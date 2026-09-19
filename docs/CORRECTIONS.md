@@ -26,6 +26,12 @@ protocol or manuscript is written.
   isolated signal model was locally stable.
 - Empty or conflicting confidence sets remain unresolved/model-conflict
   outcomes; they are not converted into stable labels.
+- The trained-neural matched study does not clear its predeclared advantage
+  threshold; the paper reports a null AI-specific result.
+- The constrained noisy/dependent observation benchmark has nonzero
+  wrong-confident calls and a large unresolved fraction.
+- The throttle intervention result is single-account synthetic evidence and
+  cannot establish absence of loss shifting.
 
 ## Corrections policy
 

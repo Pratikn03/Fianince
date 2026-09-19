@@ -21,3 +21,19 @@ packages is sufficient; the PDF itself requires no TeX installation.
 The paper summarizes the complete result tables. Every individual CSV row and raw archive belongs
 in the accompanying studies, not printed as thousands of pages. Data dictionaries explain which
 raw paths were retained and which can be regenerated from seeds.
+# Next-stage paper
+
+The scoped follow-up manuscript is `Machine_Markets_Next_Research_Paper.tex`.
+Its tables and figures are regenerated from
+`studies/next_stage_validation/results/` by:
+
+```bash
+python3.11 studies/next_stage_validation/scripts/render_paper_artifacts.py
+cd paper
+pdflatex -interaction=nonstopmode -halt-on-error Machine_Markets_Next_Research_Paper.tex
+pdflatex -interaction=nonstopmode -halt-on-error Machine_Markets_Next_Research_Paper.tex
+```
+
+This is a limited internally reproducible paper. It does not claim external
+replication, full exchange calibration, authorship review, or publication
+acceptance.
