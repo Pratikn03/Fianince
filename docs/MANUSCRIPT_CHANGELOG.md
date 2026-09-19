@@ -1,5 +1,15 @@
 # Manuscript changelog
 
+## Concise final integrated edition
+
+- Added `paper/Machine_Markets_Concise_Final_Integrated_Paper.tex/.pdf`, a single
+  41-page v0.6 manuscript based on the 38-page integrated paper.
+- Integrated the matched-policy null result, noisy/dependent observation benchmark,
+  operational-intervention result, and checksum-verified public crypto depth-band /
+  trade-tape transfer boundary.
+- Preserved `paper/Machine_Markets_Final_Integrated_Paper.tex/.pdf` unchanged as
+  the 53-page master baseline.
+
 ## Next research paper
 
 - Added `paper/Machine_Markets_Next_Research_Paper.tex`.
