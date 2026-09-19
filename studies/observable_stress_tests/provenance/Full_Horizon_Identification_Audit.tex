@@ -1,0 +1,346 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,array,longtable,enumitem}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr,listings}
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Hidden Slow Learners Revisited}\fancyhead[R]{\small Identification audit v2.0}
+\fancyfoot[C]{\thepage}\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{3em}\setlength{\parskip}{4pt}
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{theorem}[proposition]{Theorem}
+\newtheorem{corollary}[proposition]{Corollary}
+\theoremstyle{remark}\newtheorem{remark}[proposition]{Remark}
+\newcommand{\Prob}{\mathbb{P}}\newcommand{\R}{\mathbb{R}}
+\newcommand{\TV}{\operatorname{TV}}\newcommand{\N}{\mathcal N}
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,columns=fullflexible,showstringspaces=false,frame=single}
+\title{\textbf{Hidden Slow Learners Revisited}\\[5pt]\large Full-Horizon Positive Identification and\\Limits of Stability Measurement}
+\author{}
+\date{18 September 2026\\[3pt]\small Executed research audit; synthetic evidence and model-specific proofs}
+\begin{document}
+\maketitle
+\begin{abstract}
+A short response window may conceal feedback that determines the stability of an adaptive system. But an identification difficulty does not establish superiority of a proposed diagnostic. We audit a prior rate-aware summary bound against two conventional, fully informed alternatives: nonnegative exponential-mixture least squares using every observed response, and positive-mixture set-membership bounds with continuous-rate bin envelopes. All methods receive the same measurements, noise standard error and valid learning-rate floor; none receives generating rates, weights, order or class. Across 21,600 synthetic measurement vectors and four horizons, the full-moment bounds resolve more cases than the prior summary bound. At the primary 256-tap horizon, decision coverage rises from 82.69\% to 88.04\% at lower noise and from 66.20\% to 76.65\% at higher noise. The new bounds make zero and four wrong confident calls, respectively; the original bound makes none. Every interval contains the true gain on the simulated simultaneous confidence event. A separate two-state construction yields an exact Gaussian testing limit with fixed gain margins: hidden slow feedback can make opposite-stability models nearly indistinguishable without increasing model order. The resulting coverage--error and observation-budget bounds specialize classical testing theory. The defensible interpretation is a restricted measurement requirement and an auditable benchmark, not superiority of the original diagnostic, a new general identification principle, or a validated financial-crisis detector. External novelty review and independent replication remain necessary.
+\end{abstract}
+\noindent\textbf{Keywords:} positive systems; data informativity; hidden memory; set membership; stability measurement; finite-horizon identification.\\
+\textbf{Evidence boundary:} fixed positive linear models and controlled noisy kernel measurements; no observed-market dataset, trained neural agents, or external replication.
+
+\section{Introduction}
+The large research question motivating this project is whether delegation to adaptive artificial agents changes financially important feedback. A useful contribution to that program must distinguish an interesting mechanism from an identifiable phenomenon. If the observations do not discriminate stable and unstable mechanisms, a well-fitting prediction model is not sufficient evidence of stability. Conversely, difficulty for a weak fitting procedure does not establish a novel impossibility or validate a new diagnostic.
+
+A preceding research artifact, \emph{Hidden Slow Learners}, constructed positive adaptive-market models with identical finite response prefixes and different long-run stability. It also bounded total feedback using a valid lower bound on learning rates. Its numerical comparator was limited to at most 32 early observations, even when the proposed bound used a longer horizon. That comparison was inadequate for any claim of superiority over conventional identification. This paper addresses that weakness rather than protecting the earlier conclusion.
+
+The audit asks a precise question: \emph{what remains of the proposed contribution when conventional positive identification uses the entire available response and exactly the same side information?} Two comparisons are required. First, a positive point estimator can show whether the observations support accurate fitting. Second, a positive confidence-set estimator can show whether stability is a property of all models compatible with a declared uncertainty set. These are different tasks. The distinction itself is established in data-informativity theory \citep{vanwaarde2020}, not introduced here.
+
+The executed comparison changes the interpretation. Conventional full-moment bounds are more decisive on average than the simple summary bound. Their finite confidence budget allows occasional wrong labels, and they reject some datasets as incompatible with the assumed positive model. A nonnegative point fit is even more decisive by construction, but has no corresponding error-control claim. Thus the prior method cannot be sold as a generally superior stability diagnostic.
+
+What survives is a measurement question. We give a fixed two-state noisy construction, rather than relying only on an exact moment construction whose order may grow with the desired horizon. It makes two models with normalized total gains 0.9 and 1.1 difficult to distinguish, using the same states and rates. An explicit likelihood-ratio calculation quantifies the trade-off among observation length, measurement precision and hidden learning speed. The calculation is a specialization of classical two-point testing, not a claim to have invented that technique \citep{polyanskiy2019}.
+
+The release contains the complete response vectors, all paired decisions, confidence-event checks, resolution sensitivity, exact rational witnesses, and separately implemented numerical checks. This makes the result inspectable and reproducible. It does not make it independently replicated or establish publication priority.
+
+\section{Related work and priority boundary}
+\paragraph{Adaptive finance and performative feedback.}
+\citet{georges2021} study market stability with machine-learning agents; the accessible April 2019 author preprint was inspected. \citet{perdomo2020} formalize decision-induced changes in the data distribution. These are direct reasons not to describe the feedback between prediction, action and subsequent observations as an unprecedented discovery. The present model isolates hidden memory rather than reproducing their market or learning results.
+
+\paragraph{Data informativity.}
+\citet{vanwaarde2020} distinguish properties supported by all data-compatible systems from conclusions based on one identified model. Their framework is the closest conceptual predecessor to the present fit-versus-certificate distinction. Our confidence sets and scalar gain target provide a specialized worked example, not a replacement for that framework.
+
+\paragraph{Positivity and gain side information.}
+Positive-system stability is established control theory \citep{rantzer2015}. Positivity-constrained identification is also established. \citet{khosravi2025} incorporate internal positivity through constrained kernel-based identification; \citet{khosravi2022} study steady-state gain side information and explicitly discuss long-memory responses. \citet{umenberger2016} address stable positive identification in a different measured-state setting. Our full-horizon nonnegative least-squares baseline is conventional, but it is not an implementation or claimed improvement of these complete algorithms. Imposing closed-loop stability in advance would make it unsuitable for testing unknown stability; the present baselines allow gains on both sides of the boundary.
+
+\paragraph{Moments and statistical identification limits.}
+Our impulse response is a positive mixture of geometric sequences. Finite information about such a mixture is a moment problem. Convex moment bounds and their limits have an extensive history \citep{bertsimas2005}; ill-posed Hausdorff moment inversion is studied explicitly by \citet{gerth2021}. Finite-sample identification and lower bounds also predate this project \citep{oymak2019,jedra2019}. The new calculation below uses a particularly transparent two-state Gaussian experiment. It is not a contradiction of identification results with more informative excitation, stronger structural restrictions, or sufficiently accurate observations.
+
+\paragraph{Scope of the review.}
+Primary abstracts, selected full texts and publication records were checked on 18 September 2026. The companion literature audit records review depth and sources. This focused search does not establish that no equivalent construction or testing formula has appeared elsewhere. No outside expert has approved the proofs. Novelty, correctness and financial relevance are separate questions.
+
+\section{Model, target and measurement contract}\label{sec:model}
+Consider a scalar price-deviation state and $n$ exponentially updating pressure states:
+\begin{align}
+ x_{t+1}&=a x_t+\sum_{i=1}^n y_{i,t}+\epsilon_{t+1},\\
+ y_{i,t+1}&=(1-\eta_i)y_{i,t}+\eta_i q_i x_t,
+\end{align}
+where $0\le a<1$, $q_i\ge0$ and $0<\eta_i\le1$. The joint transition matrix is
+\begin{equation}
+ J=\begin{pmatrix}a&\mathbf 1^\top\\\operatorname{diag}(\eta)q&\operatorname{diag}(1-\eta)\end{pmatrix}.
+\end{equation}
+The states can be signed; positivity refers to the entries of $J$. The coefficients are fixed. The model represents adaptive memory, not online training of a neural policy, utility maximization, endogenous leverage, or market clearing.
+
+\begin{proposition}[Classical positive-system specialization]\label{prop:stability}
+Let $Q=\sum_iq_i$. Then $J$ is Schur stable if and only if $a+Q<1$. At $a+Q=1$, $1$ is an eigenvalue. If $a+Q>1$, the spectral radius exceeds one.
+\end{proposition}
+\begin{proof}
+The diagonal lower block of $I-J$ is $\operatorname{diag}(\eta)>0$. Its scalar Schur complement is $1-a-\mathbf1^\top\operatorname{diag}(\eta)^{-1}\operatorname{diag}(\eta)q=1-a-Q$. The nonsingular M-matrix characterization for a nonnegative $J$ gives $\rho(J)<1$ precisely when this complement is positive. At equality, $(1,q^\top)^\top$ is a nonzero eigenvector at one. Above the boundary, the scalar eigenvalue equation
+$\lambda-a-\sum_i\eta_iq_i/(\lambda-1+\eta_i)=0$
+has a root greater than one: its left side is negative at one, increases strictly on $[1,\infty)$, and tends to infinity. Zero-weight states contribute only stable diagonal modes.
+\end{proof}
+
+Normalize $\gamma_i=q_i/(1-a)$ and $G=\sum_i\gamma_i$. The target is now $G<1$ versus $G>1$. The normalized loop-open response is
+\begin{equation}
+ g_j=\sum_i\gamma_i\eta_i(1-\eta_i)^j,\qquad j\ge0,\qquad\sum_{j=0}^\infty g_j=G.\label{eq:kernel}
+\end{equation}
+Every estimator receives $\hat g_0,\ldots,\hat g_{H-1}$, a known valid rate floor $\eta_i\ge\underline\eta>0$, and a known homoskedastic standard error $v$. Measurements satisfy
+\begin{equation}
+ \hat g_j=g_j+vZ_j,\qquad Z_j\overset{\mathrm{iid}}\sim\N(0,1).\label{eq:measurement}
+\end{equation}
+Direct persistence is known for normalization. Hidden rates, weights, component count, slow share and labels are withheld. These measurements are controlled kernel responses. They are not passive price observations; recovering them from prices would create an additional identification problem, possibly with correlated errors.
+
+\section{Equal-information estimators}\label{sec:methods}
+\subsection{Original and budget-matched summary bounds}
+For $r=1-\underline\eta$ and $S_H=\sum_{j<H}g_j$, positivity yields
+\begin{equation}
+ S_H\le G\le\min\left\{\frac{S_H}{1-r^H},\ S_H+\frac{r}{1-r}g_{H-1}\right\}.\label{eq:summary}
+\end{equation}
+The first upper bound follows from $1-(1-\eta_i)^H\ge1-r^H$. The second follows by bounding each omitted geometric tail by $r/(1-r)$ times its last observed tap. For $\underline\eta=1$, the tail is zero.
+
+The original method inserts simultaneous Gaussian bounds for sums and terminal taps, allocating total error $\alpha=0.05$ over the declared horizons $\mathcal H=\{4,16,64,256\}$. We also run the same method with $\alpha=0.025$, matching the summary share of the full-moment procedure. Negative or incompatible confidence bounds produce a model-conflict outcome, not a stable label.
+
+\subsection{Conventional full-horizon positive point fitting}
+Choose 129 logarithmically spaced rate nodes $\xi_l\in[\underline\eta,1]$. Fit
+\begin{equation}
+ \hat w\in\arg\min_{w\ge0}\sum_{j=0}^{H-1}\left[\hat g_j-\sum_lw_l\xi_l(1-\xi_l)^j\right]^2,\qquad\hat G=\sum_l\hat w_l.\label{eq:nnls}
+\end{equation}
+Columns are normalized before numerical optimization; coefficients are transformed back before summation. All $H$ observations are used. The objective does not force $\hat G<1$. SciPy's nonnegative least-squares implementation is used \citep{scipy_nnls}. Homoskedastic weighting would multiply the objective by a constant and not change its minimizer.
+
+The rate grid approximates a continuum. More importantly, one fitted gain does not characterize all compatible gains. We report $\hat G<1$ or $\hat G>1$ as a \emph{point decision}, not a confidence certificate. Hyperparameters are fixed before evaluating the primary outcomes.
+
+\subsection{Full-moment set membership with continuous-bin protection}
+Let $\mu=\sum_i\gamma_i\delta_{\eta_i}$ be the positive rate measure. Then $g_j=\int b_j(\eta)\,d\mu(\eta)$ with $b_j(\eta)=\eta(1-\eta)^j$, and $G=\int1\,d\mu$. For each rate bin $B_l$, put $w_l=\mu(B_l)$. For every measured feature $f$, define
+\begin{equation}
+ f_l^- =\min_{\eta\in B_l}f(\eta),\qquad f_l^+=\max_{\eta\in B_l}f(\eta).
+\end{equation}
+The extrema of $b_j$ are analytic: the maximum occurs at the projection of $1/(j+1)$ onto the bin, and the minimum is at an endpoint. The cumulative feature $1-(1-\eta)^h$ is increasing.
+
+If a measured feature has confidence interval $[L_f,U_f]$, every compatible positive mixture satisfies
+\begin{equation}
+ \sum_lf_l^-w_l\le U_f,\qquad \sum_lf_l^+w_l\ge L_f,\qquad w_l\ge0.\label{eq:outer}
+\end{equation}
+Minimizing and maximizing $\sum_lw_l$ over these inequalities yields a conservative interval $[G_-,G_+]$. This is an \emph{outer} relaxation: an off-grid true mode cannot be excluded merely because no grid node equals its rate. Different features can attain their bin extrema at different rates, so the feasible set can be larger than the exact moment set.
+
+The primary procedure uses 64 logarithmic bins, all individual taps through $H$, and all declared prefix sums and terminal taps available through $H$. We record the raw LP interval and its intersection with the budget-matched summary interval. Empty intersections or infeasible programs are model conflicts. Intersection can only tighten compatible intervals; it does not establish pointwise dominance when joint consistency fails.
+
+\subsection{Confidence allocation and decision rule}
+Let $m=4$ and $H_{\max}=256$. Allocate $\alpha_s=\alpha_c=0.025$ to summary features and coordinates. Use
+\begin{equation}
+ z_s=\Phi^{-1}\left(1-\frac{\alpha_s}{4m}\right),\qquad
+ z_c=\Phi^{-1}\left(1-\frac{\alpha_c}{2H_{\max}}\right).
+\end{equation}
+Tap intervals have radius $z_cv$; prefix sums and terminal taps have radii $z_sv\sqrt h$ and $z_sv$, respectively. A union bound gives simultaneous coverage at least $0.95$ over all coordinates and declared horizons. Independence among these derived features is not needed. Independence of the original tap noise is used for the sum standard errors.
+
+\begin{proposition}[Finite-family error control]\label{prop:coverage}
+In exact arithmetic, under the model and measurement contract, the full-moment interval contains the true $G$ at every declared horizon on the simultaneous event. Declaring stable when $G_+<1$ and unstable when $G_->1$ therefore has probability at most $0.05$ of any wrong confident label across the four horizons.
+\end{proposition}
+\begin{proof}
+On the event, the true measure satisfies every feature interval. Its bin masses satisfy \eqref{eq:outer}, so its total mass lies between the extremal LP objectives. A valid summary intersection also contains it. A true gain cannot be on the opposite side of one from an interval containing that gain. The probability of leaving the simultaneous event is bounded by the allocated Gaussian tail probabilities and the union bound.
+\end{proof}
+
+The implementation adds a $10^{-8}$ classification margin, outward feature padding, dual-feasibility repair and numerical audits. These are safeguards, not a formally verified interval-arithmetic solver. The guarantee is not conditional on deciding, not anytime-valid, and not robust to a false rate floor or a wrong noise model.
+
+\section{A fixed-order noisy measurement limit}\label{sec:limit}
+The exact finite-window construction in the earlier artifact permits model order to grow with the requested matching horizon. A separate noisy limit can be obtained without this feature. Consider two normalized two-state models with common rates $(1/2,\eta)$ and weights
+\begin{equation}
+ \gamma^{(0)}=(0.7,0.2),\qquad\gamma^{(1)}=(0.7,0.4).
+\end{equation}
+The first is stable with $G_0=0.9$, the second unstable with $G_1=1.1$. Their gain margins and state counts do not shrink or grow with $\eta$. Let $\Delta=0.2$. The difference of their measured means is
+\begin{equation}
+ g_j^{(1)}-g_j^{(0)}=\Delta\eta(1-\eta)^j.
+\end{equation}
+
+\begin{theorem}[Gaussian two-point specialization]\label{thm:gaussian}
+Under \eqref{eq:measurement}, the squared Mahalanobis distance between these two $H$-tap observation laws is
+\begin{equation}
+ d_H^2=\frac{\Delta^2\eta\{1-(1-\eta)^{2H}\}}{v^2(2-\eta)}.\label{eq:distance}
+\end{equation}
+Even an oracle told both candidate models has minimum balanced forced-classification error $\Phi(-d_H/2)$. Their total variation distance is $2\Phi(d_H/2)-1$.
+\end{theorem}
+\begin{proof}
+The squared mean difference divided by $v^2$ is a finite geometric sum:
+$\Delta^2\eta^2v^{-2}\sum_{j<H}(1-\eta)^{2j}$.
+Its denominator $1-(1-\eta)^2$ equals $\eta(2-\eta)$, giving \eqref{eq:distance}. Project the observations onto the standardized mean-difference direction. Under the two equally likely hypotheses, the log-likelihood-ratio decision has standardized means $-d_H/2$ and $d_H/2$ and unit variance. A threshold at zero gives error $\Phi(-d_H/2)$ under either hypothesis. This test minimizes balanced error by comparing the two densities. The identity between optimal balanced error and total variation gives the last expression.
+\end{proof}
+
+\begin{corollary}[Necessary coverage--error trade-off]\label{cor:abstain}
+For a rule that outputs stable, unstable or inconclusive, let $c$ be balanced decision coverage and $e$ its balanced \emph{unconditional} wrong-label probability on this pair. Then
+\begin{equation}
+ c\le\min\{1,\,2e+2\Phi(d_H/2)-1\}.\label{eq:coverage_limit}
+\end{equation}
+\end{corollary}
+\begin{proof}
+Write $S$ and $U$ for the disjoint stable and unstable decision regions. Then
+$c-2e=\tfrac12\{P_0(S)-P_1(S)+P_1(U)-P_0(U)\}\le\TV(P_0,P_1)$.
+The same inequality holds for randomized decision probabilities by integration. Substitution of Theorem~\ref{thm:gaussian} completes the proof.
+\end{proof}
+
+For fixed $H$ and $v>0$, $d_H\to0$ as $\eta\to0$. Thus no rule can be uniformly accurate \emph{and} highly decisive over a class allowing arbitrarily slow hidden feedback in this experiment. This is not impossibility for every model. A verified rate floor, another tail restriction, improved precision, or a more informative measurement can exclude the hard pairs.
+
+\subsection{Observation budget and an important saturation caveat}
+If $v=\sigma/\sqrt R$ is obtained by averaging $R$ independent probes, achieving oracle balanced error at most $\varepsilon<1/2$ requires
+\begin{equation}
+ R\ge\frac{4\sigma^2(2-\eta)[\Phi^{-1}(1-\varepsilon)]^2}
+ {\Delta^2\eta\{1-(1-\eta)^{2H}\}}.\label{eq:budget}
+\end{equation}
+This is a necessary requirement for the specified two-hypothesis pulse experiment, not a sufficient practical design. At fixed $v$,
+\begin{equation}
+ d_\infty^2=\frac{\Delta^2\eta}{v^2(2-\eta)}.
+\end{equation}
+Adding arbitrarily late noisy taps can therefore leave substantial error. Other excitation protocols can yield different information scaling; the result must not be generalized to every experiment.
+
+For $\eta=10^{-5}$, $H=256$, $\sigma=0.02$ and $R=128$, the best forced error is $49.6394\%$. An unconditional error target $e\le5\%$ permits at most $10.7212\%$ decision coverage by \eqref{eq:coverage_limit}. At infinite horizon with the same per-tap noise, the oracle error remains $44.9671\%$. These are dimensionless constructed examples, not measured market percentages or real-world crisis forecasts.
+
+\section{Executed experimental design}\label{sec:design}
+\paragraph{Original measurement population.}
+The fixed grid contains 108 configurations: $a\in\{0.2,0.5,0.8\}$, rate floor in $\{0.002,0.02,0.1\}$, slow-feedback share in $\{0,0.3,0.7\}$, and normalized gain in $\{0.6,0.9,1.1,1.4\}$. Each generating model has eight state slots, with four floor-linked slow rates and four faster rates. The configurations, including zero weights, are saved. There are 100 noise repetitions per case at each of two noise levels, giving 21,600 independent noise vectors conditional on this fixed grid. These are not 21,600 independently sampled economic environments.
+
+\paragraph{Complete information reconstruction.}
+The preceding archive saved only the first 32 taps and selected sums and terminal responses. We regenerated the complete 256-tap vectors from the documented seed and generative formula. All saved taps, sums, terminals and standard errors match exactly. The release now contains all 5,529,600 response measurements. The random-generator seed is 20260918 with case, noise and repetition identifiers included in the seed sequence.
+
+\paragraph{Primary endpoint and information firewall.}
+At each of $H=4,16,64,256$, every method receives the same prefix. The primary endpoint is $H=256$ on all 21,600 vectors. The 86,400 horizon-specific rows are paired, not independent. Truth variables are passed only to evaluation code. No outcome-based filtering, rate-floor tuning or selection of favorable seeds is performed.
+
+\paragraph{Noise.}
+Normalized single-probe standard deviations are 0.002 and 0.02. Each tap mean averages 128 probes, so the normalized standard errors are $0.002/\sqrt{128}$ and $0.02/\sqrt{128}$. Noise is synthetic independent Gaussian noise with known variance. Uncertain calibration and real measurement covariance are outside this experiment.
+
+\paragraph{Resolution and numerical checks.}
+Primary resolutions are 129 nodes for NNLS and 64 bins for the LP. Predetermined repetitions $0,20,40,60,80$ yield 1,080 vectors for sensitivity: NNLS uses 65 and 257 nodes, and the LP uses 32, 128 and 256 bins. These are 5,400 additional estimator executions, not additional independent measurements. All primary programs use SciPy 1.17.0 and NumPy 2.3.5. LPs are solved by HiGHS dual simplex \citep{scipy_highs}.
+
+\paragraph{Independent mathematical route, not independent authorship.}
+A second constraint-building implementation uses HiGHS interior point on all 108 cases and both noise levels at repetition zero. A separate standard-library rational verifier rechecks all 112 prior exact pairs and the readable witness. Gaussian testing formulas are checked against direct finite sums and projected likelihood-ratio simulations. These are separate code paths in one environment; no outside laboratory has replicated the study.
+
+\section{Results}\label{sec:results}
+\subsection{The full-horizon comparison changes the claim}
+Table~\ref{tab:primary} reports the complete primary endpoint. Full-moment intervals increase coverage from 82.69\% to 88.04\% at lower noise, and from 66.20\% to 76.65\% at higher noise. The net changes are 578 and 1,128 additional decisions among 10,800 vectors at each noise level. At higher noise, four of the new procedure's confident decisions are wrong, whereas the original summary procedure makes none. Thus the result is a trade-off under the same nominal error budget, not proof of strictly superior behavior on every dataset.
+
+\begin{table}[htbp]\centering\small
+\caption{Primary endpoint, $H=256$. There are 10,800 vectors per noise level. Point decisions from NNLS have no confidence guarantee. Conflicts are unresolved, not correct predictions.}\label{tab:primary}
+\begin{tabular}{llrrrr}\toprule
+Noise&Method&Decided&Coverage&Wrong&Conflicts\\\midrule
+Lower&Original summary&8,930&82.69\%&0&23\\
+Lower&Budget-matched summary&8,893&82.34\%&0&13\\
+Lower&Full-horizon NNLS&10,800&100.00\%&24&0\\
+Lower&Full-moment LP&9,508&88.04\%&0&152\\\midrule
+Higher&Original summary&7,150&66.20\%&0&31\\
+Higher&Budget-matched summary&6,884&63.74\%&0&12\\
+Higher&Full-horizon NNLS&10,800&100.00\%&306&0\\
+Higher&Full-moment LP&8,278&76.65\%&4&194\\\bottomrule
+\end{tabular}
+\end{table}
+
+The point fit makes 24 false-unstable decisions at lower noise. At higher noise it makes 97 false-stable and 209 false-unstable decisions. The LP makes two of each at higher noise. Its conditional error among decided cases there is $4/8278=0.0483\%$, while its unconditional error is $4/10800=0.0370\%$. Neither empirical quantity should be substituted for the formal guarantee, which concerns the probability of any wrong confident call over the declared horizon family.
+
+The raw LP and its summary intersection have identical labels in this primary study. Relative to the original summary, the LP newly resolves 710 lower-noise vectors but loses 132 earlier decisions, for a net increase of 578. At higher noise it gains 1,330 and loses 202, for a net increase of 1,128. Losses include inconsistent joint confidence sets. The release preserves these cases instead of removing them from denominators.
+
+\subsection{Confidence-event and numerical audit}
+The simultaneous event holds for 20,591 of 21,600 independent vectors, or 95.33\%. Across all four horizons this gives 82,364 on-event rows. Every full-moment interval contains the true normalized gain on these rows; none makes a wrong confident call. All four wrong LP labels occur off-event. Two violate an individual-tap interval and two violate a summary-feature interval. Every erroneous label and its noise-event status is saved.
+
+Across all 86,400 rows, NNLS reports no solver failure. The LP reports 85,989 feasible results and 411 model conflicts, with no numerical-failure status. Maximum recorded primal violation is $1.07\times10^{-9}$; repaired dual violation is zero at the audit precision. The maximum guarded primal--dual gap is $1.82\times10^{-6}$. These checks support the numerical implementation, but do not constitute formal verification of floating-point arithmetic.
+
+\subsection{Horizon dependence and selection risk}
+At $H=4$, the NNLS point decision is wrong on 29.79\% of lower-noise vectors and 26.97\% of higher-noise vectors. At $H=256$, those rates fall to 0.22\% and 2.83\%. Across the four horizons, at least one NNLS error occurs in 3,583 lower-noise vectors and 3,762 higher-noise vectors. These are family-level counts over independent vectors, not a claim that the four within-vector decisions are independent.
+
+A long-horizon point fit can be accurate on this finite grid while short-horizon confident interpretation remains unjustified. This does not show that NNLS is defective as an estimator. It shows why estimator accuracy and a set-valued stability statement must be evaluated separately.
+
+\subsection{Sensitivity and the fixed-order test}
+On the predetermined 540 lower-noise sensitivity vectors, raw LP decision counts are 477, 478, 480 and 480 for 32, 64, 128 and 256 bins. At higher noise the count is 416 at all four resolutions. No wrong LP label occurs in this subset; the four primary errors are outside these selected repetitions. Conflicts can increase under a tighter relaxation. The NNLS higher-noise wrong counts are 15, 15 and 14 for 65, 129 and 257 nodes. These limited checks do not establish convergence or global optimality.
+
+The two-point study evaluates 60 parameter combinations with 100,000 projected likelihood-ratio observations per class: 12,000,000 one-dimensional sufficient-statistic draws. All formula-versus-direct-distance checks pass, and all simulated oracle errors fall within the declared six-standard-error tolerance. The maximum absolute discrepancy is 0.00384. These are not millions of agent-based financial simulations.
+
+\section{Interpretation: what survived?}
+\paragraph{A better original diagnostic? No supported claim.}
+The simple rate-aware formula is transparent and inexpensive, but its apparent advantage over a limited comparator does not survive the stronger test as a general superiority claim. Conventional full-moment information improves decisiveness. The present LP is itself conservative and is not a benchmark against every state-of-the-art continuous identification method.
+
+\paragraph{A necessary measurement requirement? Yes, within scope.}
+The finite exact construction and the fixed-order noisy calculation identify an information bottleneck. Without sufficient tail restrictions, precision or informative excitation, stable and unstable feedback may be observationally close. The noisy result provides an explicit way to quantify this statement in a specified pulse experiment. It does not imply that a particular rate floor is the only possible remedy.
+
+\paragraph{An illustrative construction? Also yes.}
+The earlier exact pairs specialize moment ambiguity. The present Gaussian formulas specialize classical testing. A coherent, reproducible application can be useful research, but application-specific priority is not established merely by introducing new names. The strongest honest contribution at this stage is an audited measurement framework and a testable specification for the next experiment.
+
+\paragraph{Relation to the global financial ambition.}
+A future financial stress test would need to measure decision-response dynamics under realistic access constraints, rather than assuming the true kernel is available. The scientifically useful target is therefore: \emph{under a specified observation and intervention budget, when is adaptive feedback stability identifiable, and when must a test remain inconclusive?} That is narrower than predicting systemic crises, but it addresses a prerequisite for any such claim.
+
+\section{Limitations and next research gates}
+This release has no real-market data or trained AI-agent population. The fixed positive memory model excludes stabilizing signed feedback, parameter switching, strategic adaptation, nonlinearities, balance-sheet constraints and market microstructure. Its instability criterion is not a measure of global economic welfare or a forecast of financial losses. Equivalent memory could occur in human expectations or nonfinancial systems, so the result is not intrinsically AI-specific.
+
+Kernel measurements, rate floors and known Gaussian errors are strong assumptions. A false rate floor can produce false reassurance even in the simple summary formula. Extracting kernel responses from passive prices is not covered. Unknown variance, temporal correlation, drift and adaptive stopping require new inference arguments. The fixed two-point limit is experiment-specific; persistent excitation or direct state measurements can change its information content.
+
+The next methodological comparison should include a continuous positive-moment or suitably constrained kernel estimator with the same information and an explicit confidence target. A next financial experiment should implement an economically grounded observation protocol, audit how measurement noise arises, and compare equally informed identification procedures without supplying hidden states. Signed feedback and evolving parameters should be tested as deliberate model violations before transfer claims are made.
+
+External proof review should first seek an equivalent statement in data informativity, positive realization, moment inversion and Gaussian functional testing. Independently generated data and a separately authored implementation are needed beyond same-environment repetition. No external expert review, journal acceptance, or global priority is implied by this document.
+
+\section{Conclusion}
+Using all available measurements changes the scientific conclusion. A conventional full-moment positive-mixture procedure is more decisive than the original summary bound on the complete synthetic benchmark, while preserving a declared finite-family uncertainty contract in exact arithmetic and exhibiting four off-event errors in the higher-noise run. A positive point fit is often accurate but cannot be interpreted as a certificate.
+
+The strongest remaining target is measurement design. Hidden slow feedback admits a fixed-order Gaussian testing limit even with fixed stability margins. The explicit calculation connects decisive coverage to noise, horizon and hidden learning speed. Its foundation is classical mathematics, and its financial relevance remains to be tested. The appropriate next step is to make the observation contract realistic and independently review the precise application-level contribution, not to declare a new finance paradigm from the present model.
+
+\appendix
+\section{Exact finite-window construction: what is retained}
+For distinct poles $r_0,\ldots,r_K\in[0,1)$, barycentric weights
+$\omega_i=[\prod_{l\ne i}(r_i-r_l)]^{-1}$ obey
+$\sum_i\omega_i r_i^j=0$ for $0\le j<K$. Split their positive and negative parts into two positive kernel measures. With $\eta_i=1-r_i$, convert kernel masses $m_i$ to feedback weights $q_i=m_i/\eta_i$. The first $K$ kernel coefficients agree, whereas total feedback involves the nonpolynomial function $1/(1-r)$ and need not agree. A common scaling places the two total gains around the same stability boundary when they differ.
+
+For zero initial hidden states, closed-loop price responses satisfy a causal recursion with the kernel. Matching $K$ early kernel coefficients and direct persistence therefore matches the first $K+2$ price coefficients. Repeated-rate copies can equalize active-agent counts, but do not give a fixed minimal order as $K$ increases. The old exact theorem must be interpreted with that limitation.
+
+The readable witness uses $a=0.4$ and three active states in each system. The first four price responses are $1,0.4,0.2523076923,0.184$. Total unnormalized feedback differs: $0.1846153846$ versus $1.0153846154$. The spectral radii are approximately $0.757909$ and $1.032345$. The archive stores rational parameters, and the separate Fraction verifier checks exact identities rather than rounded displays. All 112 saved pairs and the readable example pass that recheck. This reruns the prior independent code path; it is not a new outside replication.
+
+\section{Floating-point dual guards}
+Each extremal program can be written as maximizing $c^\top w$ subject to $Aw\le b$ and $w\ge0$. A nonnegative dual vector $\lambda$ with $A^\top\lambda\ge c$ gives $c^\top w\le b^\top\lambda$. Solver multipliers are clipped to nonnegative values. A strictly positive cumulative-response constraint row is used to repair small remaining dual-feasibility deficits, with long-double arithmetic for residual evaluation. The objective receives an additional outward guard.
+
+For the lower bound, apply the same upper-bounding procedure to $c=-\mathbf1$ and negate its result. Record the primal violation, repaired dual violation, objective gap and repair magnitude. Programs failing the declared checks produce a numerical-failure status rather than a confident label. Analytic feature extrema are padded outward by $10^{-13}$; the classification margin is $10^{-8}$. These choices are fixed in the protocol. A fully formal numerical certificate would require directed-rounding interval arithmetic or exact rational optimization and is not supplied here.
+
+The separate interior-point check rebuilds features without importing the main estimator. All 216 selected datasets agree with the primary feasible bounds or conflict status; the maximum bound difference is $5.62\times10^{-9}$. Both algorithms are provided by HiGHS, so this is an algorithmic cross-check within one solver library, not independent numerical infrastructure.
+
+\section{Reproduction and evidence map}
+The companion folder \texttt{Machine\_Markets\_Full\_Horizon\_Study} includes complete inputs and scripts. The original archive is not overwritten. Core commands from the new folder are:
+\begin{lstlisting}
+python -m pip install -r requirements.txt
+python -m pytest -q
+python scripts/verify_exact.py --results data
+python scripts/verify_confidence_events.py
+python scripts/run_testing_limits.py
+python scripts/reproduce_clean.py --output /tmp/mmfh-clean --datasets 21600
+\end{lstlisting}
+The executed clean-directory rerun reproduced all 86,400 paired rows from all 21,600 vectors. All 33 non-timing fields matched, and numeric fields were exactly equal on this environment.
+
+The output directory for clean reproduction must not already exist. Timing fields are excluded from equivalence checks. The clean rerun uses the same software environment and copied inputs, not an external laboratory. A different platform may show small numerical differences; categorical disagreements or interval failures require investigation rather than silent tolerance expansion.
+
+\begingroup\small
+\begin{longtable}{p{0.40\linewidth}p{0.54\linewidth}}\toprule
+Artifact&What it establishes\\\midrule\endhead
+\path{data/full_measurements.npz}&Every observed tap for all 21,600 vectors; truth stored separately for evaluation.\\
+\path{results/paired_comparison.csv}&All 86,400 paired rows, labels, bounds, statuses and numerical audits.\\
+\path{results/aggregate_comparison.csv}&Complete method/noise/horizon summaries, including conflicts and conditional versus unconditional errors.\\
+\path{results/confidence_event_audit.json}&Every erroneous LP label and the on-event interval checks.\\
+\path{results/resolution_sensitivity.csv}&All predetermined resolution experiments, including unfavorable cases.\\
+\path{results/testing_limits.csv}&Exact two-point risk and projected likelihood-ratio simulation results.\\
+\path{results/clean_reproduction.json}&Actual rerun scope, equality checks and environment-specific status.\\
+\path{docs/CLAIM_AND_PROOF_AUDIT.md}&Proof assumptions, corrected claims, priority boundary and external review questions.\\\bottomrule
+\end{longtable}
+\endgroup
+
+\section{Research transparency statement}
+This is an AI-assisted research-development artifact. Mathematical derivations, code, tests and synthetic experiments were produced and inspected in this environment. No authorship or institutional affiliation is assigned without the researcher's review. External literature is credited; no consulted author has endorsed this work. No private financial records, external trading actions, or personal account data were used. Human authors should verify all claims, determine journal-specific disclosure requirements, and obtain independent review before submission.
+
+\clearpage
+\begingroup\small
+\begin{thebibliography}{99}
+\bibitem[van Waarde et al.(2020)]{vanwaarde2020} H. J. van Waarde, J. Eising, H. L. Trentelman, and M. K. Camlibel. \emph{Data informativity: a new perspective on data-driven analysis and control}. arXiv:1908.00468v3, 2020. \url{https://arxiv.org/abs/1908.00468}.
+\bibitem[Khosravi and Smith(2025)]{khosravi2025} M. Khosravi and R. S. Smith. Regularized identification with internal positivity side-information. \emph{SIAM Journal on Control and Optimization}, 63(1):26--56, 2025. doi:10.1137/23M1556095. Accessible preprint: \url{https://arxiv.org/abs/2111.00407}.
+\bibitem[Khosravi and Smith(2022)]{khosravi2022} M. Khosravi and R. S. Smith. \emph{Kernel-based impulse response identification with side-information on steady-state gain}. arXiv:2111.00409v2, 2022. \url{https://arxiv.org/abs/2111.00409}.
+\bibitem[Rantzer(2015)]{rantzer2015} A. Rantzer. Scalable control of positive systems. \emph{European Journal of Control}, 24:72--80, 2015. doi:10.1016/j.ejcon.2015.04.004.
+\bibitem[Umenberger and Manchester(2016)]{umenberger2016} J. Umenberger and I. R. Manchester. Scalable identification of stable positive systems. \emph{IEEE Conference on Decision and Control}, pp.~4630--4635, 2016. doi:10.1109/CDC.2016.7798974.
+\bibitem[Bertsimas and Popescu(2005)]{bertsimas2005} D. Bertsimas and I. Popescu. Optimal inequalities in probability theory: a convex optimization approach. \emph{SIAM Journal on Optimization}, 15(3):780--804, 2005. doi:10.1137/S1052623401399903.
+\bibitem[Gerth et al.(2021)]{gerth2021} D. Gerth, B. Hofmann, C. Hofmann, and S. Kindermann. \emph{The Hausdorff moment problem in the light of ill-posedness of type I}. arXiv:2104.06029, 2021. \url{https://arxiv.org/abs/2104.06029}.
+\bibitem[Oymak and Ozay(2019)]{oymak2019} S. Oymak and N. Ozay. \emph{Non-asymptotic identification of LTI systems from a single trajectory}. arXiv:1806.05722, revised 2019. \url{https://arxiv.org/abs/1806.05722}.
+\bibitem[Jedra and Proutiere(2019)]{jedra2019} Y. Jedra and A. Proutiere. \emph{Sample complexity lower bounds for linear system identification}. arXiv:1903.10343, 2019. \url{https://arxiv.org/abs/1903.10343}.
+\bibitem[Polyanskiy and Wu(2019)]{polyanskiy2019} Y. Polyanskiy and Y. Wu. \emph{Dualizing Le Cam's method for functional estimation, with applications to estimating the unseens}. arXiv:1902.05616, 2019. \url{https://arxiv.org/abs/1902.05616}.
+\bibitem[Georges and Pereira(2021)]{georges2021} C. Georges and J. Pereira. Market stability with machine learning agents. \emph{Journal of Economic Dynamics and Control}, 122:104032, 2021. doi:10.1016/j.jedc.2020.104032. Reviewed author preprint: April 18, 2019.
+\bibitem[Perdomo et al.(2020)]{perdomo2020} J. C. Perdomo, T. Zrnic, C. Mendler-D\"unner, and M. Hardt. Performative prediction. \emph{Proceedings of Machine Learning Research}, 119:7599--7609, 2020. \url{https://proceedings.mlr.press/v119/perdomo20a.html}.
+\bibitem[SciPy(nnls)]{scipy_nnls} SciPy developers. \texttt{scipy.optimize.nnls}: nonnegative least squares. Official API documentation, accessed September 18, 2026. \url{https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.nnls.html}. Executed library version: 1.17.0.
+\bibitem[SciPy(HiGHS)]{scipy_highs} SciPy developers. \texttt{linprog(method='highs-ds')}: HiGHS dual-simplex linear programming. Official API documentation, accessed September 18, 2026. \url{https://docs.scipy.org/doc/scipy/reference/optimize.linprog-highs-ds.html}. Executed library version: 1.17.0.
+\end{thebibliography}
+\endgroup
+\end{document}

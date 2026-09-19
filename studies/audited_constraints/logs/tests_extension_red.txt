@@ -1,0 +1,52 @@
+....F.......F.....F                                                      [100%]
+=================================== FAILURES ===================================
+_________________ test_preloaded_dealer_can_halt_under_stress __________________
+
+    def test_preloaded_dealer_can_halt_under_stress():
+>       r=market_panel(1.3,.1,'tight',-15,64,19,steps=64,save_paths=True,preloaded_dealer=True)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: market_panel() got an unexpected keyword argument 'preloaded_dealer'
+
+tests/test_finance.py:28: TypeError
+____________ test_public_single_roundtrip_has_no_residual_inventory ____________
+
+    def test_public_single_roundtrip_has_no_residual_inventory():
+        from src.linear import probe_orders
+>       u=probe_orders(np.random.default_rng(1),20,64,'single_roundtrip')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_inference.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+rng = Generator(PCG64) at 0x7F32FB1BA960, episodes = 20, steps = 64
+design = 'single_roundtrip', gross = 4.0
+
+    def probe_orders(rng,episodes:int,steps:int,design:str,gross:float=4.):
+        if steps<16 or episodes<4 or gross<=0:raise ValueError('invalid probe specification')
+        u=np.zeros((episodes,steps))
+        if design=='impulse':
+            u[:,0]=rng.choice([-1.,1.],episodes)*gross
+        elif design=='roundtrips':
+            times=np.linspace(0,steps-3,8,dtype=int)
+            for j in range(4):
+                s=rng.choice([-1.,1.],episodes)*gross/8
+                u[:,times[2*j]]=s;u[:,times[2*j+1]]=-s
+>       else:raise ValueError('unknown design')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       ValueError: unknown design
+
+src/linear.py:16: ValueError
+_______________________ test_source_rejects_illegal_gain _______________________
+
+    def test_source_rejects_illegal_gain():
+        from src.linear import simulate_linear
+>       with pytest.raises(ValueError):simulate_linear(.4,[-1,.1],[.5,.1],.02,10,16,1,'impulse')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_tail.py:32: Failed
+=========================== short test summary info ============================
+FAILED tests/test_finance.py::test_preloaded_dealer_can_halt_under_stress - TypeError: market_panel() got an unexpected keyword argument 'preloaded_dealer'
+FAILED tests/test_inference.py::test_public_single_roundtrip_has_no_residual_inventory - ValueError: unknown design
+FAILED tests/test_tail.py::test_source_rejects_illegal_gain - Failed: DID NOT RAISE <class 'ValueError'>
+3 failed, 16 passed in 1.22s
