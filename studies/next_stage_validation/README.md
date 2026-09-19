@@ -18,5 +18,7 @@ python3.11 studies/next_stage_validation/scripts/render_paper_artifacts.py
 ```
 
 The saved confirmation result is a null AI-specific comparison, a noisy/dependent
-coverage limitation, a synthetic intervention result, and a descriptive OHLCV
-pilot. Full order-book calibration and external replication remain blocked.
+coverage limitation, a synthetic intervention result, a descriptive OHLCV pilot,
+and a checksum-verified historical Binance depth-band/trade-tape calibration.
+Queue-level/full order-book replay calibration and external replication remain
+blocked; see `docs/L2_CALIBRATION_REPORT.md` for the exact boundary.

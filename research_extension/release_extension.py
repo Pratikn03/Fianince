@@ -66,8 +66,8 @@ def gate_status() -> dict[str, dict[str, Any]]:
             "acceptance": "Named unaffiliated reviewer returns dated code, logs, and discrepancy report.",
         },
         "crypto_calibration": {
-            "status": "pending",
-            "acceptance": "Held-out public crypto data validates spread, depth, fills, impact, and regime behavior.",
+            "status": "completed_depth_band_pending_queue_replay",
+            "acceptance": "93 matched depth-band/trade archives have verified checksums and chronological held-out descriptive summaries; spread, queue, fills, and simulator replay remain pending.",
         },
         "matched_ai_non_ai": {
             "status": "completed_synthetic_null",

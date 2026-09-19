@@ -12,11 +12,12 @@ is complete.
 | Matched trained/non-AI study | DONE_INTERNAL, null result | `matched_agent_analysis.json` |
 | Synthetic intervention validation | DONE_INTERNAL, local only | `intervention_results.json` |
 | Public OHLCV descriptive pilot | DONE_INTERNAL, not L2 calibration | `kline_calibration_summary.json` |
-| Full crypto-exchange calibration | BLOCKED_EXTERNAL | Authorized historical order-book data and held-out simulator validation required |
+| Historical depth-band/trade-tape calibration | DONE_INTERNAL, scoped | `l2_calibration_results.json`, `docs/L2_CALIBRATION_REPORT.md` |
+| Full crypto-exchange queue/fill calibration | BLOCKED_EXTERNAL | Spread, event-level orders/cancellations, queue priority, fills, and held-out simulator validation remain required |
 | Independent replication and proof review | BLOCKED_EXTERNAL | `replication/EXTERNAL_REVIEW_STATUS.md` |
-| Priority/novelty review | IN_PROGRESS | No independent priority review recorded |
+| Priority/novelty review | IN_PROGRESS | `docs/NOVELTY_POSITIONING.md`; independent human priority review not recorded |
 | Human authorship, ethics, rights, venue review | BLOCKED_EXTERNAL | Human decisions and independent review required |
-| Versioned release packaging | IN_PROGRESS | Current branch has a compiled research paper and reproducibility scripts |
+| Versioned release packaging | IN_PROGRESS | Five reviews, L2 report, human packet, publication packet, compiled paper |
 
 ## Interpretation
 

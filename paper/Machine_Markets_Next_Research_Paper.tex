@@ -35,9 +35,10 @@ difficult synthetic risk regime, a 50\% execution throttle reduced the
 nonterminal event rate from \InterventionNoneRate{} to
 \InterventionThrottleRate{} while reducing mean drawdown to
 \InterventionThrottleDrawdown{}. These are controlled synthetic findings, not
-real-market probabilities or safety guarantees. Public Binance OHLCV data are
-used only for a chronological descriptive pilot; full order-book calibration,
-external replication, and independent publication review remain open.
+real-market probabilities or safety guarantees. Public Binance OHLCV and
+historical depth-band/trade-tape data are used for a chronological descriptive
+transfer layer; queue-level replay, external replication, and independent
+publication review remain open.
 \end{abstract}
 
 \section{Scope and research question}
@@ -172,11 +173,25 @@ descriptive counts are shown below.
 \CalibrationResultsTable
 \end{table}
 
-These archives do not contain historical level-2 queue state, cancellations,
-order priority, or enough information to validate partial-fill probabilities.
-Consequently they do not establish a calibrated exchange replay environment.
-WP13 remains externally blocked until authorized order-book data and a held-out
-calibration succeed.
+We additionally downloaded and checksum-verified 93 daily Binance
+``bookDepth`` archives and 93 matched ``aggTrades`` archives for BTCUSDT,
+ETHUSDT, and SOLUSDT over January 2025. The chronological held-out summaries
+are shown below.
+
+\begin{table}[t]
+\centering\small
+\caption{Historical public depth-band and aggregate-trade calibration targets.}
+\LTwoCalibrationTable
+\end{table}
+
+These files provide aggregate depth bands and executions, not historical
+level-2 queue state. They do not contain cancellations, queue priority, spread,
+or submitted-order outcomes, and the signed impact quantity is descriptive
+rather than causal. The corpus therefore completes a historical depth-band and
+trade-tape calibration layer but does not establish a calibrated queue-level
+exchange replay environment. Full L2/fill calibration remains externally
+blocked until authorized event history or an equivalent validated interface is
+available.
 
 \section{Relation to the frozen release and failure cases}
 
@@ -203,9 +218,9 @@ which execution throttling reduces local event rates.
 \section{Limitations and open gates}
 
 There is no independent external replication report, no authenticated
-deployment/runtime attestation, no full historical order-book calibration, no
-external operational validation, and no independent novelty, authorship,
-ethics, or publication review. The trained policy is small and synthetic; its
+deployment/runtime attestation, no queue-level/fill calibration, no external
+operational validation, and no independent novelty, authorship, ethics, or
+publication review. The trained policy is small and synthetic; its
 failure to show an advantage is not evidence that all AI systems lack one.
 No live trading, market perturbation, paid data, or unauthorized access was
 used. The paper is internally reproducible at the declared level but is not
@@ -226,10 +241,16 @@ python3.11 studies/next_stage_validation/scripts/run_observation_benchmark.py \
   --output studies/next_stage_validation/results --replicates 200
 python3.11 studies/next_stage_validation/scripts/analyze_results.py
 python3.11 studies/next_stage_validation/scripts/render_paper_artifacts.py
+python3.11 studies/next_stage_validation/scripts/run_l2_calibration.py \\
+  --depth-root PATH_TO_BOOKDEPTH_ROOT \\
+  --trades-root PATH_TO_AGGTRADES_ROOT \\
+  --output studies/next_stage_validation/results
 \end{verbatim}
 
-The public-data acquisition manifest and checksums are in
-\url{research_extension/data/acquisition_manifest.json}. Generated
+The OHLCV acquisition manifest is in the repository's data directory; the
+historical depth and trade archive manifest and its exact paths are documented
+in \codelink{docs/L2\_CALIBRATION\_REPORT.md}.
+The raw L2 corpus is retained on T9 and is not copied into GitHub. Generated
 results are versioned separately from the original master checksum manifest.
 
 \section*{Contribution and review status}

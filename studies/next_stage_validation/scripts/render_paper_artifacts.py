@@ -31,6 +31,7 @@ def main() -> int:
     observations = json.loads((results / "observation_benchmark.json").read_text())
     interventions = json.loads((results / "intervention_results.json").read_text())["results"]["policies"]
     calibration = json.loads((results / "kline_calibration_summary.json").read_text())["assets"]
+    l2 = json.loads((results / "l2_calibration_results.json").read_text())
 
     agent_rows = agent["summaries"]
     mean_neural_minus_adaptive = float(np.mean([
@@ -78,6 +79,12 @@ def main() -> int:
         latex_name = name.replace("_", chr(92) + "_")
         macros.append(
             f"{latex_name} & {summary['rows']['train']} & {summary['rows']['validation']} & {summary['rows']['test']} & {summary['targets']['close_return_volatility']:.5f}\\\\"
+        )
+    macros += ["\\end{tabular}%", "}", "\\newcommand{\\LTwoCalibrationTable}{%", "\\begin{tabular}{lrrrrr}", "Symbol & Test days & Snapshots/day & Trades & Flow ACF & Return vol.\\\\\\hline"]
+    for name, row in l2["symbols_results"].items():
+        test = row["splits"]["test"]
+        macros.append(
+            f"{name} & {test['days']} & {test['depth']['snapshot_count']:.0f} & {test['trades']['trade_count']:.0f} & {test['trades']['order_flow_sign_autocorrelation']:.3f} & {test['trades']['trade_return_volatility_proxy']:.5f}\\\\"
         )
     macros += ["\\end{tabular}%", "}"]
     _write(paper / "generated_results.tex", "\n".join(macros) + "\n")
