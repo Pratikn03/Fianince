@@ -89,14 +89,56 @@ In one dealer-stress scenario, the stable isolated signal model (a + sum(q) = 0.
 not asymptotic stability. The simulation is uncalibrated; the primary near-zero/near-one event
 probabilities do not establish general practical performance near a threshold.
 
+## 7. Broadened 120-cell Comparator Benchmark and Conic Contraction
+**Paper:** `paper/Machine_Markets_Final_Integrated_Paper.pdf` (Chapter 4, Table 5, Figure 4).
+**Code:** `research_extension/mm_revision/studies/run_broadened_comparator_grid.py`, `conic_informativeness_curve.py`.
+**Artifacts:** `research_extension/outputs/broadened_comparator_results.json`, `conic_contraction_results.json`.
+The 120-cell grid tests 600 synthetic panels across 5 feedback regimes ($S \in \{0.70, 0.82, 1.00, 1.03, 1.18\}$), 3 decay rates, 2 budgets, and 2 horizons. At low budget ($R=128$), the Covariance Conic Certificate achieves 100% parameter coverage and 0% decisiveness. Under the monotonic budget sweep ($R=128 \to 32,768$, 300 solves total), the conic certificate contracts by up to 70.4% in width, reaching 100.0% decisiveness and 0.0% conditional error at $R=32,768$.
+
+## 8. Output-Error Misspecification Diagnostic
+**Paper:** `paper/Machine_Markets_Final_Integrated_Paper.pdf` (Chapter 4, Table 6).
+**Code:** `research_extension/mm_revision/studies/output_error_misspecification_diagnostic.py`.
+**Artifact:** `research_extension/outputs/output_error_diagnostic_results.json`.
+Evaluating 400 panels across conditions C1–C4 reveals that output-error estimators are unbiased ($|\text{bias}| \le 0.00004$) under matched models, but fitting a single-rate model to a two-rate ground truth induces an irreducible structural bias of $-0.1072$, explaining the 57.1% conditional error rate in Table 5.
+
+## 9. Group Identification and Continuous-Time Dynamics
+**Paper:** `paper/Machine_Markets_Final_Integrated_Paper.pdf` (Chapter 5), `paper/Machine_Markets_Mathematical_Supplement.pdf` (Sections S1–S14).
+**Code:** `research_extension/group_identification.py`, `reference_directory/group.py`, `reference_directory/continuous.py`.
+Swapped-feedback non-identifiability (Proposition 5.1) proves that symmetric memory decay prevents isolating individual group feedbacks from aggregate prices. Channel excitation ($b = \eta U q$, Theorem 5.2) yields unique recovery only under known learning rates. The continuous-time extension establishes exact Hurwitz conditions and Euler discretization error bounds ($\mathcal{O}(h^2)$).
+
+## 10. Smooth Solvency Surface and Inventory Buffer Exhaustion
+**Paper:** `paper/Machine_Markets_Final_Integrated_Paper.pdf` (Chapter 6, Tables 11, 12, 13).
+**Code:** `research_extension/mm_revision/studies/funded_smooth_surface.py`, `funded_stress.py`.
+**Artifacts:** `research_extension/outputs/funded_smooth_surface_results.json`, `funded_mechanism_results.json`.
+Across 330 factorial cells ($\mu \in [-0.2, -2.0]$), resolving inventory drift shows a smooth monotone solvency frontier. Dealer halts occur with positive dealer equity (\$9,999.06) due to inventory buffer exhaustion ($|\text{inv}_t| > 25 \times \text{mult}$), whereas unlimited funding causes true balance-sheet insolvency ($-\$122.03$). Paired counterfactual controls ($N=100$) confirm that active learning amplifies price dislocation by $+0.6148$ [0.6148, 0.6149] ($s_D = 0.0004$).
+
+## 11. Exploratory Public Market Studies (Digital Assets)
+**Paper:** `paper/Machine_Markets_Final_Integrated_Paper.pdf` (Chapter 7, Tables 14, 15, 16).
+**Code:** `research_extension/real_data_study.py`, `research_extension/mm_revision/studies/binance_robustness.py`.
+**Artifacts:** `research_extension/outputs/empirical_results.json`, `binance_robustness_results.json`.
+Coinbase predictive regressions ($N=10$) yield bivariate $t=+2.47$ ($p=0.039$) which attenuates to $t=+1.23$ ($p=0.264$) under spread and volatility controls. Binance US state-space estimation across 175 runs hits parameter bounds in 93.1% of fits. These are strictly framed as exploratory cross-sectional associations and empirical model sensitivity, not structural causal identification.
+
+## 12. Empirical Microstructure Calibration (Gates 2–4)
+**Paper:** `paper/Machine_Markets_Final_Integrated_Paper.pdf` (Chapter 7, Section 7.3, Table 17).
+**Code:** `research_extension/gate24_public_data/gate24_analysis.py`, `research_extension/gate24_public_data/calibrated_simulator.py`.
+**Artifacts:** `research_extension/gate24_public_data/gate24_analysis_results.json`, `data_acquisition_manifest.json`.
+Analysis of 3.41 GB public data from Binance Vision across 129,600 1-minute bars and 1,000-level LOB depth for BTC, ETH, and SOL authenticates external market channels. Probing costs range from \$0.59 (ETH) to \$89.00 (BTC) for $N=1,000$ active probe episodes. An independent clean-room calibrated simulator confirms balance-sheet conservation ($\text{residual} < 10^{-10}$) and monotone solvency frontiers under empirically grounded parameters.
+
+## 13. Learned-Agent Transfer Layer (Q-Learning and Model Audit)
+**Paper:** `paper/Machine_Markets_Final_Integrated_Paper.pdf` (Chapter 6, Section 6.4, Table 14).
+**Code:** `research_extension/learned_agents/train_q_learning.py`, `research_extension/learned_agents/evaluate_q_learning.py`.
+**Artifacts:** `research_extension/outputs/learned_agents/q_learning_transfer_results.json`, `trained_q_agents.json`.
+Evaluating 5 independently trained tabular Q-learning agents (6,125 states, 5 actions) across 10 held-out test seeds (15,000 steps each) reveals that learned agents reduce dealer halt rates from 100% to 0.0% and price dislocations by 75% compared to naive trend-followers. Active adaptation introduces contrarian damping ($dq/dx < 0$). Crucially, the local model-class validity audit correctly classifies 5/5 learned policies as `OUTSIDE_CERTIFIED_MODEL_CLASS` ($R^2 = 0.01\text{--}0.24$) rather than force-fitting positive linear feedback theorems, demonstrating safe observer abstention under architectural violation.
+
 ## Never combine these quantities into one headline sample count
 Observation laws differ between hidden kernels and public prices. Nested horizons share data.
 Funding scenarios share random inputs. Alternative inference methods are paired on the same data.
 Tail reanalysis reuses the primary linear rows. Simulation events, panels, scalar checks and solver
-comparisons are different counting units. Per-study protocols explain each denominator.
+comparisons are different counting units. Table 18 in Chapter 8 and Appendix B explains each denominator.
 
 ## Reviewer-ready sources
 Each study includes its original theory/claim ledger, data dictionary and research protocol.
 The latest outside-replication instructions are
-`studies/audited_constraints/replication/EXTERNAL_REPLICATION.md`.
+`studies/audited_constraints/replication/EXTERNAL_REPLICATION.md` and `docs/REPRODUCTION_GUIDE.md`.
 All outside-review and deployment-authentication gates remain pending.
+

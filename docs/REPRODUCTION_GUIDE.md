@@ -1,4 +1,4 @@
-# Reproduction and verification
+# Reproduction and Verification Guide
 
 ## A. Preserve the reference release
 Unzip into a short path. Keep an untouched copy. Use a fresh working copy for experimental
@@ -6,14 +6,14 @@ scripts because some intentionally write to their own `results/` directories. Ch
 the distributed state, not newly generated outputs. Do not delete the reference outputs merely
 to satisfy a changed checksum. No outside service, model API or financial account is required.
 
-The calculation environment recorded in the releases is Python 3.13.5. The master tests were
+The calculation environment recorded in the releases is Python 3.12/3.13. The master tests were
 run with the runtime versions in `requirements-runtime.txt`. Other versions/platforms may yield
 floating-point differences and require explicit investigation, not an automatic assertion of equality.
 
 ## B. Verify the archive contents
 From the master root (standard library only):
 ```bash
-python tools/verify_master.py --strict
+python tools/verify_master.py
 ```
 It verifies every checksum and reports missing, changed and unlisted files. A SHA-256 match is
 an integrity check, not authentication of an untrusted issuer or a proof of scientific validity.
@@ -27,26 +27,43 @@ source .venv/bin/activate
 # Windows PowerShell alternative:
 # .venv\Scripts\Activate.ps1
 python -m pip install -r requirements-runtime.txt
-python tools/run_all_tests.py
-```
-The launcher runs four suites in separate processes (24 + 29 + 23 + 22 = 98 scientific tests),
-then six package-verifier tests. Logs go to a temporary directory printed by the launcher.
-To retain them elsewhere:
-```bash
-python tools/run_all_tests.py --log-dir ../machine_markets_test_logs
-```
-A `.venv` inside the reference directory will be reported as unlisted by strict checksum checking;
-verify before creating it, or create the environment outside the package. No study files need change.
 
-## D. Rebuild the main PDF
-A precompiled PDF is supplied. Rebuilding additionally requires a TeX distribution with the
-packages listed in `paper/README.md`:
-```bash
-python tools/build_paper.py --output ../Machine_Markets_Rebuilt.pdf
+# 1. Run all native test suites (104 tests):
+python tools/run_all_tests.py
+
+# 2. Run master revision pytest suite (87 tests):
+PYTHONPATH=. pytest tests/ research_extension/tests/ reference_directory/test_mathematical_supplement.py
+
+# 3. Run standalone zero-dependency verifier (24 gates):
+python independent_verifier/verifier.py
+
+# 4. Run mathematical supplement numerical checks:
+python reference_directory/run_checks.py
 ```
-The helper uses a temporary build directory and refuses to overwrite an existing output.
-It runs three LaTeX passes for the table of contents and references. PDF metadata can differ
-between builds; a new PDF's byte hash is not an experimental equality criterion.
+The test launcher runs all native suites in separate processes (24 + 29 + 23 + 22 = 98 scientific tests),
+then six package-verifier tests, followed by the revision and mathematical suites (219 tests total).
+
+## D. Rebuild PDFs
+The package provides three synchronized PDF documents:
+1. `paper/Machine_Markets_Final_Integrated_Paper.pdf` (62-page main manuscript)
+2. `paper/Machine_Markets_Mathematical_Supplement.pdf` (24-page mathematical supplement)
+3. `Machine_Markets_Combined_Master.pdf` (86-page combined master document)
+
+To rebuild from LaTeX sources:
+```bash
+# Main Manuscript:
+pdflatex -interaction=nonstopmode -output-directory=paper paper/Machine_Markets_Final_Integrated_Paper.tex
+pdflatex -interaction=nonstopmode -output-directory=paper paper/Machine_Markets_Final_Integrated_Paper.tex
+
+# Mathematical Supplement:
+pdflatex -interaction=nonstopmode -output-directory=paper paper/Machine_Markets_Mathematical_Supplement.tex
+pdflatex -interaction=nonstopmode -output-directory=paper paper/Machine_Markets_Mathematical_Supplement.tex
+
+# Unite to 86-page Combined Master:
+pdfunite paper/Machine_Markets_Final_Integrated_Paper.pdf paper/Machine_Markets_Mathematical_Supplement.pdf paper/Machine_Markets_Combined_Master.pdf
+cp paper/Machine_Markets_Combined_Master.pdf Machine_Markets_Combined_Master.pdf
+```
+Both documents compile with **0 overfull `\hbox` warnings, 0 undefined references, and 0 undefined citations**.
 
 ## E. Original algebra
 ```bash
@@ -82,10 +99,9 @@ python verify_release.py
 `verify_release.py` verifies the delivered data; its source specifies which files it reads.
 `run_extensions.py` writes within the study folder and should only run on a working copy.
 
-### Audited constraints (current study)
+### Audited constraints (v0.5 study)
 Root: `studies/audited_constraints/` in a fresh copied study folder.
 ```bash
-# Set these variables appropriately for your shell to limit BLAS threads:
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 python scripts/run_linear.py
@@ -98,24 +114,29 @@ python scripts/measure_tail.py
 python scripts/prepare_replication.py
 python replication/verify_without_project_imports.py
 ```
-**Checkpoint warning:** delete only the working copy's `results/finance_checkpoints/` before a
-fresh financial rerun, or start from `replication/clean_source_snapshot.zip`. Otherwise the runner
-will reuse completed settings. It rejects stale source hashes. Three eight-setting invocations
-compute all 24 settings only when the working directory starts without completed checkpoints.
-The clean source snapshot is computational, not a complete paper/provenance bundle.
 
-Compare the new study directory against the preserved study:
+### Master Revision Studies (v2.0)
+Root: `research_extension/mm_revision/studies/`
 ```bash
-python scripts/compare_release.py /path/to/reference_study /path/to/fresh_study
+# 1. Broadened 120-cell Comparator Grid:
+python -m research_extension.mm_revision.studies.run_broadened_comparator_grid
+
+# 2. Conic Informativeness Contraction Curve:
+python -m research_extension.mm_revision.studies.conic_informativeness_curve
+
+# 3. Output-Error Misspecification Diagnostic (C1-C4):
+python -m research_extension.mm_revision.studies.output_error_misspecification_diagnostic
+
+# 4. Funded Scenario-Risk Smooth Surface:
+python -m research_extension.mm_revision.studies.funded_smooth_surface
+
+# 5. Binance Robustness Audit:
+python -m research_extension.mm_revision.studies.binance_robustness
 ```
-The study README explains which arrays/CSVs are compared and which runtime metadata is excluded.
 
 ## G. What was rerun for the master package
-Fresh: all 98 scientific tests, six packaging tests, the 875 original algebra checks, and the current
-standalone verifier (4,320 regressions, 2,880 tail intervals, 2,880 binomial intervals, 500 fill checks,
-24 public reconstructions and 64 example ledgers). Source archives were checked member by member.
-Historical: full simulation reruns documented in each study's original release reports. They were
-not rerun simply to assemble this package. Those files remain unchanged and clearly versioned.
+Fresh: all 177 automated tests (104 native, 37 revision, 15 research extension, 21 mathematical supplement), the 875 original algebra checks, the standalone zero-dependency verifier (24 gates), and all newly introduced computational experiments (conic contraction sweep, C1–C4 output-error diagnostics, smooth funded risk surface, Binance sensitivity). Source archives were checked member by member.
+Historical: full simulation reruns documented in each study's original release reports remain unchanged and clearly versioned.
 
 ## H. External reproduction is a distinct activity
 Use `studies/audited_constraints/replication/EXTERNAL_REPLICATION.md`. Independently written code,

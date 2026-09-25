@@ -1,0 +1,966 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=25mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype,amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{booktabs,longtable,array,enumitem,xcolor,hyperref,fancyhdr,listings}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\setcounter{tocdepth}{1}
+\definecolor{ink}{HTML}{17344B}
+\hypersetup{colorlinks=true,linkcolor=ink,urlcolor=ink,citecolor=ink,pdftitle={Machine Markets: Mathematical Repairs and Covariance-Aware Inference}}
+\setlength{\parindent}{0pt}\setlength{\parskip}{5pt}
+\setlist{nosep,leftmargin=*}
+\pagestyle{fancy}\fancyhf{}\fancyhead[L]{\small\textcolor{ink}{MACHINE MARKETS / MATHEMATICAL SUPPLEMENT}}
+\fancyhead[R]{\small Research draft}\fancyfoot[R]{\thepage}
+\setlength{\headheight}{15pt}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\theequation}{S\arabic{equation}}
+\renewcommand{\thetheorem}{S\arabic{section}.\arabic{theorem}}
+\renewcommand{\theproposition}{S\arabic{section}.\arabic{proposition}}
+\renewcommand{\thelemma}{S\arabic{section}.\arabic{lemma}}
+\renewcommand{\thecorollary}{S\arabic{section}.\arabic{corollary}}
+\renewcommand{\thedefinition}{S\arabic{section}.\arabic{definition}}
+\renewcommand{\theremark}{S\arabic{section}.\arabic{remark}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\makeatletter
+\renewcommand*\l@section[2]{%
+  \ifnum \c@tocdepth >\z@
+    \addpenalty\@secpenalty
+    \addvspace{1.0em \@plus\p@}%
+    \setlength\@tempdima{2.4em}%
+    \begingroup
+      \parindent \z@ \rightskip \@pnumwidth
+      \parfillskip -\@pnumwidth
+      \leavevmode \bfseries
+      \advance\leftskip\@tempdima
+      \hskip -\leftskip
+      #1\nobreak\hfil
+      \nobreak\hb@xt@\@pnumwidth{\hss #2\kern-\p@\kern\p@}\par
+    \endgroup
+  \fi}
+\makeatother
+\newcommand{\R}{\mathbb R}\newcommand{\E}{\mathbb E}\newcommand{\Prob}{\mathbb P}
+\newcommand{\one}{\mathbf 1}\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\rank}{\operatorname{rank}}\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\tr}{\operatorname{tr}}\newcommand{\TV}{\operatorname{TV}}
+\newcommand{\smax}{\operatorname{sa}}\newcommand{\argmin}{\operatorname*{arg\,min}}
+\newcommand{\argmax}{\operatorname*{arg\,max}}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\mc}{\mathcal}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single,columns=fullflexible,keepspaces=true}
+\begin{document}
+\begin{titlepage}
+\vspace*{18mm}
+{\large\textcolor{ink}{RESEARCH DEVELOPMENT / SEPTEMBER 24, 2026}}\par
+\vspace{8mm}
+{\Huge\bfseries Mathematical Repairs\\[2mm]and Covariance-Aware\\[2mm]Inference}\par
+\vspace{5mm}
+{\LARGE for \emph{Machine Markets}}\par
+\vspace{8mm}
+{\large Corrected identification theorems, continuous-time stability, finite-sample ellipsoids, conic outer bounds, and a convergent refinement procedure.}\par
+\vspace{12mm}
+\textbf{Prepared for:} Pratik Niroula\par
+\textbf{Manuscript basis:} Formulated initially against \texttt{Machine\_Markets\_Rebuilt.pdf} (56 pages, September 24, 2026); updated and integrated with the revised 8-chapter master manuscript (\texttt{Machine\_Markets\_Final\_Integrated\_Paper.pdf}) and verified against the repository implementation (\texttt{research\_extension/mm\_revision}).\par
+\textbf{Status:} Integrated mathematical supplement providing analytical proofs, covariance-aware conic derivations, and experimental protocols. It is coordinated with the master manuscript and repository test suite.\par
+\vspace{8mm}
+\textbf{Central correction.} The feedback quantity $S=a+Q$ is generally not a fixed linear contrast of finitely many public impulse-response coefficients. Covariance-aware inference must retain the response-to-model compatibility conditions.\par
+\vspace{5mm}
+\textbf{Main construction.} A finite-sample Gaussian response ellipsoid can be combined with positive-memory constraints through a second-order cone outer relaxation. The relaxation preserves continuous rate support, admits rigorous endpoint bounds, and can be refined toward the interval hull of a declared compact model-compatible set.\par
+\vfill
+\textbf{Evidence boundary.} Written proofs cannot supply missing market records, establish actual runtime provenance, measure a comparator's performance, or demonstrate future forecasting gains. Those remain separate empirical and implementation tasks.
+\end{titlepage}
+\tableofcontents
+\newpage
+
+\section{What this supplement resolves, and why each part matters}
+The existing manuscript supplies a positive-feedback model, finite-window witnesses, a Gaussian episode measurement contract, a rectangular recurrence relaxation, audited terminal-row inference, and a funded-system counterexample \cite{mm}. The extensions below are explicitly separate from those retained results.
+
+\begin{longtable}{P{.18\textwidth}P{.36\textwidth}P{.38\textwidth}}
+\toprule
+Gap & Resolution developed here & Scientific reason and remaining boundary\\\midrule
+Continuous time & Diagonal-rate continuous-time stability theorem; correctly scaled Euler limit; exact-sampling distinction. & Removes a time-unit ambiguity. It does not make the market model automatically realistic or establish a new general positive-systems theorem.\\
+Group attribution & Known-rate rank theorem; unknown-rate identified set; known-total normalization; four-tap aggregate recovery. & Prevents an identifiability claim from silently changing its available information.\\
+Response covariance & Exact $F$-calibrated ellipsoid under the manuscript's independent Gaussian episode law. & Uses full covariance without treating its estimate as the true covariance.\\
+Structural gain & Model-compatible optimization rather than the incorrect formula $S=c^\top\beta$. & Keeps finite-window non-identification and uncertain hidden memory in the inference problem.\\
+Convex computation & Continuous-rate conic outer relaxation, endpoint-validity proof, and bounded-domain dual certificates. & Supplies an implementable valid bound, not a local optimizer mislabeled a certificate.\\
+Sharpness & Exhaustive response-box and rate-bin refinement with a compactness convergence proof. & Shows a route to arbitrary sharpness for the stated compact class, without promising efficient convergence.\\
+Decision errors & Coverage-to-action theorem and a two-world abstention bound. & Separates unconditional errors from errors conditional on issued labels.\\
+Economic scope & Formal non-transfer example for solvency; empirical and verification checklist. & Prevents a signal theorem from being advertised as a financial safety certificate.\\\bottomrule
+\end{longtable}
+
+\textbf{Priority and originality.} Positive-system stability, Hotelling regions, ellipsoid support functions, McCormick inequalities, conic duality, and compactness arguments are established tools \cite{rantzer,hotelling,boyd,mccormick}. Their application and assembly here need a literature-priority review before being described as original. The specific conic construction below provides the formal theoretical derivation for the second-order cone outer relaxation implemented via HiGHS cutting planes with dual residual repair (\nolinkurl{research_extension.mm_revision.inference.conic_certificate.fit_conic_certificate}), with primary empirical benchmarks executed in Chapter~4 of the main manuscript.
+
+\textbf{Scope of completeness.} Every formal statement below is proved for its stated mathematical setting. No proof assistant has checked this supplement. No claim is made that all possible market-identification problems, all empirical gaps, or all versions of the covariance-comparison question are resolved.
+
+\section{Canonical notation and observation contracts}
+In the retained discrete pressure-coordinate model,
+\begin{align}
+ x_{t+1}&=a x_t+\sum_{i=1}^{n}y_{i,t}+\kappa u_t+e_{t+1},\label{eq:disc-x}\\
+ y_{i,t+1}&=(1-\eta_i)y_{i,t}+\eta_iq_i x_t,\label{eq:disc-y}
+\end{align}
+where $0\le a<1$, $q_i\ge0$, $0<\eta_i\le1$, and $\kappa>0$. Set
+\[
+ Q=\sum_iq_i,\qquad S=a+Q,\qquad G=\frac{Q}{1-a}.
+\]
+These are different quantities. In this model, $S<1$ is equivalent to Schur stability, but $S$ is not the numerical spectral radius. Nor is $G$ the closed-loop steady-state multiplier: for a stable system and a constant input, that multiplier is $\kappa/(1-a-Q)$.
+
+With zero adaptive initial state, define
+\begin{align}
+ k_j&=\sum_i q_i\eta_i(1-\eta_i)^j,\label{eq:kernel}\\
+ h_0&=1,\quad h_1=a,\quad h_{t+1}=a h_t+\sum_{j=0}^{t-1}k_jh_{t-1-j},\label{eq:recurrence-h}\\
+ \beta_j&=\kappa h_j.\label{eq:beta}
+\end{align}
+The observable response is $\beta$, not the private state vector and not the parameter vector $(a,q)$.
+
+\textbf{I0: controlled price responses.} The observer receives randomized probe magnitudes and episode price responses, together with an externally justified rate floor. Exact rates, private states, parameters, and covariance are not supplied.
+
+\textbf{I1: audited architecture.} Exact prices, disclosed rates, verified resets, and a complete relevant channel inventory permit reconstructed regressors and the terminal-row pivot. This is stronger information than I0.
+
+\textbf{I2: observational exchange records.} Public quotes and trades do not automatically provide exogenous interventions, independent repetitions, exact resets, or the maintained structural model. The theorems below apply to I2 only after the relevant observation and sampling assumptions are established.
+
+\section{Continuous-time stability and the correct sampling limit}
+\subsection{A positive-vector lemma}
+A real matrix is \emph{Metzler} when every off-diagonal entry is nonnegative. It is \emph{Hurwitz} when all eigenvalues have negative real part. The following established criterion is included with a proof so the application is self-contained \cite{rantzer}.
+
+\begin{lemma}[Positive-vector characterization]\label{lem:metzler}
+For a finite-dimensional Metzler matrix $A$,
+\[
+ A\text{ is Hurwitz}\quad\Longleftrightarrow\quad
+ \exists v>0\text{ such that }Av<0.
+\]
+All inequalities between vectors are componentwise.
+\end{lemma}
+\begin{proof}
+Choose $c$ large enough that $A+cI\ge0$. Then
+$e^{At}=e^{-ct}e^{(A+cI)t}\ge0$ for $t\ge0$, by the exponential series.
+If $A$ is Hurwitz, define
+\[
+ v=\int_0^\infty e^{At}\one\,dt.
+\]
+The integral converges, and every coordinate is positive because the integrand equals $\one$ at zero and is continuous. Integrating its derivative yields $Av=-\one<0$.
+
+Conversely, if $v>0$ and $Av<0$, let $D=\diag(v)$ and $\widetilde A=D^{-1}AD$. This matrix is Metzler, similar to $A$, and has strictly negative row sums. The rightmost real coordinate of its $i$th Gershgorin disk is its row sum. Every disk therefore lies in the open left half-plane, so every eigenvalue of $A$ has negative real part.
+\end{proof}
+
+\begin{lemma}[Nonnegative discrete counterpart]\label{lem:schur}
+For $P\ge0$, $\rho(P)<1$ if and only if some $v>0$ satisfies $Pv<v$.
+\end{lemma}
+\begin{proof}
+If $\rho(P)<1$, the Neumann series gives $v=(I-P)^{-1}\one>0$ and $Pv=v-\one<v$. Conversely, scaling by $D=\diag(v)$ gives a nonnegative matrix with all row sums strictly below one. Its induced infinity norm, hence its spectral radius, is below one.
+\end{proof}
+
+\subsection{Heterogeneous continuous rates}
+Let
+\[
+ \Gamma=\diag(\gamma_1,\ldots,\gamma_d)>0,
+ \qquad E=\diag(\lambda_1,\ldots,\lambda_n)>0,
+\]
+and let $B\in\R_+^{d\times n}$, $C\in\R_+^{n\times d}$, and $g\ge0$. Consider
+\begin{equation}
+ \dot x=-\Gamma x+gBm,\qquad \dot m=E(Cx-m),\qquad
+ A_c=\begin{bmatrix}-\Gamma&gB\\EC&-E\end{bmatrix}.
+ \label{eq:ct}
+\end{equation}
+
+\begin{theorem}[Continuous-time positive-feedback boundary]\label{thm:ct}
+The system \eqref{eq:ct} is exponentially asymptotically stable if and only if
+\begin{equation}
+ \rho\!\left(\Gamma^{-1}gBC\right)<1.\label{eq:ct-threshold}
+\end{equation}
+In particular, for $\Gamma=\gamma I_d$,
+\[
+ A_c\text{ is Hurwitz}\quad\Longleftrightarrow\quad g\rho(BC)<\gamma.
+\]
+This condition is independent of the positive diagonal memory rates in $E$.
+\end{theorem}
+\begin{proof}
+Let $K=\Gamma^{-1}gBC\ge0$. Suppose $\rho(K)<1$ and put $x=(I-K)^{-1}\one>0$. Then
+\[
+ (\Gamma-gBC)x=\Gamma\one>0.
+\]
+For sufficiently small $\varepsilon>0$, set $m=Cx+\varepsilon\one>0$. The two block components of $A_c(x,m)^\top$ are
+\[
+ -\Gamma x+gBm=-\Gamma\one+\varepsilon gB\one<0,
+ \qquad ECx-Em=-\varepsilon E\one<0.
+\]
+Lemma~\ref{lem:metzler} proves that $A_c$ is Hurwitz.
+
+Conversely, if $A_c$ is Hurwitz, the same lemma provides $x>0,m>0$ such that
+$-\Gamma x+gBm<0$ and $ECx-Em<0$. Because $E$ is positive diagonal, $m>Cx$. Nonnegativity then gives
+\[
+ \Gamma x>gBm\ge gBCx,
+ \qquad Kx<x.
+\]
+Lemma~\ref{lem:schur} implies $\rho(K)<1$.
+\end{proof}
+
+\begin{proposition}[Boundary and supercritical behavior]\label{prop:ctboundary}
+If $\rho(\Gamma^{-1}gBC)=1$, $A_c$ has a zero eigenvalue. If that spectral radius exceeds one, $A_c$ has a strictly positive real eigenvalue.
+\end{proposition}
+\begin{proof}
+At equality, Perron--Frobenius gives $x\ge0$, $x\ne0$, with $gBCx=\Gamma x$. Set $m=Cx$. Then $A_c(x,m)^\top=0$.
+
+For the strict case define, for $s\ge0$,
+\[
+ K(s)=g(sI+\Gamma)^{-1}B(sI+E)^{-1}EC.
+\]
+Its spectral radius is continuous, exceeds one at $s=0$, and tends to zero as $s\to\infty$. Some $s_*>0$ therefore satisfies $\rho(K(s_*))=1$. Choose a corresponding nonzero nonnegative eigenvector $x$ and set $m=(s_*I+E)^{-1}ECx$. Substitution gives $A_c(x,m)^\top=s_*(x,m)^\top$.
+\end{proof}
+
+Equality does not imply exponential divergence: it has at least a nondecaying mode. Supercriticality supplies an exponentially growing mode, not a claim that every initial condition grows or that a financial price must crash. Linear ODE solutions remain finite at every finite time. The result depends on positivity and fixed finite-dimensional coefficients; signed feedback and switching require other arguments.
+
+\subsection{Common-rate spectral abscissa}
+\begin{proposition}[Closed expression in the common-rate case]\label{prop:sa}
+For $\Gamma=\gamma I_d$, $E=\lambda I_n$, and $\nu=\rho(BC)$,
+\begin{equation}
+ \smax(A_c)=
+ \frac{-(\gamma+\lambda)+\sqrt{(\gamma-\lambda)^2+4g\lambda\nu}}{2}.
+ \label{eq:sa}
+\end{equation}
+Here $\smax(A_c)=\max\{\Re s:s\in\sigma(A_c)\}$.
+\end{proposition}
+\begin{proof}
+Let the right side be $s_+$. If $g\nu>0$, select $v\ge0$ with $BCv=\nu v$. Then $Cv\ne0$ and
+$w=\lambda Cv/(s_++\lambda)$ produces an eigenvector $(v,w)$ at eigenvalue $s_+$. For any eigenvalue $s$ other than $-\gamma,-\lambda$, block elimination gives an eigenvalue
+\[
+ \frac{(s+\gamma)(s+\lambda)}{g\lambda}
+\]
+of $BC$. If $\Re s>s_+$, then $\Re s>\max(-\gamma,-\lambda)$ and
+\[
+ |(s+\gamma)(s+\lambda)|\ge(\Re s+\gamma)(\Re s+\lambda)
+ >(s_++\gamma)(s_++\lambda)=g\lambda\nu,
+\]
+a contradiction. The excluded eigenvalues have real part at most $s_+$. When $g=0$, block triangularity proves the formula. When $\nu=0$ and $g>0$, the same elimination restricts eigenvalues to $-\gamma,-\lambda$; both occur in the resulting characteristic polynomial, giving $s_+=-\min(\gamma,\lambda)$.
+\end{proof}
+The proof does not apply a real-coefficient quadratic test to potentially complex eigenvalues of $BC$.
+
+\subsection{Euler scaling, convergence, and step-size restrictions}
+For a physical step $h>0$, forward Euler gives $P_h=I+hA_c$. In the common-rate notation of the original paper this means
+\begin{equation}
+ a_h=1-h\gamma,\qquad g_h=hg,\qquad \eta_h=h\lambda.
+ \label{eq:euler-scale}
+\end{equation}
+One must scale the coupling and memory-update parameters, not only rename $1-a$.
+
+\begin{theorem}[Euler-consistent boundary and convergence]\label{thm:euler}
+If
+\[
+ 0<h\le\min\!\left\{\min_i\gamma_i^{-1},\min_j\lambda_j^{-1}\right\},
+\]
+then $P_h\ge0$ and
+\[
+ P_h\text{ is Schur}\quad\Longleftrightarrow\quad A_c\text{ is Hurwitz}.
+\]
+For common $\gamma,\lambda$, this is exactly
+$g_h\rho(BC)<1-a_h$. In any induced matrix norm, for $kh\le T$,
+\begin{equation}
+ \norm{(I+hA_c)^k-e^{khA_c}}
+ \le \frac12 Th\norm{A_c}^2e^{T\norm{A_c}}.
+ \label{eq:euler-error}
+\end{equation}
+\end{theorem}
+\begin{proof}
+The step-size restriction makes every entry of $P_h$ nonnegative. If $A_cv<0$ for some $v>0$, then $P_hv<v$, so $P_h$ is Schur. Conversely, if $P_h$ is Schur, Lemma~\ref{lem:schur} gives $P_hv<v$, hence $A_cv<0$. Lemma~\ref{lem:metzler} completes the stability equivalence. Substitution of \eqref{eq:euler-scale} gives the common-rate inequality.
+
+The exponential series bounds the one-step defect by
+$\norm{e^{hA_c}-I-hA_c}\le\tfrac12h^2\norm{A_c}^2e^{h\norm{A_c}}$.
+Use the telescoping identity for $P_h^k-(e^{hA_c})^k$, together with
+$\norm{P_h^j}\le e^{jh\norm{A_c}}$. There are $k$ terms, each bounded by
+$\tfrac12h^2\norm{A_c}^2e^{kh\norm{A_c}}$. Since $kh\le T$, \eqref{eq:euler-error} follows. It gives convergence at grid points; piecewise-linear interpolation adds an $O(h)$ term on every bounded time interval.
+\end{proof}
+
+\begin{remark}[Exact sampling is different]
+The exact sampled transition is $e^{hA_c}$. Its eigenvalues are $e^{h s_i}$, so it is Schur exactly when $A_c$ is Hurwitz, for every $h>0$. It need not retain the original simple Euler block structure. Forward Euler outside its admissible step range can be unstable even for a stable ODE: $A_c=-I$, $h=3$ gives $I+hA_c=-2I$. Thus the correct claim is not unrestricted discretization invariance.
+\end{remark}
+
+\subsection{Continuous hidden-memory tails}
+For $\dot y_i=-\lambda_i y_i+\lambda_iq_i x$, zero initial memory gives
+\[
+ y_i(t)=q_i\lambda_i\int_0^t e^{-\lambda_i(t-s)}x(s)\,ds.
+\]
+Hence the loop-open kernel is $K(t)=\sum_iq_i\lambda_i e^{-\lambda_i t}$ and
+\[
+ \int_0^\infty K(t)\,dt=Q,
+ \qquad \int_T^\infty K(t)\,dt=\sum_iq_ie^{-\lambda_iT}
+ \le Q_{\max}e^{-\lambda_0T}
+\]
+when $Q\le Q_{\max}$ and every $\lambda_i\ge\lambda_0>0$. These identities follow by direct integration. They extend the audited-tail interpretation, not the ability to verify a rate floor from prices.
+
+\section{Corrected group identification, including unknown rates}
+\subsection{Aggregate equivalence}
+Under a common rate $\eta$, summing \eqref{eq:disc-y} gives
+\[
+ Y_{t+1}=(1-\eta)Y_t+\eta Qx_t,\qquad Y_t=\sum_i y_{i,t}.
+\]
+For the same initial aggregate state, probe sequence, and aggregate disturbance law, prices depend on $q$ only through $Q$. Equal $Q$ therefore implies equal aggregate price laws. This is the retained symmetry result, not a statement about known heterogeneous rates.
+
+\subsection{Known-rate measurement theorem}
+Let experiment $j$ inject the channel-input vector $U_{j,:}$ at time zero, with known pulse units and otherwise zero inputs. From a zero state,
+\[
+ y_{i,1}=\eta q_iU_{j,i},\qquad x_1=0,\qquad x_2=\eta U_{j,:}q.
+\]
+Stacking the measured lag-2 responses yields $b=\eta Uq$.
+
+\begin{theorem}[Uniform identification with a known common rate]\label{thm:group-known}
+Fix known $\eta>0$. The map $q\mapsto\eta Uq$ is injective over all $q\ge0$ if and only if $\rank U=n$. If a known total $Q>0$ is included and the class is $\{q\ge0:\one^\top q=Q\}$, uniform injectivity holds if and only if
+\[
+ \rank\begin{bmatrix}\one^\top\\U\end{bmatrix}=n.
+\]
+Thus $n-1$ appropriately independent channel measurements can suffice when $Q$ is known. Pointwise uniqueness at a boundary point is weaker than uniform injectivity.
+\end{theorem}
+\begin{proof}
+Full column rank gives a unique solution of the linear system; in the first case it is
+$q=\eta^{-1}(U^\top U)^{-1}U^\top b$. If $U$ is rank deficient, choose $z\ne0$ in its nullspace and a strictly positive $q_0$. For sufficiently small $\varepsilon>0$, both $q_0\pm\varepsilon z$ are nonnegative and yield the same response. This proves necessity for uniform identification.
+
+With a fixed positive $Q$, use the augmented matrix. If it is rank deficient, its nullspace contains $z\ne0$ with $Uz=0$ and $\one^\top z=0$. Perturb the interior point $q_0=(Q/n)\one$ as above. Both alternatives preserve the sum and observations. Conversely, full column rank of the augmented matrix gives uniqueness. Taking $U$ to measure the first $n-1$ coordinates realizes the sufficient count. For $Q=0$, nonnegativity already forces $q=0$, regardless of rank; this is why the necessity statement excludes that degenerate simplex.
+\end{proof}
+
+\subsection{Unknown rate: an exact identified-set description}
+Assume only $0<\eta_{\min}\le\eta\le\eta_{\max}\le1$ and observe $b,U$. Set $s=1/\eta$.
+
+\begin{theorem}[Unknown-rate set and normalization]\label{thm:unknown}
+The exact group-parameter identified set from lag-2 channel observations is the projection onto $q$ of the polyhedron
+\begin{equation}
+ \mc P_b=\left\{(q,s):q\ge0,\quad Uq=sb,\quad
+ \eta_{\max}^{-1}\le s\le\eta_{\min}^{-1}\right\}.
+ \label{eq:unknown-poly}
+\end{equation}
+A known total is incorporated by the additional equality $\one^\top q=Q$.
+If $U$ has full column rank and $v=U^\dagger b$ is nonnegative and consistent with $Uv=b$, the set without a total is
+$\{q=sv:s\in[\eta_{\max}^{-1},\eta_{\min}^{-1}]\}$.
+If additionally $Q>0$ and $\one^\top v>0$, then, when compatible with the rate interval,
+\begin{equation}
+ \eta=\frac{\one^\top v}{Q},\qquad
+ q=\frac{Qv}{\one^\top v}.
+ \label{eq:eta-normalization}
+\end{equation}
+\end{theorem}
+\begin{proof}
+The map $\eta\mapsto s=1/\eta$ is a bijection between the declared rate interval and the interval in \eqref{eq:unknown-poly}. Multiplying $b=\eta Uq$ by $s$ gives exactly $Uq=sb$, proving both directions of the set representation. With full column rank, $Uq=sb$ implies $q=sv$. The known-total constraint then gives $s\one^\top v=Q$, hence \eqref{eq:eta-normalization}. If this $s$ is outside its allowed interval, the observations and side information conflict. If $v=0$, full rank forces $q=0$ but does not identify $\eta$. Rank deficiency can leave non-radial nullspace ambiguity, so a universal ``ray only'' statement is false.
+\end{proof}
+
+For example, $U=I_2$, $b=(0.06,0.02)^\top$, $Q=0.4$ identify $\eta=0.2$ and $q=(0.3,0.1)^\top$. Without $Q$, both $(\eta,q)=(0.2,(0.3,0.1))$ and $(0.4,(0.15,0.05))$ fit the same lag-2 data.
+
+The polyhedral formulation is for exact $b$. If $b$ itself is uncertain inside an ellipsoid, $Uq=sb$ again contains a product; one must propagate that uncertainty rather than reuse the exact-data LP as a confidence procedure.
+
+\subsection{The aggregate common rate may itself be identifiable}
+\begin{proposition}[Four-tap aggregate recovery]\label{prop:4tap}
+In the common-rate model, suppose exact $\beta_0,\beta_1,\beta_2,\beta_3$ are available, $\beta_0=\kappa>0$, and $Q>0$. Define $h_j=\beta_j/\beta_0$ and
+\[
+ a=h_1,\qquad k_0=h_2-a^2,\qquad
+ k_1=h_3-2ah_2+a^3.
+\]
+Then
+\begin{equation}
+ \eta=1-\frac{k_1}{k_0},\qquad Q=\frac{k_0}{\eta},\qquad\kappa=\beta_0.
+ \label{eq:4tap}
+\end{equation}
+\end{proposition}
+\begin{proof}
+The first recurrences give $h_2=a^2+k_0$ and
+$h_3=ah_2+ak_0+k_1$, establishing the displayed deconvolution. Common-rate kernels satisfy $k_0=\eta Q>0$ and $k_1=(1-\eta)k_0$. Solving these two identities gives \eqref{eq:4tap}.
+\end{proof}
+Consequently, ``unknown rate'' is not a permanent information restriction when these additional exact aggregate lags are observed. Finite-sample recovery can nevertheless be extremely ill-conditioned when $k_0$ is small. At $Q=0$, group weights are zero but the memory rate is not identified.
+
+\subsection{Known heterogeneous modes}
+For distinct known rates $\eta_i$, the first $n$ kernel moments satisfy
+\[
+ (k_0,\ldots,k_{n-1})^\top=V_\eta q,\qquad
+ (V_\eta)_{j+1,i}=\eta_i(1-\eta_i)^j.
+\]
+This is a Vandermonde matrix times a positive diagonal matrix. Its determinant is a nonzero product of $\eta_i$ and pairwise differences of $1-\eta_i$, so exact recovery holds. Close rates can make this inversion poorly conditioned. Equal-rate cohorts reveal only their total weight through this observation law.
+
+\section{Finite-sample response ellipsoids with the correct calibration}
+\subsection{Sampling model}
+Let $p=H+1$ be a predeclared response dimension. For $R$ independent episodes,
+\begin{equation}
+ Y_r=m+u_r\beta+\varepsilon_r,\qquad
+ \varepsilon_r\overset{\mathrm{iid}}\sim N_p(0,\Sigma),\quad\Sigma\succ0,
+ \label{eq:regression}
+\end{equation}
+conditional on a nonconstant probe design independent of the residuals. Here $m\in\R^p$ is an arbitrary common no-probe path. Define
+\[
+ v_r=u_r-\bar u,\quad D=\sum_rv_r^2>0,\quad \nu=R-2,
+\]
+\[
+ \hat\beta=\frac{\sum_rv_rY_r}{D},\quad
+ \hat m=\bar Y-\bar u\hat\beta,\quad
+ \hat\Sigma=\frac1\nu\sum_r(Y_r-\hat m-u_r\hat\beta)(Y_r-\hat m-u_r\hat\beta)^\top,
+ \qquad V=\hat\Sigma/D.
+\]
+The actual sampling covariance of $\hat\beta$ is $\Sigma/D$, not the random estimate $V$.
+
+\begin{theorem}[Exact response ellipsoid]\label{thm:ellipsoid}
+If $\nu\ge p$, set
+\begin{equation}
+ k_\alpha^2=\frac{\nu p}{\nu-p+1}\,
+ F^{-1}_{p,\nu-p+1}(1-\alpha),\qquad
+ \mc E_\alpha=\left\{b:(b-\hat\beta)^\top V^{-1}(b-\hat\beta)\le k_\alpha^2\right\}.
+ \label{eq:ellipse}
+\end{equation}
+Then $\Prob(\beta\in\mc E_\alpha\mid u)=1-\alpha$.
+\end{theorem}
+\begin{proof}
+The design matrix has columns $\one$ and $u$ and rank two. Gaussian least-squares projection yields
+\[
+ \hat\beta-\beta\sim N_p(0,\Sigma/D),\qquad
+ \nu\hat\Sigma\sim W_p(\Sigma,\nu),
+\]
+independently, conditional on the design. To see the independence directly, transform the $R$ episode coordinates by an orthogonal matrix whose first two rows span the design. The remaining $\nu$ rows are independent Gaussian residual coordinates. The fitted slope is a linear combination of the first two coordinates, independent of all remaining rows.
+
+Whiten the slope error and residual covariance:
+\[
+ z=\sqrt D\,\Sigma^{-1/2}(\hat\beta-\beta)\sim N_p(0,I),\qquad
+ W=\nu\Sigma^{-1/2}\hat\Sigma\Sigma^{-1/2}\sim W_p(I,\nu).
+\]
+They are independent. Therefore
+\[
+ T^2=(\hat\beta-\beta)^\top V^{-1}(\hat\beta-\beta)
+ =\nu z^\top W^{-1}z.
+\]
+By rotational invariance, rotate the direction of $z$ to the first coordinate. Its squared norm is $U\sim\chi_p^2$. Write $W=G^\top G$ for a $\nu\times p$ standard Gaussian matrix and partition its first column $g_1$ from the remaining columns $G_2$. The inverse-entry identity gives
+\[
+ (W^{-1})_{11}=\left[g_1^\top(I-P_{G_2})g_1\right]^{-1}.
+\]
+The projector has rank $p-1$ almost surely, so the denominator has distribution $Z\sim\chi^2_{\nu-p+1}$. The rotationally transformed $W$ has its original law and is independent of $\norm z$; hence $U,Z$ are independent. Thus
+\[
+ T^2\overset d=\nu U/Z,
+ \qquad \frac{\nu-p+1}{\nu p}T^2\sim F_{p,\nu-p+1}.
+\]
+The quantile in \eqref{eq:ellipse} proves the claim. This is a specialization of classical Hotelling inference \cite{hotelling,psu}.
+\end{proof}
+
+\textbf{Important limitations.} If $\nu<p$, the full residual covariance is singular almost surely under this sampling law. A pseudoinverse or shrinkage estimator does not inherit the theorem. Use the retained coordinatewise method, a justified fixed subspace model, or another separately proved construction. For heteroskedastic, dependent, selected, or non-Gaussian episodes, the exact $F$ calibration is not established here. A sandwich covariance generally needs its own asymptotic or finite-sample argument.
+
+\subsection{What the ellipsoid support formula actually proves}
+\begin{proposition}[Linear contrast support]\label{prop:support}
+For $V\succ0$, $k\ge0$, and fixed $c$, the extrema of $c^\top b$ over
+$(b-\hat\beta)^\top V^{-1}(b-\hat\beta)\le k^2$ are
+\[
+ c^\top\hat\beta\pm k\sqrt{c^\top Vc}.
+\]
+\end{proposition}
+\begin{proof}
+Write $b=\hat\beta+V^{1/2}z$, $\norm z_2\le k$. Cauchy--Schwarz gives
+$c^\top b\le c^\top\hat\beta+k\norm{V^{1/2}c}_2$. For $c\ne0$, equality holds at
+$z=kV^{1/2}c/\norm{V^{1/2}c}_2$. Negating $c$ gives the minimum. If $c=0$, both extrema are zero.
+\end{proof}
+This is standard ellipsoid geometry \cite{boyd}. It is not a formula for an unidentified structural parameter.
+
+\subsection{Why no fixed response contrast gives \texorpdfstring{$S$}{S}}
+\begin{proposition}[No universal finite-response formula]\label{prop:no-map}
+On the manuscript's unrestricted finite positive-memory family, $S$ is not generally a function of a fixed finite public-response vector. In particular, it cannot generally equal $c^\top\beta$ for a fixed vector $c$.
+\end{proposition}
+\begin{proof}
+The retained finite-window theorem supplies two models with the same response vector over any prescribed finite horizon and opposite stability classes \cite[Theorem 8.2]{mm}. A function of that common vector has the same value in both models, whereas their $S$ values differ. This is a contradiction.
+
+For a concrete four-coefficient witness, use $a=2/5$, rates $(1,1/2,1/20)$, and weights
+\[
+ q^{(0)}=(0,12/65,0),\qquad
+ q^{(1)}=(54/1235,0,240/247).
+\]
+Both normalized responses begin
+\[
+ (h_0,h_1,h_2,h_3)=(1,2/5,82/325,23/125),
+\]
+but $S_0=38/65<1$ and $S_1=92/65>1$. The impact normalization may be chosen the same in both models.
+\end{proof}
+Under stronger fixed-order assumptions a nonlinear recovery can exist. For the common single-mode aggregate with $k_0>0$,
+\[
+ S=a+\frac{k_0^2}{k_0-k_1},
+\]
+using Proposition~\ref{prop:4tap}. This is still not a linear contrast of the response vector, and its instability near a small denominator requires uncertainty propagation.
+
+\subsection{The audited contrast is a different problem}
+Under I1, let $\theta=(\mu,a,q_1,\ldots,q_d)^\top$ be the coefficient vector in the manuscript's terminal-row regression. Then $S=c^\top\theta$ with $c=(0,1,\ldots,1)^\top$. Conditional on a full-rank design $X$, independent Gaussian terminal errors of common unknown variance give
+\[
+ \frac{c^\top\hat\theta-c^\top\theta}
+ {\hat\sigma\sqrt{c^\top(X^\top X)^{-1}c}}
+ \sim t_{N-d_\theta}.
+\]
+Indeed, the numerator is Gaussian, the independent residual sum of squares divided by the true variance is chi-squared with $N-d_\theta$ degrees of freedom, and their ratio is Student-$t$. This is the retained classical I1 pivot, not a new solution of I0. A full simultaneous coefficient ellipsoid may answer simultaneous-contrast questions, but its support does not automatically improve a prespecified one-contrast interval.
+
+\section{The exact covariance-aware identified set}
+Let $\underline\eta>0$ be an externally valid rate floor. Let $\mu$ be a finite nonnegative measure on $[\underline\eta,1]$; in a finite-state model it is $\sum_iq_i\delta_{\eta_i}$. Define $\psi_j(\eta)=\eta(1-\eta)^j$.
+For a predeclared persistence bound $0\le a\le\bar a\le1$, define
+\begin{align}
+ \mc K_\alpha=\bigg\{(a,\mu,b):\;& b\in\mc E_\alpha,\quad b\ge0,\quad b_0>0,\quad 0\le a\le\bar a,\quad\mu\ge0,\nonumber\\
+ &b_1=ab_0,\quad
+ b_{t+1}=ab_t+\sum_{j=0}^{t-1}b_{t-1-j}\int\psi_j(\eta)d\mu(\eta),\quad1\le t\le H-1\bigg\}.
+ \label{eq:exact-set}
+\end{align}
+The structural interval hull is
+\begin{equation}
+ S_{\mathrm{exact}}^- =\inf_{\mc K_\alpha}(a+\mu([\underline\eta,1])),\qquad
+ S_{\mathrm{exact}}^+ =\sup_{\mc K_\alpha}(a+\mu([\underline\eta,1])).
+ \label{eq:exact-ends}
+\end{equation}
+The set of attainable $S$ need not itself be an interval; \eqref{eq:exact-ends} is its smallest enclosing interval. Choosing $\bar a=1$ uses a conservative closed extension of the manuscript's $a<1$ family.
+
+\begin{theorem}[Coverage through model compatibility]\label{thm:compatibility}
+Suppose the true model obeys the declared parameter class and sampling contract. On $\{\beta\in\mc E_\alpha\}$, its true $(a,\mu,\beta)$ belongs to \eqref{eq:exact-set}. Therefore any interval enclosing all objectives in \eqref{eq:exact-set} covers the true $S$ with probability at least $1-\alpha$.
+\end{theorem}
+\begin{proof}
+The true response is nonnegative and satisfies the recurrence by construction. Its rates and persistence satisfy the declared class. The ellipsoid event supplies the remaining membership requirement. Thus the true objective belongs to the enclosed range on an event of probability $1-\alpha$.
+\end{proof}
+This simple containment argument is what allows a rigorous relaxation. It does not establish that the exact nonlinear set is convex: the products $ab_t$ and $b_s\int\psi_jd\mu$ are bilinear.
+
+\section{A finite, covariance-aware conic outer relaxation}
+This section supplies a concrete alternative to the incorrect closed-form claim. It uses a second-order cone constraint for the response ellipsoid and linear outer constraints for the recurrence. McCormick inequalities are established convex-relaxation machinery \cite{mccormick}; the continuum-support containment argument is proved here.
+
+\subsection{Response bounds and a finite feedback bound}
+The ellipsoid's coordinate projections give
+\[
+ L_s=\max\{0,\hat\beta_s-k_\alpha\sqrt{V_{ss}}\},\qquad
+ U_s=\hat\beta_s+k_\alpha\sqrt{V_{ss}}.
+\]
+If some $U_s<0$, no nonnegative response is compatible. In the construction below require $H\ge2$ and $L_0>0$.
+
+\begin{lemma}[Data-derived finite mass cap]\label{lem:mass}
+Every model in \eqref{eq:exact-set} satisfies
+\begin{equation}
+ Q\le M:=\frac{U_2}{\underline\eta L_0}.
+ \label{eq:mass}
+\end{equation}
+\end{lemma}
+\begin{proof}
+The lag-2 recurrence is
+$b_2=ab_1+b_0\int\eta\,d\mu$. Positivity gives
+$b_2\ge b_0\underline\eta Q\ge L_0\underline\eta Q$, while $b_2\le U_2$. Rearrangement proves the bound.
+\end{proof}
+If $L_0\le0$, this particular construction has not obtained a finite cap. Return an inconclusive status or use a separately justified external $Q_{\max}$; do not introduce an arbitrary fitting cap and call it learned information. Empty ellipsoid/model intersections are conflicts, not successful stability certificates.
+
+\subsection{Continuous rate support without a grid assumption}
+Partition $[\underline\eta,1]$ into bins $B_\ell$, $\ell=1,\ldots,L$. Use a nonoverlapping membership convention and closed-bin envelopes at boundaries. Set
+\[
+ w_\ell=\mu(B_\ell),\quad
+ \ell_{j\ell}=\min_{\eta\in\overline B_\ell}\psi_j(\eta),\quad
+ u_{j\ell}=\max_{\eta\in\overline B_\ell}\psi_j(\eta).
+\]
+The minimum is at a bin endpoint; the maximum is at an endpoint or the projection of $1/(j+1)$ into the bin. This follows by differentiating $\eta(1-\eta)^j$. Consequently the envelopes cover off-grid rates. They do not assert that actual memory rates lie at chosen grid nodes.
+
+\subsection{Bilinear-product lifting}
+Introduce variables $v_t$ for $ab_t$, and $z_{\ell s}$ for $w_\ell b_s$. The exact equalities are relaxed by four inequalities.
+For $0\le x\le A$, $L\le y\le U$, a valid product $z=xy$ satisfies
+\begin{align}
+ z&\ge Lx,& z&\ge Ay+Ux-AU,\label{eq:mc1}\\
+ z&\le Ay+Lx-AL,& z&\le Ux.\label{eq:mc2}
+\end{align}
+Each inequality follows by expanding one of the nonnegative products
+$x(y-L)$, $(A-x)(U-y)$, $(A-x)(y-L)$, or $x(U-y)$.
+Use \eqref{eq:mc1}--\eqref{eq:mc2} with $(x,y,z,A)=(a,b_t,v_t,\bar a)$ and $(w_\ell,b_s,z_{\ell s},M)$, respectively.
+
+\subsection{The conic program}
+Let $V=RR^\top$ be a positive-definite factorization. The outer set $\mc R_\alpha$ has variables $a,w,b,v,z$ and constraints:
+\begin{align}
+ &\norm{R^{-1}(b-\hat\beta)}_2\le k_\alpha,\qquad L\le b\le U,\label{eq:soc}\\
+ &0\le a\le\bar a,\quad w_\ell\ge0,\quad\sum_\ell w_\ell\le M,\label{eq:linear-bounds}\\
+ &\text{all product envelopes \eqref{eq:mc1}--\eqref{eq:mc2}},\nonumber\\
+ &b_1=v_0,\label{eq:first-lag}\\
+ &v_t+\sum_{\ell=1}^L\sum_{j=0}^{t-1}\ell_{j\ell}z_{\ell,t-1-j}
+ \le b_{t+1}\le
+ v_t+\sum_{\ell=1}^L\sum_{j=0}^{t-1}u_{j\ell}z_{\ell,t-1-j},
+ \quad1\le t\le H-1.\label{eq:outer-rec}
+\end{align}
+The required product variables use only the response coordinates appearing in those formulas. Their finite bounds follow from $0\le v_t\le\bar a U_t$ and $0\le z_{\ell s}\le M U_s$.
+Define
+\begin{equation}
+ S_{\mathrm{soc}}^- =\min_{\mc R_\alpha}\left(a+\sum_\ell w_\ell\right),\qquad
+ S_{\mathrm{soc}}^+ =\max_{\mc R_\alpha}\left(a+\sum_\ell w_\ell\right).
+ \label{eq:soc-ends}
+\end{equation}
+These are convex conic problems: a linear objective, affine inequalities/equalities, and a second-order cone constraint. Maximization is implemented by minimizing the negative linear objective. Global convexity of the relaxation is not exactness of the original bilinear problem.
+
+\begin{theorem}[True-model containment and statistical validity]\label{thm:soc}
+Every model in \eqref{eq:exact-set} lifts into $\mc R_\alpha$ with the same value of $S$. For nonempty sets,
+\begin{equation}
+ S_{\mathrm{soc}}^-\le S_{\mathrm{exact}}^-\le S_{\mathrm{exact}}^+\le S_{\mathrm{soc}}^+.
+ \label{eq:contain}
+\end{equation}
+Under Theorem~\ref{thm:ellipsoid}'s sampling law, exact or outward-valid endpoints in \eqref{eq:soc-ends} cover the true $S$ with probability at least $1-\alpha$.
+\end{theorem}
+\begin{proof}
+For a true feasible $(a,\mu,b)$, set $w_\ell=\mu(B_\ell)$, $v_t=ab_t$, and $z_{\ell s}=w_\ell b_s$. The mass bound follows from Lemma~\ref{lem:mass}. Exact products satisfy all four envelopes. The first lag holds exactly.
+
+For every $j,\ell,s$, since $b_s\ge0$ and $\mu\ge0$,
+\[
+ \ell_{j\ell}w_\ell b_s
+ \le b_s\int_{B_\ell}\psi_j(\eta)d\mu(\eta)
+ \le u_{j\ell}w_\ell b_s.
+\]
+Summing these inequalities in the exact recurrence gives \eqref{eq:outer-rec}. The response and its bounds satisfy \eqref{eq:soc}. Finally
+$a+\sum_\ell w_\ell=a+\mu([\underline\eta,1])$.
+Containment gives the ordering of extrema. Theorem~\ref{thm:compatibility} then gives the probability statement. The mass cap is data-dependent but valid pointwise on the same ellipsoid event, so deriving it this way does not consume a separate error budget.
+\end{proof}
+
+\subsection{A correct comparison with a rectangle}
+Let the comparison rectangle be the coordinate enclosure $[L,U]$ generated from this \emph{same} ellipsoid. Define the paper-style box LP using
+\begin{align}
+ aL_t+\sum_{\ell,j<t}\ell_{j\ell}L_{t-1-j}w_\ell&\le U_{t+1},\label{eq:boxlower}\\
+ aU_t+\sum_{\ell,j<t}u_{j\ell}U_{t-1-j}w_\ell&\ge L_{t+1},\label{eq:boxupper}
+\end{align}
+including the empty-sum first lag and the same persistence and nonnegative-weight bounds.
+
+\begin{theorem}[Weak dominance for a common underlying region]\label{thm:dominance}
+Every conic-feasible point projects onto a feasible point of \eqref{eq:boxlower}--\eqref{eq:boxupper}. Therefore its structural interval is no wider:
+\[
+ S_{\mathrm{box}}^-\le S_{\mathrm{soc}}^-\le S_{\mathrm{soc}}^+\le S_{\mathrm{box}}^+.
+\]
+No strict improvement and no dominance over a separately calibrated Bonferroni rectangle are asserted.
+\end{theorem}
+\begin{proof}
+The product envelopes imply
+$aL_t\le v_t\le aU_t$ and
+$w_\ell L_s\le z_{\ell s}\le w_\ell U_s$.
+Consequently the left side of \eqref{eq:boxlower} is at most
+$v_t+\sum\ell_{j\ell}z_{\ell,t-1-j}$, which is at most $b_{t+1}\le U_{t+1}$. The analogous upper expression is at least $b_{t+1}\ge L_{t+1}$. Thus the same $(a,w)$ is box-feasible, with the same objective. Taking extrema proves the result.
+\end{proof}
+
+A known-covariance two-dimensional counterexample explains the qualification. For identity covariance and nominal $95\%$ coverage, the chi-squared ellipsoid radius is
+$\sqrt{\chi^2_{2,0.95}}\approx2.44775$, while the Bonferroni coordinate half-width is
+$\Phi^{-1}(1-0.05/4)\approx2.24140$. The ellipsoid is wider for the first-coordinate contrast, but narrower for the $(1,1)$ contrast, whose half-widths are approximately $3.46164$ and $4.48281$. Equal confidence level or smaller volume is not set inclusion. Intersecting two independently calibrated regions requires a joint coverage argument, such as splitting the error budget; one cannot keep both original $95\%$ claims and silently treat their intersection as $95\%$.
+
+\section{Convergent refinement toward the exact compatible interval}
+A single conic relaxation can remain loose. This section states a rigorous but potentially expensive sharpening procedure. It is not a claim that refining rate bins alone removes product uncertainty.
+
+\subsection{Compact target and finite support}
+Fix the observed ellipsoid, global bounds $L,U$, $L_0>0$, finite $M$, and $a\in[0,\bar a]$. Let $\mc K$ be \eqref{eq:exact-set} with $Q\le M$. It is a compact feasible set when measures are given the weak topology on the compact rate interval: bounded nonnegative measures are sequentially compact, and all finite recurrence integrands are continuous. The constraint $b_0\ge L_0>0$ removes the open-boundary issue.
+
+The measure formulation need not enlarge the finite-response unknown-order model. For fixed $b,a,Q>0$, only the first $H-1$ moments of $\psi_j$, $j=0,\ldots,H-2$, enter the recurrence. The normalized moment vector lies in the convex hull of the compact curve
+$\eta\mapsto(\psi_0(\eta),\ldots,\psi_{H-2}(\eta))$ in $\R^{H-1}$. By the finite-dimensional convex-hull representation, it is a convex combination of at most $H$ points. Multiplying by $Q$ supplies an atomic measure with at most $H$ rates, preserving the response and objective. At $Q=0$ the zero measure suffices. This does not apply to a separately fixed smaller state-count class.
+
+\subsection{Exhaustive refinement theorem}
+Partition the global response box into finitely many subboxes of maximum coordinate width $\epsilon_n\to0$, and partition the rate interval into bins of maximum diameter $\delta_n\to0$. For each response subbox, intersect it with the same ellipsoid and solve the outer program using that subbox's response bounds and the fixed global mass cap $M$. Let $L_n$ be the smallest lower endpoint over all feasible subboxes and $U_n$ the largest upper endpoint. Infeasible nodes may be discarded only with a valid infeasibility certificate.
+
+\begin{theorem}[Convergence of exhaustive outer intervals]\label{thm:converge}
+Assume $\mc K\ne\varnothing$. Under exact solution of every node's convex outer program,
+\[
+ L_n\longrightarrow\min_{\mc K}S,
+ \qquad U_n\longrightarrow\max_{\mc K}S.
+\]
+Taking the running maximum of lower bounds and running minimum of upper bounds makes the reported enclosure monotone. This theorem gives no favorable computational complexity bound.
+\end{theorem}
+\begin{proof}
+Every exact feasible response lies in at least one subbox, so Theorem~\ref{thm:soc} gives
+$L_n\le\min_{\mc K}S\le\max_{\mc K}S\le U_n$.
+
+Choose outer-feasible maximizers along any subsequence that attains the limit superior of $U_n$. Denote their variables by $a_n,b_n,w_n,v_n,z_n$. Choose one representative rate $\eta_{\ell,n}$ in each bin and form
+$\mu_n=\sum_\ell w_{\ell,n}\delta_{\eta_{\ell,n}}$. These measures have mass at most $M$. Compactness yields a subsequence with
+$a_n\to a$, $b_n\to b$, and $\mu_n\Rightarrow\mu$ weakly. The limit response is in the fixed closed ellipsoid and its global box.
+
+Inside a response subbox of width at most $\epsilon_n$, both $z_{\ell s,n}$ and $w_{\ell,n}b_{s,n}$ lie in
+$[w_{\ell,n}L_{s,n},w_{\ell,n}U_{s,n}]$. Hence
+\[
+ |z_{\ell s,n}-w_{\ell,n}b_{s,n}|\le w_{\ell,n}\epsilon_n,
+ \qquad |v_{t,n}-a_nb_{t,n}|\le\bar a\epsilon_n.
+\]
+Let $B_* =\max_sU_s$ and let
+$\omega(\delta)$ be the maximum oscillation of the finitely many functions $\psi_j$, $0\le j\le H-2$, on rate intervals of diameter at most $\delta$. Uniform continuity gives $\omega(\delta)\to0$. Since $0\le\psi_j\le1$, the difference between the relaxed right side and the exact recurrence evaluated at $(a_n,b_n,\mu_n)$ is, for lag $t$, at most
+\[
+ (\bar a+tM)\epsilon_n+tMB_*\omega(\delta_n).
+\]
+This tends to zero uniformly over the finitely many lags. Weak convergence preserves each continuous kernel moment, so the limiting $(a,b,\mu)$ satisfies every exact recurrence and all class bounds. Thus it belongs to $\mc K$.
+
+The objective is continuous along this subsequence because total mass is the integral of the continuous function one:
+$a_n+\mu_n([\underline\eta,1])\to a+\mu([\underline\eta,1])\le\max_{\mc K}S$.
+Therefore $\limsup U_n\le\max_{\mc K}S$. Containment gives the reverse inequality. Apply the same argument to minimizing sequences to obtain convergence of $L_n$. Running intersections retain validity and the same limits.
+\end{proof}
+
+\textbf{Practical consequence.} A branch-and-bound implementation may prioritize useful subboxes, but it must retain bounds for every unexplored node. Stopping after promising nodes and ignoring others destroys the global guarantee. Rate refinement and response-product refinement solve different sources of relaxation error.
+
+\section{Numerical endpoint certification, not just optimizer success}
+Convexity removes local-versus-global ambiguity at the mathematical optimization level. It does not make floating-point endpoint reports outward-valid. A feasible primal point for a minimization is an upper bound on its optimum, not the lower endpoint needed for certification. The analogous direction reverses for maximization.
+
+\begin{proposition}[Residual-corrected conic lower bound]\label{prop:dual}
+Consider
+\[
+ p_* =\min\{c^\top x:Ax=b,\ h-Gx\in K,\ \ell\le x\le u\},
+\]
+where $K$ is a closed convex cone and all coordinate bounds are finite. For arbitrary $y$ and any exactly dual-cone-feasible $z\in K^*$, put $r=c+A^\top y+G^\top z$. Then
+\begin{equation}
+ p_*\ge -y^\top b-z^\top h+\sum_i\min\{r_i\ell_i,r_i u_i\}.
+ \label{eq:dual-lower}
+\end{equation}
+Negating the objective and the resulting lower bound supplies an upper bound for a maximization problem.
+\end{proposition}
+\begin{proof}
+For a feasible $x$, $y^\top(Ax-b)=0$ and
+$z^\top(Gx-h)=-z^\top(h-Gx)\le0$. Therefore
+\[
+ c^\top x\ge c^\top x+y^\top(Ax-b)+z^\top(Gx-h)
+ =r^\top x-y^\top b-z^\top h.
+\]
+The minimum of the linear form $r^\top x$ on a box is the sum of its coordinate minima, giving \eqref{eq:dual-lower}. This argument requires no exact stationarity $r=0$.
+\end{proof}
+
+Use exact rational comparisons or outward interval arithmetic for dual-cone membership and the lower-bound evaluation. The second-order cone is self-dual; membership of $(t,v)$ can be verified from $t\ge0$ and $t^2\ge v^\top v$ with directed arithmetic. Covariance factorization and kernel-envelope coefficients also need numerical enclosures when claiming a formally enclosed endpoint. A library's success flag, a small residual, or a primal objective alone is insufficient. Conic duality is established optimization theory \cite{boyd}; this proposition spells out a bounded-domain numerical safeguard.
+
+A production result should separately store: primal feasibility, dual-cone feasibility, numerical enclosure error, optimization gap, statistical confidence level, and structural-contract validity. Failure at any required stage means inconclusive or conflict, never automatic stability.
+
+\section{What coverage guarantees, and why abstention cannot disappear}
+\begin{theorem}[Directionally valid classifications]\label{thm:decision}
+Suppose an interval $[L_S,U_S]$ covers the true $S$ with probability at least $1-\alpha$. Issue STABLE if $U_S<1$, UNSTABLE if $L_S>1$, and ABSTAIN otherwise; an empty or unverified set is a separate non-certificate status. Then the unconditional probability of a wrong strict label is at most $\alpha$.
+If the probability of issuing a strict label is $c>0$, the implied conditional bound is at most $\min\{1,\alpha/c\}$, not automatically $\alpha$.
+\end{theorem}
+\begin{proof}
+On the coverage event, $U_S<1$ implies $S<1$, and $L_S>1$ implies $S>1$. Thus any wrong strict label is contained in the noncoverage event. Divide its probability by $c$ for the conditional statement. When $c=0$, conditional error is undefined. At $S=1$ either strict label is wrong.
+\end{proof}
+
+\begin{theorem}[Two-world abstention bound]\label{thm:abstention}
+Let $P_0,P_1$ be observation laws for opposite strict stability classes. Under equal class weights, let $c$ be the probability of issuing either strict label and $e$ the unconditional wrong-label probability. Then
+\[
+ c\le\min\{1,\ 2e+\TV(P_0,P_1)\}.
+\]
+If the two laws are identical, $c=2e$. For equal-covariance Gaussian laws with Mahalanobis mean distance $d$, the bound is
+\[
+ c\le\min\{1,\ 2e+2\Phi(d/2)-1\}.
+\]
+\end{theorem}
+\begin{proof}
+Let $A_0,A_1$ be the disjoint decision events labeling the respective classes. Then
+\begin{align*}
+ c&=\tfrac12\{P_0(A_0)+P_0(A_1)+P_1(A_0)+P_1(A_1)\},\\
+ e&=\tfrac12\{P_0(A_1)+P_1(A_0)\}.
+\end{align*}
+Subtracting gives
+\[
+ c-2e=\tfrac12\{P_0(A_0)-P_1(A_0)+P_1(A_1)-P_0(A_1)\}
+ \le\TV(P_0,P_1).
+\]
+When $P_0=P_1$, the difference is zero. For equal-covariance Gaussians, whitening and projection onto the mean-difference direction reduce the optimal likelihood-ratio test to two univariate unit-variance normal distributions separated by $d$. Their midpoint threshold has error $\Phi(-d/2)$, so their total variation is $1-2\Phi(-d/2)=2\Phi(d/2)-1$.
+\end{proof}
+
+No ellipsoid or optimizer can remove this information limitation. It can reduce an avoidable relaxation loss while leaving unavoidable uncertainty intact. In particular, the manuscript's displayed level-noise forced error of $47.56\%$ and error target $5\%$ give a decision-coverage bound near $14.88\%$, not $9.75\%$.
+
+\section{Financial safety and empirical usefulness are separate statements}
+\subsection{A precise solvency non-transfer example}
+\begin{proposition}[No solvency guarantee from a stable signal alone]\label{prop:solvency}
+Fix any scalar signal persistence $r\in[0,1)$ and any $\pi\in[0,1]$. There is a finite-price, initially solvent account and an external-shock law with signal transition coefficient $r$ for which insolvency at a specified horizon has probability $\pi$.
+\end{proposition}
+\begin{proof}
+Take price $P_t=P_0+x_t$ with $x_{t+1}=r x_t+\varepsilon_{t+1}$, initially $x_0=0$. Let a fixed account hold $I>0$ shares and have equity $E_0>0$; choose $P_0>2E_0/I$ and cash $C=E_0-IP_0$. The initial equity is $C+IP_0=E_0$. Assume funding permits this initial position; the proposition specifies no particular leverage or credit rule.
+Set all innovations before the designated time to zero. At that time let the innovation be $-2E_0/I$ with probability $\pi$ and zero otherwise. On the shock event the price remains positive but the equity becomes
+$E_0+I(-2E_0/I)=-E_0$. Otherwise it remains $E_0$. The signal coefficient is still $r<1$, while insolvency probability is exactly $\pi$.
+\end{proof}
+This is a scope counterexample, not a new liquidity-spiral theory. Its purpose is to show that shock distributions, exposures, collateral, and execution constraints cannot be inferred from a stable eigenvalue. The manuscript's funded simulator must still measure its own predeclared scenario probabilities and mechanism contrasts.
+
+\subsection{Why a theoretical solution does not finish the empirical study}
+The response ellipsoid proves coverage only under \eqref{eq:regression}. It does not prove that one historical market stream supplies iid reset episodes. The continuous-time theorem does not prove that actual agents obey the model. The group theorem does not show which real accounts are adaptive. A new interval construction does not prove an improvement over the original method until both are evaluated with matched inputs, coverage targets, and numerical safeguards.
+
+Similarly, computing features on Period A and fitting a regression using Period B outcomes does not by itself measure forecasting performance of a rule frozen before those B outcomes were seen. A later untouched date set remains necessary for that particular predictive claim. Missing historical spread or depth observations must be removed from the corresponding primary analysis or explicitly restricted to a retrospective diagnostic.
+
+The correct remaining empirical work is to report interval coverage, widths, decision exposure, conditional and unconditional errors, model conflicts, runtime, and actual forward predictive loss under a frozen protocol. A null result, noncomparability finding, or frequent abstention is admissible. No proof here guarantees a grade, acceptance, a target $p$-value, or a fixed percentage of project completion.
+
+\section{Integration into the manuscript}
+\begin{longtable}{P{.20\textwidth}P{.34\textwidth}P{.38\textwidth}}
+\toprule
+Manuscript location & Insert or replace & What not to claim\\\midrule
+Chapters~2 \& 3 & Theorem~\ref{thm:ct}, Proposition~\ref{prop:sa}, and Euler theorem. & Do not say $\gamma=1-a$ is a limit without scaling by a physical step. Do not claim arbitrary Euler steps preserve stability.\\
+Chapter~5 \& Appendix~A & Theorems~\ref{thm:group-known}, \ref{thm:unknown}, Proposition~\ref{prop:4tap}. & Do not say an unknown rate always leaves a ray when known mass or extra aggregate lags remove that ambiguity.\\
+Chapter~4 & Theorem~\ref{thm:ellipsoid} and covariance-rank failure status. & Do not replace the exact $F$ radius with a chi-squared radius when covariance is estimated.\\
+Chapter~4 & Exact compatible set, Theorem~\ref{thm:soc}, and common-region comparison. & Do not call $S$ a linear response contrast or promise strict improvement over the original Bonferroni method.\\
+Technical appendix & Theorem~\ref{thm:converge} and Proposition~\ref{prop:dual}. & Do not treat numerical local fits or unchecked duals as globally enclosed endpoints.\\
+Chapter~4 & Matched 120-cell benchmark (Table~5) and budget sweep (Figure~4). & Do not extrapolate decisive classification from large budgets to under-sampled settings.\\
+Chapter~5 & Retain the fixed-contrast I1 Student-$t$ pivot (Table~9). & Do not count standard ellipsoid support as a replacement advance over the existing single-contrast result.\\
+Chapter~6 & Preserve signal/solvency decoupling and paired mechanism controls (Tables~11--13). & Do not attribute inventory buffer halts to balance-sheet insolvency.\\
+Chapter~7 & Exploratory digital asset associations and Gates~2--4 calibration (Tables~14--17). & Do not substitute observational associations for locked predictive tests or proprietary runtime audits.\\
+Abstract / conclusion & Describe standard tools, specialized derivations, and executed evidence separately. & Do not state that all missing gaps, all conditional errors, or all abstentions are eliminated.\\\bottomrule
+\end{longtable}
+
+\subsection{Replacement contribution paragraph}
+\begin{quote}
+We separate the observations needed for aggregate feedback inference from those needed for componentwise attribution and financial-risk evaluation. In the positive-feedback class, a heterogeneous-rate continuous-time analogue admits a spectral small-gain characterization, with the original discrete boundary recovered under an explicit Euler scaling. For independent Gaussian probe episodes, an exactly calibrated response ellipsoid accounts for estimated within-episode covariance. Rather than treating aggregate feedback as a linear contrast of finite responses, we impose the positive-memory recurrence and construct a conic outer bound that preserves compatible continuous-rate models. The bound is no wider than the recurrence box relaxation derived from the same ellipsoid, while improvement over separately calibrated rectangular methods remains an empirical question. Group attribution depends on the rank and normalization information of the actual experimental map, and none of these signal-level results alone certifies funded-system safety.
+\end{quote}
+This statement coordinates the mathematical scope with the empirical evaluations executed in the main manuscript (Chapter~4, Table~5, Figure~4).
+
+\subsection{Implementation procedure}
+\begin{enumerate}
+\item Freeze the response dimension, probe design, observation contract, rate floor, and error level before confirmation data are examined.
+\item Compute the OLS response, residual covariance, residual degrees of freedom, and exact $F$ critical value. Reject invalid rank or insufficient sample-size cases.
+\item Form the ellipsoid, its nonnegative coordinate enclosure, and the finite mass cap. Record weak-impact or model-conflict status separately.
+\item Build continuous rate-bin envelopes and the lifted conic recurrence program. Do not replace continuous support with a bare grid without a declared approximation.
+\item Solve both endpoint problems; retain primal, dual, residual, and gap information. Return certificates only from outward-valid endpoint bounds.
+\item Optionally refine response subboxes and rate bins while retaining valid bounds for every unresolved region.
+\item Score the new and retained methods on identical I0 panels. Keep I1 comparisons separate or explicitly label their stronger information.
+\item Generate every table and claim from saved result rows. Preserve unsuccessful solves and undefined conditional-error denominators.
+\end{enumerate}
+
+\subsection{Required comparison table}
+For each method and generating setting, record the number of independent panels, nominal confidence, observed coverage with Monte Carlo uncertainty, median/quantile interval widths, stable/unstable/abstain/conflict counts, unconditional error, conditional error, solver failures, runtime, and probe cost. Also retain covariance dimension, residual degrees of freedom, rate-bin resolution, numerical enclosure status, and the exact information contract.
+
+The minimum comparison is: the original Bonferroni recurrence LP, the enclosing-box LP derived from the new ellipsoid, the conic relaxation, and, if implemented, its refinement. This separates a change of confidence region from a change of recurrence relaxation. The separately audited I1 regression is an information benchmark, not an equal-information competitor.
+
+\section{Executed checks and what they do not establish}
+The reference directory contains 21 unit tests. Looped numerical fixtures also cover 120 continuous systems with heterogeneous rates, common-rate complex modes, Euler behavior, group recovery, finite-window witnesses, covariance support, rate envelopes, and decision-bound arithmetic. These are finite numerical consistency checks, not proofs of the universal statements.
+
+A Gaussian calibration illustration used $R=32$, $p=4$, $10{,}000$ independently generated panels, and seed $240926$. The exact response-ellipsoid radius squared was $12.12340136$. The true response was included in $9{,}476$ panels ($94.76\%$), with nominal Monte Carlo standard error about $0.218$ percentage points at $95\%$. Replacing its $F$ radius by an unjustified $\chi^2_4$ radius gave $89.46\%$ inclusion in this particular illustration. This is a diagnostic example, not evidence about the market-data study.
+
+The polyhedral outer relaxation of the Second-Order Cone Program (Theorem~S7.2) is implemented via HiGHS simplex cutting planes with dual residual repair (\nolinkurl{research_extension.mm_revision.inference.conic_certificate.fit_conic_certificate}). The resulting method is evaluated across the 600-panel benchmark (Study \texttt{COMP-GRID-120}, yielding 100.0\% coverage and 0.0\% decisiveness at low budget $R=128$, reported in Chapter~4, Table~5) and across the geometric budget sweep ($R=128 \to 32,768$, 300 instances, in \nolinkurl{research_extension/outputs/conic_contraction_results.json}, reported in Chapter~4, Figure~4), which establishes empirical interval contraction (up to 70.4\% width reduction) and decisive classification recovery under scaling observation budgets.
+
+The calculation log also records the manuscript's $S=0.82$, spectral radius $0.9900902493$, and the conventional two-sided value $\Prob(|T_8|\ge2.47)\approx0.03871045$. Actual regression tables should still be regenerated from their saved model objects rather than edited using this isolated calculation.
+
+\begin{lstlisting}
+# Run from the reference directory after installing NumPy and SciPy.
+python -m unittest discover -v
+python run_checks.py
+\end{lstlisting}
+
+\section{Prospective multi-agent experimental protocol (MARL)}
+\label{sec:supp_marl}
+\textbf{Status: prospective protocol, not executed in current release.} This section records the complete experimental specification for evaluating feedback stability in multi-agent reinforcement learning (MARL) populations and rich agent environments.
+
+\subsection{Research hypotheses and rejection conditions}
+\begin{longtable}{P{.10\textwidth}P{.40\textwidth}P{.41\textwidth}}
+\toprule
+ID & Hypothesis & Evidence against the proposed claim \\
+\midrule
+H1 & A joint response estimate predicts stress amplification beyond ordinary market covariates. & No reproducible incremental prediction on held-out regimes.\\
+H2 & Matching measured feedback reduces architecture-specific outcome differences. & Large architecture effects remain after reliable response matching.\\
+H3 & Increased reinforcing response alignment increases loss amplification in the specified environment. & Effects disappear under matched depth and exposures, or reverse outside selected cells.\\
+H4 & An uncertainty-aware gate improves a predeclared loss--liquidity trade-off. & Apparent benefits rely on disappearing liquidity, oracle information, or shifted losses.\\
+H5 & A boundary estimated in one agent family transfers to a held-out family or simulator. & Transfer requires unrestricted refitting or yields unacceptable uncertainty.\\
+\bottomrule
+\end{longtable}
+
+\subsection{Environment and economic accounting}
+The experimental environment should contain an explicit central exchange matching engine, finite cash and inventory balances, and price formation via double-auction books. Every fill transfers inventory and cash between counterparties, with trading fees and margin accounted for. In a leveraged extension, maintenance margin calculations and forced liquidations must be audited. ABIDES is a candidate infrastructure \cite{mm}.
+
+\subsection{Agent families and paired baselines}
+A complete design compares: (i) adaptive expectation chartists, (ii) value-learning agents (e.g., DQN / PPO), (iii) expressive deep actor-critic policies, and (iv) inference-only language-model agents. Each adaptive policy requires a paired baseline with the identical checkpoint and architecture but online adaptation frozen.
+
+\subsection{Factor design and shock families}
+A minimum design crosses participation levels ($n \in \{32, 128, 512\}$), response-sharing conditions, and update schedules ($3 \times 3 \times 3 = 27$ cells). Exogenous fundamental repricing shocks ($\mu \in [-0.1, -2.0]$) and liquidity dry-ups are injected into paired shock tapes. Primary outcomes are cumulative price dislocation and dealer balance-sheet survival.
+
+\section{Prospective empirical validation}
+\label{sec:supp_empirical}
+\textbf{Status: prospective protocol, requires institutional data access.} Empirical validation of feedback stability requires observing decision provenance and policy adaptation, not merely downloading public price histories.
+
+\subsection{Data requirements and institutional access}
+An ideal empirical dataset records anonymized account/decision identifiers, timestamps, execution authority, policy versions, update schedules, exposure limits, and execution fills. Such records require lawful access, institutional cooperation, and privacy oversight under supervisory governance.
+
+\subsection{Staggered rollouts and shadow evaluation}
+A partner-assisted study could exploit authorized staggered rollouts of algorithmic updates. Shadow evaluation permits predictions and instability warnings to be logged in real time without authorizing trades, followed by frozen out-of-sample scoring against subsequent market distress events.
+
+\section{Legal and regulatory governance of active probing}
+\label{sec:supp_legal}
+\subsection{Market abuse regulations and manipulative intent}
+Under market manipulation frameworks such as SEC Rule~10b-5 in the United States and Article~12 of the EU Market Abuse Regulation (MAR), submitting orders or executing transactions that give false or misleading signals regarding the supply of, demand for, or price of financial instruments is strictly prohibited. Executing orders without genuine investment intent to probe counterparty algorithms can trigger regulatory scrutiny under manipulative and deceptive practice standards.
+
+\subsection{Operational boundaries for supervisory authorities}
+Consequently, active probing is established in this research strictly as a theoretical identification benchmark, not an operational trading recommendation. If an exchange operator or macroprudential authority evaluates active system identification, any physical execution protocol requires explicit legal, regulatory, and supervisory authorization. Standard market-wide mechanisms, such as the national Limit-Up/Limit-Down (LULD) Plan, impose non-discriminatory price bands and trading pauses precisely because live causal attribution across heterogeneous participants remains an open institutional challenge.
+
+\section{Executable reproduction code listing}
+\label{sec:supp_code}
+The standalone Python script below reproduces all deterministic algebra checks, spectral radius calculations, and non-normal gain bounds reported in the manuscript without project imports.
+
+\begin{lstlisting}[language=python]
+"""Deterministic algebra checks for Machine Markets.
+Requires Python 3 and NumPy. Run: python verify_math.py
+"""
+import json
+import numpy as np
+
+def spectral_radius(matrix):
+    matrix = np.asarray(matrix, dtype=float)
+    if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1]:
+        raise ValueError("Expected a square matrix")
+    if not np.isfinite(matrix).all():
+        raise ValueError("Nonfinite matrix entry")
+    return float(np.max(np.abs(np.linalg.eigvals(matrix))))
+
+def scalar_matrix(a, g, eta, kappa=1.0):
+    if not (0 <= a < 1 and 0 < eta <= 1 and g >= 0 and kappa >= 0):
+        raise ValueError("Parameters violate proposition assumptions")
+    return np.array([[a, g], [eta * kappa, 1 - eta]])
+
+def rho_formula(a, g, eta, kappa=1.0):
+    return float((a + 1 - eta + np.sqrt((a - 1 + eta)**2 + 4 * g * eta * kappa)) / 2)
+
+def main():
+    rows = []
+    for label, g, eta in [
+        ("stable feedback", 0.30, 0.20),
+        ("boundary", 0.60, 0.20),
+        ("unstable feedback", 0.90, 0.20),
+        ("same unstable gain, slower learning", 0.90, 0.05),
+        ("same unstable gain, faster learning", 0.90, 0.80),
+        ("baseline before action gate", 0.45, 0.20),
+        ("gate, depth unchanged", 0.225, 0.20),
+        ("gate, depth reduced to one quarter", 0.90, 0.20),
+    ]:
+        radius = spectral_radius(scalar_matrix(0.4, g, eta))
+        assert abs(radius - rho_formula(0.4, g, eta)) < 1e-12
+        rows.append(dict(case=label, a=0.4, g=g, eta=eta, kappa=1.0, radius=radius))
+
+    # Deterministic Cartesian grid
+    scalar_checks = 0
+    max_error = 0.0
+    for a in [0.1, 0.3, 0.5, 0.7, 0.9]:
+        for eta in [0.05, 0.2, 0.5, 0.8, 1.0]:
+            for g in [0.07, 0.17, 0.37, 0.67, 1.07]:
+                for kappa in [0.15, 0.45, 0.85, 1.25, 1.75]:
+                    radius = spectral_radius(scalar_matrix(a, g, eta, kappa))
+                    max_error = max(max_error, abs(radius - rho_formula(a, g, eta, kappa)))
+                    assert abs(g * kappa - (1 - a)) > 1e-8
+                    assert (radius < 1) == (g * kappa < 1 - a)
+                    scalar_checks += 1
+
+    # Independent network formula checks
+    rng = np.random.default_rng(20260918)
+    network_checks = 0
+    max_network_error = 0.0
+    for _ in range(250):
+        d, n = 3, 4
+        B = rng.uniform(0, 1, (d, n)) / n
+        C = rng.uniform(0, 1, (n, d)) / d
+        a = float(rng.uniform(0.05, 0.95))
+        eta = float(rng.uniform(0.05, 1.0))
+        g = float(rng.uniform(0.01, 4.0))
+        J = np.block([[a*np.eye(d), g*B], [eta*C, (1-eta)*np.eye(n)]])
+        nu = spectral_radius(B @ C)
+        radius = spectral_radius(J)
+        pred = rho_formula(a, g, eta, nu)
+        max_network_error = max(max_network_error, abs(radius - pred))
+        assert abs(radius - pred) < 1e-10
+        assert (radius < 1) == (g*nu < 1-a)
+        network_checks += 1
+
+    # Switched system check
+    J1 = np.array([[0.5, 2.0], [0.0, 0.5]])
+    J2 = J1.T
+    switch_radius = spectral_radius(J2 @ J1)
+    assert spectral_radius(J1) == 0.5 and switch_radius > 1
+
+    # Nonnormal amplification check
+    J = np.array([[0.8, 4.0], [0.0, 0.8]])
+    gains = [float(np.linalg.norm(np.linalg.matrix_power(J, h), 2)) for h in range(51)]
+    assert spectral_radius(J) < 1 and max(gains) > 8
+
+    out = dict(scalar_cases=rows, scalar_grid_checks=scalar_checks,
+               max_scalar_formula_error=max_error,
+               network_checks=network_checks,
+               max_network_formula_error=max_network_error,
+               switching_product_radius=switch_radius,
+               nonnormal_peak_gain=max(gains))
+    print(json.dumps(out, indent=2))
+
+if __name__ == "__main__":
+    main()
+\end{lstlisting}
+
+\begin{thebibliography}{9}
+\bibitem{mm} P. Niroula. \emph{From Human Markets to Machine Markets: Feedback Stability, Auditable Memory, and Financial Constraints}. User-supplied working manuscript, \texttt{Machine\_Markets\_Rebuilt.pdf}, 56 pages, September 24, 2026. References here identify this supplied version, not a public or independently reviewed release.
+\bibitem{rantzer} A. Rantzer. \emph{Scalable Control of Positive Systems}. European Journal of Control, 24:72--80, 2015. DOI: \href{https://doi.org/10.1016/j.ejcon.2015.04.004}{10.1016/j.ejcon.2015.04.004}. Author preprint: \emph{Distributed Control of Positive Systems}, \href{https://arxiv.org/abs/1203.0047v3}{arXiv:1203.0047v3}; especially the positive-vector stability characterizations.
+\bibitem{hotelling} H. Hotelling. \emph{The Generalization of Student's Ratio}. Annals of Mathematical Statistics, 2(3):360--378, 1931. DOI: \href{https://doi.org/10.1214/aoms/1177732979}{10.1214/aoms/1177732979}. The regression-specific normalization used here is derived explicitly in Theorem~\ref{thm:ellipsoid}.
+\bibitem{psu} Pennsylvania State University. \emph{STAT 505, Lesson 7: Inferences Regarding Multivariate Population Mean}. Official course notes, accessed September 24, 2026. \url{https://online.stat.psu.edu/stat505/Lesson07}. Provides the classical multivariate confidence-region and simultaneous-contrast context.
+\bibitem{boyd} S. Boyd and L. Vandenberghe. \emph{Convex Optimization}. Cambridge University Press, 2004. Author-hosted materials: \url{https://web.stanford.edu/~boyd/cvxbook/}. Used for standard convex-set, conic optimization, and duality context; not evidence of novelty of the proposed application.
+\bibitem{mccormick} G. P. McCormick. \emph{Computability of Global Solutions to Factorable Nonconvex Programs: Part I---Convex Underestimating Problems}. Mathematical Programming, 10:147--175, 1976. DOI: \href{https://doi.org/10.1007/BF01580665}{10.1007/BF01580665}.
+\end{thebibliography}
+\end{document}
