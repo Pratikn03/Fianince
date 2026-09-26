@@ -1,13 +1,13 @@
 # From Human Markets to Machine Markets
 ## Master Research Release 2.0 (Submission-Ready Master Edition) | September 2026
 
-**Start with [the integrated research paper](paper/Machine_Markets_Final_Integrated_Paper.pdf) (67 pages) or the [combined master volume](Machine_Markets_Combined_Master.pdf) (92 pages).**
+**Start with [the integrated research paper](paper/Machine_Markets_Final_Integrated_Paper.pdf) (68 pages) or the [combined master volume](Machine_Markets_Combined_Master.pdf) (93 pages).**
 The self-contained [LaTeX source](paper/Machine_Markets_Final_Integrated_Paper.tex) and the [Mathematical Supplement source](paper/Machine_Markets_Mathematical_Supplement.tex) are beside them in `paper/`.
 
 This master release establishes the complete, unified scientific package for *Machine Markets*:
-1. **8-Chapter Consolidated Main Manuscript** (67 pages, 0 overfull `\hbox`es, 0 undefined references/citations).
+1. **8-Chapter Consolidated Main Manuscript** (68 pages, 0 overfull `\hbox`es, 0 undefined references/citations).
 2. **Mathematical Supplement** (25 pages, Sections S1–S14, complete proofs, continuous-time dynamics, and covariance geometry).
-3. **Combined Master Volume** (92 pages, uniting the main paper and supplement).
+3. **Combined Master Volume** (93 pages, uniting the main paper and supplement).
 4. **220-Test Hierarchical Verification Suite** (104 native + 88 pytest + 4 numerical suites + 24 independent gates) passing at 100% offline.
 5. **Standalone Zero-Dependency Verifier** (`independent_verifier/verifier.py`) passing all 24 verification gates ($< 7.2 \times 10^{-14}$ error) without importing project libraries.
 6. **Method-to-Evidence Crosswalk** (Table 4) establishing unbroken theorem $\to$ code $\to$ artifact $\to$ paper traceability.
@@ -46,7 +46,7 @@ Machine_Markets_Master_Release/
   README.md                            Master release index and blocker resolution summary
   Machine_Markets_Combined_Master.pdf  Combined 92-page master volume (Main + Supplement)
   paper/
-    Machine_Markets_Final_Integrated_Paper.tex   Self-contained 8-chapter LaTeX source (67 pages)
+    Machine_Markets_Final_Integrated_Paper.tex   Self-contained 8-chapter LaTeX source (68 pages)
     Machine_Markets_Final_Integrated_Paper.pdf   Compiled main manuscript (0 overfulls, 0 undefined refs)
     Machine_Markets_Mathematical_Supplement.tex  Mathematical supplement LaTeX source (25 pages)
     Machine_Markets_Mathematical_Supplement.pdf  Compiled supplement (0 overfulls)

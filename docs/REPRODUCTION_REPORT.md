@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-This report establishes the baseline and extension reproduction of all empirical, synthetic, and analytical findings across the 67-page master manuscript (`Machine_Markets_Final_Integrated_Paper.pdf`), the 25-page mathematical supplement (`Machine_Markets_Mathematical_Supplement.pdf`), and the 92-page combined master volume (`Machine_Markets_Combined_Master.pdf`). All scientific test suites execute completely offline without external network dependencies.
+This report establishes the baseline and extension reproduction of all empirical, synthetic, and analytical findings across the 68-page master manuscript (`Machine_Markets_Final_Integrated_Paper.pdf`), the 25-page mathematical supplement (`Machine_Markets_Mathematical_Supplement.pdf`), and the 93-page combined master volume (`Machine_Markets_Combined_Master.pdf`). All scientific test suites execute completely offline without external network dependencies.
 
 Retained numerical artifacts have been classified into three strict epistemic tiers:
 1. **Reproduced**: Regenerated and confirmed from native test runners and recorded execution pipelines.

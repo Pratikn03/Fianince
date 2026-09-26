@@ -45,9 +45,9 @@ then six package-verifier tests, followed by the revision, verifier, and mathema
 
 ## D. Rebuild PDFs
 The package provides three synchronized PDF documents:
-1. `paper/Machine_Markets_Final_Integrated_Paper.pdf` (67-page main manuscript)
+1. `paper/Machine_Markets_Final_Integrated_Paper.pdf` (68-page main manuscript)
 2. `paper/Machine_Markets_Mathematical_Supplement.pdf` (25-page mathematical supplement)
-3. `Machine_Markets_Combined_Master.pdf` (92-page combined master document)
+3. `Machine_Markets_Combined_Master.pdf` (93-page combined master document)
 
 To rebuild from LaTeX sources:
 ```bash
