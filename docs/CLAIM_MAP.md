@@ -1,6 +1,6 @@
 # Machine Markets — Scientific Claim Register and Traceability Matrix
 
-This claim register establishes strict cryptographic and experimental provenance for every numerical, mathematical, and empirical claim across the 62-page master manuscript (`Machine_Markets_Final_Integrated_Paper.pdf`), the 24-page mathematical supplement (`Machine_Markets_Mathematical_Supplement.pdf`), and the united 86-page combined master document (`Machine_Markets_Combined_Master.pdf`).
+This claim register establishes strict cryptographic and experimental provenance for every numerical, mathematical, and empirical claim across the 67-page master manuscript (`Machine_Markets_Final_Integrated_Paper.pdf`), the 25-page mathematical supplement (`Machine_Markets_Mathematical_Supplement.pdf`), and the united 92-page combined master document (`Machine_Markets_Combined_Master.pdf`).
 
 ---
 
@@ -14,14 +14,14 @@ Every empirical and synthetic result originates from a frozen, versioned study d
 | **`STUDY-ID-02`**<br>(`COMP-PILOT-NARROW`) | Historical Narrow Pilot Benchmark | 600 panels at fixed $H=64$, $\eta=0.002$, penalized $\lambda=0.01$, pegged $\kappa = \hat\beta_0$. Single-rate generator. | `research_extension/outputs/confirmatory_results.json` | `research_extension/confirmatory_study.py` |
 | **`STUDY-ID-03`**<br>(`AUDIT-I1-2880`) | Audited Terminal-Row OLS Benchmark | 2,880 panels under Contract $I_1$ across 18 design cells: $R \in \{128, 1024\}$, pulses $\{1, 4\}$, $H \in \{16, 24, 64\}$. | `studies/audited_constraints/results/panels.csv` | `studies/audited_constraints/run_study.py` |
 | **`STUDY-ID-04`**<br>(`FUNDED-SURFACE-480`) | Funded Market Scenario-Risk Surface | 480 scenario cells: $S \in \{0.70, 0.82, 0.97, 1.03, 1.18\}$, capital multipliers $\{0.5, 1.0, 2.0, 4.0\}$, utilizations $\{0\%, 50\%, 90\%\}$, shocks $\mu \in \{0, -2, -10\}$. | `research_extension/outputs/funded_mechanism_results.json` | `research_extension/mm_revision/studies/funded_stress.py` |
-| **`STUDY-ID-05`**<br>(`FUNDED-PAIRED-100`) | Paired Counterfactual Mechanism Controls | $N=100$ identical shock tapes ($\mu = -2.0$) across Active, Frozen, $Q=0$, and Unlimited Funding. Pre-shock memory enabled. | `research_extension/outputs/funded_mechanism_results.json` | `research_extension/mm_revision/studies/funded_stress.py` |
+| **`STUDY-ID-05`**<br>(`FUNDED-PAIRED-100`) | Paired Counterfactual Mechanism Controls | $N=100$ identical shock tapes ($\mu = -2.0$) across Active Memory Updating, Frozen, $Q=0$, and Unlimited Funding. Pre-shock memory enabled. | `research_extension/outputs/funded_mechanism_results.json` | `research_extension/mm_revision/studies/funded_stress.py` |
 | **`STUDY-ID-06`**<br>(`BINANCE-SENS-175`) | Binance State-Space Sensitivity Audit | 175 runs across BTC, ETH, SOL, DOGE, ADA across $y_0$ treatments, burn-in, $\lambda \in \{0, 0.001, 0.01, 0.1\}$, and flow scalings. | `research_extension/outputs/binance_robustness_results.json` | `research_extension/mm_revision/studies/binance_robustness.py` |
 | **`STUDY-ID-07`**<br>(`COINBASE-HIST-10`) | Coinbase Exploratory LOB Study | 10 digital assets, strict temporal split (Period A: 70%, Period B: 30%). | `research_extension/outputs/empirical_results.json` | `research_extension/real_data_study.py` |
 | **`STUDY-ID-08`**<br>(`CONIC-SWEEP-300`) | Conic Contraction Budget Sweep | Budget sweep $R \in \{128, 512, 2048, 8192, 32768\}$ across 3 regimes ($S=0.60, 0.82, 1.25$), 300 solves total, 100% parameter coverage. | `research_extension/outputs/conic_contraction_results.json` | `research_extension/mm_revision/studies/conic_informativeness_curve.py` |
 | **`STUDY-ID-09`**<br>(`DIAG-C1-C4`) | Output-Error Misspecification Diagnostic | 4 factorial conditions C1–C4 ($N=100$ panels each, true $S=0.82$, $H=24$): evaluates single-rate vs two-rate DGP under matched vs misspecified estimators. | `research_extension/outputs/output_error_diagnostic_results.json` | `research_extension/mm_revision/studies/output_error_misspecification_diagnostic.py` |
 | **`STUDY-ID-10`**<br>(`FUNDED-SMOOTH-330`) | Fine-Grained Smooth Solvency Surface | 330 scenario cells across $\mu \in [-0.2, -2.0]$ in increments of 0.2 and capital multipliers $\{0.5\times, 1.0\times, 2.0\times\}$, $N=30$ per cell. | `research_extension/outputs/funded_smooth_surface_results.json` | `research_extension/mm_revision/studies/funded_smooth_surface.py` |
 | **`STUDY-ID-11`**<br>(`GATE24-BINANCE-3GB`) | Empirical Microstructure Calibration (Gates 2–4) | 3.41 GB public data from Binance Vision: 129,600 1-minute bars per asset (BTC, ETH, SOL, Jan–Mar 2025) + 1,000-level LOB depth. Costed probing protocol + clean-room calibrated simulator. | `research_extension/gate24_public_data/gate24_analysis_results.json` | `research_extension/gate24_public_data/gate24_analysis.py` |
-| **`STUDY-ID-12`**<br>(`Q-LEARNING-TRANSFER`) | Learned-Agent Transfer Layer & Model Audit | 5 independently trained Q-learning agents (6,125 states, 5 actions, seeds 101–105), 5 validation seeds (201–205), 10 held-out test seeds (301–310, 15,000 steps per seed). Counterfactual frozen controls and local model-class validity audit. | `research_extension/outputs/learned_agents/q_learning_transfer_results.json` | `research_extension/learned_agents/evaluate_q_learning.py` |
+| **`STUDY-ID-12`**<br>(`Q-LEARNING-TRANSFER`) | Learned-Agent Transfer Layer & Model Audit | 10 independently trained Q-learning agents (6,125 states, 5 actions, seeds 101–110), 5 validation seeds (201–205), 10 held-out test seeds (301–310, 15,000 steps per seed). Counterfactual frozen controls and local model-class validity audit. | `research_extension/outputs/learned_agents/q_learning_transfer_results.json` | `research_extension/learned_agents/evaluate_q_learning.py` |
 
 ---
 
@@ -55,12 +55,12 @@ Every empirical and synthetic result originates from a frozen, versioned study d
 
 ## 3. Verification Protocol
 
-The verification state can be completely reproduced by executing the automated test hierarchy:
+The verification state can be completely reproduced by executing the automated test hierarchy (220 tests total):
 ```bash
 # 1. Native Test Suite (104 tests)
 .venv/bin/python tools/run_all_tests.py
 
-# 2. Pytest Suite (87 tests)
+# 2. Pytest Suite (88 tests)
 PYTHONPATH=. .venv/bin/pytest tests/ research_extension/tests/ reference_directory/test_mathematical_supplement.py
 
 # 3. Independent Zero-Dependency Verifier (24 gates)

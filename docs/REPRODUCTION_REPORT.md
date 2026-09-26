@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-This report establishes the baseline and extension reproduction of all empirical, synthetic, and analytical findings across the 62-page master manuscript (`Machine_Markets_Final_Integrated_Paper.pdf`), the 24-page mathematical supplement (`Machine_Markets_Mathematical_Supplement.pdf`), and the 86-page combined master volume (`Machine_Markets_Combined_Master.pdf`). All scientific test suites execute completely offline without external network dependencies.
+This report establishes the baseline and extension reproduction of all empirical, synthetic, and analytical findings across the 67-page master manuscript (`Machine_Markets_Final_Integrated_Paper.pdf`), the 25-page mathematical supplement (`Machine_Markets_Mathematical_Supplement.pdf`), and the 92-page combined master volume (`Machine_Markets_Combined_Master.pdf`). All scientific test suites execute completely offline without external network dependencies.
 
 Retained numerical artifacts have been classified into three strict epistemic tiers:
 1. **Reproduced**: Regenerated and confirmed from native test runners and recorded execution pipelines.
@@ -30,12 +30,13 @@ All test suites pass cleanly in isolated sub-processes via `tools/run_all_tests.
 | `release_tools` | `tools/test_release_tools.py` | 6 / 6 | **PASS** | 0.18s |
 | `mm_revision` | `tests/mm_revision/` | 37 / 37 | **PASS** | 0.65s |
 | `group_extensions` | `research_extension/tests/test_group_extensions.py` | 10 / 10 | **PASS** | 0.22s |
+| `research_extensions_misc` | `research_extension/tests/` (obs, rel, audit) | 9 / 9 | **PASS** | 0.20s |
 | `mathematical_supplement` | `reference_directory/test_mathematical_supplement.py` | 21 / 21 | **PASS** | 0.19s |
-| `q_learning_transfer` | `tests/test_q_learning_transfer.py` | 5 / 5 | **PASS** | 0.15s |
+| `q_learning_transfer` | `tests/test_q_learning_transfer.py` | 6 / 6 | **PASS** | 0.15s |
 | `gate24_public_data` | `tests/test_gate24_public_data.py` | 5 / 5 | **PASS** | 0.18s |
 | `independent_verifier` | `independent_verifier/verifier.py` (24 gates) | 24 / 24 | **PASS** | 0.32s |
 | `reference_numerical` | `reference_directory/run_checks.py` | 4 / 4 suites | **PASS** | 0.34s |
-| **Total Automated Tests** | | **210 / 210** | **PASS** | **7.40s** |
+| **Total Automated Tests** | | **220 / 220** | **PASS** | **7.45s** |
 
 ---
 
@@ -118,12 +119,13 @@ All test suites pass cleanly in isolated sub-processes via `tools/run_all_tests.
   - Costed active probing budget under linear price impact: \$0.59 (ETH), \$3.16 (SOL), and \$89.00 (BTC) for $N=1,000$ episodes.
   - Independent clean-room calibrated simulator confirms balance-sheet conservation ($\Delta\text{eq} < 10^{-10}$) and monotone solvency frontiers under empirically calibrated market parameters.
 
-### J. Learned-Agent Transfer Layer & Model-Class Validity Audit (Chapter 6, Section 6.4, Table 14)
+### J. Learned-Agent Transfer Layer & Model-Class Validity Audit (Chapter 6, Section 6.5, Table 14)
 - **Status:** **Reproduced** (Artifact: `research_extension/outputs/learned_agents/q_learning_transfer_results.json`)
 - **Findings:**
   - Discrete trading environment with 6,125 states, 5 inventory-bounded actions, and marked-equity rewards.
-  - 5 independently trained tabular Q-learning policies across training seeds 101–105 and validation seeds 201–205 evaluated on 10 held-out test seeds (15,000 steps per seed).
-  - Learned agents completely eliminate dealer inventory halts (0.0% vs 100% for naive trend-followers) and reduce price dislocations by 75% (mean $|x| = 0.54$ vs 2.14).
+  - 10 independently trained tabular Q-learning policies across training seeds 101–110 and validation seeds 201–205 evaluated on 10 held-out test seeds (15,000 steps per seed).
+  - State space visitation concentrates tightly around $(x \approx 0, I \approx 0)$ ($119 \pm 4$ states, 1.9%; $454 \pm 12$ state-action pairs, 1.5%), with step 20k validation checkpoint selection.
+  - Learned agents completely eliminate dealer inventory halts (0.0% vs 100% for naive trend-followers) and reduce price dislocations by ~75% (mean $|x| = 0.54$ vs 2.14).
   - Counterfactual adaptation analysis: active online Q-learning exhibits state-dependent damping ($\Delta_{\text{learn}} = -0.0163$ to $-0.0245$), with local Jacobian slope $\hat J_{\text{local}} \in [-0.07, -0.03]$.
-  - Model-Class Validity Audit: correctly classifies 5/5 learned policies as `OUTSIDE_CERTIFIED_MODEL_CLASS` ($R^2 \approx 0.01\text{--}0.24$) rather than force-fitting positive linear feedback theorems, demonstrating safe observer abstention under architectural violation.
+  - Model-Class Validity Audit: flags all 10/10 learned policies as `OUTSIDE_CERTIFIED_MODEL_CLASS` ($R^2 \le 0.24$, mean $0.08$) rather than force-fitting positive linear feedback theorems, demonstrating safe observer abstention under architectural violation.
 

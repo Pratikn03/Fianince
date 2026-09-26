@@ -835,8 +835,37 @@ The experimental environment should contain an explicit central exchange matchin
 \subsection{Agent families and paired baselines}
 A complete design compares: (i) adaptive expectation chartists, (ii) value-learning agents (e.g., DQN / PPO), (iii) expressive deep actor-critic policies, and (iv) inference-only language-model agents. Each adaptive policy requires a paired baseline with the identical checkpoint and architecture but online adaptation frozen.
 
-\subsection{Factor design and shock families}
-A minimum design crosses participation levels ($n \in \{32, 128, 512\}$), response-sharing conditions, and update schedules ($3 \times 3 \times 3 = 27$ cells). Exogenous fundamental repricing shocks ($\mu \in [-0.1, -2.0]$) and liquidity dry-ups are injected into paired shock tapes. Primary outcomes are cumulative price dislocation and dealer balance-sheet survival.
+\subsection{Executed tabular Q-learning benchmark and state visitation diagnostics}
+\label{sec:supp_q_learning_diagnostics}
+To empirically evaluate whether analytical stability certificates transfer to learned decision rules, Chapter~6 of the main manuscript implements a controlled tabular Q-learning layer within the identical double-entry dealer market mechanism. Ten policies are independently trained across seeds 101--110 over 100,000 environment transitions per policy (1,000,000 transitions total across the 10 seeds).
+
+Table~\ref{tab:supp_q_learning_diagnostics} reports the complete training, checkpointing, and state-space visitation diagnostics across all 10 trained policies. Across 100,000 transitions within a discretized state space of 6,125 bins (30,625 state-action pairs), agents visit an average of $119 \pm 4$ unique states ($1.9\% \pm 0.1\%$) and $454 \pm 12$ state-action pairs ($1.5\% \pm 0.04\%$). This concentration reflects the ergodic support of baseline market noise: in the absence of extreme shocks, market trajectories concentrate tightly around zero price displacement ($\delta_x \approx 0$), small returns, low agent inventories ($I_t \approx 0$), and moderate dealer capacity utilization. Consequently, extreme inventory and displacement boundary states are rarely visited during training.
+
+Checkpoint selection on held-out validation seeds (201--205) selected step 20,000 across all 10 policies, at which point greedy execution had already converged to zero trading in the absence of exogenous shocks, achieving a terminal equity of \$10,000.00 and zero spread loss. When evaluated under extreme repricing shocks ($\mu = -2.0$), the policy transitions to unvisited or boundary bins where default initialization ($Q=0$) or thresholded inventory penalties dominate, producing flat, step-like response curves ($R^2 \le 0.24$, mean $0.08$) and triggering model-class abstention.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Training, checkpoint selection, and state visitation diagnostics across 10 independently trained Q-learning policies (100,000 training transitions per policy, $\alpha = 0.1, \gamma = 0.95$). State space comprises 6,125 states; action space comprises 5 actions (30,625 state-action pairs). Validation checkpoint selection evaluates greedy policy across seeds 201--205 at 20,000-step intervals.}
+\label{tab:supp_q_learning_diagnostics}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+\toprule
+Policy ID & Seed & Best Step & Total Steps & States Visited & $(s,a)$ Pairs Visited & Val.\ Equity (\$) \\
+\midrule
+Policy 01 & 101 & 20,000 & 100,000 & 123 (2.0\%) & 439 (1.4\%) & \$10,000.00 \\
+Policy 02 & 102 & 20,000 & 100,000 & 118 (1.9\%) & 454 (1.5\%) & \$10,000.00 \\
+Policy 03 & 103 & 20,000 & 100,000 & 116 (1.9\%) & 447 (1.5\%) & \$10,000.00 \\
+Policy 04 & 104 & 20,000 & 100,000 & 122 (2.0\%) & 463 (1.5\%) & \$10,000.00 \\
+Policy 05 & 105 & 20,000 & 100,000 & 119 (1.9\%) & 452 (1.5\%) & \$10,000.00 \\
+Policy 06 & 106 & 20,000 & 100,000 & 120 (2.0\%) & 457 (1.5\%) & \$10,000.00 \\
+Policy 07 & 107 & 20,000 & 100,000 & 122 (2.0\%) & 470 (1.5\%) & \$10,000.00 \\
+Policy 08 & 108 & 20,000 & 100,000 & 123 (2.0\%) & 472 (1.5\%) & \$10,000.00 \\
+Policy 09 & 109 & 20,000 & 100,000 & 116 (1.9\%) & 445 (1.5\%) & \$10,000.00 \\
+Policy 10 & 110 & 20,000 & 100,000 & 109 (1.8\%) & 436 (1.4\%) & \$10,000.00 \\
+\midrule
+Mean $\pm$ SD & --- & 20,000 & 100,000 & $119 \pm 4$ (1.9\%) & $454 \pm 12$ (1.5\%) & \$10,000.00 \\
+\bottomrule
+\end{tabular*}
+\end{table}
 
 \section{Prospective empirical validation}
 \label{sec:supp_empirical}

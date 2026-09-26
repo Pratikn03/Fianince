@@ -1,17 +1,17 @@
 # From Human Markets to Machine Markets
 ## Master Research Release 2.0 (Submission-Ready Master Edition) | September 2026
 
-**Start with [the integrated research paper](paper/Machine_Markets_Final_Integrated_Paper.pdf) (62 pages) or the [combined master volume](Machine_Markets_Combined_Master.pdf) (86 pages).**
+**Start with [the integrated research paper](paper/Machine_Markets_Final_Integrated_Paper.pdf) (67 pages) or the [combined master volume](Machine_Markets_Combined_Master.pdf) (92 pages).**
 The self-contained [LaTeX source](paper/Machine_Markets_Final_Integrated_Paper.tex) and the [Mathematical Supplement source](paper/Machine_Markets_Mathematical_Supplement.tex) are beside them in `paper/`.
 
 This master release establishes the complete, unified scientific package for *Machine Markets*:
-1. **8-Chapter Consolidated Main Manuscript** (62 pages, 0 overfull `\hbox`es, 0 undefined references/citations).
-2. **Mathematical Supplement** (24 pages, Sections S1–S14, complete proofs, continuous-time dynamics, and covariance geometry).
-3. **Combined Master Volume** (86 pages, uniting the main paper and supplement).
-4. **219-Test Hierarchical Verification Suite** (104 native + 87 pytest + 4 numerical suites + 24 independent gates) passing at 100% offline.
+1. **8-Chapter Consolidated Main Manuscript** (67 pages, 0 overfull `\hbox`es, 0 undefined references/citations).
+2. **Mathematical Supplement** (25 pages, Sections S1–S14, complete proofs, continuous-time dynamics, and covariance geometry).
+3. **Combined Master Volume** (92 pages, uniting the main paper and supplement).
+4. **220-Test Hierarchical Verification Suite** (104 native + 88 pytest + 4 numerical suites + 24 independent gates) passing at 100% offline.
 5. **Standalone Zero-Dependency Verifier** (`independent_verifier/verifier.py`) passing all 24 verification gates ($< 7.2 \times 10^{-14}$ error) without importing project libraries.
 6. **Method-to-Evidence Crosswalk** (Table 4) establishing unbroken theorem $\to$ code $\to$ artifact $\to$ paper traceability.
-7. **Learned-Agent Transfer Layer (Layer 4)** (Section 6.4, Table 14) evaluating tabular Q-learning policies (6,125 states, 5 actions), active counterfactual adaptation, and model-class validity audits.
+7. **Learned-Agent Transfer Layer (Layer 4)** (Section 6.5, Table 14) evaluating 10 tabular Q-learning policies (6,125 states, 5 actions), active counterfactual adaptation, and model-class validity audits.
 8. **Empirical Microstructure Calibration (Gates 2–4)** (Section 7.3, Table 17) authenticating external market channels across 3.41 GB of public LOB depth and klines from Binance Vision.
 
 ---
@@ -25,7 +25,7 @@ This master release establishes the complete, unified scientific package for *Ma
 | **3. Output-Error 57.1% Error Rate** | Factorial diagnostic across conditions C1–C4 ($N=400$ panels); proved matched models achieve zero bias ($|\text{bias}| \le 0.00004$), while single-rate fitting to a two-rate ground truth induces $-0.1072$ structural misspecification bias. | Table 6 (p. 25), `research_extension/outputs/output_error_diagnostic_results.json` |
 | **4. Step-Function vs Smooth Solvency Surface** | Executed 330-cell factorial shock sweep ($\mu \in [-0.2, -2.0]$); established smooth monotone solvency boundary and isolated causal chain: dealer halts occur with positive equity (\$9,999.06) from **inventory capacity exhaustion** ($|\text{inv}_t| > 25 \times \text{mult}$), whereas unlimited funding produces true balance-sheet insolvency ($-\$122.03$). | Table 12 (p. 39), Table 13 (p. 40), Section 6.2 |
 | **5. Empirical Predictive Overclaims** | Re-anchored Coinbase ($N=10$) and Binance US (175 runs) studies strictly as exploratory cross-sectional associations and empirical model sensitivity under passive observation; eliminated uncalibrated crisis prediction claims. | Chapter 7, Tables 15–16 (pp. 43–45) |
-| **6. Learned-Agent Transfer Layer (RL)** | Executed tabular Q-learning across 6,125 states; verified learned policies reduce halts to 0% and dislocations by 75%; demonstrated that observer model audit classifies 5/5 learned policies as `OUTSIDE_CERTIFIED_MODEL_CLASS` ($R^2 \approx 0.01\text{--}0.24$), proving safe abstention. | Chapter 6, Section 6.4, Table 14 (p. 41) |
+| **6. Learned-Agent Transfer Layer (RL)** | Executed tabular Q-learning across 6,125 states across 10 independently trained policies; verified learned policies reduce halts to 0% and dislocations by ~75%; demonstrated that observer model audit classifies all 10/10 learned policies as `OUTSIDE_CERTIFIED_MODEL_CLASS` ($R^2 \le 0.24$, mean $0.08$), proving safe abstention. | Chapter 6, Section 6.5, Table 14 (p. 41) |
 | **7. Public Microstructure Grounding (Gates 2–4)** | Calibrated market channels against 3.41 GB public Binance Vision data; proved costed active probing protocol (\$0.59 to \$89.00/1,000 episodes); confirmed balance-sheet conservation ($\Delta\text{eq} < 10^{-10}$) and monotone solvency frontiers. | Chapter 7, Section 7.3, Table 17 (p. 46) |
 
 ---
@@ -34,7 +34,7 @@ This master release establishes the complete, unified scientific package for *Ma
 1. **[Main Paper](paper/Machine_Markets_Final_Integrated_Paper.pdf)**: 8-chapter core manuscript (Introduction, Closed-Loop Model, Identification Boundaries, Observable Probes, Group Identification, Funded Market Solvency & RL Transfer, Empirical Calibration & Digital Assets, Discussion & Frontiers).
 2. **[Mathematical Supplement](paper/Machine_Markets_Mathematical_Supplement.pdf)**: Sections S1–S14, exact proofs, continuous-time small-gain theorems, F-calibrated response ellipsoids, McCormick conic relaxations, and two-world abstention bounds.
 3. **[Claim Map & Traceability Matrix](docs/CLAIM_MAP.md)**: Cryptographic and experimental provenance for every numerical, mathematical, and empirical claim.
-4. **[Reproduction Report](docs/REPRODUCTION_REPORT.md)**: Baseline and extension audit of all 210 automated tests and numerical fixtures.
+4. **[Reproduction Report](docs/REPRODUCTION_REPORT.md)**: Baseline and extension audit of all 220 automated tests and numerical fixtures.
 5. **[Reproduction Guide](docs/REPRODUCTION_GUIDE.md)**: Complete offline instructions for running tests, verifiers, and rebuilding PDFs.
 6. **[Requirements for Flagship Acceptance](docs/FINAL_RESEARCH_REQUIREMENTS.md)**: Prospective scientific gates for future empirical and laboratory research programs.
 
@@ -44,11 +44,11 @@ This master release establishes the complete, unified scientific package for *Ma
 ```text
 Machine_Markets_Master_Release/
   README.md                            Master release index and blocker resolution summary
-  Machine_Markets_Combined_Master.pdf  Combined 86-page master volume (Main + Supplement)
+  Machine_Markets_Combined_Master.pdf  Combined 92-page master volume (Main + Supplement)
   paper/
-    Machine_Markets_Final_Integrated_Paper.tex   Self-contained 8-chapter LaTeX source (62 pages)
+    Machine_Markets_Final_Integrated_Paper.tex   Self-contained 8-chapter LaTeX source (67 pages)
     Machine_Markets_Final_Integrated_Paper.pdf   Compiled main manuscript (0 overfulls, 0 undefined refs)
-    Machine_Markets_Mathematical_Supplement.tex  Mathematical supplement LaTeX source (24 pages)
+    Machine_Markets_Mathematical_Supplement.tex  Mathematical supplement LaTeX source (25 pages)
     Machine_Markets_Mathematical_Supplement.pdf  Compiled supplement (0 overfulls)
     Machine_Markets_Combined_Master.pdf          Combined master volume
   independent_verifier/
@@ -85,7 +85,7 @@ Machine_Markets_Master_Release/
 # 1. Native Test Suite (104 tests):
 python tools/run_all_tests.py
 
-# 2. Pytest Suite (87 tests):
+# 2. Pytest Suite (88 tests):
 PYTHONPATH=. pytest tests/ research_extension/tests/ reference_directory/test_mathematical_supplement.py
 
 # 3. Independent Zero-Dependency Verifier (24 gates):
@@ -94,7 +94,7 @@ python independent_verifier/verifier.py
 # 4. Mathematical Supplement Numerical Checks:
 python reference_directory/run_checks.py
 ```
-Total automated tests: **219 passed in ~8 seconds**.
+Total automated tests: **220 passed in ~8 seconds**.
 All experiments require no GPU, no financial account, no live market connection, and no external API key.
 
 ---
