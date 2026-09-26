@@ -31,7 +31,7 @@ python -m pip install -r requirements-runtime.txt
 # 1. Run all native test suites (104 tests):
 python tools/run_all_tests.py
 
-# 2. Run master revision pytest suite (87 tests):
+# 2. Run master revision pytest suite (88 tests):
 PYTHONPATH=. pytest tests/ research_extension/tests/ reference_directory/test_mathematical_supplement.py
 
 # 3. Run standalone zero-dependency verifier (24 gates):
@@ -41,13 +41,13 @@ python independent_verifier/verifier.py
 python reference_directory/run_checks.py
 ```
 The test launcher runs all native suites in separate processes (24 + 29 + 23 + 22 = 98 scientific tests),
-then six package-verifier tests, followed by the revision and mathematical suites (219 tests total).
+then six package-verifier tests, followed by the revision, verifier, and mathematical suites (220 tests total: 104 native + 88 pytest + 24 verifier gates + 4 supplement verification suites).
 
 ## D. Rebuild PDFs
 The package provides three synchronized PDF documents:
-1. `paper/Machine_Markets_Final_Integrated_Paper.pdf` (62-page main manuscript)
+1. `paper/Machine_Markets_Final_Integrated_Paper.pdf` (66-page main manuscript)
 2. `paper/Machine_Markets_Mathematical_Supplement.pdf` (24-page mathematical supplement)
-3. `Machine_Markets_Combined_Master.pdf` (86-page combined master document)
+3. `Machine_Markets_Combined_Master.pdf` (90-page combined master document)
 
 To rebuild from LaTeX sources:
 ```bash
@@ -59,7 +59,7 @@ pdflatex -interaction=nonstopmode -output-directory=paper paper/Machine_Markets_
 pdflatex -interaction=nonstopmode -output-directory=paper paper/Machine_Markets_Mathematical_Supplement.tex
 pdflatex -interaction=nonstopmode -output-directory=paper paper/Machine_Markets_Mathematical_Supplement.tex
 
-# Unite to 86-page Combined Master:
+# Unite to 90-page Combined Master:
 pdfunite paper/Machine_Markets_Final_Integrated_Paper.pdf paper/Machine_Markets_Mathematical_Supplement.pdf paper/Machine_Markets_Combined_Master.pdf
 cp paper/Machine_Markets_Combined_Master.pdf Machine_Markets_Combined_Master.pdf
 ```
