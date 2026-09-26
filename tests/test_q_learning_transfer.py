@@ -72,4 +72,22 @@ def test_transfer_results_artifact_exists():
     assert "rule_based_baseline" in data
     assert "learned_policies" in data
     assert "architecture_transfer_synthesis" in data
-    assert len(data["learned_policies"]) >= 1
+    assert len(data["learned_policies"]) == 10
+    assert "baselines" in data
+    assert "do_nothing" in data["baselines"]
+    assert "turnover_matched_static" in data["baselines"]
+
+
+def test_audit_calibration_study_artifact():
+    cal_file = ROOT / "research_extension" / "outputs" / "learned_agents" / "audit_calibration_results.json"
+    assert cal_file.exists(), f"Missing {cal_file}"
+    with open(cal_file) as f:
+        data = json.load(f)
+    assert "standard_threshold_0_70" in data
+    assert "threshold_sweep" in data
+    std = data["standard_threshold_0_70"]
+    # Exact linear must pass 100%
+    assert std["pass_rates"]["exact_linear"] == 1.0
+    # Contrarian negative feedback must fail 100% (pass rate 0.0%)
+    assert std["pass_rates"]["contrarian_linear"] == 0.0
+

@@ -791,39 +791,44 @@ Audited Terminal OLS & $I_1$ (Audited Arch.) & 2,880 & 95.76\% & 25.87\% & 20 & 
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-  width=0.88\textwidth, height=6.2cm,
+  width=0.88\textwidth, height=6.6cm,
   xlabel={Decisiveness (\% of Panels Issuing Confident Call)},
   ylabel={Parameter Coverage Rate (\%)},
-  xmin=-5, xmax=105, ymin=20, ymax=106,
-  legend pos=south west, legend style={font=\small},
+  xmin=-6, xmax=106, ymin=20, ymax=106,
+  legend style={font=\scriptsize, at={(0.97,0.78)}, anchor=north east, draw=black!30, fill=white, fill opacity=0.92, text opacity=1.0},
   tick label style={font=\small}, grid=major
 ]
 % 95% nominal confidence band
-\addplot[black!15, fill=black!5] coordinates {(0, 95) (100, 95) (100, 100) (0, 100)} \closedcycle;
+\addplot[black!15, fill=black!5, forget plot] coordinates {(0, 95) (100, 95) (100, 100) (0, 100)} \closedcycle;
 
-% Recurrence LP
+% (1) Recurrence LP
 \addplot[only marks, mark=diamond*, mark size=4pt, blue] coordinates {(0.0, 99.7)};
-\node[anchor=south west, font=\footnotesize, blue] at (axis cs:2, 96.0) {Observable Recurrence LP (0.0\%, 99.7\%)};
+\addlegendentry{\textbf{[1]} Observable Recurrence LP ($I_0$): 0.0\% dec., 99.7\% cov.}
+\node[anchor=south west, font=\scriptsize\bfseries, blue] at (axis cs:1.8, 97.5) {[1]};
 
-% Conic Certificate
+% (2) Conic Certificate
 \addplot[only marks, mark=square*, mark size=3.5pt, teal] coordinates {(0.0, 100.0)};
-\node[anchor=south west, font=\footnotesize, teal] at (axis cs:2, 102.5) {Covariance Conic Certificate (0.0\%, 100.0\%)};
+\addlegendentry{\textbf{[2]} Covariance Conic Certificate ($I_0$): 0.0\% dec., 100.0\% cov.}
+\node[anchor=south east, font=\scriptsize\bfseries, teal] at (axis cs:-1.5, 100.8) {[2]};
 
-% Audited OLS (Contract I1)
+% (3) Audited OLS (Contract I1)
 \addplot[only marks, mark=star, mark size=4.5pt, black] coordinates {(25.9, 95.8)};
-\node[anchor=south west, font=\footnotesize] at (axis cs:28, 95.8) {Audited Terminal OLS [Contract $I_1$] (25.9\%, 95.8\%)};
+\addlegendentry{\textbf{[3]} Audited Terminal OLS ($I_1$): 25.9\% dec., 95.8\% cov.}
+\node[anchor=south west, font=\scriptsize\bfseries] at (axis cs:27.5, 96.5) {[3]};
 
-% Output-Error
+% (4) Output-Error
 \addplot[only marks, mark=triangle*, mark size=4pt, orange] coordinates {(31.5, 47.7)};
-\node[anchor=north west, font=\footnotesize, orange] at (axis cs:33, 47.7) {Covariance Output-Error (31.5\%, 47.7\%)};
+\addlegendentry{\textbf{[4]} Covariance Output-Error ($I_0$): 31.5\% dec., 47.7\% cov.}
+\node[anchor=south west, font=\scriptsize\bfseries, orange] at (axis cs:33.2, 48.5) {[4]};
 
-% Naive Point Fit
+% (5) Naive Point Fit
 \addplot[only marks, mark=otimes*, mark size=4pt, red] coordinates {(76.7, 37.2)};
-\node[anchor=south east, font=\footnotesize, red] at (axis cs:75, 37.2) {Point Fit (76.7\%, 37.2\%)};
+\addlegendentry{\textbf{[5]} Constrained Point Fit ($I_0$): 76.7\% dec., 37.2\% cov.}
+\node[anchor=south east, font=\scriptsize\bfseries, red] at (axis cs:74.5, 38.0) {[5]};
 
 \end{axis}
 \end{tikzpicture}
-\caption{Identification efficiency frontier: Decisiveness versus true parameter coverage across 600 evaluated panels under Contract~$I_0$ (along with the audited benchmark under Contract~$I_1$). Rigorous outer relaxations (Conic Certificate and Recurrence LP) preserve $\ge 99.7\%$ parameter coverage but abstain universally ($0.0\%$ decisiveness) across this broad 120-cell grid. Naive point fitting and uncalibrated output-error benchmarks over-issue confident calls at the cost of severe under-coverage ($37.2\%$ and $47.7\%$).}
+\caption{Identification efficiency frontier: Decisiveness versus true parameter coverage across 600 evaluated panels under Contract~$I_0$ (along with the audited benchmark under Contract~$I_1$). Methods are identified by numbered markers \textbf{[1]}--\textbf{[5]} corresponding to the legend. Rigorous outer relaxations (\textbf{[1]} and \textbf{[2]}) preserve $\ge 99.7\%$ parameter coverage but abstain universally ($0.0\%$ decisiveness) across this broad 120-cell grid. Naive point fitting (\textbf{[5]}) and uncalibrated output-error (\textbf{[4]}) over-issue confident calls at the cost of severe under-coverage ($37.2\%$ and $47.7\%$).}
 \label{fig:comparator_frontier}
 \end{figure}
 
@@ -1406,7 +1411,7 @@ where $\Delta E_t$ is the marked equity change net of spread crossing costs, $\l
 \paragraph{Training and evaluation protocol with strict seed separation.}
 To enforce rigorous experimental discipline, we maintain strict partition separation across three independent seed spaces:
 \begin{enumerate}
-    \item \textbf{Training seeds (101--105):} Used exclusively for exploration and Q-table updates over $100,000$ transitions per policy.
+    \item \textbf{Training seeds (101--110):} Used exclusively for exploration and Q-table updates over $100,000$ transitions per policy across 10 independently initialized policies.
     \item \textbf{Validation seeds (201--205):} Evaluated periodically to select optimal checkpoints based on greedy policy performance.
     \item \textbf{Held-out test seeds (301--310):} Strictly quarantined until all architectures and checkpoints are frozen; used solely for final evaluation.
 \end{enumerate}
@@ -1418,30 +1423,42 @@ Table~\ref{tab:q_learning_transfer} reports evaluation results for Q-learning po
 For each trained policy evaluated on held-out test seeds under identical repricing shocks ($\mu = -2.0$), we construct two paired arms: (i) \textbf{Q-Frozen} (read-only execution of the trained Q-table) and (ii) \textbf{Q-Active} (online TD learning continues during the shock). We compute the adaptation effect $\Delta_{\mathrm{learn}} = Y_{\mathrm{active}} - Y_{\mathrm{frozen}}$. Furthermore, we audit each policy against the certified model class by perturbing initial price displacement across $\delta_x \in [-1.0, 1.0]$ to evaluate local linearity ($R^2 \ge 0.70$), sign consistency ($\partial u / \partial x \ge 0$), and action monotonicity.
 
 \begin{table}[htbp]
-\centering\footnotesize
-\setlength{\tabcolsep}{3pt}
-\caption{Learned-agent transfer evaluation across 5 independently trained Q-learning policies versus rule-based chartists under identical repricing shocks ($\mu = -2.0$) on held-out test seeds (301--310). Q-learning agents learn conservative inventory control, producing step-like policies that the framework's model audit correctly classifies as outside the certified model class rather than falsely asserting stability.}
+\centering\scriptsize
+\setlength{\tabcolsep}{1.5pt}
+\caption{Learned-agent transfer evaluation across comparative baselines and 10 independently trained Q-learning policies under identical repricing shocks ($\mu = -2.0$) on held-out test seeds (301--310). Panel~A presents comparative baselines including passive Do-Nothing and Turnover-Matched static agents. Panel~B reports 10 independently trained Q-learning policies: all 10 policies fall outside the certified positive-memory class ($R^2 \le 0.24$) and produce dislocation ($\$0.028$) nearly identical to the passive Do-Nothing baseline ($\$0.027$), reflecting inventory avoidance rather than certified stabilizing liquidity.}
 \label{tab:q_learning_transfer}
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcrrrrrr@{}}
 \toprule
-Agent Architecture & Class Membership & Linear $R^2$ & Local $\frac{\partial u}{\partial x}$ & Frozen Disloc. & Active Disloc. & $\Delta_{\mathrm{learn}}$ \\
+Architecture / Policy & Class & $R^2$ & $\frac{\partial u}{\partial x}$ & Turnover & Frozen Disloc. & Active Disloc. & $\Delta_{\mathrm{learn}}$ \\
 \midrule
-Rule-Based Chartist & Maintained Class & 1.00 & $+0.42$ & \$0.139 & \$0.139 & $+0.000$ \\
-Q-Learning Policy 1 & Outside Class & 0.24 & $-1.09$ & \$0.028 & \$0.028 & $-0.000$ \\
-Q-Learning Policy 2 & Outside Class & 0.01 & $+0.27$ & \$0.028 & \$0.028 & $-0.000$ \\
-Q-Learning Policy 3 & Outside Class & 0.00 & $+0.08$ & \$0.027 & \$0.027 & $+0.000$ \\
-Q-Learning Policy 4 & Outside Class & 0.04 & $+0.23$ & \$0.027 & \$0.028 & $+0.000$ \\
-Q-Learning Policy 5 & Outside Class & 0.05 & $-0.47$ & \$0.030 & \$0.028 & $-0.002$ \\
+\multicolumn{8}{l}{\textit{Panel A: Comparative Baselines}} \\
+Do-Nothing (Passive) & Outside & N/A & $0.00$ & $0.0$ & \$0.027 & \$0.027 & $+0.000$ \\
+Turnover-Matched ($p=0.05$) & Outside & 0.00 & $+0.00$ & $6.0$ & \$0.028 & \$0.028 & $+0.000$ \\
+Rule-Based Chartist & Maintained & 1.00 & $+0.42$ & $27.0$ & \$0.139 & \$0.139 & $+0.000$ \\
+\midrule
+\multicolumn{8}{l}{\textit{Panel B: Independently Trained Q-Learning Policies}} \\
+Q-Learning Policy 01 & Outside Class & 0.24 & $-1.09$ & $6.5$ & \$0.028 & \$0.028 & $-0.000$ \\
+Q-Learning Policy 02 & Outside Class & 0.01 & $+0.27$ & $6.8$ & \$0.028 & \$0.028 & $-0.000$ \\
+Q-Learning Policy 03 & Outside Class & 0.00 & $+0.08$ & $6.2$ & \$0.027 & \$0.028 & $+0.000$ \\
+Q-Learning Policy 04 & Outside Class & 0.04 & $+0.23$ & $6.5$ & \$0.027 & \$0.028 & $+0.000$ \\
+Q-Learning Policy 05 & Outside Class & 0.05 & $-0.47$ & $29.1$ & \$0.030 & \$0.028 & $-0.002$ \\
+Q-Learning Policy 06 & Outside Class & 0.00 & $-0.08$ & $7.0$ & \$0.027 & \$0.027 & $-0.000$ \\
+Q-Learning Policy 07 & Outside Class & 0.23 & $-0.50$ & $5.6$ & \$0.027 & \$0.027 & $+0.000$ \\
+Q-Learning Policy 08 & Outside Class & 0.12 & $-0.74$ & $6.3$ & \$0.028 & \$0.028 & $-0.000$ \\
+Q-Learning Policy 09 & Outside Class & 0.07 & $-0.62$ & $7.7$ & \$0.027 & \$0.028 & $+0.000$ \\
+Q-Learning Policy 10 & Outside Class & 0.01 & $+0.19$ & $17.3$ & \$0.029 & \$0.028 & $-0.001$ \\
+\midrule
+Mean Across Policies & Outside (10/10) & 0.08 & $-0.27$ & $9.9$ & \$0.028 & \$0.028 & $-0.0003$ \\
 \bottomrule
 \end{tabular*}
 \end{table}
 
 \paragraph{Scientific findings from learned-agent transfer.}
-As reported in Table~\ref{tab:q_learning_transfer}, the Q-learning experiment reveals three key findings:
+As reported in Table~\ref{tab:q_learning_transfer}, the expanded 10-policy Q-learning evaluation and baseline benchmark reveal three definitive scientific insights:
 \begin{enumerate}
-    \item \textbf{Model-class compatibility screen correctly rejects learned policies:} When agents optimize an economic reward with inventory penalties, their learned policies exhibit highly non-linear, step-like response functions ($R^2 \le 0.24$) and can display contrarian local feedback ($\partial u / \partial x < 0$). Our model-class compatibility screen (local linearity $R^2 \ge 0.70$, sign consistency, and action monotonicity) correctly flags 5/5 policies as \emph{outside the certified model class}, triggering abstention. This demonstrates that the audit correctly detects non-conforming policy classes rather than forcing every RL policy into the tractable positive-memory class. We term this a \emph{model-class compatibility screen}, not a ``diagnostic safety proof'': the screen's false-acceptance and false-rejection rates against systematically varied policy classes remain to be calibrated in future work.
-    \item \textbf{Reduced market participation, not certified stabilization:} Unlike the deterministic chartist that mechanically amplifies trend-following orders and exhausts dealer inventory (causing 100\% halts), the trained Q-learning agents produce substantially lower price dislocations (\$0.027--\$0.030 vs.\ \$0.139) and 0.0\% halt rates. This may reflect that Q-learning agents, optimizing an inventory-penalized reward, learned to avoid participating heavily in adverse price moves (low effective turnover) rather than providing certified stabilizing liquidity. Whether this constitutes genuine liquidity preservation or simply low market participation cannot be resolved without explicit turnover-matched baselines; we identify this as a limitation and a priority for future work.
-    \item \textbf{Null result for online adaptation ($\Delta_{\mathrm{learn}} \approx 0$):} The Q-Active versus Q-Frozen comparison reveals an essentially zero effect ($\Delta_{\mathrm{learn}} \in \{+0.000, -0.000, +0.000, +0.000, -0.002\}$ across the five policies), indicating that additional TD updates during the held-out test period produce negligible change in market outcomes. This is an important null finding: it separates the question of ``was there a useful learned policy'' (yes, relative to the chartist) from ``does continuing online learning during the shock materially amplify or reduce stress'' (no, at this evaluation scale). The near-zero effect may reflect rapid Q-table saturation, insufficient shock duration for online adaptation to matter, or conservatism in the exploration schedule. We report this transparently rather than framing it as ``online adaptation isolation.''
+    \item \textbf{Model-class compatibility screen correctly rejects 10/10 learned policies:} When agents optimize an economic reward with inventory penalties, their learned policies exhibit highly non-linear, step-like response functions ($R^2 \le 0.24$, mean $0.08$) and frequently display contrarian local feedback ($\partial u / \partial x < 0$ in 6/10 policies). Our model-class compatibility screen (local linearity $R^2 \ge 0.70$, sign consistency, and action monotonicity) flags 10/10 policies as \emph{outside the certified model class}, triggering abstention. In an independent calibration experiment across 1,250 synthetic policy evaluations (\texttt{audit\_calibration\_study.py}), this screen achieved $100.0\%$ specificity against contrarian policies and $93.6\%$ sensitivity for linear models, confirming that $R^2 \ge 0.70$ is a well-calibrated compatibility threshold. The screen correctly detects non-conforming policy classes rather than forcing RL policies into the tractable positive-memory class.
+    \item \textbf{Resolution of the liquidity-preservation question via turnover matching:} Unlike the deterministic chartist that mechanically amplifies trend-following orders and exhausts dealer inventory (causing 100\% halts and \$0.139 dislocation), the trained Q-learning agents produce low price dislocations ($\$0.028$) and 0.0\% halt rates. Comparing this directly against the passive Do-Nothing baseline ($\$0.027$ dislocation, 0.0 turnover) and the Turnover-Matched static baseline ($\$0.028$ dislocation, 6.0 turnover) resolves the underlying mechanism: Q-learning agents do \emph{not} actively stabilize the market through contrarian liquidity provision; rather, penalized by inventory holding costs, they learn to avoid participating during adverse price shocks (reducing turnover from $27.0$ to a median of $6.5$). Their price dislocation closely tracks the passive zero-turnover limit.
+    \item \textbf{Empirical null result for online adaptation ($\Delta_{\mathrm{learn}} \approx 0$):} The Q-Active versus Q-Frozen comparison reveals an essentially zero incremental effect across all 10 independently trained policies (mean $\Delta_{\mathrm{learn}} = -0.0003$, range $[-0.0023, +0.0002]$). This confirms an important null finding: while having a pre-trained policy radically alters baseline market dynamics relative to chartists, continuing online TD updates during the shock window produces negligible incremental market impact at this observation scale.
 \end{enumerate}
 
 \subsubsection{Verification, reproducibility and the test-suite hierarchy}
@@ -1585,7 +1602,7 @@ A central requirement for translating theoretical identification models to pract
 \begin{enumerate}
     \item \textbf{Quote friction ($s$):} Quoted relative bid-ask spreads range from $0.0012$~bps for BTC and $0.0374$~bps for ETH to $0.8579$~bps for SOL, providing empirical friction anchors.
     \item \textbf{Price-impact sensitivity ($\hat\kappa_{\text{obs}}$):} Regressing 1-minute log-returns on signed taker order flow yields reduced-form empirical price-impact coefficients $\hat\kappa_{\text{obs}} \in [7.36 \times 10^{-4}, 1.64 \times 10^{-3}]$ (log-return units per unit signed flow). \emph{Unit-mapping note:} $\hat\kappa_{\text{obs}}$ is a \emph{reduced-form empirical price-impact sensitivity}, not automatically the structural parameter $\kappa$ in $P_{t+1}=P_t+\kappa V_t$ (which carries absolute price-change units per share). Before use in the calibrated simulator, $\hat\kappa_{\text{obs}}$ is rescaled to the simulator's price-level units via $\kappa_{\text{cal}} = \hat\kappa_{\text{obs}} \cdot p^*$, as documented in \texttt{gate24\_analysis.py}.
-    \item \textbf{Trade arrival intensity ($\lambda_{\text{trade}}$):} Trade execution frequencies range from $1,167$~trades/min (SOL) to $2,004$~trades/min (BTC), demonstrating that market events arrive at sub-second granularity. \emph{Caution:} $\lambda_{\text{trade}}$ is the observable inter-arrival rate, not the model's private adaptive learning-rate parameter $\eta$. A market with 2,000 trades per minute does not imply any particular $\eta$ for an adaptive algorithm's internal memory updates. Public trade frequencies constrain the observable \emph{cadence} of market events but cannot identify the private parameter $\eta$, which belongs to Contract~$I_1$.
+    \item \textbf{Trade arrival intensity ($\lambda_{\text{trade}}$):} Trade execution frequencies range from $1{,}167$~trades/\allowbreak{}min (SOL) to $2{,}004$~trades/\allowbreak{}min (BTC), demonstrating that market events arrive at sub-second granularity. \emph{Caution:} $\lambda_{\text{trade}}$ is the observable inter-arrival rate, not the model's private adaptive learning-rate parameter $\eta$. A market with 2,000 trades per minute does not imply any particular $\eta$ for an adaptive algorithm's internal memory updates. Public trade frequencies constrain the observable \emph{cadence} of market events but cannot identify the private parameter $\eta$, which belongs to Contract~$I_1$.
     \item \textbf{Displayed-liquidity capacity anchor:} Top-5 cumulative book depth measures available immediate market liquidity ($1.53$~BTC, $5.27$~ETH, $1,077.9$~SOL). \emph{Epistemic boundary:} Displayed book depth anchors the \emph{market-liquidity scale} for simulator calibration; it is \emph{not} the same as a dealer's internal inventory capacity, risk limit, or credit line, which are proprietary and belong to Contract~$I_1$. We use top-5 depth solely to calibrate a plausible displayed-liquidity scale for the clean-room simulator's inventory bound parameter.
 \end{enumerate}
 Crucially, this analysis formalizes the epistemic boundary: public LOB depth and trade tapes authenticate the \emph{external market interface} (Contract~$I_2$). In contrast, internal dealer risk engines, proprietary inventory ledgers, private algorithmic update weights, and internal risk limits belong to Contract~$I_1$ and strictly require partnership with an institutional counterparty. Note especially that $\lambda_{\text{trade}}$, $\hat\kappa_{\text{obs}}$, and displayed LOB depth are \emph{not} structural identifications of $\eta$, $\kappa$, or dealer capacity; they are empirical anchors for the simulation scale.
@@ -1598,22 +1615,49 @@ For a \$1,000 probe, total execution friction is $\$0.0006$ per probe on BTC/USD
 To satisfy the requirement of an independently written market simulator tied to empirical parameters, we construct a clean-room market implementation (\texttt{IndependentCalibratedMarket}) without importing project libraries. The simulator is calibrated directly to the empirical quantities measured above ($p^*, \kappa_{\text{cal}}$, spread, displayed-liquidity depth anchor), with a \emph{maintained synthetic} stable learning feedback system ($S = a + q = 0.40 + 0.42 = 0.82 < 1.0$). \emph{Note:} $S=0.82$ is a maintained synthetic parameter that is never estimated from the Binance Vision dataset; no identification of $S$ from public data is claimed here. The purpose of this experiment is to verify that the clean-room simulator, built to match empirical scale parameters, reproduces the qualitative theoretical findings from Chapter~\ref{sec:ch6} on a calibrated platform. Across 50 replications $\times$ 4 shock levels ($0\%, -1\%, -3\%, -5\%$ of $p^*$), the calibrated simulator confirms two core theoretical findings:
 \begin{enumerate}
     \item \textbf{Strict cash and inventory conservation:} Mark-to-market balance-sheet accounting verifies $\Delta\text{cash} + \Delta(\text{inventory} \cdot p) - \text{spread loss} = 0$ at every step, with maximum numerical residuals strictly bounded by $9.84 \times 10^{-11} < 10^{-10}$.
-    \item \textbf{Signal stability versus capacity/halt frontier decoupling on a calibrated simulator:} In all three calibrated simulators (one per asset, each using that asset's empirical scale parameters), severe repricing shocks trigger dealer trading halts (inventory buffer exhaustion) despite local signal stability ($S = 0.82 < 1.0$). On the SOL/USDT-calibrated simulator, halt rates scale smoothly across shock severity ($16\% \to 16\% \to 44\% \to 80\%$), reproducing on empirical-scale parameters the smooth, monotone capacity/halt frontier established in Chapter~\ref{sec:ch6}. These results hold on the \emph{calibrated simulator}, not directly on live-market data.
+    \item \textbf{Signal stability versus capacity/halt frontier decoupling on a calibrated simulator:} In all three calibrated simulators (one per asset, each using that asset's empirical scale parameters), severe repricing shocks trigger dealer trading halts (inventory buffer exhaustion) despite local signal stability ($S = 0.82 < 1.0$). As detailed in Table~\ref{tab:gate4_shock_ci}, for BTC and ETH, tight displayed book depth anchors ($1.53$~BTC, $5.27$~ETH) cause dealer capacity to bind under any shock $\ge 1\%$, transitioning from $16.0\%$ (baseline disturbance halts) to $100.0\%$ halts ($95\%$ Clopper--Pearson CI $[92.9\%, 100.0\%]$). For SOL, the larger displayed liquidity buffer ($1,077.9$~SOL) yields a smooth, graded transition across shock severity ($16.0\% \to 16.0\% \to 44.0\% \to 80.0\%$, with $95\%$ CI $[66.3\%, 90.0\%]$ at $-5\%$). Across all three markets, the capacity/halt frontier is weakly monotone non-decreasing, reproducing on empirical-scale parameters the smooth, monotone capacity/halt frontier established in Chapter~\ref{sec:ch6}. These results hold on the \emph{calibrated simulator}, not directly on live-market data.
 \end{enumerate}
 
 \begin{table}[htbp]
-\centering\footnotesize
-\setlength{\tabcolsep}{3pt}
-\caption{Empirical calibration and costed observation protocol across digital asset markets on Binance Vision (Gates~2--4). Channels are measured across 129,600 1-minute bars (Jan--Mar 2025) and 1,000-level LOB depth snapshots. Probing costs evaluate raw market-event feasibility for an $N=1,000$-episode probing campaign (\$1,000 probe size); these are \emph{not} claims of $N=1,000$ independent $I_0$ episodes from passive data. The clean-room calibrated simulator (with maintained synthetic $S=0.82$) verifies balance-sheet conservation ($\text{residual} < 10^{-10}$) and monotone capacity/halt frontiers on empirical-scale parameters.}
+\centering\scriptsize
+\setlength{\tabcolsep}{2pt}
+\caption{Empirical calibration and costed observation protocol across digital asset markets on Binance Vision (Gates~2--4). Channels are measured across 129,600 1-minute bars (Jan--Mar 2025) and 1,000-level LOB depth snapshots. Probing costs evaluate raw market-event feasibility for an $N=1,000$-episode probing campaign (\$1,000 probe size); these are \emph{not} claims of $N=1,000$ independent $I_0$ episodes from passive data. The clean-room calibrated simulator (with maintained synthetic $S=0.82$) verifies balance-sheet conservation ($\text{residual} < 10^{-10}$) and monotone capacity/halt frontiers on empirical-scale parameters (detailed in Table~\ref{tab:gate4_shock_ci}).}
 \label{tab:gate24_empirical}
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrrr@{}}
 \toprule
-Asset Pair & Mid Price & Spread & $\lambda_{\text{trade}}$ & Displayed Depth & Probe Cost & Avail.\ Time & Cap./Halt Frontier \\\\
-& ($p^*$) & (bps) & (trades/min) & (Top-5, anchor) & ($N=1\mathrm{k}$) & (mkt.\ events) & (simulator) \\\\
+Asset Pair & Mid Price & Spread & $\lambda_{\text{trade}}$ & Displayed Depth & Probe Cost & Avail.\ Time & Cap./Halt Frontier \\
+ & ($p^*$) & (bps) & (trades/min) & (Top-5 anchor) & ($N=1\mathrm{k}$) & (mkt.\ events) & (simulator) \\
 \midrule
 BTC/USDT & \$84,165.68 & 0.0012 & 2,004.0 & 1.53 BTC & \$0.59 & 0.4 h & Monotone \\
 ETH/USDT & \$2,675.80 & 0.0374 & 1,487.0 & 5.27 ETH & \$5.00 & 0.6 h & Monotone \\
 SOL/USDT & \$116.56 & 0.8579 & 1,167.0 & 1,077.9 SOL & \$89.00 & 0.7 h & Monotone \\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table}[htbp]
+\centering\scriptsize
+\setlength{\tabcolsep}{3pt}
+\caption{Calibrated clean-room market halt rates and balance-sheet diagnostics across assets and repricing shock levels ($N=50$ replications per cell, maintained synthetic $S=0.82$). Confidence intervals are exact Clopper--Pearson two-sided $95\%$ binomial intervals. For BTC and ETH, tight displayed book depth anchors trigger prompt dealer halts under $\ge 1\%$ shocks; for SOL, larger displayed depth produces a smooth, graded halt transition ($16.0\% \to 16.0\% \to 44.0\% \to 80.0\%$). In all three markets, the capacity/halt frontier is weakly monotone non-decreasing in shock severity, confirming that spectral signal stability ($S < 1$) does not ensure dealer operational survival.}
+\label{tab:gate4_shock_ci}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrrrr@{}}
+\toprule
+Asset Pair & Shock ($\frac{\Delta p}{p^*}$) & Halts / $N$ & Halt Rate & 95\% Exact CI & Mean Disloc. & Final Equity \\
+\midrule
+BTC/USDT & $\phantom{-}0.0\%$ &  8/50 &  16.0\% & [7.2\%, 29.1\%] & \$0.00 & \$336,662.69 \\
+         & $-1.0\%$ & 50/50 & 100.0\% & [92.9\%, 100.0\%] & \$336.66 & \$336,177.74 \\
+         & $-3.0\%$ & 50/50 & 100.0\% & [92.9\%, 100.0\%] & \$1,009.99 & \$335,207.82 \\
+         & $-5.0\%$ & 50/50 & 100.0\% & [92.9\%, 100.0\%] & \$1,683.31 & \$334,237.90 \\
+\midrule
+ETH/USDT & $\phantom{-}0.0\%$ &  8/50 &  16.0\% & [7.2\%, 29.1\%] & \$0.00 & \$28,214.64 \\
+         & $-1.0\%$ & 50/50 & 100.0\% & [92.9\%, 100.0\%] & \$10.70 & \$28,174.04 \\
+         & $-3.0\%$ & 50/50 & 100.0\% & [92.9\%, 100.0\%] & \$32.10 & \$28,092.74 \\
+         & $-5.0\%$ & 50/50 & 100.0\% & [92.9\%, 100.0\%] & \$53.51 & \$28,011.45 \\
+\midrule
+SOL/USDT & $\phantom{-}0.0\%$ &  8/50 &  16.0\% & [7.2\%, 29.1\%] & \$0.25 & \$251,572.42 \\
+         & $-1.0\%$ &  8/50 &  16.0\% & [7.2\%, 29.1\%] & \$0.48 & \$251,581.36 \\
+         & $-3.0\%$ & 22/50 &  44.0\% & [30.0\%, 58.7\%] & \$1.41 & \$251,627.25 \\
+         & $-5.0\%$ & 40/50 &  80.0\% & [66.3\%, 90.0\%] & \$2.34 & \$251,695.22 \\
 \bottomrule
 \end{tabular*}
 \end{table}

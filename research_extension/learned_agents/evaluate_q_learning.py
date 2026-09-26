@@ -33,7 +33,7 @@ RESULTS_DIR = ROOT / "research_extension" / "outputs" / "learned_agents"
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 1. EVALUATION AGENTS (Rule-Based Chartist)
+# 1. EVALUATION AGENTS (Baselines: Chartist, Do-Nothing, Turnover-Matched)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class RuleBasedChartist:
@@ -57,24 +57,58 @@ class RuleBasedChartist:
         return int(np.argmin(diffs))
 
 
+class DoNothingAgent:
+    """Passive agent that abstains from all trading (action = 0 always)."""
+
+    def reset(self):
+        pass
+
+    def select_action(self, *args, **kwargs) -> int:
+        # action index 2 corresponds to 0.0 shares in ACTIONS = [-2, -1, 0, 1, 2]
+        return 2
+
+
+class TurnoverMatchedStaticAgent:
+    """
+    Static stochastic agent calibrated to match the empirical turnover and trade
+    frequency of the trained Q-learning policy.
+    """
+
+    def __init__(self, trade_prob: float = 0.10, seed: int = 42):
+        self.trade_prob = trade_prob
+        self.rng = np.random.default_rng(seed)
+
+    def reset(self, seed: Optional[int] = None):
+        if seed is not None:
+            self.rng = np.random.default_rng(seed)
+
+    def select_action(self, *args, **kwargs) -> int:
+        if self.rng.random() < self.trade_prob:
+            # Randomly submit small buy (+1) or sell (-1) with equal probability
+            return 3 if self.rng.random() < 0.5 else 1
+        return 2  # 0.0 shares
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # 2. RUN PAIRED TRAJECTORY ON IDENTICAL SHOCK TAPES
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def run_paired_trial(
     env_config: MarketConfig,
-    agent_type: str,  # 'rule_based', 'q_frozen', 'q_active'
+    agent_type: str,  # 'rule_based', 'do_nothing', 'turnover_matched', 'q_frozen', 'q_active'
     agent_obj: Any,
     test_seed: int,
     mean_shock: float = -2.0,
     shock_step: int = 16,
 ) -> Dict[str, Any]:
-    """Execute a single episode on a controlled shock tape."""
+    """Execute a single episode on a controlled shock tape with full microstructure diagnostics."""
     env = DiscreteTradingEnv(config=env_config, seed=test_seed)
     s = env.reset(seed=test_seed)
 
-    if agent_type == "rule_based":
+    if agent_type in ("rule_based", "do_nothing"):
         agent_obj.reset()
+    elif agent_type == "turnover_matched":
+        agent_obj.reset(seed=test_seed)
     elif agent_type == "q_frozen":
         agent_obj.set_mode("frozen")
     elif agent_type == "q_active":
@@ -84,6 +118,9 @@ def run_paired_trial(
     agent_equities = []
     dealer_equities = []
     trades = []
+    agent_invs = []
+    dealer_invs = []
+    rewards = []
     halt_step = None
 
     done = False
@@ -95,6 +132,8 @@ def run_paired_trial(
 
         if agent_type == "rule_based":
             a_idx = agent_obj.select_action(env.x)
+        elif agent_type in ("do_nothing", "turnover_matched"):
+            a_idx = agent_obj.select_action()
         else:
             # Q-learning selects action (greedy during evaluation, but active updates Q if in active mode)
             a_idx = agent_obj.select_action(s, greedy=True)
@@ -105,14 +144,21 @@ def run_paired_trial(
             agent_obj.update(s, a_idx, r, s_next, done)
 
         s = s_next
+        rewards.append(r)
         dislocations.append(abs(info["x"]))
         agent_equities.append(info["agent_equity"])
         dealer_eq = env.dealer_cash + env.dealer_inv * (env.cfg.p_star + env.x)
         dealer_equities.append(dealer_eq)
         trades.append(info["agent_trade"])
+        agent_invs.append(abs(info["agent_inv"]))
+        dealer_invs.append(abs(info["dealer_inv"]))
 
         if info["dealer_halted"] and halt_step is None:
             halt_step = step
+
+    trade_arr = np.array(trades)
+    num_trades = int(np.sum(np.abs(trade_arr) > 1e-5))
+    total_turnover = float(np.sum(np.abs(trade_arr)))
 
     return {
         "agent_type": agent_type,
@@ -123,9 +169,16 @@ def run_paired_trial(
         "dealer_halted": bool(env.dealer_halted),
         "halt_step": halt_step,
         "final_agent_equity": float(agent_equities[-1]),
+        "agent_pnl": float(agent_equities[-1] - 10000.0),
+        "agent_cum_reward": float(np.sum(rewards)),
         "min_dealer_equity": float(np.min(dealer_equities)),
         "final_dealer_equity": float(dealer_equities[-1]),
-        "total_turnover": float(np.sum(np.abs(trades))),
+        "total_turnover": total_turnover,
+        "num_trades": num_trades,
+        "mean_abs_agent_inv": float(np.mean(agent_invs)),
+        "max_abs_agent_inv": float(np.max(agent_invs)),
+        "mean_abs_dealer_inv": float(np.mean(dealer_invs)),
+        "max_abs_dealer_inv": float(np.max(dealer_invs)),
     }
 
 
@@ -248,7 +301,31 @@ def main():
     print(f"Repricing shock: mu = {args.shock:.1f}")
     print("=" * 75)
 
-    # 1. Evaluate Rule-Based Baseline on test seeds
+    # 1. Evaluate Baseline 1: Passive Do-Nothing Agent on test seeds
+    do_nothing = DoNothingAgent()
+    dn_results = []
+    for seed in test_seeds:
+        res = run_paired_trial(cfg, "do_nothing", do_nothing, test_seed=seed, mean_shock=args.shock)
+        dn_results.append(res)
+
+    dn_summary = {
+        "mean_dislocation": float(np.mean([r["mean_dislocation"] for r in dn_results])),
+        "max_dislocation": float(np.mean([r["max_dislocation"] for r in dn_results])),
+        "halt_rate": float(np.mean([1 if r["dealer_halted"] else 0 for r in dn_results])),
+        "mean_dealer_equity": float(np.mean([r["final_dealer_equity"] for r in dn_results])),
+        "min_dealer_equity": float(np.mean([r["min_dealer_equity"] for r in dn_results])),
+        "total_turnover": float(np.mean([r["total_turnover"] for r in dn_results])),
+        "num_trades": float(np.mean([r["num_trades"] for r in dn_results])),
+        "mean_abs_agent_inv": float(np.mean([r["mean_abs_agent_inv"] for r in dn_results])),
+        "agent_pnl": float(np.mean([r["agent_pnl"] for r in dn_results])),
+    }
+    print(f"\n[Baseline 1: Do-Nothing Agent (Passive)]")
+    print(f"  Dislocation: ${dn_summary['mean_dislocation']:.3f} | "
+          f"Halt Rate: {dn_summary['halt_rate']*100:.1f}% | "
+          f"Turnover: {dn_summary['total_turnover']:.1f} | "
+          f"Dealer Equity: ${dn_summary['mean_dealer_equity']:,.1f}")
+
+    # 2. Evaluate Baseline 2: Rule-Based Chartist on test seeds
     rule_results = []
     for seed in test_seeds:
         res = run_paired_trial(cfg, "rule_based", chartist, test_seed=seed, mean_shock=args.shock)
@@ -259,16 +336,24 @@ def main():
         "max_dislocation": float(np.mean([r["max_dislocation"] for r in rule_results])),
         "halt_rate": float(np.mean([1 if r["dealer_halted"] else 0 for r in rule_results])),
         "mean_dealer_equity": float(np.mean([r["final_dealer_equity"] for r in rule_results])),
+        "min_dealer_equity": float(np.mean([r["min_dealer_equity"] for r in rule_results])),
+        "total_turnover": float(np.mean([r["total_turnover"] for r in rule_results])),
+        "num_trades": float(np.mean([r["num_trades"] for r in rule_results])),
+        "mean_abs_agent_inv": float(np.mean([r["mean_abs_agent_inv"] for r in rule_results])),
+        "agent_pnl": float(np.mean([r["agent_pnl"] for r in rule_results])),
     }
-    print(f"\n[Baseline 1: Rule-Based Chartist]")
-    print(f"  Mean Dislocation: ${rule_summary['mean_dislocation']:.3f} | "
+    print(f"\n[Baseline 2: Rule-Based Chartist]")
+    print(f"  Dislocation: ${rule_summary['mean_dislocation']:.3f} | "
           f"Halt Rate: {rule_summary['halt_rate']*100:.1f}% | "
+          f"Turnover: {rule_summary['total_turnover']:.1f} | "
           f"Dealer Equity: ${rule_summary['mean_dealer_equity']:,.1f}")
 
-    # 2. Evaluate Trained Q-Learning Policies (Frozen vs Active)
+    # 3. Evaluate Trained Q-Learning Policies (Frozen vs Active across 10 policies)
     policy_evaluations = []
     delta_learn_dislocations = []
     delta_learn_halts = []
+    all_frozen_turnovers = []
+    all_frozen_trades = []
 
     for p_id in range(1, args.n_policies + 1):
         ckpt_path = CHECKPOINT_DIR / f"policy_{p_id:02d}_best.npz"
@@ -300,6 +385,15 @@ def main():
         mean_disloc_a = float(np.mean([r["mean_dislocation"] for r in p_active_runs]))
         halt_rate_f   = float(np.mean([1 if r["dealer_halted"] else 0 for r in p_frozen_runs]))
         halt_rate_a   = float(np.mean([1 if r["dealer_halted"] else 0 for r in p_active_runs]))
+        turnover_f    = float(np.mean([r["total_turnover"] for r in p_frozen_runs]))
+        turnover_a    = float(np.mean([r["total_turnover"] for r in p_active_runs]))
+        trades_f      = float(np.mean([r["num_trades"] for r in p_frozen_runs]))
+        pnl_f         = float(np.mean([r["agent_pnl"] for r in p_frozen_runs]))
+        inv_f         = float(np.mean([r["mean_abs_agent_inv"] for r in p_frozen_runs]))
+        dealer_eq_f   = float(np.mean([r["final_dealer_equity"] for r in p_frozen_runs]))
+
+        all_frozen_turnovers.append(turnover_f)
+        all_frozen_trades.append(trades_f)
 
         delta_disloc = mean_disloc_a - mean_disloc_f
         delta_halt   = halt_rate_a - halt_rate_f
@@ -313,10 +407,16 @@ def main():
             "frozen": {
                 "mean_dislocation": round(mean_disloc_f, 4),
                 "halt_rate": round(halt_rate_f, 4),
+                "total_turnover": round(turnover_f, 2),
+                "num_trades": round(trades_f, 1),
+                "mean_abs_agent_inv": round(inv_f, 3),
+                "agent_pnl": round(pnl_f, 2),
+                "final_dealer_equity": round(dealer_eq_f, 2),
             },
             "active": {
                 "mean_dislocation": round(mean_disloc_a, 4),
                 "halt_rate": round(halt_rate_a, 4),
+                "total_turnover": round(turnover_a, 2),
             },
             "delta_learn": {
                 "delta_mean_dislocation": round(delta_disloc, 4),
@@ -326,9 +426,38 @@ def main():
         policy_evaluations.append(p_record)
 
         print(f"\n[Policy {p_id:02d}] Class: {audit['classification']} (R^2={audit['r_squared']:.2f}, dq/dx={jac['dq_dx']:.2f})")
-        print(f"  Frozen: Disloc={mean_disloc_f:.3f}, Halts={halt_rate_f*100:.1f}% | "
-              f"Active: Disloc={mean_disloc_a:.3f}, Halts={halt_rate_a*100:.1f}%")
+        print(f"  Frozen: Disloc={mean_disloc_f:.3f}, Halts={halt_rate_f*100:.1f}%, Turnover={turnover_f:.1f}, Trades={trades_f:.1f}")
+        print(f"  Active: Disloc={mean_disloc_a:.3f}, Halts={halt_rate_a*100:.1f}%, Turnover={turnover_a:.1f}")
         print(f"  Delta_learn (Active - Frozen): Disloc={delta_disloc:+.4f} | Halts={delta_halt*100:+.1f}%")
+
+    # 4. Evaluate Baseline 3: Turnover-Matched Static Agent
+    avg_ql_turnover = float(np.mean(all_frozen_turnovers)) if all_frozen_turnovers else 0.0
+    avg_ql_trades = float(np.mean(all_frozen_trades)) if all_frozen_trades else 0.0
+    trade_prob = min(1.0, max(0.01, avg_ql_trades / float(cfg.max_steps)))
+
+    matched_agent = TurnoverMatchedStaticAgent(trade_prob=trade_prob, seed=42)
+    matched_results = []
+    for seed in test_seeds:
+        res = run_paired_trial(cfg, "turnover_matched", matched_agent, test_seed=seed, mean_shock=args.shock)
+        matched_results.append(res)
+
+    matched_summary = {
+        "calibrated_trade_prob": round(trade_prob, 4),
+        "mean_dislocation": float(np.mean([r["mean_dislocation"] for r in matched_results])),
+        "max_dislocation": float(np.mean([r["max_dislocation"] for r in matched_results])),
+        "halt_rate": float(np.mean([1 if r["dealer_halted"] else 0 for r in matched_results])),
+        "mean_dealer_equity": float(np.mean([r["final_dealer_equity"] for r in matched_results])),
+        "min_dealer_equity": float(np.mean([r["min_dealer_equity"] for r in matched_results])),
+        "total_turnover": float(np.mean([r["total_turnover"] for r in matched_results])),
+        "num_trades": float(np.mean([r["num_trades"] for r in matched_results])),
+        "mean_abs_agent_inv": float(np.mean([r["mean_abs_agent_inv"] for r in matched_results])),
+        "agent_pnl": float(np.mean([r["agent_pnl"] for r in matched_results])),
+    }
+    print(f"\n[Baseline 3: Turnover-Matched Static Agent (p={trade_prob:.3f})]")
+    print(f"  Dislocation: ${matched_summary['mean_dislocation']:.3f} | "
+          f"Halt Rate: {matched_summary['halt_rate']*100:.1f}% | "
+          f"Turnover: {matched_summary['total_turnover']:.1f} | "
+          f"Dealer Equity: ${matched_summary['mean_dealer_equity']:,.1f}")
 
     # Aggregate Transfer Results
     n_valid = sum(1 for p in policy_evaluations if p["model_validity"]["classification"] == "CERTIFIED_MODEL_CLASS")
@@ -340,17 +469,27 @@ def main():
             "test_seeds": test_seeds,
             "repricing_shock": args.shock,
         },
-        "rule_based_baseline": rule_summary,
+        "baselines": {
+            "do_nothing": dn_summary,
+            "rule_based_chartist": rule_summary,
+            "turnover_matched_static": matched_summary,
+        },
+        "rule_based_baseline": rule_summary,  # kept for backwards compatibility
         "learned_policies": policy_evaluations,
         "architecture_transfer_synthesis": {
             "certified_model_class_count": n_valid,
             "outside_model_class_count": n_outside,
             "mean_delta_learn_dislocation": round(float(np.mean(delta_learn_dislocations)), 4) if delta_learn_dislocations else 0.0,
             "mean_delta_learn_halt_rate": round(float(np.mean(delta_learn_halts)), 4) if delta_learn_halts else 0.0,
+            "mean_q_frozen_turnover": round(avg_ql_turnover, 2),
+            "mean_chartist_turnover": round(rule_summary["total_turnover"], 2),
+            "mean_do_nothing_turnover": round(dn_summary["total_turnover"], 2),
+            "mean_turnover_matched_turnover": round(matched_summary["total_turnover"], 2),
             "key_finding": (
-                "Online adaptation Delta_learn = Y_active - Y_frozen isolates learning-driven amplification. "
-                "Policies outside the certified model class are honestly detected via the local validity test "
-                "rather than force-fitted to the theoretical small-gain theorem."
+                "Online adaptation Delta_learn = Y_active - Y_frozen shows essentially zero incremental effect, "
+                "representing an important null finding. All trained policies fall outside the certified model class "
+                "due to step-like inventory-avoidance thresholds. Compared with turnover-matched and do-nothing baselines, "
+                "Q-learning dislocation closely tracks the passive zero-turnover limit."
             ),
         },
     }
