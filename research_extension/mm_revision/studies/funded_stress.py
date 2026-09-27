@@ -1,26 +1,18 @@
-"""Work Package 6: Comprehensive funded-system scenario map and paired mechanism controls.
+"""Work Package 6: Retained funded scenarios and paired mechanism controls.
 
-Establishes:
-1. Preserves historical 45.42% halt rate scenario (dealer_stress setting 0).
-2. Controlled scenario grid:
-   - S in {0.70, 0.82, 0.97, 1.03, 1.18}
-   - Dealer capital multiplier in {0.5, 1.0, 2.0, 4.0}
-   - Initial capacity utilization in {0.0, 0.5, 0.9}
-   - Mean repricing shock in {0.0, -2.0, -10.0}
-   - Slow rate in {0.02, 0.10}
-   - Horizon: 64 steps
-3. Strict balance-sheet accounting:
-   - Net shares, cash, equity = cash + shares * price
-   - Leverage = (shares * price) / equity
-   - Maintenance margin calls and liquidations
-   - Default, halt, and drawdown recorded separately and jointly
-   - Continued marking after halt (no post-halt censoring)
-   - Accounting residuals checked (< 1e-11)
-4. Paired mechanism controls on identical exogenous shock tapes:
-   - Full adaptive funded system
-   - Frozen learning
-   - Removed feedback Q = 0
-   - Unlimited funding diagnostic
+Scenario S labels use stored nominal a; the implemented unconstrained price
+persistence is 1-kappa*phi, with memories updated from the new price. Diagnostics
+expose this distinction without changing historical trajectories. The legacy
+capital multiplier scales inventory capacity at fixed initial equity of 10,000.
+
+Cash and inventory are marked at the current price. Margin breaches are counted
+without liquidation. Halt is a sticky occurrence flag for an inventory constraint
+hit, not a persistent trading ban: subsequent fills and marking continue. Default,
+halt occurrence, and drawdown are separate outputs. The accounting-residual field
+is retained but is not calculated or checked by this implementation.
+
+Paired controls use identical shock tapes for adaptive memories, memories frozen
+from shock_step, removed feedback, and unlimited inventory capacity.
 """
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional, Tuple
@@ -29,6 +21,8 @@ import numpy as np
 
 @dataclass
 class DealerBalanceSheet:
+    """Marked cash/inventory account; margin counts do not trigger liquidation."""
+
     cash: float
     inventory: float
     initial_cash: float
@@ -66,7 +60,11 @@ class DealerBalanceSheet:
 
 
 class FundedScenarioMarket:
-    """Multi-agent market with explicit dealer balance sheet and shock propagation."""
+    """Retained price-impact dynamics with an inventory-limited dealer.
+
+    ``a`` is nominal metadata only. ``dealer_capital_multiplier`` scales the
+    inventory limit, not equity. ``unlimited_funding`` removes that limit only.
+    """
 
     def __init__(
         self,
@@ -107,6 +105,63 @@ class FundedScenarioMarket:
             min_equity=init_cash + init_inv * p_star
         )
 
+    def dynamics_diagnostics(self, learning_regime: str = "adaptive") -> Dict[str, Any]:
+        """Describe the unconstrained, zero-input recurrence actually executed.
+
+        State order is (x, y_fast, y_slow). Price updates first, then adaptive
+        memories consume x_next. The matrix excludes inventory clipping and the
+        additive shock inputs. Frozen learning uses this matrix before shock_step
+        and the reported post-freeze matrix from shock_step onward. Removed
+        feedback holds the unused memories fixed, so its full-state spectral
+        radius includes unit eigenvalues even when price decays.
+        """
+        effective_a = 1.0 - self.kappa * self.phi
+        q_f = 0.0 if learning_regime == "zero_feedback" else self.q_fast
+        q_s = 0.0 if learning_regime == "zero_feedback" else self.q_slow
+        Q = q_f + q_s
+        held_matrix = np.array([
+            [effective_a, q_f, q_s],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ])
+        matrix = held_matrix.copy()
+        updates_memory = learning_regime in ("adaptive", "frozen")
+        if updates_memory:
+            for row, eta in ((1, self.eta_fast), (2, self.eta_slow)):
+                matrix[row] = eta * matrix[0]
+                matrix[row, row] += 1.0 - eta
+        diagnostics = {
+            "nominal_a": self.a,
+            "effective_a": float(effective_a),
+            "Q": float(Q),
+            "nominal_S": float(self.a + Q),
+            "effective_S": float(effective_a + Q),
+            "parameter_mismatch": bool(not np.isclose(self.a, effective_a, rtol=1e-12, atol=1e-12)),
+            "effective_minus_nominal_a": float(effective_a - self.a),
+            "state_order": ["x", "y_fast", "y_slow"],
+            "transition_matrix": matrix.tolist(),
+            "spectral_radius": float(np.max(np.abs(np.linalg.eigvals(matrix)))),
+            "scope": "unconstrained_zero_input_full_state",
+            "learning_regime": learning_regime,
+            "memory_timing": "x_next" if updates_memory else "held",
+            "units": {
+                "x": "price", "y_fast": "price", "y_slow": "price",
+                "shock_tape": "shares_per_step", "mean_repricing_shock": "price",
+                "kappa": "price_per_share", "phi": "shares_per_price",
+                "q": "dimensionless", "eta": "per_step_fraction",
+            },
+            "shock_timing": "repricing adds to x before demand; shock_tape adds to desired share flow",
+            "capacity_multiplier_scope": "inventory_limit_at_fixed_initial_equity_10000",
+            "halt_scope": "sticky_constraint_hit_occurrence_not_persistent_trading_ban",
+            "margin_scope": "breach_count_without_liquidation",
+        }
+        if learning_regime == "frozen":
+            diagnostics["transition_matrix_scope"] = "before_shock_step"
+            diagnostics["post_freeze_transition_matrix"] = held_matrix.tolist()
+            diagnostics["post_freeze_spectral_radius"] = float(np.max(np.abs(np.linalg.eigvals(held_matrix))))
+            diagnostics["freeze_timing"] = "memories held from shock_step onward"
+        return diagnostics
+
     def run_trajectory(
         self,
         shock_tape: np.ndarray,
@@ -115,7 +170,12 @@ class FundedScenarioMarket:
         learning_regime: str = "adaptive", # 'adaptive', 'frozen', 'zero_feedback'
         initial_memory: Optional[Tuple[float, float]] = None,
     ) -> Dict[str, Any]:
-        """Execute 64-step trajectory with identical exogenous shock tape."""
+        """Execute len(shock_tape) steps; add diagnostics without altering outcomes.
+
+        A constraint hit records halt occurrence but does not disable later fills.
+        Margin counts do not liquidate positions. Repricing is an additive change
+        to x before demand; the reference price p_star itself remains fixed.
+        """
         T = len(shock_tape)
         x = 0.0
         p = self.p_star
@@ -132,7 +192,7 @@ class FundedScenarioMarket:
         equity_series = []
 
         for t in range(T):
-            # Inject exogenous fundamental repricing shock at shock_step
+            # Inject additive price-dislocation shock before demand at shock_step
             if t == shock_step:
                 x += mean_repricing_shock
 
@@ -167,7 +227,7 @@ class FundedScenarioMarket:
             self.dealer.inventory -= actual_flow
             self.dealer.cash += actual_flow * p_next
 
-            # Continue mark-to-market even after halt (no post-halt censoring)
+            # Continue fills and marking after a halt occurrence (no halt guard).
             eq = self.dealer.mark_to_market(p_next)
             equity_series.append(eq)
 
@@ -202,6 +262,7 @@ class FundedScenarioMarket:
             "unfilled_volume": float(self.dealer.unfilled_volume),
             "final_equity": float(equity_series[-1]),
             "mean_dislocation": float(np.mean(dislocations)),
+            "dynamics_diagnostics": self.dynamics_diagnostics(learning_regime),
         }
 
 
@@ -214,7 +275,11 @@ def run_funded_scenario_grid(
     n_replications: int = 10,
     seed_base: int = 20260924
 ) -> Dict[str, Any]:
-    """Execute scenario grid mapping signal S vs dealer capital and shocks."""
+    """Map nominal S labels versus inventory capacity at fixed equity and shocks.
+
+    With default kappa and phi, effective S is nominal S + 0.4 for this grid.
+    Historical field names are preserved; capital_multiplier scales inventory.
+    """
     rng = np.random.default_rng(seed_base)
     cells = []
 
@@ -285,9 +350,9 @@ def run_paired_mechanism_controls(
 
     Controls:
       1. Full Adaptive Funded System
-      2. Frozen Learning (memories held constant)
+      2. Frozen Learning (memories held constant from shock_step onward)
       3. Removed Feedback (Q = 0)
-      4. Unlimited Funding Diagnostic
+      4. Unlimited inventory capacity diagnostic at the same initial equity
     """
     rng = np.random.default_rng(seed)
     regimes = ["adaptive", "frozen", "zero_feedback", "unlimited_funding"]
@@ -369,7 +434,16 @@ def run_paired_mechanism_controls(
         "n_replicates": n_replicates,
         "summary": summary,
         "paired_contrasts": paired_contrasts,
-        "central_finding": "Linear signal stability (S=0.82 < 1) does not prevent dealer halts or insolvency under binding funding constraints."
+        "dynamics_diagnostics": {
+            reg: results[reg][0]["dynamics_diagnostics"] for reg in regimes
+        },
+        "central_finding": (
+            "The retained adaptive baseline has nominal S=0.82 but effective S=1.22 "
+            "with new-price memory updates and an unstable unconstrained transition matrix. "
+            "These paired outcomes do not establish dealer failure under stable linear dynamics. "
+            "The capital multiplier scales inventory capacity at fixed initial equity; halt "
+            "records a constraint-hit occurrence, and margin counts are not liquidations."
+        )
     }
 
 
@@ -382,7 +456,11 @@ def run_near_threshold_factorial_design(
     n_replications: int = 20,
     seed_base: int = 20260924
 ) -> Dict[str, Any]:
-    """Execute the near-threshold factorial design to generate the scenario-risk surface without endpoint saturation."""
+    """Execute the retained factorial grid indexed by nominal S and capacity.
+
+    Nominal thresholds need not be effective dynamic thresholds; saturation is an
+    empirical outcome, not a property guaranteed by this design.
+    """
     rng = np.random.default_rng(seed_base)
     cells = []
 
@@ -442,4 +520,3 @@ def run_near_threshold_factorial_design(
         "n_replications_per_cell": n_replications,
         "grid_cells": cells,
     }
-

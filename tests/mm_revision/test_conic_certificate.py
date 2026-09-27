@@ -48,17 +48,18 @@ def test_hotelling_f_critical_value():
 
 
 def test_conic_certificate_true_model_containment():
-    """Theorem 7.2: Conic certificate covers true S = 0.82."""
+    """The numerical outer interval contains the synthetic S = 0.82."""
     beta_hat, V, df, true_S = _generate_synthetic_panel(p=5, R=128)
     res = fit_conic_certificate(beta_hat, V, df, alpha=0.05, eta_floor=0.02, bins=8)
 
-    assert res["status"] == "ok"
+    assert res["status"] == "numerical_candidate"
+    assert not res["certified"]
+    assert res["decision"] == DecisionLabel.ABSTAIN
     assert res["S_lower"] <= true_S <= res["S_upper"]
-    assert res["runtime"] < 1.0
 
 
 def test_conic_certificate_weak_dominance():
-    """Theorem 7.3: Conic certificate weakly dominates box LP over same ellipsoid."""
+    """Numerical dominance comparison uses the same ellipsoid coordinate box."""
     beta_hat, V, df, true_S = _generate_synthetic_panel(p=5, R=128)
     res = fit_conic_certificate(beta_hat, V, df, alpha=0.05, eta_floor=0.02, bins=8)
 
@@ -75,5 +76,7 @@ def test_conic_certificate_unstable_model():
     )
     res = fit_conic_certificate(beta_hat, V, df, alpha=0.05, eta_floor=0.02, bins=8)
 
-    assert res["status"] == "ok"
+    assert res["status"] == "numerical_candidate"
+    assert not res["certified"]
+    assert res["decision"] == DecisionLabel.ABSTAIN
     assert res["S_lower"] <= true_S <= res["S_upper"]

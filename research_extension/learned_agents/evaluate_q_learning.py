@@ -122,6 +122,7 @@ def run_paired_trial(
     dealer_invs = []
     rewards = []
     halt_step = None
+    max_cash_residual = max_inventory_residual = 0.0
 
     done = False
     step = 0
@@ -139,6 +140,8 @@ def run_paired_trial(
             a_idx = agent_obj.select_action(s, greedy=True)
 
         s_next, r, done, info = env.step(a_idx, external_shock=shock_val)
+        max_cash_residual = max(max_cash_residual, abs(info['cash_residual']))
+        max_inventory_residual = max(max_inventory_residual, abs(info['inventory_residual']))
 
         if agent_type == "q_active":
             agent_obj.update(s, a_idx, r, s_next, done)
@@ -179,6 +182,9 @@ def run_paired_trial(
         "max_abs_agent_inv": float(np.max(agent_invs)),
         "mean_abs_dealer_inv": float(np.mean(dealer_invs)),
         "max_abs_dealer_inv": float(np.max(dealer_invs)),
+        "steps": step,
+        "max_cash_residual": max_cash_residual,
+        "max_inventory_residual": max_inventory_residual,
     }
 
 
@@ -188,18 +194,21 @@ def run_paired_trial(
 
 def estimate_local_jacobian(agent: QLearningAgent, base_env_config: MarketConfig) -> Dict[str, Any]:
     """
-    Empirically estimate the local feedback derivative dq/dx around equilibrium (x=0).
-    Construct local Jacobian J_local = [[a + kappa * dq/dx, ...], [...]]
-    and calculate its spectral radius rho(J_local).
+    Descriptive finite-grid partial response, NOT a dynamical Jacobian certificate.
+    Hold return, inventory, capacity and imbalance fixed; integrate greedy ties.
+    Record measured state-action support rather than inferring visits from Q values.
     """
-    agent.set_mode("frozen")
     perturbations = [-1.0, -0.5, -0.2, 0.2, 0.5, 1.0]
     actions_chosen = []
+    support = []
+    queried_states = []
 
     for dx in perturbations:
-        s_idx = discretize_state(x=dx, ret=dx, inv=0.0, cap_util=0.0, imb=0.0)
-        a_idx = agent.select_action(s_idx, greedy=True)
-        actions_chosen.append(ACTIONS[a_idx])
+        s_idx = discretize_state(x=dx, ret=0.0, inv=0.0, cap_util=0.0, imb=0.0)
+        row = agent.q_table[s_idx]
+        actions_chosen.append(float(np.mean(ACTIONS[row == np.max(row)])))
+        queried_states.append(s_idx)
+        support.append(int(np.min(agent.visit_counts[s_idx])) if agent.support_recorded else None)
 
     # Fit linear slope dq/dx via OLS
     cov = np.cov(perturbations, actions_chosen)
@@ -207,20 +216,26 @@ def estimate_local_jacobian(agent: QLearningAgent, base_env_config: MarketConfig
 
     a = base_env_config.a
     kappa = base_env_config.kappa
-    # In effective 1-step local feedback: dx_{t+1}/dx_t = a + kappa * (dq/dx) - kappa * phi
+    # Scalar descriptive response only; inventory/imbalance and bin transitions omitted.
     effective_local_persistence = a + kappa * dq_dx - kappa * base_env_config.phi
     rho_local = abs(effective_local_persistence)
 
     # Implied positive-memory feedback gain Q_local
     Q_implied = max(0.0, kappa * dq_dx)
     S_implied = a + Q_implied
+    sufficient = all(c is not None and c >= 10 for c in support)
 
     return {
-        "dq_dx": round(dq_dx, 4),
-        "effective_local_persistence": round(effective_local_persistence, 4),
-        "rho_local": round(rho_local, 4),
-        "Q_implied": round(Q_implied, 4),
-        "S_implied": round(S_implied, 4),
+        "dq_dx": round(dq_dx, 4) if sufficient else None,
+        "effective_local_persistence": round(effective_local_persistence, 4) if sufficient else None,
+        "supported_response": sufficient,
+        "rho_local": None,
+        "Q_implied": None,
+        "S_implied": None,
+        "scope": "finite_grid_partial_response_not_full_state_jacobian",
+        "minimum_action_visits": support,
+        "support_recorded": agent.support_recorded,
+        "queried_states": queried_states,
         "perturbations": perturbations,
         "actions_chosen": actions_chosen,
     }
@@ -232,16 +247,29 @@ def estimate_local_jacobian(agent: QLearningAgent, base_env_config: MarketConfig
 
 def audit_model_class_validity(agent: QLearningAgent, jacobian_metrics: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Test whether the learned Q-policy satisfies the certified positive-memory model class:
+    Descriptive screening, not proof of membership in a hidden-state model class:
       1. Local Linearity: R^2 of linear fit across perturbation responses >= 0.70.
       2. Sign Consistency: dq/dx >= 0 (trend-following feedback).
       3. Action Monotonicity: actions non-decreasing across positive perturbations.
-    If any condition fails, the policy is classified as OUTSIDE the certified model class.
+    Missing support/constant response leads to abstention. A supported finite-grid
+    mismatch is a diagnostic, not a theorem about the full policy architecture.
     """
     dx = np.array(jacobian_metrics["perturbations"])
     u = np.array(jacobian_metrics["actions_chosen"])
 
-    # Linear correlation
+    # Support is necessary, but this finite-grid screen can never certify the
+    # hidden memory architecture or its global nonlinear dynamics.
+    counts = jacobian_metrics.get('minimum_action_visits', [])
+    sufficient = bool(counts) and all(c is not None and c >= 10 for c in counts)
+    if not sufficient or np.std(u) <= 1e-8:
+        return {
+            "r_squared": None,
+            "sign_consistent": None,
+            "is_monotonic": None,
+            "classification": "NON_CERTIFIABLE_SUPPORT" if not sufficient else "NON_CERTIFIABLE_ZERO_RESPONSE",
+            "diagnostic_rationale": "Missing/insufficient recorded action support" if not sufficient else "Constant response; R-squared undefined, compatible with zero local gain, not evidence of class violation",
+        }
+    # Linear correlation on the declared finite grid; descriptive only.
     corr = np.corrcoef(dx, u)[0, 1] if np.std(u) > 1e-8 else 0.0
     r_squared = float(corr ** 2) if not np.isnan(corr) else 0.0
 
@@ -256,8 +284,8 @@ def audit_model_class_validity(agent: QLearningAgent, jacobian_metrics: Dict[str
     in_certified_class = (r_squared >= 0.70) and sign_consistent and is_monotonic
 
     verdict = (
-        "CERTIFIED_MODEL_CLASS" if in_certified_class
-        else "OUTSIDE_CERTIFIED_MODEL_CLASS"
+        "SCREEN_COMPATIBLE_NOT_CERTIFIED" if in_certified_class
+        else "SCREEN_MISMATCH_NOT_STRUCTURAL_PROOF"
     )
 
     reason = []
@@ -284,6 +312,7 @@ def audit_model_class_validity(agent: QLearningAgent, jacobian_metrics: Dict[str
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def main():
+    raise RuntimeError('Legacy evaluator is superseded: run python -m research_extension.evidence_repair.run_learned_agents --output FRESH_DIRECTORY; historical outputs are protected')
     parser = argparse.ArgumentParser(description="Evaluate Q-Learning Transfer Layer")
     parser.add_argument("--n_policies", type=int, default=10, help="Number of policies to evaluate")
     parser.add_argument("--n_test_seeds", type=int, default=10, help="Number of held-out test seeds")
@@ -395,6 +424,18 @@ def main():
         all_frozen_turnovers.append(turnover_f)
         all_frozen_trades.append(trades_f)
 
+        # Per-policy individual turnover-matched baseline
+        # Calibrate a fresh TurnoverMatchedStaticAgent to this policy's actual turnover/trades ratio
+        per_policy_trade_prob = min(1.0, max(0.01, trades_f / float(cfg.max_steps)))
+        indiv_matched_agent = TurnoverMatchedStaticAgent(trade_prob=per_policy_trade_prob, seed=42 + p_id)
+        indiv_matched_runs = []
+        for seed in test_seeds:
+            rm = run_paired_trial(cfg, "turnover_matched", indiv_matched_agent,
+                                  test_seed=seed, mean_shock=args.shock)
+            indiv_matched_runs.append(rm)
+        indiv_matched_disloc = float(np.mean([r["mean_dislocation"] for r in indiv_matched_runs]))
+        delta_vs_indiv_matched = mean_disloc_f - indiv_matched_disloc
+
         delta_disloc = mean_disloc_a - mean_disloc_f
         delta_halt   = halt_rate_a - halt_rate_f
         delta_learn_dislocations.append(delta_disloc)
@@ -422,6 +463,11 @@ def main():
                 "delta_mean_dislocation": round(delta_disloc, 4),
                 "delta_halt_rate": round(delta_halt, 4),
             },
+            "individual_turnover_matched": {
+                "calibrated_trade_prob": round(per_policy_trade_prob, 4),
+                "mean_dislocation": round(indiv_matched_disloc, 4),
+                "delta_q_vs_matched": round(delta_vs_indiv_matched, 5),
+            },
         }
         policy_evaluations.append(p_record)
 
@@ -429,6 +475,8 @@ def main():
         print(f"  Frozen: Disloc={mean_disloc_f:.3f}, Halts={halt_rate_f*100:.1f}%, Turnover={turnover_f:.1f}, Trades={trades_f:.1f}")
         print(f"  Active: Disloc={mean_disloc_a:.3f}, Halts={halt_rate_a*100:.1f}%, Turnover={turnover_a:.1f}")
         print(f"  Delta_learn (Active - Frozen): Disloc={delta_disloc:+.4f} | Halts={delta_halt*100:+.1f}%")
+        print(f"  Indiv. Matched Baseline (p={per_policy_trade_prob:.4f}): Disloc={indiv_matched_disloc:.4f} | Delta_Q_vs_matched={delta_vs_indiv_matched:+.5f}")
+
 
     # 4. Evaluate Baseline 3: Turnover-Matched Static Agent
     avg_ql_turnover = float(np.mean(all_frozen_turnovers)) if all_frozen_turnovers else 0.0

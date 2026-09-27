@@ -1,14 +1,14 @@
 # From Human Markets to Machine Markets
 ## Master Research Release 2.0 (Submission-Ready Master Edition) | September 2026
 
-**Start with [the integrated research paper](paper/Machine_Markets_Final_Integrated_Paper.pdf) (68 pages) or the [combined master volume](Machine_Markets_Combined_Master.pdf) (93 pages).**
+**Start with [the integrated research paper](paper/Machine_Markets_Final_Integrated_Paper.pdf) (62 pages) or the [combined master volume](Machine_Markets_Combined_Master.pdf) (88 pages).**
 The self-contained [LaTeX source](paper/Machine_Markets_Final_Integrated_Paper.tex) and the [Mathematical Supplement source](paper/Machine_Markets_Mathematical_Supplement.tex) are beside them in `paper/`.
 
 This master release establishes the complete, unified scientific package for *Machine Markets*:
-1. **8-Chapter Consolidated Main Manuscript** (68 pages, 0 overfull `\hbox`es, 0 undefined references/citations).
-2. **Mathematical Supplement** (25 pages, Sections S1–S14, complete proofs, continuous-time dynamics, and covariance geometry).
-3. **Combined Master Volume** (93 pages, uniting the main paper and supplement).
-4. **220-Test Hierarchical Verification Suite** (104 native + 88 pytest + 4 numerical suites + 24 independent gates) passing at 100% offline.
+1. **8-Chapter Consolidated Main Manuscript** (62 pages, 0 overfull `\hbox`es, 0 undefined references/citations).
+2. **Mathematical Supplement** (26 pages, Sections S1–S14, complete proofs, continuous-time dynamics, covariance geometry, and corrective diagnostics).
+3. **Combined Master Volume** (88 pages, uniting the main paper and supplement).
+4. **Hierarchical Verification Suite** (104 native + 381 pytest + 4 numerical suites + 24 independent gates) passing at 100% offline.
 5. **Standalone Zero-Dependency Verifier** (`independent_verifier/verifier.py`) passing all 24 verification gates ($< 7.2 \times 10^{-14}$ error) without importing project libraries.
 6. **Method-to-Evidence Crosswalk** (Table 4) establishing unbroken theorem $\to$ code $\to$ artifact $\to$ paper traceability.
 7. **Learned-Agent Transfer Layer (Layer 4)** (Section 6.5, Table 14) evaluating 10 tabular Q-learning policies (6,125 states, 5 actions), active counterfactual adaptation, and model-class validity audits.
@@ -44,11 +44,11 @@ This master release establishes the complete, unified scientific package for *Ma
 ```text
 Machine_Markets_Master_Release/
   README.md                            Master release index and blocker resolution summary
-  Machine_Markets_Combined_Master.pdf  Combined 92-page master volume (Main + Supplement)
+  Machine_Markets_Combined_Master.pdf  Combined 88-page master volume (Main + Supplement)
   paper/
-    Machine_Markets_Final_Integrated_Paper.tex   Self-contained 8-chapter LaTeX source (68 pages)
+    Machine_Markets_Final_Integrated_Paper.tex   Self-contained 8-chapter LaTeX source (62 pages)
     Machine_Markets_Final_Integrated_Paper.pdf   Compiled main manuscript (0 overfulls, 0 undefined refs)
-    Machine_Markets_Mathematical_Supplement.tex  Mathematical supplement LaTeX source (25 pages)
+    Machine_Markets_Mathematical_Supplement.tex  Mathematical supplement LaTeX source (26 pages)
     Machine_Markets_Mathematical_Supplement.pdf  Compiled supplement (0 overfulls)
     Machine_Markets_Combined_Master.pdf          Combined master volume
   independent_verifier/
@@ -85,8 +85,8 @@ Machine_Markets_Master_Release/
 # 1. Native Test Suite (104 tests):
 python tools/run_all_tests.py
 
-# 2. Pytest Suite (88 tests):
-PYTHONPATH=. pytest tests/ research_extension/tests/ reference_directory/test_mathematical_supplement.py
+# 2. Pytest Suite (381 tests):
+PYTHONPATH=. pytest -q tests/ research_extension/tests/ reference_directory/test_mathematical_supplement.py
 
 # 3. Independent Zero-Dependency Verifier (24 gates):
 python independent_verifier/verifier.py
@@ -94,7 +94,7 @@ python independent_verifier/verifier.py
 # 4. Mathematical Supplement Numerical Checks:
 python reference_directory/run_checks.py
 ```
-Total automated tests: **220 passed in ~8 seconds**.
+Total automated tests: **489 passing offline** (104 native + 381 pytest + 4 numerical suites).
 All experiments require no GPU, no financial account, no live market connection, and no external API key.
 
 ---

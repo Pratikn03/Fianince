@@ -1,0 +1,223 @@
+Command: PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3.11 -m pytest -q -p no:cacheprovider tests/test_empirical_evidence_repairs.py --tb=short
+Exit code: 1
+FFFFFFFFFF.FFFFFF...                                                     [100%]
+=================================== FAILURES ===================================
+__________ test_response_retains_feedback_memory_beyond_fifteen_lags ___________
+tests/test_empirical_evidence_repairs.py:72: in test_response_retains_feedback_memory_beyond_fifteen_lags
+    np.testing.assert_allclose(response, matrix_response(PARAMS, flow), atol=1e-14)
+E   AssertionError: 
+E   Not equal to tolerance rtol=1e-07, atol=1e-14
+E   
+E   Mismatched elements: 10 / 26 (38.5%)
+E   Max absolute difference among violations: 0.04532472
+E   Max relative difference among violations: 1.
+E    ACTUAL: array([1.      , 0.4     , 0.22    , 0.16    , 0.1348  , 0.12016 ,
+E          0.109144, 0.099731, 0.0913  , 0.08363 , 0.076618, 0.070198,
+E          0.064317, 0.058928, 0.053992, 0.049469, 0.      , 0.      ,...
+E    DESIRED: array([1.      , 0.4     , 0.22    , 0.16    , 0.1348  , 0.12016 ,
+E          0.109144, 0.099731, 0.0913  , 0.08363 , 0.076618, 0.070198,
+E          0.064317, 0.058928, 0.053992, 0.049469, 0.045325, 0.041528,...
+________________ test_response_can_continue_from_training_state ________________
+tests/test_empirical_evidence_repairs.py:77: in test_response_can_continue_from_training_state
+    first, state = binance.simulate_model_response(PARAMS, flow[:3], return_state=True)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: simulate_model_response() got an unexpected keyword argument 'return_state'
+_________ test_every_epoch_uses_the_complete_contiguous_training_path __________
+tests/test_empirical_evidence_repairs.py:89: in test_every_epoch_uses_the_complete_contiguous_training_path
+    np.testing.assert_allclose(objectives, [expected] * 3, rtol=1e-12)
+E   AssertionError: 
+E   Not equal to tolerance rtol=1e-12, atol=0
+E   
+E   Mismatched elements: 3 / 3 (100%)
+E   Max absolute difference among violations: 0.24792221
+E   Max relative difference among violations: 0.77308169
+E    ACTUAL: array([0.072771, 0.100431, 0.141952])
+E    DESIRED: array([0.320693, 0.320693, 0.320693])
+___________ test_validation_carries_state_and_preserves_negative_r2 ____________
+tests/test_empirical_evidence_repairs.py:98: in test_validation_carries_state_and_preserves_negative_r2
+    assert result["val_loss_final"] == pytest.approx(np.mean((actual - expected)**2))
+E   assert 2.3307312425324853 == 3.051642760632038 ± 3.1e-06
+E     
+E     comparison failed
+E     Obtained: 2.3307312425324853
+E     Expected: 3.051642760632038 ± 3.1e-06
+____________ test_invalid_optimizer_result_is_rejected[False-False] ____________
+tests/test_empirical_evidence_repairs.py:109: in test_invalid_optimizer_result_is_rejected
+    with pytest.raises((ValueError, RuntimeError), match="(?i)optimizer|finite"):
+E   Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'RuntimeError'>)
+_____________ test_invalid_optimizer_result_is_rejected[True-True] _____________
+tests/test_empirical_evidence_repairs.py:109: in test_invalid_optimizer_result_is_rejected
+    with pytest.raises((ValueError, RuntimeError), match="(?i)optimizer|finite"):
+E   Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'RuntimeError'>)
+_________________ test_invalid_temporal_split_is_rejected[0.0] _________________
+tests/test_empirical_evidence_repairs.py:116: in test_invalid_temporal_split_is_rejected
+    binance.train_single_seed(*path_fixture(), seed=42, train_ratio=ratio)
+research_extension/binance_multi_epoch_study.py:168: in train_single_seed
+    res = minimize(loss_fn, theta, method="L-BFGS-B", bounds=bounds, options={"maxiter": 15})
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/lib/python3.11/site-packages/scipy/optimize/_minimize.py:784: in minimize
+    res = _minimize_lbfgsb(fun, x0, args, jac, bounds,
+/opt/homebrew/lib/python3.11/site-packages/scipy/optimize/_lbfgsb_py.py:413: in _minimize_lbfgsb
+    sf = _prepare_scalar_function(fun, x0, jac=jac, args=args, epsilon=eps,
+/opt/homebrew/lib/python3.11/site-packages/scipy/optimize/_optimize.py:310: in _prepare_scalar_function
+    sf = ScalarFunction(fun, x0, args, grad, hess,
+/opt/homebrew/lib/python3.11/site-packages/scipy/optimize/_differentiable_functions.py:283: in __init__
+    self._update_fun()
+/opt/homebrew/lib/python3.11/site-packages/scipy/optimize/_differentiable_functions.py:362: in _update_fun
+    fx = self._wrapped_fun(self.x)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/lib/python3.11/site-packages/scipy/_lib/_util.py:603: in __call__
+    fx = self.f(np.copy(x), *self.args)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research_extension/binance_multi_epoch_study.py:163: in loss_fn
+    pred = simulate_model_response(p, sub_flow, M=15)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research_extension/binance_multi_epoch_study.py:123: in simulate_model_response
+    pred = np.convolve(v_series, kappa * h, mode="full")[:len(v_series)]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/lib/python3.11/site-packages/numpy/_core/numeric.py:902: in convolve
+    raise ValueError('v cannot be empty')
+E   ValueError: v cannot be empty
+
+During handling of the above exception, another exception occurred:
+tests/test_empirical_evidence_repairs.py:115: in test_invalid_temporal_split_is_rejected
+    with pytest.raises(ValueError, match="train_ratio"):
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'train_ratio'
+E     Actual message: 'v cannot be empty'
+_________________ test_invalid_temporal_split_is_rejected[1.0] _________________
+tests/test_empirical_evidence_repairs.py:116: in test_invalid_temporal_split_is_rejected
+    binance.train_single_seed(*path_fixture(), seed=42, train_ratio=ratio)
+research_extension/binance_multi_epoch_study.py:174: in train_single_seed
+    pred_val = simulate_model_response(theta, flow_val, M=15)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research_extension/binance_multi_epoch_study.py:123: in simulate_model_response
+    pred = np.convolve(v_series, kappa * h, mode="full")[:len(v_series)]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/lib/python3.11/site-packages/numpy/_core/numeric.py:902: in convolve
+    raise ValueError('v cannot be empty')
+E   ValueError: v cannot be empty
+
+During handling of the above exception, another exception occurred:
+tests/test_empirical_evidence_repairs.py:115: in test_invalid_temporal_split_is_rejected
+    with pytest.raises(ValueError, match="train_ratio"):
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'train_ratio'
+E     Actual message: 'v cannot be empty'
+________________ test_invalid_temporal_split_is_rejected[-0.1] _________________
+tests/test_empirical_evidence_repairs.py:116: in test_invalid_temporal_split_is_rejected
+    binance.train_single_seed(*path_fixture(), seed=42, train_ratio=ratio)
+research_extension/binance_multi_epoch_study.py:168: in train_single_seed
+    res = minimize(loss_fn, theta, method="L-BFGS-B", bounds=bounds, options={"maxiter": 15})
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/lib/python3.11/site-packages/scipy/optimize/_minimize.py:784: in minimize
+    res = _minimize_lbfgsb(fun, x0, args, jac, bounds,
+/opt/homebrew/lib/python3.11/site-packages/scipy/optimize/_lbfgsb_py.py:413: in _minimize_lbfgsb
+    sf = _prepare_scalar_function(fun, x0, jac=jac, args=args, epsilon=eps,
+/opt/homebrew/lib/python3.11/site-packages/scipy/optimize/_optimize.py:310: in _prepare_scalar_function
+    sf = ScalarFunction(fun, x0, args, grad, hess,
+/opt/homebrew/lib/python3.11/site-packages/scipy/optimize/_differentiable_functions.py:283: in __init__
+    self._update_fun()
+/opt/homebrew/lib/python3.11/site-packages/scipy/optimize/_differentiable_functions.py:362: in _update_fun
+    fx = self._wrapped_fun(self.x)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/lib/python3.11/site-packages/scipy/_lib/_util.py:603: in __call__
+    fx = self.f(np.copy(x), *self.args)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research_extension/binance_multi_epoch_study.py:163: in loss_fn
+    pred = simulate_model_response(p, sub_flow, M=15)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+research_extension/binance_multi_epoch_study.py:123: in simulate_model_response
+    pred = np.convolve(v_series, kappa * h, mode="full")[:len(v_series)]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/lib/python3.11/site-packages/numpy/_core/numeric.py:902: in convolve
+    raise ValueError('v cannot be empty')
+E   ValueError: v cannot be empty
+
+During handling of the above exception, another exception occurred:
+tests/test_empirical_evidence_repairs.py:115: in test_invalid_temporal_split_is_rejected
+    with pytest.raises(ValueError, match="train_ratio"):
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'train_ratio'
+E     Actual message: 'v cannot be empty'
+_________________ test_invalid_temporal_split_is_rejected[nan] _________________
+tests/test_empirical_evidence_repairs.py:116: in test_invalid_temporal_split_is_rejected
+    binance.train_single_seed(*path_fixture(), seed=42, train_ratio=ratio)
+research_extension/binance_multi_epoch_study.py:131: in train_single_seed
+    n_train = int(N * train_ratio)
+              ^^^^^^^^^^^^^^^^^^^^
+E   ValueError: cannot convert float NaN to integer
+
+During handling of the above exception, another exception occurred:
+tests/test_empirical_evidence_repairs.py:115: in test_invalid_temporal_split_is_rejected
+    with pytest.raises(ValueError, match="train_ratio"):
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'train_ratio'
+E     Actual message: 'cannot convert float NaN to integer'
+___________ test_period_b_regression_losses_are_explicitly_in_sample ___________
+tests/test_empirical_evidence_repairs.py:132: in test_period_b_regression_losses_are_explicitly_in_sample
+    assert result.get("evaluation_type") == "in_sample_explanatory"
+E   AssertionError: assert None == 'in_sample_explanatory'
+E    +  where None = <built-in method get of dict object at 0x10cb9bcc0>('evaluation_type')
+E    +    where <built-in method get of dict object at 0x10cb9bcc0> = {'n_markets': 7, 'paired_loss_evaluation': {'mean_paired_difference_F': 0.0027580303898816056, 'mean_paired_difference...14981, 'S_tstat': -1.5601434304111186, 'description': 'Full model: S_model + Spread + Realized Volatility', ...}, ...}}.get
+_____________ test_failed_structural_fit_never_substitutes_proxy_f _____________
+tests/test_empirical_evidence_repairs.py:147: in test_failed_structural_fit_never_substitutes_proxy_f
+    assert all(r["S_model"] is None for r in result["records"])
+E   assert False
+E    +  where False = all(<generator object test_failed_structural_fit_never_substitutes_proxy_f.<locals>.<genexpr> at 0x10c58ac20>)
+___________ test_tick_flow_is_not_silently_paired_with_candle_prices ___________
+tests/test_empirical_evidence_repairs.py:158: in test_tick_flow_is_not_silently_paired_with_candle_prices
+    assert all(r["S_model"] is None for r in result["records"])
+E   assert False
+E    +  where False = all(<generator object test_tick_flow_is_not_silently_paired_with_candle_prices.<locals>.<genexpr> at 0x10c8fb9f0>)
+________________ test_missing_prices_are_reported_as_exclusions ________________
+tests/test_empirical_evidence_repairs.py:167: in test_missing_prices_are_reported_as_exclusions
+    assert result["excluded_assets"][0]["symbol"] == "invalid"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'excluded_assets'
+_________ test_invalid_ols_cannot_emit_valid_looking_statistics[X0-y0] _________
+tests/test_empirical_evidence_repairs.py:177: in test_invalid_ols_cannot_emit_valid_looking_statistics
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_________ test_invalid_ols_cannot_emit_valid_looking_statistics[X1-y1] _________
+tests/test_empirical_evidence_repairs.py:177: in test_invalid_ols_cannot_emit_valid_looking_statistics
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+=============================== warnings summary ===============================
+tests/test_empirical_evidence_repairs.py::test_invalid_temporal_split_is_rejected[0.0]
+  /opt/homebrew/lib/python3.11/site-packages/numpy/_core/fromnumeric.py:4268: RuntimeWarning: Degrees of freedom <= 0 for slice
+    return _methods._var(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+
+tests/test_empirical_evidence_repairs.py::test_invalid_temporal_split_is_rejected[0.0]
+  /opt/homebrew/lib/python3.11/site-packages/numpy/_core/_methods.py:180: RuntimeWarning: invalid value encountered in divide
+    arrmean = um.true_divide(arrmean, div, out=arrmean,
+
+tests/test_empirical_evidence_repairs.py::test_invalid_temporal_split_is_rejected[0.0]
+  /opt/homebrew/lib/python3.11/site-packages/numpy/_core/_methods.py:214: RuntimeWarning: invalid value encountered in scalar divide
+    ret = ret.dtype.type(ret / rcount)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_empirical_evidence_repairs.py::test_response_retains_feedback_memory_beyond_fifteen_lags
+FAILED tests/test_empirical_evidence_repairs.py::test_response_can_continue_from_training_state
+FAILED tests/test_empirical_evidence_repairs.py::test_every_epoch_uses_the_complete_contiguous_training_path
+FAILED tests/test_empirical_evidence_repairs.py::test_validation_carries_state_and_preserves_negative_r2
+FAILED tests/test_empirical_evidence_repairs.py::test_invalid_optimizer_result_is_rejected[False-False]
+FAILED tests/test_empirical_evidence_repairs.py::test_invalid_optimizer_result_is_rejected[True-True]
+FAILED tests/test_empirical_evidence_repairs.py::test_invalid_temporal_split_is_rejected[0.0]
+FAILED tests/test_empirical_evidence_repairs.py::test_invalid_temporal_split_is_rejected[1.0]
+FAILED tests/test_empirical_evidence_repairs.py::test_invalid_temporal_split_is_rejected[-0.1]
+FAILED tests/test_empirical_evidence_repairs.py::test_invalid_temporal_split_is_rejected[nan]
+FAILED tests/test_empirical_evidence_repairs.py::test_period_b_regression_losses_are_explicitly_in_sample
+FAILED tests/test_empirical_evidence_repairs.py::test_failed_structural_fit_never_substitutes_proxy_f
+FAILED tests/test_empirical_evidence_repairs.py::test_tick_flow_is_not_silently_paired_with_candle_prices
+FAILED tests/test_empirical_evidence_repairs.py::test_missing_prices_are_reported_as_exclusions
+FAILED tests/test_empirical_evidence_repairs.py::test_invalid_ols_cannot_emit_valid_looking_statistics[X0-y0]
+FAILED tests/test_empirical_evidence_repairs.py::test_invalid_ols_cannot_emit_valid_looking_statistics[X1-y1]
+16 failed, 4 passed, 3 warnings in 0.61s
+** On entry to DLASCL, parameter number  4 had an illegal value
+** On entry to DLASCL, parameter number  4 had an illegal value
+** On entry to DLASCL, parameter number  4 had an illegal value
+** On entry to DLASCL, parameter number  4 had an illegal value
+** On entry to DLASCL, parameter number  5 had an illegal value
+** On entry to DLASCL, parameter number  4 had an illegal value

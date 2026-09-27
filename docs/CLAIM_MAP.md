@@ -1,6 +1,6 @@
 # Machine Markets — Scientific Claim Register and Traceability Matrix
 
-This claim register establishes strict cryptographic and experimental provenance for every numerical, mathematical, and empirical claim across the 68-page master manuscript (`Machine_Markets_Final_Integrated_Paper.pdf`), the 25-page mathematical supplement (`Machine_Markets_Mathematical_Supplement.pdf`), and the united 93-page combined master document (`Machine_Markets_Combined_Master.pdf`).
+This claim register establishes strict cryptographic and experimental provenance for every numerical, mathematical, and empirical claim across the 62-page master manuscript (`Machine_Markets_Final_Integrated_Paper.pdf`), the 26-page mathematical supplement (`Machine_Markets_Mathematical_Supplement.pdf`), and the united 88-page combined master document (`Machine_Markets_Combined_Master.pdf`).
 
 ---
 
@@ -22,6 +22,8 @@ Every empirical and synthetic result originates from a frozen, versioned study d
 | **`STUDY-ID-10`**<br>(`FUNDED-SMOOTH-330`) | Fine-Grained Smooth Solvency Surface | 330 scenario cells across $\mu \in [-0.2, -2.0]$ in increments of 0.2 and capital multipliers $\{0.5\times, 1.0\times, 2.0\times\}$, $N=30$ per cell. | `research_extension/outputs/funded_smooth_surface_results.json` | `research_extension/mm_revision/studies/funded_smooth_surface.py` |
 | **`STUDY-ID-11`**<br>(`GATE24-BINANCE-3GB`) | Empirical Microstructure Calibration (Gates 2–4) | 3.41 GB public data from Binance Vision: 129,600 1-minute bars per asset (BTC, ETH, SOL, Jan–Mar 2025) + 1,000-level LOB depth. Costed probing protocol + clean-room calibrated simulator. | `research_extension/gate24_public_data/gate24_analysis_results.json` | `research_extension/gate24_public_data/gate24_analysis.py` |
 | **`STUDY-ID-12`**<br>(`Q-LEARNING-TRANSFER`) | Learned-Agent Transfer Layer & Model Audit | 10 independently trained Q-learning agents (6,125 states, 5 actions, seeds 101–110), 5 validation seeds (201–205), 10 held-out test seeds (301–310, 15,000 steps per seed). Counterfactual frozen controls and local model-class validity audit. | `research_extension/outputs/learned_agents/q_learning_transfer_results.json` | `research_extension/learned_agents/evaluate_q_learning.py` |
+| **`STUDY-ID-13`**<br>(`MULTISCALE-AUDIT`) | Multiscale Perturbation Radius Audit | Evaluates $R^2(r)$ and $\partial u/\partial x(r)$ across 5 nested perturbation radii $r \in \{0.05, 0.10, 0.25, 0.50, 1.00\}$ for all 10 trained Q-learning policies; isolates support coverage vs structural response. | `research_extension/outputs/learned_agents/multiscale_audit_results.json` | `research_extension/learned_agents/multiscale_audit.py` |
+| **`STUDY-ID-14`**<br>(`REWARD-SENSITIVITY`) | Reward-Penalty Sensitivity Sweep | Pre-registered evaluation across 4 reward penalty configurations ($\lambda_I \in \{0, 0.0025, 0.01\}$, $\lambda_T \in \{0, 0.001, 0.005\}$); evaluates model-class classification, dislocation, and dealer halts. | `research_extension/outputs/learned_agents/reward_sensitivity_results.json` | `research_extension/learned_agents/reward_sensitivity_sweep.py` |
 
 ---
 

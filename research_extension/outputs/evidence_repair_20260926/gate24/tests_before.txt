@@ -1,0 +1,139 @@
+FFFFFFFFFFFFFFFFFF                                                       [100%]
+=================================== FAILURES ===================================
+__________ test_impact_uses_price_changes_and_base_units_without_abs ___________
+tests/test_gate24_repairs.py:39: in test_impact_uses_price_changes_and_base_units_without_abs
+    assert positive["empirical_channels"]["kappa_hat"] == pytest.approx(2.)
+E   assert 0.23255517 == 2.0 ± 2.0e-06
+E     
+E     comparison failed
+E     Obtained: 0.23255517
+E     Expected: 2.0 ± 2.0e-06
+_______ test_holdout_cannot_change_training_impact_or_historical_anchors _______
+tests/test_gate24_repairs.py:53: in test_holdout_cannot_change_training_impact_or_historical_anchors
+    assert first["empirical_channels"]["kappa_hat"] == second["empirical_channels"]["kappa_hat"]
+E   assert 0.23255517 == 0.03317
+______ test_unidentified_or_negative_impact_is_not_simulation_calibration ______
+tests/test_gate24_repairs.py:66: in test_unidentified_or_negative_impact_is_not_simulation_calibration
+    assert g2["empirical_channels"]["kappa_hat"] is None
+E   assert 1e-06 is None
+___________ test_snapshot_is_not_historical_depth_or_dealer_capacity ___________
+tests/test_gate24_repairs.py:77: in test_snapshot_is_not_historical_depth_or_dealer_capacity
+    assert lob.get("source_kind") == "live_rest_snapshot"
+E   AssertionError: assert None == 'live_rest_snapshot'
+E    +  where None = <built-in method get of dict object at 0x10933ab80>('source_kind')
+E    +    where <built-in method get of dict object at 0x10933ab80> = {'available_levels': 1, 'best_ask': 101.0, 'best_bid': 99.0, 'mid_price': 100.0, ...}.get
+_________ test_spread_is_dealer_income_with_balanced_counterpart_cash __________
+tests/test_gate24_repairs.py:85: in test_spread_is_dealer_income_with_balanced_counterpart_cash
+    assert result["final_equity"] == pytest.approx(1000.2)
+E   assert np.float64(999.8) == 1000.2 ± 0.0010002
+E     
+E     comparison failed
+E     Obtained: 999.8
+E     Expected: 1000.2 ± 0.0010002
+__________ test_every_party_and_fee_recipient_conserves_on_each_step ___________
+tests/test_gate24_repairs.py:94: in test_every_party_and_fee_recipient_conserves_on_each_step
+    result = market(q=.3, phi=.2, a=.7, fee_bps=5.).run(np.array([2., -1., 4., -3.]))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_gate24_repairs.py:32: in market
+    return analysis.IndependentCalibratedMarket(**(params | overrides))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: IndependentCalibratedMarket.__init__() got an unexpected keyword argument 'fee_bps'
+______________ test_capacity_allows_crossing_zero_before_clipping ______________
+tests/test_gate24_repairs.py:108: in test_capacity_allows_crossing_zero_before_clipping
+    assert result["final_equity"] == pytest.approx(1171.)
+E   assert np.float64(1009.0) == 1171.0 ± 0.001171
+E     
+E     comparison failed
+E     Obtained: 1009.0
+E     Expected: 1171.0 ± 0.001171
+__________ test_halt_is_absorbing_but_marks_continue_through_horizon ___________
+tests/test_gate24_repairs.py:115: in test_halt_is_absorbing_but_marks_continue_through_horizon
+    assert result["final_equity"] == pytest.approx(1075.)
+E   assert np.float64(1125.0) == 1075.0 ± 0.001075
+E     
+E     comparison failed
+E     Obtained: 1125.0
+E     Expected: 1075.0 ± 0.001075
+_________ test_external_repricing_and_default_mark_existing_inventory __________
+tests/test_gate24_repairs.py:125: in test_external_repricing_and_default_mark_existing_inventory
+    assert result["halted"] is True
+E   assert False is True
+____ test_jacobian_matches_actual_next_price_memory_and_fundamental_demand _____
+tests/test_gate24_repairs.py:135: in test_jacobian_matches_actual_next_price_memory_and_fundamental_demand
+    assert callable(jacobian), "Expose the Jacobian of the implemented update"
+E   AssertionError: Expose the Jacobian of the implemented update
+E   assert False
+E    +  where False = callable(None)
+_____________ test_gate3_roundtrip_fees_unwind_and_50000_arrivals ______________
+tests/test_gate24_repairs.py:153: in test_gate3_roundtrip_fees_unwind_and_50000_arrivals
+    result = analysis.analyze_gate3("X", bars(), g2, fee_bps=10.)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: analyze_gate3() got an unexpected keyword argument 'fee_bps'
+_____________ test_missing_fees_does_not_become_a_complete_budget ______________
+tests/test_gate24_repairs.py:168: in test_missing_fees_does_not_become_a_complete_budget
+    assert result["status"] == "PENDING_CALIBRATION"
+E   AssertionError: assert 'PASS' == 'PENDING_CALIBRATION'
+E     
+E     - PENDING_CALIBRATION
+E     + PASS
+______________ test_unavailable_official_checksum_is_not_verified ______________
+tests/test_gate24_repairs.py:177: in test_unavailable_official_checksum_is_not_verified
+    assert downloader.verify_checksum_file(b"fixture", "https://example.invalid/file.CHECKSUM") is False
+E   AssertionError: assert True is False
+E    +  where True = <function verify_checksum_file at 0x10909fb00>(b'fixture', 'https://example.invalid/file.CHECKSUM')
+E    +    where <function verify_checksum_file at 0x10909fb00> = downloader.verify_checksum_file
+----------------------------- Captured stdout call -----------------------------
+    ⚠ Could not fetch official checksum (network disabled), logging local SHA-256 only
+______________ test_existing_cache_is_not_automatically_verified _______________
+tests/test_gate24_repairs.py:189: in test_existing_cache_is_not_automatically_verified
+    assert downloader.MANIFEST[0]["checksum_verified"] is False
+E   assert True is False
+----------------------------- Captured stdout call -----------------------------
+
+=== [1/3] Downloading Klines (1-minute OHLCV) ===
+  [skip existing] X-1m-2025-01.zip
+_____________ test_local_sidecar_must_match_hash_and_archive_name ______________
+tests/test_gate24_repairs.py:194: in test_local_sidecar_must_match_hash_and_archive_name
+    assert callable(audit), "Offline provenance must inspect cached checksum evidence"
+E   AssertionError: Offline provenance must inspect cached checksum evidence
+E   assert False
+E    +  where False = callable(None)
+_______ test_live_depth_cannot_be_recorded_as_official_checksum_verified _______
+tests/test_gate24_repairs.py:213: in test_live_depth_cannot_be_recorded_as_official_checksum_verified
+    assert downloader.MANIFEST[0]["checksum_verified"] is False
+E   assert True is False
+----------------------------- Captured stdout call -----------------------------
+    Saved X-depth-1000.json  (2 bytes  sha256=44136fa355b3678a…)
+_______ test_offline_cli_writes_new_outputs_without_touching_cached_data _______
+tests/test_gate24_repairs.py:235: in test_offline_cli_writes_new_outputs_without_touching_cached_data
+    assert (output / "gate24_analysis_results.json").exists()
+E   AssertionError: assert False
+E    +  where False = exists()
+E    +    where exists = (PosixPath('/private/var/folders/pk/ksqc41pj60q3589gfwhqz5tw0000gn/T/pytest-of-pratik_n/pytest-53/test_offline_cli_writes_new_ou0/results') / 'gate24_analysis_results.json').exists
+___________ test_loader_orders_timestamps_and_rejects_missing_month ____________
+tests/test_gate24_repairs.py:251: in test_loader_orders_timestamps_and_rejects_missing_month
+    assert loaded.shape == (2, 8)
+E   assert (2, 7) == (2, 8)
+E     
+E     At index 1 diff: 7 != 8
+E     Use -v to get more diff
+=========================== short test summary info ============================
+FAILED tests/test_gate24_repairs.py::test_impact_uses_price_changes_and_base_units_without_abs
+FAILED tests/test_gate24_repairs.py::test_holdout_cannot_change_training_impact_or_historical_anchors
+FAILED tests/test_gate24_repairs.py::test_unidentified_or_negative_impact_is_not_simulation_calibration
+FAILED tests/test_gate24_repairs.py::test_snapshot_is_not_historical_depth_or_dealer_capacity
+FAILED tests/test_gate24_repairs.py::test_spread_is_dealer_income_with_balanced_counterpart_cash
+FAILED tests/test_gate24_repairs.py::test_every_party_and_fee_recipient_conserves_on_each_step
+FAILED tests/test_gate24_repairs.py::test_capacity_allows_crossing_zero_before_clipping
+FAILED tests/test_gate24_repairs.py::test_halt_is_absorbing_but_marks_continue_through_horizon
+FAILED tests/test_gate24_repairs.py::test_external_repricing_and_default_mark_existing_inventory
+FAILED tests/test_gate24_repairs.py::test_jacobian_matches_actual_next_price_memory_and_fundamental_demand
+FAILED tests/test_gate24_repairs.py::test_gate3_roundtrip_fees_unwind_and_50000_arrivals
+FAILED tests/test_gate24_repairs.py::test_missing_fees_does_not_become_a_complete_budget
+FAILED tests/test_gate24_repairs.py::test_unavailable_official_checksum_is_not_verified
+FAILED tests/test_gate24_repairs.py::test_existing_cache_is_not_automatically_verified
+FAILED tests/test_gate24_repairs.py::test_local_sidecar_must_match_hash_and_archive_name
+FAILED tests/test_gate24_repairs.py::test_live_depth_cannot_be_recorded_as_official_checksum_verified
+FAILED tests/test_gate24_repairs.py::test_offline_cli_writes_new_outputs_without_touching_cached_data
+FAILED tests/test_gate24_repairs.py::test_loader_orders_timestamps_and_rejects_missing_month
+18 failed in 0.58s

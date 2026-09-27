@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
+import copy
 from pathlib import Path
 from typing import Dict, Any, List
 import numpy as np
@@ -26,6 +27,8 @@ RESULTS_DIR = ROOT / "research_extension" / "outputs" / "learned_agents"
 
 def evaluate_policy(agent: QLearningAgent, val_seeds: List[int], n_episodes: int = 20) -> Dict[str, float]:
     """Evaluate agent greedily across validation seeds without exploration or updates."""
+    # A validation copy cannot perturb training randomness, learning or support.
+    agent = copy.deepcopy(agent)
     prev_mode = agent.mode
     agent.set_mode("frozen")
 
@@ -39,15 +42,17 @@ def evaluate_policy(agent: QLearningAgent, val_seeds: List[int], n_episodes: int
         for ep in range(n_episodes // len(val_seeds)):
             s = env.reset(seed=seed * 1000 + ep)
             ep_reward = 0.0
+            max_dislocation = 0.0
             done = False
             while not done:
                 a = agent.select_action(s, greedy=True)
                 s_next, r, done, info = env.step(a)
                 ep_reward += r
+                max_dislocation = max(max_dislocation, abs(info['x']))
                 s = s_next
             rewards.append(ep_reward)
             equities.append(env.agent_equity)
-            max_dislocations.append(abs(env.x))
+            max_dislocations.append(max_dislocation)
             dealer_halts.append(1 if env.dealer_halted else 0)
 
     agent.set_mode(prev_mode)
@@ -66,9 +71,14 @@ def train_single_agent(
     val_seeds: List[int],
     total_steps: int = 500_000,
     eval_freq: int = 50_000,
+    checkpoint_dir: Path | None = None,
 ) -> Dict[str, Any]:
     """Train a single Q-learning policy with periodic validation checkpointing."""
     print(f"\n--- Training Policy {policy_id:02d} (seed={train_seed}, steps={total_steps:,}) ---")
+    if checkpoint_dir is None:
+        raise ValueError('Explicit fresh checkpoint_dir required; historical checkpoints are protected')
+    if total_steps <= 0 or eval_freq <= 0:
+        raise ValueError('Positive training and evaluation budgets required')
     cfg = MarketConfig()
     env = DiscreteTradingEnv(config=cfg, seed=train_seed)
     agent = QLearningAgent(seed=train_seed)
@@ -98,7 +108,7 @@ def train_single_agent(
                 best_val_reward = val_r
                 best_step = step
                 # Save best checkpoint
-                best_ckpt_path = CHECKPOINT_DIR / f"policy_{policy_id:02d}_best.npz"
+                best_ckpt_path = checkpoint_dir / f"policy_{policy_id:02d}_best.npz"
                 agent.save(best_ckpt_path)
 
             record = {
@@ -116,7 +126,7 @@ def train_single_agent(
                   f"Elapsed: {elapsed:.1f}s {'[BEST]' if is_best else ''}")
 
     # Save final checkpoint as well
-    final_ckpt_path = CHECKPOINT_DIR / f"policy_{policy_id:02d}_final.npz"
+    final_ckpt_path = checkpoint_dir / f"policy_{policy_id:02d}_final.npz"
     agent.save(final_ckpt_path)
 
     return {
@@ -124,12 +134,13 @@ def train_single_agent(
         "train_seed": train_seed,
         "best_step": best_step,
         "best_val_reward": best_val_reward,
-        "best_checkpoint": str(best_ckpt_path.relative_to(ROOT)),
+        "best_checkpoint": str(best_ckpt_path),
         "history": history,
     }
 
 
 def main():
+    raise RuntimeError('Use python -m research_extension.evidence_repair.run_learned_agents --output FRESH_DIRECTORY for versioned corrected training; historical outputs are protected')
     parser = argparse.ArgumentParser(description="Train Q-Learning Agents for Machine Markets")
     parser.add_argument("--policies", type=int, default=10, help="Number of independent policies")
     parser.add_argument("--steps", type=int, default=200_000, help="Total environment transitions per policy")

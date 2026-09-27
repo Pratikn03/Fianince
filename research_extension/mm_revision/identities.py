@@ -180,19 +180,40 @@ def recover_unknown_eta_and_q(
       1^T v = eta * (1^T q) = eta * Q
       eta = (1^T v) / Q
       q = v / eta = Q * v / (1^T v)
+
+    Requires finite inputs, compatible b, nonnegative q, and 0 < eta <= 1.
+    Compatibility and boundary checks allow only scale-relative floating-point
+    roundoff (64 * max(U.shape) * machine epsilon). Tiny negative weights within
+    that tolerance are clipped to zero; this is not a noisy-data estimator.
     """
     U = np.asarray(U, dtype=float)
     b = np.asarray(b, dtype=float).flatten()
-    if Q <= 0:
-        raise ValueError("Q must be strictly positive.")
+    if U.ndim != 2 or 0 in U.shape:
+        raise ValueError("U must be a nonempty two-dimensional matrix.")
+    if b.size != U.shape[0]:
+        raise ValueError("b must contain one response per row of U (matching rows).")
+    if not np.isfinite(Q) or Q <= 0:
+        raise ValueError("Q must be finite and strictly positive.")
+    if not np.all(np.isfinite(U)) or not np.all(np.isfinite(b)):
+        raise ValueError("U and b must be finite.")
     
     # Pseudo-inverse solution v = eta * q
-    v, _, _, _ = np.linalg.lstsq(U, b, rcond=None)
+    v, _, rank, _ = np.linalg.lstsq(U, b, rcond=None)
+    if rank != U.shape[1]:
+        raise ValueError("U must have full column rank to recover eta and q.")
+    tol = 64.0 * max(U.shape) * np.finfo(float).eps
+    response_scale = max(float(np.linalg.norm(b, ord=np.inf)),
+                         float(np.linalg.norm(U, ord=np.inf) * np.linalg.norm(v, ord=np.inf)))
+    if np.linalg.norm(U @ v - b, ord=np.inf) > tol * response_scale:
+        raise ValueError("b must be compatible with the column space of U.")
+    if np.any(v < -tol * np.linalg.norm(v, ord=np.inf)):
+        raise ValueError("Recovered q must be nonnegative.")
+    v = np.maximum(v, 0.0)
     sum_v = float(np.sum(v))
-    if sum_v <= 0:
-        raise ValueError("Measured channel response sum must be positive.")
-    
     eta_est = sum_v / float(Q)
+    if not np.isfinite(eta_est) or eta_est <= 0 or eta_est > 1.0 + tol:
+        raise ValueError("Recovered eta must lie in (0, 1].")
+    eta_est = min(eta_est, 1.0)
     q_est = (v / eta_est)
     return eta_est, q_est
 
@@ -202,16 +223,22 @@ def analyze_channel_experiment_map(
     eta: Optional[float] = None,
     aggregate_Q_known: bool = False
 ) -> Dict[str, Any]:
-    """Analyze the channel measurement map b = eta * U * q (Theorem G.2).
+    """Analyze uniform/generic rank conditions for b = eta * U * q (Theorem G.2).
+
+    This design-only analysis has no observed b or numeric Q, and does not decide
+    pointwise uniqueness on the nonnegative boundary. Rank deficiency can coexist
+    with a singleton feasible fiber (e.g. U=[1,1], b=0, known positive eta).
+    ``unique_identification`` denotes the stated uniform rank guarantee, not a
+    pointwise verdict; cases using unknown eta and known Q assume Q > 0.
 
     Delineates five distinct information cases:
       1. Known eta, full-rank U: unique componentwise recovery of q.
       2. Known eta, known aggregate Q, augmented full-rank [1^T; U]: unique recovery with n-1 probes.
       3. Unknown eta, full-rank U, known aggregate Q > 0: unique recovery of both eta and q.
       4. Unknown eta, full-rank U, lag-2 measurements only, no scale-fixing information:
-         parameter vector q is identified only up to scale on a ray {b / eta : eta in [eta_floor, 1]}.
+         q lies on a scale ray {U^dagger b / eta : 0 < eta <= 1} for compatible nonzero data.
       5. Rank-deficient U with insufficient auxiliary constraints:
-         directional subspace ambiguity beyond a simple scale ray.
+         possible nullspace ambiguity; feasible-set dimension depends on data and boundaries.
 
     Parameters:
       U: shape (m, n) measurement matrix specifying channel excitation weights across m experiments.
@@ -219,6 +246,8 @@ def analyze_channel_experiment_map(
       aggregate_Q_known: bool, whether aggregate Q = 1^T q is already known from public probing.
     """
     U = np.asarray(U, dtype=float)
+    if eta is not None and (not np.isfinite(eta) or not 0 < eta <= 1):
+        raise ValueError("Known eta must be finite and lie in (0, 1].")
     m, n = U.shape
 
     rank_U = int(np.linalg.matrix_rank(U))
@@ -238,12 +267,12 @@ def analyze_channel_experiment_map(
         elif not aggregate_Q_known and rank_U == n:
             # Case 4: Unknown eta, full-rank U, no scale-fixing information -> ray ambiguity
             unique_identification = False
-            status_reason = "Case 4: Unknown eta without aggregate Q: q is partially identified on a scale ray (b / eta)."
+            status_reason = "Case 4: Unknown eta without aggregate Q: q is partially identified on a scale ray (U^dagger b / eta) for compatible nonzero data."
             min_probes_needed = None
         else:
-            # Case 5: Rank-deficient U with unknown eta -> directional subspace ambiguity
+            # Case 5: No uniform guarantee; pointwise feasible dimension is data-dependent.
             unique_identification = False
-            status_reason = f"Case 5: Rank-deficient U (rank {rank_U}/{n}) leaves directional subspace ambiguity beyond a ray."
+            status_reason = f"Case 5: Rank-deficient U (rank {rank_U}/{n}) permits possible nullspace ambiguity; pointwise uniqueness and dimension depend on data, nonnegativity, and auxiliary constraints."
             min_probes_needed = None
     else:
         if aggregate_Q_known:
@@ -269,6 +298,7 @@ def analyze_channel_experiment_map(
         "aggregate_Q_known": aggregate_Q_known,
         "eta_known": bool(eta is not None),
         "unique_identification": bool(unique_identification),
+        "identification_scope": "uniform_generic_rank_not_pointwise_boundary",
         "condition_number_U": cond_U,
         "condition_number_aug": cond_aug,
         "status_reason": status_reason,

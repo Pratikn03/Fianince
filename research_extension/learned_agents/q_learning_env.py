@@ -1,5 +1,5 @@
 """
-Discrete Trading Environment with Funded Dealer Constraints
+Discrete Trading Environment with an Inventory-Constrained Dealer
 ===========================================================
 Machine Markets — Learned-Agent Transfer Layer (Q-Learning)
 
@@ -11,8 +11,9 @@ Action space:
   A = {-2, -1, 0, +1, +2} shares/units (5 discrete actions).
 
 Execution:
-  All orders pass through identical funded dealer inventory and balance-sheet constraints:
-  no privileged fills or soft constraints.
+  Simultaneous customer orders are netted and prorated at dealer capacity.
+  Four explicit cash/inventory ledgers conserve transfers. Cash balances may be
+  negative: this is NOT the separately implemented funded/liquidation market.
 
 Reward:
   r_t = Delta E_t - lambda_I * I_t^2 - lambda_T * |Delta I_t|
@@ -52,7 +53,7 @@ class MarketConfig:
     kappa: float = 0.02
     phi: float = 0.50          # Fundamental mean-reversion elasticity
     sigma_noise: float = 0.10   # Exogenous disturbance standard deviation
-    spread_bps: float = 1.0     # 1 bp half-spread
+    spread_bps: float = 1.0     # full bid-ask spread; half paid per execution
     max_inventory: float = 25.0 # Dealer inventory capacity
     lambda_inv: float = 0.01    # Agent inventory holding penalty
     lambda_trans: float = 0.005 # Agent turnover transaction penalty
@@ -60,10 +61,12 @@ class MarketConfig:
 
 
 class DiscreteTradingEnv:
-    """Environment simulating price dislocation and dealer balance-sheet constraints."""
+    """Inventory-only execution model; no funding, margin or liquidation rule."""
 
     def __init__(self, config: Optional[MarketConfig] = None, seed: int = 42):
         self.cfg = config or MarketConfig()
+        if self.cfg.max_inventory <= 0 or self.cfg.max_steps <= 0:
+            raise ValueError('Positive inventory capacity and horizon required')
         self.rng = np.random.default_rng(seed)
         self.half_spread = (self.cfg.spread_bps / 10000.0) * self.cfg.p_star / 2.0
         self.reset()
@@ -79,6 +82,8 @@ class DiscreteTradingEnv:
         self.agent_equity = 10000.0
         self.dealer_inv = 0.0
         self.dealer_cash = 10000.0
+        self.fundamental_inv = self.noise_inv = 0.0
+        self.fundamental_cash = self.noise_cash = 10000.0
         self.dealer_halted = False
         self.recent_imbalance = 0.0
 
@@ -87,26 +92,26 @@ class DiscreteTradingEnv:
         return discretize_state(self.x, ret, self.agent_inv, cap_util, self.recent_imbalance)
 
     def step(self, action_idx: int, external_shock: float = 0.0) -> Tuple[int, float, bool, Dict[str, Any]]:
+        if self.step_idx >= self.cfg.max_steps:
+            raise RuntimeError('Episode complete; reset before further execution')
+        if action_idx not in range(N_ACTIONS) or not np.isfinite(external_shock):
+            raise ValueError('Invalid action or shock')
         self.step_idx += 1
         desired_trade = ACTIONS[action_idx]
-
-        # In case dealer is already halted, no agent trades fill
-        if self.dealer_halted:
-            agent_trade = 0.0
-        else:
-            # Dealer checks capacity limit
-            tentative_dealer_inv = self.dealer_inv - desired_trade
-            if abs(tentative_dealer_inv) > self.cfg.max_inventory:
-                self.dealer_halted = True
-                avail = max(0.0, self.cfg.max_inventory - abs(self.dealer_inv))
-                agent_trade = avail * np.sign(desired_trade) if desired_trade != 0 else 0.0
-            else:
-                agent_trade = desired_trade
-
-        # Market-clearing flow: agent trade + fundamentalists + noise
         v_fund = -self.cfg.phi * self.x
+        # Consume the same exogenous random draw even after a halt.
         v_exog = self.rng.normal(0.0, self.cfg.sigma_noise)
-        net_flow = agent_trade + v_fund + v_exog
+        requested = float(desired_trade + v_fund + v_exog)
+        feasible = float(np.clip(requested, self.dealer_inv - self.cfg.max_inventory,
+                                 self.dealer_inv + self.cfg.max_inventory))
+        fill_fraction = 0.0 if self.dealer_halted else 1.0
+        if not self.dealer_halted and abs(feasible - requested) > 1e-12:
+            fill_fraction = feasible / requested
+            self.dealer_halted = True
+        agent_trade = float(desired_trade * fill_fraction)
+        fund_trade = float(v_fund * fill_fraction)
+        noise_trade = float(v_exog * fill_fraction)
+        net_flow = agent_trade + fund_trade + noise_trade
 
         # Update dealer inventory
         self.dealer_inv -= net_flow
@@ -114,12 +119,18 @@ class DiscreteTradingEnv:
         # Price update
         x_next = self.cfg.a * self.x + self.cfg.kappa * net_flow + external_shock
         p_next = self.cfg.p_star + x_next
-        p_curr = self.cfg.p_star + self.x
 
         # Agent balance sheet and reward
         spread_cost = abs(agent_trade) * self.half_spread
         self.agent_cash -= agent_trade * p_next + spread_cost
         self.agent_inv += agent_trade
+        fund_payment = fund_trade * p_next + abs(fund_trade) * self.half_spread
+        noise_payment = noise_trade * p_next + abs(noise_trade) * self.half_spread
+        self.fundamental_cash -= fund_payment
+        self.noise_cash -= noise_payment
+        self.fundamental_inv += fund_trade
+        self.noise_inv += noise_trade
+        self.dealer_cash += agent_trade * p_next + spread_cost + fund_payment + noise_payment
         new_equity = self.agent_cash + self.agent_inv * p_next
         delta_equity = new_equity - self.agent_equity
         self.agent_equity = new_equity
@@ -135,7 +146,7 @@ class DiscreteTradingEnv:
         cap_util = min(1.0, abs(self.dealer_inv) / self.cfg.max_inventory)
 
         next_state = discretize_state(self.x, ret, self.agent_inv, cap_util, self.recent_imbalance)
-        done = (self.step_idx >= self.cfg.max_steps) or self.dealer_halted
+        done = self.step_idx >= self.cfg.max_steps
 
         info = {
             "x": self.x,
@@ -146,5 +157,10 @@ class DiscreteTradingEnv:
             "net_flow": net_flow,
             "agent_trade": agent_trade,
             "spread_cost": spread_cost,
+            "fundamental_trade": fund_trade,
+            "noise_trade": noise_trade,
+            "fill_fraction": fill_fraction,
+            "cash_residual": self.agent_cash + self.dealer_cash + self.fundamental_cash + self.noise_cash - 40000.,
+            "inventory_residual": self.agent_inv + self.dealer_inv + self.fundamental_inv + self.noise_inv,
         }
         return next_state, reward, done, info

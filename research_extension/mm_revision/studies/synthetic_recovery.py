@@ -28,6 +28,8 @@ from research_extension.mm_revision.decisions import (
     evaluate_decision_accuracy,
     aggregate_decision_metrics,
     AggregatedDecisionMetrics,
+    interval_contains,
+    summarize_interval_widths,
 )
 import sys
 from pathlib import Path
@@ -70,14 +72,15 @@ def run_single_synthetic_panel(
     prices = np.zeros((n_episodes, H + 1), dtype=float)
 
     for r in range(n_episodes):
-        u_tape = np.zeros(H)
+        u_tape = np.zeros(H + 1)
         u_tape[0] = probes[r] # Single pulse at t=0
-        innov = rng.normal(0.0, noise_sigma, size=H)
+        innov = rng.normal(0.0, noise_sigma, size=H + 1)
         x_traj, _ = simulate_discrete_trajectory(
             a=a, eta=eta_vec, q=q_vec, u=u_tape, innovations=innov,
             kappa=kappa, x0=0.0, y0=np.zeros(2)
         )
-        prices[r] = x_traj
+        # beta_j is the response at x_{j+1}; x0 precedes the probe.
+        prices[r] = x_traj[1:]
 
     # 1. Response estimation (Contract I0 observable)
     band = response_intervals(probes, prices, alpha=0.05)
@@ -86,12 +89,27 @@ def run_single_synthetic_panel(
     lower_band = band["lower"]
     upper_band = band["upper"]
 
-    results = {"true_S": true_S, "slow_rate": slow_rate, "n_episodes": n_episodes}
+    results = {"true_S": true_S, "slow_rate": slow_rate, "n_episodes": n_episodes,
+               "seed": seed, "H": H, "probe_size": probe_size,
+               "observation": {"beta_hat": beta_hat.tolist(), "covariance": cov_beta.tolist(),
+                               "df": band['df'], "price_indices": 'x1..x(H+1)',
+                               "covariance_mode": 'estimated',
+                               "covariance_rank": int(np.linalg.matrix_rank(cov_beta))}}
+    # Oracle quantities are evaluation-only and never passed to a comparator.
+    _, true_beta = compute_impulse_response(a, eta_vec, q_vec, kappa=kappa, H=H)
+    oracle = {"true_response": true_beta.tolist(), "response_region_contains_truth": None,
+              "mahalanobis_squared": None, "radius_squared": None}
+    if n_episodes - 2 >= H + 1 and np.linalg.matrix_rank(cov_beta) == H + 1:
+        from scipy.stats import f
+        p, nu = H + 1, n_episodes - 2
+        radius = nu * p / (nu - p + 1) * f.ppf(.95, p, nu - p + 1)
+        diff = beta_hat - true_beta
+        distance = float(diff @ np.linalg.solve(cov_beta, diff))
+        oracle.update(response_region_contains_truth=bool(distance <= radius),
+                      mahalanobis_squared=distance, radius_squared=float(radius))
+    results['oracle_diagnostics'] = oracle
 
-    def check_cov(lo, hi, truth):
-        lo_ok = (lo is None or np.isnan(lo) or lo <= truth)
-        hi_ok = (hi is None or np.isnan(hi) or truth <= hi)
-        return bool(lo_ok and hi_ok and (lo is not None or hi is not None))
+    check_cov = interval_contains
 
     # Comparator 1: Observable Recurrence LP
     t0 = time.perf_counter()
@@ -103,12 +121,13 @@ def run_single_synthetic_panel(
         rec_decision = rec_res["decision"]
         rec_covered = check_cov(rec_lo, rec_hi, true_S)
         rec_eval = evaluate_decision_accuracy(rec_decision, true_S)
-    except Exception:
+    except Exception as exc:
         rec_time = time.perf_counter() - t0
         rec_lo, rec_hi = None, None
         rec_decision = DecisionLabel.CONFLICT
         rec_covered = False
-        rec_eval = {"is_issued": False, "is_wrong": False, "is_abstain": False, "is_conflict": True}
+        rec_eval = {"is_issued": False, "is_wrong": False, "is_abstain": False, "is_conflict": True,
+                    "error": f"{type(exc).__name__}: {exc}"}
 
     results["recurrence_lp"] = {
         "lower": rec_lo, "upper": rec_hi, "decision": rec_decision.value,
@@ -119,8 +138,7 @@ def run_single_synthetic_panel(
     t0 = time.perf_counter()
     try:
         oe_res = fit_covariance_output_error(
-            beta_hat=beta_hat, covariance_beta=cov_beta, eta_floor=eta_floor,
-            kappa_init=kappa
+            beta_hat=beta_hat, covariance_beta=cov_beta, eta_floor=eta_floor
         )
         oe_time = time.perf_counter() - t0
         oe_lo = oe_res.S_lower
@@ -129,12 +147,22 @@ def run_single_synthetic_panel(
         oe_covered = check_cov(oe_lo, oe_hi, true_S)
         oe_eval = evaluate_decision_accuracy(oe_decision, true_S)
         oe_diag = oe_res.diagnostics
-    except Exception:
+        oe_eval.update(ci_type=oe_res.ci_type, sandwich_interval=getattr(oe_res, 'sandwich_interval', None),
+                       profile_interval=oe_res.profile_interval, se_S=oe_res.se_S,
+                       optimizer_success=oe_diag.optimizer_success,
+                       inference_available=oe_res.ci_type != 'unavailable',
+                       inference_status=getattr(oe_res, 'inference_status', None),
+                       profile_status=getattr(oe_res, 'profile_status', None))
+        if oe_res.ci_type == 'unavailable':
+            oe_eval['fallback_interval'] = [oe_lo, oe_hi]
+            oe_lo, oe_hi, oe_covered = None, None, False
+    except Exception as exc:
         oe_time = time.perf_counter() - t0
-        oe_lo, oe_hi = 0.0, 5.0
-        oe_decision = DecisionLabel.ABSTAIN
-        oe_covered = True
-        oe_eval = {"is_issued": False, "is_wrong": False, "is_abstain": True, "is_conflict": False}
+        oe_lo, oe_hi = None, None
+        oe_decision = DecisionLabel.CONFLICT
+        oe_covered = False
+        oe_eval = {"is_issued": False, "is_wrong": False, "is_abstain": False, "is_conflict": True,
+                   "error": f"{type(exc).__name__}: {exc}"}
         oe_diag = None
 
     results["output_error"] = {
@@ -153,12 +181,13 @@ def run_single_synthetic_panel(
         dec_decision = deconv_res["decision"]
         dec_covered = check_cov(dec_lo, dec_hi, true_S)
         dec_eval = evaluate_decision_accuracy(dec_decision, true_S)
-    except Exception:
+    except Exception as exc:
         deconv_time = time.perf_counter() - t0
         dec_lo, dec_hi = None, None
         dec_decision = DecisionLabel.CONFLICT
         dec_covered = False
-        dec_eval = {"is_issued": False, "is_wrong": False, "is_abstain": False, "is_conflict": True}
+        dec_eval = {"is_issued": False, "is_wrong": False, "is_abstain": False, "is_conflict": True,
+                   "error": f"{type(exc).__name__}: {exc}"}
 
     results["deconvolution_interval"] = {
         "lower": dec_lo, "upper": dec_hi, "decision": dec_decision.value,
@@ -167,9 +196,12 @@ def run_single_synthetic_panel(
 
     # Comparator 4: Naive Point Fit (constrained least squares recurrence)
     t0 = time.perf_counter()
+    pt_res = None
     try:
         from observable import recurrence_point
         pt_res = recurrence_point(beta_hat, eta_floor=eta_floor)
+        if pt_res.get('status') != 'ok' or not np.isfinite(pt_res.get('gain', np.nan)):
+            raise RuntimeError(f"Point fit unavailable: {pt_res.get('status', 'missing_status')}")
         naive_S = pt_res["gain"]
         naive_time = time.perf_counter() - t0
         naive_se = float(np.std(beta_hat) / np.sqrt(len(beta_hat)))
@@ -178,16 +210,17 @@ def run_single_synthetic_panel(
         naive_decision = classify_interval(naive_lo, naive_hi, threshold=1.0)
         naive_covered = (naive_lo <= true_S <= naive_hi)
         naive_eval = evaluate_decision_accuracy(naive_decision, true_S)
-    except Exception:
+    except Exception as exc:
         naive_time = time.perf_counter() - t0
-        naive_lo, naive_hi = 0.0, 5.0
-        naive_decision = DecisionLabel.ABSTAIN
-        naive_covered = True
-        naive_eval = {"is_issued": False, "is_wrong": False, "is_abstain": True, "is_conflict": False}
+        naive_lo, naive_hi = None, None
+        naive_decision = DecisionLabel.CONFLICT
+        naive_covered = False
+        naive_eval = {"is_issued": False, "is_wrong": False, "is_abstain": False, "is_conflict": True,
+                      "error": f"{type(exc).__name__}: {exc}"}
 
     results["naive_point_fit"] = {
         "lower": naive_lo, "upper": naive_hi, "decision": naive_decision.value if hasattr(naive_decision, 'value') else str(naive_decision),
-        "is_covered": naive_covered, "time": naive_time, **naive_eval
+        "is_covered": naive_covered, "time": naive_time, "diagnostics": pt_res, **naive_eval
     }
 
     # Comparator 5: Covariance-Aware Conic Certificate
@@ -202,16 +235,19 @@ def run_single_synthetic_panel(
         conic_decision = conic_res["decision"]
         conic_covered = check_cov(conic_lo, conic_hi, true_S)
         conic_eval = evaluate_decision_accuracy(conic_decision, true_S)
-    except Exception:
+    except Exception as exc:
         conic_time = time.perf_counter() - t0
         conic_lo, conic_hi = None, None
         conic_decision = DecisionLabel.CONFLICT
         conic_covered = False
-        conic_eval = {"is_issued": False, "is_wrong": False, "is_abstain": False, "is_conflict": True}
+        conic_eval = {"is_issued": False, "is_wrong": False, "is_abstain": False, "is_conflict": True,
+                     "error": f"{type(exc).__name__}: {exc}"}
+        conic_res = {"status": "exception"}
 
     results["conic_certificate"] = {
         "lower": conic_lo, "upper": conic_hi, "decision": conic_decision.value if hasattr(conic_decision, 'value') else str(conic_decision),
-        "is_covered": conic_covered, "time": conic_time, **conic_eval
+        "is_covered": conic_covered, "time": conic_time, **conic_eval,
+        "diagnostics": conic_res
     }
 
     return results
@@ -252,19 +288,9 @@ def run_comparative_grid_study(
         comp_records = [r[comp] for r in all_results if comp in r]
         metrics = aggregate_decision_metrics(comp_records)
         mean_time = float(np.mean([r["time"] for r in comp_records]))
-        widths = [
-            (r["upper"] - r["lower"]) for r in comp_records
-            if r["lower"] is not None and r["upper"] is not None and np.isfinite(r["upper"]) and np.isfinite(r["lower"])
-        ]
-        mean_width = float(np.mean(widths)) if widths else 0.0
-        median_width = float(np.median(widths)) if widths else 0.0
-        p90_width = float(np.percentile(widths, 90)) if widths else 0.0
-
         summary[comp] = {
             "metrics": metrics.__dict__,
-            "mean_interval_width": mean_width,
-            "median_interval_width": median_width,
-            "p90_interval_width": p90_width,
+            **summarize_interval_widths(comp_records),
             "mean_execution_time_seconds": mean_time,
         }
 
@@ -273,6 +299,5 @@ def run_comparative_grid_study(
         "settings_count": cell_idx,
         "replications_per_cell": replications_per_cell,
         "summary": summary,
-        "sample_records": all_results[:5],
+        "panel_records": all_results,
     }
-

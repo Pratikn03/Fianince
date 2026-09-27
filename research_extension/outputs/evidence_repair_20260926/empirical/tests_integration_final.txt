@@ -1,0 +1,23 @@
+Command: PYTHONDONTWRITEBYTECODE=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3.11 -m pytest -q -p no:cacheprovider --basetemp=research_extension/outputs/evidence_repair_20260926/empirical/test_tmp_final tests research_extension/tests
+Exit code: 1
+........................................................................ [ 42%]
+................................................................F....... [ 85%]
+.........................                                                [100%]
+=================================== FAILURES ===================================
+________ test_untrained_audit_abstains_and_does_not_consume_randomness _________
+
+    def test_untrained_audit_abstains_and_does_not_consume_randomness():
+        agent = QLearningAgent(seed=7)
+        before = copy.deepcopy(agent.rng.bit_generator.state)
+        jac = estimate_local_jacobian(agent, MarketConfig())
+        audit = audit_model_class_validity(agent, jac)
+        assert audit['classification'] == 'NON_CERTIFIABLE_SUPPORT'
+        assert agent.rng.bit_generator.state == before
+        assert jac['actions_chosen'] == [0.] * 6  # mean over tied greedy actions
+>       assert jac['dq_dx'] is None
+E       assert 0.0 is None
+
+tests/test_q_learning_repairs.py:62: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_q_learning_repairs.py::test_untrained_audit_abstains_and_does_not_consume_randomness
+1 failed, 168 passed in 1.91s

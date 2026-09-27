@@ -60,7 +60,7 @@ def test_model_validity_classifier():
     agent = QLearningAgent(seed=99)
     jac = estimate_local_jacobian(agent, cfg)
     audit = audit_model_class_validity(agent, jac)
-    assert audit["classification"] in ("CERTIFIED_MODEL_CLASS", "OUTSIDE_CERTIFIED_MODEL_CLASS")
+    assert audit["classification"] == "NON_CERTIFIABLE_SUPPORT"
     assert "r_squared" in audit
     assert "sign_consistent" in audit
 
@@ -90,4 +90,36 @@ def test_audit_calibration_study_artifact():
     assert std["pass_rates"]["exact_linear"] == 1.0
     # Contrarian negative feedback must fail 100% (pass rate 0.0%)
     assert std["pass_rates"]["contrarian_linear"] == 0.0
+
+
+def test_multiscale_audit_artifact():
+    multi_file = ROOT / "research_extension" / "outputs" / "learned_agents" / "multiscale_audit_results.json"
+    assert multi_file.exists(), f"Missing {multi_file}"
+    with open(multi_file) as f:
+        data = json.load(f)
+    assert "summary_by_radius" in data
+    assert "policy_results" in data
+    assert len(data["policy_results"]) == 10
+    assert len(data["summary_by_radius"]) == 5
+    # Smallest radius (r=0.05) has 100% support and mean R^2 == 0.0 across all policies
+    r_005 = data["summary_by_radius"][0]
+    assert r_005["radius"] == 0.05
+    assert r_005["r_squared_mean"] == 0.0
+
+
+def test_reward_sensitivity_artifact():
+    reward_file = ROOT / "research_extension" / "outputs" / "learned_agents" / "reward_sensitivity_results.json"
+    assert reward_file.exists(), f"Missing {reward_file}"
+    with open(reward_file) as f:
+        data = json.load(f)
+    assert "reward_specs" in data
+    assert len(data["reward_specs"]) == 4
+    labels = [spec["label"] for spec in data["reward_specs"]]
+    assert "A_main" in labels
+    assert "B_no_inv" in labels
+    assert "C_no_turn" in labels
+    assert "D_low_penalty" in labels
+    # Verify that in all specifications, 0 policies are classified as in-class
+    for spec in data["reward_specs"]:
+        assert spec["n_in_class"] == 0
 

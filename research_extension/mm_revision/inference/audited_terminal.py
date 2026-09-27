@@ -1,100 +1,140 @@
-"""Audited terminal-row regression pivot under Contract I1.
+"""Contract I1 adapter to the primary audited terminal-row implementation.
 
-Under Contract I1:
-- Verified memory reset y_0 = 0
-- Disclosed learning rates eta = (eta_1, ..., eta_n)
-- Exhaustive channel inventory
-- Exact prices x_t
-Regressor construction:
-  w_{k, t} = eta_k * sum_{s=0}^{t-1} (1 - eta_k)^{t-1-s} * x_s
-OLS model:
-  x_{t+1} = a * x_t + sum_{k=1}^n q_k * w_{k,t} + e_{t+1}
-Total feedback gain:
-  S = a + sum_{k=1}^n q_k = 1^T gamma
+Each row of the input contains one independent episode's exact deviations
+``x_1, ..., x_T`` (the audited initial ``x_0 = m_0 = 0`` is omitted).
+Every episode uses the same endpoint T, fixed before observing the data, with
+zero terminal probe ``u_(T-1) = 0``. Public rates and the complete channel
+inventory are assumed truthful. The model is
+
+    x_T = mu + a*x_(T-1) + sum_k q_k*m_(k,T-1) + e_T.
+
+The Student-t reference requires independent Gaussian terminal innovations of
+common unknown variance, independent of all preterminal regressors. Neither
+independence nor truthful resets, exact observations, or endpoint assignment
+can be established by inspecting a numeric array. Successive transitions of
+one trajectory are not independent episode rows and are explicitly rejected.
 """
-from typing import Dict, Any, Tuple, Optional
+from typing import Dict, Any, Tuple
 import numpy as np
-from scipy.stats import t as student_t
 from research_extension.mm_revision.decisions import DecisionLabel, classify_interval
+from studies.audited_constraints.src.inference import reconstruct_terminal, terminal_interval
 
 
 def construct_audited_regressors(
     x_series: np.ndarray,
     eta_vector: np.ndarray
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """Construct regressors Z and dependent variable Y for audited terminal regression.
+    """Return one terminal row per independent episode, including an intercept.
 
-    Parameters:
-      x_series: shape (T+1,) observed price trajectory
-      eta_vector: shape (n,) disclosed learning rates
-    Returns:
-      Z: shape (T, 1+n) regressor matrix [x_t, w_{1,t}, ..., w_{n,t}]
-      Y: shape (T,) dependent variable x_{t+1}
+    ``x_series`` has shape (n_episodes, T), T >= 3, containing x_1 through
+    x_T, not x_0. ``eta_vector`` has d finite disclosed rates in (0, 1].
+    Returns X of shape (n_episodes, d+2), ordered [1, x_(T-1), m_(T-1)],
+    and a copy of Y = x_T. Memory uses only x_1 through x_(T-2).
+    A single 1D trajectory is no longer supported by this API.
     """
-    x = np.asarray(x_series, dtype=float)
-    eta = np.asarray(eta_vector, dtype=float)
-    n = len(eta)
-    T = len(x) - 1
+    try:
+        x = np.asarray(x_series, dtype=float)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("A finite independent-episode price matrix is required.") from exc
+    if x.ndim != 2 or x.shape[0] == 0 or x.shape[1] < 3 or not np.isfinite(x).all():
+        raise ValueError("A finite episode price matrix of independent episodes (n, T>=3) is required.")
+    try:
+        eta = np.asarray(eta_vector, dtype=float)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("Disclosed rates must be a finite nonempty vector in (0, 1].") from exc
+    if eta.ndim != 1 or eta.size == 0 or not np.isfinite(eta).all() or np.any((eta <= 0) | (eta > 1)):
+        raise ValueError("Disclosed rates must be a finite nonempty vector in (0, 1].")
+    return reconstruct_terminal(x, eta)
 
-    Z = np.zeros((T, 1 + n), dtype=float)
-    Y = x[1:]
 
-    # Memory states w_{k, t} initialized at 0 (verified reset)
-    w = np.zeros(n, dtype=float)
-    for t in range(T):
-        Z[t, 0] = x[t]
-        Z[t, 1:] = w
-        w = (1.0 - eta) * w + eta * x[t]
-
-    return Z, Y
+def _abstain_result(n: int, p: int, status: str) -> Dict[str, Any]:
+    """Preserve result fields without reporting an identified estimate or pivot."""
+    return {
+        "gamma_hat": [float("nan")] * (p - 1),
+        "intercept_hat": float("nan"),
+        "coefficient_estimates": [float("nan")] * p,
+        "a_hat": float("nan"),
+        "q_hat": [float("nan")] * (p - 2),
+        "S_hat": float("nan"),
+        "se_S": float("inf"),
+        "S_lower": -float("inf"),
+        "S_upper": float("inf"),
+        "decision": DecisionLabel.ABSTAIN,
+        "df": n - p,
+        "sigma_hat": float("inf"),
+        "condition_number_scaled": float("inf"),
+        "status": status,
+        "reference_distribution": None,
+        "is_definite": False,
+        "is_conflict": False,
+    }
 
 
 def fit_audited_terminal_regression(
     x_series: np.ndarray,
     eta_vector: np.ndarray,
-    alpha: float = 0.05
+    alpha: float = 0.05,
+    *,
+    noise_model: str = "iid_gaussian",
 ) -> Dict[str, Any]:
-    """Fit OLS terminal-row regression and compute confidence interval for S = a + sum(q)."""
-    Z, Y = construct_audited_regressors(x_series, eta_vector)
-    T, p = Z.shape
+    """Fit S = a + sum(q) using the primary scaled-QR terminal-row pivot.
 
-    if T <= p:
-        raise ValueError(f"Insufficient observations (T={T}) for {p} parameters.")
+    Requires full column rank and n_episodes > d+2, counting the intercept.
+    Invalid designs or numerical failures return ABSTAIN with (-inf, inf).
+    Malformed inputs and unsupported noise declarations raise ValueError.
+    ``noise_model='iid_gaussian'`` declares the maintained terminal innovation
+    law; it does not validate that law from data or permit noisy price sensors.
 
-    # OLS estimation via SVD / pseudoinverse
-    gamma_hat, residuals, rank, s = np.linalg.lstsq(Z, Y, rcond=None)
-    resid = Y - Z @ gamma_hat
-    df = T - p
-    sigma2_hat = float(np.sum(resid**2) / df)
+    Legacy ``gamma_hat`` remains [a, q_1, ..., q_d]; ``intercept_hat`` is
+    separate. ``coefficient_estimates`` contains the full [mu, a, q] vector.
+    S excludes the intercept. The reference degrees of freedom are n-(d+2).
+    """
+    if np.ndim(alpha) != 0:
+        raise ValueError("alpha must be a finite scalar in (0, 1).")
+    try:
+        alpha = float(alpha)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("alpha must be a finite scalar in (0, 1).") from exc
+    if not np.isfinite(alpha) or not 0 < alpha < 1:
+        raise ValueError("alpha must be a finite scalar in (0, 1).")
+    if not isinstance(noise_model, str) or noise_model != "iid_gaussian":
+        raise ValueError("noise_model must be 'iid_gaussian' for the exact Student-t reference.")
 
-    # Covariance of gamma_hat
-    ZtZ_inv = np.linalg.pinv(Z.T @ Z)
-    cov_gamma = sigma2_hat * ZtZ_inv
+    X, y = construct_audited_regressors(x_series, eta_vector)
+    n, p = X.shape
+    try:
+        with np.errstate(over="raise", invalid="raise", divide="raise"):
+            result = terminal_interval(X, y, alpha)
+            if result["status"] != "ok":
+                return _abstain_result(n, p, "invalid_design")
+            beta = np.asarray(result["coefficient_estimates"])
+            residual = y - X @ beta
+            sigma_hat = float(np.sqrt(residual @ residual / (n - p)))
+            scalars = [result[k] for k in ("estimate", "lower", "upper", "se", "condition_number_scaled")]
+            if not np.isfinite(beta).all() or not np.isfinite([*scalars, sigma_hat]).all():
+                return _abstain_result(n, p, "numerical_failure")
+    except (np.linalg.LinAlgError, FloatingPointError):
+        return _abstain_result(n, p, "numerical_failure")
 
-    # Linear combination S = 1^T gamma
-    ones_vec = np.ones(p, dtype=float)
-    S_hat = float(np.sum(gamma_hat))
-    var_S = float(ones_vec @ cov_gamma @ ones_vec)
-    se_S = float(np.sqrt(max(0.0, var_S)))
-
-    # Critical Student-t value
-    tcrit = float(student_t.ppf(1.0 - alpha / 2.0, df))
-    S_lower = S_hat - tcrit * se_S
-    S_upper = S_hat + tcrit * se_S
-
-    decision = classify_interval(S_lower, S_upper, threshold=1.0)
+    # Match the primary threshold rule; its interval already has a 1e-12 pad.
+    decision = classify_interval(result["lower"], result["upper"], threshold=1.0, tol=0.0)
 
     return {
-        "gamma_hat": gamma_hat.tolist(),
-        "a_hat": float(gamma_hat[0]),
-        "q_hat": gamma_hat[1:].tolist(),
-        "S_hat": S_hat,
-        "se_S": se_S,
-        "S_lower": float(S_lower),
-        "S_upper": float(S_upper),
+        "gamma_hat": beta[1:].tolist(),
+        "intercept_hat": float(beta[0]),
+        "coefficient_estimates": beta.tolist(),
+        "a_hat": float(beta[1]),
+        "q_hat": beta[2:].tolist(),
+        "S_hat": result["estimate"],
+        "se_S": result["se"],
+        "S_lower": result["lower"],
+        "S_upper": result["upper"],
         "decision": decision,
-        "df": df,
-        "sigma_hat": float(np.sqrt(sigma2_hat)),
+        "df": result["df"],
+        "sigma_hat": sigma_hat,
+        "condition_number_scaled": result["condition_number_scaled"],
+        "status": "ok",
+        "reference_distribution": "student_t",
         "is_definite": bool(decision in (DecisionLabel.STABLE, DecisionLabel.UNSTABLE)),
         "is_conflict": bool(decision == DecisionLabel.CONFLICT),
     }

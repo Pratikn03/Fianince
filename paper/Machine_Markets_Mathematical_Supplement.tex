@@ -58,7 +58,7 @@
 \begin{document}
 \begin{titlepage}
 \vspace*{18mm}
-{\large\textcolor{ink}{RESEARCH DEVELOPMENT / SEPTEMBER 24, 2026}}\par
+{\large\textcolor{ink}{RESEARCH DEVELOPMENT / REVISED SEPTEMBER 26, 2026}}\par
 \vspace{8mm}
 {\Huge\bfseries Mathematical Repairs\\[2mm]and Covariance-Aware\\[2mm]Inference}\par
 \vspace{5mm}
@@ -89,7 +89,7 @@ Continuous time & Diagonal-rate continuous-time stability theorem; correctly sca
 Group attribution & Known-rate rank theorem; unknown-rate identified set; known-total normalization; four-tap aggregate recovery. & Prevents an identifiability claim from silently changing its available information.\\
 Response covariance & Exact $F$-calibrated ellipsoid under the manuscript's independent Gaussian episode law. & Uses full covariance without treating its estimate as the true covariance.\\
 Structural gain & Model-compatible optimization rather than the incorrect formula $S=c^\top\beta$. & Keeps finite-window non-identification and uncertain hidden memory in the inference problem.\\
-Convex computation & Continuous-rate conic outer relaxation, endpoint-validity proof, and bounded-domain dual certificates. & Supplies an implementable valid bound, not a local optimizer mislabeled a certificate.\\
+Convex computation & Continuous-rate conic outer relaxation, endpoint-validity proof, and bounded-domain dual certificates. & Exact or outward-valid bounds are required; the numerical implementation presently withholds certification.\\
 Sharpness & Exhaustive response-box and rate-bin refinement with a compactness convergence proof. & Shows a route to arbitrary sharpness for the stated compact class, without promising efficient convergence.\\
 Decision errors & Coverage-to-action theorem and a two-world abstention bound. & Separates unconditional errors from errors conditional on issued labels.\\
 Economic scope & Formal non-transfer example for solvency; empirical and verification checklist. & Prevents a signal theorem from being advertised as a financial safety certificate.\\\bottomrule
@@ -348,7 +348,7 @@ The map $\eta\mapsto s=1/\eta$ is a bijection between the declared rate interval
 
 For example, $U=I_2$, $b=(0.06,0.02)^\top$, $Q=0.4$ identify $\eta=0.2$ and $q=(0.3,0.1)^\top$. Without $Q$, both $(\eta,q)=(0.2,(0.3,0.1))$ and $(0.4,(0.15,0.05))$ fit the same lag-2 data.
 
-The polyhedral formulation is for exact $b$. If $b$ itself is uncertain inside an ellipsoid, $Uq=sb$ again contains a product; one must propagate that uncertainty rather than reuse the exact-data LP as a confidence procedure.
+The polyhedral formulation is for exact $b$. If $b$ itself is uncertain inside an ellipsoid, $Uq=sb$ again contains a product; one must propagate that uncertainty rather than reuse the exact-data LP as a confidence procedure. For full-column-rank $U$, zero observations identify $q=0$; the rate is unidentified only when its allowed interval is nondegenerate. If $\eta_{\min}=\eta_{\max}$, the rate is known. For a fixed known rate and feasible $q_0$, the identified set is $(q_0+\ker U)\cap\mathbb R_+^n$, with local dimension $n-\rank U$ at an interior point. Boundary uniqueness does not imply uniform injectivity.
 
 \subsection{The aggregate common rate may itself be identifiable}
 \begin{proposition}[Four-tap aggregate recovery]\label{prop:4tap}
@@ -704,6 +704,9 @@ Use exact rational comparisons or outward interval arithmetic for dual-cone memb
 
 A production result should separately store: primal feasibility, dual-cone feasibility, numerical enclosure error, optimization gap, statistical confidence level, and structural-contract validity. Failure at any required stage means inconclusive or conflict, never automatic stability.
 
+\paragraph{Implementation status after the corrective audit.}
+The released numerical routine now retains the complete solved tangent matrices and applies residual correction to both objectives, using the negative-objective lower bound for the upper endpoint. It records solver and cut-termination diagnostics separately. These improvements do not enclose floating-point construction of the covariance geometry, mass cap, kernel envelopes, or cuts. Its endpoint candidates are therefore diagnostic; the structural certification flag remains false and certified classification is withheld. The theorem above is conditional on outward-valid arithmetic, not a proof that this numerical routine has attained it.
+
 \section{What coverage guarantees, and why abstention cannot disappear}
 \begin{theorem}[Directionally valid classifications]\label{thm:decision}
 Suppose an interval $[L_S,U_S]$ covers the true $S$ with probability at least $1-\alpha$. Issue STABLE if $U_S<1$, UNSTABLE if $L_S>1$, and ABSTAIN otherwise; an empty or unverified set is a separate non-certificate status. Then the unconditional probability of a wrong strict label is at most $\alpha$.
@@ -802,7 +805,7 @@ The reference directory contains 21 unit tests. Looped numerical fixtures also c
 
 A Gaussian calibration illustration used $R=32$, $p=4$, $10{,}000$ independently generated panels, and seed $240926$. The exact response-ellipsoid radius squared was $12.12340136$. The true response was included in $9{,}476$ panels ($94.76\%$), with nominal Monte Carlo standard error about $0.218$ percentage points at $95\%$. Replacing its $F$ radius by an unjustified $\chi^2_4$ radius gave $89.46\%$ inclusion in this particular illustration. This is a diagnostic example, not evidence about the market-data study.
 
-The polyhedral outer relaxation of the Second-Order Cone Program (Theorem~S7.2) is implemented via HiGHS simplex cutting planes with dual residual repair (\nolinkurl{research_extension.mm_revision.inference.conic_certificate.fit_conic_certificate}). The resulting method is evaluated across the 600-panel benchmark (Study \texttt{COMP-GRID-120}, yielding 100.0\% coverage and 0.0\% decisiveness at low budget $R=128$, reported in Chapter~4, Table~5) and across the geometric budget sweep ($R=128 \to 32,768$, 300 instances, in \nolinkurl{research_extension/outputs/conic_contraction_results.json}, reported in Chapter~4, Figure~4), which establishes empirical interval contraction (up to 70.4\% width reduction) and decisive classification recovery under scaling observation budgets.
+The polyhedral outer relaxation of the Second-Order Cone Program (Theorem~S7.2) is implemented via HiGHS cutting planes with numerical dual residual repair (\nolinkurl{research_extension.mm_revision.inference.conic_certificate.fit_conic_certificate}). A post-hoc audit found a response-indexing error in the comparator grid and a mismatch between the known-covariance sampling law and the reported pivot in the budget sweep. Those numerical comparisons are superseded, not silently edited. The corrected 600-panel grid starts at the post-probe response. Two separate 300-panel budget sweeps distinguish known covariance with chi-square calibration from independent Wishart-estimated covariance with $F$ calibration. The main manuscript reports their candidate endpoints and failures from \nolinkurl{research_extension/outputs/statistical_repair_20260926/}. Full outward construction of the numerical constraints remains unverified, so all conic certified labels are withheld. The interval-containment theorem and the solver's numerical evidence are distinct claims.
 
 The calculation log also records the manuscript's $S=0.82$, spectral radius $0.9900902493$, and the conventional two-sided value $\Prob(|T_8|\ge2.47)\approx0.03871045$. Actual regression tables should still be regenerated from their saved model objects rather than edited using this isolated calculation.
 
@@ -835,37 +838,14 @@ The experimental environment should contain an explicit central exchange matchin
 \subsection{Agent families and paired baselines}
 A complete design compares: (i) adaptive expectation chartists, (ii) value-learning agents (e.g., DQN / PPO), (iii) expressive deep actor-critic policies, and (iv) inference-only language-model agents. Each adaptive policy requires a paired baseline with the identical checkpoint and architecture but online adaptation frozen.
 
-\subsection{Executed tabular Q-learning benchmark and state visitation diagnostics}
+\subsection{Corrected tabular benchmark and recorded support}
 \label{sec:supp_q_learning_diagnostics}
-To empirically evaluate whether analytical stability certificates transfer to learned decision rules, Chapter~6 of the main manuscript implements a controlled tabular Q-learning layer within the identical double-entry dealer market mechanism. Ten policies are independently trained across seeds 101--110 over 100,000 environment transitions per policy (1,000,000 transitions total across the 10 seeds).
+The main paper's corrective inventory-only experiment replaces the interpretation of the earlier tabular transfer study. Its ten policies use 100,000 transitions each, learning rate $0.05$, discount factor $0.98$, and multiplicative exploration decay $0.99995$ with floor $0.02$. Training seeds are 926101--926110; checkpoint validation uses 926201--926205 and evaluation uses 926301--926310. Validation cannot mutate training states or randomness. Active and frozen evaluation arms restart from matched complete checkpoints for every tape.
 
-Table~\ref{tab:supp_q_learning_diagnostics} reports the complete training, checkpointing, and state-space visitation diagnostics across all 10 trained policies. Across 100,000 transitions within a discretized state space of 6,125 bins (30,625 state-action pairs), agents visit an average of $119 \pm 4$ unique states ($1.9\% \pm 0.1\%$) and $454 \pm 12$ state-action pairs ($1.5\% \pm 0.04\%$). This concentration reflects the ergodic support of baseline market noise: in the absence of extreme shocks, market trajectories concentrate tightly around zero price displacement ($\delta_x \approx 0$), small returns, low agent inventories ($I_t \approx 0$), and moderate dealer capacity utilization. Consequently, extreme inventory and displacement boundary states are rarely visited during training.
+The revised checkpoints contain state--action update counts, hyperparameters and the random generator state. Nonzero Q entries alone are not visit counts: a visited action can retain a zero estimate. Missing counts in legacy checkpoints are labeled unavailable, never retroactively reconstructed as measured visits. The response screen holds other state coordinates fixed and averages over tied greedy actions. Unsupported queries cause abstention; a constant response has undefined $R^2$, not evidence of a class violation.
 
-Checkpoint selection on held-out validation seeds (201--205) selected step 20,000 across all 10 policies, at which point greedy execution had already converged to zero trading in the absence of exogenous shocks, achieving a terminal equity of \$10,000.00 and zero spread loss. When evaluated under extreme repricing shocks ($\mu = -2.0$), the policy transitions to unvisited or boundary bins where default initialization ($Q=0$) or thresholded inventory penalties dominate, producing flat, step-like response curves ($R^2 \le 0.24$, mean $0.08$) and triggering model-class abstention.
-
-\begin{table}[htbp]
-\centering\small
-\caption{Training, checkpoint selection, and state visitation diagnostics across 10 independently trained Q-learning policies (100,000 training transitions per policy, $\alpha = 0.1, \gamma = 0.95$). State space comprises 6,125 states; action space comprises 5 actions (30,625 state-action pairs). Validation checkpoint selection evaluates greedy policy across seeds 201--205 at 20,000-step intervals.}
 \label{tab:supp_q_learning_diagnostics}
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
-\toprule
-Policy ID & Seed & Best Step & Total Steps & States Visited & $(s,a)$ Pairs Visited & Val.\ Equity (\$) \\
-\midrule
-Policy 01 & 101 & 20,000 & 100,000 & 123 (2.0\%) & 439 (1.4\%) & \$10,000.00 \\
-Policy 02 & 102 & 20,000 & 100,000 & 118 (1.9\%) & 454 (1.5\%) & \$10,000.00 \\
-Policy 03 & 103 & 20,000 & 100,000 & 116 (1.9\%) & 447 (1.5\%) & \$10,000.00 \\
-Policy 04 & 104 & 20,000 & 100,000 & 122 (2.0\%) & 463 (1.5\%) & \$10,000.00 \\
-Policy 05 & 105 & 20,000 & 100,000 & 119 (1.9\%) & 452 (1.5\%) & \$10,000.00 \\
-Policy 06 & 106 & 20,000 & 100,000 & 120 (2.0\%) & 457 (1.5\%) & \$10,000.00 \\
-Policy 07 & 107 & 20,000 & 100,000 & 122 (2.0\%) & 470 (1.5\%) & \$10,000.00 \\
-Policy 08 & 108 & 20,000 & 100,000 & 123 (2.0\%) & 472 (1.5\%) & \$10,000.00 \\
-Policy 09 & 109 & 20,000 & 100,000 & 116 (1.9\%) & 445 (1.5\%) & \$10,000.00 \\
-Policy 10 & 110 & 20,000 & 100,000 & 109 (1.8\%) & 436 (1.4\%) & \$10,000.00 \\
-\midrule
-Mean $\pm$ SD & --- & 20,000 & 100,000 & $119 \pm 4$ (1.9\%) & $454 \pm 12$ (1.5\%) & \$10,000.00 \\
-\bottomrule
-\end{tabular*}
-\end{table}
+The complete per-policy counts, training histories, and selected checkpoints are in \path{research_extension/outputs/evidence_repair_20260926/learned_agents_v2/}. The main paper's generated table reports the corrected outcomes. These results are post-review diagnostics, not preregistered confirmation, and are not pooled with the legacy study.
 
 \section{Prospective empirical validation}
 \label{sec:supp_empirical}
@@ -983,6 +963,20 @@ def main():
 if __name__ == "__main__":
     main()
 \end{lstlisting}
+
+
+\subsection{Correction of the legacy response and reward diagnostics}
+\label{sec:supp_multiscale_audit}\label{tab:supp_multiscale_audit}
+The archived multiscale audit queried price and return jointly and used one random greedy tie draw per perturbation. It called nonzero Q entries support and assigned $R^2=0$ to a constant response. Those choices do not establish that a trained policy violates the positive-memory model. In particular, an identically zero local response is compatible with zero local gain. The corrected support-first audit in the main paper withholds a structural conclusion for all ten policies.
+
+\label{sec:supp_reward_sensitivity}\label{tab:supp_reward_sensitivity}
+The historical reward-penalty sweep is retained in the archive but not treated as evidence from the corrected economic environment. It used the earlier capacity/accounting implementation and response screen. No externally timestamped preregistration is established here, so its preregistered designation is withdrawn. A future reward intervention must use corrected accounting and independently specified evaluation.
+
+\label{sec:supp_individual_matched}\label{tab:supp_individual_matched}
+The old per-policy random comparator used test-set trading frequencies and unit-sized orders. Matching frequency is not matching realized turnover, and conditioning a comparator on test outcomes is post-hoc. The corrective pipeline chooses frequency from validation only and reports the realized volume difference explicitly. It does not claim to isolate liquidity provision or the causal role of inventory penalties.
+
+\subsection{AI assistance and independent review}
+AI assistance was used for drafting, coding, debugging, and internal review. It is not independent human review or proof of novelty. Human authors must confirm contributions, disclosures and permissions before submission. No external acceptance or operational approval is asserted.
 
 \begin{thebibliography}{9}
 \bibitem{mm} P. Niroula. \emph{From Human Markets to Machine Markets: Feedback Stability, Auditable Memory, and Financial Constraints}. User-supplied working manuscript, \texttt{Machine\_Markets\_Rebuilt.pdf}, 56 pages, September 24, 2026. References here identify this supplied version, not a public or independently reviewed release.

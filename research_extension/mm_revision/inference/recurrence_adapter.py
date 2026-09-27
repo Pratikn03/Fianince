@@ -44,8 +44,8 @@ def fit_recurrence_interval(
         decision = DecisionLabel.ABSTAIN
 
     return {
-        "S_lower": float(lo) if np.isfinite(lo) else None,
-        "S_upper": float(hi) if np.isfinite(hi) else None,
+        "S_lower": float(lo) if not np.isnan(lo) else None,
+        "S_upper": float(hi) if not np.isnan(hi) else None,
         "decision": decision,
         "raw_label": raw_label,
         "details": raw_res,
@@ -78,8 +78,8 @@ def fit_deconvolution_interval(
         decision = DecisionLabel.ABSTAIN
 
     return {
-        "S_lower": float(lo) if np.isfinite(lo) else None,
-        "S_upper": float(hi) if np.isfinite(hi) else None,
+        "S_lower": float(lo) if not np.isnan(lo) else None,
+        "S_upper": float(hi) if not np.isnan(hi) else None,
         "decision": decision,
         "raw_label": raw_label,
         "details": raw_res,

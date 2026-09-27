@@ -21,6 +21,42 @@ class DecisionLabel(str, Enum):
     CONFLICT = "CONFLICT"
 
 
+def interval_contains(lower, upper, truth) -> bool:
+    """Missing/NaN endpoints are failures, unlike a genuine infinite bound."""
+    if lower is None or upper is None:
+        return False
+    return bool(np.isfinite(truth) and not np.isnan(lower) and not np.isnan(upper)
+                and lower <= truth <= upper)
+
+
+def summarize_interval_widths(records) -> Dict[str, Any]:
+    """Keep finite-width summaries conditional and report their denominator.
+
+    The unconditional mean is unavailable if any interval failed or is
+    unbounded. JSON null represents unavailable, never zero-width certainty.
+    """
+    widths, unbounded, invalid = [], 0, 0
+    for record in records:
+        lo, hi = record.get('lower'), record.get('upper')
+        if lo is None or hi is None or np.isnan(lo) or np.isnan(hi) or lo > hi:
+            invalid += 1
+        elif not (np.isfinite(lo) and np.isfinite(hi)):
+            unbounded += 1
+        else:
+            widths.append(float(hi - lo))
+    mean = float(np.mean(widths)) if widths else None
+    median = float(np.median(widths)) if widths else None
+    p90 = float(np.percentile(widths, 90)) if widths else None
+    complete = bool(widths) and not (unbounded or invalid)
+    return dict(total_intervals=len(records), finite_intervals=len(widths),
+                unbounded_intervals=unbounded, invalid_intervals=invalid,
+                finite_mean_interval_width=mean, finite_median_interval_width=median,
+                finite_p90_interval_width=p90,
+                mean_interval_width=mean if complete else None,
+                median_interval_width=median if complete else None,
+                p90_interval_width=p90 if complete else None)
+
+
 def classify_interval(
     lower_bound: float,
     upper_bound: float,
@@ -34,7 +70,8 @@ def classify_interval(
     - If lower_bound > threshold + tol: UNSTABLE
     - Otherwise (interval straddles threshold or hits boundary): ABSTAIN
     """
-    if lower_bound > upper_bound + tol:
+    if (lower_bound is None or upper_bound is None or np.isnan(lower_bound)
+            or np.isnan(upper_bound) or lower_bound > upper_bound + tol):
         return DecisionLabel.CONFLICT
     if upper_bound < threshold - tol:
         return DecisionLabel.STABLE
