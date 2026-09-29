@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "status": "bounded_robustness_audit_not_field_general_validation",
+  "claims": [
+    {
+      "id": "R1",
+      "statement": "All 54 non-tied states in each family at each tested softmax temperature have a positive-profit negative-welfare learning interaction under the primary mask and rival-wait condition.",
+      "assumptions": "PROTOCOL.md; H2 fixed initial focal policy, epsilon=0.1, alpha=0.5; five specified temperatures; stipulated grid only",
+      "proof_status": "finite numerical enclosures; not Lean verified",
+      "code": ["model.py:Engine.evaluate", "run.py:contrasts"],
+      "tests": ["test_model.py", "verify.py:literal_history"],
+      "results": ["results/reviewed_p60/summary.json", "artifacts/v2/RESULTS.md"],
+      "denominator": "54 states per family and temperature, not trained populations",
+      "prohibited_wording": "always privately profitable; generic AI harm; all learning algorithms"
+    },
+    {
+      "id": "R2",
+      "statement": "Total conflict is less robust than its learning interaction: active-plus-shadow cases yield 45/54 at tau=.1 and 51/54 at each other tested tau.",
+      "assumptions": "same as R1; total includes direct strategic component",
+      "proof_status": "finite numerical enclosures",
+      "code": ["run.py:contrasts", "run.py:classify_contrasts"],
+      "tests": ["test_run.py:test_summary_retains_null_opposite_and_unresolved"],
+      "results": ["artifacts/v2/RESULTS.md", "artifacts/v2/all_contrasts.csv"],
+      "denominator": "54 active-plus-shadow states per temperature"
+    },
+    {
+      "id": "R3",
+      "statement": "At cost .05, mutual waiting is both the unique pure equilibrium and planner choice at every tested state for tau=.5, 1, 2.",
+      "assumptions": "same four-profile menu and information; focal learning off, rival on; specified real cost",
+      "proof_status": "interval-verified finite pure-profile inequalities, not a general equilibrium theorem",
+      "code": ["run.py:game"],
+      "tests": ["test_run.py:test_game_finds_known_costly_equilibrium_and_planner"],
+      "results": ["results/reviewed_p60/softmax_1_2.json", "results/reviewed_p60/softmax_1.json", "results/reviewed_p60/softmax_2.json", "artifacts/v2/game_counts.json"],
+      "denominator": "109 states at each of three temperatures",
+      "prohibited_wording": "the planner always disagrees; all mixed equilibria computed"
+    },
+    {
+      "id": "T1",
+      "statement": "Under the smooth H2 contract in THEORY.md, the focal deployment's gross welfare effect is strictly negative for arbitrary finite rival tables when alpha>0, epsilon<1 and tau>0 finite.",
+      "assumptions": "THEORY.md section 1; own learning off; rival waits and learns; focal active/shadow swap; exact six-atom economy",
+      "proof_status": "post-hoc analytical proof, AI-assisted internal review; not formalized",
+      "proof": "THEORY.md section 2",
+      "code": ["theory_check.py:formulas"],
+      "tests": ["test_theory.py"],
+      "results": ["verification/reviewed_theory_check.json"],
+      "denominator": "analytical quantified statement; numerical check covers only 545 state/temperature points",
+      "prohibited_wording": "new universal theorem; privately optimal harm for every state; systemic instability"
+    },
+    {
+      "id": "T2",
+      "statement": "Strict inequalities persist in some local neighborhood under positive-temperature smooth choice, without a calculated radius.",
+      "assumptions": "finite horizon, finite economic/action support, smooth policy, affine selected updates; strict point inequality",
+      "proof": "THEORY.md section 4",
+      "proof_status": "elementary continuity argument, not a novelty or Lean claim",
+      "code": ["model.py:Engine.evaluate"],
+      "tests": ["test_model.py:test_smooth_policy_floor_normalization_shift_and_permutation"],
+      "results": ["results/reviewed_p60/softmax_1_10.json"],
+      "denominator": "local existence only; no global interpolation between grid points"
+    }
+  ],
+  "external_human_review": false,
+  "main_paper_modified": false,
+  "real_market_claims": false
+}
