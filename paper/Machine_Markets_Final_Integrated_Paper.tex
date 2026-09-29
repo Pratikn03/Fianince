@@ -68,11 +68,7 @@ Adaptive financial agents alter the observations on which they subsequently act.
 \noindent\textbf{Keywords:} adaptive agents; endogenous risk; financial stability; market microstructure; performative prediction; system identification.\\
 \textbf{JEL codes:} C63, D83, G01, G14.
 
-\clearpage
-\setcounter{secnumdepth}{2}
-\setcounter{tocdepth}{2}
-\tableofcontents
-\clearpage
+
 \section{Introduction, Related Work, and Information Architecture}
 \label{sec:ch1}
 \subsection{Introduction}
@@ -1082,11 +1078,11 @@ Passive or unconstrained price observation experiments leave a consequential gap
 
 \subsubsection{A complete channel inventory, not a guessed rate floor}
 The audited experimental class has the public update rule
-\begin{equation}
- m_{i,t+1}=(1-\eta_i)m_{i,t}+\eta_i x_t,\qquad
- x_{t+1}=a x_t+\sum_i q_i m_{i,t}+\lambda u_t+w_{t+1},
+\begin{align}
+ m_{i,t+1} &= (1-\eta_i)m_{i,t}+\eta_i x_t, \nonumber\\
+ x_{t+1} &= a x_t+\sum_i q_i m_{i,t}+\lambda u_t+w_{t+1},
  \label{eq:audited_recursion}
-\end{equation}
+\end{align}
 with $m_{i,0}=x_0=0$, $0\le a<1$, $q_i\ge0$, $\sum_iq_i\le Q_{\max}$, and public $\eta_i\in[\eta_0,1]$. Here $Q_{\max}=1$ is enforced by input validation in the released linear source. The rates, reset, update timing, and absence of other feedback channels are architectural disclosures; they are not estimated from price records. The actual $q_i$, $a$, and $\lambda$ are withheld from the estimator.
 
 The release includes a machine-readable contract with source digest, public rates, zero-reset declaration, observation specification and allowed execution regime. Unit tests reject declared changes to the reset, source digest, observation type, or execution regime. In the experiment the contract is issued from the actual public simulation configuration, and the source is available for inspection. This justifies the restriction \emph{within that controlled implementation}, not in an arbitrary proprietary market.
@@ -1124,12 +1120,12 @@ Given public rates, exact midprice deviations and a verified reset, the estimato
  \label{eq:observable_memory}
 \end{equation}
 from prices alone. It never reads the simulator's stored memory. Assume $u_{T-1}=0$. Each independent episode contributes exactly one regression row,
-\begin{equation}
- Y_j=x_{j,T_j},\qquad
- X_j=(1,x_{j,T_j-1},m_{j,1,T_j-1},\ldots,m_{j,d,T_j-1}),
- \quad Y_j=X_j\beta+w_{j,T_j},
+\begin{align}
+ Y_j &= x_{j,T_j}, \nonumber\\
+ X_j &= (1,x_{j,T_j-1},m_{j,1,T_j-1},\ldots,m_{j,d,T_j-1}), \nonumber\\
+ Y_j &= X_j\beta+w_{j,T_j},
  \label{eq:terminal_regression}
-\end{equation}
+\end{align}
 where $\beta=(\mu,a,q_1,\ldots,q_d)^\top$ and the intercept accommodates a common mean innovation. The endpoint $T_j$ is fixed or randomly assigned \emph{before} observing that episode. It is not selected after a favorable price movement.
 
 \begin{proposition}[Conditional terminal-row confidence; classical regression]
@@ -1365,10 +1361,10 @@ Feedback $S$ & Capacity & Shock $\mu$ & Failure Rate & Halt Rate & Mean Disloc. 
 \paragraph{Dealer capacity-risk surface and inventory-buffer scaling.}
 Table~\ref{tab:funded_risk_surface} varies inventory capacity and initial inventory at fixed utilization. In \texttt{FundedScenarioMarket}, the argument historically named \texttt{dealer\_capital\_multiplier} scales the inventory limit, while initial marked equity remains \$10,000 in every arm. Thus $0.5\times$, $1\times$ and $2\times$ do not mean \$5,000, \$10,000 and \$20,000 of equity. This compares capacity/inventory regimes, not an isolated capacity effect with initial inventory held fixed or a causal effect of recapitalization. It is separate from the original funded-engine experiments with explicit credit and liquidation rules.
 The historical argument \texttt{a=0.4} is also not used by this scenario's price update. The effective unconstrained adaptive dynamics are
-\[
- x_{t+1}=(1-\kappa\phi)x_t+q_f y_{f,t}+q_s y_{s,t}+\kappa\varepsilon_t,
- \qquad y_{i,t+1}=(1-\eta_i)y_{i,t}+\eta_i x_{t+1}.
-\]
+\begin{align*}
+ x_{t+1} &= (1-\kappa\phi)x_t+q_f y_{f,t}+q_s y_{s,t}+\kappa\varepsilon_t, \\
+ y_{i,t+1} &= (1-\eta_i)y_{i,t}+\eta_i x_{t+1}.
+\end{align*}
 Here memories are unweighted and update from the new price, unlike the timing and weighted memory coordinates in the principal linear model. At the paired-control parameters, the nominal sum is $0.82$ but the effective sum is $1.22$ and the full transition matrix has spectral radius approximately $1.07409$. The correction exposes these quantities without changing any historical trajectory. The stable-signal counterexample in Table~\ref{tab:dealer_stress} belongs to the separate original funded engine; it must not be inferred from this scenario surface.
 
 \paragraph{Event-path causal diagnostics and inventory buffer exhaustion.}
@@ -1990,7 +1986,7 @@ To evaluate the $(1,1)$ scalar entry of $(zI_{1+n}-J)^{-1}$, partition the resol
 Applying the Schur complement of the $(2,2)$ block $(z-1+\eta)I_n$, which is invertible for all $z\ne 1-\eta$, yields
 \begin{align}
  \left[(zI_{1+n}-J)^{-1}\right]_{1,1}
- &=\left((z-a)-(-\mathbf1_n^\top)\left((z-1+\eta)I_n\right)^{-1}(-\eta q)\right)^{-1}\\
+ &=\left((z-a)-(-\mathbf1_n^\top)\frac{(-\eta q)}{z-1+\eta}\right)^{-1}\\
  &=\left(z-a-\frac{\eta}{z-1+\eta}\mathbf1_n^\top q\right)^{-1}\\
  &=\left(z-a-\frac{\eta Q}{z-1+\eta}\right)^{-1}\\
  &=\frac{z-1+\eta}{(z-a)(z-1+\eta)-\eta Q},
@@ -2024,7 +2020,8 @@ The non-identifiability of group weights can be characterized directly in state 
 Consider $\lambda = 1 - \eta$. Any non-zero vector $v = [0, w^\top]^\top \in \mathbb{R}^{1+n}$ with $w = [w_1, \dots, w_n]^\top$ satisfying $\sum_{i=1}^n w_i = 0$ obeys:
 \begin{align}
  C v &= \begin{bmatrix} 1 & \mathbf{0}_n^\top \end{bmatrix} \begin{bmatrix} 0 \\ w \end{bmatrix} = 0, \\
- J v &= \begin{bmatrix} a & \mathbf{1}_n^\top \\ \eta q & (1-\eta)I_n \end{bmatrix} \begin{bmatrix} 0 \\ w \end{bmatrix} = \begin{bmatrix} \mathbf{1}_n^\top w \\ (1-\eta)w \end{bmatrix} = \begin{bmatrix} 0 \\ (1-\eta)w \end{bmatrix} = (1-\eta) v.
+ J v &= \begin{bmatrix} a & \mathbf{1}_n^\top \\ \eta q & (1-\eta)I_n \end{bmatrix} \begin{bmatrix} 0 \\ w \end{bmatrix} \nonumber\\
+ &= \begin{bmatrix} \mathbf{1}_n^\top w \\ (1-\eta)w \end{bmatrix} = \begin{bmatrix} 0 \\ (1-\eta)w \end{bmatrix} = (1-\eta) v.
 \end{align}
 Thus, $v$ lies in the unobservable subspace of $(J, C)$. Because the hyperplane $\{w \in \mathbb{R}^n : \sum_{i=1}^n w_i = 0\}$ has dimension $n - 1 \ge 1$ for any $n \ge 2$, the mode $\lambda = 1 - \eta$ suffers a PBH rank deficiency of exactly $n - 1$. Crucially, this $n-1$-dimensional unobservable state subspace provides the systems-theoretic explanation for parameter non-identifiability: while $q$ is a parameter vector and $v$ is a state vector, any redistribution of feedback weights preserving the scalar sum $Q = \sum_i q_i$ excites only internal state trajectories within this unobservable subspace, leaving aggregate price observations $Cv=0$ identically invariant at all horizons.
 
