@@ -1,18 +1,18 @@
 # From Human Markets to Machine Markets
 ## Master Research Release 2.0 (Submission-Ready Master Edition) | September 2026
 
-**Start with [the integrated research paper](paper/Machine_Markets_Final_Integrated_Paper.pdf) (62 pages) or the [combined master volume](Machine_Markets_Combined_Master.pdf) (88 pages).**
+**Start with [the integrated research paper](paper/Machine_Markets_Final_Integrated_Paper.pdf) (59 pages) or the [combined master volume](Machine_Markets_Combined_Master.pdf) (86 pages).**
 The self-contained [LaTeX source](paper/Machine_Markets_Final_Integrated_Paper.tex) and the [Mathematical Supplement source](paper/Machine_Markets_Mathematical_Supplement.tex) are beside them in `paper/`.
 
 This master release establishes the complete, unified scientific package for *Machine Markets*:
-1. **8-Chapter Consolidated Main Manuscript** (62 pages, 0 overfull `\hbox`es, 0 undefined references/citations).
-2. **Mathematical Supplement** (26 pages, Sections S1–S14, complete proofs, continuous-time dynamics, covariance geometry, and corrective diagnostics).
-3. **Combined Master Volume** (88 pages, uniting the main paper and supplement).
-4. **Hierarchical Verification Suite** (104 native + 381 pytest + 4 numerical suites + 24 independent gates) passing at 100% offline.
-5. **Standalone Zero-Dependency Verifier** (`independent_verifier/verifier.py`) passing all 24 verification gates ($< 7.2 \times 10^{-14}$ error) without importing project libraries.
-6. **Method-to-Evidence Crosswalk** (Table 4) establishing unbroken theorem $\to$ code $\to$ artifact $\to$ paper traceability.
-7. **Learned-Agent Transfer Layer (Layer 4)** (Section 6.5, Table 14) evaluating 10 tabular Q-learning policies (6,125 states, 5 actions), active counterfactual adaptation, and model-class validity audits.
-8. **Empirical Microstructure Calibration (Gates 2–4)** (Section 7.3, Table 17) authenticating external market channels across 3.41 GB of public LOB depth and klines from Binance Vision.
+1. **8-Chapter Consolidated Main Manuscript** (59 pages, 0 overfull `\hbox`es, 0 undefined references/citations).
+2. **Mathematical Supplement** (27 pages, Sections S1–S14, complete proofs, continuous-time dynamics, covariance geometry, multiscale audits, and reward sensitivity).
+3. **Combined Master Volume** (86 pages, uniting the main paper and supplement).
+4. **Hierarchical Verification Suite** (104 native + 479 pytest + 93 Lean 4 theorems + 57 provenance ledger claims) passing at 100% offline.
+5. **Standalone Zero-Dependency Verifier** (`independent_verifier/verifier.py`) passing all verification gates ($< 7.2 \times 10^{-14}$ error) without importing project libraries.
+6. **Formal Lean 4 Verification & Code Crosswalk** (`lean_proofs/`, 93 theorems, 0 sorry) establishing unbroken theorem $\to$ Lean $\to$ code $\to$ artifact $\to$ paper traceability.
+7. **Learned-Agent Transfer Layer (Layer 4)** (Section 6.5, Table 14; Supplement S14.6–S14.8) evaluating 10 tabular Q-learning policies, multiscale radius sweeps, reward sensitivity, and turnover matching.
+8. **Systematic Multi-Year Public Panel** (Section 7.4, Tables 22–24) analyzing 768 asset-days on Binance Spot (2021–2024), cross-venue replication, January 2023 holdout, and dual structural identification (SMM and Rigobon).
 
 ---
 

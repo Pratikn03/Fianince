@@ -38,6 +38,7 @@ STAT = "research_extension/outputs/statistical_repair_20260926/verified"
 EVID = "research_extension/outputs/evidence_repair_20260926"
 FUND = "research_extension/outputs/funded_mechanism_results.json"
 SURF = "research_extension/outputs/funded_smooth_surface_results.json"
+PROV = "results/provenance"
 
 
 # --------------------------------------------------------------------------- helpers
@@ -378,6 +379,38 @@ CLAIMS: list[Claim] = [
     Claim("S7-bytes", "Sec. 7 gate24", "bytes consumed", r"totaling 18,445,389 bytes", "18,445,389",
           lambda: _num_in(f"{EVID}/gate24/gate24_summary.json", "18445389", fmt=lambda s: com(int(s))),
           f"{EVID}/gate24/gate24_summary.json"),
+    # ---------------- Section 7 (Systematic panel, cross-venue, holdout, structural identification)
+    Claim("S7-binance-btc", "Sec. 7 cross-venue", "Binance BTC Q and 95% CI",
+          r"On Binance, BTC yields $\hat Q = 0.0102$ [0.0079, 0.0126]", "0.0102/0.0079/0.0126",
+          lambda: (lambda b: f"{f(b['Q'], 4)}/{f(b['Q_ci'][0], 4)}/{f(b['Q_ci'][1], 4)}")(J(f"{PROV}/cross_venue_summary.json")["BTC"]["binance"]),
+          f"{PROV}/cross_venue_summary.json"),
+    Claim("S7-binance-eth", "Sec. 7 cross-venue", "Binance ETH Q and 95% CI",
+          r"ETH yields $\hat Q = 0.0069$ [0.0044, 0.0095]", "0.0069/0.0044/0.0095",
+          lambda: (lambda b: f"{f(b['Q'], 4)}/{f(b['Q_ci'][0], 4)}/{f(b['Q_ci'][1], 4)}")(J(f"{PROV}/cross_venue_summary.json")["ETH"]["binance"]),
+          f"{PROV}/cross_venue_summary.json"),
+    Claim("S7-binance-ada", "Sec. 7 cross-venue", "Binance ADA Q and 95% CI",
+          r"ADA yields $\hat Q = 0.0108$ [0.0075, 0.0142]", "0.0108/0.0075/0.0142",
+          lambda: (lambda b: f"{f(b['Q'], 4)}/{f(b['Q_ci'][0], 4)}/{f(b['Q_ci'][1], 4)}")(J(f"{PROV}/cross_venue_summary.json")["ADA"]["binance"]),
+          f"{PROV}/cross_venue_summary.json"),
+    Claim("S7-holdout-btc", "Sec. 7 holdout", "Jan 2023 BTC holdout Q, Q30, S, pos share",
+          r"(\texttt{1-09-1-20.csv}, covering BTCUSDT in January 2023; $N=11$ days) yields $\hat Q = 0.0149$ [0.0095, 0.0204], $\hat Q_{30} = 0.0128$, and $\hat S = 0.932 < 1$ with $90.9\%$ of days positive",
+          "0.0149/0.0095/0.0204/0.0128/0.932/90.9",
+          lambda: (lambda h: f"{f(h['Q']['mean'], 4)}/{f(h['Q']['ci95'][0], 4)}/{f(h['Q']['ci95'][1], 4)}/{f(h['Q30']['mean'], 4)}/{f(h['S']['mean'], 3)}/{f(h['share_Q_pos']*100, 1)}")(J(f"{PROV}/binance_panel_summary.json")["holdout_jan2023"]),
+          f"{PROV}/binance_panel_summary.json"),
+    Claim("S7-panel-regimes", "Sec. 7 Binance panel", "epoch mean Q and positive day shares",
+          r"expansion ($\hat Q = 0.0091$, 91.1\% positive days), the 2022 crypto winter ($\hat Q = 0.0068$, 82.8\% positive), the 2023 consolidation ($\hat Q = 0.0078$, 86.5\% positive), and the 2024 institutional/ETF era ($\hat Q = 0.0090$, 87.0\% positive)",
+          "0.0091/91.1/0.0068/82.8/0.0078/86.5/0.0090/87.0",
+          lambda: (lambda r: f"{f(r['2021']['Q']['mean'], 4)}/{f(r['2021']['share_Q_pos']*100, 1)}/{f(r['2022']['Q']['mean'], 4)}/{f(r['2022']['share_Q_pos']*100, 1)}/{f(r['2023']['Q']['mean'], 4)}/{f(r['2023']['share_Q_pos']*100, 1)}/{f(r['2024']['Q']['mean'], 4)}/{f(r['2024']['share_Q_pos']*100, 1)}")(J(f"{PROV}/binance_panel_summary.json")["by_year"]),
+          f"{PROV}/binance_panel_summary.json"),
+    Claim("S7-flow-gamma", "Sec. 7 flow memory", "order-splitting memory exponent range",
+          r"order-splitting sign-memory exponent yields $\gamma \in [0.22, 0.35]$", "0.22/0.35",
+          lambda: (lambda fm: f"{f(min(v['gamma'] for v in fm.values()), 2)}/{f(max(v['gamma'] for v in fm.values()), 2)}")(J(f"{PROV}/flow_memory_bias_correction.json")),
+          f"{PROV}/flow_memory_bias_correction.json"),
+    Claim("S7-flow-set-btc", "Sec. 7 flow memory", "BTC robust identified set and max loop ratio",
+          r"establishing a robust identified set of $[0.015, 0.028]$ for BTC ($[0.008, 0.028]$ across assets) with $\mathcal L_{\max} \le 0.405 < 1$",
+          "0.015/0.028/0.008/0.405",
+          lambda: (lambda fm: f"{f(fm['BTC']['identified_set'][0], 3)}/{f(fm['BTC']['identified_set'][1], 3)}/{f(min(v['identified_set'][0] for v in fm.values()), 3)}/{f(fm['BTC']['L_max'], 3)}")(J(f"{PROV}/flow_memory_bias_correction.json")),
+          f"{PROV}/flow_memory_bias_correction.json"),
     # ---------------- Appendix: standalone verifier
     Claim("App-verifier", "App. replication", "standalone verifier counts and max regression difference",
           r"recomputes the 4,320 terminal-row regression decisions with an SVD solver (all labels match; maximum difference $4.4\times10^{-14}$)",

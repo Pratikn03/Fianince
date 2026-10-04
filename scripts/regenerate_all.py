@@ -68,15 +68,37 @@ def run_tests() -> bool:
 
 
 def compile_paper() -> bool:
-    log("Compiling paper with pdflatex (2 passes)...")
+    log("Compiling main paper with pdflatex (2 passes)...")
     for i in (1, 2):
         code, out = run_cmd(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", TEX], cwd=PAPER_DIR)
         if code != 0:
-            log(f"Compilation failed on pass {i}:")
+            log(f"Main paper compilation failed on pass {i}:")
             print(out[-1500:])
             return False
     shutil.copy(PAPER_DIR / TEX.replace(".tex", ".pdf"), ROOT / TEX.replace(".tex", ".pdf"))
-    log("PDF compiled and copied to repository root.")
+
+    log("Compiling mathematical supplement with pdflatex (2 passes)...")
+    supp_tex = "Machine_Markets_Mathematical_Supplement.tex"
+    for i in (1, 2):
+        code, out = run_cmd(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", supp_tex], cwd=PAPER_DIR)
+        if code != 0:
+            log(f"Supplement compilation failed on pass {i}:")
+            print(out[-1500:])
+            return False
+
+    log("Uniting into combined master volume...")
+    code, out = run_cmd([
+        "pdfunite",
+        str(PAPER_DIR / TEX.replace(".tex", ".pdf")),
+        str(PAPER_DIR / supp_tex.replace(".tex", ".pdf")),
+        str(ROOT / "Machine_Markets_Combined_Master.pdf"),
+    ])
+    if code != 0:
+        log("pdfunite failed:")
+        print(out[-1500:])
+        return False
+    shutil.copy(ROOT / "Machine_Markets_Combined_Master.pdf", PAPER_DIR / "Machine_Markets_Combined_Master.pdf")
+    log("Main paper, supplement, and combined master PDF all built successfully.")
     return True
 
 

@@ -48,13 +48,7 @@ This directory contains public crypto order book datasets used in the empirical 
 
 ---
 
-## 3. Reference Benchmark Data
-
-* `LOBSTER_SampleFile_AMZN_2012-06-21_10.zip`: Standard LOBSTER public sample benchmark for Amazon (AMZN) on 2012-06-21 (10 levels of message book and order book), used for parser and benchmark calibration.
-
----
-
-## 4. SHA-256 Integrity Checksums and Line Counts
+## 3. SHA-256 Integrity Checksums and Line Counts
 
 | Filename | Line Count | SHA-256 Checksum |
 | :--- | :--- | :--- |
@@ -68,4 +62,3 @@ This directory contains public crypto order book datasets used in the empirical 
 | `BTC_5min.csv` | 3,368 | `095ee45ed97240a12e64cb2e038e04eef537da520851b1be4f05e1eee91395b9` |
 | `ETH_5min.csv` | 3,366 | `d63af34f75e7e5c54d3800f28e24ef2148b51640dd607454352246a3b2a81476` |
 | `ADA_5min.csv` | 3,368 | `ce416ff1fbe627a7397ce1f222ec61e162aaec8d25a27c3e738fd9676f0bbb1c` |
-| `LOBSTER_SampleFile_AMZN_2012-06-21_10.zip` | — | `3967668ba6d7b3ed9bc3a4173555252ac38bcdcbfbebea2fab8c1bd2a18a63cb` |
