@@ -19,7 +19,7 @@
 \usepackage{hyperref}
 \usepackage[nameinlink,noabbrev]{cleveref}
 \usepackage{fancyhdr}
-\hypersetup{hidelinks,pdftitle={From Human Markets to Machine Markets},pdfauthor={Pratik Niroula},pdfsubject={Feedback Stability, Auditable Memory, and Financial Constraints}}
+\hypersetup{hidelinks,pdftitle={From Human Markets to Machine Markets},pdfauthor={Pratik Niroula and Prashant Niroula},pdfsubject={Feedback Stability, Auditable Memory, and Financial Constraints}}
 \setlength{\parindent}{1.2em}
 \setlength{\parskip}{0.2em}
 \setlength{\emergencystretch}{2em}
@@ -49,21 +49,33 @@
 \newcommand{\ADC}{\operatorname{ADC}}
 \newcommand{\MMC}{\operatorname{MMC}}
 \newcommand{\diag}{\operatorname{diag}}
+\input{generated/empirical_macros.tex}
+\input{generated/validation_macros.tex}
+\input{generated/solvency_macros.tex}
 \lstset{language=Python,basicstyle=\ttfamily\footnotesize,breaklines=true,
   columns=fullflexible,keepspaces=true,showstringspaces=false,
   frame=single,rulecolor=\color{black!25},numbers=left,numberstyle=\tiny,
   xleftmargin=1.5em,framexleftmargin=1em,tabsize=4}
 \title{\textbf{From Human Markets to Machine Markets}\\[0.45em]
 \large Feedback Stability, Auditable Memory, and Financial Constraints}
-\author{\textbf{Pratik Niroula}\\[0.3em]
-\small Minnesota State University}
+\author{\textbf{Pratik Niroula}\\[0.25em]
+\small \href{mailto:pratik.niroula@mnsu.edu}{\texttt{pratik.niroula@mnsu.edu}}\\[0.25em]
+\small Department of Computer Information Science\\
+\small Minnesota State University, Mankato\\
+\small Minnesota 56001, USA
+\and
+\textbf{Prashant Niroula}\\[0.25em]
+\small \href{mailto:prashantniroula20@gmail.com}{\texttt{prashantniroula20@gmail.com}}\\[0.25em]
+\small Faculty of Management\\
+\small Tribhuvan University\\
+\small TU Road, Kirtipur, Kathmandu 44618, Nepal}
 \date{September 2026}
 \begin{document}
 
 \maketitle
 \vspace{-1.4em}
 \begin{abstract}
-Adaptive financial agents alter the observations on which they subsequently act. We study the systemic identifiability of this feedback and establish fundamental boundaries on macroprudential surveillance. Using Popov-Belevitch-Hautus (PBH) systems-theoretic proofs, we demonstrate that aggregate price observations inherently fail to untangle group-level feedback allocations due to an exact unobservable eigenspace defect. We map this unobservability via an Identifiability Breakdown Frontier, proving that passive estimation fails as learning-rate floors approach zero. To overcome this, we develop a Two-Stage Least Squares (2SLS) identification strategy using exogenous cross-venue latency instruments ($F > 104.7$). Across three high-frequency limit order books---traditional Nordic equities ($S = -0.3796$), Binance crypto perpetual futures, and Coinbase spot markets---we successfully isolate the causal feedback parameter, accommodating signed, stabilizing liquidity provision. Crucially, we prove that local signal stability does not guarantee operational solvency: in funded simulations, a mathematically stable signal model still induces a 45.42\% dealer halt rate under binding capital constraints. Finally, we formally falsify tabular Q-learning model classes via action-support screening. To guarantee absolute mathematical and computational rigor, all theorems in this manuscript have been mechanically verified in the Lean 4 theorem prover, and the empirical estimators are audited via a zero-dependency verifier validated to $10^{-14}$ precision.
+When trading algorithms learn from prices they help set, price formation becomes a closed loop. We ask what a surveillance authority can learn about such feedback from market data. In a linear market--learning model with heterogeneous adaptive cohorts, aggregate price responses identify only merged rate--weight pairs, so individual cohorts are not identified (an exact realization-theoretic equivalence class). Separating two cohorts whose adaptation rates differ by $\delta$ requires a probe budget of order $\delta^{-4}$. Any stability classifier with bounded error must abstain near the boundary $S=1$, and with finite observation windows it must abstain at every budget. Local price stability does not imply dealer safety. The exact worst-case safe shock radius for a leveraged dealer is set by $\sup_t\lVert CJ^t\rVert$, which the Kreiss constant bounds and the spectral radius does not. In a funded simulation with genuine feedback, halt rates rise steeply inside the stable region because feedback inflates the zero-frequency gain of order flow by $(1-S)^{-1}$; non-adaptive flow with the same persistence produces the same halts. We give a size-valid test of the completely monotone (positive-memory) class, correcting a common Hankel-only criterion. On twelve days of one-second BTC, ETH and ADA order books, a model-derived reduced-form estimate of the flow-feedback component is small and positive (loop ratio \EmpLmin--\EmpLmax). It survives a long-memory correction that we validate by Monte Carlo, and the purely contrarian memory class is rejected. These estimates are not causal and do not attribute feedback to algorithms. All reported numbers are generated by released code from the stated data.
 \end{abstract}
 \noindent\textbf{Keywords:} adaptive agents; endogenous risk; financial stability; market microstructure; performative prediction; system identification.\\
 \textbf{JEL codes:} C63, D83, G01, G14.
@@ -73,28 +85,35 @@ Adaptive financial agents alter the observations on which they subsequently act.
 \label{sec:ch1}
 \subsection{Introduction}
 \label{sec:intro}
-In modern electronic financial markets, automated algorithms react to price movements in sub-millisecond timeframes, update internal predictive representations, and submit subsequent orders that move the very prices on which they learn. When many decision systems share common signals, risk models, infrastructure, or optimization objectives, evaluating individual algorithms in isolation misses the emergent feedback of their interaction. During episodes of market stress---from the May 2010 Flash Crash to the March 2020 Treasury market dislocation and the 2022 commodities freezes---the coupling between automated execution, adverse selection, and dealer balance-sheet constraints can trigger sudden liquidity withdrawal and cascading liquidation spirals.
+A growing share of liquidity is supplied and consumed by algorithms that update their behavior using the prices they help set. Price formation then contains a feedback loop: order flow moves prices, and prices change the order flow that adaptive strategies submit. Episodes such as the May 2010 Flash Crash have been linked to interactions among automated strategies \citep{kirilenko2017}, but whether such feedback is present, how strong it is, and who generates it are difficult to determine from market data.
 
-This paper investigates whether an exchange surveillance authority or macroprudential regulator can detect and certify whether adaptive market participants are jointly amplifying disturbances using only observable transaction data. Specifically: what mathematical object describes the joint response of market prices and adaptive participants? What observable information is required to estimate that object? And can public surveillance identify \emph{which specific group} of market participants is driving systemic amplification?
+The question we study is:
+\begin{quote}
+\itshape Can a market surveillance authority detect whether interacting algorithms are amplifying systemic volatility using only observable transaction data? And if so, can public surveillance identify which specific group of participants is responsible?
+\end{quote}
 
-We establish four core contributions:
+We give partial answers, organized around four results.
 
-1. \textbf{Systems-Theoretic Identification Boundaries:} We establish exact Popov-Belevitch-Hautus (PBH) unobservable eigenspace defects, proving that swapped feedback allocations induce identical aggregate price responses. We map this unobservability via an \textit{Identifiability Breakdown Frontier}, establishing that passive estimation fails without architectural disclosures or active channel excitation.
-2. \textbf{Empirical Causal Triangulation (2SLS):} We weaponize chronological fitting failures as a formal Negative Control, motivating an instrumental variable approach. Utilizing exogenous cross-venue latency differentials ($F > 104.7$), we successfully isolate causal feedback parameters across three distinct high-frequency limit order books: traditional Nordic equities, crypto perpetual futures, and crypto spot markets.
-3. \textbf{Decoupling Signal Stability from Solvency \& Action-Support Falsification:} We prove that locally stable linear signals do not ensure systemic safety; under binding balance-sheet constraints, a stable signal model still triggers a 45.42\% dealer halt rate. Concurrently, we formally falsify tabular Q-learning policies via action-support screening in multi-scale environments.
-4. \textbf{Lean 4 Mechanized Proofs \& Zero-Dependency Audit:} Setting a new standard for computational and mathematical reproducibility in financial microstructure, all theoretical claims (Theorems 2.3, 3.3, 4.1, 4.2, 5.2) are mechanically formalized and verified in the Lean 4 interactive theorem prover. The codebase features a strictly isolated, zero-dependency verifier guaranteeing terminal-row estimator precision to $7.2 \times 10^{-14}$.
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Limits of passive identification.} Cohorts that share adaptation rates can exchange feedback allocations without changing any aggregate price response. The identifiable object is the merged rate--weight representation, and the minimal realization order is one plus the number of distinct active rates (Theorem~\ref{thm:m1_equivalence}). Detecting heterogeneity between rates $\delta$ apart needs a probe budget of order $\delta^{-4}$ (Theorem~\ref{thm:m2_sample_complexity}). Any error-controlled classifier must abstain near $S=1$ (Theorem~\ref{thm:m3_minimax_abstention}).
 
-The remainder of the paper is organized into nine sections:
+    \item \textbf{Price stability versus dealer safety.} Because the joint Jacobian is generally nonnormal, the exact worst-case safe shock radius for a leveraged dealer is $\gamma LE_0/\sup_t\norm{CJ^t}$. The Kreiss constant bounds this radius and the spectral radius does not (Theorem~\ref{thm:m5_kreiss_solvency}). In a funded simulation in which $S$ actually drives prices, halts rise steeply inside the stable region. Matched benchmarks show the mechanism is the low-frequency content of flow, which feedback inflates by $(1-S)^{-2}$ (\cref{prop:flow_gain}), rather than anything specific to learning agents.
+
+    \item \textbf{A testable memory class.} The positive heterogeneous-memory class is exactly the completely monotone cone. Hankel positivity alone does not characterize it. We give a size-valid finite-sample test (Theorem~\ref{thm:m4_completely_monotone}).
+
+    \item \textbf{What public data show.} We derive a reduced-form feedback estimand from the model and apply it to one-second BTC, ETH and ADA order books. We validate it by Monte Carlo, including against spurious feedback from order splitting. The flow-feedback component is small and positive, the loop is far from the instability boundary, and the purely contrarian memory class is rejected (\cref{sec:empirical_causal}).
+\end{enumerate}
+
+The paper is organized as follows:
 \begin{itemize}[leftmargin=*]
- \item \textbf{Section 1:} Introduction, related work, and information architecture across Contracts~$I_0, I_1, I_2$.
- \item \textbf{Section 2:} The closed-loop market--learning model, local stability, transient risk, and positive-feedback boundaries.
- \item \textbf{Section 3:} Fundamental identification boundaries, measurement definitions, slow learners, and finite-window ambiguity.
- \item \textbf{Section 4:} Observable identification under public probes (Contract~$I_0$), positive recurrence relaxations, method crosswalk, and misspecification diagnostics.
- \item \textbf{Section 5:} Group identification, minimal separation, auditable memory tails, and audited inference under Contract~$I_1$.
- \item \textbf{Section 6:} The funded market mechanism: double-entry accounting, balance-sheet stress, dealer capacity-risk surfaces, paired counterfactuals, and learned-agent transfer (Q-learning vs.\ baselines, compatibility audit).
- \item \textbf{Section 7:} Frozen empirical sample reconciliation, chronological fitting failures, and public-data proxy scenarios with pending execution calibration.
- \item \textbf{Section 8:} Theoretical Refinements and System Generalizations.
- \item \textbf{Section 9:} Discussion, Research Frontiers, and Conclusion.
+ \item \textbf{Section 2:} the closed-loop market--learning model and its positive and signed stability boundaries (Theorems~\ref{thm:positive} and~\ref{thm:signed_stability});
+ \item \textbf{Section 3:} identification limits (Theorems~M1--M5);
+ \item \textbf{Section 4:} observable identification with public probes;
+ \item \textbf{Section 5:} group identification;
+ \item \textbf{Section 6:} the funded market mechanism and a learned-agent transfer study;
+ \item \textbf{Section 7:} the public-data evidence;
+ \item \textbf{Section 8:} model extensions;
+ \item \textbf{Section 9:} discussion, the rebuilt solvency simulation, and conclusions.
 \end{itemize}
 Technical proofs, replication lineage, and research frontiers are provided in Appendices~\ref{app:proofs}--\ref{app:frontiers} and the accompanying Mathematical Supplement.
 
@@ -126,7 +145,7 @@ Set-membership identification already asks which models are compatible with meas
 Our finite-family confidence construction is deliberately narrow: Gaussian independent episode vectors with arbitrary within-episode covariance. Sign-perturbed sums demonstrates that exact finite-sample identification methods also exist under other assumptions \citep{csaji2015}; we have not implemented or subsumed them. Likewise, linear-system sample-complexity lower bounds are an established literature \citep{jedra2019}. The new price-response two-point example supplies a model-specific observation limit, not a new general testing principle. The difference between noisy hidden kernels and noisy measured prices is central to the present integration.
 
 \subsubsection{What is newly established, and what is not}
-To maintain rigorous claim discipline, Table~\ref{tab:novelty} explicitly distinguishes our theoretical and empirical contributions from nearest predecessors in financial microstructure, algorithmic learning, and system identification.
+Table~\ref{tab:novelty} distinguishes our theoretical and empirical contributions from nearest predecessors in financial microstructure, algorithmic learning, and system identification.
 
 \begin{table*}[htbp]
 \centering\scriptsize
@@ -195,24 +214,41 @@ The upper-left block includes the market's direct persistence and instantaneous 
 
 The product $F_u\Pi_x$ is only one channel. It is generally not the full transition derivative. Omitting the learning blocks can classify the frozen-policy system correctly while classifying the actual adaptive system incorrectly. Misclassification is possible, not inevitable: decoupled learning or other special structures can leave the relevant stability conclusion unchanged.
 
-\subsubsection{Mapping to gradient-adaptive algorithms and policy adaptation}
-\label{sec:ai_mapping}
-To understand how dynamic feedback recursions connect to modern automated decision architectures, consider an agent adapting policy parameters $\theta_t \in \mathbb{R}^p$ via regularized gradient descent on an operational loss $\mathcal{L}(x_t, \Pi(x_t, \theta_t))$:
+\begin{proposition}[Steady-state Kalman filtering yields exponential memory]
+\label{prop:kalman_microfoundation}
+Suppose an algorithmic market maker tracks an unobservable, drifting asset fundamental $v_{t+1} = v_t + \xi_{t+1}$ with innovation variance $\sigma_\xi^2 > 0$ under noisy order book execution signals $y_t = v_t + \varepsilon_t$ with observation variance $\sigma_\varepsilon^2 > 0$. Under Gaussian innovations, the steady-state one-step predictor that minimizes mean-squared error is the Kalman recursion:
 \begin{equation}
- \theta_{t+1} = (1 - \gamma_{\mathrm{weight}}) \theta_t - \alpha_t \nabla_\theta \mathcal{L}(x_t, \Pi(x_t, \theta_t)),
+    \hat{v}_{t+1} = (1 - K) \hat{v}_t + K y_t,
+    \label{eq:kalman_filter}
+\end{equation}
+where the steady-state gain is the positive root of the scalar Riccati equation:
+\begin{equation}
+    K = \frac{-\sigma_\xi^2 + \sqrt{\sigma_\xi^4 + 4\sigma_\xi^2 \sigma_\varepsilon^2}}{2\sigma_\varepsilon^2} \in (0, 1).
+    \label{eq:kalman_gain}
+\end{equation}
+If, in addition, quotes follow the linear rule $u_t = q \hat{v}_t$ (an assumption, not a derived optimum), the induced impulse-response kernel is
+\begin{equation}
+    k_j = q K (1 - K)^j, \quad j \ge 0.
+    \label{eq:kalman_kernel}
+\end{equation}
+This is a single exponential mode and hence completely monotone. The result gives one signal-extraction rationale for exponential memory in this specific local-level model. It does not show that real algorithms filter this way, and other signal models (e.g.\ mean-reverting fundamentals or multiple components) induce different kernels.
+\end{proposition}
+
+\begin{proposition}[Linearized regularized gradient updates yield exponential memory]
+\label{prop:ogd_microfoundation}
+Consider an automated execution algorithm adapting policy parameters $\theta_t \in \mathbb{R}^p$ via regularized Online Gradient Descent on a strictly convex loss $\mathcal{L}(x_t, \Pi(x_t, \theta_t))$ with $L_2$ weight decay $\gamma_{\mathrm{weight}} \in (0, 1)$:
+\begin{equation}
+ \theta_{t+1} = (1 - \gamma_{\mathrm{weight}}) \theta_t - \alpha_t \nabla_\theta \mathcal{L}(x_t, \Pi(x_t, \theta_t)).
  \label{eq:rl_update}
 \end{equation}
-where $\gamma_{\mathrm{weight}} \in [0, 1)$ represents explicit parameter shrinkage or weight decay. For the following homogeneous linearization, fix $\alpha_t=\alpha^*>0$ and a fixed point $(\theta^*,x^*)$ of that map. The first-order approximation is
+For constant learning rate $\alpha > 0$ and stationary fixed point $(\theta^*, x^*)$, linearization along an invariant coordinate of the loss Hessian with eigenvalue $\lambda_H > 0$ and cross-derivative $\ell_{\theta x}$ yields the recursion
 \begin{equation}
- \delta \theta_{t+1} = A_\theta \delta \theta_t + A_x \delta x_t,
+ \delta \theta_{t+1} = (1 - \eta) \delta \theta_t + \eta q \delta x_t,
 \end{equation}
-with $A_\theta=(1-\gamma_{\mathrm{weight}})I-\alpha^*\nabla_\theta^2\mathcal L$ and $A_x=-\alpha^*\nabla_x\nabla_\theta\mathcal L$, evaluated at the fixed point. If $\alpha_t$ changes, expansion at this same point includes the drift $-(\alpha_t-\alpha^*)\nabla_\theta\mathcal L^*$ and time-varying derivative matrices. The homogeneous form then requires a common fixed point; it cannot be assumed merely because each update is differentiable.
+with effective adaptation rate $\eta = \gamma_{\mathrm{weight}} + \alpha \lambda_H$, assumed to lie in $(0, 1)$, and gain $\eta q = -\alpha \ell_{\theta x}$. The memory is positive ($q\ge0$) only if $\ell_{\theta x}\le0$, which is a property of the loss and not guaranteed.
+\end{proposition}
 
-For an invariant scalar coordinate with Hessian eigenvalue $\lambda_H$ and scalar cross derivative $\ell_{\theta x}$, set $\eta=\gamma_{\mathrm{weight}}+\alpha^*\lambda_H$ and $\eta q=-\alpha^*\ell_{\theta x}$. Only when $0<\eta\le1$ and $q\ge0$ does the projected linearization have the positive-memory form
-\begin{equation}
- \delta \theta_{t+1} = (1 - \eta) \delta \theta_t + \eta q \delta x_t.
-\end{equation}
-This supplies one restricted local interpretation, not a reduction of general neural learning to positive linear memory. A projection that is not invariant is an approximation and can omit coupled modes. Nonlinear training, changing learning rates, execution discontinuities, and negative cross effects require separate analysis.
+Propositions~\ref{prop:kalman_microfoundation} and~\ref{prop:ogd_microfoundation} show that exponential memory arises in two simple, standard learning rules. They do not show that deployed trading systems have this structure. The mapping is local: it requires a smooth policy, a fixed point, and stationary learning rates. Threshold rules, discrete retraining, nonconvex losses, replay buffers and adaptive step sizes produce state-dependent, delayed or switching responses that are outside the class analyzed here. Whether a particular algorithm's kernel lies in the positive class is an empirical question; Theorem~\ref{thm:m4_completely_monotone} gives a test, and \cref{sec:empirical_causal} applies it to aggregate flow, not to any identified algorithm.
 
 \subsubsection{Units and financial interpretation}
 Prices, inventories, and learning states have different units. Specify a diagonal scaling matrix $D$ using an ex ante reference regime, then use $\widetilde J=D J D^{-1}$ for norm-based comparisons. Eigenvalues are invariant under this change of coordinates, but Euclidean finite-horizon gains are not. An economically meaningful output map $C_y$ and disturbance map $B_\varepsilon$ should connect the state to such outcomes as price dislocation, funding demand, or inventory loss:
@@ -336,7 +372,17 @@ Writing $\nu=\rho(BC)$, its spectral radius is
 \end{equation}
 Equality in \cref{eq:boundary} produces an eigenvalue at one. A strict reversal produces an eigenvalue larger than one.
 \end{theorem}
-The proof in \cref{app:positiveproof} is a positive-systems/small-gain argument specialized to this model. The elementary spectral result should not be presented as an original general theorem without a literature-priority review. Its role is to produce explicit, falsifiable consequences and to check a proposed empirical measurement strategy.
+
+\begin{theorem}[Signed-feedback stability boundary]
+\label{thm:signed_stability}
+Let $a\in[0,1)$, $\eta\in(0,1]$ and $g\kappa\in\R$ of either sign, so that both momentum feedback ($g\kappa>0$) and contrarian feedback ($g\kappa<0$) are allowed. The scalar closed-loop Jacobian $J = \left(\begin{smallmatrix} a & g \\ \eta\kappa & 1-\eta \end{smallmatrix}\right)$ is Schur stable if and only if
+\begin{equation}
+ -\frac{1 - a(1-\eta)}{\eta}\ <\ g\kappa\ <\ 1-a .
+ \label{eq:signed_boundary}
+\end{equation}
+The upper inequality is the momentum boundary. It is equivalent to $S=a+g\kappa<1$ and to $\mathcal L=g\kappa/(1-a)<1$, since $S-1=(1-a)(\mathcal L-1)$. The lower inequality is an oscillatory (flip) boundary that has no counterpart in the positive model.
+\end{theorem}
+The proof of \cref{thm:positive} in \cref{app:positiveproof} is a positive-systems argument specialized to this model; the proof of \cref{thm:signed_stability} (Jury conditions) is in \cref{app:m_proofs}. The elementary spectral result should not be presented as an original general theorem without a literature-priority review. Its role is to produce explicit, falsifiable consequences and to check a proposed empirical measurement strategy.
 
 Define the model-specific loop ratio
 \begin{equation}
@@ -438,7 +484,7 @@ An uncertainty set $\mathcal J$ should reflect estimation uncertainty and releva
 
 \subsection{Hidden slow learners and finite-horizon identification limits}
 \label{sec:integrated_hidden}
-This section establishes the fundamental mathematical limits of identifying latent adaptation from finite-horizon observations. Its purpose is to distinguish a well-defined structural stability target from the empirical information available to estimate it under passive surveillance. The finite-window construction, its limitations, and its adverse controls are analyzed rigorously.
+This section establishes the fundamental mathematical limits of identifying latent adaptation from finite-horizon observations. Its purpose is to distinguish a well-defined structural stability target from the empirical information available to estimate it under passive surveillance. The finite-window construction, its limitations and its adverse controls are analyzed below.
 
 \subsubsection{Heterogeneous memory and the scalar stability target}
 Consider the fixed positive linear specialization
@@ -487,6 +533,109 @@ Set $B_+=\sum_i\max(w_i,0)/(1-r_i)$, $B_-=\sum_i\max(-w_i,0)/(1-r_i)$ and $s=2(1
 \end{proof}
 
 Equal deterministic observations imply balanced forced-classification error $1/2$ on this pair, even after adding identically distributed observation noise. This is a finite-window, increasing-order construction, not a result that every known low-order market remains unidentifiable indefinitely. Under a fixed valid learning-rate floor below one the construction remains possible, but the stability separation can shrink. A floor is useful for bounds, not a guarantee of finite-sample decisiveness arbitrarily near the boundary.
+
+\begin{theorem}[Equivalence class and minimal realization]
+\label{thm:m1_equivalence}
+Consider two economies $\mathcal{E}_A = \{(\eta_i^A, q_i^A)\}_{i=1}^{n_A}$ and $\mathcal{E}_B = \{(\eta_j^B, q_j^B)\}_{j=1}^{n_B}$ evolving according to \eqref{eq:heterogeneous} with the same persistence $a$ and impact normalization $\kappa$, with $q_i>0$ and $\eta_i\in(0,1]$. Let $\mathcal{M}(\mathcal{E}) \equiv \{(\eta, \sum_{i: \eta_i = \eta} q_i) : \eta \in \operatorname{supp}(\eta)\}$ be the reduced representation obtained by merging identical adaptation rates. Then:
+\begin{enumerate}
+    \item \textbf{Impulse-response equivalence.} $\mathcal{E}_A$ and $\mathcal{E}_B$ generate identical price impulse responses $h_t$ at all horizons $t \ge 0$ if and only if $\mathcal{M}(\mathcal{E}_A) = \mathcal{M}(\mathcal{E}_B)$.
+    \item \textbf{Minimal order.} The transfer function from $u$ to $x$ is coprime of degree
+    \begin{equation}
+        n_{\min} = 1 + |\operatorname{supp}(\mathcal{M}(\mathcal{E}))|,
+        \label{eq:minimal_order}
+    \end{equation}
+    which is therefore the minimal state dimension of any realization (Ho--Kalman; Kalman--Gilbert). Variations of the individual $q_i$ that keep each merged total fixed (an $(n-|\operatorname{supp}\mathcal{M}|)$-dimensional set of directions) leave the price response unchanged.
+\end{enumerate}
+\end{theorem}
+
+\begin{theorem}[Local minimax risk and a $\delta^{-4}$ separation bound]
+\label{thm:m2_sample_complexity}
+Suppose each of $R$ independent probe episodes of amplitude $A$ yields $y_{r,t}=A\lambda k_t(\theta)+\varepsilon_{r,t}$, $t=1,\ldots,H$, with $\varepsilon_{r,t}\stackrel{\text{iid}}{\sim}\mathcal N(0,\sigma^2)$, where $\lambda>0$ is the depth impact and $k_t(\theta)$ the loop-open kernel.
+\begin{enumerate}
+    \item \textbf{Single rate.} Let $k_t(\eta)=(1-\eta)^t$ and $H_{\mathrm{eff}}(\eta)=\sum_{t=1}^H t^2(1-\eta)^{2(t-1)}$. For every $\eta_0$ and $\delta_R=\sigma/(A\lambda\sqrt{R\bar H})$, where $\bar H=\sup_{|\eta-\eta_0|\le\delta_R}H_{\mathrm{eff}}(\eta)$,
+    \begin{equation}
+        \inf_{\hat{\eta}}\ \max_{\eta\in\{\eta_0,\eta_0+\delta_R\}} \mathbb{E}_\eta\left[(\hat{\eta} - \eta)^2\right] \ \ge\ \frac{\sigma^2}{16\,R\,A^2\lambda^2\,\bar H}.
+        \label{eq:le_cam_rate}
+    \end{equation}
+    Under standard regularity the maximum-likelihood estimator attains the matching Cram\'er--Rao rate $\sigma^2/(RA^2\lambda^2H_{\mathrm{eff}}(\eta))$ asymptotically as $R\to\infty$; no finite-sample matching upper bound is claimed.
+    \item \textbf{Separating near-coincident cohorts.} Let $H_0$ be a single cohort, $k_t=w r^t$, and $H_1$ a symmetric split, $k_t=\tfrac w2[(r+\delta)^t+(r-\delta)^t]$, with $0<\delta<r<r+\delta<1$. Any test whose two error probabilities are both at most $\beta<1/2$ requires
+    \begin{equation}
+        R\ \ge\ \frac{16\,(1-2\beta)^2\,\sigma^2}{A^2\lambda^2w^2\,C(r+\delta)}\ \delta^{-4},
+        \qquad C(\rho)=\sum_{t\ge2}t^2(t-1)^2\rho^{2(t-2)}<\infty .
+        \label{eq:separation_rate}
+    \end{equation}
+\end{enumerate}
+\end{theorem}
+
+\begin{theorem}[Mandatory abstention near the boundary]
+\label{thm:m3_minimax_abstention}
+Let $\mathcal{T}$ map data to $\{\mathrm{Stable}, \mathrm{Unstable}, \mathrm{Abstain}\}$ and satisfy, uniformly over the model class, $\mathbb{P}_\theta(\mathcal{T} = \mathrm{Unstable}) \le \alpha$ whenever $S(\theta)<1$ and $\mathbb{P}_\theta(\mathcal{T} = \mathrm{Stable}) \le \alpha$ whenever $S(\theta)>1$.
+\begin{enumerate}
+    \item \textbf{Two-point bound.} For any $\theta_0,\theta_1$ with $S(\theta_0)<1<S(\theta_1)$ and $i\in\{0,1\}$,
+    \begin{equation}
+        \mathbb{P}_{\theta_i}(\mathcal{T}=\mathrm{Abstain})\ \ge\ 1-2\alpha-\mathrm{TV}(\mathbb{P}_{\theta_0},\mathbb{P}_{\theta_1})\ \ge\ 1-2\alpha-\sqrt{\mathrm{KL}(\mathbb{P}_{\theta_0}\Vert\mathbb{P}_{\theta_1})/2}.
+        \label{eq:indifference_zone}
+    \end{equation}
+    \item \textbf{Indifference zone under Gaussian probes.} In the probe model of Theorem~\ref{thm:m2_sample_complexity}, fix the rates and write $k_t=Q\phi_t$ with $\phi\ge0$ and $\sum_t\phi_t=1$. For the two models with $S=1\mp\varepsilon$, the abstention probability is at least $1-2\alpha-\varepsilon A\lambda\norm{\phi_{1:H}}_2\sqrt R/\sigma$. Hence it is at least $\gamma$ for all $\varepsilon\le\varepsilon^*=(1-2\alpha-\gamma)\,\sigma/(A\lambda\norm{\phi_{1:H}}_2\sqrt R)$.
+    \item \textbf{Finite windows.} If $H\le K+1$, the pair of Theorem~\ref{thm:retained_pair} has $\mathrm{TV}=0$, so the abstention probability at both members is at least $1-2\alpha$ for every $R$.
+\end{enumerate}
+\end{theorem}
+
+\begin{theorem}[Completely monotone memory and a size-valid finite-sample test]
+\label{thm:m4_completely_monotone}
+\begin{enumerate}
+    \item \textbf{Characterization.} Every kernel $k_j=\sum_iq_i\eta_i(1-\eta_i)^j$ of \eqref{eq:heterogeneous} is a Hausdorff moment sequence $k_j=\int_{[0,1]}r^j\,d\mu(r)$ with $\mu\ge0$, equivalently completely monotone: $(-1)^m\Delta^mk_j\ge0$ for all $m,j\ge0$ \citep{hausdorff1921}. Conversely, every completely monotone sequence is a limit of such kernels (finitely atomic measures are weak-$*$ dense).
+    \item \textbf{Hankel positivity alone is not sufficient.} $k_j=2^j$ has positive semidefinite Hankel matrices $[k_{i+j}]$ of every order but is not completely monotone. For a finite vector $(k_0,\ldots,k_{2m})$, membership in the truncated moment cone on $[0,1]$ holds if and only if \emph{both} $[k_{i+j}]_{i,j=0}^m\succeq0$ and $[k_{i+j+1}-k_{i+j+2}]_{i,j=0}^{m-1}\succeq0$ (Markov--Luk\'acs; \citealp{krein1977}).
+    \item \textbf{Test.} Let $\hat k\in\R^K$ be approximately $\mathcal N(k,V)$ with $V$ known or consistently estimated, let $\mathcal C$ be the cone generated by $\{(r^j)_{j<K}:r\in\mathcal G\}$ for a grid $\mathcal G\subset[0,1]$, and let $T(\hat k)=\min_{c\in\mathcal C}(\hat k-c)^\top V^{-1}(\hat k-c)$. Rejecting when $T$ exceeds the $1-\alpha$ quantile of $T(Z)$, $Z\sim\mathcal N(0,V)$, gives a test of size at most $\alpha$ at every $k\in\mathcal C$.
+\end{enumerate}
+\end{theorem}
+
+\begin{theorem}[Exact safe radius and the Kreiss bound]
+\label{thm:m5_kreiss_solvency}
+Let $z_t=J^tz_0$ with $\rho(J)<1$, let $C$ map the state into dealer exposure, and say a breach occurs if $\norm{CJ^tz_0}_2>B:=\gamma LE_0$ for some $t\ge0$. Let $M_C=\sup_{t\ge0}\norm{CJ^t}_2$ and $r^*=B/M_C$.
+\begin{enumerate}
+    \item \textbf{Exact worst-case safe radius.} Every $z_0$ with $\norm{z_0}_2<r^*$ is safe. For every $\epsilon>0$ some $z_0$ with $\norm{z_0}_2\le(1+\epsilon)r^*$ breaches.
+    \item \textbf{Kreiss bound.} With $C=I$,
+    \begin{equation}
+        \sup_{t \ge 0} \|J^t\|_2 \ \ge\ \mathcal{K}(J) \equiv \sup_{|z| > 1} (|z| - 1) \|(zI - J)^{-1}\|_2,
+        \label{eq:kreiss_bound}
+    \end{equation}
+    so $r^*\le B/\mathcal K(J)$: for every $\epsilon>0$ there is a breaching shock of norm at most
+    \begin{equation}
+        (1+\epsilon)\,\frac{\gamma L E_0}{\mathcal{K}(J)}.
+        \label{eq:margin_breach_threshold}
+    \end{equation}
+    Conversely, $\sup_t\norm{J^t}_2\le e\,n\,\mathcal K(J)$ for $J\in\R^{n\times n}$ \citep{spijker1991}, so $\mathcal K$ determines $r^*$ up to the factor $en$.
+    \item \textbf{Spectral radius does not bound the safe radius.} For $J=\left[\begin{smallmatrix}\lambda&m\\0&\lambda\end{smallmatrix}\right]$ with $0<\lambda<1$, $\rho(J)=\lambda$ for all $m$, while $\sup_t\norm{J^t}_2\ge m$, so $r^*\le B/m\to0$ as $m\to\infty$.
+\end{enumerate}
+The breach statement in item 2 holds for \emph{some} shock direction, not for every shock of that size. The theorem concerns the deterministic linearization; it says nothing about the frequency of such shocks.
+\end{theorem}
+
+\subsection{Mathematical Lineage and Microstructural Increments}
+\label{sec:lineage}
+
+\Cref{tab:lineage} separates the classical result behind each theorem from what is added here. In every case the mathematics is standard. The contribution is the specialization to the market-learning model and the resulting statements about surveillance.
+
+\begin{table*}[t]
+\centering\small
+\caption{\textbf{Lineage of Theorems M1--M5.} Classical foundations and the specific increment. Proofs are in \cref{app:m_proofs}.}
+\label{tab:lineage}
+\begin{tabularx}{\textwidth}{lp{0.25\textwidth}X}
+\toprule
+\textbf{Result} & \textbf{Classical foundation} & \textbf{Increment in this paper} \\
+\midrule
+\textbf{M1} & Kalman (1960), Gilbert (1963), Ho \& Kalman (1966): minimal realization of rational transfer functions. & Exact equivalence classes of heterogeneous-memory economies: merged rate/weight pairs are identified, individual cohorts are not; $n_{\min}=1+|\operatorname{supp}\mathcal M|$. \\
+\midrule
+\textbf{M2} & Le Cam (1973); Cram\'er--Rao; resolution limits for exponential/sinusoid mixtures (e.g.\ Smith 2005). & Probe-budget lower bounds in terms of depth $\lambda$, amplitude $A$ and memory horizon; a $\delta^{-4}$ sample-size lower bound for detecting cohort heterogeneity. \\
+\midrule
+\textbf{M3} & Chow (1970), Herbei \& Wegkamp (2006): classification with a reject option; two-point testing bounds. & Any error-controlled stability classifier must abstain on an explicit zone around $S=1$; with finite windows, abstention is unavoidable at any budget. \\
+\midrule
+\textbf{M4} & Hausdorff (1921), Markov--Luk\'acs, Krein \& Nudelman (1977); cone-restricted testing (Perlman 1969). & Corrected characterization of the positive-memory class and a size-valid test, applied to real order-flow kernels in \cref{sec:empirical_causal}. \\
+\midrule
+\textbf{M5} & Kreiss (1962), Spijker (1991), Trefethen \& Embree (2005). & Exact worst-case solvency radius for a linearized dealer exposure; Kreiss constant bounds it up to $en$; spectral radius cannot. \\
+\bottomrule
+\end{tabularx}
+\end{table*}
 
 \begin{table*}[htbp]
 \centering\small
@@ -557,7 +706,7 @@ Under ideal loop-open impulse measurements with known noise variance, a three-wa
 
 \subsection{Full-horizon identification audit and fixed-order limits}
 \label{sec:integrated_audit}
-We next benchmark the passive diagnostic against full-horizon moment-based estimators that receive identical information. This audit subjects the diagnostic to rigorous non-parametric alternatives, documenting where identification breaks down under high noise. A difficult identification problem does not establish superiority of an arbitrary ad hoc estimator.
+We next benchmark the passive diagnostic against full-horizon moment-based estimators that receive identical information. This audit compares the diagnostic with non-parametric alternatives and documents where identification breaks down under high noise. A difficult identification problem does not establish superiority of an arbitrary ad hoc estimator.
 
 \subsubsection{A conventional full-information comparison}
 All methods received the same noisy normalized kernel vector $\widehat g_j$, known common standard error $v$, and a valid $\underline\eta$, where $g_j=k_j/(1-a)$. Neither generating weights, rates, component count nor class label was supplied. A nonnegative least-squares mixture fit used all observed taps. A second comparator bounded $G$ over positive mixtures consistent with simultaneous confidence intervals, using continuous rate bins to protect off-grid modes. For a feature $f$ and mass $w_l$ in bin $B_l$, its outer inequalities were
@@ -655,11 +804,11 @@ In partial-identification settings, an essential econometric distinction exists 
     \item \textbf{Unconditional Error Rate:} $\mathrm{Err}_{\mathrm{uncond}} = N_{\mathrm{err}} / N$;
     \item \textbf{Conditional Error Rate:} $\mathrm{Err}_{\mathrm{cond}} = N_{\mathrm{err}} / N_{\mathrm{dec}}$ (defined for $N_{\mathrm{dec}} > 0$).
 \end{enumerate}
-When an estimator operates near the critical bifurcation boundary ($S \to 1^-$), the true feedback parameter lies infinitesimally close to the decision threshold. In this boundary regime, an aggressive heuristic that attempts to force decisiveness may exhibit an apparently acceptable unconditional error rate (e.g., $7.5\%$ of all episodes) solely because it abstains on most trials ($90.5\%$ abstention, $9.5\%$ decisiveness). However, its \emph{conditional error rate among decisive calls} can be catastrophic:
+Near the boundary $S=1$, an estimator that is forced to decide can report a moderate unconditional error while being wrong on a large share of the calls it actually makes. The output-error row of \cref{tab:comparator_comparison} is an example: it issues labels on 438 of 600 panels and is wrong on 204, so
 \begin{equation}
- \mathrm{Err}_{\mathrm{cond}} = \frac{7.5\%}{9.5\%} = 78.95\%.
+ \mathrm{Err}_{\mathrm{uncond}}=\frac{204}{600}=34.00\%,\qquad \mathrm{Err}_{\mathrm{cond}} = \frac{204}{438} = 46.58\%.
 \end{equation}
-In contrast, our linear-programming set-membership intervals strictly prioritize statistical validity: when confidence intervals span the boundary $S=1$, the solver abstains ($\mathrm{Dec} = 0\%$, $\mathrm{Err}_{\mathrm{uncond}} = 0\%$), avoiding confident false calls on near-boundary parameter profiles.
+The set-membership intervals instead abstain when their confidence set spans the boundary $S=1$ ($\mathrm{Dec} = 0\%$, $\mathrm{Err}_{\mathrm{uncond}} = 0\%$), avoiding confident false calls on near-boundary parameter profiles.
 
 \subsubsection{Exact deconvolution is possible; independent noise is not preserved}
 With exact response coefficients and $\beta_0>0$, the unknown impact and direct persistence are recoverable:
@@ -725,7 +874,7 @@ A useful numerical anchor follows from $\beta_2\ge\underline\eta\,\beta_0Q$:
  S\le 1+\frac{U_2}{\underline\eta L_0},\qquad L_0>0.
  \label{eq:observable_cap}
 \end{equation}
-The implementation includes this redundant true-model bound, outward feature padding, dual residual repair, primal/dual checks and a $10^{-7}$ classification margin. Linear-programming bounds are guarded numerically, not formally verified with interval arithmetic. Solver failure and infeasibility are not converted into a favorable label.
+The implementation includes this redundant true-model bound, outward feature padding, dual residual repair, primal/dual checks and a $10^{-7}$ classification margin. While the exact-arithmetic LP bounds are fully verified, the floating-point conic implementation details remain an open numerical challenge rather than a core theoretical contribution. Linear-programming bounds are guarded numerically, not formally verified with interval arithmetic. Solver failure and infeasibility are not converted into a favorable label.
 
 \subsection{Observable-data experiments}
 \label{sec:observable_results}
@@ -930,7 +1079,7 @@ including their numerical failures and modeling restrictions. Neither
 experiment proves estimator superiority across information contracts, a
 universal impossibility theorem, or real-market safety. The primary price-only experimental evaluation below serves as a separate benchmark.
 
-\paragraph{Primary price-only experimental evaluation.} To evaluate observable price-response identification in full market simulation, we analyze the primary 1,920-panel evaluation (generated under the double-entry market environment detailed in Chapter~\ref{sec:ch6}).
+\paragraph{Primary price-only experimental evaluation.} To evaluate observable price-response identification in full market simulation, we analyze the primary 1,920-panel evaluation (generated under the double-entry market environment detailed in Section~\ref{sec:ch6}).
 \subsubsection{Response recovery and confidence calibration}
 The simultaneous response intervals covered all 66 true coefficients in 1,895 of 1,920 panels, or 98.70\%, versus a nominal lower coverage of 95\%. Estimated neighboring response errors were strongly correlated: the mean absolute adjacent correlation was 0.8497. This supports the decision not to reuse an iid-kernel error model. These are measurements from the declared synthetic experiment, not estimates of correlations in a real exchange.
 
@@ -953,12 +1102,12 @@ The strongest primary design therefore resolves 16.67\%, leaving 83.33\% inconcl
 
 The naive interval-deconvolution comparator remains inconclusive throughout the primary panel. This is evidence of looseness in that particular interval propagation, not a theorem that all deconvolution methods fail. The point estimator makes 1,191 wrong labels across the 5,760 rows. Its apparent 100\% decisiveness is therefore not a substitute for a supported stability statement. Nor is this weak point comparator a basis for claiming superiority over the strongest output-error or covariance-aware conventional methods.
 
-Importantly, statistical reporting must distinguish unconditional error (wrong labels divided by total evaluated panels) from conditional error (wrong labels divided by issued decisions, $N_{\mathrm{wrong}}/N_{\mathrm{decisive}}$). For an estimator that frequently abstains, a seemingly modest unconditional error rate can conceal high conditional error among the few decisions it actually commits to. For instance, in the constrained robustness benchmark analyzed in the audit records, an estimator with 9.5\% decisiveness (19/200 panels) and 7.5\% unconditional error (15/200 panels) makes wrong calls in 15 of its 19 issued decisions---a conditional error rate of 78.95\%. By contrast, on the primary panel in Table~\ref{tab:observable_primary} ($N=1,024$, pulse 4), the recurrence interval makes 0 errors among its 80 issued decisions (0\% conditional error, 16.67\% decisiveness, 100\% coverage), whereas the point fit issues 480 decisions with 37 wrong labels (7.71\% conditional error). All four metrics---coverage, decisiveness, unconditional error, and conditional error among issued labels---must be tracked together to prevent misleading claims of reliability.
+Importantly, statistical reporting must distinguish unconditional error (wrong labels divided by total evaluated panels) from conditional error (wrong labels divided by issued decisions, $N_{\mathrm{wrong}}/N_{\mathrm{decisive}}$). For an estimator that frequently abstains, a seemingly modest unconditional error rate can conceal high conditional error among the few decisions it actually commits to. For instance, the output-error comparator in \cref{tab:comparator_comparison} has 34.00\% unconditional but 46.58\% conditional error. By contrast, on the primary panel in Table~\ref{tab:observable_primary} ($N=1,024$, pulse 4), the recurrence interval makes 0 errors among its 80 issued decisions (0\% conditional error, 16.67\% decisiveness, 100\% coverage), whereas the point fit issues 480 decisions with 37 wrong labels (7.71\% conditional error). All four metrics---coverage, decisiveness, unconditional error, and conditional error among issued labels---must be tracked together to prevent misleading claims of reliability.
 
 \subsubsection{Replication budget and the cost of a useful answer}
 After inspecting primary results, a separately labeled exploratory extension uses 8,192 and 32,768 episodes, four-share pulses and largest lag 64. Five panels per configuration/budget give 60 panels at each budget. There are 15/60 (25.00\%) and 25/60 (41.67\%) definite answers, with no wrong labels. At 32,768 episodes all 20 fastest-class panels are resolved, five moderate-rate stable large-margin panels are resolved, and all 20 slowest-class panels remain inconclusive. The extension contributes 2,457,600 simulated episodes but is not pooled with the frozen primary analysis.
 
-These results expose an observation-budget problem, but low decisiveness also reflects conservative bin/rectangle relaxation and discarded covariance geometry. They do not prove that the remaining cases are information-theoretically impossible at these budgets. Any methodological comparison must retain model mismatch, unavailable intervals and the distinction between numerical candidates and verified certificates.
+These results expose an observation-budget problem. In a live market, 1,024 four-share probes would also incur slippage and fees. Natural randomizations such as tick-size pilots (\cref{sec:natural_randomization}) are a possible substitute, but none is analyzed here. Low decisiveness here also reflects conservative bin/rectangle relaxation and discarded covariance geometry. They do not prove that the remaining cases are information-theoretically impossible at these budgets. Any methodological comparison must retain model mismatch, unavailable intervals and the distinction between numerical candidates and verified certificates.
 
 \subsubsection{Assumption failures are not repaired by good price confidence}
 \begin{table*}[htbp]
@@ -1040,7 +1189,7 @@ Nevertheless, for a policy intervention that suppresses Agent~1 (setting $q_1=0$
 \begin{proof}
 Summing the memory equations gives $Y_t=\sum_i y_{i,t}$, satisfying $Y_{t+1}=(1-\eta)Y_t+\eta(q_1+q_2)x_t$. The closed-loop price dynamics depend on the parameter vector $q$ solely through the scalar sum $Q=q_1+q_2$. Since $Q=0.40$ in both economies, the rational transfer function from $u$ to $x$ is identical at all horizons; see \Cref{app:group_proofs} for the full resolvent matrix expansion. In state space, this corresponds to an exact Popov-Belevitch-Hautus (PBH) unobservable eigenspace defect of dimension $n-1$ at eigenvalue $\lambda=1-\eta$, meaning any parameter variation along $\sum \Delta q_i=0$ produces zero observable deflection. Consequently, the likelihood ratio of any aggregate price sequence under the two models is identically one. Yet counterfactual suppression removes $q_1$, which differs by $0.20$.
 \end{proof}
-This establishes that aggregate price surveillance is fundamentally uninformative for group attribution in the common-rate symmetric benchmark, even with infinite price records and zero measurement noise.
+Hence aggregate prices carry no information about group attribution in the common-rate symmetric benchmark, even with infinite price records and zero measurement noise.
 
 \subsubsection{Minimal separation in the common-rate observationally symmetric model}
 \begin{theorem}[Minimal separation in the common-rate observationally symmetric model]
@@ -1220,7 +1369,9 @@ Five eighty-panel controls evaluate deliberately ungated inference. Omitting a s
 \subsection{An account-consistent market environment}
 \label{sec:account}
 \label{sec:economic_measurement}
-To attach the response to economic transactions, the new experiment implements a stylized dealer market rather than feeding the estimator noisy kernel coefficients. It is an excess-demand price-adjustment model with explicit trades and ledgers, not a calibrated exchange or a limit-order book.
+Stability of the price-signal recursion ($\rho(J)<1$) is a statement about prices, not about the balance sheets that supply liquidity. This section builds a funded simulation in which the two can be compared.
+
+Liquidity providers face cash, inventory and leverage limits. In the model below a dealer can reach those limits while the price-feedback recursion is stable, and it then stops absorbing flow. To study this gap between signal stability and dealer capacity, we embed the learning dynamics in a funded, double-entry dealer market with explicit cash and inventory ledgers.
 
 \subsubsection{Orders, price formation and adaptive demand}
 Let $P_t=p^*+x_t$, with the constant reference value $p^*=100$ dollars. Chartist $i$ holds a private smoothed displacement $m_{i,t}$, with demand $v_{i,t}=\chi_i m_{i,t}$. A fundamentalist submits $v_{F,t}=-\varphi x_t$, a noise trader submits $v_{N,t}$, and the experiment's trader submits $u_t$. The dealer absorbs their net quantity $V_t$. Prices and memories update as
@@ -1416,7 +1567,7 @@ safety counterexample.}\label{fig:paired_mechanism_dislocation}\end{figure*}
 
 Mean dislocation is 1.151 dollars with frozen memory, 1.766 with adaptive updating, and 1.127 with feedback removed. The adaptive-minus-frozen difference is about $0.6148$ dollars, a 53.4\% increase relative to the frozen arm. The reported narrow bootstrap interval describes variation across these paired tapes only. Common random inputs can reduce variance; they do not generally cancel nonlinear disturbance effects. Because the implementation is capacity-limited, uses post-price memory updates, and has unstable unconstrained adaptive dynamics, this contrast cannot be read as validation of the principal linear model or an AI-specific amplification effect.
 
-\subsection{Learned-Agent Transfer: Inventory-Avoidance Falsification}
+\subsection{Learned-Agent Transfer: Inventory-Avoidance and Action-Support Failure}
 \label{sec:q_learning_transfer}
 The linear theory does not automatically describe a learned trading policy. We therefore examine a separate tabular Q-learning environment, with an explicit distinction between response screening and structural certification.
 
@@ -1428,7 +1579,7 @@ The state has 6,125 bins for price deviation, return, agent inventory, dealer ut
 \paragraph{Evaluation protocol.}
 Ten independent policies receive 100,000 transitions each, using training seeds 926101--926110. Validation seeds 926201--926205 select checkpoints every 20,000 transitions. Evaluation uses ten shared tapes, seeds 926301--926310, with a $-2$ price shock at step 16. The learning rate is $0.05$, discount factor $0.98$, and exploration probability decays multiplicatively by $0.99995$ per update from 1 to a floor of $0.02$. These are the executed parameters, not the different settings previously described in prose. Validation uses a copy and cannot advance the training random stream. Every active/frozen comparison restarts from identical checkpoint and tie-breaking states. Frozen policies remain bitwise unchanged.
 
-We explicitly evaluate whether a standard tabular Q-learning model class provides sufficient action support for response screening. This acts as a formal falsification test: if the tabular state representation does not systematically encounter off-policy states required for local derivative approximation, the finite-grid audit must abstain, proving the linear feedback theory cannot reliably monitor generic tabular agent classes.
+The experiment asks whether a standard tabular Q-learner visits enough states, with enough action variation, for the response screen below to be computed. If the learned policy does not revisit the off-policy states needed to approximate a local derivative, the audit must abstain. In this experiment all ten tabular policies fail the support requirement. Whether neural or continuous-action policies avoid this failure is not tested here; an earlier draft reported such tests, and that claim is withdrawn (\cref{app:provenance}).
 
 \paragraph{Support-first screening.}
 The audit holds return, inventory, utilization and imbalance fixed while varying price. It uses the expected action across greedy ties rather than a random draw at each query. A screen requires at least ten recorded updates to every action at each queried state. This threshold is a descriptive support rule, not a calibrated confidence guarantee. Missing support produces abstention. A constant zero response has undefined $R^2$ and is compatible with zero local gain; it is not evidence against the positive-memory class. Even a supported, linear-looking response on this finite grid cannot establish a complete hidden-state architecture or its spectral radius. All ten evaluated policies abstain for insufficient action support.
@@ -1494,15 +1645,15 @@ Conventional OLS standard errors here assume independent, homoskedastic cross-as
 
 \subsection{Chronological state-space fitting: A Negative Control}
 \label{sec:binance_multi_epoch}
-To demonstrate the necessity of active price probing as developed in Theorem~\ref{thm:observable_stability}, we provide a negative control using purely passive chronological state-space fitting on public exchange data. The implementation uses the ordered training prefix, carries its terminal state into validation, and retains optimizer failures.
+As a negative control, we fit the structural state-space model chronologically to passive public exchange data. The implementation uses the ordered training prefix, carries its terminal state into validation, and retains optimizer failures.
 
 For each of ten cached Binance US markets, five fixed seeds are evaluated on 500-price paths: 349 training transitions and 150 validation transitions. The fit uses absolute price changes, a zero initial state, the declared positive parameter box and a $0.01Q^2$ penalty. This is not a log-displacement model. Cached array order is retained, but missing timestamps prevent independent verification of tick/candle alignment.
 
-Eight of fifty requested seed fits fail on historical limits data. Furthermore, all seven fully successful asset panels have negative mean conditional validation $R^2$: BTC $-0.0683$, ETH $-0.0106$, SOL $-0.0445$, DOGE $-3784.3220$, NEAR $-0.0101$, ADA $-5.9986$, and DOT $-0.0212$. This intentional negative control formally validates our theoretical results: public exchange data and passive observations are structurally insufficient to estimate these feedback loops without active probing.
+Eight of fifty requested seed fits fail on historical limits data. Furthermore, all seven fully successful asset panels have negative mean conditional validation $R^2$: BTC $-0.0683$, ETH $-0.0106$, SOL $-0.0445$, DOGE $-3784.3220$, NEAR $-0.0101$, ADA $-5.9986$, and DOT $-0.0212$. This is a negative result for this passive structural fit, not a proof that passive data are uninformative. \Cref{sec:empirical_causal} estimates a reduced-form feedback component from passive one-second data; the structural decomposition (rates, group allocation, stability margin) still requires the stronger contracts of \cref{sec:ch4,sec:ch5}.
 
 \subsection{Public-data proxies, cost assumptions and synthetic execution}
 \label{sec:gate24_empirical}
-The correction consumes nine historical kline archives and three separate REST depth snapshots, totaling 18,445,389 bytes. Each historical series covers 129,600 one-minute bars in January--March 2025. The wider download archive is larger, but aggregated trades and the DOGE/ADA downloads do not enter this calculation. The depth records are cross-sectional REST snapshots, not historical event-level limit order books corresponding to the kline period. Because these depth snapshots do not reflect the dynamic intraday historical liquidity, this specific estimation must be heavily caveated as purely illustrative of the methodology rather than a definitive historical finding.
+The correction consumes nine historical kline archives and three separate REST depth snapshots, totaling 18,445,389 bytes. Each historical series covers 129,600 one-minute bars in January--March 2025. The wider download archive is larger, but aggregated trades and the DOGE/ADA downloads do not enter this calculation. The depth records are cross-sectional REST snapshots, not historical event-level limit order books corresponding to the kline period. Because these snapshots do not reflect historical intraday liquidity, the estimates below illustrate the method; they are not historical findings.
 
 \paragraph{Unit-consistent reduced-form association.}
 We regress the one-minute absolute price change on signed taker base-asset volume, with an intercept, using the first 70\% of transitions. The last 30\% remains separate for descriptive holdout evaluation. The slope has units USDT per squared base-asset unit: price change (USDT/base) per flow (base). We retain its sign. An association with contemporaneous endogenous flow is not a causal impact curve or a fill model.
@@ -1556,78 +1707,148 @@ The base-mapping scenarios retain the distinction between local price stability 
 
 
 
-\subsection{Exhaustive Cross-Exchange Causal Inference on Limit Order Books}
-\label{sec:empirical_causal}
+\subsection{Model-derived reduced-form feedback on one-second crypto order books}
+\label{sec:empirical_causal}\label{sec:crypto_panel}\label{sec:dynamic_hankel_empirics}
 
-To empirically validate the structural robustness of the estimator outside of synthetic environments, we execute a Two-Stage Least Squares (2SLS) instrumental variable regression across three distinct, high-frequency empirical microstructures: traditional equities, cryptocurrency perpetual futures, and cryptocurrency spot markets. Because passive observation suffers from the structural unobservability proven in Section~\ref{sec:ch3}, we isolate the causal algorithmic feedback parameter ($S$) by utilizing an exogenous instrumental variable ($Z$) that correlates with algorithmic order flow imbalance (OFI) but remains strictly orthogonal to fundamental price innovations. Formally, we construct the instrument as $Z_t = \sum_{k=1}^K \omega_k \Delta L_{t-k}^{(\text{cross})}$, where $\Delta L^{(\text{cross})}$ denotes the cross-venue quote arrival latency differential and $\omega_k$ are geometrically decaying weights. This exogenously isolates algorithmic flow constraints without directly entering the local target price equation. First-stage $F$-statistics across all empirical regimes strictly exceed the standard weak-instrument threshold (empirical Kleibergen-Paap $F > 104.7$), confirming robust identification.
+\paragraph{Withdrawn results.} Earlier versions of this paper reported two-stage least-squares estimates for FI-2010 Nordic equities and Binance/Coinbase crypto books using latency instruments (including $\hat S=-0.3796$ and first-stage $F$-statistics of 89.6--112.45), a 1{,}500-observation asset-day panel with placebos and sub-sample splits, and an instrumented Hankel test. An audit of the replication code showed that none of these numbers came from market data. The latency instrument was simulated inside the estimation script. The panel coefficient was the parameter of a synthetic generator. The FI-2010 data and the cross-venue timestamp data are not in the repository. All of these results are withdrawn. Appendix~\ref{app:provenance} lists every remaining empirical number and the script and data file that produce it.
 
+\paragraph{Data.} The one-second order-book files \texttt{empirical\_pipeline/data/\{BTC,ETH,ADA\}\_1sec.csv} are from the public limit-order-book dataset collected by \citet{nielsen2021} (Kaggle dataset 1567989, CC0 Public Domain). The data were recorded directly from the Coinbase Pro WebSocket feed using \citeauthor{sadighian2019}'s open-source \texttt{crypto-rl} recorder at approximately one-second intervals from 7 to 19 April 2021 (about $1.03\times10^6$ seconds per asset). Each record contains the 15-level book state and the taker buy and sell notional flow executed over $(T-1, T]$. An implementation feature of \texttt{crypto-rl} repeats the book snapshot and volume totals during seconds with no new websocket ticks; zeroing flow on duplicated consecutive records eliminates spurious volume inflation and restores exact interval closure against the dataset's own one-minute aggregates ($100\%$ match across verified blocks, relative residual $< 4\times 10^{-13}$; \texttt{results/provenance/timing\_check.json}). The sample remains narrow: three assets on one venue over twelve days during a single market regime. Nothing here supports claims about other periods or regulated equity markets.
 
-\begin{table*}[htbp]
-\centering\small
-\caption{Two-Stage Least Squares (2SLS) Instrumental Variable Estimation of Causal Feedback ($S$)}
-\label{tab:2sls_results}
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{.28\textwidth}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X}
-\toprule
- & \textbf{(1) Traditional Equities} & \textbf{(2) Crypto Perpetual Futures} & \textbf{(3) Crypto Spot} \\
- & FI-2010 Nordic LOB & Binance BTC/USDT & Coinbase ETH \& ADA \\
-\midrule
-\textbf{Feedback Parameter ($S$)} & \textbf{-0.3796***} & \textbf{0.0165} & \textbf{0.0042} \\
- & (0.0412) & (0.0210) & (0.0198) \\
-\midrule
-Instrument ($Z_t$) & $\Delta L_{t-k}^{(\text{cross})}$ & $\Delta L_{t-k}^{(\text{cross})}$ & $\Delta L_{t-k}^{(\text{cross})}$ \\
-First-Stage $F$-statistic & 104.72 & 112.45 & 89.60 \\
-Observations ($N$) & 100,000 & 500,000 & 129,600 \\
-Time-Varying Controls & Yes & Yes & Yes \\
-\bottomrule
-\multicolumn{4}{l}{\footnotesize Standard errors in parentheses. *** $p < 0.01$. The instrument $Z_t$ isolates exogenous algorithmic flow via cross-venue latency differentials.}
-\end{tabularx}
+\paragraph{Estimand derived from the model.} Let $x_t$ be the log mid-price, in basis points, minus its exponential moving average with window $W$ (smoothing weight $\alpha=2/(W/\Delta+1)$ at sampling interval $\Delta$). Let $f_t$ be signed market-order flow (buys minus sells) executed over $(t,t+\Delta]$. The single-cohort case of \eqref{eq:heterogeneous}, with adaptive price pressure $y_t=\lambda f_t$, implies
+\begin{equation}
+ \begin{bmatrix}x_{t+1}\\ f_{t+1}\end{bmatrix}
+ =\underbrace{\begin{bmatrix}a&\lambda\\ \eta c&1-\eta\end{bmatrix}}_{J}
+ \begin{bmatrix}x_{t}\\ f_{t}\end{bmatrix}+e_{t+1},
+ \qquad Q=\lambda c .
+ \label{eq:empirical_var}
+\end{equation}
+We estimate $J$ by OLS, separately for each asset-day, and report
+\begin{equation}
+ \hat Q=\frac{\hat J_{12}\hat J_{21}}{1-\hat J_{22}},\qquad
+ \hat S=\hat J_{11}+\hat Q,\qquad
+ \hat{\mathcal L}=\frac{\hat Q}{1-\hat J_{11}} .
+ \label{eq:empirical_S}
+\end{equation}
+All three quantities are invariant to the units of $f$. For any $2\times2$ matrix with $J_{22}<1$ we have $1-S=\det(I-J)/(1-J_{22})$ and $S-1=(1-J_{11})(\mathcal L-1)$. So $S<1$, equivalently $\mathcal L<1$, is the real-root (momentum) boundary of the fitted system. This also settles the notation: $S=a+Q$ (Section~\ref{sec:integrated_hidden}) and the loop ratio $\mathcal L=Q/(1-a)$ (\cref{eq:loopratio}) are different scalings of the same boundary. The fitted spectral radius is reported separately, because the contrarian boundary \eqref{eq:signed_boundary} is not captured by $S$.
+
+The estimand needs a benchmark. If the log-price were a martingale and flow played no role, the EMA construction alone would give $x_{t+1}=(1-\alpha)(x_t+r_{t+1})$. Its persistence would be $a_0=1-\alpha$ and its feedback $Q=0$. The level of $\hat S$ is therefore mostly a property of the proxy. The informative quantities are $\hat a-a_0$ and $\hat Q$. Inference uses day-level replicates: means across asset-days with Student-$t$ intervals ($n=11$--$12$ days per asset). As a placebo, $x$ from day $d$ is paired with $f$ from day $d+1$.
+
+\begin{table*}[htbp]\centering\scriptsize
+\caption{Baseline estimates ($\Delta=10$\,s, $W=300$\,s), computed by \texttt{empirical\_pipeline/feedback\_var.py}. $a_0$ is the martingale benchmark. Intervals are 95\% Student-$t$ intervals across asset-days. The placebo pairs $x$ and $f$ from different days.}
+\label{tab:empirical_feedback}
+\input{generated/empirical_feedback_baseline.tex}
 \end{table*}
 
-\subsubsection{Traditional Equities (FI-2010 Nordic Exchange)}
+\paragraph{Results.} \Cref{tab:empirical_feedback} shows the baseline estimates.
+\begin{itemize}
+ \item The flow-feedback component is small and positive for all three assets: $\hat Q$ ranges from \EmpQmin{} to \EmpQmax{}, and the loop ratio $\hat{\mathcal L}$ from \EmpLmin{} to \EmpLmax{}. Every interval excludes zero, and the placebo estimates are zero to four decimals.
+ \item The sign means that flow follows recent deviations above the moving average, which is momentum-type feedback rather than contrarian feedback.
+ \item $\hat a$ lies slightly below $a_0$, which indicates mild mean reversion of the price relative to the martingale benchmark.
+ \item $\hat S$ lies between \EmpSmin{} and \EmpSmax{}, below one with tight intervals. As noted above, its level is largely set by $a_0$.
+\end{itemize}
+Across the 24 sampling/window cells of \cref{tab:empirical_grid}:
+\begin{itemize}
+ \item $\hat Q>0$ with an interval excluding zero in \EmpGridQallPositive{} cells.
+ \item No upper interval endpoint for $\hat S$ exceeds \EmpGridSmaxUpper.
+ \item $\hat{\mathcal L}$ varies from \EmpGridLmin{} to \EmpGridLmax{} with the sampling horizon, so the size of the loop is horizon-dependent even though its sign is not.
+\end{itemize}
 
-We first apply the estimator to the FI-2010 limit order book dataset, which comprises 100,000 sequential updates from a regulated Nordic stock exchange. The 2SLS estimator processes the 10-level depth data, isolating the exogenous variation in top-of-book OFI. The closed-form algebraic matrix inversion successfully recovers a stable causal feedback parameter of $S = -0.3796$. Because $S < 1.0$, the estimator correctly diagnoses a structurally stable market regime where algorithmic liquidity provision appropriately dampens transient liquidity shocks. While the theoretical bounds in Sections 2--4 are derived for reinforcing positive-feedback regimes ($S \ge 0$), empirical estimation naturally admits signed feedback, where $S < 0$ reflects stabilizing, contrarian liquidity provision that strictly satisfies the stability criterion $S < 1$.
+\paragraph{Order splitting and a Monte Carlo check of the estimator.} Order splitting creates long memory in signed flow, and that memory loads on $x_t$ through past price impact. Part of $\hat Q$ could therefore be mechanical. We check this by applying the identical pipeline to synthetic paths with known feedback (\cref{tab:estimator_validation}; \ValReps{} replications of one simulated day each, \texttt{simulations/estimator\_validation.py}). The check shows the following.
+\begin{itemize}
+ \item With no feedback but long-memory flow (G0), the VAR(1) estimate is spuriously positive in every replication (mean \ValGzeroQ).
+ \item With feedback plus long-memory flow (G3), it overstates $Q$ by \ValGthreeBias\%.
+ \item With two cohorts (G2), it understates $Q$ by \ValGtwoBias\%, as the Jensen bound below Theorem~\ref{thm:retained_pair} predicts.
+\end{itemize}
+We therefore add a long-memory-robust variant,
+\begin{equation}
+ \hat Q_L=\hat J_{12}\,\frac{\hat c_L}{1-\sum_{l=1}^L\hat\phi_l},
+ \label{eq:Q_robust}
+\end{equation}
+where $\hat c_L$ and $\hat\phi_l$ are the coefficients of $x_t$ and of $f_t,\ldots,f_{t-L+1}$ in the $f_{t+1}$ equation. The ratio is the long-run response of flow to a sustained deviation, and $L=1$ reproduces $\hat Q$. In the simulations, $\hat Q_{30}$ removes the spurious feedback in G0, leaves G1 essentially unchanged, and halves the bias in G3. It does not remove the G3 bias or the G2 understatement. On the real data (\cref{tab:empirical_feedback}), $\hat Q_{30}$ ranges from \EmpQrobMin{} to \EmpQrobMax{}, with intervals excluding zero for \EmpQrobAllPos{} three assets. That is \EmpQrobRedMin--\EmpQrobRedMax\% below the VAR(1) values, far from the collapse to zero seen under pure order splitting. \Cref{tab:empirical_flowmemory} shows the same pattern for the flow response itself: with 90 lags of flow, $\hat c$ keeps \EmpCratioMin--\EmpCratioMax\% of its one-lag value. The simulated ratio is \ValRatioGone{} under pure feedback (G1), \ValRatioGzero{} under pure order splitting (G0), and \ValRatioGthree{} with both (G3). Our reading is that the data contain a genuine price-responsive component of flow. Its magnitude is uncertain by a factor of roughly two in either direction.
 
-\subsubsection{Crypto Perpetual Futures (Binance BTC/USDT)}
-To test generalization to ultra-high-frequency decentralized derivatives, we evaluate a 1.1 Gigabyte dataset of Binance BTC/USDT perpetual futures, sampled at 250-millisecond resolution. To rigorously verify immunity to overfitting, we partition 500,000 live LOB updates into five independent temporal regimes. The estimator is applied to each out-of-sample regime without any hyperparameter tuning or gradient optimization. Across all five regimes, the recovered causal feedback parameters are strictly bound near zero ($S \in [-0.014, 0.047]$). 
+\begin{table*}[htbp]\centering\scriptsize
+\caption{Monte Carlo validation of the estimators on synthetic paths with known $Q$ (same EMA construction, $\Delta=10$\,s, $W=300$\,s; mean and standard deviation across replications).}
+\label{tab:estimator_validation}
+\input{generated/estimator_validation.tex}
+\end{table*}
 
-\subsubsection{Crypto Spot Markets (Coinbase ETH and ADA)}
-Finally, to rule out asset-specific artifacts, we execute the estimator on high-frequency Coinbase spot data for Ethereum (ETH) and Cardano (ADA), processing 15-level limit order books. The estimator seamlessly processes the alternative tick sizes and liquidity profiles of these secondary assets, consistently recovering $S \approx 0$ across diverse liquidity depths. Furthermore, we explicitly reject minute-by-minute snapshot data (e.g., 50-level aggregated snapshots) from our evaluation, as temporal aggregation inherently destroys the microsecond-level state transitions required for true causal inference.
+\begin{table*}[htbp]\centering\scriptsize
+\caption{Robustness of the flow response $\hat c$ (coefficient of $x_t$ in the $f_{t+1}$ equation) to additional flow lags. Day-level means; $t$ from day replicates.}
+\label{tab:empirical_flowmemory}
+\input{generated/empirical_feedback_flowmemory.tex}
+\end{table*}
 
-This exhaustive multi-asset execution definitively proves that the exact-arithmetic feedback estimator generalizes across fundamentally different market microstructures (Equities, Futures, and Spot). Unlike predictive machine learning architectures that suffer from gradient explosion or require continuous hyperparameter recalibration, this closed-form structural econometric approach provides a mathematically stable, non-overfitting diagnostic for systemic market resilience.
+\paragraph{Memory kernel and the completely monotone test.} The model kernel satisfies $y_t=\sum_jk_jx_{t-1-j}$. Its empirical analogue is the distributed lag $f_t=\sum_{j<K}b_jx_{t-1-j}+u_t$ with $K=10$, where $b_j$ is per standard deviation of flow and $k_j\propto b_j$ for $\lambda>0$. We apply the corrected test of Theorem~\ref{thm:m4_completely_monotone} to the day-averaged kernel, using Newey--West covariances. \Cref{tab:empirical_kernel} reports the results.
+\begin{itemize}
+ \item The estimated kernel has a positive first tap and a smaller negative second tap; later taps are insignificant.
+ \item The positive completely monotone cone is not rejected at 5\% for BTC ($p=\EmpCMpBTC$) or ADA ($p=\EmpCMpADA$), but it is rejected for ETH ($p=\EmpCMpETH$).
+ \item The contrarian cone ($-b$ completely monotone) is rejected for all three assets.
+\end{itemize}
+The evidence is therefore against purely contrarian positive memory and mixed on the positive class. The dominant pattern is a response to the most recent price change, which a single exponential mode fits poorly.
 
+\begin{table*}[htbp]\centering\scriptsize
+\caption{Distributed-lag kernel (first five of ten taps; HAC standard errors in parentheses) and the vertex-calibrated completely monotone cone test (2{,}000 null draws).}
+\label{tab:empirical_kernel}
+\input{generated/empirical_kernel_cm.tex}
+\end{table*}
 
+\paragraph{What this does not show.}
+\begin{itemize}
+ \item The estimates are reduced form. Flow over $(t,t+\Delta]$ and the price innovation share news, so $\hat\lambda$ is not a structural impact coefficient.
+ \item Flow aggregates all market orders. Nothing here attributes feedback to algorithmic or AI agents.
+ \item The VAR(1) is a one-mode approximation. By Theorem~\ref{thm:retained_pair} and the Jensen bound below it, a slow hidden mode outside the fitted window can be missed, and a one-mode fit can understate $Q$. These estimates describe the fitted window; they do not certify stability.
+\end{itemize}
+
+\begin{table*}[htbp]\centering\scriptsize
+\caption{Sensitivity of $\hat S$, $\hat Q$ and $\hat{\mathcal L}$ to the sampling interval $\Delta$ and EMA window $W$ (cells with $W/\Delta<3$ omitted).}
+\label{tab:empirical_grid}
+\input{generated/empirical_feedback_grid.tex}
+\end{table*}
 
 \section{Theoretical Refinements and System Generalizations}
 \label{sec:refinements}
-In response to the structural complexities of real-world multi-agent architectures, we formally extend our baseline model to address layered adaptive states, heterogeneous response operators, and robust measurement protocols.
+This section records extensions that are discussed but not analyzed in depth: layered adaptive states, heterogeneous response kernels, signed coherence, horizon targets and quote cancellation.
 
 \subsection{Layered Adaptive State and Input-Output Equivalence}
-The general state space $\theta$ defined in Section 2.1 is naturally partitioned into a \textit{layered state}: (1) \textbf{Signal/Belief State} (e.g., exponentially smoothed memory, admitting signed and delayed responses); (2) \textbf{Exploration State} (visit counts or entropy metrics controlling action support); (3) \textbf{Version State} (discrete retrains and model swaps); and (4) \textbf{Latency State} (pending-order queues and routing delays). Because real-world agents adapt via event-driven triggers (e.g., drawdown limits) rather than continuous updates, the market mechanism is most accurately modeled as a jump-linear or switched system. Consequently, the common-norm certificate becomes the natural stability bound. Furthermore, this state is defined up to input-output equivalence relative to the observation map, as only the projected output is theoretically identifiable.
+The general state space $\theta$ defined in Section 2.1 is naturally partitioned into a \textit{layered state}: (1) \textbf{Signal/Belief State} (e.g., exponentially smoothed memory, admitting signed and delayed responses); (2) \textbf{Exploration State} (visit counts or entropy metrics controlling action support); (3) \textbf{Version State} (discrete retrains and model swaps); and (4) \textbf{Latency State} (pending-order queues and routing delays). Agents that adapt through event-driven triggers (e.g., drawdown limits) make the market a jump-linear or switched system, for which a common-norm certificate (\cref{prop:robust}) is the relevant sufficient condition. Furthermore, this state is defined up to input-output equivalence relative to the observation map, as only the projected output is theoretically identifiable.
 
 \subsection{Heterogeneous Architectures and Sandbox Probing}
-To capture true architectural heterogeneity, we represent agent classes via nonnegative impulse-response kernels $k_i(j)$, accommodating oscillatory and delayed reactions that fall outside simple monotone exponential mixtures. Algorithmic updates bifurcate into two regimes: continuous parameter perturbations within a Jacobian $J$, and discrete version swaps within an uncertainty polytope. To bridge discrete non-differentiable models (e.g., tabular Q-learning) to this linear theory, we introduce \textit{sandbox probing}: estimating an effective $(q, \eta)$ by subjecting the isolated agent to controlled price perturbations, a technique that scales seamlessly to gradient-based and in-context LLM trading architectures.
+To allow architectural heterogeneity, we represent agent classes via nonnegative impulse-response kernels $k_i(j)$, accommodating oscillatory and delayed reactions that fall outside simple monotone exponential mixtures. Algorithmic updates bifurcate into two regimes: continuous parameter perturbations within a Jacobian $J$, and discrete version swaps within an uncertainty polytope. To bridge discrete non-differentiable models (e.g., tabular Q-learning) to this linear theory, we introduce \textit{sandbox probing}. Rather than suggesting external regulators inject probes into live markets, sandbox probing functions as an internal compliance audit---a stress test that a firm could run in its own isolated environment before deployment. Whether the sandbox response of gradient-based or LLM-driven policies is informative is untested; \cref{sec:q_learning_transfer} shows that even tabular policies can fail the support requirement.
 
 \subsection{Signed Coherence and Dynamic Kernel Alignment}
 To address the sign-blindness and gain-discarding properties of standard angular similarity metrics, we advance a Signed Coherence Ratio:
 \begin{equation}
     \text{Coherence} = \frac{\|\sum w_i r_i\|^2}{\sum w_i \|r_i\|^2}
 \end{equation}
-This metric explicitly distinguishes between correlated $(r, r)$ and contrarian $(r, -r)$ strategies. For time-resolved analysis, dynamic kernel alignment and canonical correlation across lagged response matrices provide a more rigorous basis for detecting synchronized algorithmic swarms.
+This metric explicitly distinguishes between correlated $(r, r)$ and contrarian $(r, -r)$ strategies. For time-resolved analysis, dynamic kernel alignment and canonical correlation across lagged response matrices are candidate tools for detecting synchronized strategies; we do not evaluate them.
 
-\subsection{Horizon-Targeted Amplification and Natural Randomization}
-While asymptotic stability ($S < 1$) remains a vital theoretical boundary, finite-horizon amplification $\sum_{j \le H} h_j$ provides a highly identifiable and policy-relevant metric without requiring strict lower-bound rate floors ($\eta_0$). Future empirical work must map sensitivity frontiers over $\eta_0$ rather than relying on point estimates. Finally, to bypass the friction and manipulation risks of active regulatory probing, causal identification can leverage \textit{natural randomization}---such as tick-size pilot programs, matching-engine outages, and randomized auction terminations---serving as perfect exogenous instruments ($Z$) for the structural estimators presented in Section~\ref{sec:empirical_causal}.
-
-
+\subsection{Horizon-Targeted Amplification and Natural Randomization}\label{sec:natural_randomization}
+Asymptotic stability ($S<1$) is not the only relevant target. Finite-horizon amplification $\sum_{j\le H}h_j$ is identifiable without a learning-rate floor $\eta_0$ and may be the more policy-relevant quantity. When $S$ itself is the target, results should be reported as a function of the assumed floor $\eta_0$, because the tail bound \eqref{eq:retained_tail} widens without limit as $\eta_0\to0$. Natural experiments such as tick-size pilots, matching-engine outages and randomized auction ends are candidate sources of exogenous variation. None is used in this paper, and each would require its own exclusion argument.
 
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.9\linewidth]{eta_sensitivity_frontier.pdf}
-    \caption{Identifiability Breakdown Frontier. The confidence interval of the systemic feedback parameter $S$ rapidly diverges as the assumed learning rate floor ($\eta_0$) approaches zero. This mapping explicitly addresses Phase 3 sensitivity critiques by rendering active probes theoretically unidentifiable without structural baseline guarantees.}
-    \label{fig:eta_frontier}
-\end{figure}
+
+
+
+
+
+\subsection{Quote Cancellation and Measured Feedback}
+Contract $I_0$ assumes that probes and feedback flow execute. If part of the intended feedback flow is posted and then cancelled, the loop that operates in the data differs from the intended one.
+
+\begin{proposition}[Cancellation attenuation of realized feedback]
+\label{prop:cancellation_masking}
+In the scalar case of \cref{thm:signed_stability} with $g\kappa\ge0$, suppose only executed flow moves the price and the adaptive cohort's intended flow executes with fraction $1-\chi$, $\chi\in[0,1)$. Then the realized feedback component is $(1-\chi)g\kappa$, so
+\begin{equation}
+    S_\chi=a+(1-\chi)g\kappa,\qquad \mathcal L_\chi=(1-\chi)\mathcal L .
+\end{equation}
+A reduced-form estimate computed in regime $\chi$ targets $\mathcal L_\chi$, not $\mathcal L$. If $g\kappa>1-a$, the realized loop is stable if and only if $\chi>\chi^*=1-(1-a)/(g\kappa)$.
+\end{proposition}
+\begin{proof}
+Replace $g$ by $(1-\chi)g$ in \cref{thm:signed_stability}; the upper boundary $(1-\chi)g\kappa<1-a$ rearranges to $\chi>\chi^*$.
+\end{proof}
+The proposition is a measurement caveat, not a model of cancellation behavior. A stable estimate in a high-cancellation regime says nothing about the loop that would operate if cancellation fell below $\chi^*$, for example if quoting algorithms switched from posting to executing during stress. Modeling $\chi$ as state dependent is left open.
 
 \section{Discussion, Research Frontiers, and Conclusion}
+
 \label{sec:ch8}
 
 \subsection{Intervention under uncertainty and liquidity feedback}
@@ -1659,10 +1880,16 @@ At $u=0.5$ and unchanged depth, $g=0.225$ and the model is more strongly stable.
 
 Any empirical intervention comparison must therefore record bid--ask spreads, depth, execution failures, inventory exposure, and losses borne by other participants. An intervention that reduces one agent's losses by transferring risk or withdrawing market-making capacity is not automatically a system improvement. Operational deployment is outside this manuscript's scope.
 
-\subsubsection{Surveillance considerations and legal boundaries of active probing}
+\subsubsection{Surveillance considerations, statutory sandboxes, and legal boundaries}
 \label{sec:regulatory_feasibility}
-An essential institutional question is whether randomized active probing could be deployed in live markets by exchanges or regulatory authorities. Such protocols could raise market-manipulation and deceptive-practice concerns depending on their design, intent, execution, and jurisdiction. For example, under U.S. securities regulations (e.g., SEC Rule~10b-5) and European frameworks (e.g., Article~12 of the EU Market Abuse Regulation), orders without genuine investment intent may face regulatory scrutiny; however, the precise legal characterization depends heavily on implementation details, the identity of the probing party, its authorization, and applicable jurisdiction. We formalize relevant statutory boundaries and macroprudential alternatives (e.g., Limit-Up/Limit-Down mechanisms) in Section~S16 of the accompanying Mathematical Supplement. Active probing is therefore framed strictly as a mathematical identification benchmark establishing the minimum information required for feedback classification, not as an operational surveillance recommendation.
+An essential institutional question is whether randomized active probing could or should be deployed in live financial markets by exchanges or regulatory authorities. In live trading, injecting randomized probe orders without genuine investment intent raises severe statutory concerns regarding market manipulation and fictitious transactions, such as under SEC Rule~10b-5 and Section~9(a)(2) of the Securities Exchange Act in the U.S., or Article~12 of the EU Market Abuse Regulation (MAR). Active probing is therefore \textbf{not} proposed as a live market intervention.
 
+The probing framework has three narrower uses:
+\begin{enumerate}
+    \item \textbf{A lower-bound benchmark.} Theorems~\ref{thm:m1_equivalence}--\ref{thm:m3_minimax_abstention} state what cannot be learned from passive price data and how much excitation a decisive classification needs. Like a Cram\'er--Rao bound, this is informative without being an operational protocol.
+    \item \textbf{Pre-deployment testing.} Market-access rules already require firms to test algorithms before deployment (e.g.\ MiFID~II RTS~6, Article~5; SEC Rule~15c3-5). Within such non-live test environments, the probe protocol of \cref{sec:ch4} could be used to estimate a policy's response. Whether regulators should mandate it, and whether sandbox responses transfer to live markets, are open questions; the transfer failure in \cref{sec:ch6} is a caution.
+    \item \textbf{Passive reduced-form monitoring.} \Cref{sec:empirical_causal} shows what can be computed from public data without intervention: a reduced-form, model-derived feedback component with known biases. It cannot attribute feedback to particular agents, and it does not certify stability.
+\end{enumerate}
 
 \subsection{Executed numerical checks and empirical ledgers}
 \label{sec:checks}
@@ -1675,7 +1902,7 @@ The computations reported here test agreement between formulas and direct matrix
 \label{tab:scalar}
 \begin{tabularx}{\textwidth}{Yrrrr}
 \toprule
-Case & $g$ & $\eta$ & $\rho(J_s)$ & $g\kappa/(1-a)$\\
+Case & $g$ & $\eta$ & $\rho(J_s)$ & $\mathcal L=g\kappa/(1-a)$\\
 \midrule
 Stable feedback & 0.300 & 0.20 & 0.916228 & 0.500\\
 Boundary & 0.600 & 0.20 & 1.000000 & 1.000\\
@@ -1703,37 +1930,93 @@ The mathematical proofs, not the finite grid, justify the universal statements w
 \label{sec:empirical}
 To delineate established scientific findings from open research frontiers, the prospective multi-agent reinforcement learning (MARL) protocol (specifying hypotheses H1--H5, double-auction exchange simulation, and actor-critic agent families) and the prospective institutional validation protocol (specifying decision provenance, authorized staggered rollouts, and shadow evaluation) are formalized in Sections~S14 and~S15 of the accompanying Mathematical Supplement.
 
+\subsection{Funded dealers under genuine feedback: what drives halts}
+\label{sec:solvency_phase_diagram}\label{sec:cross_sim_validation}\label{sec:decisiveness_frontier}
+
+\paragraph{Withdrawn simulation results.} Earlier versions contained four simulation results in this section, and all four are withdrawn:
+\begin{itemize}
+ \item \textbf{A ``solvency phase diagram''.} The price process in that simulation was an exogenous AR(1). The feedback parameter $S$ never entered the price dynamics. The ``non-AI'' benchmark was random order noise, not the inventory-control rule described.
+ \item \textbf{A cross-simulator coverage table.} Its classification rule used a hand-calibrated growth-rate threshold, not the certificate of \cref{sec:ch4}. Its simulated prices were integrated, so $S=1$ was not their stability boundary.
+ \item \textbf{A decisiveness frontier.} Its ``proposed method'' was the same growth-rate heuristic.
+ \item \textbf{DQN and continuous actor-critic action-support comparisons.} The DQN updated only its output layer, and the actor-critic was never trained.
+\end{itemize}
+The tabular $Q$-learning transfer study of \cref{sec:ch6} does not depend on these simulations and is unaffected. This subsection replaces the phase diagram with a simulation in which $S$ actually governs the price.
+
+\paragraph{Design.} We use the single-cohort case of \eqref{eq:heterogeneous}. Price deviation and adaptive pressure follow
+\[
+x_{t+1}=ax_t+y_t+\lambda n_t+\sigma e_t,\qquad y_{t+1}=(1-\eta)y_t+\eta Qx_t,
+\]
+with $S=a+Q$. Adaptive demand is $D_t=y_t/\lambda$ and $n_t$ is i.i.d.\ noise flow. A dealer takes the other side of all flow $f_t=D_t+n_t+\phi I_t$. The term $\phi I_t$ is the offsetting flow its quote skew attracts (inventory control in the spirit of \citealp{avellaneda2008}). The dealer earns a half-spread on $|f_t|$ and marks inventory $I_t$ to $p_t=1+x_t$. It halts when $|I_t|p_t>L\,E_t$ or $E_t\le0$. We compare the feedback market with three markets that have \emph{no} price-to-flow loop, in which flow is exogenous and its price impact is retained:
+\begin{itemize}
+ \item B1: i.i.d.\ flow with the same variance;
+ \item B2: AR(1) flow with the same variance and first autocorrelation;
+ \item B3: AR(1) flow with the same variance and long-run variance.
+\end{itemize}
+Each cell uses \SolvSeeds{} seeds over \SolvT{} steps, and parameters are illustrative ($a=0.5$, $\eta=0.2$, $\lambda=0.002$; \texttt{simulations/feedback\_dealer.py}).
+
+\begin{proposition}[Zero-frequency gain of feedback flow]
+\label{prop:flow_gain}
+For $S<1$, the long-run variance of $f_t=D_t+n_t$ (without inventory control) is
+\[
+\mathrm{LRV}(f)=\frac{(1-a)^2\sigma_n^2+Q^2\sigma^2/\lambda^2}{(1-S)^2}.
+\]
+\end{proposition}
+\begin{proof}
+At frequency zero the recursions give $(1-a)x=y+\lambda n+\sigma e$ and $y=Qx$. Hence $x=(\lambda n+\sigma e)/(1-S)$ and $f=y/\lambda+n=n(1-a)/(1-S)+Q\sigma e/(\lambda(1-S))$. The long-run variance is the squared zero-frequency gain applied to the innovation variances.
+\end{proof}
+
+\begin{table*}[htbp]\centering\scriptsize
+\caption{Dealer halt rates (exact 95\% binomial intervals) in the feedback market and in three no-loop benchmarks matched on variance (B1), variance and first autocorrelation (B2), or variance and long-run variance (B3). LRV is computed from \cref{prop:flow_gain}. Simulator law only; not calibrated to any market.}
+\label{tab:solvency_phase_diagram}
+\input{generated/solvency_feedback.tex}
+\end{table*}
+
+\paragraph{Results.} \Cref{tab:solvency_phase_diagram} reports the halt rates.
+\begin{itemize}
+ \item Halt rates rise steeply with $S$ well inside the stable region. At $L=10$ and $\phi=0.05$ they go from \SolvFbLow\% at $S=0.5$ to \SolvFbHigh\% at $S=0.8$.
+ \item No-loop flow matched on variance produces \SolvBoneHigh\% at $S=0.8$ (B1), and matching the first autocorrelation as well produces \SolvBtwoHigh\% (B2).
+ \item No-loop flow matched on long-run variance produces \SolvBthreeHigh\% (B3), as many halts as the feedback market or more.
+\end{itemize}
+In this model, then, dealer failure is governed by the low-frequency content of the flow the dealer absorbs. Feedback matters because, by \cref{prop:flow_gain}, it inflates that content by the factor $(1-S)^{-2}$ as $S\to1$. Two consequences follow:
+\begin{itemize}
+ \item The earlier claim that this vulnerability is ``absent in non-AI market makers'' is not supported. Any source of equally persistent flow produces it.
+ \item A benchmark that matches only volatility, or only short-lag autocorrelation, understates the risk.
+\end{itemize}
+This is the operational content of the claim that local price stability does not ensure dealer safety: the stable region contains values of $S$ at which a capital-constrained dealer fails with high probability. The simulation is linear, has one dealer with fixed capital and no strategic withdrawal, and uses uncalibrated parameters. It illustrates a mechanism and does not estimate an event probability.
 
 \subsection{Explicit Methodological Exclusions and Scope Omissions}
 \label{sec:limits}
-To maintain rigorous scientific discipline and clearly bound the theoretical contributions of this manuscript, we explicitly delineate the boundaries of our models and the empirical phenomena reserved for future research. 
+This subsection lists what the models and evidence do not cover.
 
 \paragraph{Mathematical and Proof Exclusions.}
-The core positive-feedback boundary proofs (Theorem~\ref{thm:positive}) assume a single persistence scalar and a common learning rate. We deliberately abstract away from asset-specific persistence, asymmetric learning rates, delayed observations, and signed response matrices. Furthermore, our non-identifiability boundaries are strictly derived for discrete-time models and do not seamlessly extend to nonlinear, continuous-time jump-diffusion price processes. While we prove deterministic norm inequalities (Proposition~S8.1), this framework does not resolve the complex statistical challenges associated with continuous model updates, adaptive sampling, and post-selection confidence in highly non-linear settings. Finally, while the exact-arithmetic outer bounds are theoretically proven (Theorem~\ref{thm:observable_stability}), the numerical floating-point conic implementations are maintained as unverified candidates because their complete outward constraint assembly cannot be formally certified without infinite precision.
+The core positive-feedback boundary proofs (Theorem~\ref{thm:positive}) assume a single persistence scalar and a common learning rate. We deliberately abstract away from asset-specific persistence, asymmetric learning rates, delayed observations, and signed response matrices. The non-identifiability results are derived for discrete-time linear models and have not been extended to nonlinear or continuous-time jump-diffusion price processes. The deterministic norm inequalities (Proposition~S8.1) do not address the statistical problems associated with continuous model updates, adaptive sampling, and post-selection confidence in highly non-linear settings. Finally, while the exact-arithmetic outer bounds are theoretically proven (Theorem~\ref{thm:observable_stability}), the numerical floating-point conic implementations are maintained as unverified candidates because their complete outward constraint assembly cannot be formally certified without infinite precision.
 
 \paragraph{Market Dynamics and Economic Scope.}
 Our stylized market model isolates the specific friction of algorithmic feedback. Consequently, it omits general equilibrium wealth effects, endogenous strategic innovation, deceptive routing practices, and discontinuous liquidation thresholds. The spectral boundaries derived herein represent local mechanism tests, not universal asset-pricing theorems or global crisis predictors. In our funded simulations, we restrict the analysis to isolated dealer capacity and leverage limits, explicitly excluding advanced systemic contagion mechanisms such as multi-clearinghouse margin failures and bilateral over-the-counter (OTC) derivative unwind cascades. The financial simulation utilizes an excess-demand price-adjustment mechanism rather than a fully calibrated empirical limit order book with dynamic spread formation and hardware-level cancellation latencies.
 
 \paragraph{Algorithmic Architectures and Empirical Surveillance.}
-The primary analytical experiments utilize adaptive exponential memory rather than deep neural policies or utility-optimal dynamic programming. Our learned-agent transfer experiments evaluate tabular Q-learning environments to formalize the falsification test; we reserve the evaluation of modern Multi-Agent Reinforcement Learning (MARL) populations undergoing continuous adversarial retraining for future work. Crucially, our active randomized probing protocol assumes normative agent reactions. We do not model adversarial scenarios where sophisticated participants detect surveillance probes and actively distort their quoting behavior to obfuscate their feedback loops. While our empirical causal inference pipeline successfully identifies aggregate feedback parameters on high-frequency LOB data (Section~\ref{sec:empirical_causal}), we explicitly lack the authenticated institutional counterparty IDs required to attribute this feedback to specific named algorithmic actors (Contract~$I_1$).
+The primary analytical experiments utilize adaptive exponential memory rather than deep neural policies or utility-optimal dynamic programming. Our learned-agent transfer experiments evaluate tabular Q-learning environments to formalize the falsification test; we reserve the evaluation of modern Multi-Agent Reinforcement Learning (MARL) populations undergoing continuous adversarial retraining for future work. Crucially, our active randomized probing protocol assumes normative agent reactions. We do not model adversarial scenarios where sophisticated participants detect surveillance probes and actively distort their quoting behavior to obfuscate their feedback loops. The empirical analysis (Section~\ref{sec:empirical_causal}) is reduced form, uses three assets on one venue over twelve days, and lacks the counterparty identifiers required to attribute feedback to specific algorithmic actors (Contract~$I_1$).
 \subsection{Conclusion}
 \label{sec:conclusion}
 
-The defensible question is not whether finance loses its familiar principles when AI becomes prevalent, but rather which feedback properties can be rigorously established from available high-frequency observations. This manuscript fundamentally resets the boundaries of macroprudential surveillance by proving that passive aggregate price observations suffer from exact PBH unobservable eigenspace defects. 
+We asked what market data can reveal about feedback between adaptive trading and prices.
 
-However, we demonstrate that this theoretical unobservability is not an empirical death sentence. By introducing the Identifiability Breakdown Frontier and leveraging cross-venue latency differentials as exogenous instruments, we provide a robust Two-Stage Least Squares (2SLS) identification strategy. Our execution across traditional Nordic equities, Binance perpetual futures, and Coinbase spot markets successfully recovers causal algorithmic feedback ($S$), naturally accommodating stabilizing signed liquidity provision. 
+The paper has three findings.
+\begin{itemize}
+ \item \textbf{Passive price data have exact limits.} Aggregate price responses identify only merged rate--weight pairs (Theorem~\ref{thm:m1_equivalence}). Separating near-coincident cohorts needs a probe budget growing like $\delta^{-4}$ (Theorem~\ref{thm:m2_sample_complexity}). Any error-controlled stability classifier must abstain near $S=1$, and with finite windows it must do so at every budget (Theorem~\ref{thm:m3_minimax_abstention}).
+ \item \textbf{Local price stability does not imply dealer safety.} The safe shock radius is governed by $\sup_t\norm{CJ^t}$, which the Kreiss constant bounds and the spectral radius does not (Theorem~\ref{thm:m5_kreiss_solvency}). In a funded simulation with genuine feedback, dealer halts rise steeply inside the stable region because feedback inflates the low-frequency content of flow by $(1-S)^{-2}$ (\cref{prop:flow_gain}). Non-adaptive flow with the same persistence does the same.
+ \item \textbf{The public data are consistent with weak momentum feedback.} On twelve days of one-second BTC, ETH and ADA order books, a model-derived reduced-form estimate of the flow-feedback component is small and positive, survives a long-memory correction validated by Monte Carlo, and is far from the instability boundary. It is not causal and is not attributable to algorithms.
+\end{itemize}
 
-Furthermore, our funded simulations explicitly decouple abstract signal stability from operational solvency, proving that binding dealer capacity limits can trigger systemic liquidity strain even when local linear feedback remains stable. Our falsification of tabular Q-learning underscores the necessity of continuous, gradient-aware monitoring frameworks.
-
-Finally, we establish a new paradigm for epistemological rigor in quantitative finance. By mechanically verifying our theorems in the Lean 4 theorem prover and coupling them with a precision-audited, zero-dependency computational framework, we eliminate the structural ambiguity that historically plagues complex multi-agent market models. A global safety framework requires institutional evidence, validated economic outcomes, and verified mathematics---this manuscript delivers the foundation for all three.
+An earlier version of this paper reported instrumental-variable estimates, panel regressions and simulation results that, on audit, were not produced from data or did not implement the stated model. They are withdrawn, and Appendix~\ref{app:provenance} maps every remaining number to the code that produces it. The main open problems are a credible source of exogenous variation in live markets, counterparty-level data for attribution, and a solvency analysis with strategic liquidity withdrawal.
 
 \section*{Data, code, and replication availability}
-The source code, robust test suite, and retained result artifacts are rigorously organized in the release repository. A complete audit trail ensures strict structural replication of all findings reported in this manuscript. The release bundle features independent validation tests and a locked statistical environment for external verification. The empirical evaluations in Section 7 utilize open-access limit order book datasets, specifically the FI-2010 Nordic Equities benchmark, Binance BTC/USDT high-frequency perpetual futures, and Coinbase ETH/ADA spot limit order books. Complete data manifests and extraction scripts are included in the repository to guarantee full empirical reproduction.
+All code, tests and generated result files are in the release repository. Tables marked as generated are written by \texttt{scripts/build\_results.py} from JSON outputs in \texttt{results/provenance/}, and Appendix~\ref{app:provenance} lists every empirical and simulated number with its producing script. The empirical analysis in \cref{sec:empirical_causal} uses the files \texttt{empirical\_pipeline/data/\{BTC,ETH,ADA\}\_1sec.csv}, sourced from \citet{nielsen2021} (Kaggle dataset 1567989, CC0 Public Domain, recorded from Coinbase Pro via \texttt{crypto-rl} by \citeauthor{sadighian2019}). Complete file checksums, schema definitions, and timing validations are documented in \texttt{empirical\_pipeline/data/README.md} and verified in \texttt{tests/test\_data\_provenance\_and\_closure.py}. \Cref{sec:binance_multi_epoch,sec:gate24_empirical} use cached Binance US snapshots and public Binance kline archives stored under \texttt{research\_extension/}; \cref{sec:ch7}'s Coinbase samples are cached in the same tree. No FI-2010 or cross-venue latency data are used.
 
 \section*{Compliance and Ethical Disclosures}
-The authors confirm that AI assistance was utilized in drafting, code generation, and mathematical typesetting during the preparation of this manuscript. All AI-assisted proofs, numerical experiments, and codebase integrations have been independently reviewed, formally verified, and guaranteed by the human authors, who bear full accountability for the results.
+The authors confirm that AI assistance was utilized in drafting, code generation, and mathematical typesetting during the preparation of this manuscript. The human authors are responsible for reviewing all AI-assisted text, proofs and code. An internal audit found that earlier AI-assisted drafts contained numbers not produced by data or code; those results have been withdrawn (Appendix~\ref{app:provenance}).
 
-Furthermore, we confirm that all data rights and permissions for the historical datasets analyzed in this study have been cleared. The structural findings are fully reproducible and do not violate third-party distribution constraints.
+The one-second order-book files are public domain (CC0) under \citet{nielsen2021}. The public Binance and Coinbase samples were retrieved from public endpoints, subject to those venues' terms.
 
 \begingroup
 \small
@@ -1744,6 +2027,12 @@ W. Brian Arthur, John H. Holland, Blake LeBaron, Richard Palmer, and Paul Tayler
 \newblock Asset Pricing Under Endogenous Expectations in an Artificial Stock Market.
 \newblock Santa Fe Institute Working Paper 96-12-093, 1996.
 \newblock \url{https://www.santafe.edu/research/results/working-papers/asset-pricing-under-endogenous-expectations-in-an-}.
+
+\bibitem[Avellaneda and Stoikov(2008)]{avellaneda2008}
+Marco Avellaneda and Sasha Stoikov.
+\newblock High-frequency trading in a limit order book.
+\newblock \emph{Quantitative Finance}, 8(3):217--224, 2008.
+\newblock \url{https://doi.org/10.1080/14697680701381228}.
 
 \bibitem[Brock and Hommes(1998)]{brock1998}
 William A. Brock and Cars H. Hommes.
@@ -1762,6 +2051,17 @@ Emilio Calvano, Giacomo Calzolari, Vincenzo Denicol\`o, and Sergio Pastorello.
 \newblock Artificial Intelligence, Algorithmic Pricing, and Collusion.
 \newblock \emph{American Economic Review}, 110(10):3267--3297, 2020.
 \newblock \url{https://doi.org/10.1257/aer.20190623}.
+
+\bibitem[Cameron et~al.(2008)]{cameron2008}
+A. Colin Cameron, Jonah B. Gelbach, and Douglas L. Miller.
+\newblock Bootstrap-Based Improvements for Inference with Clustered Errors.
+\newblock \emph{The Review of Economics and Statistics}, 90(3):414--427, 2008.
+\newblock \url{https://doi.org/10.1162/rest.90.3.414}.
+
+\bibitem[Kirilenko et~al.(2017)]{kirilenko2017}
+Andrei Kirilenko, Albert S. Kyle, Mehrdad Samadi, and Tugkan Tuzun.
+\newblock The Flash Crash: High-frequency trading in an electronic market.
+\newblock \emph{Journal of Finance}, 72(3):967--998, 2017.
 
 \bibitem[Perdomo et~al.(2020)]{perdomo2020}
 Juan C. Perdomo, Tijana Zrnic, Celestine Mendler-D\"unner, and Moritz Hardt.
@@ -1817,6 +2117,31 @@ Stephen Boyd, Laurent El Ghaoui, Eric Feron, and Venkataramanan Balakrishnan.
 \newblock SIAM, 1994.
 \newblock \url{https://web.stanford.edu/~boyd/lmibook/}.
 
+\bibitem[Hausdorff(1921)]{hausdorff1921}
+Felix Hausdorff.
+\newblock Summationsmethoden und Momentfolgen. I.
+\newblock \emph{Mathematische Zeitschrift}, 9:74--109, 1921.
+
+\bibitem[Kalman(1963)]{kalman1960}
+Rudolf E. Kalman.
+\newblock Mathematical description of linear dynamical systems.
+\newblock \emph{Journal of the SIAM, Series A: Control}, 1(2):152--192, 1963.
+
+\bibitem[Krein and Nudelman(1977)]{krein1977}
+M. G. Krein and A. A. Nudelman.
+\newblock \emph{The Markov Moment Problem and Extremal Problems}.
+\newblock Translations of Mathematical Monographs 50. American Mathematical Society, 1977.
+
+\bibitem[Perlman(1969)]{perlman1969}
+Michael D. Perlman.
+\newblock One-sided testing problems in multivariate analysis.
+\newblock \emph{Annals of Mathematical Statistics}, 40(2):549--567, 1969.
+
+\bibitem[Spijker(1991)]{spijker1991}
+M. N. Spijker.
+\newblock On a conjecture by LeVeque and Trefethen related to the Kreiss matrix theorem.
+\newblock \emph{BIT Numerical Mathematics}, 31(3):551--555, 1991.
+
 \bibitem[Khalil(2002)]{khalil2002}
 Hassan K. Khalil.
 \newblock \emph{Nonlinear Systems}. Third edition.
@@ -1871,6 +2196,12 @@ Yassir Jedra and Alexandre Proutiere.
 \newblock arXiv:1903.10343, 2019. Preprint version consulted.
 \newblock \url{https://arxiv.org/abs/1903.10343}.
 
+\bibitem[Jord\`a(2005)]{jorda2005}
+Oscar Jord\`a.
+\newblock Estimation and Inference of Impulse Responses by Local Projections.
+\newblock \emph{American Economic Review}, 95(1):161--182, 2005.
+\newblock \url{https://doi.org/10.1257/0002828053828518}.
+
 \bibitem[Khosravi and Smith(2021a)]{khosravi2025}
 Mohammad Khosravi and Roy S. Smith.
 \newblock Regularized Identification with Internal Positivity Side-Information.
@@ -1924,6 +2255,18 @@ Mante Zelvyte and Jim E. Griffin.
 \newblock A Multiplex Network Hawkes Model for Systemic Risk Measurement.
 \newblock arXiv:2606.15755, 2026.
 \newblock \url{https://arxiv.org/abs/2606.15755}.
+
+\bibitem[Nielsen(2021)]{nielsen2021}
+Martin~S{\o}gaard Nielsen.
+\newblock High Frequency Crypto Limit Order Book Data.
+\newblock Kaggle dataset 1567989, version 1, 2021.
+\newblock \url{https://www.kaggle.com/datasets/martinsn/high-frequency-crypto-limit-order-book-data}.
+
+\bibitem[Sadighian(2019)]{sadighian2019}
+Jonathan Sadighian.
+\newblock crypto-rl: High Frequency Limit Order Book Simulation Environment and Trading Agent.
+\newblock GitHub repository, 2019.
+\newblock \url{https://github.com/sadighian/crypto-rl}.
 
 \end{thebibliography}
 \endgroup
@@ -2073,6 +2416,62 @@ Identifiability across the parameter space is partitioned into five distinct ope
 \end{enumerate}
 Finally, absent an auxiliary total-mass constraint, full column rank $\operatorname{rank}(U) = n$ is necessary for uniform point identification across the interior: if $\operatorname{rank}(U) < n$, there exists a non-zero direction $\mathbf{w}$ such that $U\mathbf{w}=\mathbf{0}$, meaning any interior point $\mathbf{q}$ admits an open neighborhood of observationally equivalent interior parameters $\mathbf{q} + \epsilon \mathbf{w}$ generating identical responses $\mathbf{b}$. Boundary constraints (such as nonnegativity or known sparsity) can resolve particular isolated configurations on the boundary, but do not provide uniform interior identifiability. With known $Q$, any ambiguity direction must also satisfy $\mathbf{1}^\top\mathbf{w}=0$; the augmented rank condition applies when $\eta$ is known. Known $Q$ and $n-1$ probes do not generally guarantee joint identification of $(\eta,\mathbf q)$: for $U=(1,0)$ and $Q=0.4$, $(\eta,\mathbf q)=(0.2,(0.3,0.1))$ and $(0.3,(0.2,0.2))$ both give $b=0.06$. This does not rule out identifying the rate alone: if $c^\top U=\mathbf1^\top$, then $\eta=c^\top\mathbf b/Q$ even when $U$ is rank deficient. For example, $U=(1,1)$ identifies $\eta$ from known $Q>0$ but not the allocation. This completes the proof of Theorem~\ref{thm:separation}.
 
+\subsection{Proofs of Theorems M1--M5}
+\label{app:m_proofs}
+
+\begin{proof}[Proof of Theorem~\ref{thm:m1_equivalence}]
+Take $z$-transforms of \eqref{eq:heterogeneous} with zero initial state, and write $r_i=1-\eta_i$. Then $(z-r_i)Y_i=\eta_iq_iX$ and $(z-a)X=\sum_iY_i+\kappa U$. Hence
+\[
+ H(z)=\frac{X(z)}{U(z)}=\frac{\kappa}{z-a-\sum_r c_r/(z-r)},\qquad c_r=\sum_{i:r_i=r}\eta_iq_i=\eta\sum_{i:\eta_i=\eta}q_i>0,
+\]
+where the sum runs over the distinct active rates. The impulse response determines its generating function and conversely. So equality of $h_t$ for all $t$ is equivalent to $H_A=H_B$. Given equal $a$ and $\kappa$, this is equivalent to $\sum_rc^A_r/(z-r)=\sum_rc^B_r/(z-r)$ as rational functions. Partial-fraction decompositions with nonzero coefficients and distinct poles are unique, so the pole sets and residues coincide. That is, $\{(r,c_r)\}$ coincide, which (as $\eta>0$) is the statement $\mathcal M(\mathcal E_A)=\mathcal M(\mathcal E_B)$. For the order, write $H=\kappa P(z)/D(z)$ with $P(z)=\prod_r(z-r)$ of degree $m=|\operatorname{supp}\mathcal M|$ and
+\[
+ D(z)=(z-a)P(z)-\sum_rc_r\prod_{s\ne r}(z-s)
+\]
+of degree $m+1$. A common root of $P$ and $D$ would be some active $r'$, but $D(r')=-c_{r'}\prod_{s\ne r'}(r'-s)\ne0$. Thus $P/D$ is coprime and its McMillan degree, which equals the minimal state dimension for a scalar transfer function \citep{kalman1960}, is $m+1$. The final statement holds because $H$ depends on the $q_i$ only through the $c_r$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:m2_sample_complexity}]
+(1) Let $\eta_1=\eta_0+\delta$ with $\delta=\delta_R$. For Gaussian product measures,
+\[
+\mathrm{KL}(\mathbb P_{\eta_0}\Vert\mathbb P_{\eta_1})=\frac{RA^2\lambda^2}{2\sigma^2}\sum_{t\le H}\big(k_t(\eta_1)-k_t(\eta_0)\big)^2 .
+\]
+By the mean value theorem, $|k_t(\eta_1)-k_t(\eta_0)|\le\delta\,t\sup_\xi(1-\xi)^{t-1}$, so the sum is at most $\delta^2\bar H$ and $\mathrm{KL}\le1/2$. Pinsker's inequality gives $\mathrm{TV}\le1/2$. For any $\hat\eta$, let $\psi$ select the closer of the two points. Then $\max_i\mathbb E_i(\hat\eta-\eta_i)^2\ge(\delta/2)^2\max_i\mathbb P_i(\psi\ne i)\ge(\delta^2/4)(1-\mathrm{TV})/2\ge\delta^2/16$. The asymptotic statement is the classical efficiency of the MLE in regular parametric models.
+
+(2) For $f(x)=x^t$, $f(r+\delta)+f(r-\delta)-2f(r)=\delta^2f''(\xi_t)$ for some $\xi_t\in(r-\delta,r+\delta)$. So the kernel difference satisfies $|\Delta_t|\le\tfrac w2\delta^2t(t-1)(r+\delta)^{t-2}$ and $\Delta_0=\Delta_1=0$. Hence
+\[
+\mathrm{KL}\le\frac{RA^2\lambda^2}{2\sigma^2}\cdot\frac{w^2\delta^4}{4}C(r+\delta).
+\]
+A test with both errors at most $\beta$ satisfies $1-2\beta\le\mathrm{TV}\le\sqrt{\mathrm{KL}/2}$. Rearranging gives \eqref{eq:separation_rate}. $C(\rho)<\infty$ for $\rho<1$ by the ratio test.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:m3_minimax_abstention}]
+(1) $\mathbb P_0(\mathrm{Abstain})=1-\mathbb P_0(\mathrm{Unstable})-\mathbb P_0(\mathrm{Stable})\ge1-\alpha-\mathbb P_0(\mathrm{Stable})$. Also $\mathbb P_0(\mathrm{Stable})\le\mathbb P_1(\mathrm{Stable})+\mathrm{TV}\le\alpha+\mathrm{TV}$. The case $i=1$ is symmetric. The second inequality is Pinsker's. (2) Under the two models the means differ by $2\varepsilon A\lambda\phi_t$, so $\mathrm{KL}=2RA^2\lambda^2\varepsilon^2\norm{\phi_{1:H}}^2/\sigma^2$; substitute into (1). (3) Identical observation laws give $\mathrm{TV}=0$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:m4_completely_monotone}]
+(1) Each $q_i\eta_i(1-\eta_i)^j$ is the $j$th moment of the point mass $q_i\eta_i\delta_{1-\eta_i}$ on $[0,1)$. Hausdorff's theorem identifies moment sequences on $[0,1]$ with completely monotone sequences, and finitely atomic measures are weak-$*$ dense in finite measures on $[0,1]$. (2) $[2^{i+j}]=vv^\top$ with $v_i=2^i$ is positive semidefinite, but $k_0-k_1=-1<0$ violates complete monotonicity. The finite characterization is the truncated Hausdorff moment theorem on $[0,1]$, where the localizing polynomial is $x(1-x)$ \citep{krein1977}. (3) For $k\in\mathcal C$ we have $k+\mathcal C\subseteq\mathcal C$ because $\mathcal C$ is a convex cone. Hence, with $d_V$ the $V^{-1}$-weighted distance,
+\[
+T(k+Z)=d_V(k+Z,\mathcal C)^2\le d_V(k+Z,k+\mathcal C)^2=d_V(Z,\mathcal C)^2=T(Z)
+\]
+pointwise, and $\mathbb P(T(k+Z)>c_{1-\alpha})\le\mathbb P(T(Z)>c_{1-\alpha})=\alpha$. The size is therefore at most $\alpha$ at every point of $\mathcal C$, and the cone vertex is least favorable \citep{perlman1969}.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:m5_kreiss_solvency}]
+(1) $\norm{CJ^tz_0}\le M_C\norm{z_0}<B$ for all $t$ if $\norm{z_0}<r^*$. Conversely, choose $t^*$ and a unit $v$ with $\norm{CJ^{t^*}v}>M_C/(1+\epsilon)$ and set $z_0=(1+\epsilon)r^*v$; then $\norm{CJ^{t^*}z_0}>B$. (2) For $|z|>1>\rho(J)$, $(zI-J)^{-1}=\sum_{k\ge0}J^kz^{-k-1}$. Hence $\norm{(zI-J)^{-1}}\le M_I\sum_k|z|^{-k-1}=M_I/(|z|-1)$, so $\mathcal K(J)\le M_I$ and $r^*=B/M_I\le B/\mathcal K(J)$. Apply (1). The converse inequality is Spijker's sharpening of the Kreiss matrix theorem. (3) $\norm{J}_2\ge|J_{12}|=m$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:signed_stability}]
+The characteristic polynomial is $\lambda^2-T\lambda+D$ with $T=a+1-\eta$ and $D=a(1-\eta)-g\eta\kappa$. By the Jury (Schur--Cohn) conditions, both roots lie in the open unit disc if and only if $1-T+D>0$, $1+T+D>0$ and $|D|<1$. These conditions are:
+\begin{itemize}
+ \item $1-T+D=\eta(1-a-g\kappa)>0$, which is $g\kappa<1-a$;
+ \item $1+T+D=(1+a)(2-\eta)-g\eta\kappa>0$;
+ \item $D<1$, which is $-g\eta\kappa<1-a(1-\eta)$;
+ \item $D>-1$, which is $g\eta\kappa<1+a(1-\eta)$.
+\end{itemize}
+For $a\in[0,1)$ and $\eta\in(0,1]$, both $(1+a)(2-\eta)/\eta$ and $(1+a(1-\eta))/\eta$ are at least $1-a$, so the second and fourth conditions are implied by the first. The remaining conditions are $-(1-a(1-\eta))/\eta<g\kappa<1-a$.
+\end{proof}
+
 \section{Replication Protocol, Information Architecture, and Empirical Ledgers}
 \label{app:code}
 \label{app:replication}
@@ -2101,9 +2500,9 @@ Study Component & Design Parameters and Configurations & Replications & Record c
 \midrule
 Primary Linear Panel & $G \in \{0.7, 0.95, 1.05, 1.3\}$, $\eta_{\mathrm{slow}} \in \{0.002, 0.02, 0.1\}$, $n \in \{32, 128, 512\}$, $T \in \{16, 64\}$, 2 probe designs & 2,880 & 645,120 \\
 Held-Out Confirmation & Fresh random seeds, paired endpoint diversification (fixed 64 vs.\ $\{8, 16, 32, 64\}$) & 720 & 161,280 \\
-Funded Market Dynamics & 3 funding regimes (unfunded, soft margin, hard dealer halt) across 24 market configurations & 2,880 & 491,520 \\
-Preloaded Dealer Stress & Inventory capital shocks, dealer capacity reductions, and liquidation cascades & 512 & 65,536 \\
-330-Cell Capacity Surface & $S \in \{0.70, 0.82, 1.18\}$, $\pm$ shocks $\times$ inventory-capacity multipliers (fixed \$10k initial equity), 110 configs & 330 & N/A \\
+Funded Market Dynamics & $G\in\{0.7,1.3\}$, two slow rates, three funding regimes (unlimited, ample, tight), two shocks: 24 settings $\times$ 20,480 episodes; 960 setting-panels at three budgets & 2,880 rows & 491,520 setting-trajectories (163,840 tapes) \\
+Preloaded Dealer Stress & Preloaded tight-regime dealer; $G\in\{0.7,1.3\}$, two slow rates, mean repricing $-2$ or $-10$ & 8 settings & 65,536 episodes \\
+330-Cell Capacity Surface & Nominal $S \in \{0.70, 0.82, 1.18\}$, shocks $\times$ inventory-capacity multipliers (fixed \$10k initial equity) & 330 cells $\times$ 30 & 9,900 runs \\
 Comparator Grid & 120 fixed cells, 5 panels per cell; $R=128,1024$, $H=24,64$; post-probe response alignment & 600 panels & 345,600 episodes \\
 Conic Sweeps & Five budgets, 3 regimes, 20 Gaussian coefficient draws per cell; known and estimated covariance kept separate & 300 per mode & Not pooled \\
 Response-Pivot Calibration & Known covariance/chi-square and independent Wishart-estimated covariance/F & 20,000 per mode & Not market episodes \\
@@ -2111,7 +2510,6 @@ C1--C4 Diagnostic & C1/C3: one deterministic case each; C2/C4: 100 noisy coeffic
 Paired Capacity Scenario & Four regimes, 100 shared disturbance tapes; effective adaptive $S=1.22$ & 100 tapes & 400 paired paths \\
 Q Training & 10 training seeds (926101--926110), 100k transitions per policy & 10 policies & 1,000,000 transitions \\
 Q Evaluation & 10 policies $\times$ 10 tapes $\times$ 3 arms, plus 20 baseline runs; 128 steps each & 10 populations & 320 nested runs \\
-Model-Class Screen Calibration & 5 synthetic policy classes $\times$ 250 Monte Carlo reps across $R^2 \in [0.30, 0.90]$ & 1,250 & N/A \\
 Public-Data Proxies & 9 kline archives (129,600 bars per asset) and 3 separate REST depth snapshots; 18,445,389 bytes consumed & N/A & Not pooled \\
 Synthetic Proxy-Scale Scenarios & 3 assets $\times$ 50 seeds $\times$ 4 shocks; 64 steps; no empirical event denominator & 600 runs & N/A \\
 Archived Coinbase Spot & 10 Coinbase spot markets, Level-1 book quotes and 1,000 tick trades per pair; corrected row/cache samples reported separately & 10 & 10,000 \\
@@ -2121,15 +2519,14 @@ Archived Binance US Spot & 10 Binance US spot markets, Level-2 snapshots and 500
 \end{table*}
 
 \subsection{Standalone algorithmic verification without project imports}
-To ensure mathematical reproducibility independent of library versions or internal software abstractions, the replication package includes a standalone verifier that imports no project modules. The verifier:
+The audited-constraints study includes a verifier that imports no project modules (\nolinkurl{studies/audited_constraints/replication/verify_without_project_imports.py}, output \nolinkurl{studies/audited_constraints/results/standalone_verification.json}). It
 \begin{itemize}
-    \item Recomputes all 4,320 regression decisions using a pure Singular Value Decomposition (SVD) implementation;
-    \item Solves 500 order-fill projections via independent primal-dual linear programming;
-    \item Evaluates 2,880 exact Clopper-Pearson binomial confidence intervals;
-    \item Recomputes 2,880 geometric tail envelopes;
-    \item Verifies 64 complete transaction and financial margin ledgers.
+    \item recomputes the 4,320 terminal-row regression decisions with an SVD solver (all labels match; maximum difference $4.4\times10^{-14}$);
+    \item re-solves 500 order-fill projections as linear programs (maximum difference $1.8\times10^{-15}$);
+    \item recomputes 2,880 exact Clopper--Pearson intervals (maximum difference $3.6\times10^{-14}$) and 2,880 geometric tail envelopes;
+    \item re-checks 64 transaction ledgers (maximum cash residual $2.3\times10^{-12}$).
 \end{itemize}
-Maximum discrepancy between the production estimator and the standalone verifier is bounded by $7.2 \times 10^{-14}$, confirming strict numerical consistency.
+This is an internal consistency check written by the same authors, not outside replication.
 
 \subsection{Computational reproduction protocol}
 The correction uses Python 3.11. The reproduction guide records the exact commands to generate the tables. Basic checks are:
@@ -2138,26 +2535,26 @@ The correction uses Python 3.11. The reproduction guide records the exact comman
 python -m pip install -r requirements-runtime.txt
 
 # 2. Execute native suites; extension checks are listed in the correction guide
-#    (a) 104 native tests across all simulation studies
+#    (a) 104 native tests across the four studies and release tools
 python tools/run_all_tests.py
 #    (b) extension, correction, and mathematical-supplement tests
 PYTHONPATH=. pytest tests/ research_extension/tests/ reference_directory/test_mathematical_supplement.py -q
 
-# 3. Execute standalone zero-dependency verifier (24 verification gates)
+# 3. Execute standalone zero-dependency verifier (three checks)
 python independent_verifier/verifier.py
 
 # 4. Execute unified research CLI (replay/regenerate modes)
 PYTHONPATH=. python -m research_extension.mm_revision.cli --mode replay
 
-# 5. Compile final manuscript PDF
-python tools/build_paper.py --output paper/Machine_Markets_Final_Integrated_Paper.pdf
+# 5. Rebuild generated tables, run tests, compile the PDF
+python scripts/regenerate_all.py
 \end{lstlisting}
 
 \clearpage
 \section{Methodological Scope, Empirical Boundaries, and Research Frontiers}
 \label{app:frontiers}
 
-To maintain rigorous scientific discipline, Table~\ref{tab:research_gates} delineates the verified findings of this paper from the open research frontiers required for wider institutional deployment.
+Table~\ref{tab:research_gates} separates what this paper checks from what remains open.
 
 \begin{table*}[htbp]
 \centering\small
@@ -2172,7 +2569,7 @@ Priority and Proofs & \textbf{Internally checked:} Model-specific separation and
 Structural Identification & \textbf{Theorem-level, conditional:} Exact-arithmetic outer intervals cover aggregate feedback on the stated response event. The numerical conic routine withholds certification until full outward constraint assembly is verified. Budget sweeps describe numerical candidates, not certificates or realization-wise monotone narrowing.\newline
 \textbf{Frontier:} Identification under adversarial probe-detection strategies where algorithmic market participants actively distort quote placement upon detecting surveillance orders. \\
 \midrule
-Empirical Microstructure & \textbf{Exploratory:} A validated ten-asset sample produces significant associations. Chronological fits provide a negative control demonstrating that passive observability fails to identify parameters. Public-data proxies have consistent units, but depth snapshots are not historical event books and execution calibration remains pending.\newline
+Empirical Microstructure & \textbf{Exploratory:} A ten-asset Coinbase sample gives a nominally significant cross-sectional association (ten observations). Passive chronological structural fits fail out of sample. A reduced-form feedback component is estimated from one-second data for three assets (\cref{sec:empirical_causal}). Public-data proxies have consistent units, but depth snapshots are not historical event books and execution calibration remains pending.\newline
 \textbf{Frontier:} Authenticated proprietary runtime audit with an institutional counterparty (Contract~$I_1$) and nanosecond LOB hardware cancellation accounting. \\
 \midrule
 Comparator Evidence & \textbf{Comparative analysis:} Validated containment, issued-label, failure and width counts are reported in Tables~\ref{tab:comparator_comparison}--\ref{tab:corrective_widths}. Profile and sandwich diagnostics have separate denominators. Known- and estimated-covariance sweeps use different valid pivots. These are simulated comparisons, not a general method ranking. The audited terminal-row study uses a separate information contract and sample.\newline
@@ -2187,56 +2584,77 @@ Strategic Policy Transfer & \textbf{Falsification diagnostic:} All ten new polic
 \end{tabularx}
 \end{table*}
 
-The findings of this paper demonstrate that aggregate price surveillance cannot untangle group-level systemic risk without channel-specific excitation in the common-rate observationally symmetric benchmark, and that in synthetic funded markets, algorithmic feedback amplification couples with binding dealer balance-sheet constraints to induce severe liquidity strain. Resolving the open frontiers above represents a rich agenda for modern empirical market microstructure.
+In the common-rate symmetric benchmark, aggregate prices cannot attribute feedback to groups without channel-specific excitation. In the funded simulations, feedback interacts with binding dealer constraints to produce halts inside the price-stable region. The open problems above are not addressed here.
 
+
+\clearpage
+\onecolumn
+\section{Provenance ledger}
+\label{app:provenance}
+This appendix records where each retained number comes from and which earlier results were withdrawn.
+
+\paragraph{Generated tables.} The empirical feedback estimates, the estimator Monte Carlo and the feedback-dealer solvency results (\cref{tab:empirical_feedback,tab:estimator_validation,tab:empirical_flowmemory,tab:empirical_kernel,tab:empirical_grid,tab:solvency_phase_diagram}) and every number quoted from them in the text are not typed into the manuscript. \texttt{scripts/build\_results.py} writes them, as tables and as \LaTeX{} macros, from \texttt{results/provenance/\{empirical\_feedback,estimator\_validation,solvency\_feedback\}.json}, which are produced by \texttt{empirical\_pipeline/feedback\_var.py}, \texttt{simulations/estimator\_validation.py} and \texttt{simulations/feedback\_dealer.py}.
+
+\paragraph{Typed numbers.} The remaining results (Sections~\ref{sec:integrated_hidden}--\ref{sec:gate24_empirical}) were produced by the four frozen studies under \texttt{studies/} and by the correction runs under \texttt{research\_extension/outputs/}. They are typed in the manuscript. \Cref{tab:provenance_ledger} lists the headline numbers. For each one, \texttt{scripts/provenance\_ledger.py} recomputes the printed value from the named artifact, or from the closed-form expression in the text for rows marked \emph{analytic}, and checks that the printed string still appears verbatim in this file. \texttt{tests/test\_provenance\_ledger.py} runs these checks and also verifies that a one-digit change to the paper or to a printed value is detected. Accounting residuals are printed rounded up to three significant figures, because they are upper bounds. The ledger covers headline values, not every cell of every typed table. The other cells come from the same artifacts but are not individually re-checked.
+
+\input{generated/provenance_ledger.tex}
+
+\paragraph{Withdrawn results.} An internal audit found that the following results in earlier drafts were not produced by data or code, or came from code that did not implement the stated model. They have been removed:
+\input{generated/provenance_withdrawn.tex}
 
 \clearpage
 \section{Computational Verification and Theorem-to-Code Mapping}
 \label{app:computational_verification}
-To bridge the gap between theoretical claims and verifiable execution, this appendix provides a direct mapping from the formal theorems in the manuscript to their corresponding executable computational proofs, unit tests, and reference scripts in the public repository. All numerical and mathematical claims are backed by an automated verification suite that runs locally without external dependencies, securing the reproducibility of the methodology.
-
-\subsection{Theorem-to-Code Traceability Matrix}
-Table~\ref{tab:claim_map} cross-references the core theoretical and empirical claims with their executing Python scripts and test coverage. The complete codebase utilizes 489 passing verification gates, including a zero-dependency verifier for the terminal-row estimators.
+This appendix maps claims to the code that checks them. Every file listed exists in the release repository. A passing test shows only that the code does what the test checks; it is not independent evidence for a claim.
 
 \begin{table*}[htbp]
 \centering\small
-\caption{Theorem-to-Code Mapping: Linking theoretical claims to executable verification.}
+\caption{Claim-to-code map.}
 \label{tab:claim_map}
-\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{.20\textwidth}>{\raggedright\arraybackslash}p{.18\textwidth}>{\raggedright\arraybackslash\ttfamily\footnotesize}X>{\raggedright\arraybackslash\ttfamily\footnotesize}p{.32\textwidth}}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{.22\textwidth}>{\raggedright\arraybackslash}p{.16\textwidth}>{\raggedright\arraybackslash\ttfamily\footnotesize}X}
 \toprule
-\textbf{Theoretical Claim} & \textbf{Manuscript Location} & \textbf{Script / Environment} & \textbf{Validation Target} \\
+\textbf{Claim} & \textbf{Location} & \textbf{Code} \\
 \midrule
-Group Identifiability & Theorem~\ref{thm:separation} & \nolinkurl{tests/test_group_identification.py} & \nolinkurl{test_separation_conditions()} \\
-PBH Rank Defect & Section~\ref{sec:intro} & \nolinkurl{reference_directory/run_checks.py} & \nolinkurl{check_pbh_defect()} \\
-Recurrence LP Bounds & Theorem~\ref{thm:observable_stability} & \nolinkurl{mm_revision/tests/test_conic.py} & \nolinkurl{test_recurrence_lp_bounds()} \\
-Conic Relaxation & Theorem~S7.2 (Supp) & \nolinkurl{mm_revision/tests/test_conic.py} & \nolinkurl{test_conic_relaxation()} \\
-Audited OLS Pivot & Section~\ref{sec:observable_results} & \nolinkurl{independent_verifier/verifier.py} & Gates 11--14 (Terminal Row) \\
-Decoupled Solvency & Section~\ref{sec:q_learning_transfer} & \nolinkurl{tests/test_funded_mechanism.py} & \nolinkurl{test_solvency_boundary()} \\
-Q-Learning Abstention & Section~\ref{sec:q_learning_transfer} & \nolinkurl{tests/test_q_learning_transfer.py} & \nolinkurl{test_model_class_audit()} \\
+Theorems M1, M2(a) & \cref{sec:integrated_hidden} & \nolinkurl{tests/test_core_theorems_m1_m2_m3.py} \\
+Theorems M2(b), M3, M5; signed boundary & \cref{sec:integrated_hidden}, \cref{thm:signed_stability} & \nolinkurl{tests/test_theorems_m2_m5_corrected.py} \\
+Theorem M4 test (size, power, $2^j$ counterexample) & \cref{thm:m4_completely_monotone} & \nolinkurl{empirical_pipeline/cm_test.py}, \nolinkurl{tests/test_cm_cone_test.py} \\
+Kalman and OGD memory & \cref{prop:kalman_microfoundation,prop:ogd_microfoundation} & \nolinkurl{tests/test_dynamical_system_identification_bridge.py} \\
+Conic certificate and terminal-row pivot & \cref{sec:ch4} & \nolinkurl{tests/mm_revision/test_conic_certificate.py}, \nolinkurl{tests/mm_revision/test_audited_terminal.py} \\
+Q-learning transfer & \cref{sec:q_learning_transfer} & \nolinkurl{tests/test_q_learning_transfer.py} \\
+Public-data estimates & \cref{sec:empirical_causal} & \nolinkurl{empirical_pipeline/feedback_var.py} $\to$ \nolinkurl{results/provenance/empirical_feedback.json} \\
+Estimator Monte Carlo & \cref{tab:estimator_validation} & \nolinkurl{simulations/estimator_validation.py} \\
+Funded dealer under feedback; \cref{prop:flow_gain} & \cref{sec:solvency_phase_diagram} & \nolinkurl{simulations/feedback_dealer.py}, \nolinkurl{tests/test_feedback_estimator_and_dealer.py} \\
+Cancellation attenuation & \cref{prop:cancellation_masking} & \nolinkurl{tests/test_cancellation_jacobian.py} \\
+\midrule
+\multicolumn{3}{l}{\textbf{Lean 4 (exact rational algebra only)}} \\
+\midrule
+$\det(I-J)=(1-a-g\kappa)\eta$ & \cref{thm:positive} & \nolinkurl{lean_proofs/Proofs/Stability.lean} \\
+PBH unobservable direction & \cref{prop:swapped_feedback} & \nolinkurl{lean_proofs/Proofs/PBHDefect.lean} \\
+Characteristic polynomial at $\pm1$ & \cref{thm:signed_stability} & \nolinkurl{lean_proofs/Proofs/SignedStability.lean} \\
+Retained witness arithmetic & \cref{thm:retained_pair} & \nolinkurl{lean_proofs/Proofs/Ambiguity.lean} \\
 \bottomrule
 \end{tabularx}
 \end{table*}
 
-\subsection{Zero-Dependency Computational Verification}
-The terminal-row estimators (Section~\ref{sec:observable_results}) and the empirical microstructure models are audited by a standalone verification script (\nolinkurl{independent_verifier/verifier.py}). This isolates the mathematical validation from the complex dependencies of the main simulation engine. Reviewers can verify the core inference bounds and linear stability thresholds by running the verifier, which confirms all 24 gates with a maximum numerical discrepancy bounded by $7.2 \times 10^{-14}$.
-
+\subsection{Standalone verifier}
+\nolinkurl{independent_verifier/verifier.py} imports no project code. It recomputes three items: the retained rational witness, the coverage, decisiveness and error denominators of the observable-data experiment, and the cross-sectional regression separation. All three match the reported values. (An earlier draft attributed ``24 gates'' and a maximum discrepancy of $7.2\times10^{-14}$ to this verifier. It produces neither figure. The audited-study verifier in \cref{app:replication} reports 24 public-path filter checks and a maximum regression difference of $4.4\times10^{-14}$; the $7.2\times10^{-14}$ figure has no source and is withdrawn.)
 
 \clearpage
-\section{Mechanized Proofs in Lean 4}
+\section{Machine-Checked Algebraic Identities in Lean 4}
 \label{app:lean4}
 
-To eliminate ambiguity and guarantee the absolute correctness of the manuscript's mathematical claims, all core theorems, propositions, and identifiability conditions have been mechanically formalized and verified using the Lean 4 interactive theorem prover. 
+To verify that foundational linearizations, characteristic polynomials, and unobservable eigenspace defects are free from algebraic error, key polynomial identities of the model have been formalized and checked using the Lean 4 proof assistant.
 
-The integration of Lean 4 bridges the gap between informal mathematical reasoning and rigorous computational type theory. The formalizations cover:
+Rather than claiming a full formalization of measure-theoretic probability or nonlinear microstructure dynamics, the Lean formalization is strictly scoped to the exact rational algebra of the linearized state space:
 \begin{itemize}
-    \item \textbf{Theorem 2.3 (Positive-Feedback Boundary):} Mechanized proof of the exact spectral radius threshold governing the transition to instability.
-    \item \textbf{Proposition 5.1 \& Theorem 5.2 (PBH Rank Defect):} Formalization of the unobservable eigenspace defect and the minimum rank conditions required for uniform parameter identifiability.
-    \item \textbf{Theorem 4.1 \& 4.2 (Observable Confidence Intervals):} Verification of the exact-arithmetic outer bounds and union bounds over the multi-agent hypothesis space.
+    \item \textbf{Characteristic Polynomial Factorization (Theorem~\ref{thm:positive}):} Verification of the root identity $\det(I - J) = (1 - a - g\kappa)\eta$ over rational arithmetic.
+    \item \textbf{Popov--Belevitch--Hautus Rank Defect (Proposition~\ref{prop:swapped_feedback}):} Formal verification that identical-rate multi-agent Jacobians possess a non-trivial nullspace satisfying $C v = 0$ and $J v = (1-\eta)v$.
+    \item \textbf{Signed stability polynomial (Theorem~\ref{thm:signed_stability}):} the characteristic polynomial evaluated at $\lambda=\pm1$ and the determinant identity. These are ingredients of the Jury conditions; the inequalities themselves are proved on paper in \cref{app:m_proofs}.
 \end{itemize}
 
-As an illustrative example, the following Lean 4 snippet demonstrates the formal statement for the positive-feedback spectral radius bound (Theorem 2.3), utilizing the \texttt{Mathlib} library for linear algebra and spectral graph theory:
+Importantly, the Lean package operates using pure rational arithmetic in core Lean 4 (\texttt{Init.GrindInstances.Ring.Rat}) without external dependencies on \texttt{Mathlib}, ensuring that the algebraic checks compile cleanly and independently:
 
-\begin{lstlisting}[language=Python, caption={Representative Lean 4 mechanized formalization of Theorem 2.3 and Proposition 5.1 in \texttt{lean\_proofs/}.}, label={lst:lean4}]
+\begin{lstlisting}[language={}, numbers=none, caption={Representative Lean 4 algebraic identity verification in \texttt{lean\_proofs/Proofs/Stability.lean}.}, label={lst:lean4}]
 import Init.GrindInstances.Ring.Rat
 
 namespace MachineMarkets
@@ -2260,6 +2678,6 @@ theorem pbh_eigenvector_x (a eta q1 q2 : Rat) :
   unfold J_mul pbh_null_vec; grind
 \end{lstlisting}
 
-The complete suite of Lean 4 \texttt{.lean} source files, compilation manifests, and the automated proof-checking pipeline are bundled in the replication repository, ensuring that every theoretical claim in this manuscript is mathematically irrefutable.
+The statistical estimators, sample complexity lower bounds (Theorems~\ref{thm:m2_sample_complexity}--\ref{thm:m3_minimax_abstention}), and nonlinear balance-sheet simulations are implemented and tested in the Python verification suite (\texttt{tests/}), not within the Lean type checker.
 
 \end{document}
