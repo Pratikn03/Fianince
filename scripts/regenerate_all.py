@@ -46,6 +46,13 @@ def build_results(recompute: bool) -> bool:
     return code == 0
 
 
+def verify_bridge() -> bool:
+    log("Verifying theorem-to-code bridge and Lean formalizations...")
+    code, out = run_cmd([sys.executable, "scripts/verify_theorem_code_bridge.py"])
+    print(out[-1500:])
+    return code == 0
+
+
 def build_ledger() -> bool:
     log("Checking provenance ledger and writing generated ledger tables...")
     code, out = run_cmd([sys.executable, "scripts/provenance_ledger.py"])
@@ -76,6 +83,7 @@ def compile_paper() -> bool:
 def main():
     start = time.time()
     ok = build_results("--no-recompute" not in sys.argv)
+    ok = verify_bridge() and ok
     ok = build_ledger() and ok
     ok = run_tests() and ok
     if "--no-pdf" not in sys.argv:
