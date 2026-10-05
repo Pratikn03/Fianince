@@ -96,7 +96,7 @@ REGISTRY = [
     ),
     TheoremMapping(
         "theorem", "Equivalence class and minimal realization",
-        r"\cref{thm:m1_equivalence_class}",
+        r"\cref{thm:m1_equivalence}",
         "Proofs/PBHDefect.lean", "swapped_feedback_transfer_invariant",
         "tests/test_core_theorems_m1_m2_m3.py", "test_theorem_m1_minimal_realization"
     ),
