@@ -69,6 +69,11 @@ written directly from `results/provenance/*.json` and are not repeated here.
 | S7-btc-jan2023-direct | Sec. 7 Jan 2023 BTC Direct | Jan 2023 BTC perpetual Direct VAR parameters | `0.9826/0.0001/0.9827/0.9827` | `results/provenance/btc_jan2023_results.json` | ARTIFACT |
 | S7-btc-jan2023-iv | Sec. 7 Jan 2023 BTC IV | Jan 2023 BTC perpetual 2SLS IV parameters | `0.9818/-0.0007/0.9811` | `results/provenance/btc_jan2023_results.json` | ARTIFACT |
 | S7-equity-benchmark | Sec. 7 Equity Benchmark | FI-2010 NASDAQ Nordic equity persistence and stability | `0.9761/0.9655/0.9801/100.0` | `results/provenance/equity_benchmark_results.json` | ARTIFACT |
+| F1-structural-game-dealer | Sec. 6.4 Strategic Game Theory | FIX 5.0 Drop-Copy BBL dealer inventory penalty | `0.0500` | `results/provenance/structural_inverse_game_results.json` | ARTIFACT |
+| F2-macro-welfare-time | Sec. 6.5 Welfare Pareto Frontier | Macro price excursion dynamic relaxation discovery time | `7.0` | `results/provenance/macro_event_welfare_results.json` | ARTIFACT |
+| F3-hamilton-vol-expansion | Sec. 7.5 MS(2)-VAR Hamilton Filter | Unsupervised crisis regime volatility expansion factor | `62.7` | `results/provenance/markov_switching_var_results.json` | ARTIFACT |
+| F4-hayashi-yoshida-radius | Sec. 8.6 Multi-Asset Cross-Impact | Hayashi-Yoshida RMT multi-asset safe radius contraction | `14.43` | `results/provenance/multi_asset_hayashi_yoshida_results.json` | ARTIFACT |
+| F5-cpp-simd-latency | Sec. 9.4 Hardware Architecture | Native C++20 SIMD ARM NEON pre-trade mean latency | `7.7` | `results/provenance/cpp_kernel_benchmark.json` | ARTIFACT |
 | App-verifier | App. replication | standalone verifier counts and max regression difference | `4,320/4.4\times10^{-14}` | `studies/audited_constraints/results/standalone_verification.json` | ARTIFACT |
 
 ## Withdrawn

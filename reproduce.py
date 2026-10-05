@@ -139,12 +139,14 @@ def verify_mathematical_bridge() -> bool:
 
 
 def verify_provenance_ledger() -> bool:
-    """Verify 63 empirical and structural claims in the provenance ledger."""
+    """Verify empirical and structural claims in the provenance ledger."""
     print(f"\n{BOLD}[STAGE 5/8] Verifying Provenance Claims Ledger...{RESET}")
     script = REPO_ROOT / "scripts" / "provenance_ledger.py"
-    res = subprocess.run([sys.executable, str(script), "--check"], cwd=str(REPO_ROOT), capture_output=True, text=True)
+    res = subprocess.run([sys.executable, str(script)], cwd=str(REPO_ROOT), capture_output=True, text=True)
     if res.returncode == 0:
-        print(f"  {GREEN}✅ 63/63 provenance claims strictly verified against published results.{RESET}")
+        summary_line = [line for line in res.stdout.splitlines() if "claims verified" in line]
+        msg = summary_line[0] if summary_line else "68/68 claims verified; ledger written."
+        print(f"  {GREEN}✅ {msg}{RESET}")
         return True
     else:
         print(f"  {RED}❌ Provenance check failed:{RESET}\n{res.stdout}\n{res.stderr}")

@@ -79,7 +79,20 @@ class TestRealDataFrontiers:
     # ---------------------------------------------------------------- WP5: C++20 Hardware Kernel
     def test_cpp_simd_hardware_benchmark(self):
         exe_path = ROOT / "agentic_guard" / "hardware" / "benchmark_cpp_kernel"
-        assert exe_path.exists(), "C++20 benchmark executable must be compiled"
+        cpp_src = ROOT / "agentic_guard" / "hardware" / "benchmark_cpp_kernel.cpp"
+        if not exe_path.exists():
+            compile_res = subprocess.run(
+                ["clang++", "-O3", "-std=c++20", str(cpp_src), "-o", str(exe_path)],
+                capture_output=True,
+                text=True
+            )
+            if compile_res.returncode != 0:
+                subprocess.run(
+                    ["g++", "-O3", "-std=c++20", str(cpp_src), "-o", str(exe_path)],
+                    capture_output=True,
+                    text=True
+                )
+        assert exe_path.exists(), "C++20 benchmark executable must exist or compile successfully"
         proc = subprocess.run([str(exe_path)], capture_output=True, text=True)
         assert proc.returncode == 0
         assert "Sub-100ns SLA:     PASSED ✅" in proc.stdout
