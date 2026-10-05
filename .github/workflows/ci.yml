@@ -1,0 +1,114 @@
+name: Machine Markets & AMIP RFC-001 CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Lint Tools
+        run: pip install ruff
+
+      - name: Run Ruff Linter
+        run: ruff check .
+
+  lean-formal-audit:
+    name: Lean 4 Formal Mechanization Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Elan & Lean 4
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --default-toolchain leanprover/lean4:v4.14.0
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Build Lean Proofs Package
+        working-directory: lean_proofs
+        run: lake build
+
+      - name: Audit All Mechanized Theorems (0 Sorry Verification)
+        working-directory: lean_proofs
+        run: lake env lean AxiomAudit.lean
+
+  test-matrix:
+    name: Pytest Suite (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    needs: [lint]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-runtime.txt -r requirements-artifacts.txt
+          pip install pypdf
+
+      - name: Run Pytest Suite
+        run: pytest tests/ -v
+
+      - name: Run Fast Reproduction Check
+        run: python reproduce.py --mode fast
+
+  build-master-pdf:
+    name: Compile Master Publication PDF
+    needs: [test-matrix, lean-formal-audit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install TeX Live
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            texlive-latex-base \
+            texlive-latex-recommended \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            cm-super
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-runtime.txt -r requirements-artifacts.txt
+          pip install pypdf
+
+      - name: Compile LaTeX Manuscripts & Combined Master PDF
+        run: python reproduce.py --mode paper
+
+      - name: Upload Master Combined PDF Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Machine_Markets_Combined_Master
+          path: paper/Machine_Markets_Combined_Master.pdf
+          if-no-files-found: error

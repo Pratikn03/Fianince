@@ -58,3 +58,9 @@ def test_regime_switch_crosses_boundary():
     a, eta, g, kappa = 0.4, 0.2, 1.0, 0.8
     assert rho(jacobian(a, g, eta, kappa, chi=0.9)) < 1.0
     assert rho(jacobian(a, g, eta, kappa, chi=0.0)) > 1.0
+
+
+def test_cancellation_masking_jacobian():
+    """Proposition 8.2: Cancellation attenuation of realized feedback."""
+    test_threshold_chi_star_matches_spectral_radius(0.4, 0.2, 0.8)
+

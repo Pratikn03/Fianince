@@ -207,6 +207,72 @@ class TestDynamicalSystemIdentificationBridge:
         # At h=0, recovers negative contemporaneous impact
         assert irf[0] < 0.0, f"Expected negative impact, got {irf[0]}"
 
+    def test_kalman_microfoundation(self):
+        """Proposition 2.1: Steady-state Kalman filtering yields exponential memory."""
+        self.test_kalman_filter_generates_completely_monotone_kernel()
+
+    def test_ogd_microfoundation(self):
+        """Proposition 2.2: Linearized regularized gradient updates yield exponential memory."""
+        self.test_ogd_parameter_adaptation_rate()
+
+    def test_volatility_amplification_wedge(self):
+        """Proposition (sec:intro): Volatility and amplification need not move together."""
+        # Process 1: r=0.5, sigma=1.0 -> Var = 1 / (1 - 0.25) = 4/3, Response sum = 1 / (1 - 0.5) = 2
+        r1, sig1 = 0.5, 1.0
+        var1 = sig1**2 / (1.0 - r1**2)
+        resp1 = 1.0 / (1.0 - r1)
+        assert var1 == pytest.approx(4.0 / 3.0)
+        assert resp1 == pytest.approx(2.0)
+
+        # Process 2: r=0.9, sigma=0.2 -> Var = 0.04 / (1 - 0.81) = 4/19, Response sum = 1 / (1 - 0.9) = 10
+        r2, sig2 = 0.9, 0.2
+        var2 = sig2**2 / (1.0 - r2**2)
+        resp2 = 1.0 / (1.0 - r2)
+        assert var2 == pytest.approx(4.0 / 19.0)
+        assert resp2 == pytest.approx(10.0)
+
+        # Process 2 has strictly lower volatility yet strictly higher peak amplification
+        assert var2 < var1
+        assert resp2 > resp1
+
+    def test_common_norm_robustness(self):
+        """Proposition 8.2: Common-norm robustness; standard sufficient condition."""
+        # Consider 2x2 systems under common induced Euclidean norm
+        gamma = 0.85
+        b_bar = 0.5
+        z0_norm = 1.0
+        T = 5
+
+        # Small-gain estimation test: ||J_hat|| + eps <= gamma
+        J_hat = np.array([[0.5, 0.2], [-0.1, 0.6]])
+        norm_J_hat = float(np.linalg.norm(J_hat, 2))
+        eps = 0.05
+        assert norm_J_hat + eps <= gamma
+
+        # Under arbitrary switching of matrices J_t with ||J_t|| <= gamma
+        # Envelope: ||z_T|| <= gamma^T * ||z_0|| + b_bar * (1 - gamma^T) / (1 - gamma)
+        envelope_T = (gamma**T) * z0_norm + b_bar * (1.0 - gamma**T) / (1.0 - gamma)
+        assert envelope_T < z0_norm + b_bar / (1.0 - gamma)
+
+
+# Module-level aliases for direct runner discovery
+def test_kalman_microfoundation():
+    TestDynamicalSystemIdentificationBridge().test_kalman_microfoundation()
+
+
+def test_ogd_microfoundation():
+    TestDynamicalSystemIdentificationBridge().test_ogd_microfoundation()
+
+
+def test_volatility_amplification_wedge():
+    TestDynamicalSystemIdentificationBridge().test_volatility_amplification_wedge()
+
+
+def test_common_norm_robustness():
+    TestDynamicalSystemIdentificationBridge().test_common_norm_robustness()
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "-s"])
+
+

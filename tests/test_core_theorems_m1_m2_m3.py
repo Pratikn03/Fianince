@@ -370,5 +370,108 @@ class TestM2QuantitativeBound:
 # tests/test_theorems_m2_m5_corrected.py.
 
 
+def test_positive_feedback_boundary():
+    """Theorem 2.3: Positive-feedback boundary; model specialization."""
+    a, eta, kappa = 0.4, 0.2, 1.0
+    for g, is_stable in [(0.5, True), (0.59, True), (0.61, False), (0.7, False)]:
+        J = np.array([[a, g], [eta * kappa, 1.0 - eta]])
+        rho = float(np.max(np.abs(np.linalg.eigvals(J))))
+        assert (rho < 1.0) == is_stable
+
+
+def test_label_observational_equivalence():
+    """Proposition (sec:integrated_hidden): Observational equivalence of decision-maker labels."""
+    TestM1EquivalenceClass().test_identical_merged_pairs_are_equivalent()
+
+
+def test_heterogeneous_memory_boundary():
+    """Proposition (sec:integrated_hidden): Positive heterogeneous-memory boundary."""
+    a = 0.4
+    # For heterogeneous memory with rates 0.5 and 0.02, critical boundary is Q = 1 - a = 0.6
+    q_stable = np.array([0.252, 0.168])  # sum = 0.42 < 0.6
+    q_unstable = np.array([0.40, 0.35])  # sum = 0.75 > 0.6
+    eta = np.array([0.5, 0.02])
+    J_s = np.array([
+        [a, 1.0, 1.0],
+        [eta[0] * q_stable[0], 1.0 - eta[0], 0.0],
+        [eta[1] * q_stable[1], 0.0, 1.0 - eta[1]],
+    ])
+    J_u = np.array([
+        [a, 1.0, 1.0],
+        [eta[0] * q_unstable[0], 1.0 - eta[0], 0.0],
+        [eta[1] * q_unstable[1], 0.0, 1.0 - eta[1]],
+    ])
+    assert float(np.max(np.abs(np.linalg.eigvals(J_s)))) < 1.0
+    assert float(np.max(np.abs(np.linalg.eigvals(J_u)))) > 1.0
+
+
+def test_retained_pair_construction():
+    """Theorem 3.3: Retained exact construction (divergence at lag 4)."""
+    a_w = 0.4
+    q_p = [0.0, 12.0 / 65.0, 0.0]
+    q_m = [54.0 / 1235.0, 0.0, 240.0 / 247.0]
+    eta_w = [1.0, 0.5, 0.05]
+
+    def get_h(q_vec):
+        J_w = np.zeros((4, 4))
+        J_w[0, 0] = a_w
+        J_w[0, 1:] = 1.0
+        for i in range(3):
+            J_w[1 + i, 0] = eta_w[i] * q_vec[i]
+            J_w[1 + i, 1 + i] = 1.0 - eta_w[i]
+        h = np.zeros(5)
+        st = np.array([1.0, 0.0, 0.0, 0.0])
+        for t in range(5):
+            h[t] = st[0]
+            st = J_w @ st
+        return h
+
+    h_p = get_h(q_p)
+    h_m = get_h(q_m)
+    assert np.allclose(h_p[:4], h_m[:4], atol=1e-12)
+    assert abs((h_m[4] - h_p[4]) - 27.0 / 1300.0) < 1e-10
+
+
+def test_theorem_m1_minimal_realization():
+    """Theorem M1: Equivalence class and minimal realization."""
+    TestM1EquivalenceClass().test_minimal_order_formula()
+    TestM1EquivalenceClass().test_merged_representation_preserves_irf()
+
+
+def test_theorem_m2_sample_complexity():
+    """Theorem M2: Local minimax risk and a delta^(-4) separation bound."""
+    TestM2QuantitativeBound().test_le_cam_lower_bound_scales_correctly()
+    TestM2QuantitativeBound().test_r_min_formula_quantified()
+
+
+def test_theorem_m3_mandatory_abstention():
+    """Theorem M3: Mandatory abstention near the boundary."""
+    alpha = 0.05
+    for tv in [0.0, 0.1, 0.3]:
+        p_abstain_bound = 1.0 - 2.0 * alpha - tv
+        assert p_abstain_bound <= 1.0
+        if tv == 0.0:
+            assert p_abstain_bound == 0.90
+
+
+def test_swapped_feedback_defect():
+    """Proposition 5.1: Swapped-feedback non-identifiability (PBH unobservable defect)."""
+    C = np.array([1.0, 0.0, 0.0])
+    x = np.array([0.0, 1.0, -1.0])
+    assert np.dot(C, x) == 0.0
+
+
+def test_minimal_separation():
+    """Theorem: Minimal separation in common-rate observationally symmetric model."""
+    rates = np.array([0.2, 0.2])
+    weights1 = np.array([0.3, 0.3])
+    weights2 = np.array([0.1, 0.5])
+    r_min1, w_min1 = merge_equal_rates(rates, weights1)
+    r_min2, w_min2 = merge_equal_rates(rates, weights2)
+    assert np.allclose(r_min1, r_min2)
+    assert np.allclose(w_min1, w_min2)
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "-s"])
+

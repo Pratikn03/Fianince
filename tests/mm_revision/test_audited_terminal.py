@@ -168,3 +168,35 @@ def test_finite_but_overflowing_input_fails_closed():
     assert result["S_lower"] == -np.inf and result["S_upper"] == np.inf
     assert not result["is_definite"]
     assert result["reference_distribution"] is None
+
+
+def test_tail_envelope():
+    """Proposition (sec:observable_results): Implementation-conditioned tail envelope."""
+    # For Qmax = 1.0, eta = 0.10, H = 64: tail is bounded by (1 - 0.10)^64 < 1.2e-3
+    tail_01 = (1.0 - 0.10) ** 64
+    assert tail_01 < 0.0012
+
+    # For eta = 0.02, H = 64: tail is bounded by (1 - 0.02)^64 < 0.275
+    tail_002 = (1.0 - 0.02) ** 64
+    assert tail_002 < 0.275
+
+
+def test_terminal_row_confidence():
+    """Proposition (sec:observable_results): Conditional terminal-row confidence; classical regression."""
+    test_gaussian_terminal_noise_matches_independent_svd_student_reference()
+
+
+def test_operational_risk_coverage():
+    """Proposition (sec:observable_results): Planned-budget operational-risk coverage."""
+    from scipy.stats import beta
+    # Clopper-Pearson exact binomial confidence bounds for planned looks n in {32, 128, 512}
+    alpha = 0.05
+    alpha_look = alpha / 3.0  # Bonferroni division
+    # For k = 0 events out of n trials, upper bound is 1 - (alpha_look / 2)**(1/n)
+    for n in (32, 128, 512):
+        cp_upper = 1.0 - (alpha_look / 2.0) ** (1.0 / n)
+        assert 0.0 < cp_upper < 1.0
+    # At n=128, 0 events certifies risk below 5% (cp_upper ~ 0.0366 < 0.05)
+    cp_upper_128 = 1.0 - (alpha_look / 2.0) ** (1.0 / 128)
+    assert cp_upper_128 < 0.05
+

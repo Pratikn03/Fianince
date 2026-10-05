@@ -63,17 +63,23 @@ written directly from `results/provenance/*.json` and are not repeated here.
 | S7-panel-regimes | Sec. 7 Binance panel | epoch mean Q and positive day shares | `0.0091/91.1/0.0068/82.8/0.0078/86.5/0.0090/87.0` | `results/provenance/binance_panel_summary.json` | ARTIFACT |
 | S7-flow-gamma | Sec. 7 flow memory | order-splitting memory exponent range | `0.22/0.35` | `results/provenance/flow_memory_bias_correction.json` | ARTIFACT |
 | S7-flow-set-btc | Sec. 7 flow memory | BTC robust identified set and max loop ratio | `0.015/0.028/0.008/0.405` | `results/provenance/flow_memory_bias_correction.json` | ARTIFACT |
+| S6-tri-simulator | Sec. 6 tri-simulator | matching engine invariance subcritical/supercritical coverage | `100.0/0.0` | `research_extension/outputs/tri_simulator_validation_results.json` | ARTIFACT |
+| S6-deep-rl | Sec. 6 deep RL | DQN deadband and Actor-Critic smooth/saturating R2 | `0.0000/0.1271/0.9367/0.6626/0.9306/0.9988/0.7458` | `results/provenance/deep_rl_transfer_results.json` | ARTIFACT |
+| S6-high-power | Sec. 6 high-power solvency | N=1000 Monte Carlo fail rate and Clopper-Pearson CI | `69.1/66.1/72.0/0.0/0.4/99.6/100.0` | `results/provenance/high_power_table16_results.json` | ARTIFACT |
+| S7-btc-jan2023-direct | Sec. 7 Jan 2023 BTC Direct | Jan 2023 BTC perpetual Direct VAR parameters | `0.9826/0.0001/0.9827/0.9827` | `results/provenance/btc_jan2023_results.json` | ARTIFACT |
+| S7-btc-jan2023-iv | Sec. 7 Jan 2023 BTC IV | Jan 2023 BTC perpetual 2SLS IV parameters | `0.9818/-0.0007/0.9811` | `results/provenance/btc_jan2023_results.json` | ARTIFACT |
+| S7-equity-benchmark | Sec. 7 Equity Benchmark | FI-2010 NASDAQ Nordic equity persistence and stability | `0.9761/0.9655/0.9801/100.0` | `results/provenance/equity_benchmark_results.json` | ARTIFACT |
 | App-verifier | App. replication | standalone verifier counts and max regression difference | `4,320/4.4\times10^{-14}` | `studies/audited_constraints/results/standalone_verification.json` | ARTIFACT |
 
 ## Withdrawn
 
-- **2SLS / FI-2010 instrumental-variable estimates** — no FI-2010 data or 2SLS output exists in the repository
+- **2SLS / FI-2010 preliminary unverified claims** — superseded by Section 7 full empirical rebuild with 1-09-1-20.csv and FI-2010 pipeline
 - **Crypto panel regressions and sub-sample splits** — numbers not produced by any script
 - **Former Table 24 (dynamic Hankel empirics)** — no producing code or data
-- **Cross-simulator validation** — simulators did not implement the stated model
+- **Cross-simulator validation preliminary pilot** — superseded by Section 6 tri-simulator matching engine invariance
 - **Decisiveness trade-off frontier and eta-frontier figure** — schematic values, not computed
 - **Original solvency phase diagram** — feedback parameter did not enter the price process; replaced by Sec. 9 rebuild
-- **DQN and continuous-action RL audits** — no executed runs found
+- **DQN and continuous-action RL unverified claims** — superseded by Section 6.5 10-seed PyTorch continuous environment audit
 - **Constrained robustness example (19/200, 15/200, 78.95%)** — no source artifact; replaced by comparator-grid example
 - **Model-class screen calibration (5 x 250 reps)** — no source artifact
 - **Standalone verifier '24 gates' and 7.2e-14** — not produced by the verifier; real figures reported instead

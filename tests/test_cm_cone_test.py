@@ -60,3 +60,10 @@ def test_power_against_negative_kernel():
     V = _cov(sig=0.02)
     k_true = -0.3 * 0.7 ** np.arange(K)
     assert _rejection_rate(k_true, V, reps=30, seed=5) >= 0.9
+
+
+def test_cm_test_size_and_power():
+    """Theorem M4: Completely monotone memory and size-valid finite-sample test."""
+    test_size_at_interior_null_point_is_controlled()
+    test_power_against_growing_kernel_that_old_m4_accepts()
+

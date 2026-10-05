@@ -74,3 +74,9 @@ def test_generated_tables_match_json():
     for name in ("empirical_feedback_baseline", "empirical_feedback_grid", "empirical_kernel_cm",
                  "estimator_validation", "solvency_feedback"):
         assert (gen / f"{name}.tex").read_text().startswith("% AUTO-GENERATED")
+
+
+def test_prop_flow_gain_zero_frequency():
+    """Proposition 8.1: Zero-frequency gain of feedback flow."""
+    test_flow_gain_proposition_matches_simulation(0.6)
+

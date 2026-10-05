@@ -1,6 +1,6 @@
 # Machine Markets — Scientific Claim Register and Traceability Matrix
 
-This claim register establishes strict cryptographic and experimental provenance for every numerical, mathematical, and empirical claim across the 62-page master manuscript (`Machine_Markets_Final_Integrated_Paper.pdf`), the 26-page mathematical supplement (`Machine_Markets_Mathematical_Supplement.pdf`), and the united 88-page combined master document (`Machine_Markets_Combined_Master.pdf`).
+This claim register establishes strict cryptographic and experimental provenance for every numerical, mathematical, and empirical claim across the 64-page master manuscript (`Machine_Markets_Final_Integrated_Paper.pdf`), the 31-page mathematical supplement (`Machine_Markets_Mathematical_Supplement.pdf`), and the united 95-page combined master document (`Machine_Markets_Combined_Master.pdf`).
 
 ---
 

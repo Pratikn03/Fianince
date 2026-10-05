@@ -18,6 +18,7 @@ archive/withdrawn_20261003/README.md.)
 Usage:
   python3.11 scripts/regenerate_all.py [--no-recompute] [--no-pdf]
 """
+import os
 import shutil
 import subprocess
 import sys
@@ -34,7 +35,8 @@ def log(msg: str):
 
 
 def run_cmd(cmd: list, cwd: Path = ROOT) -> tuple[int, str]:
-    res = subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True, errors="replace")
+    env = dict(os.environ, PYTHONPATH=str(ROOT))
+    res = subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True, errors="replace", env=env)
     return res.returncode, res.stdout + res.stderr
 
 
@@ -62,7 +64,9 @@ def build_ledger() -> bool:
 
 def run_tests() -> bool:
     log("Running full test suite...")
-    code, out = run_cmd([sys.executable, "-m", "pytest", "tests/", "-q", "--tb=short"])
+    pytest_bin = shutil.which("pytest")
+    cmd = [pytest_bin, "tests/", "-q", "--tb=short"] if pytest_bin else [sys.executable, "-m", "pytest", "tests/", "-q", "--tb=short"]
+    code, out = run_cmd(cmd)
     print(out[-1500:])
     return code == 0
 

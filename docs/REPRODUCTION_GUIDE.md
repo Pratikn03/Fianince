@@ -40,14 +40,13 @@ python independent_verifier/verifier.py
 # 4. Run mathematical supplement numerical checks:
 python reference_directory/run_checks.py
 ```
-The test launcher runs all native suites in separate processes (24 + 29 + 23 + 22 = 98 scientific tests),
-then six package-verifier tests, followed by the revision, verifier, and mathematical suites (104 native + 381 pytest + 24 verifier gates + 4 supplement verification suites).
+The test suite includes 548 automated pytest tests, 170 mechanized Lean 4 formal proofs (0 sorry), and 63 verified provenance ledger claims.
 
 ## D. Rebuild PDFs
 The package provides three synchronized PDF documents:
-1. `paper/Machine_Markets_Final_Integrated_Paper.pdf` (62-page main manuscript)
-2. `paper/Machine_Markets_Mathematical_Supplement.pdf` (26-page mathematical supplement)
-3. `Machine_Markets_Combined_Master.pdf` (88-page combined master document)
+1. `paper/Machine_Markets_Final_Integrated_Paper.pdf` (64-page main manuscript)
+2. `paper/Machine_Markets_Mathematical_Supplement.pdf` (31-page mathematical supplement)
+3. `Machine_Markets_Combined_Master.pdf` (95-page combined master document)
 
 To rebuild from LaTeX sources:
 ```bash
@@ -59,7 +58,7 @@ pdflatex -interaction=nonstopmode -output-directory=paper paper/Machine_Markets_
 pdflatex -interaction=nonstopmode -output-directory=paper paper/Machine_Markets_Mathematical_Supplement.tex
 pdflatex -interaction=nonstopmode -output-directory=paper paper/Machine_Markets_Mathematical_Supplement.tex
 
-# Unite to 88-page Combined Master:
+# Unite to 95-page Combined Master:
 pdfunite paper/Machine_Markets_Final_Integrated_Paper.pdf paper/Machine_Markets_Mathematical_Supplement.pdf paper/Machine_Markets_Combined_Master.pdf
 cp paper/Machine_Markets_Combined_Master.pdf Machine_Markets_Combined_Master.pdf
 ```

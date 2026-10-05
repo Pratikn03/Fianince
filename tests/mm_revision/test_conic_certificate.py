@@ -80,3 +80,14 @@ def test_conic_certificate_unstable_model():
     assert not res["certified"]
     assert res["decision"] == DecisionLabel.ABSTAIN
     assert res["S_lower"] <= true_S <= res["S_upper"]
+
+
+def test_conic_certificate():
+    """Theorem 4.1: Finite-family response uncertainty."""
+    test_conic_certificate_true_model_containment()
+
+
+def test_stability_interval():
+    """Theorem 4.2: Observable-data stability interval."""
+    test_conic_certificate_unstable_model()
+

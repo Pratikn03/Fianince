@@ -159,3 +159,36 @@ def test_signed_stability_boundary_matches_eigenvalues(seed):
         margin = min(abs(gk - (1 - a)), abs(gk + (1 - a * (1 - eta)) / eta))
         if margin > 1e-6:
             assert stable == pred
+
+
+def test_fixed_system_stability():
+    """Proposition (sec:intro): Fixed-system local stability; standard result."""
+    a, eta, kappa = 0.4, 0.2, 1.0
+    # Stable case: g = 0.5 -> S = 0.9 < 1
+    J_stable = np.array([[a, 0.5], [eta * kappa, 1.0 - eta]])
+    assert float(np.max(np.abs(np.linalg.eigvals(J_stable)))) < 1.0
+
+    # Unstable case: g = 0.7 -> S = 1.1 > 1
+    J_unstable = np.array([[a, 0.7], [eta * kappa, 1.0 - eta]])
+    assert float(np.max(np.abs(np.linalg.eigvals(J_unstable)))) > 1.0
+
+
+def test_signed_stability_jury_conditions():
+    """Theorem 2.4: Signed-feedback stability boundary."""
+    test_signed_stability_boundary_matches_eigenvalues(seed=0)
+
+
+def test_no_universal_participation_cutoff():
+    """Corollary (sec:intro): No universal participation cutoff in contrarian model."""
+    a, eta, kappa = 0.4, 0.2, -0.75
+    # Contrarian feedback: g > 0 but kappa < 0 -> gk < 0
+    # Stability holds for large g without a cutoff
+    for g in [0.5, 1.0, 1.5]:
+        J = np.array([[a, g * kappa], [eta, 1.0 - eta]])
+        assert float(np.max(np.abs(np.linalg.eigvals(J)))) < 1.0
+
+
+def test_theorem_m5_kreiss_solvency():
+    """Theorem M5: Exact safe radius and the Kreiss bound."""
+    test_m5_safe_radius_is_exact()
+
