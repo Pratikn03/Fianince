@@ -42,7 +42,7 @@ def plot_equity_flash_crash():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.5, 3.8))
     
     # Left: E-mini S&P 500 Flash Crash Feedback Transition
-    regimes = ["Calm\n(Pre-Crash)", "Liquidity Vacuum\n(Supercritical Flash)"]
+    regimes = ["Calm\n(Normal Depth)", "Depleted Book\n(Stress Window)"]
     Q_vals = [emini["calm_feedback_q"], emini["crisis_feedback_q"]]
     S_vals = [emini["calm_stability_s"], emini["crisis_stability_s"]]
     
@@ -50,9 +50,8 @@ def plot_equity_flash_crash():
     width = 0.35
     
     b1 = ax1.bar(x - width/2, Q_vals, width, label=r"Price Feedback $\hat{Q}$", color="#2b5c8f")
-    b2 = ax1.bar(x + width/2, [min(s, 3.5) for s in S_vals], width, label=r"Feedback Gain $S = a + Q$", color="#c0392b")
-    ax1.axhline(1.0, color="black", linestyle="--", linewidth=1.5, label="Stability Boundary ($S = 1.0$)")
-    ax1.set_ylabel("Parameter Magnitude")
+    b2 = ax1.bar(x + width/2, [min(s, 3.5) for s in S_vals], width, label=r"Depth-Scaled Sensitivity $\hat{S}_{\mathrm{eff}}$", color="#c0392b")
+    ax1.set_ylabel("Sensitivity Metric")
     ax1.set_title("May 6, 2010 E-mini S&P 500 Flash Crash", fontweight="bold")
     ax1.set_xticks(x)
     ax1.set_xticklabels(regimes, fontweight="bold")
@@ -66,14 +65,13 @@ def plot_equity_flash_crash():
                  fontsize=8.5, fontweight="bold", color="#196f3d")
     
     # Right: October 15, 2014 Treasury Rally
-    t_regimes = ["Calm", "Treasury Rally Flash"]
+    t_regimes = ["Calm\n(Normal Depth)", "Depleted Book\n(Rally Window)"]
     t_Q = [treasury["calm_feedback_q"], treasury["crisis_feedback_q"]]
     t_S = [treasury["calm_feedback_q"] + 0.95, treasury["crisis_feedback_q"] + 0.95]
     
     ax2.bar(x - width/2, t_Q, width, label=r"$\hat{Q}$", color="#2b5c8f")
-    ax2.bar(x + width/2, [min(s, 3.5) for s in t_S], width, label=r"$S = a + Q$", color="#c0392b")
-    ax2.axhline(1.0, color="black", linestyle="--", linewidth=1.5, label="Stability Boundary ($S = 1.0$)")
-    ax2.set_ylabel("Parameter Magnitude")
+    ax2.bar(x + width/2, [min(s, 3.5) for s in t_S], width, label=r"$\hat{S}_{\mathrm{eff}}$", color="#c0392b")
+    ax2.set_ylabel("Sensitivity Metric")
     ax2.set_title("Oct 15, 2014 US Treasury 10Y Flash Rally", fontweight="bold")
     ax2.set_xticks(x)
     ax2.set_xticklabels(t_regimes, fontweight="bold")
