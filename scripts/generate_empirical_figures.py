@@ -5,6 +5,7 @@ Produces paper/figures/fig_binance_panel_and_identification.pdf and PNG preview.
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -13,6 +14,8 @@ import matplotlib.dates as mdates
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 DATA_FILE = ROOT / "results" / "provenance" / "binance_panel_results.json"
 SUMMARY_FILE = ROOT / "results" / "provenance" / "binance_panel_summary.json"
 FIG_DIR = ROOT / "paper" / "figures"
@@ -192,6 +195,15 @@ def build_figure():
     print(f"Generated: {pdf_path}")
     print(f"Generated: {png_path}")
 
+    # Generate Welfare Pareto Frontier figure
+    try:
+        from simulations.welfare_pareto_frontier import compute_welfare_pareto_frontier
+        compute_welfare_pareto_frontier()
+        print(f"Generated: {FIG_DIR / 'fig_welfare_pareto_frontier.pdf'}")
+    except Exception as e:
+        print(f"Note: welfare pareto frontier generation error: {e}")
+
 
 if __name__ == "__main__":
     build_figure()
+

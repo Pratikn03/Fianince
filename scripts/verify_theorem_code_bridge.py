@@ -194,6 +194,32 @@ REGISTRY = [
         "Proofs/Microfoundations.lean", "flow_gain_frequency_zero_identity",
         "tests/test_feedback_estimator_and_dealer.py", "test_prop_flow_gain_zero_frequency"
     ),
+
+    # Institutional Upgrades: 5 Scientific Frontiers
+    TheoremMapping(
+        "theorem", "Boundary Chipping Boundedness (Theorem G1)",
+        r"\cref{thm:boundary_chipping_bounded}",
+        "Proofs/Frontiers.lean", "boundary_chipping_clamped",
+        "tests/test_five_frontiers.py", "test_strategic_boundary_chipping_bounded"
+    ),
+    TheoremMapping(
+        "theorem", "Anti-Predatory Equilibrium under AMIP RFC-001 (Theorem G2)",
+        r"\cref{thm:anti_predatory}",
+        "Proofs/Frontiers.lean", "pegged_liquidity_anti_predatory",
+        "tests/test_five_frontiers.py", "test_predatory_shorting_eliminated"
+    ),
+    TheoremMapping(
+        "theorem", "Stability--Discovery Pareto Optimum (Theorem W1)",
+        r"\cref{thm:welfare_pareto}",
+        "Proofs/Frontiers.lean", "welfare_pareto_optimality",
+        "tests/test_five_frontiers.py", "test_welfare_pareto_frontier"
+    ),
+    TheoremMapping(
+        "theorem", "Multi-Asset Kreiss Safe Ellipsoid (Theorem M6)",
+        r"\cref{thm:multi_asset_kreiss}",
+        "Proofs/Frontiers.lean", "multi_asset_kreiss_safe_ellipsoid",
+        "tests/test_five_frontiers.py", "test_multi_asset_cross_impact"
+    ),
 ]
 
 

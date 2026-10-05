@@ -7,6 +7,7 @@ import Proofs.CancellationJacobian
 import Proofs.Microfoundations
 import Proofs.InformationBounds
 import Proofs.AgenticGuard
+import Proofs.Frontiers
 
 namespace MachineMarkets
 
