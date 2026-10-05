@@ -2,8 +2,9 @@
 
 This directory implements the locally actionable portion of the complete verification
 plan while preserving the frozen master release. It does not claim that human external
-replication, crypto calibration, trained-agent experiments, authorship review, or
-publication review has occurred.
+replication, queue-level crypto calibration, authorship review, or publication review
+has occurred. A separate next-stage package contains the matched synthetic agent study
+and a checksum-verified public depth-band/trade-tape calibration layer.
 
 Run the extension from the master-release root:
 
@@ -28,6 +29,6 @@ working-release inventory, not an external authenticity attestation.
 
 `specs/crypto_dataset_schema.json`, `specs/agent_run_schema.json`, and
 `specs/operational_validation_schema.json` define the required interfaces for the
-crypto replay, matched AI/non-AI study, and operational validation. Their status remains
-pending until licensed data, independent reviewers, and experiment results exist.
-
+full crypto replay, matched AI/non-AI study, and operational validation. The public
+depth-band/trade-tape layer is complete locally, but licensed event-level data,
+independent reviewers, and external operational validation remain pending.

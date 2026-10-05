@@ -58,24 +58,24 @@ def gate_status() -> dict[str, dict[str, Any]]:
             "acceptance": "Missing, unlisted, changed, or unavailable channels fail closed.",
         },
         "noisy_dependent_observations": {
-            "status": "pilot_implemented",
-            "acceptance": "Schema-complete pilot data is generated with noise, missingness, costs, and within-episode dependence.",
+            "status": "completed_local",
+            "acceptance": "The next-stage package reports simulation-calibrated coverage, wrong-confident calls, unresolved fractions, and costs under declared noisy/dependent conditions.",
         },
         "external_replication": {
             "status": "pending",
             "acceptance": "Named unaffiliated reviewer returns dated code, logs, and discrepancy report.",
         },
         "crypto_calibration": {
-            "status": "pending",
-            "acceptance": "Held-out public crypto data validates spread, depth, fills, impact, and regime behavior.",
+            "status": "completed_depth_band_pending_queue_replay",
+            "acceptance": "93 matched depth-band/trade archives have verified checksums and chronological held-out descriptive summaries; spread, queue, fills, and simulator replay remain pending.",
         },
         "matched_ai_non_ai": {
-            "status": "pending",
-            "acceptance": "Any AI-specific result survives matched adaptive non-AI and frozen-policy controls.",
+            "status": "completed_synthetic_null",
+            "acceptance": "A matched frozen-neural versus adaptive non-AI comparison ran on paired held-out synthetic tapes; the predeclared AI-specific advantage threshold was not met.",
         },
         "operational_validation": {
-            "status": "pending",
-            "acceptance": "Interventions reduce a declared out-of-sample loss target without loss shifting.",
+            "status": "completed_synthetic_only",
+            "acceptance": "A synthetic held-out intervention study reports event rate, gain, and drawdown; external loss shifting and real-market validation remain untested.",
         },
         "novelty_publication": {
             "status": "pending",
