@@ -93,9 +93,38 @@ class AgenticGuard:
         self.throttled_count = 0
         self.abstentions_count = 0
         self.audit_log: List[Dict[str, Any]] = []
+        self._override_s_bounds: Optional[Tuple[float, float, float]] = None
+
+    def update_market_state(self, s_hat: float, s_lower: float, s_upper: float):
+        """Update market-wide systemic feedback estimates from external streaming estimator."""
+        self._override_s_bounds = (float(s_hat), float(s_lower), float(s_upper))
+
+    @property
+    def s_hat(self) -> float:
+        return self._override_s_bounds[0] if self._override_s_bounds else 0.70
+
+    @property
+    def s_lower(self) -> float:
+        return self._override_s_bounds[1] if self._override_s_bounds else 0.65
+
+    @property
+    def s_upper(self) -> float:
+        return self._override_s_bounds[2] if self._override_s_bounds else 0.75
+
+    @property
+    def current_state(self) -> AMIPState:
+        s_up = self.s_upper
+        if s_up >= 1.0:
+            return AMIPState.RED
+        elif s_up >= 0.85:
+            return AMIPState.YELLOW
+        return AMIPState.GREEN
 
     def _compute_conic_certificate(self) -> Tuple[float, float, float]:
         """Streaming Conic Certificate [S_lower, S_upper] in < 25 microseconds."""
+        if self._override_s_bounds is not None:
+            return self._override_s_bounds
+
         if len(self.flow_history) < 15:
             return 0.70, 0.65, 0.75  # Prior default subcritical
 

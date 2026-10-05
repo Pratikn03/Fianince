@@ -204,6 +204,14 @@ def run_benchmarks() -> Dict[str, Any]:
     print(f"  • Multi-Agent Flash Crash Test: Unprotected Drawdown = {dd_unprot:.2f}%, Protected Drawdown = {dd_prot:.2f}%")
     print(f"  • Risk Reduction Factor: {risk_reduction:.1f}x reduction with 0 defaults.")
 
+    # 3. Real LOB Order Book Replay Benchmark (Empirical BTC Depth)
+    from agentic_guard.real_lob_benchmark import run_real_lob_benchmark
+    lob_res = run_real_lob_benchmark(n_ticks=500, seed=42)
+    lob_unprot = lob_res["solvency_and_drawdown"]["unprotected_max_drawdown_pct"]
+    lob_prot = lob_res["solvency_and_drawdown"]["protected_max_drawdown_pct"]
+    lob_risk = lob_res["solvency_and_drawdown"]["risk_reduction_factor"]
+    print(f"  • Real LOB Depth Replay: Unprotected DD = {lob_unprot:.2f}%, Protected DD = {lob_prot:.2f}%, Risk Reduction = {lob_risk:.1f}x ({lob_res['solvency_and_drawdown']['unprotected_agent_defaults']} defaults eliminated)")
+
     dt = time.time() - t0
     return {
         "status": "PASSED",
@@ -212,6 +220,9 @@ def run_benchmarks() -> Dict[str, Any]:
         "unprotected_drawdown_pct": round(dd_unprot, 2),
         "protected_drawdown_pct": round(dd_prot, 2),
         "risk_reduction_factor": round(risk_reduction, 1),
+        "real_lob_unprotected_dd_pct": round(lob_unprot, 2),
+        "real_lob_protected_dd_pct": round(lob_prot, 2),
+        "real_lob_risk_reduction_factor": round(lob_risk, 1),
         "elapsed_sec": round(dt, 2),
     }
 
