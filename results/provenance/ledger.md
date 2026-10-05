@@ -79,6 +79,13 @@ written directly from `results/provenance/*.json` and are not repeated here.
 | F8-marl-drawdown-suppression | Sec. 6.7 Deep MARL Population | PPO Actor-Critic multi-agent drawdown suppression under AMIP | `60.3` | `results/provenance/marl_amip_results.json` | ARTIFACT |
 | F9-hft-fifo-toxic-reduction | Sec. 9.3 LOB FIFO Queue Priority | Queue-aware AMIP toxic adverse selection loss reduction | `49.37` | `results/provenance/hft_queue_priority_results.json` | ARTIFACT |
 | F10-alveo-u50-lut-utilization | Sec. 9.4 Hardware Architecture | AMD Alveo U50 post-route FPGA LUT resource utilization | `0.25` | `results/provenance/fpga_silicon_synthesis_report.json` | ARTIFACT |
+| F11-equity-flash-crash-q-crisis | Sec. 7.6 Historical Equity Flash Crash | May 6 2010 E-mini crisis regime feedback sensitivity | `0.8142` | `results/provenance/equity_flash_crash_taq_results.json` | ARTIFACT |
+| F12-treasury-flash-rally-q-crisis | Sec. 7.6 Historical Treasury Rally | Oct 15 2014 Treasury crisis regime feedback sensitivity | `0.742` | `results/provenance/equity_flash_crash_taq_results.json` | ARTIFACT |
+| F13-continuous-hawkes-gamma | Sec. 8.8 Continuous Hawkes Jump-Diffusion | Continuous marked Hawkes branching ratio Gamma | `0.875` | `results/provenance/continuous_hawkes_results.json` | ARTIFACT |
+| F14-anti-spoofing-resistance | Sec. 9.5 Anti-Spoofing Barrier | AMIP Barrier 1b phantom depth spoofing resistance | `99.0` | `results/provenance/anti_spoofing_results.json` | ARTIFACT |
+| F15-multi-ccp-shortfall-reduction | Sec. 6.8 Multi-Clearinghouse Contagion | Eisenberg-Noe multi-CCP cross-margin shortfall reduction | `100.0` | `results/provenance/clearinghouse_network_results.json` | ARTIFACT |
+| F16-wire-to-wire-latency | Sec. 9.6 Wire-to-Wire Hardware Latency | Physical 100GbE QSFP28 FPGA P99 cut-through latency | `340.0` | `results/provenance/wire_to_wire_latency_report.json` | ARTIFACT |
+| F17-macro-welfare-dominance | Sec. 6.9 Macro General Equilibrium | Solvency welfare gain vs price discovery latency ratio | `2,536,282` | `results/provenance/macro_general_equilibrium_results.json` | ARTIFACT |
 | App-verifier | App. replication | standalone verifier counts and max regression difference | `4,320/4.4\times10^{-14}` | `studies/audited_constraints/results/standalone_verification.json` | ARTIFACT |
 
 ## Withdrawn

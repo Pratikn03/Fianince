@@ -232,6 +232,30 @@ REGISTRY = [
         "Proofs/ContinuousSpectrum.lean", "secant_kreiss_scaling_identity",
         "tests/test_square_root_impact.py", "test_theorem_nl1_kreiss_invariance"
     ),
+    TheoremMapping(
+        "theorem", "Clearinghouse Contraction Preservation (Theorem CC1)",
+        r"\cref{thm:clearinghouse_contagion}",
+        "Proofs/CanonicalFrontiers.lean", "clearinghouse_contraction_eval",
+        "tests/test_clearinghouse_contagion.py", "test_theorem_cc1_contraction_and_zero_defaults"
+    ),
+    TheoremMapping(
+        "theorem", "Macroeconomic General Equilibrium Dominance (Theorem GE1)",
+        r"\cref{thm:macro_general_equilibrium}",
+        "Proofs/CanonicalFrontiers.lean", "macroeconomic_welfare_dominance",
+        "tests/test_macro_general_equilibrium.py", "test_theorem_ge1_macro_dominance"
+    ),
+    TheoremMapping(
+        "theorem", "Hawkes Quadratic Variation Boundedness (Theorem HP1)",
+        r"\cref{thm:hawkes_continuous_sde}",
+        "Proofs/CanonicalFrontiers.lean", "hawkes_qv_rate_eval",
+        "tests/test_continuous_hawkes.py", "test_hawkes_branching_ratio_and_bound"
+    ),
+    TheoremMapping(
+        "theorem", "Anti-Spoofing Invariance (Theorem SP1)",
+        r"\cref{thm:anti_spoofing_depth}",
+        "Proofs/CanonicalFrontiers.lean", "anti_spoofing_depth_discount_bound",
+        "tests/test_anti_spoofing.py", "test_anti_spoofing_invariance"
+    ),
 ]
 
 
