@@ -1671,7 +1671,7 @@ Under an outright trading halt, bid depth collapses to zero, rendering predatory
 \end{theorem}
 
 \paragraph{Empirical Counterparty Attribution via FIX 5.0 SP2 Drop-Copy and BBL Estimation.}
-To bridge Theorem~G2 with institutional clearinghouse practice, we implement counterparty-attributed streaming surveillance under Contract~$I_1$ via standard FIX~5.0~SP2 Drop-Copy feeds (\texttt{research\_extension/game\_theory/structural\_inverse\_game.py}). In anonymous markets (Contract~$I_0$), the Swapped-Feedback Non-Identifiability Theorem (\cref{thm:swapped_feedback}) establishes that an aggressive predator and a distressed dealer cannot be distinguished from public trades alone. Under FIX Drop-Copy message parsing (Tag 11 \texttt{ClOrdID}, Tag 448 \texttt{PartyID}, Tag 38 \texttt{OrderQty}), order streams are partitioned by counterparty. Applying the two-step structural forward-simulation estimator of \citet{bajari2007estimating} recovers the true behavioral parameters: the distressed dealer is identified with inventory penalty $\hat{\lambda}_{\text{dealer}} = 0.0500$ ($R^2 = 0.9936$), while the unconstrained predator is identified with $\hat{\lambda}_{\text{pred}} = 0.0050$ ($R^2 = 0.9389$; \texttt{results/provenance/structural\_inverse\_game\_results.json}). This confirms that institutional counterparty attribution resolves anonymous non-identifiability, enabling selective intervention against predatory accounts without penalizing distressed market makers.
+To bridge Theorem~G2 with institutional clearinghouse practice, we implement counterparty-attributed streaming surveillance under Contract~$I_1$ via standard FIX~5.0~SP2 Drop-Copy feeds (\texttt{research\_extension/game\_theory/structural\_inverse\_game.py}). In anonymous markets (Contract~$I_0$), the Swapped-Feedback Non-Identifiability Theorem (\cref{prop:swapped_feedback}) establishes that an aggressive predator and a distressed dealer cannot be distinguished from public trades alone. Under FIX Drop-Copy message parsing (Tag 11 \texttt{ClOrdID}, Tag 448 \texttt{PartyID}, Tag 38 \texttt{OrderQty}), order streams are partitioned by counterparty. Applying the two-step structural forward-simulation estimator of \citet{bajari2007estimating} recovers the true behavioral parameters: the distressed dealer is identified with inventory penalty $\hat{\lambda}_{\text{dealer}} = 0.0500$ ($R^2 = 0.9936$), while the unconstrained predator is identified with $\hat{\lambda}_{\text{pred}} = 0.0050$ ($R^2 = 0.9389$; \texttt{results/provenance/structural\_inverse\_game\_results.json}). This confirms that institutional counterparty attribution resolves anonymous non-identifiability, enabling selective intervention against predatory accounts without penalizing distressed market makers.
 
 \subsection{Welfare Economics and the Stability--Price Discovery Pareto Frontier: Theorem W1}
 \label{sec:welfare_pareto_frontier}
@@ -1749,6 +1749,13 @@ Let $\mathbf{\Pi}_{\text{buffered}} = \mathbf{\Pi} \cdot \operatorname{diag}(1 -
 \end{theorem}
 
 We simulate an institutional network of $N=20$ broker-dealers and $M=3$ CCPs (\texttt{simulations/clearinghouse\_network\_contagion.py}). Under unconstrained trading, an algorithmic liquidation shock of $\$4{,}500\text{M}$ forces primary dealer bankruptcy, triggering an inter-dealer cascade with $\$145.39\text{M}$ systemic shortfall and cross-CCP contagion spillovers ($\$43.62\text{M}$ to CCP~2 and $\$29.08\text{M}$ to CCP~3). Under AMIP enforcement, primary losses are clamped to $\$600\text{M}$, preserving primary solvency ($0$ member defaults), which achieves a $\mathbf{100.0\%}$ elimination of cross-clearinghouse shortfall contagion (\texttt{results/provenance/clearinghouse\_network\_results.json}).
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=0.88\textwidth]{figures/fig_clearinghouse_network_contagion.pdf}
+\caption{Multi-Clearinghouse Eisenberg--Noe Contagion Mitigation under Theorem~CC1. Left: Systemic shortfall across interconnected CCPs (CCP~1, CCP~2, CCP~3) under unconstrained cascade vs.\ 100\% elimination under AMIP Barrier~3. Right: Primary clearing member loss containment and zero network defaults, verifying contraction preservation $\rho(\mathbf{\Pi}_{\text{buffered}}) = 0.80 < 1.0$.}
+\label{fig:clearinghouse_network_contagion}
+\end{figure*}
 
 \subsection{Macroeconomic General Equilibrium and Corporate Credit Welfare: Theorem GE1}
 \label{sec:macro_general_equilibrium}
@@ -2052,6 +2059,13 @@ We reconstruct tick-level microstructure dynamics and estimate Threshold Vector 
 \end{enumerate}
 This evidence proves that supercritical feedback is a universal physical feature of electronic limit order books across equities, sovereign debt, and digital assets.
 
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=0.88\textwidth]{figures/fig_equity_flash_crash_taq.pdf}
+\caption{Empirical Microstructure Phase Transitions in Historical Traditional Market Flash Crashes. Left: May 6, 2010 E-mini S\&P 500 Flash Crash, showing a $65.1\times$ surge in local feedback ($\hat{Q}_{\text{crisis}} = 0.8142$, $S = 8.13 > 1.0$) and an $86.28\%$ drawdown mitigation under AMIP pre-trade clamping. Right: October 15, 2014 US Treasury 10-Year Flash Rally, confirming a $78.9\times$ feedback surge and an $81.62\%$ yield excursion suppression.}
+\label{fig:equity_flash_crash_taq}
+\end{figure*}
+
 \section{Theoretical Refinements and System Generalizations}
 \label{sec:refinements}
 This section records extensions that are discussed but not analyzed in depth: layered adaptive states, heterogeneous response kernels, signed coherence, horizon targets and quote cancellation.
@@ -2188,6 +2202,13 @@ Let $N_t$ be a stationary Hawkes process with subcritical branching ratio $\Gamm
 \end{theorem}
 
 Simulating Theorem~HP1 over $T = 100.0$ seconds with calibrated high-frequency parameters ($\mu_0 = 1.2$, $\alpha = 3.5$, $\beta = 4.0 \implies \Gamma = \mathbf{0.875}$; \texttt{simulations/continuous\_hawkes\_point\_process.py}) confirms that continuous AMIP rate-limiting compresses total quadratic variation from $61.2284$ down to \textbf{$42.6392$} (a \textbf{$30.36\%$} reduction), while bounding maximum price excursion from $5.9811$ to \textbf{$3.8828$} (a $35.08\%$ reduction; \texttt{results/provenance/continuous\_hawkes\_results.json}).
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=0.88\textwidth]{figures/fig_continuous_hawkes_qv.pdf}
+\caption{Continuous-Time Hawkes Jump-Diffusion Dynamics under Theorem~HP1. Left: Cumulative price quadratic variation $[X, X]_T$ under unconstrained execution vs.\ AMIP rate-limited execution, establishing a $30.36\%$ variance reduction well below the theoretical bound ($344.0$). Right: Maximum price excursion suppression ($35.08\%$ reduction) under calibrated empirical parameters ($\Gamma = 0.875$, arrival intensity $\bar{\lambda} = 9.60~\text{s}^{-1}$).}
+\label{fig:continuous_hawkes_qv}
+\end{figure*}
 
 \section{Discussion, Research Frontiers, and Conclusion}
 
@@ -2414,6 +2435,13 @@ Let an adversary inject an arbitrary phantom depth multiplier $M \cdot V_0$ with
 
 Simulating a $11.0\times$ phantom depth injection ($50{,}000$ spoofed contracts with $99.5\%$ cancellation rate; \texttt{agentic\_guard/anti\_spoofing\_barrier.py}) demonstrates that while a naive interceptor inflates $r^*$ from $45.74$ to $169.34~\text{BTC}$ ($3.7\times$ artificial bloat, breaching clearinghouse capital), AMIP Barrier~1b discounts phantom depth to keep $r^* = 46.97~\text{BTC}$ ($1.03\times$, well within the $1.05\times$ bound), achieving $\mathbf{99.0\%}$ spoofing resistance (\texttt{results/provenance/anti\_spoofing\_results.json}).
 
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=0.88\textwidth]{figures/fig_anti_spoofing_depth.pdf}
+\caption{Adversarial Spoofing Invariance under Theorem~SP1. Left: Order book depth under an $11\times$ phantom quote stuffing attack; AMIP Barrier~1b quadratic OTR discounting compresses effective depth back to genuine liquidity. Right: Kreiss safe solvency radius invariance; naive pre-trade filters bloat safe capacity by $3.7\times$, whereas AMIP holds $r^*$ within $1.03\times$, achieving $99.0\%$ spoofing resistance.}
+\label{fig:anti_spoofing_depth}
+\end{figure*}
+
 \subsection{Physical Wire-to-Wire Hardware Latency Stack and Sub-350ns Cut-Through}
 \label{sec:wire_to_wire_latency}
 To establish the physical real-world viability of AMIP in premier colocation environments, we develop a cycle-accurate hardware timing model of a complete dual-port 100GbE QSFP28 FPGA bump-in-the-wire risk appliance (\texttt{agentic\_guard/hardware/wire\_to\_wire\_latency\_model.py}). The physical stack accounts for:
@@ -2425,6 +2453,13 @@ To establish the physical real-world viability of AMIP in premier colocation env
     \item \textbf{Egress Packetization \& Serializer:} Clock domain crossing ($5.0~\text{ns}$), TX MAC ($25.0~\text{ns}$), TX PMA/PCS ($85.0~\text{ns}$), and optical transmitter ($15.0~\text{ns}$).
 \end{enumerate}
 The nominal wire-to-wire cut-through latency is \textbf{$292.5~\text{ns}$}, and with a conservative $47.5~\text{ns}$ clock jitter margin, the $99\text{th}$ percentile latency is $\mathbf{340.0~\text{ns}}$, providing a $+160.0~\text{ns}$ timing margin below the institutional $500~\text{ns}$ HFT SLA (\texttt{results/provenance/wire\_to\_wire\_latency\_report.json}).
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=0.88\textwidth]{figures/fig_wire_to_wire_hardware_stack.pdf}
+\caption{Cycle-Accurate Physical Wire-to-Wire Hardware Latency Stack. Left: Cumulative nanosecond budget across 100GbE optical, MAC/PCS, FIX/ITCH protocol parsing, AMIP 8-cycle pre-trade evaluation ($20.0~\text{ns}$ at $400~\text{MHz}$), and egress serialization (nominal $292.5~\text{ns}$). Right: Institutional SLA compliance; P99 latency of $340.0~\text{ns}$ guarantees a $+160.0~\text{ns}$ operating safety margin below the $500~\text{ns}$ colocation SLA.}
+\label{fig:wire_to_wire_hardware_stack}
+\end{figure*}
 
 \subsection{Explicit Methodological Exclusions and Scope Omissions}
 \label{sec:limits}
@@ -2464,6 +2499,17 @@ The one-second order-book files are public domain (CC0) under \citet{nielsen2021
 \small
 \setlength{\bibsep}{2pt}
 \begin{thebibliography}{99}
+\bibitem[Almgren and Chriss(2000)]{almgren2000optimal}
+\bibitem[Almgren and Chriss(2000)]{almgren2000}
+Robert Almgren and Neil Chriss.
+\newblock Optimal execution of portfolio transactions.
+\newblock \emph{Journal of Risk}, 3(2):5--40, 2000.
+
+\bibitem[Almgren et~al.(2005)]{almgren2005direct}
+Robert Almgren, Chee Thum, Emmanuel Hauptmann, and Hong Li.
+\newblock Direct estimation of equity market impact.
+\newblock \emph{Risk}, 18(7):58--62, 2005.
+
 \bibitem[Arthur et~al.(1996)]{arthur1996}
 W. Brian Arthur, John H. Holland, Blake LeBaron, Richard Palmer, and Paul Tayler.
 \newblock Asset Pricing Under Endogenous Expectations in an Artificial Stock Market.
@@ -2476,6 +2522,16 @@ Marco Avellaneda and Sasha Stoikov.
 \newblock \emph{Quantitative Finance}, 8(3):217--224, 2008.
 \newblock \url{https://doi.org/10.1080/14697680701381228}.
 
+\bibitem[Bajari et~al.(2007)]{bajari2007estimating}
+Patrick Bajari, C. Lanier Benkard, and Jonathan Levin.
+\newblock Estimating dynamic models of imperfect competition.
+\newblock \emph{Econometrica}, 75(5):1331--1370, 2007.
+
+\bibitem[Bhatia(1997)]{bhatia2013matrix}
+Rajendra Bhatia.
+\newblock \emph{Matrix Analysis}, volume 169 of \emph{Graduate Texts in Mathematics}.
+\newblock Springer, New York, 1997.
+
 \bibitem[Brock and Hommes(1998)]{brock1998}
 William A. Brock and Cars H. Hommes.
 \newblock Heterogeneous beliefs and routes to chaos in a simple asset pricing model.
@@ -2483,6 +2539,7 @@ William A. Brock and Cars H. Hommes.
 \newblock \url{https://doi.org/10.1016/S0165-1889(98)00011-6}.
 
 \bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009}
+\bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009market}
 Markus K. Brunnermeier and Lasse Heje Pedersen.
 \newblock Market Liquidity and Funding Liquidity.
 \newblock \emph{The Review of Financial Studies}, 22(6):2201--2238, 2009.
@@ -2709,6 +2766,61 @@ Jonathan Sadighian.
 \newblock crypto-rl: High Frequency Limit Order Book Simulation Environment and Trading Agent.
 \newblock GitHub repository, 2019.
 \newblock \url{https://github.com/sadighian/crypto-rl}.
+
+\bibitem[Bouchaud et~al.(2004)]{bouchaud2004fluctuations}
+Jean-Philippe Bouchaud, Yuval Gefen, Marc Potters, and Matthieu Wyart.
+\newblock Fluctuations and response in financial markets: the subtle nature of ``random'' price changes.
+\newblock \emph{Quantitative Finance}, 4(2):176--190, 2004.
+
+\bibitem[Brunnermeier and Pedersen(2005)]{brunnermeier2005predatory}
+Markus K. Brunnermeier and Lasse Heje Pedersen.
+\newblock Predatory trading.
+\newblock \emph{The Journal of Finance}, 60(4):1825--1863, 2005.
+
+\bibitem[Cont et~al.(2014)]{cont2010stochastic}
+Rama Cont, Arseniy Kukanov, and Sasha Stoikov.
+\newblock The price impact of order book events.
+\newblock \emph{Journal of Financial Econometrics}, 12(1):47--88, 2014.
+
+\bibitem[Eisenberg and Noe(2001)]{eisenberg2001systemic}
+Larry Eisenberg and Thomas H. Noe.
+\newblock Systemic risk in financial systems.
+\newblock \emph{Management Science}, 47(2):236--249, 2001.
+
+\bibitem[Gatheral(2010)]{gatheral2010no}
+Jim Gatheral.
+\newblock No-dynamic-arbitrage and market impact.
+\newblock \emph{Quantitative Finance}, 10(7):749--759, 2010.
+
+\bibitem[Glasserman and Young(2015)]{glasserman2015likely}
+Paul Glasserman and H. Peyton Young.
+\newblock How likely is contagion in financial networks?
+\newblock \emph{Journal of Banking \& Finance}, 50:383--399, 2015.
+
+\bibitem[Grossman and Stiglitz(1980)]{grossman1980impossibility}
+Sanford J. Grossman and Joseph E. Stiglitz.
+\newblock On the impossibility of informationally efficient markets.
+\newblock \emph{The American Economic Review}, 70(3):393--408, 1980.
+
+\bibitem[Hayashi and Yoshida(2005)]{hayashi2005evaluating}
+Takaki Hayashi and Nakahiro Yoshida.
+\newblock Evaluating covariance with non-synchronous high-frequency data.
+\newblock \emph{Bernoulli}, 11(2):359--384, 2005.
+
+\bibitem[Kyle(1985)]{kyle1985continuous}
+Albert S. Kyle.
+\newblock Continuous auctions and informed trader.
+\newblock \emph{Econometrica}, 53(6):1315--1335, 1985.
+
+\bibitem[Ledoit and Wolf(2004)]{ledoit2004well}
+Olivier Ledoit and Michael Wolf.
+\newblock A well-conditioned estimator for large-dimensional covariance matrices.
+\newblock \emph{Journal of Multivariate Analysis}, 88(2):365--411, 2004.
+
+\bibitem[Trefethen and Embree(2005)]{trefethen2005spectra}
+Lloyd N. Trefethen and Mark Embree.
+\newblock \emph{Spectra and Pseudospectra: The Behavior of Nonnormal Matrices and Operators}.
+\newblock Princeton University Press, Princeton, NJ, 2005.
 
 \end{thebibliography}
 \endgroup
@@ -3081,11 +3193,11 @@ The formalization is structured into eleven specialized submodules in \texttt{le
 \toprule
 \textbf{Submodule} & \textbf{Theorems} & \textbf{Key Mechanized Definitions \& Results} & \textbf{Manuscript Linkage} \\
 \midrule
-\texttt{Stability.lean} & 8 & Characteristic polynomial $\det(\lambda I - J)$, root factorization $(1-a-g\kappa)\eta$, boundary evaluation at $\lambda = 1$. & Theorem~\ref{thm:positive}, Proposition~\ref{prop:ctboundary} \\
+\texttt{Stability.lean} & 8 & Characteristic polynomial $\det(\lambda I - J)$, root factorization $(1-a-g\kappa)\eta$, boundary evaluation at $\lambda = 1$. & Theorem~\ref{thm:positive}, Proposition~\ref{prop:heterogeneous_boundary} \\
 \texttt{SignedStability.lean} & 6 & Generalized Schur--Cohn stability for signed momentum ($Q > 0$) and contrarian ($Q < 0$) adaptive feedback. & Theorem~\ref{thm:signed_stability}, Proposition~3.1 \\
 \texttt{PBHDefect.lean} & 9 & Popov--Belevitch--Hautus unobservable eigenspace defect: $Cv = 0$ and $Jv = (1-\eta)v$; swapped-feedback transfer invariance. & Theorem~\ref{thm:m1_equivalence}, Proposition~\ref{prop:swapped_feedback} \\
 \texttt{Ambiguity.lean} & 9 & Exact rational ambiguity witness matching identically through lag 3 ($h_0, h_1, h_2, h_3$) and diverging strictly at lag 4. & Theorem~\ref{thm:retained_pair}, Proposition~5.3 \\
-\texttt{Bounds.lean} & 4 & Set-membership outer-set decision soundness (certified stable if $\bar{S} < 1$, unstable if $\underline{S} > 1$); geometric tail envelopes $Q_{\max}(1-\eta)^H$. & Theorems~4.1, 4.2, Proposition~\ref{prop:support} \\
+\texttt{Bounds.lean} & 4 & Set-membership outer-set decision soundness (certified stable if $\bar{S} < 1$, unstable if $\underline{S} > 1$); geometric tail envelopes $Q_{\max}(1-\eta)^H$. & Theorems~4.1, 4.2, Proposition~\ref{prop:audited_tail} \\
 \texttt{CancellationJacobian.lean} & 4 & Adversarial quote cancellation attenuation: realized feedback attenuated to $a + (1-\chi)g\kappa$; boundary preservation at $\chi = 1$. & Proposition~\ref{prop:cancellation_masking} \\
 \texttt{Microfoundations.lean} & 10 & Steady-state Kalman filtering Riccati roots; regularized OGD effective rates; volatility-amplification wedge counterexample; low-frequency $(1-S)^{-2}$ flow variance inflation. & Propositions~\ref{prop:kalman_microfoundation}, \ref{prop:ogd_microfoundation}, \ref{prop:flow_gain} \\
 \texttt{InformationBounds.lean} & 20 & Theorems~M2--M5: $\delta^4$ cohort separation; two-world mandatory abstention lower bound $1 - 2\alpha - \mathrm{TV}$; completely monotone differences vs.\ Hankel PSD counterexamples; Kreiss nonnormal transient growth $\|J^k\| > 10$; OLS projection orthogonality; Bonferroni 3-look coverage; small-gain robustness; LP weak duality. & Theorems~\ref{thm:m2_sample_complexity}--\ref{thm:m5_kreiss_solvency}, \cref{prop:robust} \\

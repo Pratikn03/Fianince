@@ -340,40 +340,40 @@ def generate_claim_map_table(mappings: list[TheoremMapping]) -> str:
         r"Binance 768-Day Multi-Year Panel & \cref{sec:empirical_causal} & --- & \nolinkurl{test_binance_panel_and_structural.py} \\"
     )
     lines.append(
-        r"Deep Reinforcement Learning Suite (10 Seeds DQN \& Continuous Actor-Critic) & \cref{sec:learned_agents} & --- & \nolinkurl{test_no_shortcuts_validation.py} (\nolinkurl{test_deep_rl_10_seeds_checkpoints}) \\"
+        r"Deep Reinforcement Learning Suite (10 Seeds DQN \& Continuous Actor-Critic) & \cref{sec:deep_marl_coadaptation} & --- & \nolinkurl{test_no_shortcuts_validation.py} (\nolinkurl{test_deep_rl_10_seeds_checkpoints}) \\"
     )
     lines.append(
-        r"Tri-Simulator Matching Engine Invariance (FIFO, Pro-Rata, CDA) & \cref{sec:tri_simulator} & --- & \nolinkurl{test_no_shortcuts_validation.py} (\nolinkurl{test_tri_simulator_results_exist}) \\"
+        r"Tri-Simulator Matching Engine Invariance (FIFO, Pro-Rata, CDA) & \cref{sec:hft_queue_priority} & --- & \nolinkurl{test_no_shortcuts_validation.py} (\nolinkurl{test_tri_simulator_results_exist}) \\"
     )
     lines.append(
-        r"High-Power Solvency Monte Carlo ($N=1{,}000$, Clopper--Pearson CIs) & \cref{sec:funded_capacity_risk} & --- & \nolinkurl{test_no_shortcuts_validation.py} (\nolinkurl{test_high_power_table16_results_exist}) \\"
+        r"High-Power Solvency Monte Carlo ($N=1{,}000$, Clopper--Pearson CIs) & \cref{sec:solvency_phase_diagram} & --- & \nolinkurl{test_no_shortcuts_validation.py} (\nolinkurl{test_high_power_table16_results_exist}) \\"
     )
     lines.append(
-        r"January 2023 BTC Perpetual Depth Dual Identification & \cref{sec:btc_jan2023} & --- & \nolinkurl{test_no_shortcuts_validation.py} (\nolinkurl{test_btc_jan2023_results_exist}) \\"
+        r"January 2023 BTC Perpetual Depth Dual Identification & \cref{sec:tvar_flash_crashes} & --- & \nolinkurl{test_no_shortcuts_validation.py} (\nolinkurl{test_btc_jan2023_results_exist}) \\"
     )
     lines.append(
-        r"Regulated Equity Benchmark (FI-2010 NASDAQ Nordic) & \cref{sec:equity_benchmark} & --- & \nolinkurl{test_no_shortcuts_validation.py} (\nolinkurl{test_equity_benchmark_results_exist}) \\"
+        r"Regulated Equity Benchmark (FI-2010 NASDAQ Nordic) & \cref{sec:historical_equity_treasury_flash_crashes} & --- & \nolinkurl{test_no_shortcuts_validation.py} (\nolinkurl{test_equity_benchmark_results_exist}) \\"
     )
     lines.append(r"\midrule")
     lines.append(r"\multicolumn{4}{l}{\textbf{Production Institutional Hardening \& Agentic Safeguards}} \\")
     lines.append(r"\midrule")
     lines.append(
-        r"Real Level-3 LOB Deep RL Training \& Empirical Policy Jacobians & \cref{sec:learned_agents} & --- & \nolinkurl{test_institutional_hardening.py} (\nolinkurl{TestPhase1RealLOBReplayAndDeepRL}) \\"
+        r"Real Level-3 LOB Deep RL Training \& Empirical Policy Jacobians & \cref{sec:deep_marl_coadaptation} & --- & \nolinkurl{test_institutional_hardening.py} (\nolinkurl{TestPhase1RealLOBReplayAndDeepRL}) \\"
     )
     lines.append(
-        r"Multi-Dealer Basel III SA-CCR \& CME SPAN 2 Clearing Engine & \cref{sec:funded_capacity_risk} & --- & \nolinkurl{test_institutional_hardening.py} (\nolinkurl{TestPhase2InstitutionalSACRAndMargining}) \\"
+        r"Multi-Dealer Basel III SA-CCR \& CME SPAN 2 Clearing Engine & \cref{sec:solvency_phase_diagram} & --- & \nolinkurl{test_institutional_hardening.py} (\nolinkurl{TestPhase2InstitutionalSACRAndMargining}) \\"
     )
     lines.append(
-        r"Bivariate Hawkes Process Clustered Burst Tri-Simulator Invariance & \cref{sec:tri_simulator} & --- & \nolinkurl{test_institutional_hardening.py} (\nolinkurl{TestPhase3HawkesProcessTriSimulator}) \\"
+        r"Bivariate Hawkes Process Clustered Burst Tri-Simulator Invariance & \cref{sec:hft_queue_priority} & --- & \nolinkurl{test_institutional_hardening.py} (\nolinkurl{TestPhase3HawkesProcessTriSimulator}) \\"
     )
     lines.append(
-        r"Production FIX 5.0 SP2 Drop-Copy Supervisory Fallback Controller & \cref{sec:audited_constraints} & --- & \nolinkurl{test_institutional_hardening.py} (\nolinkurl{TestPhase4FIXSupervisorAndFallback}) \\"
+        r"Production FIX 5.0 SP2 Drop-Copy Supervisory Fallback Controller & \cref{sec:regulatory_feasibility} & --- & \nolinkurl{test_institutional_hardening.py} (\nolinkurl{TestPhase4FIXSupervisorAndFallback}) \\"
     )
     lines.append(
         r"AMIP RFC-001 AgenticGuard Zero-Trust Interceptor & \cref{sec:regulatory_feasibility} & \nolinkurl{Proofs/AgenticGuard.lean} (\nolinkurl{agentic_guard_composite_safety}) & \nolinkurl{test_agentic_guard.py} (\nolinkurl{TestAgenticGuardCore}) \\"
     )
     lines.append(
-        r"Provenance Ledger (63/63 claims) & \cref{app:provenance} & --- & \nolinkurl{test_provenance_ledger.py} \\"
+        r"Provenance Ledger (80/80 claims) & \cref{app:provenance} & --- & \nolinkurl{test_provenance_ledger.py} \\"
     )
     lines.append(r"\bottomrule\end{longtable}")
     return "\n".join(lines) + "\n"
