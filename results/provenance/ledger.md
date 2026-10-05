@@ -73,7 +73,7 @@ written directly from `results/provenance/*.json` and are not repeated here.
 | F2-macro-welfare-time | Sec. 6.5 Welfare Pareto Frontier | Macro price excursion dynamic relaxation discovery time | `7.0` | `results/provenance/macro_event_welfare_results.json` | ARTIFACT |
 | F3-hamilton-vol-expansion | Sec. 7.5 MS(2)-VAR Hamilton Filter | Unsupervised crisis regime volatility expansion factor | `62.7` | `results/provenance/markov_switching_var_results.json` | ARTIFACT |
 | F4-hayashi-yoshida-radius | Sec. 8.6 Multi-Asset Cross-Impact | Hayashi-Yoshida RMT multi-asset safe radius contraction | `14.43` | `results/provenance/multi_asset_hayashi_yoshida_results.json` | ARTIFACT |
-| F5-cpp-simd-latency | Sec. 9.4 Hardware Architecture | Native C++20 SIMD ARM NEON pre-trade mean latency | `7.7` | `results/provenance/cpp_kernel_benchmark.json` | ARTIFACT |
+| F5-cpp-simd-latency | Sec. 9.4 Hardware Architecture | Native C++20 SIMD ARM NEON pre-trade mean latency | `7.6` | `results/provenance/cpp_kernel_benchmark.json` | ARTIFACT |
 | App-verifier | App. replication | standalone verifier counts and max regression difference | `4,320/4.4\times10^{-14}` | `studies/audited_constraints/results/standalone_verification.json` | ARTIFACT |
 
 ## Withdrawn

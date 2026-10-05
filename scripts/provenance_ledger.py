@@ -465,8 +465,8 @@ CLAIMS: list[Claim] = [
           lambda: f"{f(J(f'{PROV}/multi_asset_hayashi_yoshida_results.json')['pseudospectral_kreiss_analysis']['safe_radius_contraction_pct'], 2)}",
           f"{PROV}/multi_asset_hayashi_yoshida_results.json"),
     Claim("F5-cpp-simd-latency", "Sec. 9.4 Hardware Architecture", "Native C++20 SIMD ARM NEON pre-trade mean latency",
-          r"$7.7~\text{ns}$",
-          "7.7",
+          r"$7.6~\text{ns}$",
+          "7.6",
           lambda: f"{f(J(f'{PROV}/cpp_kernel_benchmark.json')['latency_statistics_ns']['mean_ns'], 1)}",
           f"{PROV}/cpp_kernel_benchmark.json"),
     # ---------------- Appendix: standalone verifier
