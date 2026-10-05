@@ -102,9 +102,17 @@ def compile_paper() -> bool:
     return True
 
 
+def generate_figures() -> bool:
+    log("Generating publication-grade empirical visualizations...")
+    code, out = run_cmd([sys.executable, "scripts/generate_empirical_figures.py"])
+    print(out[-1500:])
+    return code == 0
+
+
 def main():
     start = time.time()
     ok = build_results("--no-recompute" not in sys.argv)
+    ok = generate_figures() and ok
     ok = verify_bridge() and ok
     ok = build_ledger() and ok
     ok = run_tests() and ok
