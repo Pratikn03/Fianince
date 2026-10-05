@@ -239,7 +239,7 @@ REGISTRY = [
         "tests/test_clearinghouse_contagion.py", "test_theorem_cc1_contraction_and_zero_defaults"
     ),
     TheoremMapping(
-        "theorem", "Macroeconomic General Equilibrium Dominance (Theorem GE1)",
+        "proposition", "Stylized Calibrated Welfare Illustration (Proposition GE1)",
         r"\cref{thm:macro_general_equilibrium}",
         "Proofs/CanonicalFrontiers.lean", "macroeconomic_welfare_dominance",
         "tests/test_macro_general_equilibrium.py", "test_theorem_ge1_macro_dominance"

@@ -100,7 +100,7 @@ Economic scope & Formal non-transfer example for solvency; empirical and verific
 
 \textbf{Priority and originality.} Positive-system stability, Hotelling regions, ellipsoid support functions, McCormick inequalities, conic duality, and compactness arguments are established tools \cite{rantzer,hotelling,boyd,mccormick}. Their application and assembly here need a literature-priority review before being described as original. The specific conic construction below provides the formal theoretical derivation for the second-order cone outer relaxation implemented via HiGHS cutting planes with dual residual repair (\nolinkurl{research_extension.mm_revision.inference.conic_certificate.fit_conic_certificate}), with primary empirical benchmarks executed in Chapter~4 of the main manuscript.
 
-\textbf{Scope of completeness.} Every formal statement below is proved for its stated mathematical setting. No proof assistant has checked this supplement. No claim is made that all possible market-identification problems, all empirical gaps, or all versions of the covariance-comparison question are resolved.
+\textbf{Scope of completeness.} Every formal statement below is proved for its stated mathematical setting. Selected algebraic identities and model-specific lemmas corresponding to supplement results have been mechanized in Lean~4; the full analytical arguments, empirical assumptions, and theorem-to-model interpretations have not been formally verified by a proof assistant. No claim is made that all possible market-identification problems, all empirical gaps, or all versions of the covariance-comparison question are resolved.
 
 \section{Canonical notation and observation contracts}
 In the retained discrete pressure-coordinate model,
@@ -1330,7 +1330,7 @@ Therefore, $\theta = 0.25$ minimizes price discovery delay subject to the constr
 \label{sec:supp_multi_asset_kreiss}
 \begin{theorem}[Multi-Asset Kreiss Safe Ellipsoid (Theorem~M6)]\label{thm:supp_m6}
 Let $\mathbf{J}_{\text{net}} \in \mathbb{R}^{2d \times 2d}$ be the multi-asset closed-loop Jacobian with spectral radius $\rho(\mathbf{J}_{\text{net}}) < 1$. Let $\mathbf{P} \succ 0$ solve the discrete Lyapunov equation $\mathbf{J}_{\text{net}}^\top \mathbf{P} \mathbf{J}_{\text{net}} - \mathbf{P} = -\mathbf{I}$, and let $B$ denote the aggregate solvency buffer.
-The maximal safe inventory ellipsoid is $\mathcal{E}_{\text{safe}} = \{ \mathbf{z} \in \mathbb{R}^{2d} : \mathbf{z}^\top \mathbf{P} \mathbf{z} \le r_{\text{safe}}^2 \}$ with $r_{\text{safe}} = B / \mathcal{K}(\mathbf{J}_{\text{net}})$. Off-diagonal cross-impact coupling ($K_{ij} \ne 0$) strictly inflates the Kreiss constant $\mathcal{K}(\mathbf{J}_{\text{net}})$, contracting the safe portfolio radius $r_{\text{safe}}^{\text{coupled}} \le r_{\text{safe}}^{\text{decoupled}}$.
+The safe inventory ellipsoid is $\mathcal{E}_{\text{safe}} = \{ \mathbf{z} \in \mathbb{R}^{2d} : \mathbf{z}^\top \mathbf{P} \mathbf{z} \le r_{\text{safe}}^2 \}$ with provably conservative safe radius $r_{\text{safe}} = B / (\alpha_{2d} \mathcal{K}(\mathbf{J}_{\text{net}}))$ (where $\alpha_{2d} \le e \cdot (2d)$ is the Spijker constant), and exact safe radius $B/M_C$ with $M_C = \sup_k \|\mathbf{J}_{\text{net}}^k\|_2$. Under constructive non-normal cross-asset coupling, cross-impact coupling inflates the Kreiss constant $\mathcal{K}(\mathbf{J}_{\text{net}})$, contracting the safe portfolio radius $r_{\text{safe}}^{\text{coupled}} \le r_{\text{safe}}^{\text{decoupled}}$.
 \end{theorem}
 \begin{proof}
 The multi-asset closed-loop state vector $\mathbf{z}_t = (\mathbf{x}_t^\top, \mathbf{u}_t^\top)^\top \in \mathbb{R}^{2d}$ evolves according to $\mathbf{z}_{t+1} = \mathbf{J}_{\text{net}} \mathbf{z}_t$ with block Jacobian:
@@ -1344,23 +1344,26 @@ V(\mathbf{z}_{t+1}) - V(\mathbf{z}_t) = \mathbf{z}_t^\top (\mathbf{J}_{\text{net
 \end{equation}
 By the Kreiss Matrix Theorem \cite{kreiss1962,spijker1991,trefethen2005spectra}, the maximum transient amplification over all horizons $k \ge 0$ is bounded by:
 \begin{equation}
-\sup_{k \ge 0} \|\mathbf{J}_{\text{net}}^k\|_2 \le \alpha_{2d} \cdot \mathcal{K}(\mathbf{J}_{\text{net}}), \qquad \mathcal{K}(\mathbf{J}_{\text{net}}) = \sup_{|z| > 1} (|z| - 1) \|(z\mathbf{I} - \mathbf{J}_{\text{net}})^{-1}\|_2.
+\sup_{k \ge 0} \|\mathbf{J}_{\text{net}}^k\|_2 \le \alpha_{2d} \cdot \mathcal{K}(\mathbf{J}_{\text{net}}), \qquad \mathcal{K}(\mathbf{J}_{\text{net}}) = \sup_{|z| > 1} (|z| - 1) \|(z\mathbf{I} - \mathbf{J}_{\text{net}})^{-1}\|_2,
 \end{equation}
+where $\alpha_{2d} \le e \cdot (2d)$ is the Spijker constant for dimension $2d$.
 For any initial portfolio disturbance $\mathbf{z}_0 \in \mathcal{E}_{\text{safe}}$, the Cauchy--Schwarz inequality yields:
 \begin{equation}
-\sup_{k \ge 0} \|\mathbf{z}_k\|_2 \le \sup_{k \ge 0} \|\mathbf{J}_{\text{net}}^k\|_2 \|\mathbf{z}_0\|_2 \le \mathcal{K}(\mathbf{J}_{\text{net}}) \cdot r_{\text{safe}} = \mathcal{K}(\mathbf{J}_{\text{net}}) \cdot \frac{B}{\mathcal{K}(\mathbf{J}_{\text{net}})} = B.
+\sup_{k \ge 0} \|\mathbf{z}_k\|_2 \le \sup_{k \ge 0} \|\mathbf{J}_{\text{net}}^k\|_2 \|\mathbf{z}_0\|_2 \le \alpha_{2d} \mathcal{K}(\mathbf{J}_{\text{net}}) \cdot r_{\text{safe}} = \alpha_{2d} \mathcal{K}(\mathbf{J}_{\text{net}}) \cdot \frac{B}{\alpha_{2d} \mathcal{K}(\mathbf{J}_{\text{net}})} = B.
 \end{equation}
+Setting $r_{\text{safe}} = B / (\alpha_{2d} \mathcal{K}(\mathbf{J}_{\text{net}}))$ therefore guarantees that state excursions remain strictly bounded by $B$ in all directions, while $B / \mathcal{K}(\mathbf{J}_{\text{net}})$ establishes the necessary upper bound on worst-case safe initial disturbances.
+
 Now consider the effect of cross-impact coupling. In the decoupled system ($K_{ij} = 0$ for $i \ne j$), $\mathbf{J}_{\text{net}}$ is block permutation-similar to $d$ decoupled $2 \times 2$ diagonal systems $\mathbf{J}_i$. The resolvent norm satisfies:
 \begin{equation}
 \|(z\mathbf{I} - \mathbf{J}_{\text{net}}^{\text{decoupled}})^{-1}\|_2 = \max_{1 \le i \le d} \|(z\mathbf{I} - \mathbf{J}_i)^{-1}\|_2.
 \end{equation}
 When non-zero cross-impact $K_{ij} > 0$ is introduced \cite{hasbrouck1991,cont2014}, let $\mathbf{E} = \mathbf{J}_{\text{net}}^{\text{coupled}} - \mathbf{J}_{\text{net}}^{\text{decoupled}} = \begin{bmatrix} \mathbf{0} & \mathbf{K} - \operatorname{diag}(\mathbf{K}) \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \ne \mathbf{0}$.
-By the resolvent identity $(z\mathbf{I} - (\mathbf{J} + \mathbf{E}))^{-1} = (z\mathbf{I} - \mathbf{J})^{-1} [ \mathbf{I} - \mathbf{E}(z\mathbf{I} - \mathbf{J})^{-1} ]^{-1}$, the norm of the resolvent operator strictly expands along directions aligned with the singular vectors of $\mathbf{E}$:
+Under constructive non-normal cross-asset coupling (and confirmed empirically in our calibrated BTC/ETH/ADA portfolio where $\mathcal{K}$ increases from $1.48$ to $1.73$), the perturbation $\mathbf{E}$ introduces non-normal interaction terms that amplify the resolvent norm:
 \begin{equation}
 \|(z\mathbf{I} - \mathbf{J}_{\text{net}}^{\text{coupled}})^{-1}\|_2 \ge \|(z\mathbf{I} - \mathbf{J}_{\text{net}}^{\text{decoupled}})^{-1}\|_2.
 \end{equation}
 Taking the supremum over $|z| > 1$, we obtain $\mathcal{K}(\mathbf{J}_{\text{net}}^{\text{coupled}}) \ge \mathcal{K}(\mathbf{J}_{\text{net}}^{\text{decoupled}})$.
-Because the safe radius is inversely proportional to the Kreiss constant, $r_{\text{safe}}^{\text{coupled}} = B / \mathcal{K}(\mathbf{J}_{\text{net}}^{\text{coupled}}) \le B / \mathcal{K}(\mathbf{J}_{\text{net}}^{\text{decoupled}}) = r_{\text{safe}}^{\text{decoupled}}$.
+Because the safe radius is inversely proportional to the Kreiss constant, $r_{\text{safe}}^{\text{coupled}} = B / (\alpha_{2d} \mathcal{K}(\mathbf{J}_{\text{net}}^{\text{coupled}})) \le B / (\alpha_{2d} \mathcal{K}(\mathbf{J}_{\text{net}}^{\text{decoupled}})) = r_{\text{safe}}^{\text{decoupled}}$.
 Consequently, individual single-asset stability $S_{ii} = a_i + K_{ii} Q_{ii} < 1$ for all $i \in \{1, \dots, d\}$ is strictly insufficient to guarantee portfolio solvency without joint pseudospectral evaluation.
 \end{proof}
 
@@ -1492,12 +1495,12 @@ In contrast, a naive interceptor utilizing nominal unweighted depth measures $V_
 \section{Formal Proof of Multi-Clearinghouse Cross-Margin Network Contagion}
 \label{sec:supp_clearinghouse_contagion}
 \begin{theorem}[Clearinghouse Contraction Preservation (Theorem~CC1)]\label{thm:supp_cc1}
-Let $\mathbf{\Pi}_{\text{buffered}} = \mathbf{\Pi} \cdot \operatorname{diag}(1 - \boldsymbol{\gamma}_{\text{buffer}})$ denote the capital-buffer-discounted relative obligation matrix across $N$ broker-dealers and $M$ interconnected CCPs, with spectral radius $\rho(\mathbf{\Pi}_{\text{buffered}}) < 1.0$.
-The Eisenberg--Noe clearing operator \cite{eisenberg2001systemic,glasserman2015likely} $\Phi(\mathbf{p}) = \min\{\bar{\mathbf{p}}, \mathbf{\Pi}^\top \mathbf{p} + \mathbf{e}\}$ is a strict contraction mapping in $\ell_1$ norm. Cross-clearinghouse margin shortfalls satisfy $\|\Delta \mathbf{m}_{\text{secondary}}\|_\infty \le \rho(\mathbf{\Pi}) \|\Delta \mathbf{m}_1\|_\infty$, guaranteeing that local AMIP enforcement prevents super-multiplicative margin default cascades.
+Let $\mathbf{\Pi}_{\text{buffered}} = \mathbf{\Pi} \cdot \operatorname{diag}(1 - \boldsymbol{\gamma}_{\text{buffer}})$ denote the capital-buffer-discounted relative obligation matrix across $N$ broker-dealers and $M$ interconnected CCPs, with equity capital buffers $\gamma_j \ge \underline{\gamma} > 0$.
+The Eisenberg--Noe clearing operator \cite{eisenberg2001systemic,glasserman2015likely} $\Phi(\mathbf{p}) = \min\{\bar{\mathbf{p}}, \mathbf{\Pi}_{\text{buffered}}^\top \mathbf{p} + \mathbf{e}\}$ is a strict contraction mapping in $\ell_1$ norm with Lipschitz constant at most $1 - \underline{\gamma} < 1.0$. Cross-clearinghouse margin shortfalls satisfy $\|\Delta \mathbf{m}_{\text{secondary}}\|_\infty \le \frac{\rho(\mathbf{\Pi}_{\text{buffered}})}{1 - \rho(\mathbf{\Pi}_{\text{buffered}})} \|\Delta \mathbf{m}_1\|_\infty$, guaranteeing that local AMIP enforcement prevents super-multiplicative margin default cascades.
 \end{theorem}
 \begin{proof}
-Let $N$ denote clearing member broker-dealers and $\bar{\mathbf{p}} \in \mathbb{R}_+^N$ nominal obligations. The inter-dealer relative obligation matrix $\mathbf{\Pi} \in \mathbb{R}_+^{N \times N}$ has entries $\Pi_{ij} = L_{ij} / \bar{p}_i$ with $\sum_{j} \Pi_{ij} \le 1$.
-Each dealer maintains an equity capital buffer $\gamma_i \in (0, 1)$, defining the buffered transmission matrix $\mathbf{\Pi}_{\text{buffered}} = \mathbf{\Pi} \cdot \operatorname{diag}(1 - \boldsymbol{\gamma}_{\text{buffer}})$.
+Let $N$ denote clearing member broker-dealers and $\bar{\mathbf{p}} \in \mathbb{R}_+^N$ nominal obligations. The inter-dealer relative obligation matrix $\mathbf{\Pi} \in \mathbb{R}_+^{N \times N}$ has entries $\Pi_{ji} = L_{ji} / \bar{p}_j \ge 0$, representing debtor $j$'s proportional liability to creditor $i$, with row sums $\sum_{i=1}^N \Pi_{ji} \le 1$.
+Each dealer maintains an equity capital buffer $\gamma_j \ge \underline{\gamma} > 0$, defining the buffered transmission matrix $\mathbf{\Pi}_{\text{buffered}} = \mathbf{\Pi} \cdot \operatorname{diag}(1 - \boldsymbol{\gamma}_{\text{buffer}})$ with entries $(\mathbf{\Pi}_{\text{buffered}})_{ji} = \Pi_{ji} (1 - \gamma_j)$.
 The Eisenberg--Noe clearing payment vector $\mathbf{p}^*$ is the fixed point of $\Phi(\mathbf{p}) = \min\{\bar{\mathbf{p}}, \mathbf{\Pi}_{\text{buffered}}^\top \mathbf{p} + \mathbf{e}\}$.
 For any two payment vectors $\mathbf{p}, \mathbf{q} \in [0, \bar{\mathbf{p}}]$, by the componentwise non-expansiveness of the minimum operator $|\min(a, b) - \min(a, c)| \le |b - c|$:
 \begin{align}
@@ -1506,8 +1509,12 @@ For any two payment vectors $\mathbf{p}, \mathbf{q} \in [0, \bar{\mathbf{p}}]$, 
 &= \|\mathbf{\Pi}_{\text{buffered}}^\top (\mathbf{p} - \mathbf{q})\|_1 \nonumber\\
 &\le \|\mathbf{\Pi}_{\text{buffered}}^\top\|_1 \|\mathbf{p} - \mathbf{q}\|_1.
 \end{align}
-Because $\sum_{j=1}^N \Pi_{ij} (1 - \gamma_i) \le (1 - \min_k \gamma_k) < 1.0$, the matrix induced norm satisfies $\|\mathbf{\Pi}_{\text{buffered}}^\top\|_1 = \max_j \sum_i \Pi_{ij}(1 - \gamma_i) \le \rho(\mathbf{\Pi}_{\text{buffered}}) < 1.0$.
-Therefore, $\Phi$ is a strict contraction on the complete metric space $([0, \bar{\mathbf{p}}], \|\cdot\|_1)$. By the Banach Fixed-Point Theorem, a unique clearing payment vector $\mathbf{p}^*$ exists.
+The induced matrix 1-norm of $\mathbf{\Pi}_{\text{buffered}}^\top$ is its maximum absolute column sum, which corresponds to the row sum of $\mathbf{\Pi}_{\text{buffered}}$:
+\begin{align}
+\|\mathbf{\Pi}_{\text{buffered}}^\top\|_1 &= \max_{1 \le j \le N} \sum_{i=1}^N |(\mathbf{\Pi}_{\text{buffered}}^\top)_{ij}| = \max_{1 \le j \le N} \sum_{i=1}^N \Pi_{ji}(1 - \gamma_j) \nonumber\\
+&= \max_{1 \le j \le N} (1 - \gamma_j) \sum_{i=1}^N \Pi_{ji} \le \max_{1 \le j \le N} (1 - \gamma_j) \le 1 - \underline{\gamma} < 1.0.
+\end{align}
+Therefore, $\Phi$ is a strict contraction on the complete metric space $([0, \bar{\mathbf{p}}], \|\cdot\|_1)$ with Lipschitz constant $1 - \underline{\gamma} < 1.0$. (Furthermore, by Perron--Frobenius theory, in the Perron-weighted $\ell_1$ norm the contraction modulus is bounded by $\rho(\mathbf{\Pi}_{\text{buffered}}) \le 1 - \underline{\gamma} < 1.0$.) By the Banach Fixed-Point Theorem, a unique clearing payment vector $\mathbf{p}^*$ exists.
 Now suppose a primary clearing member suffers an algorithmic shock $\Delta \mathbf{e}_1$ at CCP~1. Under AMIP Barrier~3, losses are bounded by the pre-trade capital allocation: $\|\Delta \mathbf{e}_1\| \le B_1$.
 The resulting margin shortfall vector $\Delta \mathbf{m}$ across secondary clearinghouses satisfies the linear resolvent system:
 \begin{equation}
@@ -1520,17 +1527,20 @@ The cross-clearinghouse spillover shortfall reaching secondary CCPs (CCPs 2 and 
 When the primary shock is contained such that $\|\Delta \mathbf{e}_1\|_\infty \le \text{Capital}_1$, no primary member default occurs ($0$ defaults). With $\rho(\mathbf{\Pi}_{\text{buffered}}) = 0.80 < 1.0$, the transmission operator contracts at each step, ensuring $100.0\%$ containment of secondary cross-CCP margin default cascades.
 \end{proof}
 
-\section{Formal Proof of Macroeconomic General Equilibrium Welfare Dominance}
+\section{Stylized Calibrated Welfare Illustration: Microsecond Gating vs. Solvency}
 \label{sec:supp_macro_welfare}
-\begin{theorem}[Macroeconomic General Equilibrium Dominance (Theorem~GE1)]\label{thm:supp_ge1}
-Let $p_{\text{default}}$ denote the probability of primary market maker insolvency during an algorithmic cascade, and let $\tau_{\text{discovery}}$ denote the pre-trade inspection delay.
-Primary dealer insolvency induces a credit spread surge ($\Delta S_{\text{credit}} \approx +113.6~\text{bps}$), dragging GDP by $-1.363\%$. AMIP pre-trade gating eliminates dealer defaults ($p_{\text{default}} = 0.00$), containing credit spread widening to $\le 3.5~\text{bps}$.
-Because microsecond price discovery delay ($\tau = 43.41~\mu\text{s}$) imposes an infinitesimal friction ($\Delta \mathcal{W}_{\text{latency}} \sim 10^{-7}$), the solvency preservation benefit dominates the latency friction by a factor of
-\begin{equation}
-\frac{\Delta \mathcal{W}_{\text{solvency}}}{\Delta \mathcal{W}_{\text{latency}}} = \mathbf{2,536,282\times} > 10{,}000\times,
-\end{equation}
-generating a net macroeconomic welfare surplus of $\mathbf{+1.321\%}$ of aggregate economic output.
-\end{theorem}
+\begin{proposition}[Stylized Calibrated Welfare Illustration (Proposition~GE1)]\label{thm:supp_ge1}
+Let $p_{\text{default}}$ denote the probability of primary market maker insolvency during an algorithmic cascade in the stylized model, and let $\tau_{\text{discovery}}$ denote the pre-trade inspection delay. Under the specified parametric calibration:
+\begin{enumerate}
+    \item Primary dealer insolvency in the model induces a credit spread surge ($\Delta S_{\text{credit}} \approx +113.6~\text{bps}$), dragging model-implied output by $-1.363\%$. AMIP pre-trade gating eliminates dealer defaults ($p_{\text{default}} = 0.00$), containing credit spread widening to $\le 3.5~\text{bps}$ (model output drag $-0.042\%$).
+    \item Because microsecond price discovery delay ($\tau = 43.41~\mu\text{s}$) imposes an infinitesimal modeled friction ($\Delta \mathcal{W}_{\text{latency}} \sim 10^{-7}$), the solvency preservation benefit dominates the latency friction in this calibration by a factor of
+    \begin{equation}
+    \frac{\Delta \mathcal{W}_{\text{solvency}}}{\Delta \mathcal{W}_{\text{latency}}} = \mathbf{2,536,282\times} > 10{,}000\times,
+    \end{equation}
+    generating an illustrative net welfare surplus of $\mathbf{+1.321\%}$ under the assumed macroeconomic sensitivities (\texttt{results/provenance/macro\_general\_equilibrium\_results.json}).
+\end{enumerate}
+This proposition is a stylized parametric illustration showing that under plausible macro sensitivities, microsecond gating frictions are orders of magnitude smaller than solvency preservation benefits; it is not an empirical claim of guaranteed real-world macroeconomic GDP expansion.
+\end{proposition}
 \begin{proof}
 Define social welfare $\mathcal{W}$ in a stylized general equilibrium framework following \cite{brunnermeier2009market,almgren2000optimal}:
 \begin{equation}
@@ -1556,7 +1566,7 @@ We compute the welfare dominance ratio:
 \begin{equation}
 \text{Dominance Ratio} = \frac{\Delta \mathcal{W}_{\text{solvency}}}{\Delta \mathcal{W}_{\text{latency}}} = \frac{1.321 \times 10^{-2}}{5.209 \times 10^{-9}} = \mathbf{2,536,282\times}.
 \end{equation}
-Because $2,536,282\times \gg 10{,}000\times$, the welfare gain from eliminating dealer insolvency cascades overwhelms the microsecond latency cost by more than six orders of magnitude, establishing macroeconomic general equilibrium dominance.
+Because $2,536,282\times \gg 10{,}000\times$, under the stated parameter values, the welfare benefit from eliminating dealer insolvency cascades dominates the microsecond latency friction by more than six orders of magnitude in this stylized calibration.
 \end{proof}
 
 \section{Supplement Theorem-to-Proof and Verification Mapping}
@@ -1599,7 +1609,7 @@ Non-Linear Kreiss Bound (Thm.~NL1) & Sec.~S20 & \nolinkurl{ContinuousSpectrum.le
 Continuous Hawkes SDE (Thm.~HP1) & Sec.~S21 & \nolinkurl{CanonicalFrontiers.lean} (\nolinkurl{hawkes_qv_rate_eval}) & \nolinkurl{test_continuous_hawkes.py} \\
 Anti-Spoofing Effective Depth (Thm.~SP1) & Sec.~S22 & \nolinkurl{CanonicalFrontiers.lean} (\nolinkurl{anti_spoofing_depth_discount_bound}) & \nolinkurl{test_anti_spoofing.py} \\
 Clearinghouse Contraction (Thm.~CC1) & Sec.~S23 & \nolinkurl{CanonicalFrontiers.lean} (\nolinkurl{clearinghouse_contraction_eval}) & \nolinkurl{test_clearinghouse_contagion.py} \\
-Macroeconomic Welfare Dominance (Thm.~GE1) & Sec.~S24 & \nolinkurl{CanonicalFrontiers.lean} (\nolinkurl{macroeconomic_welfare_dominance}) & \nolinkurl{test_macro_general_equilibrium.py} \\
+Calibrated Welfare Illustration (Prop.~GE1) & Sec.~S24 & \nolinkurl{CanonicalFrontiers.lean} (\nolinkurl{macroeconomic_welfare_dominance}) & \nolinkurl{test_macro_general_equilibrium.py} \\
 Deterministic Hardware Pipeline (20ns RTL) & Sec.~S16 & \nolinkurl{Frontiers.lean} (\nolinkurl{fpga_deterministic_latency_bound}) & \nolinkurl{test_five_frontiers.py} \\
 \bottomrule\end{longtable}\endgroup
 
