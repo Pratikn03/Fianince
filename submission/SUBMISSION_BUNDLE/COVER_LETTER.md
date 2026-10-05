@@ -1,47 +1,50 @@
 # Editorial Submission Cover Letter
 
-**To:** The Editorial Board  
-**Target Journal:** *The Review of Financial Studies* / *Journal of Financial Economics*  
+**To:** The Editors  
+**Target Journal:** *The Journal of Finance* / *The Journal of Financial Economics* / *The Review of Financial Studies*  
 **Date:** October 2026  
 **Re:** Submission of *"From Human Markets to Machine Markets: Feedback Stability, Auditable Memory, and Financial Constraints"*  
 **Authors:** Pratik Niroula and Prashant Niroula  
+**Manuscript Length:** 48 pages (12pt, 1.5 line spacing; abstract strictly 97 words)  
+**Accompanying Materials:** Internet Appendix / Mathematical Supplement (44 pages) and Complete Open Replication Archive  
 
 ---
 
-Dear Editors and Program Committee,
+Dear Editors,
 
 We are pleased to submit our manuscript, **"From Human Markets to Machine Markets: Feedback Stability, Auditable Memory, and Financial Constraints,"** for consideration for publication.
 
-Modern electronic exchanges are increasingly dominated by autonomous algorithms, high-frequency quoting engines, and adaptive reinforcement learning agents. While classical market microstructure models treat liquidity providers and consumers as static linear optimizers or exogenous noise traders, real-world algorithmic market participants adapt dynamically, creating closed-loop feedback between order book flow and price dynamics.
+As autonomous trading algorithms, high-frequency execution engines, and adaptive machine-learning strategies increasingly intermediate financial markets, price formation ceases to be an open-loop discovery process and becomes a closed dynamical system: algorithms learn from prices that their own order flow directly impacts. 
 
-In this paper, we address the fundamental question: **When can an exchange supervisor or macroprudential regulator determine whether an observed market is operating in a stable versus supercritical feedback regime, and how can pre-trade market mechanisms provably bound nonnormal inventory amplification?**
+Our paper organizes around a single central economic and regulatory question:
+> **Can observable market data identify destabilizing adaptive feedback, when does that feedback become financially dangerous, and what information is fundamentally missing from public surveillance data?**
 
-Our manuscript establishes five core contributions:
+Rather than asserting speculative claims about universal machine behavior, our paper establishes **three concrete headline contributions** supported by a 10-study empirical identification chain and machine-checked mathematical foundations:
 
-1. **Closed-Loop Systems-Theoretic Identification Boundary:**  
-   We prove the *Swapped-Feedback Non-Identifiability Theorem* (Theorem M1): when algorithmic cohorts adapt with symmetric memory, the aggregate price response exhibits an exact Popov--Belevitch--Hautus (PBH) unobservable eigenspace defect of dimension $n-1$. Consequently, passive surveillance cannot identify cohort-level allocations, and we establish the minimal active probing rank conditions required to break this unobservable defect.
+1. **Contribution 1 — Identification Limits and Mandatory Surveillance Abstention:**  
+   We prove that public market feeds identify only merged rate–weight transfer functions, rendering individual algorithmic cohorts observationally equivalent. Separating near-coincident cohorts requires active probing budgets that scale as $\delta^{-4}$ under Le Cam minimax limits. In finite observation windows, bounded surveillance errors force a mandatory abstention layer around the critical unit boundary, explaining why public surveillance must withhold binary classification.
+   
+2. **Contribution 2 — High-Frequency Empirical Evidence and Natural Experiment:**  
+   Across a multi-year panel of 768 asset-days ($66.3 \times 10^6$ one-second transitions) on Binance and Coinbase, high-frequency feedback is modest and strictly subcritical in normal conditions ($\hat{Q} \approx 0.008, \hat{S} \approx 0.92 < 1.0$), with positive feedback confirmed across 99.7% of asset-days. We identify state-dependent non-linearities where order impact surges by $+11.1\%$ and volatility expands $62.7\times$ during depth depletion, replicated in regulated equity limit order books (NASDAQ Nordic FI-2010). Crucially, a Difference-in-Differences natural experiment around the July 8, 2022 Binance Zero-Fee trading schedule overhaul ($N=192$, parallel trends $p=0.835$) causally isolates the sensitivity of order-flow feedback to exchange fee architecture.
 
-2. **Minimax Information Bounds & Mandatory Abstention:**  
-   We prove a fundamental $\delta^{-4}$ sample-complexity lower bound for resolving cohort heterogeneity (Theorem M2) and establish the *Two-World Abstention Theorem* (Theorem M3): any error-controlled stability classifier must abstain near the critical spectral boundary $S = 1$, formally proving why selective classification unavoidably withholds judgment under finite observation windows.
+3. **Contribution 3 — Financial Fragility vs. Price Stability:**  
+   We demonstrate that classical spectral price stability ($\rho(J) < 1$) does not ensure financial safety. Due to the severe non-normality of the price–impact Jacobian, transient amplification can exhaust dealer capital buffers even when all eigenvalues remain strictly within the unit circle. We prove the exact worst-case safe shock radius $r^*_{\text{exact}} = B / M_C$ and establish its two-sided Kreiss bounds $\frac{B}{e n \mathcal{K}(J)} \le r^*_{\text{exact}} \le \frac{B}{\mathcal{K}(J)}$. Furthermore, feedback inflates low-frequency order flow variance by $(1 - S)^{-2}$, generating sustained inventory accumulation that triggers dealer margin calls in 69.1% of trials inside the spectrally stable regime.
 
-3. **Nonnormal Solvency & Kreiss Matrix Safe Radii:**  
-   We show that classical spectral radius stability ($\rho(J) < 1$) is strictly insufficient to prevent dealer default. Leveraging the Kreiss Matrix Theorem (Theorem M5) and its non-linear concave impact extension (Theorem NL1), we derive the exact worst-case safe inventory radius $r^* = B / (\mathcal{K}(J) \cdot P)$, proving that multi-asset cross-impact (Theorem M6) inflates the empirical Kreiss constant from $1.48$ to $1.73$, contracting clearinghouse solvency buffers by $14.43\%$.
+### Manuscript Scope and Organization
+In accordance with top finance journal guidelines, the main submission manuscript is strictly focused on economic theory, econometric identification, empirical market microstructure, and regulatory implications (48 pages, well within the 60-page journal ceiling; abstract 97 words). 
 
-4. **Machine-Checked Formal Verification in Lean 4:**  
-   To guarantee complete mathematical certitude across all linearizations, polynomials, and invariant bounds, all 36 mathematical environments and 216 theorems in the manuscript and supplement are formally mechanized in **Lean 4** with **0 `sorry` and 0 unproved axioms**, verified via `AxiomAudit.lean`.
+All formal mathematical proofs (including machine-checked Lean 4 Mechanization with 0 axioms and 0 `sorry`), algorithmic implementations (SIMD pre-trade interceptors and FPGA RTL), and extended multi-asset network derivations are housed in the companion **Internet Appendix / Mathematical Supplement** (44 pages).
 
-5. **Empirical Calibration & Provenance Rigor:**  
-   Using 6.3+ GB of Level-2 and Level-3 market data across crypto perpetuals (Coinbase L3, Binance 1-sec bars) and regulated equity markets (canonical NASDAQ Nordic FI-2010 Level-2 benchmark, SHA-256 `0fac513a408b4dd803373860831874d3423a89f41fbaf13323f8a25a3019f3eb`, CC0 1.0 license), an unsupervised Markov-Switching VAR identifies endogenous phase transitions into supercritical territory ($\hat{Q}_{\text{calm}} = 0.0076$ vs. $\hat{Q}_{\text{crisis}} = 1.1109$), while our AMIP RFC-001 pre-trade interceptor (implemented in C++20 SIMD at 7.7 ns and FPGA Verilog at 20.0 ns) suppresses flash-crash drawdown by $86.28\%$ with zero dealer insolvencies.
+### Data Availability and Provenance Rigor
+Every empirical estimate and calibration reported in the manuscript is tied to a reproducible 80-claim automated provenance ledger (`results/provenance/`), and our complete open reproduction suite (622 unit tests) executes cleanly. All public datasets are documented with cryptographic SHA-256 hashes and institutional sources.
 
-### Data Availability and Reproducibility
-The manuscript is accompanied by an open, fully verified reproduction suite. Every numerical claim in the paper is validated against the 80-claim automated provenance ledger (`scripts/provenance_ledger.py`), and the full test suite of 622 tests passes in under 60 seconds (`scripts/regenerate_all.py`). All benchmark datasets are publicly accessible with SHA-256 checksums.
-
-We certify that this manuscript is original, has not been published previously, and is not under consideration elsewhere. We look forward to the editorial evaluation and referee review.
+We confirm that this manuscript is original, has not been published previously, and is not under consideration elsewhere. We look forward to your evaluation and the referee process.
 
 Sincerely,
 
 **Pratik Niroula**  
-Author  
+Corresponding Author  
+Email: `pratik.niroula@alumni.harvard.edu`  
 
 **Prashant Niroula**  
 Author  
