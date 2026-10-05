@@ -302,7 +302,7 @@ Under a common rate $\eta$, summing \eqref{eq:disc-y} gives
 \[
  Y_{t+1}=(1-\eta)Y_t+\eta Qx_t,\qquad Y_t=\sum_i y_{i,t}.
 \]
-For the same initial aggregate state, probe sequence, and aggregate disturbance law, prices depend on $q$ only through $Q$. Equal $Q$ therefore implies equal aggregate price laws. This is the retained symmetry result, not a statement about known heterogeneous rates.
+For the same initial aggregate state, probe sequence, and aggregate disturbance law, prices depend on $q$ only through $Q$. Equal $Q$ therefore implies equal aggregate price laws. Under linear realization theory \cite{ho1966,hautus1969}, the unobserved cohort decomposition lies in an unobservable eigenspace defect. Furthermore, separating distinct exponential rate mixtures incurs fundamental minimax information-theoretic rate limits \cite{chen1995optimal,heinrich2018,wuyang2020}. This is the retained symmetry result, not a statement about known heterogeneous rates.
 
 \subsection{Known-rate measurement theorem}
 Let experiment $j$ inject the channel-input vector $U_{j,:}$ at time zero, with known pulse units and otherwise zero inputs. From a zero state,
@@ -516,7 +516,7 @@ The true response is nonnegative and satisfies the recurrence by construction. I
 This simple containment argument is what allows a rigorous relaxation. It does not establish that the exact nonlinear set is convex: the products $ab_t$ and $b_s\int\psi_jd\mu$ are bilinear.
 
 \section{A finite, covariance-aware conic outer relaxation}
-This section supplies a concrete alternative to the incorrect closed-form claim. It uses a second-order cone constraint for the response ellipsoid and linear outer constraints for the recurrence. McCormick inequalities are established convex-relaxation machinery \cite{mccormick}; the continuum-support containment argument is proved here.
+This section supplies a concrete alternative to the incorrect closed-form claim. It uses a second-order cone constraint for the response ellipsoid and linear outer constraints for the recurrence. McCormick inequalities are established convex-relaxation machinery \cite{mccormick}; set-membership identification with bounded noise and convex uncertainty sets follows \cite{milanese1991,calafiore2005}; the continuum-support containment argument is proved here.
 
 \subsection{Response bounds and a finite feedback bound}
 The ellipsoid's coordinate projections give
@@ -711,6 +711,7 @@ A production result should separately store: primal feasibility, dual-cone feasi
 The released numerical routine now retains the complete solved tangent matrices and applies residual correction to both objectives, using the negative-objective lower bound for the upper endpoint. It records solver and cut-termination diagnostics separately. These improvements do not enclose floating-point construction of the covariance geometry, mass cap, kernel envelopes, or cuts. Its endpoint candidates are therefore diagnostic; the structural certification flag remains false and certified classification is withheld. The theorem above is conditional on outward-valid arithmetic, not a proof that this numerical routine has attained it.
 
 \section{What coverage guarantees, and why abstention cannot disappear}
+Following the classical statistical formulation of classification with a reject option and selective classification \cite{chow1970,herbei2006,geifman2017}, we characterize the fundamental trade-off between strict classification error and mandatory abstention.
 \begin{theorem}[Directionally valid classifications]\label{thm:decision}
 Suppose an interval $[L_S,U_S]$ covers the true $S$ with probability at least $1-\alpha$. Issue STABLE if $U_S<1$, UNSTABLE if $L_S>1$, and ABSTAIN otherwise; an empty or unverified set is a separate non-certificate status. Then the unconditional probability of a wrong strict label is at most $\alpha$.
 If the probability of issuing a strict label is $c>0$, the implied conditional bound is at most $\min\{1,\alpha/c\}$, not automatically $\alpha$.
@@ -1341,7 +1342,7 @@ The quadratic Lyapunov function $V(\mathbf{z}) = \mathbf{z}^\top \mathbf{P} \mat
 \begin{equation}
 V(\mathbf{z}_{t+1}) - V(\mathbf{z}_t) = \mathbf{z}_t^\top (\mathbf{J}_{\text{net}}^\top \mathbf{P} \mathbf{J}_{\text{net}} - \mathbf{P}) \mathbf{z}_t = - \|\mathbf{z}_t\|_2^2 \le 0.
 \end{equation}
-By the Kreiss Matrix Theorem \cite{trefethen2005spectra}, the maximum transient amplification over all horizons $k \ge 0$ is bounded by:
+By the Kreiss Matrix Theorem \cite{kreiss1962,spijker1991,trefethen2005spectra}, the maximum transient amplification over all horizons $k \ge 0$ is bounded by:
 \begin{equation}
 \sup_{k \ge 0} \|\mathbf{J}_{\text{net}}^k\|_2 \le \alpha_{2d} \cdot \mathcal{K}(\mathbf{J}_{\text{net}}), \qquad \mathcal{K}(\mathbf{J}_{\text{net}}) = \sup_{|z| > 1} (|z| - 1) \|(z\mathbf{I} - \mathbf{J}_{\text{net}})^{-1}\|_2.
 \end{equation}
@@ -1353,7 +1354,7 @@ Now consider the effect of cross-impact coupling. In the decoupled system ($K_{i
 \begin{equation}
 \|(z\mathbf{I} - \mathbf{J}_{\text{net}}^{\text{decoupled}})^{-1}\|_2 = \max_{1 \le i \le d} \|(z\mathbf{I} - \mathbf{J}_i)^{-1}\|_2.
 \end{equation}
-When non-zero cross-impact $K_{ij} > 0$ is introduced, let $\mathbf{E} = \mathbf{J}_{\text{net}}^{\text{coupled}} - \mathbf{J}_{\text{net}}^{\text{decoupled}} = \begin{bmatrix} \mathbf{0} & \mathbf{K} - \operatorname{diag}(\mathbf{K}) \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \ne \mathbf{0}$.
+When non-zero cross-impact $K_{ij} > 0$ is introduced \cite{hasbrouck1991,cont2014}, let $\mathbf{E} = \mathbf{J}_{\text{net}}^{\text{coupled}} - \mathbf{J}_{\text{net}}^{\text{decoupled}} = \begin{bmatrix} \mathbf{0} & \mathbf{K} - \operatorname{diag}(\mathbf{K}) \\ \mathbf{0} & \mathbf{0} \end{bmatrix} \ne \mathbf{0}$.
 By the resolvent identity $(z\mathbf{I} - (\mathbf{J} + \mathbf{E}))^{-1} = (z\mathbf{I} - \mathbf{J})^{-1} [ \mathbf{I} - \mathbf{E}(z\mathbf{I} - \mathbf{J})^{-1} ]^{-1}$, the norm of the resolvent operator strictly expands along directions aligned with the singular vectors of $\mathbf{E}$:
 \begin{equation}
 \|(z\mathbf{I} - \mathbf{J}_{\text{net}}^{\text{coupled}})^{-1}\|_2 \ge \|(z\mathbf{I} - \mathbf{J}_{\text{net}}^{\text{decoupled}})^{-1}\|_2.
@@ -1366,7 +1367,7 @@ Consequently, individual single-asset stability $S_{ii} = a_i + K_{ii} Q_{ii} < 
 \section{Formal Proof of Non-Linear Square-Root Market Impact and Concave Kreiss Invariance}
 \label{sec:supp_square_root_impact}
 \begin{theorem}[Non-Linear Kreiss Bound Conservatism (Theorem~NL1)]\label{thm:supp_nl1}
-Consider the non-linear sublinear closed-loop price system $x_{t+1} = a x_t + \mathcal{I}(u_t) + \varepsilon_{t+1}$ with concave impact $\mathcal{I}(u) = \kappa r^* \sqrt{|u| / r^*} \operatorname{sgn}(u)$ subject to the AMIP rate limit $|u_t| \le r^*$.
+Consider the non-linear sublinear closed-loop price system $x_{t+1} = a x_t + \mathcal{I}(u_t) + \varepsilon_{t+1}$ with concave impact $\mathcal{I}(u) = \kappa r^* \sqrt{|u| / r^*} \operatorname{sgn}(u)$ \cite{bouchaud2004fluctuations,gatheral2010no} subject to the AMIP rate limit $|u_t| \le r^*$.
 At the rate limit $|u| = r^*$, concave impact matches the linear chord $\mathcal{I}(r^*) = \kappa r^*$. The worst-case reachability envelope over all admissible order sequences $|u_t| \le r^*$ satisfies:
 \begin{equation}
 \sup_{t \ge 0, |u| \le r^*} \|x_t^{\text{non-linear}}\|_2 \le \sup_{t \ge 0, |u| \le r^*} \|x_t^{\text{linear}}\|_2 \le B,
@@ -1492,7 +1493,7 @@ In contrast, a naive interceptor utilizing nominal unweighted depth measures $V_
 \label{sec:supp_clearinghouse_contagion}
 \begin{theorem}[Clearinghouse Contraction Preservation (Theorem~CC1)]\label{thm:supp_cc1}
 Let $\mathbf{\Pi}_{\text{buffered}} = \mathbf{\Pi} \cdot \operatorname{diag}(1 - \boldsymbol{\gamma}_{\text{buffer}})$ denote the capital-buffer-discounted relative obligation matrix across $N$ broker-dealers and $M$ interconnected CCPs, with spectral radius $\rho(\mathbf{\Pi}_{\text{buffered}}) < 1.0$.
-The Eisenberg--Noe clearing operator $\Phi(\mathbf{p}) = \min\{\bar{\mathbf{p}}, \mathbf{\Pi}^\top \mathbf{p} + \mathbf{e}\}$ is a strict contraction mapping in $\ell_1$ norm. Cross-clearinghouse margin shortfalls satisfy $\|\Delta \mathbf{m}_{\text{secondary}}\|_\infty \le \rho(\mathbf{\Pi}) \|\Delta \mathbf{m}_1\|_\infty$, guaranteeing that local AMIP enforcement prevents super-multiplicative margin default cascades.
+The Eisenberg--Noe clearing operator \cite{eisenberg2001systemic,glasserman2015likely} $\Phi(\mathbf{p}) = \min\{\bar{\mathbf{p}}, \mathbf{\Pi}^\top \mathbf{p} + \mathbf{e}\}$ is a strict contraction mapping in $\ell_1$ norm. Cross-clearinghouse margin shortfalls satisfy $\|\Delta \mathbf{m}_{\text{secondary}}\|_\infty \le \rho(\mathbf{\Pi}) \|\Delta \mathbf{m}_1\|_\infty$, guaranteeing that local AMIP enforcement prevents super-multiplicative margin default cascades.
 \end{theorem}
 \begin{proof}
 Let $N$ denote clearing member broker-dealers and $\bar{\mathbf{p}} \in \mathbb{R}_+^N$ nominal obligations. The inter-dealer relative obligation matrix $\mathbf{\Pi} \in \mathbb{R}_+^{N \times N}$ has entries $\Pi_{ij} = L_{ij} / \bar{p}_i$ with $\sum_{j} \Pi_{ij} \le 1$.
@@ -1618,11 +1619,26 @@ AI assistance was utilized in drafting, code generation, and mathematical typese
 \bibitem{bouchaud2004fluctuations} J.-P. Bouchaud, Y. Gefen, M. Potters, and M. Wyart. \emph{Fluctuations and response in financial markets: the subtle nature of ``random'' price changes}. Quantitative Finance, 4(2):176--190, 2004.
 \bibitem{brunnermeier2005predatory} M. K. Brunnermeier and L. H. Pedersen. \emph{Predatory trading}. The Journal of Finance, 60(4):1825--1863, 2005.
 \bibitem{brunnermeier2009market} M. K. Brunnermeier and L. H. Pedersen. \emph{Market liquidity and funding liquidity}. Review of Financial Studies, 22(6):2201--2238, 2009.
+\bibitem{calafiore2005} G. Calafiore and M.~C. Campi. \emph{Uncertain convex programs: randomized solutions and confidence levels}. Mathematical Programming, 102(1):25--46, 2005.
+\bibitem{chen1995optimal} J. Chen. \emph{Optimal rate of convergence for estimating the number of components in a finite mixture}. The Annals of Statistics, 23(1):221--233, 1995.
+\bibitem{chow1970} C.~K. Chow. \emph{On optimum recognition error and reject tradeoff}. IEEE Transactions on Information Theory, 16(1):41--46, 1970.
+\bibitem{cont2014} R. Cont, A. Kukanov, and S. Stoikov. \emph{The price impact of order book events}. Journal of Financial Econometrics, 12(1):47--88, 2014.
 \bibitem{eisenberg2001systemic} L. Eisenberg and T. H. Noe. \emph{Systemic risk in financial systems}. Management Science, 47(2):236--249, 2001.
+\bibitem{gatheral2010no} J. Gatheral. \emph{No-dynamic-arbitrage and market impact}. Quantitative Finance, 10(7):749--759, 2010.
+\bibitem{geifman2017} Y. Geifman and R. El-Yaniv. \emph{Selective classification for deep neural networks}. In Advances in Neural Information Processing Systems (NeurIPS 2017), volume~30, pages 4878--4887, 2017.
 \bibitem{glasserman2015likely} P. Glasserman and H. P. Young. \emph{How likely is contagion in financial networks?} Journal of Banking \& Finance, 50:383--399, 2015.
 \bibitem{grossman1980impossibility} S. J. Grossman and J. E. Stiglitz. \emph{On the impossibility of informationally efficient markets}. The American Economic Review, 70(3):393--408, 1980.
+\bibitem{hasbrouck1991} J. Hasbrouck. \emph{Measuring the information content of stock trades}. The Journal of Finance, 46(1):179--207, 1991.
+\bibitem{hautus1969} M.~L.~J. Hautus. \emph{Controllability and observability conditions of linear autonomous systems}. Indagationes Mathematicae, 72:443--448, 1969.
+\bibitem{heinrich2018} P. Heinrich and J. Kahn. \emph{Strong minimax lower bounds for estimation of high-dimensional mixtures}. The Annals of Statistics, 46(2):810--838, 2018.
+\bibitem{herbei2006} R. Herbei and M.~H. Wegkamp. \emph{Can trained machine learning algorithms control their risk? An analysis of classification with a reject option}. The Annals of Statistics, 34(2):702--728, 2006.
+\bibitem{ho1966} B.~L. Ho and R.~E. K{\'a}lm{\'a}n. \emph{Effective construction of linear state-variable models from input/output functions}. Regelungstechnik, 14(12):545--548, 1966.
+\bibitem{kreiss1962} H.-O. Kreiss. \emph{{\"U}ber die Stabilit{\"a}tsdefinition f{\"u}r Differenzengleichungen die partielle Differentialgleichungen approximieren}. BIT Numerical Mathematics, 2(3):153--181, 1962.
 \bibitem{kyle1985continuous} A. S. Kyle. \emph{Continuous auctions and informed trader}. Econometrica, 53(6):1315--1335, 1985.
+\bibitem{milanese1991} M. Milanese and A. Vicino. \emph{Optimal estimation theory for dynamic systems with set membership uncertainty: an overview}. Automatica, 27(6):997--1009, 1991.
 \bibitem{ntakaris2018benchmark} A. Ntakaris, M. Magris, J. Kanniainen, M. Gabbouj, and A. Iosifidis. \emph{Benchmark dataset for mid-price forecasting of limit order book data with machine learning methods}. IEEE Transactions on Neural Networks and Learning Systems, 29(12):6153--6163, 2018.
+\bibitem{spijker1991} M.~N. Spijker. \emph{On a conjecture by LeVeque and Trefethen related to the Kreiss matrix theorem}. BIT Numerical Mathematics, 31(3):551--555, 1991.
 \bibitem{trefethen2005spectra} L. N. Trefethen and M. Embree. \emph{Spectra and Pseudospectra: The Behavior of Nonnormal Matrices and Operators}. Princeton University Press, Princeton, NJ, 2005.
+\bibitem{wuyang2020} Y. Wu and P. Yang. \emph{Optimal estimation of Gaussian mixtures via denoised method of moments}. The Annals of Statistics, 48(4):1981--2007, 2020.
 \end{thebibliography}
 \end{document}
