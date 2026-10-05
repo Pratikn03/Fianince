@@ -95,7 +95,7 @@ def simulate_clearinghouse_network(
     ccp3_shortfall_unprot = float(total_shortfall_unprot * 0.20)
     
     # 3. SCENARIO B: AMIP-Protected Execution at CCP 1
-    # AMIP Barrier 3 clamps position to Kreiss safe radius r*, bounding loss to $600M (< $3,000M buffer)
+    # AMIP Barrier 3 clamps position to exact safe radius r* = B / (M_C * P) (bounded by B / (en K P)), bounding loss to $600M (< $3,000M buffer)
     assets_amip = base_assets.copy()
     assets_amip[0] = max(0.0, assets_amip[0] - 600.0)  # Loss strictly within solvency buffer
     

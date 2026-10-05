@@ -53,6 +53,23 @@ def simulate_macro_general_equilibrium() -> Dict[str, Any]:
     
     macro_dominance_ratio = solvency_welfare_gain_pct / max(latency_welfare_cost_pct, 1e-9)
 
+    # 6. Sensitivity Analysis across Macroeconomic Elasticities
+    sensitivity_grid = []
+    for eta in [0.60, 0.90, 1.20, 1.50, 1.80, 2.40]:
+        for lam in [0.006, 0.012, 0.024]:
+            s_gain = ((unprotected_credit_spread_spike_bps - amip_credit_spread_spike_bps) / 100.0) * eta
+            l_cost = (latency_delay_amip_us / 1_000_000.0) * lam
+            dom = s_gain / max(l_cost, 1e-9)
+            sensitivity_grid.append({
+                "eta_gdp": eta,
+                "lambda_delay": lam,
+                "net_welfare_surplus_pct": round(s_gain - l_cost, 3),
+                "dominance_ratio": round(dom, 1)
+            })
+
+    min_dom = min(item["dominance_ratio"] for item in sensitivity_grid)
+    max_dom = max(item["dominance_ratio"] for item in sensitivity_grid)
+
     return {
         "model": "Macroeconomic_General_Equilibrium_Credit_Welfare",
         "unprotected_dealer_default_prob": p_default_unprotected,
@@ -65,6 +82,9 @@ def simulate_macro_general_equilibrium() -> Dict[str, Any]:
         "latency_welfare_friction_pct": float(f"{latency_welfare_cost_pct:.6e}"),
         "net_macro_welfare_surplus_pct": round(net_macro_welfare_surplus_pct, 3),
         "macro_dominance_ratio": round(macro_dominance_ratio, 1),
+        "sensitivity_min_dominance_ratio": round(min_dom, 1),
+        "sensitivity_max_dominance_ratio": round(max_dom, 1),
+        "sensitivity_grid": sensitivity_grid,
         "theorem_ge1_verified": bool(macro_dominance_ratio > 10000.0 and net_macro_welfare_surplus_pct > 1.0),
     }
 

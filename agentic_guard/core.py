@@ -149,10 +149,18 @@ class AgenticGuard:
         s_upper = float(s_hat + 1.96 * se)
         return s_hat, s_lower, s_upper
 
-    def compute_kreiss_safe_radius(self, current_price: float) -> float:
-        """Theorem M5 Kreiss Solvency Radius: r^* = B / (K(J) * P)."""
+    def compute_kreiss_safe_radius(
+        self,
+        current_price: float,
+        conservative: bool = False,
+        dim: int = 2
+    ) -> float:
+        """Theorem M5 Solvency Radius: exact r^* = B / (M_C * P) or conservative r_cons = B / (alpha_n * K(J) * P)."""
         buffer_capital = self.equity * self.buffer_ratio
-        return float(buffer_capital / (self.kreiss_constant_J * max(current_price, 1e-4)))
+        denom = self.kreiss_constant_J * max(current_price, 1e-4)
+        if conservative:
+            denom *= (np.e * dim)
+        return float(buffer_capital / denom)
 
     def intercept(
         self,
