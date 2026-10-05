@@ -22,8 +22,8 @@ OUT_EXT = ROOT / "research_extension" / "outputs" / "markov_switching_var_result
 
 
 def fit_markov_switching_var(
-    n_samples: int = 15000,
-    max_iter: int = 25,
+    n_samples: int = 5000,
+    max_iter: int = 10,
     tol: float = 1e-4
 ) -> Dict[str, Any]:
     """Fit 2-regime Markov-Switching VAR on real Bitcoin Level-3 depth records."""

@@ -62,7 +62,7 @@ def ledoit_wolf_shrinkage(K_emp: np.ndarray) -> Tuple[np.ndarray, float]:
     return K_shrunk, alpha
 
 
-def estimate_multi_asset_hayashi_yoshida(n_samples: int = 15000) -> Dict[str, Any]:
+def estimate_multi_asset_hayashi_yoshida(n_samples: int = 5000) -> Dict[str, Any]:
     """Estimate empirical multi-asset cross-impact matrix on real BTC, ETH, ADA depth."""
     use_cols = ["system_time", "midpoint", "spread", "buys", "sells"]
 
