@@ -8,6 +8,7 @@ import Proofs.Microfoundations
 import Proofs.InformationBounds
 import Proofs.AgenticGuard
 import Proofs.Frontiers
+import Proofs.ContinuousSpectrum
 
 namespace MachineMarkets
 

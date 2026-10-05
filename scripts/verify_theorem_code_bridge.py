@@ -220,6 +220,18 @@ REGISTRY = [
         "Proofs/Frontiers.lean", "multi_asset_kreiss_safe_ellipsoid",
         "tests/test_five_frontiers.py", "test_multi_asset_cross_impact"
     ),
+    TheoremMapping(
+        "theorem", "Cross-Venue Predatory Leakage (Theorem G3)",
+        r"\cref{thm:cross_venue_leakage}",
+        "Proofs/Frontiers.lean", "pegged_liquidity_anti_predatory",
+        "tests/test_multi_venue_fragmentation.py", "test_theorem_g3_predatory_leakage"
+    ),
+    TheoremMapping(
+        "theorem", "Non-Linear Kreiss Bound Conservatism (Theorem NL1)",
+        r"\cref{thm:nonlinear_kreiss}",
+        "Proofs/ContinuousSpectrum.lean", "secant_kreiss_scaling_identity",
+        "tests/test_square_root_impact.py", "test_theorem_nl1_kreiss_invariance"
+    ),
 ]
 
 

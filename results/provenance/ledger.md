@@ -74,6 +74,11 @@ written directly from `results/provenance/*.json` and are not repeated here.
 | F3-hamilton-vol-expansion | Sec. 7.5 MS(2)-VAR Hamilton Filter | Unsupervised crisis regime volatility expansion factor | `62.7` | `results/provenance/markov_switching_var_results.json` | ARTIFACT |
 | F4-hayashi-yoshida-radius | Sec. 8.6 Multi-Asset Cross-Impact | Hayashi-Yoshida RMT multi-asset safe radius contraction | `14.43` | `results/provenance/multi_asset_hayashi_yoshida_results.json` | ARTIFACT |
 | F5-cpp-simd-latency | Sec. 9.4 Hardware Architecture | Native C++20 SIMD ARM NEON pre-trade mean latency | `7.6` | `results/provenance/cpp_kernel_benchmark.json` | ARTIFACT |
+| F6-square-root-alpha | Sec. 8.7 Non-Linear Square-Root Impact | Empirical Bitcoin L3 power-law market impact exponent | `0.1269` | `results/provenance/square_root_impact_results.json` | ARTIFACT |
+| F7-multi-venue-reduction | Sec. 6.6 Multi-Venue Fragmentation | Federated AMIP cross-venue contagion drawdown reduction | `80.94` | `results/provenance/multi_venue_fragmentation_results.json` | ARTIFACT |
+| F8-marl-drawdown-suppression | Sec. 6.7 Deep MARL Population | PPO Actor-Critic multi-agent drawdown suppression under AMIP | `60.3` | `results/provenance/marl_amip_results.json` | ARTIFACT |
+| F9-hft-fifo-toxic-reduction | Sec. 9.3 LOB FIFO Queue Priority | Queue-aware AMIP toxic adverse selection loss reduction | `49.37` | `results/provenance/hft_queue_priority_results.json` | ARTIFACT |
+| F10-alveo-u50-lut-utilization | Sec. 9.4 Hardware Architecture | AMD Alveo U50 post-route FPGA LUT resource utilization | `0.25` | `results/provenance/fpga_silicon_synthesis_report.json` | ARTIFACT |
 | App-verifier | App. replication | standalone verifier counts and max regression difference | `4,320/4.4\times10^{-14}` | `studies/audited_constraints/results/standalone_verification.json` | ARTIFACT |
 
 ## Withdrawn

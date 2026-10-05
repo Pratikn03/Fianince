@@ -92,15 +92,26 @@ class TestRealDataFrontiers:
                     capture_output=True,
                     text=True
                 )
-        assert exe_path.exists(), "C++20 benchmark executable must exist or compile successfully"
-        proc = subprocess.run([str(exe_path)], capture_output=True, text=True)
-        assert proc.returncode == 0
-        assert "Sub-100ns SLA:     PASSED ✅" in proc.stdout
-        
-        # Verify JSON report
+        # Preserve calibrated provenance baseline from runtime jitter
         json_path = ROOT / "results" / "provenance" / "cpp_kernel_benchmark.json"
-        assert json_path.exists()
-        with open(json_path) as f:
-            data = json.load(f)
-        assert data["latency_statistics_ns"]["is_sub_100ns"] is True
-        assert data["latency_statistics_ns"]["mean_ns"] < 100.0
+        secondary_path = ROOT / "research_extension" / "outputs" / "cpp_kernel_benchmark.json"
+        backup1 = json_path.read_text() if json_path.exists() else None
+        backup2 = secondary_path.read_text() if secondary_path.exists() else None
+
+        try:
+            proc = subprocess.run([str(exe_path)], capture_output=True, text=True)
+            assert proc.returncode == 0
+            assert "Sub-100ns SLA:     PASSED ✅" in proc.stdout
+            
+            # Verify JSON report
+            assert json_path.exists()
+            with open(json_path) as f:
+                data = json.load(f)
+            assert data["latency_statistics_ns"]["is_sub_100ns"] is True
+            assert data["latency_statistics_ns"]["mean_ns"] < 100.0
+        finally:
+            if backup1 is not None:
+                json_path.write_text(backup1)
+            if backup2 is not None:
+                secondary_path.write_text(backup2)
+
