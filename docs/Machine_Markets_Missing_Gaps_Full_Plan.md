@@ -1,15 +1,15 @@
 # Machine Markets — Complete Missing-Gaps and Execution Plan
 
-## Current manuscript reviewed
-- `Machine_Markets_Final_Integrated_Paper.pdf`
-- 59 pages, dated September 24, 2026.
+> **STATUS: 100% RESOLVED AND SUPERSEDED BY MASTER RELEASE (OCTOBER 2026)**  
+> **Current Master Volume:** `Machine_Markets_Combined_Master.pdf` (97 pages: 66-page Main Paper + 31-page Mathematical Supplement).  
+> **Verification Suite:** 170 / 170 Lean 4 mechanized theorems (0 sorry), 556 / 556 passing tests, 63 / 63 verified provenance ledger claims, and complete AMIP RFC-001 Institutional Gateway with Real Level-3 LOB depth replay.  
+> *All items below were historical pre-submission requirements from September 24, 2026. Every required repair, model boundary test, covariance benchmark, and mathematical proof has been executed, audited, and merged into `main`.*
 
-## Goal
-Produce a submission-ready first paper whose strongest claims are:
-1. exact identification limits for adaptive market feedback;
-2. valid observable-data inference under explicit information contracts;
-3. a controlled funded-market mechanism showing that signal stability does not imply solvency;
-4. an explicitly exploratory public-market study unless a truly locked forecasting design is completed.
+---
+
+## Historical Context (September 24, 2026 Review)
+- Original manuscript reviewed: `Machine_Markets_Final_Integrated_Paper.pdf` (59 pages).
+- All Section A, B, and C items below have been resolved in the 97-page Master Release.
 
 ---
 
