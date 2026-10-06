@@ -140,7 +140,7 @@ All reruns were executed cleanly from the command line without synthetic mockups
     - Root: `Machine_Markets_JF_Submission.pdf`
     - Paper: `paper/Machine_Markets_JF_Submission.pdf`
     - Review Freeze: `Machine_Markets_External_Review_Freeze.pdf`
-  - SHA-256 Checksum: `e96b091196e691ba90d8e5e28982afa7be42b93d2ebd63a4083e5458fe3d9a23`
+  - SHA-256 Checksum: `3739d00ea516e2bb108d1a17367f102b3157a06a0f4a13b810cf55d6ecdb37f7`
 
 ---
 

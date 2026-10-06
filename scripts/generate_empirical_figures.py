@@ -155,9 +155,9 @@ def build_figure():
     ax_c = fig.add_subplot(gs[0, 2])
 
     methods = [
-        ("OLS\nReduced-Form", 0.0082, 0.00760, 0.00870, NAVY, "o"),
-        ("MD\nLyapunov (C1)", 0.00861, 0.00750, 0.00972, FOREST, "^"),
-        ("Rigobon (C2)\nHeteroskedastic", -0.01913, -0.02186, -0.01640, CRIMSON, "v"),
+        ("OLS\nDynamic", 0.0082, 0.00760, 0.00870, NAVY, "o"),
+        ("MD\nRobustness", 0.00861, 0.00750, 0.00972, FOREST, "^"),
+        ("Rigobon\nContemp.", -0.01913, -0.02186, -0.01640, CRIMSON, "v"),
     ]
 
     x_c = np.arange(len(methods))
@@ -172,7 +172,7 @@ def build_figure():
     ax_c.set_xticks(x_c)
     ax_c.set_xticklabels([m[0] for m in methods], fontsize=8.0, fontweight="bold")
     ax_c.set_ylabel(r"Estimated feedback parameter $Q$", fontweight="bold")
-    ax_c.set_title(r"(c) Dual Structural Identification", loc="left", fontweight="bold")
+    ax_c.set_title(r"(c) Dynamic Robustness and Contemporaneous Identification", loc="left", fontweight="bold", fontsize=7.0)
     ax_c.set_ylim(-0.028, 0.020)
 
     # Annotate economic mechanism contrast with clean text boxes

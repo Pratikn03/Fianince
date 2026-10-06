@@ -6,7 +6,7 @@
 **External Review Freeze Artifact**: `Machine_Markets_External_Review_Freeze.pdf`  
 **Journal Target**: *Journal of Finance* / *Journal of Financial Economics* / *Review of Financial Studies*  
 **Compilation Status**: Strictly 48 pages exact | 0.0 pt overfull `\hbox`es | 0 undefined citations | Abstract 99 words ($\le 100$ words)  
-**Cryptographic Integrity**: SHA-256 `e96b091196e691ba90d8e5e28982afa7be42b93d2ebd63a4083e5458fe3d9a23`  
+**Cryptographic Integrity**: SHA-256 `3739d00ea516e2bb108d1a17367f102b3157a06a0f4a13b810cf55d6ecdb37f7`  
 **Synchronization**: Byte-for-byte identical across:
 1. `Machine_Markets_JF_Submission.pdf` (root)
 2. `paper/Machine_Markets_JF_Submission.pdf`
@@ -85,7 +85,7 @@ Overfull \hbox Warnings   : 0.0 pt (Zero overfull boxes across entire document)
 Undefined References      : 0 (Zero undefined citations or cross-references)
 Abstract Word Count       : 99 words (Strictly <= 100 words)
 Bibliography Entries      : 34 references (Neatly formatted on Pages 47 and 48)
-SHA-256 Checksum          : e96b091196e691ba90d8e5e28982afa7be42b93d2ebd63a4083e5458fe3d9a23
+SHA-256 Checksum          : 3739d00ea516e2bb108d1a17367f102b3157a06a0f4a13b810cf55d6ecdb37f7
 Path Synchronization      : Byte-for-byte identical across:
                             1. Machine_Markets_JF_Submission.pdf
                             2. paper/Machine_Markets_JF_Submission.pdf
