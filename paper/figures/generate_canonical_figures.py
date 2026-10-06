@@ -50,7 +50,7 @@ def plot_equity_flash_crash():
     width = 0.35
     
     b1 = ax1.bar(x - width/2, Q_vals, width, label=r"Price Feedback $\hat{Q}$", color="#2b5c8f")
-    b2 = ax1.bar(x + width/2, [min(s, 3.5) for s in S_vals], width, label=r"Depth-Scaled Sensitivity $\hat{S}_{\mathrm{eff}}$", color="#c0392b")
+    b2 = ax1.bar(x + width/2, [min(s, 3.5) for s in S_vals], width, label=r"Depth-Scaled Sensitivity $\hat{\Xi}_{\mathrm{depth}}$", color="#c0392b")
     ax1.set_ylabel("Sensitivity Metric")
     ax1.set_title("May 6, 2010 E-mini S&P 500 Flash Crash", fontweight="bold")
     ax1.set_xticks(x)
@@ -69,8 +69,8 @@ def plot_equity_flash_crash():
     t_Q = [treasury["calm_feedback_q"], treasury["crisis_feedback_q"]]
     t_S = [treasury["calm_feedback_q"] + 0.95, treasury["crisis_feedback_q"] + 0.95]
     
-    ax2.bar(x - width/2, t_Q, width, label=r"$\hat{Q}$", color="#2b5c8f")
-    ax2.bar(x + width/2, [min(s, 3.5) for s in t_S], width, label=r"$\hat{S}_{\mathrm{eff}}$", color="#c0392b")
+    ax2.bar(x - width/2, t_Q, width, label=r"Price Feedback $\hat{Q}$", color="#2b5c8f")
+    ax2.bar(x + width/2, [min(s, 3.5) for s in t_S], width, label=r"Sensitivity $\hat{\Xi}_{\mathrm{depth}}$", color="#c0392b")
     ax2.set_ylabel("Sensitivity Metric")
     ax2.set_title("Oct 15, 2014 US Treasury 10Y Flash Rally", fontweight="bold")
     ax2.set_xticks(x)

@@ -133,7 +133,7 @@ Every item has been audited from first principles, tested with fresh code and Mo
 - **Overfull `\hbox`es**: **0.0 pt** (0 overfull boxes found in log).
 - **Undefined References / Citations**: **0** (0 undefined warnings in log).
 - **Abstract Length**: **98 words** in source (85 words extracted from PDF), strictly $\le 100$ words.
-- **SHA-256 Checksum**: `86294704904fc9bb6a9ee1c286e17d1c49617bcb04ee8eda7ffda123b263f132` identical across root, `paper/`, and `submission/SUBMISSION_BUNDLE/`.
+- **SHA-256 Checksum**: `e96b091196e691ba90d8e5e28982afa7be42b93d2ebd63a4083e5458fe3d9a23` identical across root, `paper/`, `submission/SUBMISSION_BUNDLE/`, and `Machine_Markets_External_Review_Freeze.pdf`.
 
 ---
 

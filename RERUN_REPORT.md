@@ -139,8 +139,8 @@ All reruns were executed cleanly from the command line without synthetic mockups
   - Synchronized across:
     - Root: `Machine_Markets_JF_Submission.pdf`
     - Paper: `paper/Machine_Markets_JF_Submission.pdf`
-    - Submission Bundle: `submission/SUBMISSION_BUNDLE/Machine_Markets_JF_Submission.pdf`
-  - SHA-256 Checksum: `86294704904fc9bb6a9ee1c286e17d1c49617bcb04ee8eda7ffda123b263f132`
+    - Review Freeze: `Machine_Markets_External_Review_Freeze.pdf`
+  - SHA-256 Checksum: `e96b091196e691ba90d8e5e28982afa7be42b93d2ebd63a4083e5458fe3d9a23`
 
 ---
 
