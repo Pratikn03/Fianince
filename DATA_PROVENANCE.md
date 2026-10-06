@@ -66,6 +66,8 @@ To verify end-to-end data provenance and re-generate all results without manual 
    python empirical_pipeline/binance_panel.py
    python empirical_pipeline/summarize_panel.py
    python scripts/rebuild_binance_natural_exp.py
+   python scripts/rebuild_minimum_distance.py
+   python scripts/recompute_stability_invariants.py
    ```
 3. **Execute Proposition 2.8 Large-Scale Matrix Sweep**:
    ```bash

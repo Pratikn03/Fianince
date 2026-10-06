@@ -59,7 +59,7 @@ def plot_equity_flash_crash():
     ax1.grid(True)
     
     # Drawdown mitigation comparison
-    ax1.annotate(f"Drawdown: {emini['unprotected_flash_drawdown_pct']}%\n$\\to$ AMIP: {emini['amip_protected_drawdown_pct']}%\n({emini['drawdown_reduction_pct']}% reduction)",
+    ax1.annotate(f"Drawdown: {emini['unprotected_flash_drawdown_pct']}%\n$\\to$ Gated: {emini['amip_protected_drawdown_pct']}%\n({emini['drawdown_reduction_pct']}% reduction)",
                  xy=(1, 1.8), xytext=(0.4, 2.3),
                  bbox=dict(boxstyle="round,pad=0.3", fc="#e8f8f5", ec="#27ae60", lw=1.5),
                  fontsize=8.5, fontweight="bold", color="#196f3d")
@@ -78,7 +78,7 @@ def plot_equity_flash_crash():
     ax2.legend(loc="upper left")
     ax2.grid(True)
     
-    ax2.annotate(f"Yield Drop: {treasury['yield_drop_bps']:.0f} bps\n$\\to$ AMIP: {treasury['protected_yield_drop_bps']:.1f} bps\n({treasury['volatility_suppression_pct']}% suppression)",
+    ax2.annotate(f"Yield Drop: {treasury['yield_drop_bps']:.0f} bps\n$\\to$ Gated: {treasury['protected_yield_drop_bps']:.1f} bps\n({treasury['volatility_suppression_pct']}% suppression)",
                  xy=(1, 1.2), xytext=(0.35, 2.2),
                  bbox=dict(boxstyle="round,pad=0.3", fc="#e8f8f5", ec="#27ae60", lw=1.5),
                  fontsize=8.5, fontweight="bold", color="#196f3d")

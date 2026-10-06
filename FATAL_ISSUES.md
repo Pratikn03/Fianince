@@ -133,7 +133,7 @@ Every item has been audited from first principles, tested with fresh code and Mo
 - **Overfull `\hbox`es**: **0.0 pt** (0 overfull boxes found in log).
 - **Undefined References / Citations**: **0** (0 undefined warnings in log).
 - **Abstract Length**: **98 words** in source (85 words extracted from PDF), strictly $\le 100$ words.
-- **SHA-256 Checksum**: `fe27cd7afed9c310d7cc3dae3159b598c1bf98814eb7523e7ecd64bf3eb15d84` identical across root, `paper/`, and `submission/SUBMISSION_BUNDLE/`.
+- **SHA-256 Checksum**: `7df69634348b4520e0efa953c955cfa8f6b224ac2973d125f7ef65e71e7001ca` identical across root, `paper/`, and `submission/SUBMISSION_BUNDLE/`.
 
 ---
 

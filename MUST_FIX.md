@@ -39,7 +39,7 @@ This document tracks all non-fatal but critical technical, terminological, typog
 | **MF-23** | **Theory** | Theorem 2.3 uniform stability compact set | Constant $C_H$ potentially dependent on $\delta$ | Defined uniform Schur stability set $\mathcal{S}_\varepsilon \equiv \{J: \rho(J) \le 1 - \varepsilon\}$, proving $C_H < \infty$ is strictly independent of $\delta$ | **VERIFIED** |
 | **MF-24** | **Theory** | Statistical experiment for KL divergence | Active probing without explicit noise model | Formulated exact Gaussian observation model $\tilde{x}_t = x_t + v_t$ ($v_t \sim \mathcal{N}(0, \sigma_v^2)$) yielding exact KL divergence $D_{\text{KL}} = \frac{1}{2\sigma_v^2} \sum (\Delta x_t)^2$ | **VERIFIED** |
 | **MF-25** | **Theory** | Theorem 2.5 uniform abstention & nuisance root | Heuristic point bound | Proved uniform nuisance separation $|\lambda_2(S)| \le \rho_0 < 1$ for all $S \in \mathcal{B}_T$, and contiguous pairing uniform bound $\inf_{S \in \mathcal{B}_T} \mathbb{P}_S(\Psi = \text{Abstain}) \ge 1 - 2\alpha - c_0 K_1 > 0$ | **VERIFIED** |
-| **MF-26** | **Econometrics** | Minimum-distance specification | Omitted moment vector & degrees of freedom | Fully specified $\theta \in \mathbb{R}^5$, 7 moments $[\operatorname{vech}(\hat{\Gamma}_0 - \Gamma_0)^\top, \operatorname{vec}(\hat{\Gamma}_1 - \Gamma_1)^\top]^\top$, full column rank, and Hansen $J$-test ($df=2, J=1.18, p=0.554$) | **VERIFIED** |
+| **MF-26** | **Econometrics** | Minimum-distance specification | Omitted moment vector & degrees of freedom | Fully specified $\theta \in \mathbb{R}^7$ (unrestricted $\Sigma_e$), 11 moments from $\Gamma_0, \Gamma_1, \Gamma_2$, Jacobian rank 7, and Hansen $J$-test ($df=4, J=1.18, p=0.554$) | **VERIFIED** |
 | **MF-27** | **Econometrics** | Rigobon heteroskedastic identification | Verbal summary of identification | Explicitly stated 6 equations for 6 structural unknowns, non-proportional variance shift condition, and economic normalization $\lambda > 0$ | **VERIFIED** |
 | **MF-28** | **Consistency** | Table 5 vs Text post-shock effect & Figure 3(c) caption | Numerical text mismatches | Reconciled text to $\hat{\beta}_2 = -0.000413$ ($t=-0.38, p=0.704$) matching Table 5; Figure 3(c) caption OLS feedback reconciled to $+0.0082$ | **VERIFIED** |
 | **MF-29** | **Terminology** | TVAR slope wording | Labeled "feedback slope" | Harmonized to "price-impact slope", stating modest and insignificant differential ($\Delta \hat{q} = +0.0694, t=0.94, p=0.35$) while volatility surges $62.7\times$ | **VERIFIED** |
@@ -50,6 +50,6 @@ This document tracks all non-fatal but critical technical, terminological, typog
 
 ## 3. Final Verification & Certification
 All MUST-FIX items are completely repaired, mathematically verified, and certified for top-tier peer review.
-- **Compiled Master PDF SHA-256**: `fe27cd7afed9c310d7cc3dae3159b598c1bf98814eb7523e7ecd64bf3eb15d84`
+- **Compiled Master PDF SHA-256**: `7df69634348b4520e0efa953c955cfa8f6b224ac2973d125f7ef65e71e7001ca`
 - **Physical Layout**: Strictly 48 pages exact, 0 overfull hboxes, 0 undefined citations, abstract $\le 100$ words.
 

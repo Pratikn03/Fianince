@@ -155,7 +155,7 @@ def build_figure():
     ax_c = fig.add_subplot(gs[0, 2])
 
     methods = [
-        ("OLS\nReduced-Form", 0.00815, 0.00760, 0.00870, NAVY, "o"),
+        ("OLS\nReduced-Form", 0.0082, 0.00760, 0.00870, NAVY, "o"),
         ("MD\nLyapunov (C1)", 0.00861, 0.00750, 0.00972, FOREST, "^"),
         ("Rigobon (C2)\nHeteroskedastic", -0.01913, -0.02186, -0.01640, CRIMSON, "v"),
     ]
