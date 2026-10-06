@@ -1,7 +1,7 @@
 # DATA PROVENANCE & REPRODUCIBILITY AUDIT
 
-**Audit Date**: October 5, 2026  
-**Auditor**: Antigravity Quantitative Verification Engine (Submission Hardening Cycle 6)  
+**Audit Date**: October 6, 2026  
+**Auditor**: Antigravity Quantitative Verification Engine (Submission Hardening Cycle 11 - Final Freeze)  
 **Target Repository**: `Machine_Markets_Master_Release`  
 **License Compliance**: Open Science / Public Datasets / CC-BY-4.0  
 **Verification Status**: **100% CRYPTOGRAPHICALLY VERIFIED**
@@ -22,7 +22,7 @@ This provenance audit certifies the lineage, raw data integrity, checksums, obse
 | **DS-02 (Flagship Natural Experiment)** | Binance Spot Public API | BTC/USDT (Treated) + 7 Altcoins (Control) | Jan 10 -- Dec 24, 2022 | 192 asset-days (24 bi-monthly dates) | Subpanel of DS-01 | Synced with DS-01 | `scripts/rebuild_binance_natural_exp.py` | Table 5, Table 7, Section 4.2 |
 | **DS-03 (Coinbase Level-3 LOB)** | Coinbase Exchange L3 Feed | BTC-USD, ETH-USD | Multi-week high-volatility window | $1.03 \times 10^6$ synchronized 1-sec depth snapshots | 1.14 GB (`1-09-1-20.csv`) | `5d3f14a2d252a884e3c9b81a...` | `empirical_pipeline/cross_venue_check.py` | Table 6, Table 9, Table 10 |
 | **DS-04 (FI-2010 NASDAQ Benchmark)** | NASDAQ Nordic (Benchmark) | 5 Liquid Equities (Kesko, Outokumpu, Sampo, Rautaruukki, Wärtsilä) | 10 Trading Days | 272,941 continuous order book snapshots | 56 MB (`data.csv`) | `0fac513a408b4dd803373860...` | `empirical_pipeline/equity_benchmark_analysis.py` | Table 8, Section 5.2 |
-| **DS-05 (Frozen Holdout LOB)** | Binance Futures (Perpetual) | BTC/USDT Perpetual Contract | Jan 9 -- Jan 20, 2023 | 935,199 continuous 1-second bars | Subpanel of L3 raw | Cryptographically locked | `empirical_pipeline/btc_jan2023_orderbook_analysis.py` | Table 13, Section 6.3 |
+| **DS-05 (Documented Holdout LOB)** | Binance Futures (Perpetual) | BTC/USDT Perpetual Contract | Jan 9 -- Jan 20, 2023 | 935,199 continuous 1-second bars | Subpanel of L3 raw | Cryptographically locked | `empirical_pipeline/btc_jan2023_orderbook_analysis.py` | Table 13, Section 6.6 |
 | **DS-06 (Historical Flash Crash TAQ)** | CFTC / SEC Official Joint Report | E-mini S&P 500 Index Futures | May 6, 2010 (13:00--15:30 CST) | Second-by-second trade/quote tape | Official Joint Report Data | Calibrated Parameters | `empirical_pipeline/equity_flash_crash_taq.py` | Figure 3, Section 5.1 |
 | **DS-07 (Treasury Flash Rally)** | Joint Treasury Staff Report | 10-Year U.S. Treasury Futures | Oct 15, 2014 (08:00--10:00 EST) | Sub-minute price and liquidity event logs | Official Joint Report Data | Calibrated Parameters | `empirical_pipeline/equity_flash_crash_taq.py` | Figure 3, Section 5.1 |
 

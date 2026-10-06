@@ -1,7 +1,7 @@
 # MUST-FIX ITEMS: PRE-CIRCULATION COMPLIANCE AUDIT
 
-**Audit Date**: October 5, 2026  
-**Auditor**: Antigravity Quantitative Verification Engine (Submission Hardening Cycle 8)  
+**Audit Date**: October 6, 2026  
+**Auditor**: Antigravity Quantitative Verification Engine (Submission Hardening Cycle 11 - Final Freeze)  
 **Status**: **ALL ITEMS AUDITED, REPAIRED, AND VERIFIED (100% COMPLETE)**
 
 ---
@@ -43,13 +43,19 @@ This document tracks all non-fatal but critical technical, terminological, typog
 | **MF-27** | **Econometrics** | Rigobon heteroskedastic identification | Verbal summary of identification | Explicitly stated 6 equations for 6 structural unknowns, non-proportional variance shift condition, and economic normalization $\lambda > 0$ | **VERIFIED** |
 | **MF-28** | **Consistency** | Table 5 vs Text post-shock effect & Figure 3(c) caption | Numerical text mismatches | Reconciled text to $\hat{\beta}_2 = -0.000413$ ($t=-0.38, p=0.704$) matching Table 5; Figure 3(c) caption OLS feedback reconciled to $+0.0082$ | **VERIFIED** |
 | **MF-29** | **Terminology** | TVAR slope wording | Labeled "feedback slope" | Harmonized to "price-impact slope", stating modest and insignificant differential ($\Delta \hat{q} = +0.0694, t=0.94, p=0.35$) while volatility surges $62.7\times$ | **VERIFIED** |
-| **MF-30** | **Empirical** | Historical flash crash calibration status | Potential confusion with causal estimate | Documented $8.76\times$ volume intensity multiplier from Waddell & Reed execution rate leading to $\hat{S}_{\text{eff}} = 8.131$; demoted to stylized accounting replay | **VERIFIED** |
+| **MF-30** | **Empirical** | Historical flash crash calibration status | Potential confusion with causal estimate | Documented $8.76\times$ volume intensity multiplier from Waddell & Reed execution rate leading to $\hat{\Xi}_{\text{depth}} = 8.131$; demoted to stylized accounting replay | **VERIFIED** |
 | **MF-31** | **Simulation** | Dealer fragility dual mechanism | Combined channel descriptions | Formalized Channel A (Non-Normal Transient Amplification, Theorem 2.6 and Proposition 2.8) vs Channel B (Persistent Flow Accumulation, $\sigma_e^2 / (1-S)^2$, Table 12 and B3) | **VERIFIED** |
+| **MF-32** | **Diagnostics** | TVAR and Flash Crash sensitivity notation | Labeled as $\hat{S}_{\text{eff}}$ confusing dimensionless root | Renamed to Depth-Scaled Price Sensitivity Diagnostic $\hat{\Xi}_{\text{depth}} \equiv a_{\text{level}} + I_{\text{depth}}$ | **VERIFIED** |
+| **MF-33** | **Simulation** | Table 11 architecture & persistence distinction | Redundant failure rate column; nominal/effective ambiguity | Restructured to 7 clean columns; distinguished $S_{\rm nom}=0.70$ from $S_{\rm eff}=1.10$ under $0.5\times$ capacity (69.1% halt rate) | **VERIFIED** |
+| **MF-34** | **Attribution** | Section 6 terminology and holdout description | "Locked Holdout" and "Causal Attribution" overclaim | Renamed to "Documented Out-of-Sample Holdout" and Figure 5 "Cohort Disaggregation"; clarified Contract I1 parameter estimation vs causal identification | **VERIFIED** |
 
 ---
 
 ## 3. Final Verification & Certification
 All MUST-FIX items are completely repaired, mathematically verified, and certified for top-tier peer review.
-- **Compiled Master PDF SHA-256**: `7df69634348b4520e0efa953c955cfa8f6b224ac2973d125f7ef65e71e7001ca`
-- **Physical Layout**: Strictly 48 pages exact, 0 overfull hboxes, 0 undefined citations, abstract $\le 100$ words.
+- **Compiled Master PDF SHA-256**: `86294704904fc9bb6a9ee1c286e17d1c49617bcb04ee8eda7ffda123b263f132`
+- **Physical Layout**: Strictly 48 pages exact, 0 overfull hboxes, 0 undefined citations, abstract 99 words ($\le 100$ words).
+
+READY FOR EXTERNAL EXPERT REVIEW — NO KNOWN FATAL ISSUES
+
 

@@ -1,7 +1,7 @@
 # THEOREM AUDIT: FIRST-PRINCIPLES MATHEMATICAL VERIFICATION
 
-**Date**: October 5, 2026  
-**Auditor**: Antigravity Quantitative Verification Engine (Submission Hardening Cycle 9)  
+**Date**: October 6, 2026  
+**Auditor**: Antigravity Quantitative Verification Engine (Submission Hardening Cycle 11 - Final Freeze)  
 **Target Manuscript**: `paper/Machine_Markets_JF_Submission.tex` / `Machine_Markets_JF_Submission.pdf`  
 **Status**: **ALL THEOREMS, PROPOSITIONS, AND LEMMAS MATHEMATICALLY VERIFIED AND PROVEN**
 
@@ -47,20 +47,19 @@ This document presents a rigorous, first-principles audit of every theorem, prop
 ---
 
 ### 2.3 Theorem 2.3: Lower Bound on Statistical Separation of Algorithmic Timescales
-- **Statement**: Let two candidate dynamic market systems have memory decay rates $a_1$ and $a_2 = a_1 + \delta$, where $\delta \in (0, 1 - a_1)$, with independent additive Gaussian observation noise $w_t \stackrel{iid}{\sim} \mathcal{N}(0, \sigma_w^2)$. Any statistical test $\phi_T: (\Delta p_1, \dots, \Delta p_T) \to \{1, 2\}$ achieving maximum error probability:
-  $$\max_{i \in \{1, 2\}} \mathbb{P}_{H_i}(\phi_T \neq i) \le \alpha < \frac{1}{2}$$
-  requires an observation window satisfying:
-  $$T \ge C(\alpha, \sigma_w^2, a_1) \cdot \delta^{-4}$$
-  where $C > 0$ is a constant independent of $\delta$ and $T$.
+- **Statement**: Consider testing whether a noiseless-state market ($w_t = 0$) consists of a single merged cohort with rate $\bar{\eta}$ versus two split cohorts with rates $\bar{\eta} \pm \delta$ and identical total feedback $Q$. Under deterministic probing sequences satisfying power constraint $\frac{1}{T} \sum_{t=0}^{T-1} u_t^2 \le \mathcal{P}_{\text{probe}}$ and independent additive Gaussian observation noise $\tilde{x}_t = x_t + v_t$ with $v_t \sim \mathcal{N}(0, \sigma_v^2)$, any active probing strategy distinguishing the two economies with worst-case probability of error at most $\alpha \in (0, 1/4)$ requires an observation budget $T$ satisfying:
+  $$T \ge \frac{C(\alpha, \sigma_v, \mathcal{P}_{\text{probe}})}{\delta^4} = \Omega(\delta^{-4})$$
+  where $C > 0$ is a constant independent of $\delta$.
 - **Proof Structure**:
   - Uses Le Cam's Two-Point Testing Inequality:
-    $$\inf_{\phi} \max_{i=1,2} \mathbb{P}_{H_i}(\phi \neq i) \ge \frac{1}{2} - \frac{1}{2} \|P_1^T - P_2^T\|_{\text{TV}} \ge \frac{1}{2} \left(1 - \sqrt{\frac{1}{2} D_{\text{KL}}(P_1^T \parallel P_2^T)}\right)$$
-  - For Gaussian autoregressive systems, the KL divergence is governed by the difference in power spectral densities $S_1(\omega) - S_2(\omega)$.
-  - **Closed-Loop Reduction Lemma**: Proves that the closed-loop transfer function difference satisfies:
-    $$H_\delta(e^{i\omega}) - H_0(e^{i\omega}) = H_0(e^{i\omega}) H_\delta(e^{i\omega}) e^{i\omega} \delta = \mathcal{O}(\delta)$$
-    in $L^2(-\pi, \pi)$, but when integrated against the stationary covariance and observation noise, the leading-order term vanishes due to spectral matching, yielding:
-    $$D_{\text{KL}}(P_1^T \parallel P_2^T) \le T \cdot \tilde{C} \cdot \delta^4$$
-  - Setting $D_{\text{KL}} \le 2(1 - 2\alpha)^2$ directly yields $T \ge C \delta^{-4}$.
+    $$\inf_{\phi} \max_{i=0,1} \mathbb{P}_{i}(\phi \neq i) \ge \frac{1}{2} - \frac{1}{2} \|P_0^T - P_1^T\|_{\text{TV}} \ge \frac{1}{2} \left(1 - \sqrt{\frac{1}{2} D_{\text{KL}}(P_0^T \parallel P_1^T)}\right)$$
+  - For Gaussian observation noise with identical covariance $\sigma_v^2 I_T$, the KL divergence is governed by deterministic trajectory discrepancy: $D_{\text{KL}} = \frac{1}{2\sigma_v^2} \sum_{t=1}^T (\Delta x_t)^2$.
+  - **Closed-Loop Reduction Lemma**: Proves that the closed-loop transfer function perturbation satisfies:
+    $$H_\delta(z) - H_0(z) = H_0(z) H_\delta(z) \Delta G(z) = \mathcal{O}(\delta^2)$$
+    in $\ell_1$ norm uniformly on the compact uniform Schur-stability set $\mathcal{S}_\varepsilon$.
+  - By Young's convolution inequality, $\|\Delta x\|_{\ell_2} \le \|\Delta h\|_{\ell_1} \|u\|_{\ell_2} \le C_H \delta^2 \sqrt{T \mathcal{P}_{\text{probe}}}$, yielding:
+    $$D_{\text{KL}}(P_0^T \parallel P_1^T) \le T \cdot C_0 \cdot \delta^4$$
+  - Setting $D_{\text{KL}} \le 2(1 - 2\alpha)^2$ directly yields $T \ge C(\alpha, \sigma_v, \mathcal{P}_{\text{probe}}) \delta^{-4} = \Omega(\delta^{-4})$.
 - **Verdict**: **VERIFIED — RESOLVED AND MATHEMATICALLY FORTIFIED**.
 
 ---

@@ -1,9 +1,9 @@
-# RERUN REPORT: MACHINE MARKETS VERSION 10 FINAL TECHNICAL FREEZE
+# RERUN REPORT: MACHINE MARKETS VERSION 11 FINAL TECHNICAL FREEZE
 
-**Date**: October 5, 2026  
-**Auditor**: Antigravity Quantitative Verification Engine (Submission Hardening Cycle 9)  
+**Date**: October 6, 2026  
+**Auditor**: Antigravity Quantitative Verification Engine (Submission Hardening Cycle 11 - Final Freeze)  
 **Target Manuscript**: `Machine_Markets_JF_Submission.pdf` (Journal of Finance / JFE / RFS Standard)  
-**Compilation**: Exactly 48 pages | 0.0 pt overfull `\hbox`es | 0 undefined citations | Abstract $\le 100$ words  
+**Compilation**: Exactly 48 pages | 0.0 pt overfull `\hbox`es | 0 undefined citations | Abstract 99 words ($\le 100$ words)  
 **Active Python Environment**: `/Users/pratik_n/.venv_kbound_tta/bin/python`  
 **Git Branch**: `submission-v6-freeze`  
 
@@ -135,12 +135,12 @@ All reruns were executed cleanly from the command line without synthetic mockups
   - Total Pages: **Strictly 48 pages exact**
   - Overfull `\hbox`es: **0.0 pt (0 warnings)**
   - Undefined References: **0**
-  - Abstract Word Count: **98 words** ($\le 100$ words)
+  - Abstract Word Count: **99 words** ($\le 100$ words)
   - Synchronized across:
     - Root: `Machine_Markets_JF_Submission.pdf`
     - Paper: `paper/Machine_Markets_JF_Submission.pdf`
     - Submission Bundle: `submission/SUBMISSION_BUNDLE/Machine_Markets_JF_Submission.pdf`
-  - SHA-256 Checksum: `7df69634348b4520e0efa953c955cfa8f6b224ac2973d125f7ef65e71e7001ca`
+  - SHA-256 Checksum: `86294704904fc9bb6a9ee1c286e17d1c49617bcb04ee8eda7ffda123b263f132`
 
 ---
 
