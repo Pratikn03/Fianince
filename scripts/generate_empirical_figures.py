@@ -156,7 +156,7 @@ def build_figure():
 
     methods = [
         ("OLS\nReduced-Form", 0.00815, 0.00760, 0.00870, NAVY, "o"),
-        ("SMM\nLyapunov (C1)", 0.00861, 0.00750, 0.00972, FOREST, "^"),
+        ("MD\nLyapunov (C1)", 0.00861, 0.00750, 0.00972, FOREST, "^"),
         ("Rigobon (C2)\nHeteroskedastic", -0.01913, -0.02186, -0.01640, CRIMSON, "v"),
     ]
 
