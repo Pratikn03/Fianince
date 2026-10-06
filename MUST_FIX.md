@@ -1,7 +1,7 @@
 # MUST-FIX ITEMS: PRE-CIRCULATION COMPLIANCE AUDIT
 
 **Audit Date**: October 5, 2026  
-**Auditor**: Antigravity Quantitative Verification Engine (Submission Hardening Cycle 6)  
+**Auditor**: Antigravity Quantitative Verification Engine (Submission Hardening Cycle 8)  
 **Status**: **ALL ITEMS AUDITED, REPAIRED, AND VERIFIED (100% COMPLETE)**
 
 ---
@@ -29,32 +29,45 @@ This document tracks all non-fatal but critical technical, terminological, typog
 | **MF-11** | **Formatting** | Overfull horizontal boxes | 99.1 pt overfull in DiD table | Added `\resizebox{0.88\textwidth}{!}`: **0.0 pt overfull hboxes** | **VERIFIED** |
 | **MF-12** | **Formatting** | Undefined citations and cross-references | Risk of broken keys | Compiler log confirms **0 undefined references/citations** | **VERIFIED** |
 | **MF-13** | **Abstract** | Word count limit compliance | Required $\le 100$ words | Exactly **98 words** in source (85 words in PDF) | **VERIFIED** |
-| **MF-14** | **Replication** | Multi-path bundle synchronization | Mismatched PDF versions across folders | Byte-for-byte identical PDF (`03b812a...`) across all 3 directories | **VERIFIED** |
+| **MF-14** | **Replication** | Multi-path bundle synchronization | Mismatched PDF versions across folders | Byte-for-byte identical PDF (`0637103...`) across all 3 directories | **VERIFIED** |
+| **MF-15** | **Theory** | Single-cohort stability under signed feedback | Omitted lower Jury stability bound | Explicitly stated: $-\frac{(2-\eta)(1+a)}{\eta} < Q < 1 - a$ prevents oscillatory period-doubling explosion | **VERIFIED** |
+| **MF-16** | **Theory** | Theorem 2.3 $z$-transform timing & realization | Missing factor $z$; $\eta=1$ included in states | Preserved contemporaneous update algebra with factor $z$; restricted minimal realization to dynamic $\eta \in (0, 1)$ | **VERIFIED** |
+| **MF-17** | **Theory** | Closed-loop reduction lemma for $\delta^{-4}$ | $\Delta h_t$ evaluated on open-loop memory kernel | Proved closed-loop perturbation $H_\delta - H_0 = H_0 H_\delta z \Delta U_{\text{end}} = \mathcal{O}(\delta^2)$ in $\ell_1$ norm | **VERIFIED** |
+| **MF-18** | **Theory** | Two-state to scalar local-to-unity reduction | Evaluated scalar AR(1) likelihood ratio | Proved Jordan spectral decomposition into scalar local diffusion + stationary nuisance mode $\mathcal{O}_p(T^{-1/2})$ | **VERIFIED** |
+| **MF-19** | **Empirical** | Historical E-mini Flash Crash arithmetic | Conflicted $25\times$ impact with $0.0125$ feedback | Harmonized: $25\times$ depth collapse combined with momentum acceleration $q=0.0326$ yields implied $65.1\times$ surge to $0.8142$ | **VERIFIED** |
+| **MF-20** | **Econometrics**| Latent vs return VAR stability boundary bridge | Latent $x_t = p_t - p_t^*$ vs return $x_t = 10,000 \Delta p_t$ | Added Remark showing $\det(I - J) = (1 - J_{22})(1 - S)$, establishing observational equivalence | **VERIFIED** |
+| **MF-21** | **Claim Discipline**| Caption, cross-venue, and policy claims | Over-claiming phrases flagged in red team | Repaired Table 12 caption ("most closely matched by B3"), cross-venue VAR, FI-2010 replication, pre-trends, session resets | **VERIFIED** |
 
 ---
 
 ## 3. Detailed Verification of Completed Actions
 
-### MF-01 & MF-02: Structural Estimator & Regressor Terminology
-- Inspected `paper/Machine_Markets_JF_Submission.tex` lines 106, 169, 652--666, 688, 731, 749, 754.
-- In all instances, "Simulated Method of Moments (SMM)" has been replaced by "analytical minimum-distance Lyapunov covariance matching" ($Q_{\text{MD}}$).
-- In line 688, "instrument for transaction order flow" has been replaced by "depth-aware robustness proxy for transaction order flow".
+### MF-15: Signed-Feedback Jury Stability Interval
+- Updated Section 2.1: clarified that Schur stability is strictly equivalent to $S = a + Q < 1$ for positive-feedback economies ($Q \ge 0$), and stated the complete two-sided Jury stability interval $-\frac{(2-\eta)(1+a)}{\eta} < Q < 1 - a$ for signed feedback ($Q \in \mathbb{R}$).
 
-### MF-03 & MF-04: Causal & Mechanism Discipline
-- Table 5 (`paper/generated/natural_experiment_table.tex`) conclusion row updated to:
-  `Statistical Conclusion & \textbf{No Detectable Response (Null)} & \textbf{No Detectable Response (Null)} \\`
-- Abstract and Conclusion updated to state: "with no detectable change in closed-loop feedback persistence, which remained strictly subcritical."
-- Text explicitly states that order book depth was not observed directly on proprietary tapes, and frames the stability as "consistent with offsetting endogenous liquidity provision."
+### MF-16 & MF-17: Theorem 1 Timing, Realization Domain, and Closed-Loop Reduction
+- Equation (243) specifies dynamic memory $\eta_i \in (0, 1)$.
+- Proof of Theorem 1 Part 1 carries factor $z$ in $Y_i(z) = \frac{\eta_i z}{z - (1 - \eta_i)} X(z)$ and $H(z) = \frac{\kappa}{z - a - \kappa z \sum \frac{c_r}{z-r}}$, with dynamic minimal realization degree $1 + |\operatorname{supp}(\mathcal{M})|$.
+- Proof of Theorem 1 Part 2 provides a formal reduction lemma establishing that bilateral symmetry $\bar{\eta} \pm \delta$ ensures the closed-loop resolvent perturbation satisfies $\|H_\delta - H_0\|_{\ell_1} \le C_H \delta^2$, yielding $T = \Omega(\delta^{-4})$ on the full closed-loop price output via Young's inequality and Le Cam's two-point bound.
 
-### MF-05: Proposition 2.8 Repair
-- Proposition 2.8 restated in `paper/Machine_Markets_JF_Submission.tex` lines 594--601.
-- Supported by `proposition_2_8_redteam.md`, `crossimpact_counterexample_search.csv` (103,340 trials, 0 counterexamples), and `crossimpact_grid.csv`.
+### MF-18: Theorem 2 Jordan Spectral Reduction Lemma
+- Proof of Theorem 2 decomposes the $2 \times 2$ structural system via Jordan spectral projection into a local-to-unity scalar diffusion mode $\xi_{1, t}$ plus a geometrically ergodic stationary nuisance mode $\xi_{2, t}$ satisfying $\sum \xi_{2, t}^2 = \mathcal{O}_p(T)$, establishing that the local asymptotic experiment is contiguous and statistically equivalent to the scalar Phillips (1987) experiment.
 
-### MF-10, MF-11, MF-12, MF-13: Strict Editorial Constraints
-- `scripts/generate_jf_paper.py` executed: compiled cleanly to **exactly 48 pages**.
-- `grep -c "Overfull" paper/Machine_Markets_JF_Submission.log` returns **0**.
-- `grep -c -i "undefined" paper/Machine_Markets_JF_Submission.log` returns **0**.
-- Abstract word count verified at **98 words** (source) and **85 words** (extracted PDF text).
+### MF-19: Historical E-mini Flash Crash Calibration Harmonization
+- Section 5.1 harmonized all numbers: baseline price impact $\kappa_0 = 1.0$ (calm feedback $\hat{Q}_{\text{calm}} = 0.0125$), stressed impact $\kappa_{\text{crisis}} = 25.0$ due to $25\times$ depth collapse, and momentum feedback acceleration $q_{\text{crisis}} = 0.0326$, yielding implied crisis feedback $\hat{Q}_{\text{crisis}} = 25.0 \times 0.03257 = 0.8142$ (a $65.1\times$ total amplification over calm conditions), perfectly matching `equity_flash_crash_taq_results.json` and Figure 3.
+
+### MF-20: Return VAR Observational Equivalence Bridge Remark
+- Added formal Remark in Section 3.1 proving $\det(I - J) = (1 - J_{22})(1 - S)$, establishing that $S = 1.0$ is the exact unit-root stability boundary directly from the observable $2 \times 2$ return-flow VAR without requiring unobserved latent fundamentals.
+
+### MF-21: Claim Discipline and Caption Sweep
+- Table 12 caption: replaced "captured exclusively by benchmark B3" with **"most closely matched by benchmark B3"**.
+- Cross-venue VAR: replaced "dominant share of price discovery" with **"consistent with stronger Binance-to-Coinbase information transmission"**, and replaced "cross-venue arbitrage binds fragmented books" with **"confirming that the estimated joint VAR is dynamically stable"**.
+- FI-2010: replaced "shared cross-market microstructural invariant" with **"The same qualitative subcritical pattern appears in this regulated-equity benchmark"**, and replaced "proving that subcritical feedback is not a crypto artifact" with **"replicating the qualitative subcritical pattern in regulated equities"**.
+- Historical calibration framing: replaced "demonstrates that severe feedback surges occur" with **"The calibrations illustrate how documented liquidity depletion maps into large model-implied feedback sensitivity"**.
+- Pre-trend and reverse causality: replaced "moved in lockstep" with **"we detect no statistically significant differential pre-trend"**; replaced "confirm[s] that causality does not operate backward in time" with **"providing no evidence of a reverse-timing artifact"**; replaced "proves that positive feedback is not an econometric illusion" with **"showing that the positive estimate persists after extensive lag controls"**.
+- Policy discussion: streamlined Section 6.2 item 2 to **"Standardized Session Memory Clearing"**, eliminating mentions of "mandatory neural weight resets".
+- Holdout validation: framed Direct VAR ($\hat{S} = 0.983$) as the primary benchmark and noted strong first-stage predictive power ($F > 100$) for the 2SLS check.
+- Table 15: renamed $a_0$ to **$a_{\text{EMA}}$ (Filter Anchor)** in table header and text, clarifying that it is the mechanical EMA filter parameter distinct from empirical return autoregression $\hat{J}_{11}$.
 
 ---
 

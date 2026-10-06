@@ -64,7 +64,7 @@ def build_empirical(recompute: bool) -> None:
     # Table: sensitivity grid
     lines = [_header("results/provenance/empirical_feedback.json"),
              r"\begin{tabular}{lrrrlllr}\toprule",
-             r"Asset & $\Delta$ (s) & $W$ (s) & $a_0$ & $\hat S$ [95\% CI] & $\hat Q$ [95\% CI] & $\hat{\mathcal L}$ [95\% CI] & Days $\hat Q>0$\\\midrule"]
+             r"Asset & $\Delta$ (s) & $W$ (s) & $a_{\text{EMA}}$ & $\hat S$ [95\% CI] & $\hat Q$ [95\% CI] & $\hat{\mathcal L}$ [95\% CI] & Days $\hat Q>0$\\\midrule"]
     for g in r["grid"]:
         lines.append(f"{g['asset']} & {g['delta_s']} & {g['window_s']} & {g['a0_martingale_benchmark']:.4f} & "
                      f"{_ci(g['S'])} & {_ci(g['Q'])} & {_ci(g['L'], 3)} & {100 * g['share_days_Q_pos']:.0f}\\%\\\\")
