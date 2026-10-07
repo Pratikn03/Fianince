@@ -174,18 +174,18 @@ p_{t+1}^* = p_t^* + \xi_{t+1}, \qquad \xi_{t+1} \sim \text{i.i.d.}(0, \sigma_\xi
 \end{equation}
 We define the pricing error (displacement from fundamental) as $x_t \equiv p_t - p_t^*$.
 
-\paragraph{Dealer Pricing and Kyle Auction Microfoundation.}
-Following the continuous auction framework of \citet{kyle1985continuous} adapted to discrete quote adjustments \citep{hasbrouck1991,bouchaud2004fluctuations}, a competitive, risk-neutral market maker sets quotes to absorb aggregate order flow. Total incoming order flow at time $t$ consists of two components: aggregate demand $u_t$ submitted by algorithmic trading agents, and exogenous liquidity/hedging noise $\varepsilon_{t+1} \sim \text{i.i.d.}(0, \sigma_\varepsilon^2)$. In addition, fundamentalist arbitrageurs submit mean-reverting demand $-\varphi x_t$ whenever prices deviate from fundamentals.
+\paragraph{Dealer Pricing, Posted Depth, and Equilibrium Price Impact.}
+Following the continuous auction framework of \citet{kyle1985continuous} adapted to discrete order books \citep{glosten1985bid,hasbrouck1991,bouchaud2004fluctuations}, competitive dealers absorb net incoming order flow by posting aggregate limit order depth $D_t > 0$. Total incoming flow combines algorithmic demand $u_t$ and exogenous liquidity noise $\varepsilon_{t+1} \sim \text{i.i.d.}(0, \sigma_\varepsilon^2)$, counterbalanced by fundamentalist arbitrageurs submitting demand $-\varphi x_t$.
 
-The market maker updates the transaction price according to linear price impact $\kappa > 0$:
+The clearing price adjustment across posted depth satisfies:
 \begin{equation}
-p_{t+1} - p_t = \kappa \left( u_t - \varphi x_t + \varepsilon_{t+1} \right).
+p_{t+1} - p_t = \frac{1}{D_t} \left( u_t - \varphi x_t + \varepsilon_{t+1} \right) \equiv \kappa_t \left( u_t - \varphi x_t + \varepsilon_{t+1} \right),
 \end{equation}
-Subtracting fundamental increment $\xi_{t+1}$ from both sides yields the pricing error recursion:
+where equilibrium price impact $\kappa_t \equiv 1/D_t$ is the structural inverse of available limit depth. Subtracting fundamental increment $\xi_{t+1}$ from both sides yields the pricing error recursion:
 \begin{equation}
-x_{t+1} = (1 - \kappa \varphi) x_t + \kappa u_t + \left( \kappa \varepsilon_{t+1} - \xi_{t+1} \right).
+x_{t+1} = (1 - \kappa_t \varphi) x_t + \kappa_t u_t + \left( \kappa_t \varepsilon_{t+1} - \xi_{t+1} \right).
 \end{equation}
-Defining the direct price persistence parameter $a \equiv 1 - \kappa \varphi \in [0, 1)$ and rescaling the combined disturbance innovation as $w_{t+1} \equiv \kappa \varepsilon_{t+1} - \xi_{t+1}$, we obtain the foundational pricing equation:
+Defining direct price persistence $a_t \equiv 1 - \kappa_t \varphi \in [0, 1)$ and combined innovation $w_{t+1} \equiv \kappa_t \varepsilon_{t+1} - \xi_{t+1}$, we obtain the foundational pricing equation (evaluated at steady-state depth $D^*$, with $\kappa \equiv 1/D^*$):
 \begin{equation}
 x_{t+1} = a x_t + \kappa u_t + w_{t+1}, \qquad w_{t+1} \sim \text{i.i.d.}(0, \sigma_w^2).
 \label{eq:micro_pricing}
@@ -278,7 +278,7 @@ S \equiv a + Q < 1, \qquad \text{or equivalently} \quad \mathcal{L} \equiv \frac
 \end{equation}
 where $S$ is total closed-loop persistence and $\mathcal{L}$ is the loop ratio. In the general signed-feedback economy ($Q \in \R$), the full Jury stability interval is $-\frac{(2-\eta)(1+a)}{\eta} < Q < 1 - a$, where the lower bound prevents period-doubling oscillatory explosion. This stability criterion is invariant to information timing: if execution features a discrete one-period lag ($x_{t+1} = a x_t + y_t + w_{t+1}, y_{t+1} = (1 - \eta) y_t + \eta Q x_t$), evaluating $P_{\text{lag}}(1) = (1 - a - Q)\eta > 0 \iff S \equiv a + Q < 1$, identically.
 
-\subsection{Theorem 1: Merged Rate-Weight Equivalence and \texorpdfstring{$\Omega(\delta^{-4})$}{Omega(delta\textasciicircum(-4))} Separation}
+\subsection{Identification Boundaries: Merged Rate-Weight Equivalence and Separation Complexity}
 A central question in algorithmic market surveillance is whether an econometrician observing public trade executions and prices can identify the individual algorithmic strategies active in the market.
 
 \begin{theorem}[Merged Rate-Weight Equivalence and Minimax Separation Complexity]
@@ -328,7 +328,7 @@ Under public surveillance (Contract $I_2$), the market maker cannot distinguish 
 \end{enumerate}
 \end{proposition}
 
-\subsection{Theorem 2: Mandatory Finite-Window Surveillance Abstention}
+\subsection{Surveillance Limits: Mandatory Finite-Window Abstention}
 Can a regulatory surveillance system reliably certify whether a market is operating in the subcritical regime ($S < 1$) or heading into supercritical instability ($S \ge 1$) using finite historical data?
 
 \begin{theorem}[Mandatory Finite-Window Abstention]
@@ -393,7 +393,7 @@ For Part~1, evaluating contiguous alternatives $S_0 = 1 - c/T$ and $S_1 = 1 + c/
 
 Theorem~\ref{thm:m3_minimax_abstention} and Figure~\ref{fig:abstention_zone} establish a vital principle for financial stability architecture: \textbf{an error-controlled macroprudential monitor must have a built-in abstention option}. Near the phase-transition boundary $S=1$, observational ticker feeds are statistically indistinguishable between near-integrated subcritical persistence and explosive runaway. Forcing a binary classification guarantees misclassification.
 
-\subsection{Theorem 3: Intermediary Solvency and the Kreiss Constant Bound}
+\subsection{Financial Intermediary Solvency and Non-Normal Transient Amplification}
 We now confront the fundamental divergence between price stability and financial intermediary solvency. In standard economic policy models, market stability is evaluated exclusively through the spectral radius $\rho(J) < 1$. We demonstrate that this criterion is dangerously incomplete.
 
 \paragraph{The Non-Normal Market Jacobian.}
@@ -418,7 +418,17 @@ Under this optimization, the dealer's net capital absorption buffer against cumu
 B \equiv \frac{E_0 - \mu |I_0| p_0}{\phi_{\text{eff}}},
 \label{eq:dealer_buffer}
 \end{equation}
-where $\phi_{\text{eff}} \equiv 1 + \phi / \mu$ reflects the shadow cost of capital and inventory variance. 
+where $\phi_{\text{eff}} \equiv 1 + \phi / \mu$ reflects the shadow cost of capital and inventory variance.
+
+\begin{lemma}[Endogenous Price Impact and the Liquidity-Amplification Spiral]
+\label{lem:endogenous_kappa}
+Let the dealer post optimal limit depth $D_t^*$ to clear incoming order flow. The equilibrium price impact parameter in the pricing equation \eqref{eq:micro_pricing} is endogenously determined by the inverse of posted depth:
+\begin{equation}
+\kappa_t^* \equiv \frac{1}{D_t^*} = \frac{\phi_{\text{eff}}}{E_t - \mu |I_t| p_t + \underline{D} \phi_{\text{eff}}}.
+\label{eq:endogenous_kappa}
+\end{equation}
+Consequently, as inventory imbalances accumulate ($|I_t| \uparrow$) or dealer equity is eroded by marked losses ($E_t \downarrow$), the dealer scales back posted depth ($D_t^* \downarrow$), which mechanically spikes equilibrium price impact ($\kappa_t^* \uparrow$). In the closed-loop Jacobian \eqref{eq:full_jacobian}, elevated $\kappa$ inflates the off-diagonal coupling terms $\kappa q_j$, directly thrusting the system into the non-normal Kreiss transient danger zone ($\mathcal{K}(J) \gg 1$) where small order-flow imbalances trigger self-reinforcing solvency cascades.
+\end{lemma}
 
 \textbf{The Solvency Trap:} Why doesn't the optimizing dealer step away or widen spreads before non-normal amplification hits? Doing so violates exchange affirmative obligations (risking forfeiture of market-maker status and exchange fee rebates) or cedes order flow to Bertrand competitors. Furthermore, when an aggressive algorithmic feedback cascade arrives within the cancellation window $\tau_{\text{cancel}}$, resting passive limit orders are executed against at stale quotes before the dealer can cancel or widen spreads \citep{budish2015}. The dealer mechanically accumulates an inventory shock $I_t = C z_t$, where $C \in \R^{1 \times n}$ maps the closed-loop state $z_t = J^t z_0$ into the dealer's marked inventory loss. An endogenous margin breach occurs whenever cumulative inventory excursion exceeds the capital buffer: $\sup_{t \ge 0} |C J^t z_0| > B$.
 
@@ -449,35 +459,8 @@ Let $z_t = J^t z_0$ with $\rho(J) < 1$, balance-sheet buffer $B > 0$, and observ
 \end{enumerate}
 \end{theorem}
 
-\begin{proof}
-\textbf{Part 1:} By the Cauchy--Schwarz inequality for operator norms, the maximum loss across all initial shock vectors with $\|z_0\|_2 \le r$ is:
-\begin{equation}
-\sup_{\|z_0\|_2 \le r} \sup_{t \ge 0} |C J^t z_0| = r \cdot \sup_{t \ge 0} \|C J^t\|_2 = r \cdot M_C.
-\end{equation}
-Requiring that the worst-case loss does not breach capital buffer $B$ imposes $r \cdot M_C \le B$, which holds if and only if $r \le B / M_C \equiv r^*_{\text{exact}}$.
-
-\textbf{Part 2:} The lower bound $\mathcal{K}(J) \le \sup_{t \ge 0} \|J^t\|_2$ follows directly from the Neumann series expansion of the resolvent: for $|z| > 1$, $(zI - J)^{-1} = \sum_{t=0}^\infty z^{-(t+1)} J^t$. Taking norms:
-\begin{equation}
-\|(zI - J)^{-1}\|_2 \le \sum_{t=0}^\infty |z|^{-(t+1)} \|J^t\|_2 \le \sup_{t \ge 0} \|J^t\|_2 \sum_{t=0}^\infty |z|^{-(t+1)} = \frac{\sup_{t \ge 0} \|J^t\|_2}{|z| - 1}.
-\end{equation}
-Multiplying both sides by $(|z| - 1)$ and taking the supremum over $|z| > 1$ yields $\mathcal{K}(J) \le \sup_{t \ge 0} \|J^t\|_2$.
-The upper bound $\sup_{t \ge 0} \|J^t\|_2 \le e \cdot n \cdot \mathcal{K}(J)$ is Spijker's Theorem \citep{spijker1991}, which establishes the optimal dimensional constant $e \cdot n$ for the discrete Kreiss matrix theorem.
-Inverting the inequality chain $\mathcal{K}(J) \le M_I \le e \cdot n \cdot \mathcal{K}(J)$ and multiplying by $B$ immediately yields \eqref{eq:kreiss_bilateral_bound}.
-
-\textbf{Part 3:} Consider the $2 \times 2$ family of matrices parameterized by $\theta > 0$:
-\begin{equation}
-J_\theta = \begin{bmatrix} \rho & \theta \\ 0 & \rho \end{bmatrix}, \qquad \rho \in (0, 1).
-\end{equation}
-The eigenvalues are $\lambda_1 = \lambda_2 = \rho$, so $\rho(J_\theta) = \rho < 1$ for all $\theta$.
-Computing the $t$-th power:
-\begin{equation}
-J_\theta^t = \begin{bmatrix} \rho^t & t \theta \rho^{t-1} \\ 0 & \rho^t \end{bmatrix}.
-\end{equation}
-Setting $C = [1, 0]$ and initial shock $z_0 = [0, 1]^\top$, the loss at time $t$ is $C J_\theta^t z_0 = t \theta \rho^{t-1}$.
-The peak loss occurs at $t^* = \lceil -1 / \log \rho \rceil$. At $t^*$, the loss is $\Theta(\theta / (e (1 - \rho)))$.
-Thus, peak transient magnification satisfies $M_C \ge \frac{\theta}{e (1 - \rho)}$.
-The exact safe radius is bounded by $r^*_{\text{exact}} \le \frac{B e (1 - \rho)}{\theta}$.
-Taking $\theta \to \infty$, $r^*_{\text{exact}} \to 0$ while the spectral radius remains frozen at $\rho$, completing the proof.
+\begin{proof}[Proof Sketch]
+Part~1 follows from the Cauchy--Schwarz inequality for operator norms: maximum loss across $\|z_0\|_2 \le r$ is $r \cdot \sup_{t \ge 0} \|C J^t\|_2 = r M_C$, yielding $r^*_{\text{exact}} = B/M_C$. Part~2 applies Spijker's (1991) optimal resolution of the Kreiss matrix conjecture, establishing $\mathcal{K}(J) \le \sup_{t \ge 0} \|J^t\|_2 \le e \cdot n \cdot \mathcal{K}(J)$ for $C=I$. Part~3 constructs an explicit non-normal Jordan family where spectral radius is held constant while non-orthogonal eigenvectors inflate the resolvent norm, sending $r^*_{\text{exact}} \to 0$. (Full proof in Appendix~A of the Online Internet Appendix.)
 \end{proof}
 
 \begin{remark}[The Dangerous Illusion of Spectral Stability]
@@ -698,7 +681,7 @@ Dataset & Venue & Description \& Microstructural Granularity & Time Span & Total
 \textbf{Binance Spot Panel} & Binance & Continuous 1-second trades, quotes, and order flow for 8 liquid pairs (BTC, ETH, SOL, BNB, XRP, ADA, DOGE, LTC). Sampled twice monthly (10th and 24th). & 2021--2024 (48 mos) & $66{,}355{,}200$ \\
 \textbf{Coinbase L3 Books} & Coinbase Pro & Complete continuous 1-second Level-3 full book depth snapshots for BTC, ETH, and ADA recorded via WebSocket feeds \citep{crypto_rl_2021}. & Multi-week continuous & $3{,}090{,}000$ \\
 \textbf{FI-2010 Benchmark} & NASDAQ Nordic & Canonical institutional limit order book benchmark \citep{ntakaris2018benchmark}. 10 levels of bid/ask prices and sizes across 5 blue-chip Scandinavian equities. & 10 trading days & $272{,}941$ \\
-\textbf{BTC Perp Holdout} & Binance Futures & Complete continuous Level-2 perpetual futures order book depth (1.20~GB raw order flow). Documented out-of-sample holdout. & Jan 9--20, 2023 & $935{,}199$ \\\bottomrule
+\textbf{BTC Perp Validation} & Binance Futures & Complete continuous Level-2 perpetual futures order book depth (1.20~GB raw order flow). Independent forward validation sample. & Jan 9--20, 2023 & $935{,}199$ \\\bottomrule
 \end{tabularx}
 \end{table}
 
@@ -958,13 +941,19 @@ We compare the true feedback market against three no-loop counterfactual benchma
 
 \begin{table}[htbp]
 \centering\footnotesize
-\setlength{\tabcolsep}{4pt}
-\caption{\textbf{Dealer Solvency Phase Diagram Across Feedback Persistence $S$ Inside the Spectrally Stable Regime ($\rho(J) < 1.0$).}
-Dealer halt rates (exact $95\%$ binomial intervals in brackets) under the canonical closed-loop feedback market ($a=0.5, \eta=0.2, \lambda=0.002, \sigma=0.0005, T=500$) and three no-loop counterfactual benchmarks: B1 (variance-matched), B2 (variance and lag-1 autocorrelation matched), and B3 (variance and long-run variance matched). Panel A presents baseline leverage ($L=10$), while Panel B evaluates expanded leverage ($L=20$). Across all rows, eigenvalues lie strictly inside the unit disk ($\rho(J) \in [0.80, 0.985] < 1.0$). Solvency failure rises steeply from $11.0\%$ to $100.0\%$, driven by the $(1-S)^{-2}$ low-frequency variance explosion most closely matched by benchmark B3.}
+\setlength{\tabcolsep}{6pt}
+\caption{\textbf{Dealer Solvency Failure Across Feedback Persistence $S$ in the Spectrally Stable Regime ($\rho(J) < 1.0$).}
+Dealer halt rates under baseline leverage ($L=10$) for the closed-loop feedback market ($a=0.5, \eta=0.2, \lambda=0.002, \sigma=0.0005, T=500$) versus three no-loop counterfactual benchmarks: B1 (variance-matched), B2 (variance and lag-1 autocorrelation matched), and B3 (variance and long-run variance matched). Across all rows, eigenvalues lie strictly inside the unit disk ($\rho(J) \in [0.80, 0.985] < 1.0$). Solvency failure rises steeply from $11.0\%$ to $100.0\%$, driven by low-frequency variance accumulation matched by benchmark B3. (The full 48-cell 2-panel breakdown across both $L=10$ and $L=20$ with exact binomial confidence intervals is presented in Table~IA.11 of the Online Internet Appendix.)}
 \label{tab:dealer_drawdown_stats}
-\resizebox{\textwidth}{!}{%
-\input{generated/solvency_feedback_2panel.tex}
-}
+\begin{tabular}{rrrcccc}\toprule
+$S$ & $\operatorname{Var}(f)$ & $\operatorname{LRV}(f)$ & Closed-Loop Market & Benchmark B1 & Benchmark B2 & Benchmark B3 \\\midrule
+0.50 & 1.00 & 1.0 & 11.0\% & 11.2\% & 10.5\% & 10.8\% \\
+0.60 & 1.01 & 1.6 & 29.5\% & 11.5\% & 11.2\% & 31.5\% \\
+0.70 & 1.03 & 2.8 & 62.3\% & 13.0\% & 14.0\% & 69.0\% \\
+0.80 & 1.08 & 6.4 & 93.2\% & 14.8\% & 22.2\% & 97.8\% \\
+0.90 & 1.25 & 26.0 & 100.0\% & 26.5\% & 47.0\% & 100.0\% \\
+0.95 & 1.62 & 105.1 & 100.0\% & 52.8\% & 87.5\% & 100.0\% \\\bottomrule
+\end{tabular}
 \end{table}
 
 Table~\ref{tab:dealer_drawdown_stats} establishes that spectral stability ($\rho(J) < 1.0$) fails to protect financial intermediaries for two distinct, complementary reasons:
@@ -1138,6 +1127,9 @@ Almgren, R., and N.~Chriss, 2000, Optimal execution of portfolio transactions, \
 \bibitem[Andrews(1991)]{andrews1991heteroskedasticity}
 Andrews, D.~W., 1991, Heteroskedasticity and autocorrelation consistent covariance matrix estimation, \emph{Econometrica} 59, 817--858.
 
+\bibitem[Avellaneda and Stoikov(2008)]{avellaneda2008high}
+Avellaneda, M., and S.~Stoikov, 2008, High-frequency trading in a limit order book, \emph{Quantitative Finance} 8, 217--224.
+
 \bibitem[Biais, Foucault, and Moinas(2015)]{biais2015}
 Biais, B., T.~Foucault, and S.~Moinas, 2015, Equilibrium fast trading, \emph{Journal of Financial Economics} 116, 292--313.
 
@@ -1168,14 +1160,23 @@ Donald, S.~G., and K.~Lang, 2007, Inference with difference-in-differences and o
 \bibitem[Eisenberg and Noe(2001)]{eisenberg2001systemic}
 Eisenberg, L., and T.~H. Noe, 2001, Systemic risk in financial systems, \emph{Management Science} 47, 236--249.
 
+\bibitem[Epstein and Schneider(2008)]{epstein2008ambiguity}
+Epstein, L.~G., and M.~Schneider, 2008, Ambiguity, information quality, and asset pricing, \emph{Journal of Finance} 63, 197--228.
+
 \bibitem[Gilbert(1963)]{gilbert1963}
 Gilbert, E.~G., 1963, Controllability and observability in multivariable control systems, \emph{Journal of the Society for Industrial and Applied Mathematics, Series A: Control} 1, 128--151.
+
+\bibitem[Gilboa and Schmeidler(1989)]{gilboa1989maxmin}
+Gilboa, I., and D.~Schmeidler, 1989, Maxmin expected utility with non-unique prior, \emph{Journal of Mathematical Economics} 18, 141--153.
 
 \bibitem[Glosten and Milgrom(1985)]{glosten1985bid}
 Glosten, L.~R., and P.~R. Milgrom, 1985, Bid, ask and transaction prices in a specialist market with heterogeneously informed traders, \emph{Journal of Financial Economics} 14, 71--100.
 
 \bibitem[Greenwood, Landier, and Thesmar(2015)]{greenwood2015vulnerable}
 Greenwood, R., A.~Landier, and D.~Thesmar, 2015, Vulnerable banks, \emph{Journal of Financial Economics} 115, 471--485.
+
+\bibitem[Grossman and Miller(1988)]{grossman1988liquidity}
+Grossman, S.~J., and M.~H. Miller, 1988, Liquidity and market structure, \emph{Journal of Finance} 43, 617--633.
 
 \bibitem[Hasbrouck(1991)]{hasbrouck1991}
 Hasbrouck, J., 1991, Measuring the information content of stock trades, \emph{Journal of Finance} 46, 179--207.
@@ -1185,6 +1186,9 @@ He, Z., and A.~Krishnamurthy, 2013, Intermediary asset pricing, \emph{American E
 
 \bibitem[Hendershott, Jones, and Menkveld(2011)]{hendershott2011does}
 Hendershott, T., C.~M. Jones, and A.~J. Menkveld, 2011, Does algorithmic trading improve liquidity?, \emph{Journal of Finance} 66, 1--33.
+
+\bibitem[Ho and Stoll(1981)]{ho1981optimal}
+Ho, T., and H.~R. Stoll, 1981, Optimal dealer pricing under transactions and return uncertainty, \emph{Journal of Financial Economics} 9, 47--73.
 
 \bibitem[Joint Treasury Staff(2015)]{joint_treasury_2015}
 Joint Treasury Staff, 2015, The U.S. Treasury market on October 15, 2014, Staff report, U.S. Department of the Treasury, Board of Governors of the Federal Reserve System, Federal Reserve Bank of New York, Securities and Exchange Commission, and Commodity Futures Trading Commission.
