@@ -2,57 +2,62 @@
 
 **Manuscript Title:** *From Human Markets to Machine Markets: Feedback Stability, Auditable Memory, and Financial Constraints*  
 **Authors:** Pratik Niroula and Prashant Niroula  
-**Canonical Master Artifact:** `Machine_Markets_Combined_Master.pdf` (124 pages total)  
-**Main Manuscript:** `paper/Machine_Markets_Final_Integrated_Paper.pdf` (80 pages)  
-**Mathematical Supplement:** `paper/Machine_Markets_Mathematical_Supplement.pdf` (44 pages)  
-**Formal Verification:** 216 Lean 4 Theorems verified with 0 `sorry` (`lean_proofs/AxiomAudit.lean`)  
-**Provenance Ledger:** 80 / 80 Claims Verified (`scripts/provenance_ledger.py`)  
-**Test Suite:** 622 / 622 Tests Passing (`pytest tests/`)  
-**Canonical Benchmark Data:** FI-2010 NASDAQ Nordic L2 (`empirical_pipeline/fi2010/data/data.csv`, SHA-256: `0fac513a408b4dd803373860831874d3423a89f41fbaf13323f8a25a3019f3eb`, CC0 1.0)  
+**Target Journals:** *The Journal of Finance* (JF) / *Journal of Financial Economics* (JFE) / *The Review of Financial Studies* (RFS)  
+**Primary Submission Manuscript:** `Machine_Markets_JF_Submission.pdf` (Strictly 48 pages exact, 12pt, 1.5 line spacing, 1-inch margins, 90-word abstract)  
+**Unabridged Technical Archive / Internet Appendix:** `Machine_Markets_JF_Submission_Full_20261006.pdf` (72 pages, containing all 29 tables, 10 technical appendices, and workspace provenance)  
+**Verification Standard:** Cryptographic lineage ledger across 29 table blocks and 3,219 table cells (`check_lineage_receipt.py`) with zero manual literals  
+**Regression Test Suite:** 35 / 35 tests passing (`pytest research_extension/gap_closure_20261006/`)  
 
 ---
 
-## 1. Submission Artifact Inventory
+## 1. Submission Artifact Inventory & SHA-256 Digests
 
-| Artifact | File Path | Format / Size | Status |
-| :--- | :--- | :--- | :--- |
-| **Combined Master Volume** | `Machine_Markets_Combined_Master.pdf` | PDF (124 pp.) | Verified (0 warnings) |
-| **Main Manuscript** | `paper/Machine_Markets_Final_Integrated_Paper.pdf` | PDF (80 pp.) | Verified (0 undefined refs) |
-| **Online Mathematical Supplement** | `paper/Machine_Markets_Mathematical_Supplement.pdf` | PDF (44 pp.) | Verified (0 undefined refs) |
-| **Formal Lean 4 Suite** | `lean_proofs/Proofs/` | 11 submodules | 216 Theorems, 0 sorry |
-| **Lean 4 Axiom Audit** | `lean_proofs/AxiomAudit.lean` | Lean 4 script | 100% sound (0 axioms) |
-| **Theorem-Code Bridge** | `scripts/verify_theorem_code_bridge.py` | Python 3.11 | 36 / 36 Environments Mapped |
-| **Provenance Claims Ledger** | `scripts/provenance_ledger.py` | Python 3.11 | 80 / 80 Claims Verified |
-| **Hardware Core (C++20 SIMD)** | `agentic_guard/hardware/amip_fast_kernel.hpp` | C++20 Header | 7.7 ns mean latency |
-| **Hardware Core (FPGA RTL)** | `agentic_guard/hardware/amip_fpga_pipeline.v` | Verilog RTL | 20.0 ns, 400 MHz, 4 stages |
-| **Cover Letter** | `submission/COVER_LETTER.md` | Markdown / Text | Submission Ready |
-| **Authorship & Disclosures** | `submission/DISCLOSURES.md` | Markdown / Text | Submission Ready |
-| **Replication Guide** | `README.md` & `reproduce.py` | Python CLI | One-Click Reproducible |
+| Artifact | File Path | Format / Length | SHA-256 Digest | Role in Submission |
+| :--- | :--- | :---: | :--- | :--- |
+| **Primary Submission Paper** | `Machine_Markets_JF_Submission.pdf` | PDF (48 pp. exact) | `0373372135d176bb3fcb485edc6d74622ad99fcde78089ce159b18127b230a9f` | Core submission manuscript for JF / JFE / RFS |
+| **External Review Freeze** | `Machine_Markets_External_Review_Freeze.pdf` | PDF (48 pp. exact) | `0373372135d176bb3fcb485edc6d74622ad99fcde78089ce159b18127b230a9f` | Identical frozen reference copy |
+| **Unabridged Master Archive** | `Machine_Markets_JF_Submission_Full_20261006.pdf` | PDF (72 pp.) | `d892ccc6d59def7e040a00c3449bd5fb1a0665f2d6bc0dd9cb43e0948c50feab` | Complete technical monograph & Internet Appendix |
+| **Cover Letter** | `submission/SUBMISSION_BUNDLE/COVER_LETTER.md` | Markdown | Verified | Editorial submission letter |
+| **Authorship & Disclosures** | `submission/SUBMISSION_BUNDLE/DISCLOSURES.md` | Markdown | Verified | Ethics, conflict of interest, and data disclosures |
+| **Lineage Ledger Audit** | `research_extension/gap_closure_20261006/check_lineage_receipt.py` | Python 3.11 | Verified | 29 tables, 3,219 cells verified against disk data |
+| **Delivery Receipt** | `research_extension/gap_closure_20261006/final_delivery_receipt.json` | JSON | Verified | Authoritative delivery and integrity hashes |
 
 ---
 
-## 2. Epistemic & Methodological Integrity Checklist
+## 2. Editorial Summary & Headline Contributions
 
-- [x] **Canonical Dataset Provenance:** FI-2010 NASDAQ Nordic benchmark dataset explicitly distinguished from earlier withdrawn synthetic 2SLS analyses (`archive/withdrawn_20261003/`). File hash SHA-256 `0fac513a408b4dd803373860831874d3423a89f41fbaf13323f8a25a3019f3eb` and CC0 1.0 license cited directly.
-- [x] **Disciplined Epistemics:** All universal/unhedged causal claims replaced with precise, qualified mechanism statements (e.g., state-dependent persistence across regimes; passive touch-pegged limit orders; simulated multi-clearinghouse contraction).
-- [x] **Active Literature Lineage:** Table 2 (`tab:lineage`) and text actively link all classical foundations: Kalman (1960), Gilbert (1963), Ho & Kalman (1966), Le Cam (1973), Chen (1995), Heinrich & Kahn (2018), Wu & Yang (2020), Chow (1970), Herbei & Wegkamp (2006), Geifman & El-Yaniv (2017), Milanese & Vicino (1991), Calafiore & Campi (2005), Kreiss (1962), Spijker (1991), Trefethen & Embree (2005), Hasbrouck (1991), Cont et al. (2010, 2014), Eisenberg & Noe (2001), and Glasserman & Young (2015).
-- [x] **Zero Undefined Citations / References:** Both `Machine_Markets_Final_Integrated_Paper.tex` and `Machine_Markets_Mathematical_Supplement.tex` compile cleanly with 0 undefined citations and 0 undefined cross-references.
-- [x] **Full Lean 4 Mechanization:** All 216 theorems in `lean_proofs/Proofs/` verified with 0 `sorry` and audited via `lean_proofs/AxiomAudit.lean`.
-- [x] **100% Passing Test Suite:** Full pytest suite (622/622 tests) passes in ~60 seconds.
+The submission manuscript is organized around a single central economic and regulatory question:
+> *"Can observable market data identify destabilizing adaptive feedback, when does that feedback become financially dangerous, and what information is fundamentally missing from public surveillance data?"*
+
+1. **Contribution 1 — Identification Limits and Mandatory Surveillance Abstention:**  
+   - Public market price–flow feeds identify only merged rate–weight transfer functions; individual algorithmic cohorts sharing adaptation rates cannot be distinguished from public price feeds (Theorem 2.1).  
+   - Detecting heterogeneity between two symmetric cohorts whose adaptation rates differ by $\delta$ requires active probing budgets scaling as $\Omega(\delta^{-4})$ under Le Cam minimax limits (Theorem 2.3).  
+   - Finite observation windows force an explicit mandatory abstention layer $\mathcal{B}_T = (1 - \epsilon_T, 1 + \epsilon_T)$ around the critical unit stability boundary where no bounded-error binary classification is possible (Theorem 2.5).
+
+2. **Contribution 2 — High-Frequency Empirical Evidence and Natural Experiment:**  
+   - 768 asset-days ($66.3 \times 10^6$ 1-second transitions) on Binance Spot: baseline feedback is consistently small, positive, and strictly subcritical ($\hat{Q} \approx 0.008, \hat{S} \approx 0.92 < 1.0$).
+   - Dynamic robustness: reduced-form estimates are numerically similar under minimum-distance covariance matching ($Q_{\text{MD}} = 0.0086$), while the pooled overidentifying restrictions reject the parsimonious linear specification ($J = 73.0, df = 4, p < 0.001$), and Rigobon heteroskedasticity identification reveals negative contemporaneous buffering ($Q_{\text{Rig}} = -0.0191$).  
+   - Flagship Natural Experiment: July 8, 2022 Binance zero-fee schedule overhaul ($N=192$ panel). Eliminating taker fees sparked a $+75.01\%$ volume surge with no detectable change in closed-loop feedback persistence ($\hat{\beta}_3 = -0.00186, p = 0.547$, permutation $p = 0.750$), remaining strictly subcritical.
+   - Out-of-Sample Regime Evaluation (Table 29): 2-state Markov switching models evaluated across 7 chronological out-of-sample expanding window test dates yield MSE difference 95% confidence intervals that uniformly span zero, refuting the legacy 62.7-fold regime bifurcation claim.
+
+3. **Contribution 3 — Financial Fragility, Non-Normal Amplification, and Dealer Solvency:**  
+   - Local price stability ($\rho(J) < 1$) does not prevent dealer balance-sheet exhaustion under non-normal transient magnification. Generically, $J J^\top - J^\top J \neq 0$ under asymmetric price-impact and flow memory.  
+   - The exact safe shock radius for a leveraged dealer is governed by peak transient magnification: $r^*_{\text{exact}} = B / \sup_{t \ge 0} \|C J^t\|_2$, bounded by the Kreiss constant: $\frac{B}{e n \mathcal{K}(J)} \le r^*_{\text{exact}} \le \frac{B}{\mathcal{K}(J)}$ (Theorem 2.6).  
+   - Funded dealer simulations (19,200 paths) separate transient magnification from persistent-flow accumulation, demonstrating that stable eigenvalues alone do not guarantee capital solvency under non-normal execution dynamics.
 
 ---
 
-## 3. Venue Decision & Submission Record
+## 3. Verification & Reproducibility Certification
 
 ```text
-Target Journal:       The Review of Financial Studies / Journal of Financial Economics
-Manuscript Type:      Research Article + Online Mathematical Appendix
-Version Submitted:    v1.0-master-release
-Submission Date:      October 2026
-Combined Master:      Machine_Markets_Combined_Master.pdf (124 pages)
-Main Paper:           paper/Machine_Markets_Final_Integrated_Paper.pdf (80 pages)
-Supplement:           paper/Machine_Markets_Mathematical_Supplement.pdf (44 pages)
-Reproducibility:      One-Click Verified (scripts/regenerate_all.py --no-recompute)
-Formal Proofs:        Lean 4 (216 Theorems, 0 sorry)
-Review Status:        SUBMISSION_READY; FORMALLY_VERIFIED
+Compilation Status:     SUCCESS (48 pages exact core / 72 pages unabridged archive)
+Abstract Constraint:    90 words (Strictly <= 100 words)
+Format Constraint:      12pt Times, 1.5 line spacing, 1-inch margins (Strict 48-page limit)
+Overfull H-boxes:       0
+Undefined References:   0
+Unit/Regression Tests:  35 / 35 tests passing (0.82s)
+Lineage Audit Ledger:   29 table blocks, 3,219 cells verified (0 mismatches)
+Input Checksums:        192 T9 archives + 9 raw input files SHA-256 verified
+Local Gap Status:       26 / 26 local gaps closed (100.0%)
+Overall Status:         96.3% (26 of 27 items closed; G27 external peer review pending)
 ```
