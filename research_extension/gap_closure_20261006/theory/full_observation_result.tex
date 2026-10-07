@@ -1,0 +1,49 @@
+\section{Why the Observation Contract Changes the Abstention Result}
+The scalar price-surveillance theorem cannot be promoted into a mandatory-abstention theorem for every richer observation experiment. The following constructive result resolves a specific full-observation case rather than leaving that distinction informal.
+\begin{proposition}[Two-step identification under an exact audited contract]
+\label{prop:exact_audited_contract}
+Consider the single-cohort recursion
+\[
+x_t=a x_{t-1}+\kappa u_{t-1}+w_t,\qquad
+u_t=(1-\eta)u_{t-1}+\eta q x_t,
+\]
+with aggregate cohort demand $u_t$, $x_0=u_0=0$, known $a\in[0,1)$ and $\kappa>0$, unknown $\eta\in(0,1)$ and $q\in\mathbb R$, and $w_1$ has a continuous nondegenerate Gaussian law. Suppose the true pricing error $x_t$, cohort demand $u_t$, and their exact timing are observed without measurement error for $t=1,2$. Then, with probability one, either $q=0$ is identified and the model is Schur stable, or both $q$ and $\eta$ are recovered exactly:
+\[
+\vartheta=\frac{u_1}{x_1},\qquad
+\beta=\frac{u_2-\vartheta x_2}{u_1},\qquad
+\eta=1-\beta,\qquad q=\frac{\vartheta}{\eta}.
+\]
+Consequently the exact signed-feedback Jury conditions decide stability with zero error in this observation experiment, including alternatives arbitrarily close to its stability boundaries.
+\end{proposition}
+\begin{proof}
+The reset gives $x_1=w_1$, so $x_1\ne0$ almost surely. The first demand observation gives $u_1=\eta q x_1$. If $u_1=0$, then $q=0$ because $\eta>0$; the triangular zero-feedback dynamics have eigenvalues $a$ and $1-\eta$, both strictly inside the unit circle. Otherwise $u_1\ne0$ and $\vartheta=\eta q$. The second demand equation gives $u_2-\vartheta x_2=(1-\eta)u_1$, yielding the recovery formulas. With $Q=\kappa q$, the signed Jury interval is
+\[
+-\frac{(2-\eta)(1+a)}{\eta}<Q<1-a.
+\]
+All parameters in this decision are known or exactly recovered. Equality is a unit-circle boundary and is classified as not Schur stable. Process innovations do not obstruct recovery because the exact same-time price appears in the observed demand recursion.
+\end{proof}
+This is an exact mathematical information contract, not a claim that public midpoint records reveal fundamental mispricing or that a dealer supplies noiseless policy states. Timing errors, unknown state definitions, additional cohorts, discretionary orders, noisy disclosure or unknown $a,\kappa$ change the experiment. Numerical floating-point decoding does not inherit an exact boundary decision without an error analysis. The result demonstrates why a price-only lower bound and an audited-state guarantee need separate assumptions; it does not undo the scalar Gaussian lower bound.
+
+\begin{proposition}[Bounded merged-cohort identification under exact disclosure]
+\label{prop:exact_multicohort_contract}
+Let $x_0=y_{i,0}=0$, $x_t=a x_{t-1}+\kappa u_{t-1}+w_t$, $y_{i,t}=(1-\eta_i)y_{i,t-1}+\eta_i x_t$, and $u_t=\sum_i q_i y_{i,t}$, with known $a\in[0,1)$ and $\kappa>0$, rates $\eta_i\in(0,1)$, and finite signed weights. Suppose at most $K_{\max}\ge1$ distinct rates have nonzero merged weights. Under exact observation of true $x_t$ and cohort demand $u_t$ for $t=1,\ldots,2K_{\max}$ and a continuous nondegenerate Gaussian first innovation, the merged rate--weight measure is identified almost surely. This identifies the closed-loop stability class under the maintained model, although participant counts within merged groups remain unidentified.
+\end{proposition}
+\begin{proof}
+Iterating the reset cohort recursion gives
+\[
+u_t=\sum_{k=0}^{t-1}h_k x_{t-k},\qquad
+h_k=\sum_{j=1}^{K}c_j r_j^k,\quad r_j=1-\eta_j\in(0,1),\quad c_j=\eta_j\bar q_j\ne0,
+\]
+where $K\le K_{\max}$ counts nonzero merged groups. Since $x_1=w_1\ne0$ almost surely, the first $2K_{\max}$ moments are recovered recursively:
+\[
+h_n=\frac{u_{n+1}-\sum_{k=0}^{n-1}h_k x_{n+1-k}}{x_1},\qquad n=0,\ldots,2K_{\max}-1.
+\]
+For uniqueness, the difference of two candidate signed measures has at most $2K_{\max}$ distinct nodes. Vanishing first $2K_{\max}$ moments implies zero weights by the full column rank of the corresponding Vandermonde matrix. Thus the merged measure is unique, including signed weights.
+
+Constructively, the $K_{\max}\times K_{\max}$ Hankel matrix $H=(h_{i+j})_{i,j=0}^{K_{\max}-1}$ factors as $V\,\mathrm{diag}(c_j)V^\top$, where $V_{ij}=r_j^i$. Its rank is $K$; the leading $K\times K$ block is invertible. Solve
+\[
+\sum_{j=0}^{K-1}h_{i+j}b_j=-h_{i+K},\qquad i=0,\ldots,K-1.
+\]
+The roots of $r^K+\sum_{j=0}^{K-1}b_jr^j$ are the distinct memory nodes. The first $K$ moments then determine the $c_j$ through a square Vandermonde system, and $\bar q_j=c_j/(1-r_j)$. When $H=0$, the merged measure is empty. The identified merged groups determine the minimal closed-loop Jacobian. Additional same-rate difference modes and canceled groups have eigenvalues $r_j\in(0,1)$, so they do not change its instability classification.
+\end{proof}
+The constructive step uses established finite exponential-sum and annihilating-filter algebra, rather than a new recovery algorithm; see, for example, \citet{vetterli2002}. The contribution here is the explicit observation-contract comparison for the stated market recursion. Exact algebra does not imply robust finite-precision recovery: close rates, small weights, noisy demand, and small $x_1$ can make inversion ill-conditioned. With no bound on merged model order, this finite observation budget does not supply the same guarantee. Anonymous recorded prices and total executed flow do not certify this exact true-state/cohort-demand contract.

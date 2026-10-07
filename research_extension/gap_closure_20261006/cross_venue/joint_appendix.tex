@@ -1,0 +1,85 @@
+
+\section{Restored Joint-Venue Study}
+\label{sec:restored_joint}
+The original separate-venue generator did not establish its reported joint matrix or FEVD. That contradiction remains in the audit. A subsequent recovery retrieved the exact original study's Binance BTCUSDT, ETHUSDT and ADAUSDT daily one-second kline objects for April 8--18, 2021: thirty-three exchange archives, each verified against a newly retrieved official checksum and its ZIP CRC. These are current public archives for the original sample dates, not byte-authenticated copies of the original downloads. Three recovered April 10 asset-days reproduce every saved baseline coefficient, invariant, observation count and mean price exactly. The remaining 765 original-panel asset-days require their own recovery and reproduction; this three-row comparison does not close that full-panel gate.
+
+The new independent joint study joins the three recorder caches to restored exchange observations. Binance supplies transaction closes and signed quote flow $2V^{\rm buy}-V^{\rm total}$, rather than order-book midpoints. Coinbase supplies recorded midpoint and deduplicated flow, with provider authentication still open. Quote currencies differ (USD and USDT); basis movements and common information can affect the relation. The two timestamp conventions do not establish subsecond simultaneity. We retain integer-second offset sensitivities of minus and plus one second for the recorder.
+
+Ten-second bins require all ten integer-second records from both venues. Incomplete bins are excluded; neither series is filled from future observations. Gaps and UTC date changes reset both filters together, followed by a 150-bin burn-in. Segments require at least 500 retained bins. A four-variable VAR with separate segment intercepts is fit to the within-segment centered observations. The ordered state is recorder price deviation, recorder flow, Binance price deviation, Binance flow. Each variable is divided by its retained-sample standard deviation for estimation; the saved fit also supplies the raw-unit matrix and covariance. The filtered state uses a 300-second EMA; a raw-return variant measures a different estimand.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Joint fits from restored original overlap. Radii describe fitted reduced-form dynamics, not fundamental stability.}\label{tab:joint_fit_recovered}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{llrrr}\toprule
+Asset & State / clock & Transitions & Segments & $\rho$\\\midrule
+BTC & EMA, offset 0 & 85304 & 64 & 0.950614\\
+BTC & Return, offset 0 & 85304 & 64 & 0.286970\\
+BTC & EMA, offset -1s & 85302 & 64 & 0.952560\\
+BTC & EMA, offset +1s & 85303 & 64 & 0.950148\\
+ETH & EMA, offset 0 & 85008 & 66 & 0.949934\\
+ETH & Return, offset 0 & 85008 & 66 & 0.383452\\
+ETH & EMA, offset -1s & 85008 & 66 & 0.949761\\
+ETH & EMA, offset +1s & 85008 & 66 & 0.950104\\
+ADA & EMA, offset 0 & 85615 & 62 & 0.948204\\
+ADA & Return, offset 0 & 85615 & 62 & 0.227168\\
+ADA & EMA, offset -1s & 85616 & 62 & 0.946539\\
+ADA & EMA, offset +1s & 85617 & 62 & 0.948877\\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+For horizon $H$, with $\Psi_k=J^k$ and residual covariance $\Sigma$, the generalized decomposition \citep{pesaran1998} is
+\[
+\theta_{ij}(H)=\frac{\Sigma_{jj}^{-1}\sum_{k=0}^{H-1}(e_i^\top\Psi_k\Sigma e_j)^2}{\sum_{k=0}^{H-1} e_i^\top\Psi_k\Sigma\Psi_k^\top e_i}.
+\]
+With correlated innovations, these raw generalized shares need not sum to one. We report $\widetilde\theta_{ij}=\theta_{ij}/\sum_j\theta_{ij}$ as an explicitly chosen row normalization, retain raw shares in the output, and do not interpret their directional difference as identified net causality. We also calculate orthogonal decompositions under all twenty-four variable orderings. Six fitted steps are sixty seconds. The matrix, full residual covariance, responses, and every horizon use the same saved joint fit.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Sixty-second cross-price predictive decomposition, percentages. Ordering ranges are sensitivity ranges, not confidence intervals.}\label{tab:joint_fevd_recovered}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lrrrr}\toprule
+Asset & BN to CB & Order range & CB to BN & Order range\\\midrule
+BTC & 44.29 & [17.00, 84.83] & 32.24 & [0.05, 57.77]\\
+ETH & 41.31 & [4.77, 79.46] & 37.45 & [0.73, 69.99]\\
+ADA & 32.52 & [0.70, 60.87] & 30.75 & [0.20, 56.51]\\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+The ordering ranges are broad. Contemporaneously correlated innovations can produce cross-price shares even without a directed lag channel. These calculations establish a reproducible joint descriptive study; they do not identify a structural information shock, eliminate common news, or validate the old untraced percentages. Date-resampling with 200 draws is supplied as exploratory variation under an exchangeable-date assumption, not as a small-sample causal guarantee. Residual lag correlations are retained; fitting a stable matrix does not establish model adequacy. The raw-return and clock-offset fits remain visible rather than selecting a preferred result.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Full-precision fits are saved digitally; displayed normalized matrices round to six decimals. Row/column order is CB price, CB flow, BN price, BN flow.}\label{tab:joint_matrices_recovered}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{llrrrrr}\toprule
+Asset & Matrix & Row & CB price & CB flow & BN price & BN flow\\\midrule
+BTC & $J$ & 1 & 0.615681 & 0.017169 & 0.344680 & 0.016968\\
+BTC & $J$ & 2 & -0.281880 & 0.173033 & 0.437549 & 0.036387\\
+BTC & $J$ & 3 & 0.025606 & 0.016819 & 0.919871 & 0.009472\\
+BTC & $J$ & 4 & 0.037385 & 0.032498 & 0.026393 & 0.156420\\
+BTC & $\Sigma$ & 1 & 0.077404 & 0.096316 & 0.062844 & 0.069130\\
+BTC & $\Sigma$ & 2 & 0.096316 & 0.911571 & 0.074506 & 0.159400\\
+BTC & $\Sigma$ & 3 & 0.062844 & 0.074506 & 0.093297 & 0.095180\\
+BTC & $\Sigma$ & 4 & 0.069130 & 0.159400 & 0.095180 & 0.959249\\
+ETH & $J$ & 1 & 0.775163 & 0.003957 & 0.176204 & 0.020426\\
+ETH & $J$ & 2 & -0.147239 & 0.139105 & 0.301382 & 0.046338\\
+ETH & $J$ & 3 & 0.073362 & 0.008001 & 0.872432 & 0.011210\\
+ETH & $J$ & 4 & 0.048283 & 0.039717 & 0.017520 & 0.080380\\
+ETH & $\Sigma$ & 1 & 0.095445 & 0.083451 & 0.077468 & 0.073354\\
+ETH & $\Sigma$ & 2 & 0.083451 & 0.930111 & 0.065504 & 0.134739\\
+ETH & $\Sigma$ & 3 & 0.077468 & 0.065504 & 0.099874 & 0.096972\\
+ETH & $\Sigma$ & 4 & 0.073354 & 0.134739 & 0.096972 & 0.981444\\
+ADA & $J$ & 1 & 0.893862 & 0.007220 & 0.050108 & 0.021432\\
+ADA & $J$ & 2 & -0.049199 & 0.120553 & 0.128009 & 0.066042\\
+ADA & $J$ & 3 & 0.024676 & 0.002544 & 0.922499 & 0.012366\\
+ADA & $J$ & 4 & 0.064629 & 0.013664 & 0.025311 & 0.099010\\
+ADA & $\Sigma$ & 1 & 0.107064 & 0.097674 & 0.075204 & 0.111943\\
+ADA & $\Sigma$ & 2 & 0.097674 & 0.961497 & 0.064103 & 0.176227\\
+ADA & $\Sigma$ & 3 & 0.075204 & 0.064103 & 0.100421 & 0.139113\\
+ADA & $\Sigma$ & 4 & 0.111943 & 0.176227 & 0.139113 & 0.974483\\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}

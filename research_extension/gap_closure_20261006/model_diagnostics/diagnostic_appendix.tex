@@ -1,0 +1,152 @@
+
+\section{Diagnosing the Maintained Linear Approximation}
+\label{sec:model_diagnostic_audit}
+The original covariance rejection is examined rather than repaired by choosing a passing specification. We retain four fixed HAC bandwidths (5, 10, 20 and 40 bins) and six optimizer starts for each asset/bandwidth. An independent parameterization covers the stable two-state transition with an unrestricted positive-definite innovation covariance. Let $\Gamma_0\succ0$ be arbitrary and let $K=M(I+M^\top M)^{-1/2}$ for unrestricted $M\in\mathbb R^{2\times2}$. Set
+\[
+J=\Gamma_0^{1/2}K\Gamma_0^{-1/2},\qquad
+\Sigma=\Gamma_0^{1/2}(I-KK^\top)\Gamma_0^{1/2}.
+\]
+This ensures $\Sigma\succ0$, $\rho(J)<1$ and $\Gamma_0=J\Gamma_0J^\top+\Sigma$. Conversely, the stationary covariance of any stable $J$ with $\Sigma\succ0$ supplies such a strict contraction, so the parameterization removes unnecessary entrywise bounds. Its eleven moment restrictions and seven local parameter directions retain four overidentifying degrees of freedom. The weighting rank is eleven and the parameter Jacobian rank seven in all reported cases. The six starts agree numerically, without constituting a certified global optimization proof. All twelve cases reject under their asymptotic reference. Changing these computational bounds does not rescue the maintained covariance model.
+
+\begin{longtable}{lrrrr}
+\caption{Independent full-class covariance audit. All fixed bandwidth cases are retained; the chi-square reference is asymptotic.}\label{tab:covariance_audit_complete}\\
+\toprule Asset & HAC bins & Moment rows & $J$ & Reference $p$\\\midrule\endfirsthead
+\toprule Asset & HAC bins & Moment rows & $J$ & Reference $p$\\\midrule\endhead
+\bottomrule\endfoot
+BTC & 5 & 102454 & 44.1538 & 5.961e-09\\
+BTC & 10 & 102454 & 41.4063 & 2.214e-08\\
+BTC & 20 & 102454 & 42.1261 & 1.571e-08\\
+BTC & 40 & 102454 & 44.1138 & 6.076e-09\\
+ETH & 5 & 102757 & 29.0175 & 7.754e-06\\
+ETH & 10 & 102757 & 28.3094 & 1.08e-05\\
+ETH & 20 & 102757 & 27.1269 & 1.874e-05\\
+ETH & 40 & 102757 & 25.3985 & 4.183e-05\\
+ADA & 5 & 102885 & 13.1214 & 0.0107\\
+ADA & 10 & 102885 & 12.1175 & 0.0165\\
+ADA & 20 & 102885 & 11.4782 & 0.02168\\
+ADA & 40 & 102885 & 11.3096 & 0.0233\\
+\end{longtable}
+
+\subsection{Retrospective Whole-Date Forecast Comparisons}
+We next compare a mechanical EMA-anchor forecast (or zero-return forecast), separately fitted autoregressions, and joint VARs at fixed lags $p\in\{1,2,3,6\}$. The mechanical forecast has a training-only intercept and a training mean for flow. The alternatives and scoring protocol were fixed before this run, after prior exploration of these data; this is not an untouched holdout or external preregistration. Six initial dates train the first expanding-window fit. Subsequent entire dates supply one-step evaluations; all models use the same rows after six within-segment history bins. Training-only means, scales and coefficients prevent future-fit normalization. Lags do not bridge gaps or dates.
+
+The previously reported recorder EMA continues across contiguous UTC dates while its lag products are split by date; it resets at data gaps. The restored joint and original-panel studies reset both filters at gaps and UTC dates. These constructions are explicitly distinguished rather than retroactively changing the old estimates. A price--flow VAR can improve prediction through order splitting, common news or measurement structure; improvement is not identified adaptation.
+
+The complete table reports price and flow comparisons for every fixed lag and construction. Improvement is $100(\overline L_{\rm AR}-\overline L_{\rm VAR})/\overline L_{\rm AR}$ using training-scale squared loss, averaged equally across held dates. The displayed interval concerns the paired normalized-loss difference, not percentage improvement. Only seven recorder dates and five joint dates are evaluated. Date-$t$ intervals are exploratory and do not address multiple comparisons or establish serial independence. Negative improvements and unfavorable dates remain visible. Companion radii, residual correlations, physical-unit RMSE and every fold are saved digitally.
+
+\begin{longtable}{lllrrrl}
+\caption{Every fixed AR-versus-VAR forecast comparison. Positive values favor VAR, negative values favor separate AR; intervals are paired normalized-loss differences.}\label{tab:forecast_audit_complete}\\
+\toprule Asset & State & Target & Lag & Dates & Gain (\%) & $\Delta L$ date interval\\\midrule\endfirsthead
+\toprule Asset & State & Target & Lag & Dates & Gain (\%) & $\Delta L$ date interval\\\midrule\endhead
+\bottomrule\endfoot
+BTC & Recorder EMA & Price & 1 & 7 & 0.328 & [-0.000730, 0.002294]\\
+BTC & Recorder EMA & Flow & 1 & 7 & 1.935 & [-0.019560, 0.080324]\\
+BTC & Recorder EMA & Price & 2 & 7 & 0.230 & [-0.000621, 0.001710]\\
+BTC & Recorder EMA & Flow & 2 & 7 & 1.225 & [-0.011794, 0.049588]\\
+BTC & Recorder EMA & Price & 3 & 7 & 0.182 & [-0.000533, 0.001395]\\
+BTC & Recorder EMA & Flow & 3 & 7 & 0.963 & [-0.009033, 0.038628]\\
+BTC & Recorder EMA & Price & 6 & 7 & 0.133 & [-0.000410, 0.001038]\\
+BTC & Recorder EMA & Flow & 6 & 7 & 0.547 & [-0.004181, 0.020920]\\
+BTC & Recorder return & Price & 1 & 7 & 0.162 & [-0.004527, 0.011555]\\
+BTC & Recorder return & Flow & 1 & 7 & 0.066 & [-0.001216, 0.003302]\\
+BTC & Recorder return & Price & 2 & 7 & 0.185 & [-0.004286, 0.012291]\\
+BTC & Recorder return & Flow & 2 & 7 & 0.125 & [-0.002472, 0.006340]\\
+BTC & Recorder return & Price & 3 & 7 & 0.157 & [-0.003625, 0.010395]\\
+BTC & Recorder return & Flow & 3 & 7 & 0.142 & [-0.002676, 0.007041]\\
+BTC & Recorder return & Price & 6 & 7 & 0.112 & [-0.003261, 0.008096]\\
+BTC & Recorder return & Flow & 6 & 7 & 0.256 & [-0.004961, 0.012781]\\
+BTC & Joint EMA & CB price & 1 & 5 & 1.394 & [-0.069427, 0.078149]\\
+BTC & Joint EMA & CB flow & 1 & 5 & 2.754 & [-0.016691, 0.121896]\\
+BTC & Joint EMA & BN price & 1 & 5 & 0.291 & [-0.001316, 0.003228]\\
+BTC & Joint EMA & BN flow & 1 & 5 & 0.666 & [-0.000852, 0.019857]\\
+BTC & Joint EMA & CB price & 2 & 5 & 6.265 & [-0.018711, 0.057644]\\
+BTC & Joint EMA & CB flow & 2 & 5 & 2.060 & [-0.006074, 0.082952]\\
+BTC & Joint EMA & BN price & 2 & 5 & 0.440 & [-0.002009, 0.004897]\\
+BTC & Joint EMA & BN flow & 2 & 5 & 0.386 & [0.000716, 0.010237]\\
+BTC & Joint EMA & CB price & 3 & 5 & 7.179 & [-0.010407, 0.054981]\\
+BTC & Joint EMA & CB flow & 3 & 5 & 1.719 & [-0.004776, 0.068559]\\
+BTC & Joint EMA & BN price & 3 & 5 & 0.471 & [-0.002375, 0.005470]\\
+BTC & Joint EMA & BN flow & 3 & 5 & 0.169 & [-0.002553, 0.007330]\\
+BTC & Joint EMA & CB price & 6 & 5 & 7.487 & [-0.008015, 0.054354]\\
+BTC & Joint EMA & CB flow & 6 & 5 & 1.443 & [-0.008618, 0.061925]\\
+BTC & Joint EMA & BN price & 6 & 5 & 0.217 & [-0.000990, 0.002411]\\
+BTC & Joint EMA & BN flow & 6 & 5 & 0.053 & [-0.005346, 0.006854]\\
+ETH & Recorder EMA & Price & 1 & 7 & 0.014 & [-0.000321, 0.000387]\\
+ETH & Recorder EMA & Flow & 1 & 7 & 2.021 & [-0.009013, 0.079348]\\
+ETH & Recorder EMA & Price & 2 & 7 & -0.015 & [-0.000349, 0.000277]\\
+ETH & Recorder EMA & Flow & 2 & 7 & 1.485 & [-0.006718, 0.057917]\\
+ETH & Recorder EMA & Price & 3 & 7 & -0.020 & [-0.000344, 0.000250]\\
+ETH & Recorder EMA & Flow & 3 & 7 & 1.189 & [-0.004475, 0.045255]\\
+ETH & Recorder EMA & Price & 6 & 7 & -0.058 & [-0.000416, 0.000142]\\
+ETH & Recorder EMA & Flow & 6 & 7 & 0.909 & [-0.003352, 0.034388]\\
+ETH & Recorder return & Price & 1 & 7 & 0.004 & [-0.002877, 0.003028]\\
+ETH & Recorder return & Flow & 1 & 7 & 0.053 & [0.000139, 0.001701]\\
+ETH & Recorder return & Price & 2 & 7 & -0.001 & [-0.003203, 0.003150]\\
+ETH & Recorder return & Flow & 2 & 7 & 0.130 & [0.000036, 0.004443]\\
+ETH & Recorder return & Price & 3 & 7 & -0.008 & [-0.003015, 0.002679]\\
+ETH & Recorder return & Flow & 3 & 7 & 0.172 & [-0.000203, 0.006117]\\
+ETH & Recorder return & Price & 6 & 7 & -0.058 & [-0.003555, 0.001180]\\
+ETH & Recorder return & Flow & 6 & 7 & 0.262 & [-0.000956, 0.009916]\\
+ETH & Joint EMA & CB price & 1 & 5 & -21.583 & [-0.350218, 0.212484]\\
+ETH & Joint EMA & CB flow & 1 & 5 & 1.144 & [-0.106740, 0.159966]\\
+ETH & Joint EMA & BN price & 1 & 5 & 0.377 & [-0.001908, 0.004359]\\
+ETH & Joint EMA & BN flow & 1 & 5 & 0.831 & [-0.003012, 0.036239]\\
+ETH & Joint EMA & CB price & 2 & 5 & -10.134 & [-0.217103, 0.152492]\\
+ETH & Joint EMA & CB flow & 2 & 5 & 0.895 & [-0.113647, 0.154838]\\
+ETH & Joint EMA & BN price & 2 & 5 & 0.474 & [-0.002668, 0.005742]\\
+ETH & Joint EMA & BN flow & 2 & 5 & 0.785 & [-0.005457, 0.036660]\\
+ETH & Joint EMA & CB price & 3 & 5 & -7.364 & [-0.184900, 0.137942]\\
+ETH & Joint EMA & CB flow & 3 & 5 & 0.948 & [-0.102737, 0.146129]\\
+ETH & Joint EMA & BN price & 3 & 5 & 0.436 & [-0.002436, 0.005264]\\
+ETH & Joint EMA & BN flow & 3 & 5 & 0.724 & [-0.006374, 0.035154]\\
+ETH & Joint EMA & CB price & 6 & 5 & -4.761 & [-0.154151, 0.123794]\\
+ETH & Joint EMA & CB flow & 6 & 5 & 0.405 & [-0.136398, 0.154815]\\
+ETH & Joint EMA & BN price & 6 & 5 & 0.235 & [-0.001576, 0.003098]\\
+ETH & Joint EMA & BN flow & 6 & 5 & 0.544 & [-0.004422, 0.025989]\\
+ADA & Recorder EMA & Price & 1 & 7 & 0.067 & [-0.000153, 0.000556]\\
+ADA & Recorder EMA & Flow & 1 & 7 & 0.558 & [-0.000724, 0.022762]\\
+ADA & Recorder EMA & Price & 2 & 7 & 0.028 & [-0.000343, 0.000510]\\
+ADA & Recorder EMA & Flow & 2 & 7 & 0.458 & [-0.001664, 0.019744]\\
+ADA & Recorder EMA & Price & 3 & 7 & 0.015 & [-0.000438, 0.000531]\\
+ADA & Recorder EMA & Flow & 3 & 7 & 0.411 & [-0.002254, 0.018464]\\
+ADA & Recorder EMA & Price & 6 & 7 & 0.013 & [-0.000473, 0.000551]\\
+ADA & Recorder EMA & Flow & 6 & 7 & 0.290 & [-0.003650, 0.015062]\\
+ADA & Recorder return & Price & 1 & 7 & 0.062 & [-0.002007, 0.005053]\\
+ADA & Recorder return & Flow & 1 & 7 & 0.016 & [-0.002250, 0.002864]\\
+ADA & Recorder return & Price & 2 & 7 & 0.040 & [-0.002718, 0.004686]\\
+ADA & Recorder return & Flow & 2 & 7 & 0.036 & [-0.002752, 0.004191]\\
+ADA & Recorder return & Price & 3 & 7 & 0.017 & [-0.003870, 0.004698]\\
+ADA & Recorder return & Flow & 3 & 7 & 0.066 & [-0.003427, 0.006044]\\
+ADA & Recorder return & Price & 6 & 7 & 0.006 & [-0.003656, 0.003952]\\
+ADA & Recorder return & Flow & 6 & 7 & 0.096 & [-0.005866, 0.009630]\\
+ADA & Joint EMA & CB price & 1 & 5 & -45.271 & [-0.658270, 0.337430]\\
+ADA & Joint EMA & CB flow & 1 & 5 & -8.977 & [-0.854151, 0.478959]\\
+ADA & Joint EMA & BN price & 1 & 5 & -0.636 & [-0.010025, 0.005778]\\
+ADA & Joint EMA & BN flow & 1 & 5 & 1.027 & [-0.005255, 0.038827]\\
+ADA & Joint EMA & CB price & 2 & 5 & -28.019 & [-0.429631, 0.230926]\\
+ADA & Joint EMA & CB flow & 2 & 5 & -7.801 & [-0.754016, 0.428354]\\
+ADA & Joint EMA & BN price & 2 & 5 & -0.305 & [-0.004878, 0.002837]\\
+ADA & Joint EMA & BN flow & 2 & 5 & 0.675 & [-0.001711, 0.023734]\\
+ADA & Joint EMA & CB price & 3 & 5 & -21.955 & [-0.351491, 0.195741]\\
+ADA & Joint EMA & CB flow & 3 & 5 & -6.351 & [-0.639886, 0.374860]\\
+ADA & Joint EMA & BN price & 3 & 5 & -0.326 & [-0.005051, 0.002872]\\
+ADA & Joint EMA & BN flow & 3 & 5 & 0.571 & [-0.001174, 0.019776]\\
+ADA & Joint EMA & CB price & 6 & 5 & -20.205 & [-0.328320, 0.184997]\\
+ADA & Joint EMA & CB flow & 6 & 5 & -6.900 & [-0.677047, 0.389789]\\
+ADA & Joint EMA & BN price & 6 & 5 & -0.470 & [-0.006646, 0.003501]\\
+ADA & Joint EMA & BN flow & 6 & 5 & 0.320 & [-0.001617, 0.012032]\\
+\end{longtable}
+
+For recorder EMA price forecasts, VAR(1) improves mean squared loss only modestly relative to AR(1). Price-loss intervals include zero across all fixed price comparisons. Joint price forecasts can deteriorate substantially for ETH and ADA. Additional lags do not turn the rejected two-state covariance restrictions into a structural learning model. These results identify limitations of this approximation; they do not prove that markets lack all adaptive trading.
+
+\subsection{Heteroskedastic Identification Requires More Than Covariance Fitting}
+The inspected C2 generator applies an unweighted covariance fit to price differences and legacy forward-aligned flow, rather than innovations from a defended dynamic reduced form. Its rolling price volatility includes the contemporaneous state and backward-fills initialization; regimes use pooled state-dependent quantiles. Conditional shock orthogonality, constant slopes and distinct structural variance profiles are assumptions, not consequences of those operations \citep{rigobon2003identification}. A bounded optimizer with one starting point supplies neither a causal interpretation nor uncertainty.
+
+An exact algebraic example shows why shock labels matter. Let
+\[
+A=\begin{bmatrix}1&-\lambda\\-\alpha&1\end{bmatrix},\qquad
+\Omega_r=A^{-1}\mathrm{diag}(v_{p,r},v_{f,r})A^{-\top}.
+\]
+Swapping and rescaling the structural equations yields another normalized matrix with $\lambda'=1/\alpha$ and $\alpha'=1/\lambda$, and transformed diagonal variances. It produces exactly the same regime covariances. The retained witness has $\lambda=1/20$, $\alpha=-3/20$, product $-3/400$, and an alternative product $-400/3$ under three nonproportional variance regimes. Bounds on the two slopes implicitly exclude this alternative; they are not independently authenticated shock labels. External sign or exclusion information could distinguish branches, but that information must be defended.
+
+A separate bounded Gaussian illustration starts with independent structural errors and partitions observations using the contemporaneous reduced-form price. Conditional errors become correlated within the selected regimes. This demonstrates that endogenous selection can violate the needed restriction even when unconditional errors are orthogonal. It does not estimate actual market shock correlations. Reopening causal identification requires a stated innovation equation, valid timing, defended conditional orthogonality/invariance and shock labels, plus uncertainty and adequacy checks. The current archive does not establish market-maker buffering from its negative fitted product.

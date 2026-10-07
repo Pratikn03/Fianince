@@ -1,0 +1,119 @@
+\section{Signed Portfolios, Model Uncertainty, and Marked Losses}
+\label{sec:risk_contract_extensions}
+The nonnegative-output result does not cover every hedged portfolio. This section states a signed extension for a specified output location, an explicit failure for general portfolio weights, and sufficient uncertainty/noise contracts. The arguments use established block-power and quadratic-Lyapunov tools; they do not constitute a new general control method or authenticate a market loss calibration.
+
+\begin{proposition}[Signed directed coupling with downstream-only output]
+\label{prop:signed_target_coupling}
+Let $A,B$ be fixed Schur-stable matrices, $L$ any real matrix, $\theta\ge0$, and
+\[
+J_\theta=\begin{bmatrix}A&0\\\theta L&B\end{bmatrix},\qquad C=[0,C_B],\quad C_B\ne0.
+\]
+Use the same fixed Euclidean initial-state ball and output units for every $\theta$. Then $M_C(J_\theta)=\sup_{t\ge0}\|CJ_\theta^t\|_2$ is nondecreasing in $\theta$, without sign restrictions on $A,B,L,C_B$. Consequently its exact initial-shock radius $B_{\rm loss}/M_C$ is nonincreasing.
+\end{proposition}
+\begin{proof}
+For $t\ge1$, the lower-left block is $\theta S_t$, where $S_t=\sum_{j=0}^{t-1}B^{t-1-j}LA^j$. Thus $CJ_\theta^t=[\theta C_BS_t,C_BB^t]$. Its row Gram matrix is
+\[
+\theta^2 C_BS_tS_t^\top C_B^\top+C_BB^t(B^t)^\top C_B^\top.
+\]
+It increases in the positive-semidefinite order with $\theta$, so its largest eigenvalue and the spectral norm are nondecreasing. Taking the supremum over $t$, including the unchanged $t=0$ term, preserves the ordering.
+\end{proof}
+The output support is essential. For $\rho=0.85$, $h=2$, let
+\[
+J_\theta=\begin{bmatrix}\rho&h&0\\0&\rho&0\\0&\theta&\rho\end{bmatrix},\qquad C=[1,0,-1].
+\]
+All eigenvalues stay at $\rho$, while
+\[
+CJ_\theta^t=[\rho^t,(h-\theta)t\rho^{t-1},-\rho^t].
+\]
+At $\theta=h$ the middle term cancels and $M_C=\sqrt2$, whereas at $\theta=0$ the peak exceeds five. Increasing coupling can therefore enlarge a hedged portfolio's radius. This is an exact-output statement in fixed coordinates; it does not identify market hedging effectiveness from the observed VAR.
+
+\subsection{Amplification Inside the Stated Multi-Asset Model}
+An unrestricted Jordan example need not have a structural cohort parameterization. The stated leader--satellite equations supply a separate witness. Order states by asset as $(x_1,y_1,x_2,y_2)$, fix $a_i=0.5$, $\eta_i=0.2$, $q_i=0.2$, $K_{ii}=1$, $K_{12}=0$, and let $K_{21}=\theta$. Both diagonal blocks are
+\[
+A_i=\begin{bmatrix}0.5&0.2\\0.1&0.84\end{bmatrix},
+\]
+and the lower-left block is $\theta\left[\begin{smallmatrix}0&0.2\\0&0.04\end{smallmatrix}\right]$. The spectrum is independent of $\theta$ and is strictly inside the unit circle. For downstream price output $C=[0,0,1,0]$, a unit leader-memory shock produces loss $0.2\theta$ at one step. Hence $M_C\ge0.2\theta$ and the exact radius tends to zero as $\theta\to\infty$. This family satisfies the paper's linear cohort equations; economic no-arbitrage, feasible orders, impact calibration and actual portfolio exposures require separate justification.
+
+A second family additionally has symmetric positive-definite impact. For $\theta\ge1$, let
+\[
+K_\theta=\begin{bmatrix}1&\theta/2\\\theta/2&\theta^2\end{bmatrix},\qquad
+Q_\theta=\mathrm{diag}(1/5,1/(5\theta^2)),\qquad a_i=1/2,\quad\eta_i=1/5.
+\]
+The determinant of $K_\theta$ is $3\theta^2/4>0$. In asset-ordered coordinates, the full Jacobian satisfies $J_\theta=S_\theta J_1S_\theta^{-1}$ with $S_\theta=\mathrm{diag}(1,1,\theta,\theta)$. Its largest spectral radius is unchanged and below one, because the two feedback modes have gains $0.3$ and $0.1$, both below $1-a=0.5$. The downstream one-step response to leader memory is $\theta/10$, so its exact fixed-coordinate radius again collapses as $\theta$ grows. Similarity establishes the spectrum here; physical coordinates, initial-state ball and output remain fixed across the different parameterized economies. Symmetry/positive definiteness alone does not establish a no-manipulation equilibrium or real impact/exposure calibration.
+
+For numerical certification, choose $h$ such that $q_h=\|J^h\|_2<1$. For $t=N+j+mh$, $0\le j<h$, submultiplicativity gives $\|CJ^t\|_2\le\|CJ^{N+j}\|_2q_h^m$. Therefore the infinite tail is bounded by $\max_{j<h}\|CJ^{N+j}\|_2$. If this bound is below the finite peak through $N-1$, that peak is certified. The examples use this tail check, rather than silently treating a finite horizon as infinite. For the constructed rational matrices, a separate exact-arithmetic check bounds $\|J^h\|_2$ by its Frobenius norm, verifies that squared bound is below one, and compares exact rational squared row norms for the prefix and tail. The hedged family is independently checked through its closed-form row expression. Empirical floating-point matrices need separate roundoff and parameter-uncertainty bounds.
+
+\begin{proposition}[A common-metric loss bound with changing coefficients]
+\label{prop:robust_metric_loss}
+Let $P\succ0$, $\|z\|_P=\|P^{1/2}z\|_2$, and
+\[
+z_t=J_tz_{t-1}+D_tw_t+e_t(z_{t-1}),\qquad y_t=C_tz_t.
+\]
+Suppose, throughout a region $\|z\|_P\le R$, that
+\[
+\begin{aligned}
+\|P^{1/2}J_tP^{-1/2}\|_2\le q_J,&\quad \|P^{1/2}D_t\|_2\le d,\\
+\|C_tP^{-1/2}\|_2\le c,&\quad \|e_t(z)\|_P\le e_0+\ell\|z\|_P.
+\end{aligned}
+\]
+Let $q_J,d,c,\ell,e_0,r,r_0\ge0$, $q=q_J+\ell<1$, $\|w_t\|_2\le r$, $\|z_0\|_P\le r_0$, and $R\ge\max\{r_0,(dr+e_0)/(1-q)\}$. Then the region is invariant and
+\[
+\|y_t\|_2\le c\left(q^t r_0+\frac{(dr+e_0)(1-q^t)}{1-q}\right)
+\le c\max\left\{r_0,\frac{dr+e_0}{1-q}\right\}.
+\]
+This is a sufficient uniform budget bound, not an exact optimal radius.
+\end{proposition}
+\begin{proof}
+The declared operator and nonlinear bounds imply $\|z_t\|_P\le q\|z_{t-1}\|_P+dr+e_0$. The region condition gives $qR+dr+e_0\le R$, establishing invariance by induction. Iterating the scalar inequality gives the geometric expression. Multiplication by the output bound $c$ yields the result. The last expression is a convex combination of $r_0$ and $(dr+e_0)/(1-q)$.
+\end{proof}
+For a nominal stable $\widehat J$, solving $\widehat J^\top P\widehat J-P=-I$ supplies one common metric. If
+$\|P^{1/2}(J_t-\widehat J)P^{-1/2}\|_2\le\varepsilon$, then $q_J\le\|P^{1/2}\widehat JP^{-1/2}\|_2+\varepsilon$. The offset $e_0$ permits a bounded affine/model residual. The uncertainty set, nonlinear remainder, offset and exposures must actually satisfy these bounds; a fitted stable matrix does not establish them. Quadratic Lyapunov certificates are established control tools \citep{boyd1994lmi}.
+
+Individual spectral stability cannot replace this common condition. The matrices $\left[\begin{smallmatrix}.5&2\\0&.5\end{smallmatrix}\right]$ and $\left[\begin{smallmatrix}.5&0\\2&.5\end{smallmatrix}\right]$ each have radius $.5$, while their alternating two-step product has radius above four. Coefficient switching can thus create growth even when every separately fitted matrix is stable. A weighted initial ball is also distinct from the earlier Euclidean ball: $\|z_0\|_P\le\sqrt{\lambda_{\max}(P)}\|z_0\|_2$. Coordinate changes require corresponding transformations of the metric, operators and uncertainty set.
+
+\paragraph{Finite horizons without contraction.}
+For a finite horizon, the same recursion admits any $q=q_J+\ell\ge0$:
+\[
+a_t=q^t r_0+(dr+e_0)\sum_{k=0}^{t-1}q^k,\qquad
+R_H\ge\max_{0\le t\le H}a_t.
+\]
+A region satisfying this condition is invariant through $H$ by the same induction, and $\|y_t\|_2\le c a_t$ there. At $q=1$, $a_t=r_0+t(dr+e_0)$. Thus a declared finite-horizon contract can include a fundamental-price coordinate with a unit-root component; it supplies no indefinite contraction guarantee. Budget and nonlinear mark conditions must use this finite $R_H$.
+
+\begin{proposition}[Finite-horizon Gaussian input contract]
+\label{prop:finite_gaussian_risk}
+For a declared integer horizon $H\ge1$, integer input dimension $m\ge1$, $\sigma>0$, $0<\alpha<1$, and innovations with marginal law $w_t\sim\mathcal N(0,\sigma^2 I_m)$, define
+\[
+r_H=\sigma\sqrt{\chi^2_{m,1-\alpha/H}}.
+\]
+With probability at least $1-\alpha$, all $H$ input norms are at most $r_H$. If either the contracting or finite-horizon recursion's region and budget conditions hold with $r=r_H$, its bound holds simultaneously through $H$ on that event. Temporal independence is unnecessary for this union bound.
+\end{proposition}
+\begin{proof}
+Each $\|w_t\|_2^2/\sigma^2$ has a chi-square law with $m$ degrees of freedom, so its tail beyond $r_H$ is $\alpha/H$. The union bound over $H$ steps gives failure probability at most $\alpha$. The deterministic recursion bound applies on the complementary event.
+\end{proof}
+The horizon and noise law are parts of the contract. If the required model/parameter bounds hold only on an event with failure probability at most $\beta$, a separate union bound gives combined coverage at least $1-\alpha-\beta$; the data must justify that additional coverage. Gaussian innovations do not satisfy an indefinitely bounded-input premise. Estimated noise scales, non-Gaussian tails, missed disturbances and model rejection require their own uncertainty analysis.
+
+\paragraph{A finite-second-moment alternative.}
+If the input law is not Gaussian but has justified bounds $E\|w_t\|_2^2\le V_t$, the choice
+\[
+r_H=\sqrt{\frac{\sum_{t=1}^H V_t}{\alpha}}
+\]
+also gives $P(\max_{t\le H}\|w_t\|_2>r_H)\le\alpha$. A zero total moment bound implies zero inputs almost surely; otherwise the result follows by Markov's inequality at each step and the union bound. This needs no temporal independence or distributional shape assumption, but can be much more conservative. The population moment bounds and any uncertainty in their estimation remain part of the contract; a sample variance alone does not establish them. Under only marginal moment bounds, disjoint rare-shock events can approach the bound, so a uniformly tighter input radius needs additional assumptions.
+
+\begin{proposition}[Dollar mark mapping with a nonlinear remainder]
+\label{prop:mark_to_dollar}
+Let fixed positions $h_i$ hold instruments whose reference prices $P_i>0$ are denominated in the same budget currency. Let $b_i$ be actual log-price changes in basis points, with $|b_i|\le\Delta_i$. The marked profit change is
+\[
+\Pi(b)=\sum_i h_iP_i(e^{b_i/10000}-1),\qquad
+\Pi_{\rm lin}(b)=\sum_i\frac{h_iP_i}{10000}b_i.
+\]
+Then
+\[
+|\Pi-\Pi_{\rm lin}|\le
+\frac12\sum_i |h_i|P_i e^{\Delta_i/10000}(\Delta_i/10000)^2.
+\]
+If $b=Tz$, the dollar output row is $C=(h_iP_i/10000)_iT$. A linear budget plus this remainder and any separately bounded cash/execution costs must fit within the allocated capital budget.
+\end{proposition}
+\begin{proof}
+Taylor's theorem gives $|e^v-1-v|\le e^{|v|}v^2/2$. Apply this componentwise and use the triangle inequality. Substitution of $b=Tz$ gives the stated dollar operator. Under $\|z\|_P\le R$, valid component bounds are $\Delta_i=R\|T_iP^{-1/2}\|_2$.
+\end{proof}
+Actual log-price displacement is distinct from latent pricing error relative to fundamentals. A stable error process can coexist with a moving fundamental price. If a price exactly tracks a nondegenerate Gaussian log-fundamental innovation $\xi$, then its pricing error stays zero, but a fixed short position $h<0$ has marked loss $|h|P_0(e^\xi-1)$. For every finite budget $B>0$, the event $\xi>\log(1+B/(|h|P_0))$ has positive probability. Thus a deterministic mark-loss guarantee does not follow from zero pricing error. A finite sequence of doubling prices illustrates this omitted channel. Thus a loss operator on pricing error alone does not bound all mark risk. Fundamental-price and currency channels, changing positions, cash flows and margin rules must be included or separately bounded. The present proposition supplies a conditional unit/remainder mapping, rather than an authenticated institutional capital or execution guarantee.

@@ -1,0 +1,16 @@
+{
+  "scope": "Retrospective diagnostic comparison on existing recorded data; fixed alternatives declared before this run, after previous analyses; no untouched holdout or external preregistration claim",
+  "datasets": ["BTC", "ETH", "ADA"],
+  "measurements": ["coinbase_ema_observed", "coinbase_return_observed", "joint_ema_observed"],
+  "sampling_seconds": 10,
+  "ema_seconds": 300,
+  "minimum_retained_segment_bins": 500,
+  "lags": [1, 2, 3, 6],
+  "minimum_training_dates": 6,
+  "validation": "expanding-window whole UTC dates; every model uses the same evaluation rows after six within-segment history bins; training-only centering/scaling and fitting",
+  "models": ["mechanical_ema_anchor_or_zero_return_plus_train_intercept", "separate_AR_p", "joint_VAR_p"],
+  "scores": ["training-scale standardized squared error", "physical-unit RMSE", "paired date-average AR-minus-VAR loss differences"],
+  "diagnostics": ["within-segment residual autocorrelation", "companion spectral radius", "rank/conditioning", "date-level VAR1 coefficient variation", "original MD weighting/rank/boundary audit"],
+  "interpretation": "Predictive association and model adequacy only; a better forecast does not identify adaptive learning, and a larger lag model does not retroactively validate the rejected VAR1 covariance restrictions",
+  "retention": "Retain all fixed alternatives and all held-out-date results; do not select specifications based on obtaining a passing model test"
+}
