@@ -14,9 +14,9 @@
 
 | Artifact | File Path | Format / Length | SHA-256 Digest | Role in Submission |
 | :--- | :--- | :---: | :--- | :--- |
-| **Primary Submission Paper** | `Machine_Markets_JF_Submission.pdf` | PDF (48 pp. exact) | `3739d00ea516e2bb108d1a17367f102b3157a06a0f4a13b810cf55d6ecdb37f7` | Core submission manuscript for JF / JFE / RFS |
-| **External Review Freeze** | `Machine_Markets_External_Review_Freeze.pdf` | PDF (48 pp. exact) | `3739d00ea516e2bb108d1a17367f102b3157a06a0f4a13b810cf55d6ecdb37f7` | Identical frozen reference copy |
-| **Unabridged Master Archive** | `Machine_Markets_JF_Submission_Full_20261006.pdf` | PDF (72 pp.) | `2104487739b8bebb0d656938dd872346b95a7758f2056822c661e972d0bebf67` | Complete technical monograph & Internet Appendix |
+| **Primary Submission Paper** | `Machine_Markets_JF_Submission.pdf` | PDF (48 pp. exact) | `0373372135d176bb3fcb485edc6d74622ad99fcde78089ce159b18127b230a9f` | Core submission manuscript for JF / JFE / RFS |
+| **External Review Freeze** | `Machine_Markets_External_Review_Freeze.pdf` | PDF (48 pp. exact) | `0373372135d176bb3fcb485edc6d74622ad99fcde78089ce159b18127b230a9f` | Identical frozen reference copy |
+| **Unabridged Master Archive** | `Machine_Markets_JF_Submission_Full_20261006.pdf` | PDF (72 pp.) | `d892ccc6d59def7e040a00c3449bd5fb1a0665f2d6bc0dd9cb43e0948c50feab` | Complete technical monograph & Internet Appendix |
 | **Cover Letter** | `submission/SUBMISSION_BUNDLE/COVER_LETTER.md` | Markdown | Verified | Editorial submission letter |
 | **Authorship & Disclosures** | `submission/SUBMISSION_BUNDLE/DISCLOSURES.md` | Markdown | Verified | Ethics, conflict of interest, and data disclosures |
 | **Lineage Ledger Audit** | `research_extension/gap_closure_20261006/check_lineage_receipt.py` | Python 3.11 | Verified | 29 tables, 3,219 cells verified against disk data |
