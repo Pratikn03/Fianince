@@ -1,0 +1,903 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\onehalfspacing\setlength{\emergencystretch}{2em}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{booktabs,tabularx,longtable,array,multirow}
+\usepackage{enumitem}
+\setlist{noitemsep,topsep=3pt,parsep=0pt,partopsep=0pt}
+\usepackage{graphicx,adjustbox}
+\usepackage{xcolor}
+\usepackage[round]{natbib}
+\usepackage{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    citecolor=blue!70!black,
+    urlcolor=blue!70!black,
+    pdftitle={From Human Markets to Machine Markets: Feedback Stability, Auditable Memory, and Financial Constraints},
+    pdfauthor={Pratik Niroula and Prashant Niroula}
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\Var}{\operatorname{Var}}
+
+\renewcommand{\topfraction}{0.90}
+\renewcommand{\bottomfraction}{0.80}
+\renewcommand{\textfraction}{0.10}
+\renewcommand{\floatpagefraction}{0.85}
+
+% Import generated macros
+
+
+
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize Niroula and Niroula}
+\fancyhead[R]{\footnotesize From Human Markets to Machine Markets}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{15pt}
+
+\title{\textbf{From Human Markets to Machine Markets:}\\[0.3em]
+\Large Feedback Stability, Auditable Memory, and Financial Constraints}
+\author{\textbf{Pratik Niroula}\thanks{Corresponding author email: \texttt{pratik.niroula@alumni.harvard.edu}. Repository address reported in the original manuscript (remote contents not verified in this revision): \texttt{github.com/pratikniroula/machine-markets} (Revision baseline: \texttt{451fd803c516}. This candidate has not been independently replicated).} \quad and \quad \textbf{Prashant Niroula}\thanks{Email: \texttt{prashant.niroula@alumni.harvard.edu}.}}
+\date{October 6, 2026 --- revision candidate}
+
+\begin{document}
+
+\hypersetup{pageanchor=false}\maketitle
+\thispagestyle{empty}
+
+\vspace{-0.5em}
+\begin{abstract}
+\noindent Aggregate price--flow data reveal model-dependent feedback diagnostics rather than trader identities. In a reset linear cohort model, symmetric near-coincident rates require bounded-power probing budgets of at least order $\delta^{-4}$; a separate scalar Gaussian experiment yields a finite-window abstention layer. Reanalysis of recorded Coinbase data shows substantial sensitivity to flow timing and price filtering, while covariance restrictions are rejected. Raw reconstruction of 768 Binance asset-days confirms smaller feedback under observed-flow timing; fee contrasts and ordering-sensitive venue decompositions do not identify causal learning or transmission. Finally, a declared loss operator and shock set yield an exact budget radius; fixed-spectrum and funded-dealer simulations distinguish transient magnification from persistent-flow accumulation. Independent replication and policy validation remain open.
+\end{abstract}
+
+\vspace{1.0em}
+\noindent\textbf{Keywords:} Adaptive learning, algorithmic trading, financial stability, market microstructure, system identification, non-normal dynamics, Kreiss constant.\\
+\textbf{JEL Classification Codes:} G01, G10, G14, C32, C58, D83.
+
+\newpage
+\hypersetup{pageanchor=true}\setcounter{page}{1}
+
+
+\section{Introduction}
+\label{sec:intro}
+Electronic trading creates a feedback channel when price changes affect subsequent orders and those orders affect later prices. The existence of this channel does not identify its participant-level source: aggregate flow can reflect adaptive algorithms, order splitting, liquidity provision, or common information. Nor does decay of price disturbances establish that a dealer's loss budget will remain intact. This paper separates these identification and financial-risk questions.
+
+Our central question is: \emph{what can observable aggregate data establish about feedback, and what additional assumptions are required to turn dynamic stability into a financially meaningful loss bound?} We combine a linear adaptive-memory model with an audit of observable-state definitions and timing, followed by controlled loss-exposure illustrations. The empirical analysis is deliberately reduced-form. It does not identify artificial-intelligence trading, individual learning rules, or a causal market-maker response from anonymous records.
+
+\paragraph{Conditional identification results.}
+Within a reset linear cohort model with known price-impact and anchor parameters, price responses identify merged rate--weight measures rather than the number or identity of cohorts sharing a rate. For a uniformly stable compact family of symmetric split alternatives, bounded-power deterministic probes with Gaussian observation noise face a separation lower bound of order $\delta^{-4}$. This is a lower bound for the stated experiment, not an attained universal rate for all passive market data. A separate scalar Gaussian price-surveillance experiment gives an explicit finite-window abstention bound near its unit-root boundary. The observation experiment matters: the scalar result is not asserted for noiselessly observed latent cohort states.
+
+\paragraph{Measurement sensitivity.}
+The primary empirical reanalysis uses recorded Coinbase BTC, ETH, and ADA book snapshots and signed executed flow from April 7--19, 2021. A 300-second EMA price deviation is estimated on 10-second bins with only end-bin observed flow. Mean reduced-form feedback is approximately $0.00194$, $0.00098$, and $0.00062$, respectively. Forward-bin flow alignment produces larger estimates, while raw-return specifications have feedback intervals spanning zero. These comparisons establish that measurement and timing materially affect the feedback diagnostic. They do not establish an algorithmic learning mechanism.
+
+The preserved Binance panel supplies a secondary analysis of 768 saved asset-day estimates, derived from trade-price klines rather than historical full order books. Its legacy forward-flow estimator has mean $\hat Q\simeq0.00815$. The initial cache audit lacked those raw inputs. Section~\ref{sec:restored_panel} now restores all 768 original asset-days from checksum-verified official archives, reproduces the saved core estimates, and reports corrected observed-flow diagnostics separately. Original download-time hashes were not preserved. The legacy July 2022 fee contrast has a date-clustered effect interval spanning both signs and fails the inherited equivalence reference. Corrected observed-time results in Section~\ref{sec:restored_panel} have a different scale; a wide inherited margin cannot establish economic equivalence. The contradictory old joint-venue numbers and unsupported event-study inference are withdrawn. A subsequent independent reconstruction of the original April overlap supplies a joint VAR and ordering-sensitive predictive decompositions in Section~\ref{sec:restored_joint}.
+
+\paragraph{Financially meaningful stability.}
+For fixed economically specified state coordinates, loss operator $C$, and initial-shock set, the exact loss-budget radius is $B/\sup_{t\ge0}\|CJ^t\|_2$. The underlying transient-growth mechanism is established in operator theory; our financial use is the explicit mapping from a declared disturbance set to a declared budget. A fixed-spectrum numerical illustration separates transient magnification from eigenvalue decay. A distinct funded-dealer simulation shows persistent-flow accumulation and retains an exogenous benchmark matched on long-run variance. Simulation outcomes are conditional on their accounting and calibration, not measurements of actual dealer insolvency.
+
+\subsection{Related Literature and Contribution Boundaries}
+Classical microstructure studies price formation, information and order flow \citep{kyle1985continuous,glosten1985bid,hasbrouck1991}. Order splitting and book imbalance can create persistent relations without identifying an adaptive trader \citep{bouchaud2004fluctuations,cont2014}. Funding constraints and inventory exposure connect market liquidity to intermediary fragility \citep{brunnermeier2009,adrian2010liquidity,greenwood2015vulnerable}.
+
+The realization and transient-growth tools used here build on existing control and numerical analysis \citep{gilbert1963,kreiss1962,spijker1991,trefethen2005spectra}. Non-normal financial-network amplification is not a first-use claim: Wang, Sornette, Wu and Lera's 2024 working paper studies evolving influence networks and subcritical financial instabilities \citep{wang2024}. Singular mixture models also have assumption-dependent identification rates \citep{manole2022}; our symmetric probing experiment is a specific dynamical testing problem rather than a universal new estimation rate. Our scope differs by specifying an output loss budget, a cohort-response observation experiment, and sensitivity of measured price--flow feedback to timing and filtering. We do not claim novelty for the general distinction between asymptotic decay and transient growth, or an independently certified priority for the full framework.
+
+\subsection{Evidence Organization}
+Section~\ref{sec:model} states the conditional model results. Section~\ref{sec:data_estimand} defines actual measurements and their timing. Section~\ref{sec:baseline_natural_exp} reports fresh observable-state diagnostics and clearly separated saved-panel evidence. Section~\ref{sec:stress_fragility} examines dimensional stress regression and model-based loss exposure. Section~\ref{sec:attribution_falsification} states attribution and replication limits. Section~\ref{sec:policy_conclusion} discusses conditional surveillance implications and concludes.
+
+\section{Theoretical Model and Identification Boundaries}
+\label{sec:model}
+
+\subsection{Microfoundations of Closed-Loop Price Formation}
+We formalize an electronic financial market sampled at discrete uniform time intervals $t \in \{0, 1, 2, \dots\}$, where time step $\Delta$ represents the operational sampling frequency (e.g., 1 second). Let $p_t$ denote the log mid-price of a traded asset, and let $p_t^*$ denote the unobserved fundamental value, which evolves as a martingale:
+\begin{equation}
+p_{t+1}^* = p_t^* + \xi_{t+1}, \qquad \xi_{t+1} \sim \text{i.i.d.}(0, \sigma_\xi^2).
+\label{eq:fundamental_process}
+\end{equation}
+We define the pricing error (displacement from fundamental) as $x_t \equiv p_t - p_t^*$.
+
+\paragraph{Dealer Pricing and Kyle Auction Microfoundation.}
+Following the continuous auction framework of \citet{kyle1985continuous} adapted to discrete quote adjustments \citep{hasbrouck1991,bouchaud2004fluctuations}, a competitive, risk-neutral market maker sets quotes to absorb aggregate order flow. Total incoming order flow at time $t$ consists of two components: aggregate demand $u_t$ submitted by algorithmic trading agents, and exogenous liquidity/hedging noise $\varepsilon_{t+1} \sim \text{i.i.d.}(0, \sigma_\varepsilon^2)$. In addition, fundamentalist arbitrageurs submit mean-reverting demand $-\varphi x_t$ whenever prices deviate from fundamentals.
+
+The market maker updates the transaction price according to linear price impact $\kappa > 0$:
+\begin{equation}
+p_{t+1} - p_t = \kappa \left( u_t - \varphi x_t + \varepsilon_{t+1} \right).
+\end{equation}
+Subtracting fundamental increment $\xi_{t+1}$ from both sides yields the pricing error recursion:
+\begin{equation}
+x_{t+1} = (1 - \kappa \varphi) x_t + \kappa u_t + \left( \kappa \varepsilon_{t+1} - \xi_{t+1} \right).
+\end{equation}
+Defining the direct price persistence parameter $a \equiv 1 - \kappa \varphi \in [0, 1)$ and rescaling the combined disturbance innovation as $w_{t+1} \equiv \kappa \varepsilon_{t+1} - \xi_{t+1}$, we obtain the foundational pricing equation:
+\begin{equation}
+x_{t+1} = a x_t + \kappa u_t + w_{t+1}, \qquad w_{t+1} \sim \text{i.i.d.}(0, \sigma_w^2).
+\label{eq:micro_pricing}
+\end{equation}
+When fundamentalist arbitrage is strong ($\varphi \to 1/\kappa$), $a \to 0$ and prices immediately reflect fundamentals. When liquidity is thin and arbitrage capital is limited, $a$ approaches unity, reflecting high price persistence.
+
+\paragraph{Algorithmic Learning Microfoundations.}
+We consider $K$ heterogeneous cohorts of algorithmic traders. Each cohort $i \in \{1, \dots, K\}$ maintains an internal state variable $y_{i,t} \in \R$ representing its estimate of price momentum, trend, or fundamental mispricing. We show that two stylized signal-update paradigms—steady-state Kalman filtering and regularized Online Gradient Descent—both reduce locally to the identical linear adaptive recursion.
+
+\begin{proposition}[Steady-State Kalman Filtering Yields Exponential Memory]
+\label{prop:kalman}
+As an independent microfoundation for exponential-memory signals, suppose an algorithmic execution desk tracks a latent local trend $v_t \in \R$ following a random walk $v_{t+1} = v_t + \zeta_{t+1}$ with innovation variance $\sigma_\zeta^2 > 0$, observing noisy price return increments $r_t = v_t + \nu_t$ with observation noise $\sigma_\nu^2 > 0$. Assume a Gaussian initial state and mutually independent, zero-mean Gaussian innovation and observation-noise sequences, independent of the initial state. In the steady-state covariance regime, the minimum mean-squared error (MMSE) estimator follows:
+\begin{equation}
+\hat{v}_{t+1} = (1 - \eta) \hat{v}_t + \eta r_t,
+\label{eq:kalman_recursion}
+\end{equation}
+where the steady-state Kalman gain $\eta \in (0, 1)$ is the unique positive root of the algebraic Riccati equation:
+\begin{equation}
+\eta = \frac{-\sigma_\zeta^2 + \sqrt{\sigma_\zeta^4 + 4 \sigma_\zeta^2 \sigma_\nu^2}}{2 \sigma_\nu^2}.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+The scalar state-space model is $v_{t+1} = v_t + \zeta_{t+1}$ and $r_t = v_t + \nu_t$. Let $P_{\infty}$ denote the steady-state prior error variance. The Riccati equation is $P_\infty = P_\infty - \frac{P_\infty^2}{P_\infty + \sigma_\nu^2} + \sigma_\zeta^2$, which simplifies to $P_\infty^2 - \sigma_\zeta^2 P_\infty - \sigma_\zeta^2 \sigma_\nu^2 = 0$. The unique positive root is $P_\infty = \frac{\sigma_\zeta^2 + \sqrt{\sigma_\zeta^4 + 4\sigma_\zeta^2 \sigma_\nu^2}}{2}$. The steady-state Kalman gain is $\eta = \frac{P_\infty}{P_\infty + \sigma_\nu^2} \in (0, 1)$. Substituting into the update $\hat{v}_{t+1} = \hat{v}_t + \eta (r_t - \hat{v}_t)$ yields \eqref{eq:kalman_recursion}.
+\end{proof}
+
+\begin{proposition}[Regularized Online Gradient Descent Yields Exponential Memory]
+\label{prop:ogd}
+Consider an automated trading agent updating policy weights $\theta_t \in \R$ via Online Gradient Descent (OGD) with $L_2$ weight regularization $\gamma \in (0, 1)$ to minimize a quadratic prediction loss $\mathcal{L}(\theta_t; x_t) = \frac{1}{2} (x_t - \theta_t)^\top H (x_t - \theta_t)$:
+\begin{equation}
+\theta_{t+1} = (1 - \gamma) \theta_t - \alpha \nabla_\theta \mathcal{L}(\theta_t; x_t),
+\end{equation}
+where $H>0$ and $\alpha > 0$ is the learning step size. If the effective adaptation rate $\eta \equiv \gamma + \alpha H \in (0, 1)$ and we define gain $q \equiv \frac{\alpha H}{\gamma + \alpha H}$, the parameter recursion is mathematically identical to:
+\begin{equation}
+\theta_{t+1} = (1 - \eta) \theta_t + \eta q x_t.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Differentiating the loss, $\nabla_\theta \mathcal{L} = -H(x_t - \theta_t)$. The parameter update becomes:
+$\theta_{t+1} = (1 - \gamma)\theta_t + \alpha H (x_t - \theta_t) = (1 - (\gamma + \alpha H))\theta_t + \alpha H x_t$.
+Substituting $\eta = \gamma + \alpha H$ and $q = \frac{\alpha H}{\eta}$ yields $\theta_{t+1} = (1 - \eta)\theta_t + \eta q x_t$.
+\end{proof}
+
+Propositions~\ref{prop:kalman} and~\ref{prop:ogd} demonstrate that exponential memory decay is not an ad hoc modeling assumption, but rather a common local linear reduction of standard optimal filtering and regularized gradient optimization.
+
+\paragraph{The Joint Closed-Loop Dynamical System.}
+Let cohort $i$ submit demand proportional to its state, $u_{i,t} = q_i y_{i,t}$, where $q_i \in \R$ reflects aggressive capital allocation ($q_i > 0$ represents trend-following / momentum; $q_i < 0$ represents mean-reversion). Total algorithmic demand is $u_t = \sum_{i=1}^K q_i y_{i,t}$. Each cohort updates its internal state according to:
+\begin{equation}
+y_{i, t+1} = (1 - \eta_i) y_{i, t} + \eta_i x_{t+1}, \qquad \eta_i \in (0, 1).
+\label{eq:cohort_update}
+\end{equation}
+
+Substituting the market price formation equation \eqref{eq:micro_pricing} into the update rule \eqref{eq:cohort_update}, we obtain:
+\begin{equation}
+y_{i, t+1} = (1 - \eta_i) y_{i, t} + \eta_i \left( a x_t + \kappa \sum_{j=1}^K q_j y_{j, t} + w_{t+1} \right).
+\end{equation}
+Stacking the pricing error $x_t$ and the $K$ internal cohort states into the state vector $\mathbf{z}_t = (x_t, y_{1,t}, \dots, y_{K,t})^\top \in \R^{K+1}$, the joint economy forms an autonomous discrete-time linear dynamical system:
+\begin{equation}
+\mathbf{z}_{t+1} = J \mathbf{z}_t + \mathbf{b} w_{t+1},
+\label{eq:state_space_system}
+\end{equation}
+where the closed-loop system Jacobian matrix $J \in \R^{(K+1) \times (K+1)}$ is given by:
+\begin{equation}
+J = \begin{bmatrix}
+a & \kappa q_1 & \kappa q_2 & \cdots & \kappa q_K \\
+\eta_1 a & 1 - \eta_1 + \eta_1 \kappa q_1 & \eta_1 \kappa q_2 & \cdots & \eta_1 \kappa q_K \\
+\eta_2 a & \eta_2 \kappa q_1 & 1 - \eta_2 + \eta_2 \kappa q_2 & \cdots & \eta_2 \kappa q_K \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+\eta_K a & \eta_K \kappa q_1 & \eta_K \kappa q_2 & \cdots & 1 - \eta_K + \eta_K \kappa q_K
+\end{bmatrix},
+\label{eq:full_jacobian}
+\end{equation}
+and $\mathbf{b} = (1, \eta_1, \eta_2, \dots, \eta_K)^\top$.
+
+\paragraph{Single-Cohort Stability Boundary.}
+In the single-cohort case ($K=1$), defining total loop feedback gain $Q \equiv \kappa q_1$, the characteristic polynomial of $J$ is:
+\begin{equation}
+P(\lambda) = \det(\lambda I - J) = \lambda^2 - \left( a + 1 - \eta + \eta Q \right) \lambda + (1 - \eta) a.
+\label{eq:char_poly}
+\end{equation}
+By the Jury stability criterion, all roots of $P(\lambda)$ lie strictly inside the open unit disk $\{|\lambda| < 1\}$ if and only if $|P(0)| < 1$, $P(1) > 0$, and $P(-1) > 0$. Here $|P(0)| = (1 - \eta)a < 1$ holds for all $a \in [0, 1)$ and $\eta \in (0, 1)$. Evaluating at $\lambda = 1$ and $\lambda = -1$:
+\begin{equation}
+P(1) = (1 - a - Q) \eta, \qquad P(-1) = (2 - \eta)(1 + a) + \eta Q.
+\end{equation}
+For the positive-feedback economy ($Q \ge 0$), $P(-1) > 0$ is strictly satisfied, so Schur stability is strictly equivalent to:
+\begin{equation}
+S \equiv a + Q < 1, \qquad \text{or equivalently} \quad \mathcal{L} \equiv \frac{Q}{1 - a} < 1,
+\label{eq:stability_cond}
+\end{equation}
+where $S$ is total closed-loop persistence and $\mathcal{L}$ is the loop ratio. In the general signed-feedback economy ($Q \in \R$), the full Jury stability interval is $-\frac{(2-\eta)(1+a)}{\eta} < Q < 1 - a$, where the lower bound prevents period-doubling oscillatory explosion. For positive feedback the same $+1$ boundary also holds with a lagged update; signed-feedback Jury conditions must be recomputed: if execution features a discrete one-period lag ($x_{t+1} = a x_t + y_t + w_{t+1}, y_{t+1} = (1 - \eta) y_t + \eta Q x_t$), evaluating $P_{\text{lag}}(1) = (1 - a - Q)\eta > 0 \iff S \equiv a + Q < 1$, identically.
+
+\subsection{Theorem 1: Merged Rate-Weight Equivalence and \texorpdfstring{$\Omega(\delta^{-4})$}{Omega(delta\textasciicircum(-4))} Separation}
+A central question in algorithmic market surveillance is whether an econometrician observing public trade executions and prices can identify the individual algorithmic strategies active in the market.
+
+\begin{theorem}[Merged Rate-Weight Equivalence and Minimax Separation Complexity]
+\label{thm:m1_equivalence}\label{thm:m2_sample_complexity}
+Let price impact $\kappa > 0$ and anchor $a \in [0,1)$ be known. Compare zero-initial-state responses with process innovations set to zero and adaptation rates strictly in $(0,1)$. The merged support excludes rates whose total weight cancels to zero.
+\begin{enumerate}
+    \item \textbf{Exact Equivalence Class:} Two market economies $\mathcal{E}_A = \{(q_i^A, \eta_i^A)\}_{i=1}^{K_A}$ and $\mathcal{E}_B = \{(q_i^B, \eta_i^B)\}_{i=1}^{K_B}$ generate mathematically identical public price responses $x_t$ for all $t \ge 0$ under all public probing sequences $\{u_t^{\text{probe}}\}_{t \ge 0}$ if and only if their merged rate--weight measures coincide:
+    \begin{equation}
+    \sum_{i: \eta_i^A = \eta} q_i^A = \sum_{j: \eta_j^B = \eta} q_j^B \qquad \forall \eta \in (0, 1).
+    \label{eq:merged_measure}
+    \end{equation}
+    The minimal state-space realization dimension is $1 + |\operatorname{supp}(\mathcal{M})|$, where the support counts distinct rates with nonzero merged weights; this statement excludes instantaneous rates. With these nonzero weights there are no cancellations at the distinct cohort poles.
+    \item \textbf{Minimax Separation Complexity:} Consider testing whether a noiseless-state market ($w_t = 0$) consists of a single merged cohort with rate $\bar{\eta}$ versus two split cohorts with rates $\bar{\eta}\pm\delta$ and identical fixed nonzero total feedback $Q$, with $\sigma_v>0$ and $0<\delta_0<\min(\bar\eta,1-\bar\eta)$. Assume that the closed-loop family lies in a compact parameter set with $\rho(J)\le1-\varepsilon$ uniformly for $|\delta|\le\delta_0$, with $\varepsilon>0$. Under deterministic probing sequences satisfying power constraint $\frac{1}{T} \sum_{t=0}^{T-1} u_t^2 \le \mathcal{P}_{\text{probe}}$ and independent additive Gaussian observation noise $\tilde{x}_t = x_t + v_t$ with $v_t \sim \mathcal{N}(0, \sigma_v^2)$, any deterministic/open-loop probing sequence satisfying the stated average-power constraint distinguishing the two economies with worst-case probability of error at most $\alpha \in (0, 1/4)$ requires an observation budget $T$ satisfying:
+    \begin{equation}
+    T \ge \frac{C(\alpha,\sigma_v,\mathcal P_{\text{probe}},\mathcal S_\varepsilon)}{\delta^4} = \Omega(\delta^{-4}),
+    \label{eq:delta_fourth}
+    \end{equation}
+    where $C(\alpha,\sigma_v,\mathcal P_{\text{probe}},\mathcal S_\varepsilon) > 0$ is a constant independent of $\delta$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{Part 1 (Equivalence Class):} Taking $z$-transforms of the pricing equation \eqref{eq:micro_pricing} and cohort updates \eqref{eq:cohort_update}, we have $X(z) = \frac{\kappa}{z - a} U(z)$ and $Y_i(z) = \frac{\eta_i z}{z - (1 - \eta_i)} X(z)$. Summing across cohorts, total endogenous demand is $U_{\text{end}}(z) = \sum_{i=1}^K q_i Y_i(z) = \left( \sum_{i=1}^K \frac{q_i \eta_i z}{z - (1 - \eta_i)} \right) X(z)$. 
+Applying feedback closure $X(z) = \frac{\kappa}{z - a} (U_{\text{end}}(z) + U_{\text{probe}}(z))$ yields the public transfer function from probe to price:
+\begin{equation}
+H(z) \equiv \frac{X(z)}{U_{\text{probe}}(z)} = \frac{\kappa}{z - a - \kappa G(z)}, \qquad G(z) \equiv z \sum_{r \in \mathcal{R}} \frac{c_r}{z - r},
+\end{equation}
+where the set of poles is $\mathcal{R} = \{1 - \eta : \eta \in \operatorname{supp}(\mathcal{M})\}$, with merged coefficients $c_r = \eta \sum_{i: \eta_i = \eta} q_i$. Because $\frac{z c_r}{z - r} = c_r + \frac{r c_r}{z - r}$, the pole is $r = 1 - \eta$, and its residue is $r c_r$. Since $r \neq 0$ for $\eta \in (0, 1)$, equality of poles and residues is equivalent to equality of the merged coefficients $c_r$. By the fundamental theorem of algebra and the uniqueness of partial fraction expansions of proper rational functions on $\mathbb{C}$, equality of $H_A$ and $H_B$ implies equality of $G_A$ and $G_B$ by $G=(z-a-\kappa/H)/\kappa$. Uniqueness of the poles and residues of $G$ therefore determines its nonzero merged weights. Thus, any two economies with identical merged rate-weights $c_r$ produce identical transfer functions, and hence identical price impulse responses. For a rational single-input/output transfer function, the minimal realization degree is the denominator degree after cancellation \citep{gilbert1963}, which is $1 + |\operatorname{supp}(\mathcal{M})|$ for dynamic cohorts $\eta_i \in (0, 1)$.
+
+\textbf{Part 2 (Minimax Sample Complexity):} Let $\mathcal{E}_0$ have single cohort $(\bar{q}, \bar{\eta})$, and $\mathcal{E}_1$ have two cohorts with rates $\bar{\eta}_1 = \bar{\eta} - \delta$ and $\bar{\eta}_2 = \bar{\eta} + \delta$ with weights $q_1 = q_2 = \bar{q}/2$, so total feedback $Q = \kappa \bar{q}$ is preserved.
+The endogenous demand transfer per unit price is $G_0(z) = \frac{\bar{q} \bar{\eta} z}{z - (1 - \bar{\eta})}$ under $\mathcal{E}_0$, and $G_\delta(z) = \frac{\bar{q} z}{2} [ \frac{\bar{\eta}-\delta}{z - (1 - \bar{\eta} + \delta)} + \frac{\bar{\eta}+\delta}{z - (1 - \bar{\eta} - \delta)} ]$ under $\mathcal{E}_1$. Due to bilateral symmetry $\bar{\eta} \pm \delta$, the perturbation $\Delta G(z) \equiv G_\delta(z) - G_0(z)$ is strictly even in $\delta$, so all odd-order terms in $\delta$ vanish identically: $\Delta G(z) = G_2(z) \delta^2 + \mathcal{O}(\delta^4)$.
+Writing $D(z) \equiv z - a - \kappa G(z)$, the closed-loop price transfer discrepancy is:
+\begin{equation}
+H_\delta(z) - H_0(z) = \frac{\kappa}{D_\delta(z)} - \frac{\kappa}{D_0(z)} = \frac{\kappa^2 \Delta G(z)}{D_0(z) D_\delta(z)} = H_0(z) H_\delta(z) \Delta G(z).
+\end{equation}
+Assume the parameter family belongs to the stated compact parameter family $\mathcal S_\varepsilon$ satisfying $\rho(J)\le1-\varepsilon$ for some fixed $\varepsilon > 0$ for all $|\delta| \le \delta_0$. Under this condition, all closed-loop poles lie strictly inside the disk $\{|z| \le 1 - \varepsilon\}$. Thus $H_\delta(z) - H_0(z)$ is analytic on $\{|z|\ge1\}$. Choose $R\in(1-\varepsilon,1)$. Symmetry of the alternatives and compactness bound $H_\delta-H_0$ by $C_R\delta^2$ uniformly on $|z|=R$. Cauchy's coefficient formula then bounds its impulse coefficients by $C_R\delta^2R^t$, with the constant absorbing the time-index convention. Summing the sequence yields bounded $\ell_1$ norm $\|\Delta h\|_{\ell_1} = \sum_{t=1}^\infty |\Delta h_t| \le C_H \cdot \delta^2$ with constant $C_H < \infty$ strictly independent of $\delta$. Under probe sequence $\{u_t\}_{t=0}^{T-1}$ with power budget $\frac{1}{T} \sum_{t=0}^{T-1} u_t^2 \le \mathcal{P}_{\text{probe}}$ (so $\|u\|_{\ell_2} \le \sqrt{T \mathcal{P}_{\text{probe}}}$), the deterministic output price discrepancy is $\Delta x = \Delta h * u$.
+By Young's convolution inequality, $\|\Delta x\|_{\ell_2} \le \|\Delta h\|_{\ell_1} \|u\|_{\ell_2} \le C_H \delta^2 \sqrt{T \mathcal{P}_{\text{probe}}}$, yielding $\sum_{t=1}^T (\Delta x_t)^2 \le C_H^2 \mathcal{P}_{\text{probe}} T \delta^4$.
+Under controlled probing with independent additive Gaussian observation noise $v_t \sim \mathcal{N}(0, \sigma_v^2)$ on prices $\tilde{x}_t = x_t + v_t$, the noise covariance $\sigma_v^2 I_T$ is identical across both hypotheses, and the trajectory mean discrepancy is deterministic $\Delta x$. The exact Kullback--Leibler (KL) divergence is therefore:
+\begin{equation}
+D_{\text{KL}}\left(P_0^T \,\|\, P_1^T\right) = \frac{1}{2 \sigma_v^2} \sum_{t=1}^T \left( \Delta x_t \right)^2 \le \frac{C_H^2 \mathcal{P}_{\text{probe}}}{2 \sigma_v^2} T \delta^4 \equiv T \cdot C_0 \cdot \delta^4.
+\end{equation}
+By Le Cam's two-point inequality \citep{lecam1986}, the minimax probability of error across the two hypotheses satisfies:
+\begin{equation}
+\inf_{\Psi} \max_{i \in \{0, 1\}} \mathbb{P}_i(\Psi \neq i) \ge \frac{1}{2} \left( 1 - \|P_0^T - P_1^T\|_{\text{TV}} \right) \ge \frac{1}{2} \left( 1 - \sqrt{\frac{1}{2} D_{\text{KL}}(P_0^T \,\|\, P_1^T)} \right).
+\end{equation}
+To achieve worst-case error bounded by $\alpha \in (0, 1/4)$, we must have $\|P_0^T - P_1^T\|_{\text{TV}} \ge 1 - 2\alpha > 1/2$, which requires $D_{\text{KL}}(P_0^T \,\|\, P_1^T) \ge 2 (1 - 2\alpha)^2$.
+Substituting $D_{\text{KL}} \le T \cdot C_0 \cdot \delta^4$ yields:
+\begin{equation}
+T \ge \frac{2 (1 - 2\alpha)^2}{C_0 \, \delta^4} \equiv \frac{C(\alpha,\sigma_v,\mathcal P_{\text{probe}},\mathcal S_\varepsilon)}{\delta^4} = \Omega(\delta^{-4}),
+\end{equation}
+completing the proof.
+\end{proof}
+
+\begin{remark}[Scope of the Separation Bound]
+Merged rates identify aggregate weights, not the count or identities of participants sharing a rate in the reset linear experiment. The symmetric split construction makes the leading response difference quadratic in $\delta$, giving a fourth-order testing lower bound with fixed stability margin and noise/power assumptions. This does not identify dollar allocations, supply an upper bound, or justify a literal ratio of detection horizons between $\delta=0.05$ and a unit perturbation outside the local family.
+\end{remark}
+
+
+\subsection{Theorem 2: A Finite-Window Price-Surveillance Bound}
+The following experiment isolates a statistical boundary under passive price observations. Its parameter $s$ is the scalar transition coefficient, distinct from the algebraic index $S=a+Q$ of a general multivariate market. Applying the result to a hidden multivariate market requires a valid observation-law reduction; no such reduction is inferred solely from a common unit-root boundary.
+
+\begin{theorem}[Finite-Window Abstention in a Scalar Gaussian Experiment]
+\label{thm:m3_minimax_abstention}
+Observe $\mathcal D_T=(x_1,\ldots,x_T)$ where $x_0=0$ and $x_t=sx_{t-1}+w_t$, $w_t\sim\mathcal N(0,\sigma^2)$ independently, $\sigma>0$, and $s\in(0,2)$. Let a possibly randomized rule $\Psi$ take values Stable, Unstable, or Abstain, with
+\[
+\sup_{s<1}P_s(\Psi=\mathrm{Unstable})\le\alpha,
+\qquad \sup_{s\ge1}P_s(\Psi=\mathrm{Stable})\le\alpha,
+\quad 0<\alpha<1/2.
+\]
+Choose $0<c_0<1$ with $c_0e^{c_0}/(2\sqrt2)<1-2\alpha$. For every integer $T\ge1$, on $\mathcal B_T=(1-c_0/T,1+c_0/T)$,
+\begin{equation}
+\inf_{s\in\mathcal B_T}P_s(\Psi=\mathrm{Abstain})
+\ge1-2\alpha-\frac{c_0e^{c_0}}{2\sqrt2}>0.
+\label{eq:abstain_bound}
+\end{equation}
+For every finite $T$, the minimax worst-case error of binary rules across $s\in(0,2)$ is at least $1/2$.
+\end{theorem}
+\begin{proof}
+Pair any $s_0\in(1-c_0/T,1)$ with $s_1=s_0+c_0/T\in(1,1+c_0/T)$; reverse the pairing for a point on the other side, including $s_1=1$. Gaussian transition densities give
+\[
+D_{\rm KL}(P_{s_0}\|P_{s_1})
+=\frac{(s_1-s_0)^2}{2\sigma^2}\sum_{t=1}^T E_{s_0}x_{t-1}^2.
+\]
+For either paired coefficient, $|s|\le1+c_0/T$ and
+$E_sx_{t-1}^2=\sigma^2\sum_{j=0}^{t-2}s^{2j}\le\sigma^2(t-1)e^{2c_0}$.
+Thus the KL divergence in either direction is at most $c_0^2e^{2c_0}/4$ and Pinsker's inequality bounds total variation by $c_0e^{c_0}/(2\sqrt2)$. Error control gives $P_{s_0}(\mathrm{Unstable})\le\alpha$ and $P_{s_0}(\mathrm{Stable})\le P_{s_1}(\mathrm{Stable})+\mathrm{TV}\le\alpha+\mathrm{TV}$, yielding the stated abstention bound. The reverse pairing is identical.
+
+For binary rules, the Gaussian path densities are continuous in $s$ in total variation at each finite $T$. Let $s^-\uparrow1$ and $s^+\downarrow1$. Le Cam's two-point bound gives worst-case error at least $(1-\|P_{s^-}-P_{s^+}\|_{\rm TV})/2\to1/2$. This is a worst-case statement over arbitrarily close alternatives; it is not a 50\% error claim at every fixed separated parameter.
+\end{proof}
+
+The theorem forces a positive probability of withholding a classification under the specified uniform error guarantee. It does not require abstention on every sample path. Initial conditions, extra measurements, and observation noise can change the inference problem. In particular, a fully observed noiseless cohort recursion need not admit the common Lebesgue densities assumed by an informal reduction to a scalar price likelihood. Proposition~\ref{prop:exact_audited_contract} gives a constructive two-step identification result under an exact single-cohort state/demand contract, resolving that case explicitly.
+
+\subsection{Theorem 3: Intermediary Solvency and the Kreiss Constant Bound}
+We now confront the fundamental divergence between price stability and financial intermediary solvency. Spectral radius describes asymptotic decay in the linear approximation. Loss exposure additionally depends on the shock set, output operator and finite-time magnification.
+
+\paragraph{The Non-Normal Market Jacobian.}
+Consider the closed-loop Jacobian matrix $J$ from \eqref{eq:full_jacobian}. In financial markets, price impact and memory adaptation are asymmetric: order flow directly affects prices through contemporaneous impact $\kappa$, while price innovations affect memory through learning rate $\eta$. As a result, $J J^\top - J^\top J \neq 0$: the closed-loop market Jacobian $J$ is generically \textbf{non-normal} under asymmetric price-impact and learning parameters (except on a measure-zero algebraic subvariety). A normal matrix admits an orthonormal eigenbasis. A diagonalizable non-normal matrix lacks such a basis, and a defective matrix has insufficient eigenvectors; these facts alone do not determine output magnification. Consequently, even when all eigenvalues are strictly inside the unit circle ($|\lambda_i(J)| \le \rho(J) < 1$), matrix powers $J^t$ can exhibit transient growth in a fixed norm before decaying asymptotically as $t \to \infty$ \citep{trefethen2005spectra}.
+
+\paragraph{Leveraged Dealer Balance-Sheet Model.}
+Let $E_0$ be unencumbered equity and $0<\gamma\le1$ a chosen allocation to a modeled absolute loss/exposure budget. Define
+\begin{equation}B=\gamma E_0.\label{eq:dealer_buffer}\end{equation}
+This budget is not leverage-created capital. A separate margin or leverage allowance requires its own balance-sheet rule. Fix state units and an output operator $C$ mapping state disturbance to declared dollar exposures. A single row measures one loss channel; multiple commensurately scaled rows define a vector exposure budget. The homogeneous initial-shock calculation below omits ongoing innovations and describes a stylized budget breach, not a complete stochastic solvency model.
+
+Let $z_t \in \R^n$ denote the state vector of the closed-loop economy evolving as $z_t = J^t z_0$, and let $C\in\R^{m\times n}$ denote the balance-sheet observation operator that maps the state $z_t$ into the declared dollar exposures (one output for a scalar dealer loss):
+\begin{equation}
+\text{Loss}_t = \|Cz_t\|_2=\|CJ^tz_0\|_2.
+\end{equation}
+A modeled loss-budget breach occurs if $\sup_{t \ge 0} \|C J^t z_0\|_2 > B$.
+
+\begin{theorem}[Dealer Solvency and the Kreiss Constant Bound]
+\label{thm:m5_kreiss_solvency}
+Let $z_t = J^t z_0$ with $\rho(J) < 1$, balance-sheet buffer $B > 0$, and observation matrix $C$.
+\begin{enumerate}
+    \item \textbf{Exact Worst-Case Safe Radius:} The exact maximum shock radius $r^*_{\text{exact}}$ guaranteeing that no initial disturbance with $\|z_0\|_2 \le r^*_{\text{exact}}$ breaches the declared output budget in any direction is:
+    \begin{equation}
+    r^*_{\text{exact}} = \frac{B}{\sup_{t \ge 0} \|C J^t\|_2} \equiv \frac{B}{M_C},
+    \label{eq:exact_safe_radius}
+    \end{equation}
+    where $M_C \equiv \sup_{t \ge0}\|CJ^t\|_2$ is peak output magnification. Assume $C\ne0$. For $C=I$, the budget constrains the Euclidean norm of the output vector rather than a scalar signed loss.
+    \item \textbf{Kreiss Lower and Upper Bounds:} Under full state observation ($C = I$), the Kreiss constant of matrix $J$, defined on the resolvent outside the unit disk:
+    \begin{equation}
+    \mathcal{K}(J) \equiv \sup_{|z| > 1} (|z| - 1) \|(zI - J)^{-1}\|_2,
+    \label{eq:kreiss_def}
+    \end{equation}
+    satisfies $\mathcal{K}(J) \le \sup_{t \ge 0} \|J^t\|_2 \le e \cdot n \cdot \mathcal{K}(J)$ for any $J \in \R^{n \times n}$. Consequently:
+    \begin{equation}
+    r_{\text{conservative}} \equiv \frac{B}{e \cdot n \cdot \mathcal{K}(J)} \le r^*_{\text{exact}} \le \frac{B}{\mathcal{K}(J)}.
+    \label{eq:kreiss_bilateral_bound}
+    \end{equation}
+    \item \textbf{Complete Failure of Spectral Radius:} For any stable spectral radius $\rho \in (0, 1)$ and any arbitrarily small buffer $B > 0$, there exists a parameter family of non-normal matrices $J_\theta$ and an observation operator $C = [1, 0]$ exposed to the amplified coordinate such that $\rho(J_\theta) = \rho$ for all $\theta$, while the exact safe radius collapses to zero:
+    \begin{equation}
+    \lim_{\theta \to \infty} r^*_{\text{exact}}(J_\theta) = 0.
+    \end{equation}
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{Part 1:} By the Cauchy--Schwarz inequality for operator norms, the maximum loss across all initial shock vectors with $\|z_0\|_2 \le r$ is:
+\begin{equation}
+\sup_{\|z_0\|_2 \le r} \sup_{t \ge 0} \|C J^t z_0\|_2 = r \cdot \sup_{t \ge 0} \|C J^t\|_2 = r \cdot M_C.
+\end{equation}
+Requiring that the worst-case loss does not breach capital buffer $B$ imposes $r \cdot M_C \le B$, which holds if and only if $r \le B / M_C \equiv r^*_{\text{exact}}$.
+
+\textbf{Part 2:} The lower bound $\mathcal{K}(J) \le \sup_{t \ge 0} \|J^t\|_2$ follows directly from the Neumann series expansion of the resolvent: for $|z| > 1$, $(zI - J)^{-1} = \sum_{t=0}^\infty z^{-(t+1)} J^t$. Taking norms:
+\begin{equation}
+\|(zI - J)^{-1}\|_2 \le \sum_{t=0}^\infty |z|^{-(t+1)} \|J^t\|_2 \le \sup_{t \ge 0} \|J^t\|_2 \sum_{t=0}^\infty |z|^{-(t+1)} = \frac{\sup_{t \ge 0} \|J^t\|_2}{|z| - 1}.
+\end{equation}
+Multiplying both sides by $(|z| - 1)$ and taking the supremum over $|z| > 1$ yields $\mathcal{K}(J) \le \sup_{t \ge 0} \|J^t\|_2$.
+The upper bound $\sup_{t \ge 0} \|J^t\|_2 \le e \cdot n \cdot \mathcal{K}(J)$ is Spijker's Theorem \citep{spijker1991}, which establishes the optimal dimensional constant $e \cdot n$ for the discrete Kreiss matrix theorem.
+Inverting the inequality chain $\mathcal{K}(J) \le M_I \le e \cdot n \cdot \mathcal{K}(J)$ and multiplying by $B$ immediately yields \eqref{eq:kreiss_bilateral_bound}.
+
+\textbf{Part 3:} Consider the $2 \times 2$ family of matrices parameterized by $\theta > 0$:
+\begin{equation}
+J_\theta = \begin{bmatrix} \rho & \theta \\ 0 & \rho \end{bmatrix}, \qquad \rho \in (0, 1).
+\end{equation}
+The eigenvalues are $\lambda_1 = \lambda_2 = \rho$, so $\rho(J_\theta) = \rho < 1$ for all $\theta$.
+Computing the $t$-th power:
+\begin{equation}
+J_\theta^t = \begin{bmatrix} \rho^t & t \theta \rho^{t-1} \\ 0 & \rho^t \end{bmatrix}.
+\end{equation}
+Setting $C = [1, 0]$ and initial shock $z_0 = [0, 1]^\top$, the loss at time $t$ is $C J_\theta^t z_0 = t \theta \rho^{t-1}$.
+Already at $t=1$, the unit shock $z_0=[0,1]^\top$ has loss $\theta$, so $M_C\ge\theta$ and $r^*_{\text{exact}}\le B/\theta$. No continuous-time approximation to the discrete peak is required.
+Taking $\theta \to \infty$, $r^*_{\text{exact}} \to 0$ while the spectral radius remains frozen at $\rho$, completing the proof.
+\end{proof}
+
+\begin{remark}[Interpretation and Coordinates]
+Part 3 concerns the unrestricted class of stable linear matrices. It does not assert that every Jordan-family coupling has an admissible structural market parameterization. Non-normality alone does not imply a large financially relevant transient: the loss operator and disturbance directions must expose it. Rescaling states changes Euclidean shock balls and transient norms unless the metric is transformed consistently. Fixed physical units or a justified weighted norm are therefore necessary for financial comparisons.
+
+Under $C=I$, $B/(en\mathcal K(J))$ is a guaranteed conservative lower bound on the allowable radius; $B/\mathcal K(J)$ is an upper bound, not a safe gating threshold. For a general output matrix, $M_C\le\|C\|_2 en\mathcal K(J)$ yields a conservative radius $B/(\|C\|_2 en\mathcal K(J))$.
+\end{remark}
+
+\subsection{Pseudospectral Interpretation}
+For $\epsilon>0$, define $\sigma_\epsilon(J)=\{z:\|(zI-J)^{-1}\|_2\ge\epsilon^{-1}\}$, including the spectrum by continuity, and $\alpha_\epsilon(J)=\sup_{z\in\sigma_\epsilon(J)}|z|$. The resolvent form of the Kreiss constant is equivalently
+\[
+\mathcal K(J)=\sup_{\epsilon>0}\frac{\alpha_\epsilon(J)-1}{\epsilon}.
+\]
+This relates transient growth to pseudospectral protrusion outside the unit disk in a specified norm \citep{trefethen2005spectra}. It is a geometric interpretation of established operator theory, not a measured market contour. We report actual matrix-power output magnification in Section~\ref{sec:stress_fragility}, with explicit matrices and loss coordinates.
+
+\subsection{Multi-Asset Generalization and Cross-Impact Kreiss Inflation}
+Modern market makers operate simultaneously across multiple correlated instruments (e.g., BTC, ETH, and altcoins; or equity index components and ETFs). In multi-asset environments, cross-asset price impact creates additional non-normal coupling.
+
+Let $\mathbf{x}_t \in \R^d$ denote the vector of pricing errors across $d$ traded assets, and let $\mathbf{u}_t \in \R^d$ denote aggregate order flows. The multi-asset price formation equation is:
+\begin{equation}
+\mathbf{x}_{t+1} = \mathbf{A} \mathbf{x}_t + \mathbf{K} \mathbf{u}_t + \mathbf{w}_{t+1},
+\label{eq:multi_price}
+\end{equation}
+where $\mathbf{A} = \diag(a_1, \dots, a_d) \in \R^{d \times d}$ collects direct price persistences, and $\mathbf{K} \in \R^{d \times d}$ is the cross-asset price impact matrix. In general, $\mathbf{K}$ is asymmetric ($\mathbf{K} \neq \mathbf{K}^\top$): institutional order flow in a benchmark asset (such as BTC or SPY) exerts cross-impact on satellite assets, but the reverse flow produces much smaller reactions.
+
+Each asset is traded by adaptive momentum flow with learning rates $\mathbf{H} = \diag(\eta_1, \dots, \eta_d)$ and feedback gain $\mathbf{Q} \in \R^{d \times d}$:
+\begin{equation}
+\mathbf{y}_{t+1} = (\mathbf{I} - \mathbf{H}) \mathbf{y}_t + \mathbf{H} \mathbf{x}_{t+1}, \qquad \mathbf{u}_t = \mathbf{Q} \mathbf{y}_t.
+\end{equation}
+Stacking $\mathbf{z}_t = (\mathbf{x}_t^\top, \mathbf{y}_t^\top)^\top \in \R^{2d}$, the multi-asset closed-loop Jacobian is:
+\begin{equation}
+J_{\text{multi}} = \begin{bmatrix}
+\mathbf{A} & \mathbf{K} \mathbf{Q} \\
+\mathbf{H} \mathbf{A} & \mathbf{I} - \mathbf{H} + \mathbf{H} \mathbf{K} \mathbf{Q}
+\end{bmatrix} \in \R^{2d \times 2d}.
+\label{eq:multi_jacobian}
+\end{equation}
+
+\begin{proposition}[Cross-Impact Kreiss Inflation and Safe Radius Bound in Directed Networks]
+\label{prop:cross_kreiss}
+Consider a multi-asset economy with directed block-triangular leader-satellite cross-impact ($K_{12} = 0, K_{21} > 0$), diagonal feedback matrices $\mathbf{Q} \ge 0$, anchor matrices $\mathbf{A} \ge 0$, adaptation rates $\mathbf{H} \in (0, 1)^d$, nonnegative cross-impact $\mathbf K\ge0$, and a nonzero portfolio output operator $C\ge0$. Assume $\rho(J_{\text{multi}})<1$. Let $J_{\text{diag}}$ denote the decoupled Jacobian where $K_{21} = 0$.
+The directed coupling introduces off-diagonal block feedforward, inflating the Kreiss constant: $\mathcal{K}(J_{\text{multi}}) \ge \mathcal{K}(J_{\text{diag}})$. Consequently, the Kreiss-based conservative safe radius bound contracts: $r_{\text{conservative}}(J_{\text{multi}}) \equiv \frac{B}{\|C\|_2 e (2d)\mathcal{K}(J_{\text{multi}})} \le r_{\text{conservative}}(J_{\text{diag}})$.
+For the exact safe shock radius $r^*_{\text{exact}}(J) \equiv B / M_C(J)$, because all constituent blocks of $J$ are entrywise non-negative in the momentum economy, matrix powers $J_{\text{multi}}^t$ are entrywise non-decreasing in $K_{21}$, yielding $M_C(J_{\text{multi}}) \ge M_C(J_{\text{diag}})$ and exact radius contraction $r^*_{\text{exact}}(J_{\text{multi}}) \le r^*_{\text{exact}}(J_{\text{diag}})$. Coupled powers contain sums of leader-to-satellite propagation terms; their output magnitude depends on the fixed loss coordinates. No market-calibrated contraction percentage is asserted.
+\end{proposition}
+\begin{proof}
+After ordering states by asset, the coupled matrix is block triangular with the same diagonal blocks as the decoupled direct sum. The diagonal compressions of its resolvent are unchanged. Its operator norm is therefore at least the maximum norm of those diagonal blocks, which is the decoupled resolvent norm; taking the Kreiss supremum gives the first inequality. Nonnegative powers and a nonnegative output operator are entrywise nondecreasing in the directed coupling. The spectral norm is monotone for nonnegative matrices, giving $M_C(J_{\rm multi})\ge M_C(J_{\rm diag})$. The budget-radius inequalities follow with the same $B$ and $C$.
+\end{proof}
+
+Proposition~\ref{prop:cross_kreiss} demonstrates that multi-asset diversification does not automatically insulate liquidity providers from feedback fragility. On the contrary, asymmetric cross-impact networks (such as Bitcoin leading altcoins or large-cap equities driving ETFs) introduce feedforward coupling that changes finite-time propagation in matrix powers $J^t$, inflating peak transient loss $M_C$ and potentially reducing the radius under the stated assumptions. This is a conditional network result rather than a calibrated multi-asset estimate. Section~\ref{sec:risk_contract_extensions} proves a signed downstream-output extension, gives a hedged-portfolio counterexample to general monotonicity, and supplies a family inside the stated cohort equations.
+
+
+\section{Data, Measurements, and the Observable Estimand}
+\label{sec:data_estimand}
+\subsection{Observed Price Proxies and Flow}
+The theoretical state $x_t=p_t-p_t^*$ is not observed in these datasets. For the primary Coinbase analysis we use $p_b=10{,}000\log(P_b)$, where $P_b$ is the recorded bid--ask midpoint at the end of a 10-second bin, and an operational reference $m_b=(1-\alpha)m_{b-1}+\alpha p_b$, $\alpha=2/(300/10+1)$. The empirical state is $x_b^{\rm EMA}=p_b-m_b$. It is a deviation from a trailing filter, not a measured fundamental pricing error. A separate robustness state is the raw return $r_b=p_b-p_{b-1}$.
+
+Signed executed flow $f_b$ is the recorded taker-buy minus taker-sell quote-currency notional aggregated in bin $b$. Repeated renders of the same book/trade record receive zero new flow following the recorded correction protocol. Price and flow both refer to information observed by the bin's end. Existing source timestamps and rolling trade counters only provide the recorder's timing resolution; they do not establish exchange-level execution latency.
+
+\subsection{A Reduced-Form Diagnostic}
+For an observable state $v_b\in\{x_b^{\rm EMA},r_b\}$ and observed flow $f_b$, fit
+\begin{equation}
+\begin{bmatrix}v_{b+1}\\f_{b+1}\end{bmatrix}
+=d+J\begin{bmatrix}v_b\\f_b\end{bmatrix}+e_{b+1},
+\qquad Q=\frac{J_{12}J_{21}}{1-J_{22}},\quad S=J_{11}+Q.
+\label{eq:empirical_var_revised}
+\end{equation}
+Both regressors are observed at time $b$. The legacy implementation instead pairs $v_b$ with $f_{b+1}$, creating an overlapping forward-flow statistic. That alignment is retained only as a sensitivity comparison, not as a real-time observable state.
+
+Order-flow or price-unit rescaling conjugates $J$ by a diagonal scaling matrix; the product $J_{12}J_{21}$, $Q$, $S$, and eigenvalues are unchanged. However, scale invariance does not establish causality, invariance to filtering, or equivalence to a latent economic state. Non-normal Euclidean norms additionally require fixed coordinates or a specified weighted norm.
+
+For $J_{11},J_{22}\in[0,1)$ and $J_{12}J_{21}\ge0$, $S<1$ characterizes the positive real-root boundary and Schur stability of this two-state fit. Outside those sign restrictions, $S<1$ alone is insufficient; we always compute $\rho(J)$ directly. A multivariate fit to raw returns is not interchangeable with a fit to a filtered price level.
+
+\subsection{Filters, Missingness, and Sessions}
+For a martingale price with no price-to-flow feedback, the EMA deviation satisfies $x_{b+1}^{\rm EMA}=(1-\alpha)(x_b^{\rm EMA}+\Delta p_{b+1})$. Thus an anchor near $1-\alpha=0.93548$ can arise mechanically. Positive feedback must be interpreted against that construction and explicit no-adaptation controls.
+
+The revision excludes transitions crossing UTC dates, timestamp gaps, or equity session boundaries. The previously reported recorder EMA continues across contiguous UTC dates and resets at data gaps; its lag products remain date-separated. Restored Binance and joint-venue constructions instead reset their filters at gaps and dates, as specified separately. It does not backward-fill missing prices or manufacture unobserved trading intervals. The primary crypto segments receive five EMA spans of initialization burn-in and require at least 500 retained observations. The equity analysis uses a separate rule: at least 600 raw session rows and a 500-event burn-in, so some retained equity fits are smaller than 500 observations. Segment estimates on the same date are combined using transition counts before date-level averaging and Student-$t$ intervals. The 13 Coinbase calendar dates include partial first and last dates. These intervals summarize variation across observed dates; they do not provide a long-horizon or independent external replication guarantee.
+
+\subsection{Actual Dataset Scope}
+Coinbase BTC, ETH, and ADA snapshots cover April 7--19, 2021. Binance's 768 saved asset-day fits cover twice-monthly dates in 2021--2024, but their generator reads 1-second trade-price klines and estimates at 10-second spacing with a 300-second EMA and forward flow. Klines do not contain bid--ask midpoints, queue identities, or full L3 books. The 66.3 million nominal seconds in the previous description are not the number of fitted transitions: the saved panel contains 6,519,552 fitted state rows, with one fewer transition per asset-day. Its original raw archives are not present in the inspected cache.
+
+FI-2010 is an event-based book benchmark \citep{ntakaris2018benchmark}. The local representation contains 272,941 rows with supplied STOCK and DAY fields. Those fields define this reanalysis; the original identifier mapping has not been independently authenticated. The January BTC depth file covers January 9--20, 2023 rather than the entire month. It contains quote depth, and the revision uses quote-update OFI, not authenticated executed trades. Its provider attribution is not independently established here. It was already examined before this revision, so it is a secondary sample rather than an untouched prospective holdout.
+
+\section{Observable Evidence and Fee Sensitivity}
+\label{sec:baseline_natural_exp}
+\subsection{Fresh Coinbase Reanalysis}
+The following table is generated from fresh end-bin-aligned fits of the existing corrected recorder data. The primary filtered-state estimates are small and positive on average. Their magnitude changes substantially with alignment; raw-return intervals include zero for all three assets.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Timing and state sensitivity on the recorded Coinbase sample. Feedback intervals use date-level Student-$t$ variation; maximum radius is over fitted day segments.}
+\label{tab:timing_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{llrlll}\toprule
+Asset & State / flow & Dates & $\hat Q$ [95\% interval] & Mean $\hat S$ & Max $\rho$ \\\midrule
+BTC & EMA / observed & 13 & 0.00194 [0.00032, 0.00355] & 0.9426 & 0.9587 \\
+BTC & EMA / forward & 13 & 0.01252 [0.00653, 0.01851] & 0.9419 & 0.9586 \\
+BTC & Return / observed & 13 & 0.00121 [-0.00067, 0.00308] & 0.0569 & 0.3092 \\
+ETH & EMA / observed & 13 & 0.00098 [0.00006, 0.00190] & 0.9392 & 0.9574 \\
+ETH & EMA / forward & 13 & 0.01130 [0.00806, 0.01454] & 0.9383 & 0.9586 \\
+ETH & Return / observed & 13 & 0.00033 [-0.00035, 0.00101] & 0.0274 & 0.3597 \\
+ADA & EMA / observed & 13 & 0.00062 [0.00016, 0.00108] & 0.9350 & 0.9515 \\
+ADA & EMA / forward & 13 & 0.00721 [0.00564, 0.00877] & 0.9341 & 0.9521 \\
+ADA & Return / observed & 13 & 0.00000 [-0.00094, 0.00094] & 0.0144 & 0.2974 \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=.95\textwidth]{../research_extension/paper_revision_20261006/figures/timing_comparison.pdf}
+\caption{Feedback diagnostics change with observable state and timing. All plotted intervals are regenerated from the revision's daily estimates.}\label{fig:timing_revised}
+\end{figure}
+The comparison cautions against interpreting the larger legacy estimates as the gain of a specific learning rule. Anonymous data cannot distinguish algorithmic response from other persistent or informational channels. The primary EMA-state intervals describe aggregate observed relations; they do not supply a structural trader attribution.
+
+\subsection{No-Adaptation Controls}
+We generate 60 independent 6,000-second paths for each declared control, aggregate at 10 seconds, and apply the same 300-second EMA and burn-in. The four controls are martingale prices with independent flow; persistent exogenous flow independent of prices; persistent exogenous flow with price impact; and common price--flow news. None has a price-to-flow adaptive rule. These are bounded diagnostic experiments, not calibrated real-market null distributions or evidence that all possible confounding has been excluded.
+
+\begin{table}[htbp]
+\centering\small
+\caption{No-adaptation controls. Standard deviations describe Monte Carlo variation across 60 independent paths, not standard errors for the market estimates.}
+\label{tab:nulls_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lrrrr}\toprule
+Control & Observed mean $Q$ & SD & Forward mean $Q$ & SD \\\midrule
+Independent martingale & -0.00018 & 0.00076 & -0.00006 & 0.00086 \\
+Persistent exogenous flow & 0.00027 & 0.00213 & 0.00024 & 0.00209 \\
+Order splitting with impact & -0.03120 & 0.02348 & -0.03470 & 0.02503 \\
+Common news & -0.00008 & 0.00059 & -0.00211 & 0.01183 \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+The controls show that filter construction, persistence, price impact, and information timing must be specified jointly. A diagnostic's sign is not an identification theorem. The historical estimator-validation archive also contains a no-feedback persistent-flow example with positive VAR feedback; that unfavorable result is retained in the replication materials.
+
+\subsection{Sampling and Reference-Window Sensitivity}
+We also examine the declared grid $\Delta\in\{1,10,60\}$ seconds and $W\in\{60,300,900\}$ seconds on the same recorded data and observed-flow timing. The cell $\Delta=W=60$ is excluded because the EMA span is one and its deviation is identically zero. The remaining 24 asset--specification cells use the same gap/session exclusions and date-level summaries. This is exploratory robustness, not immutable external preregistration. Changing the window changes the measured state and its mechanical persistence anchor; it does not merely change the precision of a fixed economic parameter.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Fresh sampling and filter grid. Intervals describe date-level variation; radii are maxima over fitted segments. Sign changes and intervals spanning zero are retained.}
+\label{tab:grid_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lrrrlll}\toprule
+Asset & $\Delta$ & $W$ & EMA anchor & $Q$ [95\% interval] & Mean $S$ & Max $\rho$ \\\midrule
+BTC & 1 & 60 & 0.9672 & 0.00067 [0.00048, 0.00085] & 0.9771 & 0.9886 \\
+BTC & 1 & 300 & 0.9934 & 0.00031 [0.00022, 0.00040] & 0.9952 & 0.9983 \\
+BTC & 1 & 900 & 0.9978 & 0.00017 [0.00010, 0.00023] & 0.9982 & 0.9994 \\
+BTC & 10 & 60 & 0.7143 & 0.00218 [0.00028, 0.00408] & 0.7498 & 0.8174 \\
+BTC & 10 & 300 & 0.9355 & 0.00194 [0.00032, 0.00355] & 0.9426 & 0.9587 \\
+BTC & 10 & 900 & 0.9780 & 0.00120 [0.00029, 0.00210] & 0.9786 & 0.9831 \\
+BTC & 60 & 300 & 0.6667 & 0.00179 [-0.00282, 0.00641] & 0.6495 & 0.7054 \\
+BTC & 60 & 900 & 0.8750 & 0.00178 [-0.00245, 0.00601] & 0.8563 & 0.8886 \\
+ETH & 1 & 60 & 0.9672 & 0.00048 [0.00027, 0.00070] & 0.9729 & 0.9838 \\
+ETH & 1 & 300 & 0.9934 & 0.00028 [0.00018, 0.00038] & 0.9942 & 0.9978 \\
+ETH & 1 & 900 & 0.9978 & 0.00016 [0.00010, 0.00023] & 0.9978 & 0.9995 \\
+ETH & 10 & 60 & 0.7143 & 0.00113 [-0.00014, 0.00239] & 0.7300 & 0.7809 \\
+ETH & 10 & 300 & 0.9355 & 0.00098 [0.00006, 0.00190] & 0.9392 & 0.9574 \\
+ETH & 10 & 900 & 0.9780 & 0.00072 [0.00009, 0.00136] & 0.9781 & 0.9855 \\
+ETH & 60 & 300 & 0.6667 & -0.00271 [-0.00780, 0.00239] & 0.6705 & 0.7168 \\
+ETH & 60 & 900 & 0.8750 & -0.00096 [-0.00485, 0.00294] & 0.8680 & 0.8856 \\
+ADA & 1 & 60 & 0.9672 & 0.00025 [0.00014, 0.00036] & 0.9706 & 0.9796 \\
+ADA & 1 & 300 & 0.9934 & 0.00014 [0.00008, 0.00019] & 0.9935 & 0.9961 \\
+ADA & 1 & 900 & 0.9978 & 0.00008 [0.00004, 0.00011] & 0.9975 & 0.9989 \\
+ADA & 10 & 60 & 0.7143 & 0.00077 [0.00011, 0.00143] & 0.7232 & 0.7462 \\
+ADA & 10 & 300 & 0.9355 & 0.00062 [0.00016, 0.00108] & 0.9350 & 0.9515 \\
+ADA & 10 & 900 & 0.9780 & 0.00039 [0.00007, 0.00071] & 0.9763 & 0.9833 \\
+ADA & 60 & 300 & 0.6667 & 0.00163 [-0.00069, 0.00396] & 0.6487 & 0.7291 \\
+ADA & 60 & 900 & 0.8750 & 0.00140 [-0.00073, 0.00353] & 0.8586 & 0.8907 \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+The grid should be interpreted as sensitivity of operational diagnostics, not evidence of universal positive feedback. The raw-return comparison and covariance rejections remain relevant even when a filtered-state cell has a positive estimate and a fitted radius below one.
+
+\subsection{Covariance Specification Checks}
+For each asset, fit a seven-parameter linear transition and unrestricted symmetric innovation covariance to 11 lag-0, lag-1 and lag-2 moments. Moment rows exclude all session and gap boundaries. A Bartlett HAC weighting matrix with bandwidth 10 bins is used; the $\chi^2_4$ reference is asymptotic. All three optimizations converge and their numerical moment Jacobians have rank seven, but the overidentifying restrictions are rejected at the 5\% reference level.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Fresh covariance-matching diagnostics using observed end-bin flow. Rejection is a model limitation, not validation of structural causality.}
+\label{tab:md_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lrrrr}\toprule
+Asset & Moment rows & $Q_{\rm MD}$ & $J$ statistic & Reference $p$ \\\midrule
+BTC & 102454 & 0.00083 & 41.41 & 2.21e-08 \\
+ETH & 102757 & 0.00048 & 28.31 & 1.08e-05 \\
+ADA & 102885 & 0.00091 & 12.12 & 0.0165 \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+The rejection can reflect omitted dynamics, filtering, parameter heterogeneity or nonstationarity. Section~\ref{sec:model_diagnostic_audit} independently removes unnecessary entrywise bounds, retains four HAC bandwidths and six starts per case, and confirms rejection in all twenty-four global/within-segment centering cases. Its retrospective forecast comparison retains all fixed lag alternatives and unfavorable outcomes. The revision does not select a different lag specification solely to obtain acceptance. These results constrain the linear approximation; coefficient sign agreement does not repair misspecification. The prior $J=73.00$ result belonged to pooled Coinbase data with legacy alignment, not an independent structural validation of the Binance panel.
+
+Identification through heteroskedasticity requires invariant contemporaneous coefficients, orthogonal structural innovations, and nonproportional variance shifts. Those assumptions are not established by grouping volatile and calm observations alone. The previously reported negative contemporaneous product is not used here to identify market-maker buffering or to resolve the rejected dynamic specification.
+
+\subsection{Saved Binance Panel: Secondary Evidence}
+The saved fitted matrices satisfy their recorded $Q$, $S$ and spectral-radius identities to numerical precision. The initial calculation validated consistency of the derived archive. The subsequent independent raw reconstruction in Section~\ref{sec:restored_panel} reproduces all saved core estimates and supplies corrected observed-time fits; it does not validate the old structural interpretations. Recomputed intervals first average across assets on each of 96 dates and then use a date-level Student-$t$ reference. They remain sensitive to between-date dependence and the legacy forward-flow state definition.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Saved Binance derived-panel summaries: 768 asset-days, 96 dates. These are legacy forward-flow diagnostics, not fresh raw-book estimates.}
+\label{tab:panel_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lrl}\toprule
+Index & Mean & Date-level 95\% interval \\\midrule
+Q & 0.00815 & [0.00730, 0.00901] \\
+S & 0.92055 & [0.91643, 0.92468] \\
+Q30 & 0.00640 & [0.00550, 0.00730] \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+The archive has positive $Q$ on 86.85\% of asset-days and maximum fitted radius 0.97614. Stationarity of a filtered proxy fit does not certify fundamental price stability or dealer safety. Comparing venues without synchronized joint observations does not establish causal propagation. The previous joint four-variable matrix implied $\rho=1.00258$, contradicting its reported 0.9612, and no joint generating artifact was established after the expanded workspace and archive search. That old matrix and its associated FEVD percentages are withdrawn. Section~\ref{sec:restored_joint} now supplies a new joint fit from restored original-date archives; it does not retrospectively authenticate the withdrawn numbers or identify causal transmission.
+
+
+The restored original raw panel also permits a corrected observed-flow comparison: mean $Q=0.000381$, with date interval $[0.000241,0.000520]$. Its raw-return interval $[-0.000384,0.000059]$ spans zero. These results, all eight corrected asset means, missingness, and the re-estimated fee contrast appear in Section~\ref{sec:restored_panel}. The legacy table above is retained for comparison, not promoted to an observed-time or structural learning estimate.
+
+\subsection{July 2022 Fee Intervention}
+For the preserved 2022 panel, BTCUSDT is the treated pair and seven altcoin USDT pairs are comparators. There are 12 sampled dates before and 12 after July 8, giving 192 asset-day observations. We recompute $Y_{it}=\beta_0+\beta_1\mathrm{BTC}_i+\beta_2\mathrm{Post}_t+\beta_3\mathrm{BTC}_i\mathrm{Post}_t+e_{it}$ directly from saved estimates. This association is conditional on the legacy measurement construction. The exchange did not randomly assign treatment.
+
+Binance's July announcement also excluded affected BTC volume from VIP and liquidity-provider volume calculations \citep{binance2022volume}. An August 26--September 26 ETH/BUSD fee promotion could alter cross-pair allocation even though ETHUSDT is the recorded comparator \citep{binance2022eth}. The intervention bundles trading incentives and may produce spillovers. Consequently, the treated/control contrast is not an uncontaminated shock to adaptive learning intensity.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Recomputed fee-intervention association under alternative covariance/reference assumptions. One treated asset limits all inferential interpretations.}
+\label{tab:fee_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{llrrrr}\toprule
+Outcome & Reference & Effect & SE & $p$ & 95\% interval \\\midrule
+Q & Classical OLS & -0.001856 & 0.003072 & 0.547 & [-0.00792, 0.00420] \\
+Q & Asset clusters, $t_7$ & -0.001856 & 0.000884 & 0.074 & [-0.00395, 0.00024] \\
+Q & Date clusters, $t_{23}$ & -0.001856 & 0.003412 & 0.592 & [-0.00891, 0.00520] \\
+S & Classical OLS & -0.000390 & 0.024585 & 0.987 & [-0.04889, 0.04811] \\
+S & Asset clusters, $t_7$ & -0.000390 & 0.019526 & 0.985 & [-0.04656, 0.04578] \\
+S & Date clusters, $t_{23}$ & -0.000390 & 0.013234 & 0.977 & [-0.02777, 0.02699] \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+The date-clustered feedback interval spans both signs. The effect is not statistically distinguished from zero, but a no-effect conclusion is not established. The cross-asset placebo rank fractions are 0.750 for $Q$ and 1.000 for $S$; these are descriptive ranks over eight possible treated labels, not randomized-treatment probabilities absent an exchangeability argument. At the illustrative equivalence margin $\pm0.007$, the date-clustered two-one-sided reference gives $p=0.073$, so equivalence is not established at 5\%. The previous SE of 0.003072 was classical OLS, not asset-clustered uncertainty.
+
+Date-specific BTC-minus-comparator gaps relative to June 24 are saved as descriptive diagnostics. The previous monthly event coefficients and joint pretrend $F$-tests were not traced to a matching fitted covariance and are withdrawn. Section~\ref{sec:monthly_event_rebuilt} reconstructs the monthly question on the restored original panel, retaining covariance-sensitive outcomes and explicit degenerate references rather than treating them as proof of parallel trends. The saved event-gap builder borrowed one global SE for all event dates, which does not identify valid date-specific uncertainty. The revision also withdraws the untraced 180\% volume headline. The rebuilt monthly reference tests vary sharply with the covariance choice, and saturated cluster choices cannot estimate valid uncertainty. No selected pretrend reference proves parallel counterfactual trends.
+
+\section{Stress Diagnostics and Financial Exposure}
+\label{sec:stress_fragility}
+\subsection{Exploratory Spread-State Regression}
+On the first 50,000 recorded BTC rows, repeated renders are corrected, timestamps deduplicated, and transitions crossing gaps omitted. A 100-span USD-price EMA defines a dimensional deviation. Regress its next difference on lagged deviation, observed signed base-unit flow, a wide-spread indicator at the sample 90th percentile, and their interactions. The slope-difference covariance uses a 60-second Bartlett HAC estimate. This is an exploratory conditional regression, not a full two-equation structural VAR.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Fresh exploratory spread-state diagnostics. Flow slopes are dimensional USD per base-flow unit; they are not the dimensionless loop gain $Q$.}
+\label{tab:stress_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lr}\toprule
+Diagnostic & Value \\\midrule
+Calm flow slope & 0.6267 \\
+Wide-spread flow slope & 0.7510 \\
+Slope difference & 0.1242 \\
+HAC SE of difference & 0.2181 \\
+Normal-reference p & 0.569 \\
+Residual SD ratio & 1.45 \\
+Calm inside-depth mean & 152578.07 \\
+Wide-spread inside-depth mean & 29216.24 \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+Higher residual dispersion and lower measured depth are conditional associations, not evidence of an endogenous instability transition. A slope difference must be interpreted with its uncertainty rather than each regime's separate significance. The old 62.7-fold figure came from a separate 4,999-transition switching-regression fit, whose transition updates and convergence claims were not independently validated here. Neither its extreme p-value nor a dimensionally mixed ``stability'' index is retained as a headline result. The prior scaled sum added a persistence coefficient to a dimensional slope; this is not a valid unit-invariant boundary.
+
+\subsection{Equity Sessions and the January Depth Sample}
+The event-indexed equity analysis resets OFI and the 100-event EMA at each supplied STOCK--DAY boundary, drops 500 initialization events, and excludes sessions with fewer than 600 raw rows. All reported radii are computed directly. These supplied identifiers and price representations do not support causal comparisons of regulations across venues.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Fresh FI-2010 local-representation session fits. STOCK identifiers are supplied metadata; rows differ across stocks and event time is not seconds.}
+\label{tab:equity_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{rrrrrr}\toprule
+STOCK & Raw rows & Sessions & Mean $Q$ & Mean $S$ & Max $\rho$ \\\midrule
+1 & 18308 & 9 & 0.000076 & 0.97936 & 0.98810 \\
+2 & 39555 & 10 & 0.000295 & 0.97666 & 0.98376 \\
+3 & 66862 & 10 & 0.000472 & 0.97683 & 0.98606 \\
+4 & 71750 & 10 & 0.000465 & 0.97565 & 0.98099 \\
+5 & 76466 & 10 & 0.000594 & 0.97274 & 0.98907 \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+The January depth reanalysis streams the entire existing file, carries previous quotes across read chunks, and sums OFI when one second straddles a chunk boundary. It fits a 120-second EMA state against same-second quote OFI, separately by day/gap segment. No executed-trade flow is inferred from book changes.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Secondary January 9--20, 2023 depth-sample reanalysis. No claim of prospective holdout validation or authenticated participant attribution.}
+\label{tab:depth_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{ll}\toprule
+Diagnostic & Value \\\midrule
+Raw depth records & 3730870 \\
+Dates retained & 12 \\
+Fitted transitions & 844621 \\
+Mean $Q$ [date interval] & 0.00091 [0.00040, 0.00142] \\
+Mean $Q_{30}$ [date interval] & -0.00130 [-0.00157, -0.00102] \\
+Mean $S$ [date interval] & 0.98396 [0.98190, 0.98602] \\
+Maximum segment $\rho$ & 0.99294 \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+The 30-lag adjusted feedback changes sign in this sample. Thus a positive baseline is not robust to this adjustment, even though the fitted baseline radii remain below one. This unfavorable sensitivity is retained; quote-update OFI and executed flow are different measurements.
+
+
+\subsection{Fixed-Spectrum Transient Loss}
+To isolate transient amplification, fix $\rho=0.85$, $C=[1,0]$, $B=1$, and the same Euclidean shock ball in declared abstract coordinates. Vary only the coupling in $J_\theta=\left[\begin{smallmatrix}.85&\theta\\0&.85\end{smallmatrix}\right]$. Compute $M_C$ over $t=0,\ldots,100$; both nonzero row components decrease beyond their peak, giving a tail certificate for this family. The spectrum is identical in every cell.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Fixed-spectrum output magnification. Each exact-radius shock stays at the budget; a constructed worst-direction shock just above it breaches the budget.}
+\label{tab:transient_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{rrrrr}\toprule
+Coupling $\theta$ & $\rho$ & Peak time & $M_C$ & $B/M_C$ \\\midrule
+0.0 & 0.85 & 0 & 1.0000 & 1.00000 \\
+0.5 & 0.85 & 6 & 1.3835 & 0.72280 \\
+2.0 & 0.85 & 6 & 5.3378 & 0.18734 \\
+8.0 & 0.85 & 6 & 21.3012 & 0.04695 \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=.95\textwidth]{../research_extension/paper_revision_20261006/figures/transient_loss.pdf}
+\caption{Output magnification with fixed eigenvalues and a fixed loss operator. Coordinates and shock units are held fixed. This numerical family is illustrative rather than market calibrated.}\label{fig:transient_revised}
+\end{figure}
+The calculation verifies the norm identity and distinguishes an eigenvalue threshold from a loss-budget threshold. It does not show that arbitrary couplings are economically feasible, or that the initial-shock bound controls repeated stochastic inputs.
+
+\subsection{Funded-Dealer Persistent-Flow Simulation}
+We separately reproduce 48 cells with 400 seeds each (19,200 paths) using the preserved flow-moment calibration. The model has $a=0.5$, $\eta=0.2$, price-impact scale 0.002, price noise 0.0005, spread 0.002, initial equity 1, horizon 500, and inventory control 0.05. The simulation Jacobian uses the lagged update $J=\left[\begin{smallmatrix}a&1\\\eta Q&1-\eta\end{smallmatrix}\right]$ with $Q=S-a$; its full spectral radius is below one for the reported grid.
+
+The dealer trades against flow at the current price, updates cash by execution proceeds and modeled spread revenue, marks inventory at the next price, and halts when equity is nonpositive or inventory market value exceeds the leverage allowance. These are modeled equity/margin failures, distinct from the historical inventory-capacity experiment, which retained positive equity. A higher allowed leverage limit changes the halt rule; it does not create additional equity.
+
+B1 matches flow variance, B2 matches variance and lag-one autocorrelation, and B3 matches variance and long-run variance with exogenous AR flow. The flow-moment calibration is preserved rather than independently recalibrated from market data. All 48 new seeded halt counts match the recorded counts.
+
+\begin{table}[htbp]
+\centering\small
+\caption{Reproduced funded-dealer halt rates, 400 seeds per cell. Exact binomial intervals and halt counts are supplied in the revision results.}
+\label{tab:dealer_revised}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{rrrrrrr}\toprule
+Limit $L$ & $S$ & $\rho$ & Feedback & B1 & B2 & B3 \\\midrule
+10 & 0.50 & 0.8000 & 11.0\% & 11.2\% & 10.5\% & 10.8\% \\
+10 & 0.60 & 0.8562 & 29.5\% & 11.5\% & 11.2\% & 31.5\% \\
+10 & 0.70 & 0.9000 & 62.3\% & 13.0\% & 14.0\% & 69.0\% \\
+10 & 0.80 & 0.9372 & 93.2\% & 14.8\% & 22.2\% & 97.8\% \\
+10 & 0.90 & 0.9702 & 100.0\% & 26.5\% & 47.0\% & 100.0\% \\
+10 & 0.95 & 0.9854 & 100.0\% & 52.8\% & 87.5\% & 100.0\% \\
+20 & 0.50 & 0.8000 & 0.0\% & 0.0\% & 0.0\% & 0.0\% \\
+20 & 0.60 & 0.8562 & 0.0\% & 0.0\% & 0.0\% & 0.0\% \\
+20 & 0.70 & 0.9000 & 0.2\% & 0.0\% & 0.0\% & 0.2\% \\
+20 & 0.80 & 0.9372 & 5.5\% & 0.0\% & 0.0\% & 10.0\% \\
+20 & 0.90 & 0.9702 & 52.5\% & 0.0\% & 0.0\% & 64.5\% \\
+20 & 0.95 & 0.9854 & 88.2\% & 0.0\% & 3.0\% & 96.2\% \\
+\bottomrule\end{tabular}
+\end{adjustbox}
+\end{table}
+
+B3 reproduces high failure rates without an endogenous price-to-flow rule. This supports the importance of low-frequency flow exposure within the model; it prevents attributing the failure uniquely to adaptive learning or non-normal transients. The fixed-spectrum experiment above addresses transient magnification separately. The simulation does not measure actual dealer failures or demonstrate welfare benefits of an exchange gate. Historical flash-crash mitigation percentages are omitted from the main evidence because they were calibrated illustrations rather than new causal event analyses.
+
+\section{Attribution, Falsification, and Replication Limits}
+\label{sec:attribution_falsification}
+\subsection{Aggregate Relations Do Not Identify Algorithms}
+The merged-cohort theorem concerns a stated linear, reset observation experiment. Anonymous prices and flows cannot identify identities within a merged representation. More broadly, the empirical VAR here does not distinguish a learning algorithm from a persistent exogenous flow process or discretionary response to common news. Participant identifiers improve disaggregation, but parameter recovery also requires a correct state model, sufficient regressor rank, and an orthogonality assumption; OLS alone is not an automatic causal identification guarantee.
+
+\subsection{What the Diagnostics Establish}
+Timing comparisons show that the legacy and end-bin states differ. Raw-return checks show that filtered persistence is not interchangeable with return persistence. No-adaptation controls test a finite declared family, not every confounder. Covariance rejection remains unfavorable evidence about the low-dimensional approximation. Sign-memory adjustment is a descriptive robustness exercise, not proof of causal learning. The revision makes no blanket assertion that all placebo tests have passed or that common response proves propagation.
+
+\subsection{Traceability and Remaining Limits}
+The revision archive records hashes, daily estimates, gap handling, inference calculations, numerical checks and source changes. Coinbase and equity calculations use existing local data representations; the January depth file is freshly streamed. The historical Binance results were initially recomputed from saved estimates; Section~\ref{sec:restored_panel} now also reproduces them from restored official original-date archives and supplies corrected observed-flow results. Official-source authentication is recorded for the restored Binance inputs. Provider attribution for the recorder, equity and depth representations, immutable external preregistration, independent replication and expert mathematical review remain open. Where numerical provenance could not support the previous claim, the result was withdrawn rather than replaced by a preset favorable number.
+
+\section{Conditional Surveillance Implications and Conclusion}
+\label{sec:policy_conclusion}
+\subsection{Loss Budgets Require More Than Eigenvalues}
+The exact radius is conditional on $J$, fixed state units, a declared shock set, a calibrated loss operator and budget $B$. If orders enter through a matrix $G$, the relevant immediate disturbance is $z_0=Gv$; a scalar price-impact bound does not automatically bound the entire state. For repeated orders or innovations,
+\[
+z_t=J^tz_0+\sum_{k=0}^{t-1}J^{t-1-k}Gw_{k+1},
+\]
+so an initial-shock radius alone is insufficient. Section~\ref{sec:risk_contract_extensions} gives sufficient common-metric bounds for changing coefficients and bounded nonlinear remainders, a finite-horizon Gaussian input contract, and a dollar mark mapping. Applying these bounds requires a defended uncertainty set, actual price-displacement states, exposure/cash rules and noise calibration.
+
+\subsection{A Conditional One-Burst Gate}
+If a separately justified model gives $\|z_0\|_2\le g_t V$ for a burst volume $V$, then $V\le B_t/(g_t M_C)$ bounds the modeled loss from that burst. The loss budget $B_t$ must come from actual available capital and declared risk limits, not an unsupported multiplication of capital by leverage. Under $C=I$, $B_t/(e n\mathcal K(J))$ is a conservative state-shock radius; an upper bound $B_t/\mathcal K(J)$ must not be used as a guaranteed safe radius. For a general $C$, the factor $\|C\|_2$ enters a norm-based conservative bound.
+
+This mathematical implication does not establish that an exchange can observe every required input, run the estimator within its latency budget, improve price discovery, or prevent real insolvency. Comparing execution quality, delayed fills, liquidity and dealer outcomes against ordinary depth/size limits remains a separate prospective study. Circuit breakers and batching address additional market-design questions not resolved by these calculations.
+
+\subsection{Conclusion}
+Observable price--flow data support model-dependent diagnostics, while participant attribution and financial guarantees require additional information and assumptions. Within the stated linear probing experiment, merged cohorts are observationally equivalent and symmetric close-rate alternatives have a fourth-order separation lower bound. The scalar Gaussian price experiment supplies an explicit abstention layer near its unit-root boundary. The loss-budget identity shows why stable eigenvalues alone do not bound worst-case output magnification in fixed coordinates.
+
+Empirically, end-bin observed flow produces smaller Coinbase feedback diagnostics than legacy forward-flow timing; raw-return intervals span zero, and covariance restrictions are rejected. Saved Binance fee contrasts do not establish either a causal learning response or equivalence to zero. Separate fixed-spectrum and funded-dealer simulations distinguish transient magnification from persistent-flow accumulation, with exogenous long-run-variance matching reproducing severe model losses. These limits are part of the findings. The restored studies remain descriptive; provider authentication, causal identification, independent review and real-market policy validation remain open.
+
+\input{../research_extension/paper_revision_20261006/full_scope_appendix.tex}\newpage
+\begin{thebibliography}{99}
+\small
+\setlength{\itemsep}{0.0pt plus 0.3pt}
+\setlength{\parsep}{0.0pt}
+
+\bibitem[Adrian and Shin(2010)]{adrian2010liquidity}
+Adrian, T., and H.~S. Shin, 2010, Liquidity and leverage, \emph{Journal of Financial Intermediation} 19, 418--437.
+
+\bibitem[Almgren and Chriss(2000)]{almgren2000}
+Almgren, R., and N.~Chriss, 2000, Optimal execution of portfolio transactions, \emph{Journal of Risk} 3, 5--39.
+
+\bibitem[Andrews(1991)]{andrews1991heteroskedasticity}
+Andrews, D.~W., 1991, Heteroskedasticity and autocorrelation consistent covariance matrix estimation, \emph{Econometrica} 59, 817--858.
+
+\bibitem[Biais, Foucault, and Moinas(2015)]{biais2015}
+Biais, B., T.~Foucault, and S.~Moinas, 2015, Equilibrium fast trading, \emph{Journal of Financial Economics} 116, 292--313.
+
+\bibitem[Bouchaud et~al.(2004)]{bouchaud2004fluctuations}
+Bouchaud, J.-P., Y.~Gefen, M.~Potters, and M.~Wyart, 2004, Fluctuations and response in financial markets: The subtle nature of ``random'' price changes, \emph{Quantitative Finance} 4, 176--185.
+
+\bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009}
+Brunnermeier, M.~K., and L.~H. Pedersen, 2009, Market liquidity and funding liquidity, \emph{Review of Financial Studies} 22, 2201--2238.
+
+\bibitem[Budish, Cramton, and Shim(2015)]{budish2015}
+Budish, E., P.~Cramton, and J.~Shim, 2015, The high-frequency trading arms race: Frequent batch auctions as a market design response, \emph{Quarterly Journal of Economics} 130, 1547--1621.
+
+\bibitem[Campbell, Grossman, and Wang(1993)]{campbell1993trading}
+Campbell, J.~Y., S.~J. Grossman, and J.~Wang, 1993, Trading volume and serial correlation in stock returns, \emph{Quarterly Journal of Economics} 108, 905--939.
+
+\bibitem[CFTC-SEC(2010)]{cftc_sec_2010}
+CFTC and SEC, 2010, Findings regarding the market events of May 6, 2010: Report of the staffs of the CFTC and SEC to the Joint Advisory Committee on Emerging Regulatory Issues, Technical report, Commodity Futures Trading Commission and Securities and Exchange Commission.
+
+\bibitem[Cont, Stoikov, and Talreja(2010)]{cont2010stochastic}
+Cont, R., S.~Stoikov, and R.~Talreja, 2010, A stochastic model for order book dynamics, \emph{Operations Research} 58, 549--563.
+
+\bibitem[Cont, Kukanov, and Stoikov(2014)]{cont2014}
+Cont, R., A.~Kukanov, and S.~Stoikov, 2014, The price impact of order book events, \emph{Journal of Financial Econometrics} 12, 47--88.
+
+\bibitem[Donald and Lang(2007)]{donald2007inference}
+Donald, S.~G., and K.~Lang, 2007, Inference with difference-in-differences and other panel data, \emph{Review of Economics and Statistics} 89, 221--233.
+
+\bibitem[Eisenberg and Noe(2001)]{eisenberg2001systemic}
+Eisenberg, L., and T.~H. Noe, 2001, Systemic risk in financial systems, \emph{Management Science} 47, 236--249.
+
+\bibitem[Gilbert(1963)]{gilbert1963}
+Gilbert, E.~G., 1963, Controllability and observability in multivariable control systems, \emph{Journal of the Society for Industrial and Applied Mathematics, Series A: Control} 1, 128--151.
+
+\bibitem[Glosten and Milgrom(1985)]{glosten1985bid}
+Glosten, L.~R., and P.~R. Milgrom, 1985, Bid, ask and transaction prices in a specialist market with heterogeneously informed traders, \emph{Journal of Financial Economics} 14, 71--100.
+
+\bibitem[Greenwood, Landier, and Thesmar(2015)]{greenwood2015vulnerable}
+Greenwood, R., A.~Landier, and D.~Thesmar, 2015, Vulnerable banks, \emph{Journal of Financial Economics} 115, 471--485.
+
+\bibitem[Hasbrouck(1991)]{hasbrouck1991}
+Hasbrouck, J., 1991, Measuring the information content of stock trades, \emph{Journal of Finance} 46, 179--207.
+
+\bibitem[He and Krishnamurthy(2013)]{he2013intermediary}
+He, Z., and A.~Krishnamurthy, 2013, Intermediary asset pricing, \emph{American Economic Review} 103, 732--773.
+
+\bibitem[Hendershott, Jones, and Menkveld(2011)]{hendershott2011does}
+Hendershott, T., C.~M. Jones, and A.~J. Menkveld, 2011, Does algorithmic trading improve liquidity?, \emph{Journal of Finance} 66, 1--33.
+
+\bibitem[Joint Treasury Staff(2015)]{joint_treasury_2015}
+Joint Treasury Staff, 2015, The U.S. Treasury market on October 15, 2014, Staff report, U.S. Department of the Treasury, Board of Governors of the Federal Reserve System, Federal Reserve Bank of New York, Securities and Exchange Commission, and Commodity Futures Trading Commission.
+
+\bibitem[Kalman(1960)]{kalman1960}
+Kalman, R.~E., 1960, A new approach to linear filtering and prediction problems, \emph{Journal of Basic Engineering} 82, 35--45.
+
+\bibitem[Kreiss(1962)]{kreiss1962}
+Kreiss, H.-O., 1962, {\"U}ber die Stabilit{\"a}tsdefinition f{\"u}r Differenzengleichungen die partielle Differentialgleichungen approximieren, \emph{BIT Numerical Mathematics} 2, 153--181.
+
+\bibitem[Kyle(1985)]{kyle1985continuous}
+Kyle, A.~S., 1985, Continuous auctions and insider trading, \emph{Econometrica} 53, 1315--1335.
+
+\bibitem[Le Cam(1986)]{lecam1986}
+Le Cam, L., 1986, \emph{Asymptotic Methods in Statistical Decision Theory}, Springer-Verlag.
+
+\bibitem[MacKinnon and Webb(2018)]{mackinnon2018wild}
+MacKinnon, J.~G., and M.~D. Webb, 2018, The wild bootstrap for few (treated) clusters, \emph{Econometrics Journal} 21, 114--135.
+
+\bibitem[Menkveld(2013)]{menkveld2013}
+Menkveld, A.~J., 2013, High frequency trading and the new market makers, \emph{Journal of Financial Markets} 16, 712--740.
+
+\bibitem[Newey and West(1987)]{newey1987simple}
+Newey, W.~K., and K.~D. West, 1987, A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix, \emph{Econometrica} 55, 703--708.
+
+\bibitem[Nielsen(2021)]{crypto_rl_2021}
+Nielsen, C., 2021, \texttt{crypto-rl}: High-frequency limit order book data capture, GitHub repository (CC0 License).
+
+\bibitem[Ntakaris et~al.(2018)]{ntakaris2018benchmark}
+Ntakaris, A., M.~Magris, J.~Kanniainen, M.~Gabbouj, and A.~Iosifidis, 2018, Benchmark dataset for mid-price forecasting of limit order book data with machine learning methods, \emph{Journal of Forecasting} 37, 852--866.
+
+\bibitem[Pesaran and Shin(1998)]{pesaran1998}
+Pesaran, H.~H., and Y.~Shin, 1998, Generalized impulse response analysis in linear multivariate models, \emph{Economics Letters} 58, 17--29.
+
+\bibitem[Phillips(1987)]{phillips1987time}
+Phillips, P.~C.~B., 1987, Time series regression with a unit root, \emph{Econometrica} 55, 277--301.
+
+\bibitem[Rigobon(2003)]{rigobon2003identification}
+Rigobon, R., 2003, Identification through heteroskedasticity, \emph{Review of Economics and Statistics} 85, 777--792.
+
+\bibitem[Spijker(1991)]{spijker1991}
+Spijker, M.~N., 1991, On a conjecture by LeVeque and Trefethen related to the Kreiss matrix theorem, \emph{BIT Numerical Mathematics} 31, 551--555.
+
+\bibitem[Trefethen and Embree(2005)]{trefethen2005spectra}
+Trefethen, L.~N., and M.~Embree, 2005, \emph{Spectra and Pseudospectra: The Behavior of Nonnormal Matrices and Operators}, Princeton University Press.
+
+
+\bibitem[Vetterli et~al.(2002)]{vetterli2002} Vetterli, M., P. Marziliano, and T. Blu, 2002, Sampling signals with finite rate of innovation, \emph{IEEE Transactions on Signal Processing} 50, 1417--1428. \url{https://doi.org/10.1109/TSP.2002.1003065}.
+\bibitem[Boyd et~al.(1994)]{boyd1994lmi} Boyd, S., L. El Ghaoui, E. Feron, and V. Balakrishnan, 1994, \emph{Linear Matrix Inequalities in System and Control Theory}, SIAM. \url{https://web.stanford.edu/~boyd/lmibook/}.
+\bibitem[Wang et~al.(2024)]{wang2024} Wang, Y., D. Sornette, K. Wu, and S. C. Lera, 2024, Dynamic influence networks self-organize towards sub-critical financial instabilities, Swiss Finance Institute Research Paper 24-77. \url{https://doi.org/10.2139/ssrn.4946318}.
+\bibitem[Binance(2022a)]{binance2022volume} Binance, 2022a, Binance to exclude 13 BTC spot pairs in trading volume calculations, July 8. \url{https://www.binance.com/en/support/announcement/detail/9541012e103c4ad3bfccbc54cd5f18ba}.
+\bibitem[Binance(2022b)]{binance2022eth} Binance, 2022b, Binance launches ETH/BUSD zero-fee trading, August 23. \url{https://www.binance.com/en/support/announcement/detail/5d8f9c0a68e24b82bff743a342dfa9b9}.
+\bibitem[Manole and Ho(2022)]{manole2022} Manole, T., and N. Ho, 2022, Refined convergence rates for maximum likelihood estimation under finite mixture models, Proceedings of Machine Learning Research 162, 14979--15006. \url{https://proceedings.mlr.press/v162/manole22a.html}.
+\end{thebibliography}
+
+\end{document}
