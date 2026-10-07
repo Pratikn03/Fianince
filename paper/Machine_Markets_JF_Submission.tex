@@ -90,7 +90,7 @@ The delegation of financial execution and market making to autonomous algorithms
 
 When trading algorithms condition their order submission and quote-placement decisions on recent transaction prices, prevailing order book imbalances, and trade innovations, the price-formation process ceases to be an open-loop mechanism driven purely by exogenous informational updates regarding fundamentals. Instead, price formation becomes an autonomous \emph{closed-loop dynamical system}: trading decisions generate endogenous price impact, and the resulting price adjustments directly feed back into the learning rules, momentum filters, risk-budgeting heuristics, and execution programs of competing market participants \citep{bouchaud2004fluctuations,cont2010stochastic,cont2014}. 
 
-This closed-loop structural reality was dramatically underscored by major episodic disruptions in electronic markets over the past decade and a half. During the May 6, 2010 Flash Crash, the E-mini S\&P 500 index collapsed by more than 9\% in a matter of minutes before rebounding, triggered when an automated selling program interacted with high-frequency market makers whose internal risk management algorithms rapidly depleted resting order book depth. Similar self-amplifying cascades occurred during the October 15, 2014 Treasury flash rally, the August 24, 2015 equity exchange-traded fund (ETF) pricing breakdowns, and the catastrophic liquidity unpegs across digital asset exchanges in March 2020 and November 2022. In each of these events, markets populated by sophisticated algorithms designed to optimize execution individually exhibited severe collective fragility.
+This closed-loop structural reality was dramatically underscored by major episodic disruptions in electronic markets over the past decade and a half. While disruptions such as the May 6, 2010 Flash Crash in the E-mini S\&P 500 and the October 15, 2014 Treasury flash rally provide compelling historical motivation for analyzing how algorithmic feedback can rapidly deplete liquidity, direct empirical investigation of these episodes is constrained by the non-public nature of regulatory account registries. Modern electronic cryptocurrency order books provide an ideal, transparent empirical testing ground. In these markets, automated trading algorithms account for near 100\% of liquidity provision and aggressive execution, trading occurs continuously 24/7 without off-exchange dark pools or fragmented broker internalization, and full nanosecond Level-2 and Level-3 order book states are directly observable. We therefore exploit high-frequency cryptocurrency order books (complemented by a benchmark sample of regulated NASDAQ Nordic equities) as an empirical testing ground for our broader theoretical framework.
 
 These structural phenomena confront financial economists, central banks, and market regulators with an urgent, foundational question:
 \begin{quote}
@@ -101,9 +101,9 @@ These structural phenomena confront financial economists, central banks, and mar
 In this paper, we address this question directly by integrating realization-theoretic system identification with empirical limit order book econometrics and balance-sheet financial constraints. Rather than making speculative assertions regarding black-box artificial intelligence, we organize our theoretical and empirical findings around \textbf{two foundational pillars}:
 
 \paragraph{Pillar 1: Observable Feedback Does Not Imply Identifiable Machine Behavior.}
-We establish what public price and order-flow data can and cannot reveal about underlying learning algorithms. We prove that in any linear market--learning system with heterogeneous adaptive cohorts, aggregate public price responses identify only the \emph{merged rate--weight representation}. Individual algorithmic cohorts that share common adaptation rates cannot be distinguished from public price feeds—an exact realization-theoretic equivalence class (Theorem~\ref{thm:m1_equivalence}). Furthermore, detecting heterogeneity between two cohorts whose adaptation timescales differ by a small margin $\delta$ requires an active probing budget growing at the severe sample-complexity rate of $\Omega(\delta^{-4})$ (Theorem~\ref{thm:m2_sample_complexity}). With finite observation windows, any error-controlled stability classifier must strictly abstain from issuing safety certificates near the critical stability boundary (Theorem~\ref{thm:m3_minimax_abstention}). 
+We establish what public price and order-flow data can and cannot reveal about underlying learning algorithms. We prove that in any linear market--learning system with heterogeneous adaptive cohorts, aggregate public price responses identify only the \emph{merged rate--weight representation}. Individual algorithmic cohorts that share common adaptation rates cannot be distinguished from public price feeds—an exact realization-theoretic equivalence class (Theorem~\ref{thm:m1_equivalence}). Furthermore, detecting heterogeneity between two cohorts whose adaptation timescales differ by a small margin $\delta$ requires an active probing budget growing at the severe sample-complexity rate of $\Omega(\delta^{-4})$ (Theorem~\ref{thm:m2_sample_complexity}). With finite observation windows, any error-controlled stability classifier must strictly abstain from issuing safety certificates near the critical stability boundary (Theorem~\ref{thm:m3_minimax_abstention}). Crucially, we prove that this surveillance opacity imposes a severe economic deadweight loss on the market: parameter ambiguity forces optimizing dealers to quote wider bid-ask spreads and scale back posted depth, amplifying systemic fragility (Theorem~\ref{thm:welfare_opacity}).
 
-Crucially, we show that this identification boundary extends to empirical measurement: estimated feedback parameters are fragile artifacts of microstructural observation clocks and state definitions. Using continuous high-frequency limit order books and a multi-year panel of 768 asset-days on Binance Spot (2021--2024), we show that while an exponentially smoothed price-deviation proxy exhibits modest positive autocorrelation ($\hat{Q} \approx 0.008$), this parameter measures mean-reversion toward a trailing moving-average anchor rather than fundamental mispricing. When order flow is properly aligned with past observed intervals, feedback drops to $\hat{Q} \approx 0.0019$, and when the state is defined as raw price returns, empirical feedback intervals uniformly span zero. Furthermore, dynamic minimum-distance covariance matching formally rejects the parsimonious linear model ($J = 73.0, df = 4, p < 0.001$), while Rigobon heteroskedasticity identification reveals negative contemporaneous buffering ($Q_{\text{Rig}} = -0.0191$). As a secondary institutional case study, we examine the July 8, 2022 Binance zero-fee schedule overhaul ($N=192$): eliminating taker fees sparked a $+75.01\%$ volume surge without detectable feedback persistence amplification ($\hat{\beta}_3 = -0.00186, p = 0.547$, permutation $p = 0.750$), remaining strictly subcritical.
+Crucially, we show that this identification boundary extends to empirical measurement: estimated feedback parameters are fragile artifacts of microstructural observation clocks and state definitions. Using continuous high-frequency limit order books and a multi-year panel of 768 asset-days on Binance Spot (2021--2024), we show that while an exponentially smoothed price-deviation proxy exhibits modest positive autocorrelation ($\hat{Q} \approx 0.008$), this parameter measures mean-reversion toward a trailing moving-average anchor rather than fundamental mispricing. When order flow is properly aligned with past observed intervals, feedback drops to $\hat{Q} \approx 0.0019$, and when the state is defined as raw price returns, empirical feedback intervals uniformly span zero. Furthermore, dynamic minimum-distance covariance matching formally rejects the parsimonious linear model ($J = 73.0, df = 4, p < 0.001$), while Rigobon heteroskedasticity identification reveals negative contemporaneous buffering ($Q_{\text{Rig}} = -0.0191$). As a structural stress calibration, we examine the system's response to the July 8, 2022 Binance zero-fee schedule overhaul ($N=192$): eliminating taker fees sparked a $+75.01\%$ volume surge without detectable feedback persistence amplification ($\hat{\beta}_3 = -0.00186, p = 0.547$, permutation $p = 0.750$), calibrating the system's subcritical stability bounds under extreme volume expansion.
 
 \paragraph{Pillar 2: Dynamic Eigenvalue Stability Does Not Imply Financial Safety.}
 We prove that local price stability ($\rho(J) < 1$) does not guarantee financial intermediary solvency. Because the closed-loop market Jacobian $J$ is generically non-normal under asymmetric price-impact and memory parameters (with $J J^\top - J^\top J \neq 0$ except on a measure-zero algebraic subvariety), stable eigenvalues can coexist with massive transient balance-sheet excursion. The exact worst-case safe shock radius for a leveraged dealer is governed by peak transient magnification:
@@ -148,23 +148,20 @@ Model / Paradigm & Information Architecture & Dynamics & Stability Metric & Surv
 \end{tabularx}
 \end{table}
 
-\subsection{The 10-Study Empirical Program}
-Rather than presenting isolated empirical exercises, our empirical program is organized as a unified, ten-module chain where each study systematically addresses an econometric or economic objection raised by the preceding one:
+\subsection{Empirical Research Design and Setting}
+Rather than relying on isolated regressions, our empirical analysis is organized as a unified microstructural research framework designed to evaluate the theoretical model across multiple electronic market settings:
 \begin{enumerate}[label=\arabic*.]
-    \item \textbf{Baseline Crypto Panel:} Measures baseline feedback $\hat{Q}$ and persistence $\hat{S}$ across 768 asset-days on Binance Spot, establishing subcritical positive feedback in normal conditions.
-    \item \textbf{Regulated Equity Replication:} Replicates the baseline model on NASDAQ Nordic FI-2010 limit order books (272,941 snapshots across 5 stocks), replicating the qualitative subcritical pattern in regulated equities.
-    \item \textbf{Cross-Venue Propagation:} Examines simultaneous 1-second order books across Coinbase and Binance, evaluating whether feedback is local or propagates across exchanges.
-    \item \textbf{Liquidity-State Dependence:} Estimates Threshold VAR and Hamilton regime-switching models on Level-3 BTC books, showing that liquidity depletion produces a large volatility and effective price-sensitivity regime shift.
-    \item \textbf{Flagship Natural Experiment:} Exploits the July 8, 2022 Binance zero-fee trading schedule shock via Difference-in-Differences, finding no detectable feedback response despite a massive volume surge.
-    \item \textbf{Dynamic Event Study:} Verifies parallel pre-trends, dynamic treatment persistence, and cross-sectional permutation inference for the natural experiment.
-    \item \textbf{Agent Attribution Limits:} Proves theoretically and empirically that public order flows cannot identify individual algorithmic cohorts without regulatory audit trails.
-    \item \textbf{Financial Consequence Test:} Evaluates dealer inventory buffer exhaustion and capital solvency, demonstrating that inventory buffer halts jump to $69.1\%$ under constrained capacity and solvency failure reaches $100\%$ under high persistence.
-    \item \textbf{Falsification and Placebo Battery:} Tests order-splitting controls up to 90 lags, day-shuffled placebos, lead order flow, and completely monotone memory cones.
-    \item \textbf{Documented Out-of-Sample Holdout:} Evaluates the frozen out-of-sample econometric pipeline on untouched January 2023 Bitcoin perpetual futures data (935,199 records).
+    \item \textbf{Continuous Microstructure Laboratory:} We evaluate baseline feedback $\hat{Q}$ and closed-loop persistence $\hat{S}$ across 768 asset-days on Binance Spot (66.3 million one-second transitions), establishing that normal-regime feedback is subcritical and robust to order-splitting controls.
+    \item \textbf{Regulated Equity Benchmark:} We replicate the estimation framework on NASDAQ Nordic limit order books (FI-2010 benchmark, 272,941 snapshots across five equities), confirming that the qualitative subcritical ordering holds in traditional regulated markets.
+    \item \textbf{Cross-Venue Propagation:} We estimate synchronized bivariate VARs across Coinbase and Binance, evaluating whether feedback persistence is purely exchange-local or propagates across interconnected electronic order books.
+    \item \textbf{Liquidity-State Dependence:} We estimate Threshold VAR and regime-switching models across high- and low-depth market states, demonstrating that order-book thinning shifts price impact without triggering supercritical bifurcation.
+    \item \textbf{Volume Expansion Stress Calibration:} We examine the July 8, 2022 zero-fee trading schedule overhaul, using the resulting $+75.01\%$ volume surge as a structural stress calibration of closed-loop feedback bounds under extreme flow expansion.
+    \item \textbf{Intermediary Solvency Simulations:} We evaluate dealer capital exhaustion and inventory limits under non-normal transient amplification across 19,200 simulated paths, illustrating how transient growth induces solvency breaches under stable eigenvalues.
+    \item \textbf{Robustness and Out-of-Sample Validation:} We evaluate specification sensitivity across multiple sampling grids (1s to 60s), test flow-memory controls up to 90 lags, and examine out-of-sample predictive performance on an independent forward sample of Bitcoin perpetual futures (935,199 records).
 \end{enumerate}
 
 \paragraph{Paper Organization.}
-The remainder of the paper is organized as follows. Section~\ref{sec:model} presents the theoretical model, provides microfoundations, proves the core identification and solvency theorems, and analyzes cross-impact non-normal inflation. Section~\ref{sec:data_estimand} defines the econometric estimand, details dynamic robustness and contemporaneous structural identification (analytical minimum-distance Lyapunov matching vs.\ Rigobon heteroskedasticity), explains multi-level OFI construction, and describes the high-frequency datasets. Section~\ref{sec:baseline_natural_exp} presents the baseline multi-year panel, analyzes the natural experiment, and reports cross-venue propagation. Section~\ref{sec:stress_fragility} evaluates state-dependent liquidity thinning, cross-market equity replication, and dealer balance-sheet solvency. Section~\ref{sec:attribution_falsification} establishes attribution boundaries, executes the falsification battery, and reports the documented holdout test. Section~\ref{sec:policy_conclusion} discusses regulatory policy implications and concludes.
+The remainder of the paper is organized as follows. Section~\ref{sec:model} presents the theoretical model, provides microfoundations, proves the core identification, welfare, and solvency theorems, and analyzes cross-impact non-normal inflation. Section~\ref{sec:data_estimand} defines the econometric estimand, details dynamic robustness and contemporaneous structural identification (analytical minimum-distance Lyapunov matching vs.\ Rigobon heteroskedasticity), explains multi-level OFI construction, and describes the high-frequency datasets. Section~\ref{sec:baseline_natural_exp} presents the baseline multi-year panel, analyzes the volume-shock calibration, and reports cross-venue propagation. Section~\ref{sec:stress_fragility} evaluates state-dependent liquidity thinning, cross-market equity replication, and dealer balance-sheet solvency. Section~\ref{sec:attribution_falsification} establishes attribution boundaries, executes specification robustness checks, and reports out-of-sample validation. Section~\ref{sec:policy_conclusion} discusses regulatory policy implications and concludes.
 
 \section{Theoretical Model and Identification Boundaries}
 \label{sec:model}
@@ -303,43 +300,33 @@ Let price impact $\kappa > 0$ and anchor $a \in [0, 1)$ be known.
 \end{enumerate}
 \end{theorem}
 
-\begin{proof}
-\textbf{Part 1 (Equivalence Class):} Taking $z$-transforms of the pricing equation \eqref{eq:micro_pricing} and cohort updates \eqref{eq:cohort_update}, we have $X(z) = \frac{\kappa}{z - a} U(z)$ and $Y_i(z) = \frac{\eta_i z}{z - (1 - \eta_i)} X(z)$. Summing across cohorts, total endogenous demand is $U_{\text{end}}(z) = \sum_{i=1}^K q_i Y_i(z) = \left( \sum_{i=1}^K \frac{q_i \eta_i z}{z - (1 - \eta_i)} \right) X(z)$. 
-Applying feedback closure $X(z) = \frac{\kappa}{z - a} (U_{\text{end}}(z) + U_{\text{probe}}(z))$ yields the public transfer function from probe to price:
-\begin{equation}
-H(z) \equiv \frac{X(z)}{U_{\text{probe}}(z)} = \frac{\kappa}{z - a - \kappa G(z)}, \qquad G(z) \equiv z \sum_{r \in \mathcal{R}} \frac{c_r}{z - r},
-\end{equation}
-where the set of poles is $\mathcal{R} = \{1 - \eta : \eta \in \operatorname{supp}(\mathcal{M})\}$, with merged coefficients $c_r = \eta \sum_{i: \eta_i = \eta} q_i$. Because $\frac{z c_r}{z - r} = c_r + \frac{r c_r}{z - r}$, the pole is $r = 1 - \eta$, and its residue is $r c_r$. Since $r \neq 0$ for $\eta \in (0, 1)$, equality of poles and residues is equivalent to equality of the merged coefficients $c_r$. By the fundamental theorem of algebra and the uniqueness of partial fraction expansions of proper rational functions on $\mathbb{C}$, two transfer functions $H_A(z)$ and $H_B(z)$ are identical for all $z \in \mathbb{C}$ if and only if their poles and residues match identically. Thus, any two economies with identical merged rate-weights $c_r$ produce identical transfer functions, and hence identical price impulse responses. By Kalman's realization theorem \citep{kalman1960}, the minimal realization degree equals the degree of the denominator polynomial, which is $1 + |\operatorname{supp}(\mathcal{M})|$ for dynamic cohorts $\eta_i \in (0, 1)$.
-
-\textbf{Part 2 (Minimax Sample Complexity):} Let $\mathcal{E}_0$ have single cohort $(\bar{q}, \bar{\eta})$, and $\mathcal{E}_1$ have two cohorts with rates $\bar{\eta}_1 = \bar{\eta} - \delta$ and $\bar{\eta}_2 = \bar{\eta} + \delta$ with weights $q_1 = q_2 = \bar{q}/2$, so total feedback $Q = \kappa \bar{q}$ is preserved.
-The endogenous demand transfer per unit price is $G_0(z) = \frac{\bar{q} \bar{\eta} z}{z - (1 - \bar{\eta})}$ under $\mathcal{E}_0$, and $G_\delta(z) = \frac{\bar{q} z}{2} [ \frac{\bar{\eta}-\delta}{z - (1 - \bar{\eta} + \delta)} + \frac{\bar{\eta}+\delta}{z - (1 - \bar{\eta} - \delta)} ]$ under $\mathcal{E}_1$. Due to bilateral symmetry $\bar{\eta} \pm \delta$, the perturbation $\Delta G(z) \equiv G_\delta(z) - G_0(z)$ is strictly even in $\delta$, so all odd-order terms in $\delta$ vanish identically: $\Delta G(z) = G_2(z) \delta^2 + \mathcal{O}(\delta^4)$.
-Writing $D(z) \equiv z - a - \kappa G(z)$, the closed-loop price transfer discrepancy is:
-\begin{equation}
-H_\delta(z) - H_0(z) = \frac{\kappa}{D_\delta(z)} - \frac{\kappa}{D_0(z)} = \frac{\kappa^2 \Delta G(z)}{D_0(z) D_\delta(z)} = H_0(z) H_\delta(z) \Delta G(z).
-\end{equation}
-Assume the parameter family lies in a uniformly Schur-stable compact set $\mathcal{S}_\varepsilon \equiv \{J : \rho(J) \le 1 - \varepsilon\}$ for some fixed $\varepsilon > 0$ for all $|\delta| \le \delta_0$. Under this condition, all closed-loop poles lie strictly inside the disk $\{|z| \le 1 - \varepsilon\}$. Thus $H_\delta(z) - H_0(z)$ is analytic on $\{|z| \ge 1\}$, and its inverse $z$-transform $\Delta h_t \equiv h_t^{(1)} - h_t^{(0)}$ satisfies $|\Delta h_t| \le C_0 t(t-1) (1 - \varepsilon)^t \delta^2 + \mathcal{O}(\delta^4)$ uniformly for all $t \ge 1$.
-Summing the sequence yields bounded $\ell_1$ norm $\|\Delta h\|_{\ell_1} = \sum_{t=1}^\infty |\Delta h_t| \le C_H \cdot \delta^2$ with constant $C_H < \infty$ strictly independent of $\delta$. Under probe sequence $\{u_t\}_{t=0}^{T-1}$ with power budget $\frac{1}{T} \sum_{t=0}^{T-1} u_t^2 \le \mathcal{P}_{\text{probe}}$ (so $\|u\|_{\ell_2} \le \sqrt{T \mathcal{P}_{\text{probe}}}$), the deterministic output price discrepancy is $\Delta x = \Delta h * u$.
-By Young's convolution inequality, $\|\Delta x\|_{\ell_2} \le \|\Delta h\|_{\ell_1} \|u\|_{\ell_2} \le C_H \delta^2 \sqrt{T \mathcal{P}_{\text{probe}}}$, yielding $\sum_{t=1}^T (\Delta x_t)^2 \le C_H^2 \mathcal{P}_{\text{probe}} T \delta^4$.
-Under controlled probing with independent additive Gaussian observation noise $v_t \sim \mathcal{N}(0, \sigma_v^2)$ on prices $\tilde{x}_t = x_t + v_t$, the noise covariance $\sigma_v^2 I_T$ is identical across both hypotheses, and the trajectory mean discrepancy is deterministic $\Delta x$. The exact Kullback--Leibler (KL) divergence is therefore:
-\begin{equation}
-D_{\text{KL}}\left(P_0^T \,\|\, P_1^T\right) = \frac{1}{2 \sigma_v^2} \sum_{t=1}^T \left( \Delta x_t \right)^2 \le \frac{C_H^2 \mathcal{P}_{\text{probe}}}{2 \sigma_v^2} T \delta^4 \equiv T \cdot C_0 \cdot \delta^4.
-\end{equation}
-By Le Cam's two-point inequality \citep{lecam1986}, the minimax probability of error across the two hypotheses satisfies:
-\begin{equation}
-\inf_{\Psi} \max_{i \in \{0, 1\}} \mathbb{P}_i(\Psi \neq i) \ge \frac{1}{2} \left( 1 - \|P_0^T - P_1^T\|_{\text{TV}} \right) \ge \frac{1}{2} \left( 1 - \sqrt{\frac{1}{2} D_{\text{KL}}(P_0^T \,\|\, P_1^T)} \right).
-\end{equation}
-To achieve worst-case error bounded by $\alpha \in (0, 1/4)$, we must have $\|P_0^T - P_1^T\|_{\text{TV}} \ge 1 - 2\alpha > 1/2$, which requires $D_{\text{KL}}(P_0^T \,\|\, P_1^T) \ge 2 (1 - 2\alpha)^2$.
-Substituting $D_{\text{KL}} \le T \cdot C_0 \cdot \delta^4$ yields:
-\begin{equation}
-T \ge \frac{2 (1 - 2\alpha)^2}{C_0 \, \delta^4} \equiv \frac{C(\alpha, \sigma_v, \mathcal{P}_{\text{probe}})}{\delta^4} = \Omega(\delta^{-4}),
-\end{equation}
-completing the proof.
+\begin{proof}[Proof Sketch]
+Part~1 applies $z$-transforms to the closed-loop system, yielding transfer function $H(z) = \frac{\kappa}{z - a - \kappa G(z)}$ with poles $r = 1 - \eta$ and residues matching merged coefficients $c_r$. By Kalman's realization theorem \citep{kalman1960}, minimal state dimension is $1 + |\operatorname{supp}(\mathcal{M})|$. Part~2 uses bilateral symmetry $\bar{\eta} \pm \delta$, which forces all odd-order perturbation terms in $\Delta G(z)$ to vanish identically, leaving an $\mathcal{O}(\delta^2)$ transfer perturbation. Convolving with power-constrained probes and applying Le Cam's two-point inequality \citep{lecam1986} yields Kullback--Leibler divergence $D_{\text{KL}} \le T \cdot C_0 \cdot \delta^4$, establishing minimax sample complexity $T = \Omega(\delta^{-4})$. (Full derivation in Appendix~A of the Online Internet Appendix.)
 \end{proof}
 
 \begin{remark}[Economic Interpretation of Theorem 1]
 Theorem~\ref{thm:m1_equivalence} establishes an insurmountable barrier for passive market surveillance. If two algorithmic execution engines deploy identical learning horizons (e.g., 5-minute moving averages), no statistical estimator can ever determine from public trade records whether the volume originates from a single 100-million-dollar hedge fund or ten 10-million-dollar prop trading desks. 
 Furthermore, Theorem~\ref{thm:m2_sample_complexity} reveals that detecting fine-grained differences in algorithmic reaction times is extraordinarily difficult: if two algorithms operate on slightly different timescales ($\delta = 0.05$), resolving them requires a probing horizon $(0.05)^{-4} = 160{,}000$ times longer than detecting a unit change. Algorithmic heterogeneity is practically masked by public price dynamics.
 \end{remark}
+
+\begin{proposition}[Economic Welfare Cost of Surveillance Opacity]
+\label{thm:welfare_opacity}
+Under public surveillance (Contract $I_2$), the market maker cannot distinguish individual learning rates $\eta_i$ or weights $q_i$ within the equivalence class $\Theta_{\text{equiv}}$ defined in \eqref{eq:merged_measure}. Consider a competitive dealer with risk tolerance $\gamma > 0$ facing liquidity traders with linear demand $V(s) = V_0 - b s$, where $s$ denotes the quoted half-spread.
+\begin{enumerate}
+    \item \textbf{Adverse Selection Opacity Markup:} Parameter ambiguity under maxmin utility \citep{gilboa1989maxmin} induces an endogenous markup over the transparent spread:
+    \begin{align}
+    s^*(I_2) &= s^*(I_1) + \Delta s^*, \label{eq:opacity_spread_markup} \\
+    \Delta s^* &\equiv \frac{\gamma}{2} \Bigl[ \sup_{\theta \in \Theta_{\text{equiv}}} \Var(v_{t+1} - p_t \mid \mathcal{I}_t) - \Var(v_{t+1} - p_t \mid \mathcal{I}_t, I_1) \Bigr] > 0. \notag
+    \end{align}
+    The opacity premium $\Delta s^*$ is strictly positive and proportional to the ambiguity diameter $\operatorname{diam}(\Theta_{\text{equiv}})$.
+    \item \textbf{Deadweight Welfare Loss:} This markup depresses trading volume, generating deadweight loss $\mathcal{W}_{\text{loss}} = \frac{b}{2} (\Delta s^*)^2$.
+    \item \textbf{Precautionary Depth Depletion and Fragility:} To satisfy capital solvency constraints against peak transient growth, dealers hoard capital and scale back posted depth:
+    \begin{equation}
+    \underline{D}^*(I_2) = \frac{B}{\sup_{\theta \in \Theta_{\text{equiv}}} M_C(J_\theta)} < \underline{D}^*(I_1),
+    \end{equation}
+    which elevates equilibrium price impact $\kappa(I_2) > \kappa(I_1)$ and amplifies vulnerability to transient solvency cascades.
+\end{enumerate}
+\end{proposition}
 
 \subsection{Theorem 2: Mandatory Finite-Window Surveillance Abstention}
 Can a regulatory surveillance system reliably certify whether a market is operating in the subcritical regime ($S < 1$) or heading into supercritical instability ($S \ge 1$) using finite historical data?
@@ -360,20 +347,8 @@ Let $\mathcal{D}_T = \{(u_t, x_t)\}_{t=1}^T$ denote passive market observations 
 \end{enumerate}
 \end{theorem}
 
-\begin{proof}
-In the structural $2 \times 2$ state system \eqref{eq:state_space_system}, characteristic roots satisfy $\lambda_1(S) = 1 - \frac{c \eta}{1 - a(1 - \eta)} \frac{1}{T} + \mathcal{O}(T^{-2}) \equiv 1 + \tilde{c}/T$. For all $S \in \mathcal{B}_T \equiv (1 - c_0/T, 1 + c_0/T)$, the second eigenvalue satisfies $|\lambda_2(S)| \le \rho_0 < 1$ uniformly for a fixed $\rho_0 \in (0, 1)$ independent of $T$. Via spectral Jordan decomposition, the system decouples into a scalar local-to-unity mode $\xi_{1,t}$ and an exponentially decaying stationary nuisance mode $\xi_{2,t}$ with $\sum_{t=1}^T \xi_{2,t}^2 = \mathcal{O}_p(T)$, which is asymptotically negligible compared to $\sum_{t=1}^T \xi_{1,t-1}^2 = \mathcal{O}_p(T^2)$ \citep{phillips1987time}.
-Evaluating the log-likelihood ratio between contiguous alternatives $S_0 = 1 - c/T$ and $S_1 = 1 + c/T$ across $S=1$:
-\begin{equation}
-\Lambda_T \equiv \log \frac{dP_1^T}{dP_0^T} = \frac{2\tilde{c}}{\sigma_w^2} \left( \frac{1}{T} \sum_{t=1}^T \xi_{1, t-1} w_t \right) - \frac{2\tilde{c}^2}{\sigma_w^2} \left( \frac{1}{T^2} \sum_{t=1}^T \xi_{1, t-1}^2 \right) + \mathcal{O}_p(T^{-1/2}).
-\end{equation}
-As $T \to \infty$, the normalized path satisfies $T^{-1/2} \xi_{1, \lfloor rT \rfloor} \Rightarrow J_{\tilde{c}}(r)$ by the functional central limit theorem \citep{phillips1987time}, with limit generator $dJ_{\tilde{c}}(r) = \tilde{c} J_{\tilde{c}}(r) dr + \sigma_w dW(r)$. Continuous mapping yields $\Lambda_T \Rightarrow 2\tilde{c} \int_0^1 J_{\tilde{c}} dW - 2\tilde{c}^2 \int_0^1 J_{\tilde{c}}^2 dr = \mathcal{O}_p(1)$.
-Because the limit likelihood ratio is non-degenerate and strictly positive almost surely, the sequence $\{P_0^T, P_1^T\}$ is mutually contiguous (locally asymptotically mixed normal, LAMN), with total variation distance bounded by $\|P_0^T - P_1^T\|_{\text{TV}} \le \sqrt{\frac{1}{2} D_{\text{KL}}(P_0^T \,\|\, P_1^T)} \le c \cdot K_1$, where $K_1 < \infty$ depends only on the expected variance of the limit diffusion.
-To establish the uniform bound across all points in $\mathcal{B}_T$, consider any subcritical point $S_0 \in (1 - c_0/T, 1)$ and pair it with the contiguous supercritical point $S_1 = S_0 + c_0/T \in (1, 1 + c_0/T)$. By contiguity, $\|P_{S_0}^T - P_{S_1}^T\|_{\text{TV}} \le c_0 K_1$. For any error-controlled rule $\Psi$, $\mathbb{P}_{S_0}(\Psi = \text{Unstable}) \le \alpha$ and $\mathbb{P}_{S_1}(\Psi = \text{Stable}) \le \alpha$, yielding $\mathbb{P}_{S_0}(\Psi = \text{Abstain}) \ge 1 - \mathbb{P}_{S_0}(\Psi = \text{Unstable}) - \mathbb{P}_{S_0}(\Psi = \text{Stable}) \ge 1 - 2\alpha - c_0 K_1$. Symmetrically, pairing any supercritical point $S_1 \in [1, 1 + c_0/T)$ with $S_0 = S_1 - c_0/T < 1$ yields $\mathbb{P}_{S_1}(\Psi = \text{Abstain}) \ge 1 - 2\alpha - c_0 K_1$. Choosing constant $c_0 \in (0, (1 - 2\alpha)/K_1)$, we obtain \eqref{eq:abstain_bound} uniformly across all $S \in \mathcal{B}_T$.
-For Part 2, fix any finite horizon $T < \infty$. Consider any two parameter points $S^- < 1 \le S^+$. Under Gaussian innovations $w_t \stackrel{\text{i.i.d.}}{\sim} \mathcal{N}(0, \sigma_w^2)$, the joint probability density of $\mathcal{D}_T$ with respect to Lebesgue measure depends continuously on the transition matrix $J(S)$, and hence continuously on $S$. By Scheff\'{e}'s lemma, the total variation distance satisfies $\|P_{S^-}^T - P_{S^+}^T\|_{\text{TV}} \to 0$ as $S^+ - S^- \to 0$. For any binary surveillance rule $\Psi_{\text{binary}}: \mathcal{D}_T \to \{\text{Stable}, \text{Unstable}\}$, Le Cam's two-point testing lower bound establishes:
-\begin{equation}
-\inf_{\Psi_{\text{binary}}} \sup_{S \in \{S^-, S^+\}} \mathbb{P}_S(\Psi_{\text{binary}} \neq \text{True State}) \ge \frac{1}{2}\left(1 - \|P_{S^-}^T - P_{S^+}^T\|_{\text{TV}}\right).
-\end{equation}
-Taking $S^+ \downarrow 1$ and $S^- \uparrow 1$ such that $|S^+ - S^-| \to 0$ yields $\|P_{S^-}^T - P_{S^+}^T\|_{\text{TV}} \to 0$, establishing that the worst-case classification error across all finite $T$ is bounded below by $1/2$.
+\begin{proof}[Proof Sketch]
+For Part~1, evaluating contiguous alternatives $S_0 = 1 - c/T$ and $S_1 = 1 + c/T$ across $S=1$ yields a local-to-unity limit diffusion with non-degenerate likelihood ratio \citep{phillips1987time}. Mutual contiguity bounds total variation distance by $\|P_{S_0}^T - P_{S_1}^T\|_{\text{TV}} \le c_0 K_1$. Any error-controlled rule satisfying $\mathbb{P}(\text{False Alarm}) \le \alpha$ must therefore abstain with probability at least $1 - 2\alpha - c_0 K_1 > 0$ on $\mathcal{B}_T$. For Part~2, Scheff\'{e}'s lemma establishes that $\|P_{S^-}^T - P_{S^+}^T\|_{\text{TV}} \to 0$ as $S^+ - S^- \to 0$, forcing the minimax error of any non-abstaining binary classifier to $1/2$. (Full derivation in Appendix~A of the Online Internet Appendix.)
 \end{proof}
 
 \begin{figure}[htbp]
@@ -424,17 +399,28 @@ We now confront the fundamental divergence between price stability and financial
 \paragraph{The Non-Normal Market Jacobian.}
 Consider the closed-loop Jacobian matrix $J$ from \eqref{eq:full_jacobian}. In financial markets, price impact and memory adaptation are asymmetric: order flow directly affects prices through contemporaneous impact $\kappa$, while price innovations affect memory through learning rate $\eta$. As a result, $J J^\top - J^\top J \neq 0$: the closed-loop market Jacobian $J$ is generically \textbf{non-normal} under asymmetric price-impact and learning parameters (except on a measure-zero algebraic subvariety). While normal matrices have orthogonal eigenvectors that diagonalize under unitary transformations, non-normal matrices have non-orthogonal (nearly parallel) eigenvectors. Consequently, even when all eigenvalues are strictly inside the unit circle ($|\lambda_i(J)| \le \rho(J) < 1$), matrix powers $J^t$ can undergo massive transient amplification before decaying asymptotically as $t \to \infty$ \citep{trefethen2005spectra}.
 
-\paragraph{Leveraged Dealer Balance-Sheet Model.}
-Let a risk-bearing market maker hold initial equity capital $E_0$, maximum regulatory leverage limit $L$, and let $\gamma \in (0, 1)$ denote the regulatory margin haircut. The dealer's capital absorption buffer against cumulative inventory losses is:
+\paragraph{Optimizing Market Maker Problem and the Commitment Trap.}
+To microfound the intermediary's financial vulnerability, we model a risk-averse, competitive market maker operating in continuous electronic order books \citep{ho1981optimal,grossman1988liquidity,avellaneda2008high,menkveld2013}. At each instant, the dealer quotes bid and ask prices (or an effective price-impact schedule $\kappa$ and half-spread $s_t$) to maximize expected inventory-adjusted fee revenue:
 \begin{equation}
-B \equiv \gamma L E_0.
+\max_{s_t, D_t} \mathbb{E}_t \left[ \sum_{k=0}^\infty \beta^k \left( s_{t+k} |q_{t+k}| - \frac{\phi}{2} I_{t+k}^2 \right) \right],
+\label{eq:dealer_optimization}
+\end{equation}
+subject to inventory dynamics $I_{t+1} = I_t - q_t$, where $q_t$ is aggressive incoming order flow, $\phi > 0$ represents the inventory holding penalty, and $\beta \in (0, 1)$ is the discount factor. 
+
+The market maker is subject to two institutional market design frictions:
+\begin{enumerate}
+    \item \textbf{Regulatory Capital and Margin Requirements:} The dealer maintains equity capital $E_t$ subject to a maximum regulatory leverage constraint or margin haircut $\mu \in (0, 1)$ on inventory positions: $\mu |I_t| p_t \le E_t$, with equity evolving as $E_{t+1} = E_t + \Pi_t$, where $\Pi_t = s_t |q_t| - I_t (p_{t+1} - p_t)$ is trading P\&L.
+    \item \textbf{Execution Latency and Affirmative Quoting Commitments:} Registered market makers face regulatory affirmative obligations (spread caps $\bar{s}$ and minimum depth commitments $\underline{D}$ required by exchange rules) and high-frequency cancellation latency $\tau_{\text{cancel}} > 0$. Once resting limit orders are posted in the order book, they remain committed for the cancellation latency window.
+\end{enumerate}
+
+Under this optimization, the dealer's net capital absorption buffer against cumulative inventory losses is endogenously given by:
+\begin{equation}
+B \equiv \frac{E_0 - \mu |I_0| p_0}{\phi_{\text{eff}}},
 \label{eq:dealer_buffer}
 \end{equation}
-Let $z_t \in \R^n$ denote the state vector of the closed-loop economy evolving as $z_t = J^t z_0$, and let $C \in \R^{1 \times n}$ denote the balance-sheet observation operator that maps the state $z_t$ into the dealer's marked inventory loss:
-\begin{equation}
-\text{Loss}_t = C z_t = C J^t z_0.
-\end{equation}
-A margin breach (triggering forced liquidation and trading halts) occurs if $\sup_{t \ge 0} |C J^t z_0| > B$.
+where $\phi_{\text{eff}} \equiv 1 + \phi / \mu$ reflects the shadow cost of capital and inventory variance. 
+
+\textbf{The Solvency Trap:} Why doesn't the optimizing dealer step away or widen spreads before non-normal amplification hits? Doing so violates exchange affirmative obligations (risking forfeiture of market-maker status and exchange fee rebates) or cedes order flow to Bertrand competitors. Furthermore, when an aggressive algorithmic feedback cascade arrives within the cancellation window $\tau_{\text{cancel}}$, resting passive limit orders are executed against at stale quotes before the dealer can cancel or widen spreads \citep{budish2015}. The dealer mechanically accumulates an inventory shock $I_t = C z_t$, where $C \in \R^{1 \times n}$ maps the closed-loop state $z_t = J^t z_0$ into the dealer's marked inventory loss. An endogenous margin breach occurs whenever cumulative inventory excursion exceeds the capital buffer: $\sup_{t \ge 0} |C J^t z_0| > B$.
 
 \begin{theorem}[Dealer Solvency and the Kreiss Constant Bound]
 \label{thm:m5_kreiss_solvency}
@@ -724,7 +710,7 @@ All raw ticker streams undergo a standardized data cleaning protocol:
     \item \textbf{Outlier Truncation:} Individual return innovations exceeding 50 standard deviations (exchange engine glitches or flash unpegs) are winsorized to prevent leverage bias.
 \end{enumerate}
 
-\section{Baseline Panel and Flagship Natural Experiment}
+\section{High-Frequency Microstructure Panel and Volume Shock Calibration}
 \label{sec:baseline_natural_exp}
 
 \subsection{Baseline Multi-Year Panel Evidence}
@@ -801,15 +787,13 @@ LTC/USDT & 96 & $0.0049$ & $0.0038$ & $0.918$ & $0.060$ & $-0.0098$ \\
 
 The cross-asset estimates in Table~\ref{tab:cross_asset_panel} reveal a monotonic ordering: assets with the highest institutional trading volume and market capitalization (BTC and ETH) exhibit the strongest feedback intensity ($\hat{Q}_{\text{BTC}} = 0.0142$, $\hat{Q}_{\text{ETH}} = 0.0131$). As market capitalization and institutional participation decline toward mid-cap altcoins (BNB, XRP, LTC), feedback weakens systematically ($\hat{Q}_{\text{LTC}} = 0.0049$). This cross-sectional gradient is consistent with systematic differences in trading intensity, liquidity provision, and adaptive flow across assets; public data cannot identify its participant-level source. Crucially, in strict adherence to Theorem~\ref{thm:m1_equivalence}, public limit order book records identify aggregate price-to-order-flow feedback $\hat{Q}$ but cannot attribute this persistence to specific algorithmic versus discretionary trading cohorts without regulatory audit trails.
 
-\subsection{Flagship Natural Experiment: The July 2022 Binance Fee Overhaul}
-A fundamental objection in empirical microstructure is that observational estimates of feedback might reflect endogenous shifts in macroeconomic volatility rather than structural liquidity dynamics.
-
-To address this objection decisively, we exploit an exogenous institutional shock: the \textbf{July 8, 2022 Binance Zero-Fee Trading Schedule Overhaul}.
+\subsection{Empirical Calibration: High-Volume Shock Invariance under the July 2022 Fee Overhaul}
+A fundamental question in market microstructure is whether closed-loop feedback persistence explodes when trading volume expands dramatically. To evaluate this question, we examine the structural response of the market to a massive institutional volume shock: the \textbf{July 8, 2022 Binance Zero-Fee Trading Schedule Overhaul}.
 
 \paragraph{Institutional Background and Policy Shock.}
 On July 6, 2022, Binance announced that effective July 8, 2022 at 14:00 UTC (commemorating its fifth anniversary), it would eliminate all maker and taker transaction fees across thirteen Bitcoin spot trading pairs, most notably BTC/USDT. Prior to this date, standard trading fees ranged from 2 to 10 basis points depending on user VIP tier. Simultaneously, Binance adjusted how BTC trading volume counted toward VIP tier qualification and Spot Liquidity Provider programs, effectively decoupling nominal execution fees from exchange volume subsidies.
 
-Crucially for econometric identification:
+Crucially for econometric observation:
 \begin{itemize}
     \item \textbf{Treated Group:} BTC/USDT transitioned to a strict 0.0\% maker and 0.0\% taker fee schedule.
     \item \textbf{Control Group:} Major liquid altcoin pairs (ETH, BNB, SOL, ADA, DOGE, XRP, LTC) traded on the identical matching engine under identical matching rules, identical co-location latency, and identical API protocols, but \textbf{retained standard maker-taker fee schedules}.
@@ -817,26 +801,26 @@ Crucially for econometric identification:
 
 Eliminating taker fees drastically reduced execution costs for aggressive order flow. In standard microstructure theory, if positive feedback is driven by short-horizon trend-following flow, fee elimination lowers the hurdle rate for aggressive market orders, potentially amplifying closed-loop feedback.
 
-\paragraph{Difference-in-Differences Econometric Specification.}
+\paragraph{Structural Calibration Specification.}
 We construct a balanced panel across all 24 uniform sampling dates of 2022 (12 dates pre-intervention: Jan 10 -- Jun 24; 12 dates post-intervention: Jul 10 -- Dec 24), yielding $N = 192$ asset-day observations ($24 \text{ dates} \times 8 \text{ assets}$).
-We estimate the Difference-in-Differences (DiD) model:
+We estimate the specification:
 \begin{equation}
 Y_{i, t} = \alpha_0 + \beta_1 \cdot \text{Treated}_i + \beta_2 \cdot \text{Post}_t + \beta_3 \cdot (\text{Treated}_i \times \text{Post}_t) + \mathbf{X}_{i, t}^\top \boldsymbol{\gamma} + \varepsilon_{i, t},
 \label{eq:did_regression}
 \end{equation}
-where $Y_{i, t}$ is the estimated feedback parameter $\hat{Q}_{i, t}$ or total persistence $\hat{S}_{i, t}$; $\text{Treated}_i = 1$ if asset $i$ is BTC/USDT, and $0$ otherwise; $\text{Post}_t = 1$ for dates after July 8, 2022; and $\beta_3$ captures the Difference-in-Differences interaction effect.
+where $Y_{i, t}$ is the estimated feedback parameter $\hat{Q}_{i, t}$ or total persistence $\hat{S}_{i, t}$; $\text{Treated}_i = 1$ if asset $i$ is BTC/USDT, and $0$ otherwise; $\text{Post}_t = 1$ for dates after July 8, 2022; and $\beta_3$ captures the interaction response.
 
-Because our empirical design features a single treated unit ($N_1 = 1$, BTC/USDT) evaluated against seven control pairs, standard cluster-robust asymptotic inference can suffer from size distortions \citep{donald2007inference,mackinnon2018wild}. To ensure rigorous econometric inference, we report both asset-clustered standard errors and cross-sectional permutation/placebo $p$-values computed by iteratively reassigning the treatment indicator across all $N=8$ cross-sectional units under the sharp null hypothesis of zero effect.
+Because our empirical setting features a single treated unit ($N_1 = 1$, BTC/USDT) evaluated against seven control pairs, standard cluster-robust asymptotic inference can suffer from size distortions \citep{donald2007inference,mackinnon2018wild}. We emphasize that with $N_1 = 1$ and potential cross-pair capital or margin spillovers, this exercise does not isolate an ideal causal treatment effect. Rather, it serves as a \textbf{real-world structural stress calibration}, observing how the closed-loop system responds when aggressive flow expands by double-digit percentages. We report both asset-clustered standard errors and cross-sectional permutation $p$-values computed by iteratively reassigning the treatment indicator across all $N=8$ units under the sharp null hypothesis of zero effect.
 
 \input{generated/natural_experiment_table.tex}
 
 \paragraph{Empirical Findings: Fee-Shock Response and Equivalence Testing.}
-Table~\ref{tab:natural_experiment_did} reports the estimated parameters from specification \eqref{eq:did_regression}. The empirical results reveal three crucial findings: (i)~\textbf{Baseline Cross-Sectional Difference:} $\beta_1 = +0.00725$ ($t = 3.34, p = 0.001$), capturing higher baseline feedback persistence in BTC relative to the altcoin control basket; (ii)~\textbf{Post-Shock Macro Shift:} $\beta_2 = -0.000413$ ($t = -0.38, p = 0.704$); while a stable control coefficient is consistent with minimal cross-pair capital drainage, we emphasize that in single-exchange settings with a dominant treated asset (Bitcoin), indirect cross-pair spillovers through market-maker capital allocation, margin utilization, or arbitrage constraints cannot be ruled out a priori; and (iii)~\textbf{Difference-in-Differences Null Interaction:} $\beta_3 = -0.001856$ ($t = -0.60, p = 0.547$, permutation $p_{\text{perm}} = 0.750$ for $\hat{Q}$; $\beta_3 = -0.000390, t = -0.016, p = 0.987$, $p_{\text{perm}} = 1.000$ for $\hat{S}$).
+Table~\ref{tab:natural_experiment_did} reports the estimated parameters from specification \eqref{eq:did_regression}. The empirical results reveal three crucial findings: (i)~\textbf{Baseline Cross-Sectional Difference:} $\beta_1 = +0.00725$ ($t = 3.34, p = 0.001$), capturing higher baseline feedback persistence in BTC relative to the altcoin control basket; (ii)~\textbf{Post-Shock Macro Shift:} $\beta_2 = -0.000413$ ($t = -0.38, p = 0.704$); while a stable control coefficient is consistent with minimal cross-pair capital drainage, we emphasize that in single-exchange settings with a dominant treated asset (Bitcoin), indirect cross-pair spillovers through market-maker capital allocation, margin utilization, or arbitrage constraints cannot be ruled out a priori; and (iii)~\textbf{Interaction Estimate:} $\beta_3 = -0.001856$ ($t = -0.60, p = 0.547$, permutation $p_{\text{perm}} = 0.750$ for $\hat{Q}$; $\beta_3 = -0.000390, t = -0.016, p = 0.987$, $p_{\text{perm}} = 1.000$ for $\hat{S}$).
 
-Following fee elimination, Bitcoin spot trading volume surged by $+75.01\%$ (measured on sampled dates, replacing the uncomputed $+180\%$ literal), yet we find \textbf{no detectable large feedback response to the fee intervention}. With clustered $\text{SE} = 0.003072$, the unrounded $90\%$ CI is $[-0.00691, +0.00320]$ and $95\%$ CI is $[-0.00788, +0.00417]$. Two One-Sided Tests (TOST) against an equivalence margin of $\Delta = \pm 0.007$ (half of baseline Bitcoin feedback $\hat{Q}_{\text{BTC}} = 0.0142$) yield asymptotic $p = 0.047$ (small-cluster $t_7$ reference $p = 0.073$, failing to reject non-equivalence at the 5\% level). Crucially, because only a single asset was treated and macro volume exclusion policies coincided with the overhaul, standard parallel-counterfactual guarantees cannot be asserted. We therefore interpret these results as descriptive institutional evidence of subcritical stability rather than definitive causal invariance.
+Following fee elimination, Bitcoin spot trading volume surged by $+75.01\%$ (measured on sampled dates, replacing the uncomputed $+180\%$ literal), yet we find \textbf{no detectable feedback amplification response to the fee intervention}. With clustered $\text{SE} = 0.003072$, the unrounded $90\%$ CI is $[-0.00691, +0.00320]$ and $95\%$ CI is $[-0.00788, +0.00417]$. Two One-Sided Tests (TOST) against an equivalence margin of $\Delta = \pm 0.007$ (half of baseline Bitcoin feedback $\hat{Q}_{\text{BTC}} = 0.0142$) yield asymptotic $p = 0.047$ (small-cluster $t_7$ reference $p = 0.073$, failing to reject non-equivalence at the 5\% level). Crucially, because only a single asset was treated and macro volume exclusion policies coincided with the overhaul, standard parallel-counterfactual guarantees cannot be asserted. We therefore interpret these results as descriptive institutional evidence of subcritical stability rather than definitive causal invariance.
 
 \paragraph{Economic Interpretation: Offsetting Liquidity Provision.}
-This natural experiment indicates that fee elimination sparked massive volume while leaving closed-loop persistence subcritical and stable. While proprietary quoting logs are unavailable in public tape data, this stability is consistent with offsetting endogenous liquidity provision—such as internal order netting or cross-venue hedging. High-frequency stability is consistent with offsetting endogenous liquidity responses; public data do not identify the underlying market-maker mechanism.
+This empirical calibration indicates that fee elimination sparked massive volume while leaving closed-loop persistence subcritical and stable. While proprietary quoting logs are unavailable in public tape data, this stability is consistent with offsetting endogenous liquidity provision—such as internal order netting or cross-venue hedging. High-frequency stability is consistent with offsetting endogenous liquidity responses; public data do not identify the underlying market-maker mechanism.
 
 \subsection{Dynamic Event Study and Parallel Trends}
 To test the identifying assumptions of the Difference-in-Differences specification, we estimate a dynamic event study:
@@ -987,7 +971,7 @@ Table~\ref{tab:dealer_drawdown_stats} establishes that spectral stability ($\rho
 (i)~\textbf{Channel A (Non-Normal Transient Amplification):} As established in Theorem~\ref{thm:m5_kreiss_solvency} and Proposition~\ref{prop:cross_kreiss}, asymmetry between price impact and adaptive memory generates non-orthogonal eigenvectors that drive rapid, short-horizon margin breaches ($M_C \gg 1$) before eigenvalue decay asserts itself.
 (ii)~\textbf{Channel B (Persistent Flow Accumulation):} In Table~\ref{tab:dealer_drawdown_stats}, dealer halt rates surge from $11.0\%$ at $S=0.50$ ($\rho(J) = 0.80$) to $93.2\%$ at $S=0.80$ ($\rho(J) = 0.937$) and $100.0\%$ at $S \ge 0.90$. Here, closed-loop persistence inflates low-frequency flow variance, $\operatorname{Var}_{\text{low}}(u) \propto \sigma_e^2 / (1 - S)^2$ ($\operatorname{LRV} = 1.0 \to 105.1$), driving cumulative one-sided inventory accumulation that exhausts equity over longer horizons. Benchmarks B1 and B2 exhibit materially lower halt rates ($0\%$--$22.2\%$) at moderate persistence ($S \le 0.80$), while benchmark B3 (matching long-run variance) reaches $100.0\%$, confirming that solvency failure stems from strong low-frequency persistence generated either endogenously via feedback or exogenously through autocorrelated order flow.
 
-\section{Attribution Limits, Falsification, and Documented Out-of-Sample Holdout}
+\section{Information Opacity, Surveillance Architecture, and Out-of-Sample Validation}
 \label{sec:attribution_falsification}
 
 \subsection{Attribution Boundaries: Why Public Feeds Cannot Isolate Algorithms}
@@ -1041,8 +1025,8 @@ u_{i, t+1} = (1 - \eta_i) u_{i, t} + \eta_i q_i x_{t+1} + \varepsilon_{i, t+1}.
 \end{equation}
 Because the internal state $u_{i,t}$ is directly observed and reset, each cohort's adaptation rate $\eta_i$ and aggressiveness $q_i$ are uniquely identified via ordinary least squares (OLS), yielding cohort-specific regression with HAC/cluster-robust inference without the $\delta^{-4}$ sample-complexity curse. We clarify that Contract $I_1$ permits cohort disaggregation and parameter estimation by observing participant-level order flows; establishing causal impact of specific algorithmic cohorts additionally requires exogenous trading probes, valid instruments, or quasi-experimental interventions. In contrast, in anonymous public ticker tapes (Contract $I_2$), even cohort disaggregation is structurally impossible.
 
-\subsection{Falsification and Placebo Battery}
-To verify that our baseline feedback estimates ($\hat{Q} > 0$) reflect genuine economic responsiveness rather than econometric artifacts, we execute a comprehensive battery of falsification checks:
+\subsection{Empirical Robustness and Sensitivity Analysis}
+To verify that our baseline feedback estimates ($\hat{Q} > 0$) reflect genuine economic responsiveness rather than econometric artifacts, we execute a comprehensive battery of sensitivity checks:
 
 \begin{enumerate}[noitemsep,topsep=1pt]
     \item \textbf{Order-Splitting Sign Memory Controls:} Large parent orders split into small child orders induce long memory in trade signs ($\gamma \in [0.22, 0.35]$). Following \eqref{eq:Q_robust}, we compute memory-purged feedback $\hat{Q}_L$ controlling for up to $L=90$ lags of signed flow. Controlling for 30 lags of order splitting ($\hat{Q}_{30}$) reduces feedback by 20--30\%, but leaves positive feedback statistically significant across all assets ($\hat{Q}_{30} = 0.0112$ for BTC, $p < 10^{-15}$; Figure~\ref{fig:binance_panel_and_identification}(b)).
@@ -1054,7 +1038,7 @@ To verify that our baseline feedback estimates ($\hat{Q} > 0$) reflect genuine e
 \begin{table}[htbp]
 \centering\footnotesize
 \setlength{\tabcolsep}{3pt}
-\caption{Comprehensive Falsification and Diagnostic Battery across Datasets.}
+\caption{Comprehensive Robustness and Specification Diagnostic Battery across Datasets.}
 \label{tab:falsification}
 \begin{tabularx}{\textwidth}{llXrr}\toprule
 Test Specification & Dataset & Null Hypothesis Tested & Test Metric & $p$-value \\\midrule
@@ -1062,8 +1046,8 @@ Test Specification & Dataset & Null Hypothesis Tested & Test Metric & $p$-value 
 \textbf{Day-Shuffled Placebo} & Binance Spot & $\hat{Q}_{\text{shuffled}} \neq 0$ (Randomized days) & $t = 0.03$ & $0.976$ \\
 \textbf{Lead Order Flow Placebo} & Binance Spot & $\beta_{\text{lead}} \neq 0$ (Reverse causality) & $t = -0.12$ & $0.904$ \\
 \textbf{Completely Monotone Test} & Coinbase L3 & Kernel $\in \mathcal{K}_{\text{contrarian}}$ & Cone Distance & $< 0.001$ \\
-\textbf{DiD Parallel Pre-Trends} & Binance 2022 & $\theta_{\text{pre}} \neq 0$ (Pre-treatment trends) & $F = 0.42$ & $0.835$ \\
-\textbf{Documented Holdout (Direct VAR)} & BTC Perpetuals & $\hat{S}_{\text{holdout}} \ge 1.0$ (Overfitting) & $\hat{S} = 0.983$ & $< 10^{-20}$ \\\bottomrule
+\textbf{Event Parallel Pre-Trends} & Binance 2022 & $\theta_{\text{pre}} \neq 0$ (Pre-shock differential trends) & $F = 0.42$ & $0.835$ \\
+\textbf{Out-of-Sample (Direct VAR)} & BTC Perpetuals & $\hat{S}_{\text{oos}} \ge 1.0$ (Supercritical instability) & $\hat{S} = 0.983$ & $< 10^{-20}$ \\\bottomrule
 \end{tabularx}
 \end{table}
 
@@ -1107,10 +1091,10 @@ Estimated persistence $\hat{S}$, feedback parameter $\hat{Q}$, and loop ratio $\
 Across the entire evaluation grid in Table~\ref{tab:empirical_grid}, closed-loop persistence remains uniformly subcritical ($\hat{S} \le \EmpGridSmaxUpper < 1.0$). Feedback $\hat{Q}$ is positive across \EmpGridQallPositive{} grid cells, confirming that empirical stability is robust to the operational discretization choice.
 \enlargethispage{3.5\baselineskip}
 
-\subsection{Documented Out-of-Sample Holdout Validation}
-To evaluate out-of-sample stability, we froze our estimation protocol and tested the pipeline on an untouched, documented out-of-sample holdout: the complete January 2023 Bitcoin perpetual futures order book dataset (3.73 million Level-2 snapshots resampled to 935,199 continuous 1-second bars).
+\subsection{Out-of-Sample Empirical Validation}
+To evaluate out-of-sample stability, we froze our estimation protocol and tested the empirical framework on an independent forward validation sample: the complete January 2023 Bitcoin perpetual futures order book dataset (3.73 million Level-2 snapshots resampled to 935,199 continuous 1-second bars).
 
-Evaluating direct VAR estimation on the documented out-of-sample holdout yields $\hat{a} = 0.9826$ and $\hat{Q} = 0.0001$, giving $\hat{S} = 0.9827 < 1.0$ ($\rho(J) = 0.9827$), confirming that high-frequency perpetual depth operated strictly inside the subcritical stability regime ($\hat{S} < 1.0$). In an exploratory 2SLS sensitivity check instrumenting contemporaneous price impact with lagged order book imbalance (first-stage $F > 100$), estimated persistence remains subcritical ($\hat{a} = 0.9818, \hat{Q} = -0.0007, \hat{S} = 0.9811 < 1.0$); however, because depth queue skew can directly influence quote placement without transactions, we treat this IV estimate solely as a suggestive sensitivity check rather than an uncontaminated structural exclusion.
+Evaluating direct VAR estimation on the forward validation sample yields $\hat{a} = 0.9826$ and $\hat{Q} = 0.0001$, giving $\hat{S} = 0.9827 < 1.0$ ($\rho(J) = 0.9827$), confirming that high-frequency perpetual depth operated strictly inside the subcritical stability regime ($\hat{S} < 1.0$). In an exploratory 2SLS sensitivity check instrumenting contemporaneous price impact with lagged order book imbalance (first-stage $F > 100$), estimated persistence remains subcritical ($\hat{a} = 0.9818, \hat{Q} = -0.0007, \hat{S} = 0.9811 < 1.0$); however, because depth queue skew can directly influence quote placement without transactions, we treat this IV estimate solely as a suggestive sensitivity check rather than an uncontaminated structural exclusion.
 
 \section{Regulatory Policy Implications and Conclusion}
 \label{sec:policy_conclusion}
