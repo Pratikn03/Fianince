@@ -81,7 +81,7 @@ breakthrough_experiments/
 # 4. Venue-rule funding & wallet envelope verification
 /opt/anaconda3/envs/ag311/bin/python research_extension/account_calibration_20261009/verify_public_funding.py
 
-# 5. Theorem-to-code bridge (36/36 environments verified on disk)
+# 5. Theorem-to-code bridge (17/17 environments verified on disk)
 /opt/anaconda3/envs/ag311/bin/python scripts/verify_theorem_code_bridge.py
 
 # 6. Full automated test suite (including test_breakthrough_experiments.py)
