@@ -14,7 +14,8 @@ Verifies:
 from __future__ import annotations
 import numpy as np
 import pytest
-import torch
+
+torch = pytest.importorskip("torch")
 
 from research_extension.learned_agents.real_lob_replay_env import (
     RealLOBReplayEnv, STATE_DIM_REAL, ACTIONS_REAL

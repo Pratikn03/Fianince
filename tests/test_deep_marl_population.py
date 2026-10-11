@@ -9,7 +9,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import pytest
-import torch
+
+torch = pytest.importorskip("torch")
 
 from research_extension.marl.train_marl_amip_population import (
     ActorCritic,
