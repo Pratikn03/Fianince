@@ -70,57 +70,72 @@ def compute_frontier():
     for T in [3, 4, 10, 20, 100]:
         d_T = diff_100[:T]
         energy_T = float(np.sum(d_T ** 2))
-        kl_per_pulse = (V_eff ** 2 * energy_T) / (2.0 * sigma ** 2)
-        N_pulses = int(np.ceil(target_kl / kl_per_pulse))
-        actual_kl = N_pulses * kl_per_pulse
-        testing_error = float(norm.cdf(-np.sqrt(actual_kl / 2.0)))
+        Omega_T = float((4.0 * (sigma ** 2) * (z_alpha ** 2)) / energy_T)
         
-        # Benchmark simplified cost (one-leg + peak margin)
-        cost_benchmark = float(N_pulses * (0.5 * kappa * (V_eff ** 2) + c_fee * P_star * V_eff) + mu * P_star * V_eff)
+        # 1. Capacity-saturating design (V = V_eff = 6.25)
+        kl_per_pulse_cap = (V_eff ** 2 * energy_T) / (2.0 * sigma ** 2)
+        N_cap = int(np.ceil(target_kl / kl_per_pulse_cap))
+        cost_bench_cap = float(N_cap * (0.5 * kappa * (V_eff ** 2) + c_fee * P_star * V_eff) + mu * P_star * V_eff)
+        cost_exec_cap = float(N_cap * (kappa * (V_eff ** 2) + 2.0 * c_fee * P_star * V_eff) + mu * P_star * V_eff)
+        err_cap = float(norm.cdf(-np.sqrt((N_cap * kl_per_pulse_cap) / 2.0)))
         
-        # Physically executable round-trip unwind cost:
-        # Buy +V_eff, hold T steps, unwind -V_eff at market: net impact kappa*V^2 + 2*fee*P**V
-        cost_executable = float(N_pulses * (kappa * (V_eff ** 2) + 2.0 * c_fee * P_star * V_eff) + mu * P_star * V_eff)
-        tot_obs = int(N_pulses * T)
+        # 2. Exact volume-optimized design (minimal integer N such that V* <= V_eff)
+        N_opt = int(np.ceil(Omega_T / (V_eff ** 2)))
+        V_opt = float(np.sqrt(Omega_T / N_opt))
+        cost_bench_opt = float(N_opt * (0.5 * kappa * (V_opt ** 2) + c_fee * P_star * V_opt) + mu * P_star * V_opt)
+        cost_exec_opt = float(N_opt * (kappa * (V_opt ** 2) + 2.0 * c_fee * P_star * V_opt) + mu * P_star * V_opt)
+        err_opt = float(norm.cdf(-np.sqrt(target_kl / 2.0))) # strictly 0.050
         
         counterexample_table.append({
             "observations_per_reset_T": T,
-            "required_pulses_N": N_pulses,
-            "testing_error": testing_error,
-            "cost_benchmark_usdt": cost_benchmark,
-            "cost_executable_usdt": cost_executable,
-            "total_price_observations": tot_obs
+            "capacity_saturating": {
+                "required_pulses_N": N_cap,
+                "trade_volume_V": V_eff,
+                "testing_error": err_cap,
+                "cost_benchmark_usdt": cost_bench_cap,
+                "cost_executable_usdt": cost_exec_cap,
+                "total_price_observations": int(N_cap * T)
+            },
+            "volume_optimized": {
+                "required_pulses_N": N_opt,
+                "trade_volume_V": V_opt,
+                "testing_error": err_opt,
+                "cost_benchmark_usdt": cost_bench_opt,
+                "cost_executable_usdt": cost_exec_opt,
+                "total_price_observations": int(N_opt * T)
+            }
         })
         
     # -------------------------------------------------------------
     # 2. Single-Pulse Resolution Floor delta_min as a function of T
+    # Correct formula: V_req = 2 * sigma * z_alpha / ||d_T||_2 <= V_eff
     # -------------------------------------------------------------
     def get_delta_min_for_T(T_horizon):
         def obj(d):
             h0 = get_mean_impulse_response(d, T=T_horizon, kappa=kappa, q=q, a=a, eta=eta, split=False)
             h1 = get_mean_impulse_response(d, T=T_horizon, kappa=kappa, q=q, a=a, eta=eta, split=True)
             norm_diff = np.linalg.norm(h1 - h0)
-            v_req = np.sqrt(2.0) * sigma * z_alpha / norm_diff
+            v_req = 2.0 * sigma * z_alpha / norm_diff
             return v_req - V_eff
         try:
             return float(brentq(obj, 0.01, 0.35))
         except Exception:
             return 0.2028
 
-    delta_min_T3 = get_delta_min_for_T(3)   # ~0.1705 (exact) or ~0.2028 (3rd-tap approx)
-    delta_min_T4 = get_delta_min_for_T(4)   # ~0.1157
-    delta_min_T10 = get_delta_min_for_T(10) # ~0.0820
-    delta_min_T20 = get_delta_min_for_T(20) # ~0.0769
-    delta_min_T100 = get_delta_min_for_T(100) # ~0.0762
+    delta_min_T3 = get_delta_min_for_T(3)     # 0.20278
+    delta_min_T4 = get_delta_min_for_T(4)     # 0.13760
+    delta_min_T10 = get_delta_min_for_T(10)   # 0.09727
+    delta_min_T20 = get_delta_min_for_T(20)   # 0.09142
+    delta_min_T100 = get_delta_min_for_T(100) # 0.09047
     
     # 3rd-tap explicit analytic approximation:
     # diff_3rd = kappa^2 * q * delta^2
     # A_req = (2 * sigma * z_alpha) / diff_3rd <= V_eff
-    delta_min_3rd_tap_analytic = float(np.sqrt((2.0 * sigma * z_alpha) / (kappa**2 * q * V_eff))) # 0.2028
+    delta_min_3rd_tap_analytic = float(np.sqrt((2.0 * sigma * z_alpha) / (kappa**2 * q * V_eff))) # 0.20278
     
     # -------------------------------------------------------------
     # 3. Phase Diagram Mapping across Grid
-    # Compute for both T = 3 (restricted baseline) and T = 20 (optimal transient)
+    # Compute for both T = 3 (restricted baseline) and T = 20 (transient design)
     # -------------------------------------------------------------
     deltas = np.linspace(0.01, 0.25, 100)
     log_B = np.linspace(1.0, 6.0, 100)
@@ -143,7 +158,7 @@ def compute_frontier():
                 h0 = get_mean_impulse_response(delta, T=T_eval, kappa=kappa, q=q, a=a, eta=eta, split=False)
                 h1 = get_mean_impulse_response(delta, T=T_eval, kappa=kappa, q=q, a=a, eta=eta, split=True)
                 diff_norm = np.linalg.norm(h1 - h0)
-                A_req = (np.sqrt(2.0) * sigma * z_alpha) / max(1e-12, diff_norm)
+                A_req = (2.0 * sigma * z_alpha) / max(1e-12, diff_norm)
                 kl_pulse = (V_eff**2 * (diff_norm**2)) / (2.0 * sigma**2)
                 
             B_req_pulse = 0.5 * kappa * (A_req**2) + (c_fee + mu) * P_star * A_req
@@ -214,8 +229,11 @@ def compute_frontier():
     print(f"Frontier Phase Diagram successfully computed with multi-observation design.")
     print(f"Verified counterexample at delta=0.05:")
     for row in counterexample_table:
-        print(f"  T={row['observations_per_reset_T']:3d} | N={row['required_pulses_N']:3d} | Error={row['testing_error']*100:.3f}% | Benchmark Cost={row['cost_benchmark_usdt']:8.2f} USDT | Executable Cost={row['cost_executable_usdt']:8.2f} USDT | Total Obs={row['total_price_observations']}")
-    print(f"Single-pulse floors: delta_min(3) = {delta_min_3rd_tap_analytic:.4f} vs delta_min(20) = {delta_min_T20:.4f}")
+        T_val = row["observations_per_reset_T"]
+        cs = row["capacity_saturating"]
+        vo = row["volume_optimized"]
+        print(f"  T={T_val:3d} | Cap-sat: N={cs['required_pulses_N']:3d}, V={cs['trade_volume_V']:.2f}, Cost={cs['cost_benchmark_usdt']:8.2f} USDT, Err={cs['testing_error']*100:.3f}% | Vol-opt: N={vo['required_pulses_N']:3d}, V={vo['trade_volume_V']:.3f}, Cost={vo['cost_benchmark_usdt']:8.2f} USDT, Err={vo['testing_error']*100:.3f}%")
+    print(f"Single-pulse floors: delta_min(3) = {delta_min_3rd_tap_analytic:.5f}, delta_min(4) = {delta_min_T4:.5f}, delta_min(10) = {delta_min_T10:.5f}, delta_min(20) = {delta_min_T20:.5f}, delta_min(100) = {delta_min_T100:.5f}")
     return summary
 
 if __name__ == "__main__":

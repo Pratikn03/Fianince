@@ -124,7 +124,7 @@ REGISTRY = [
         "tests/test_dynamical_system_identification_bridge.py", "test_volatility_amplification_wedge"
     ),
     TheoremMapping(
-        "proposition", "Tri-Region Partition and Finite-Horizon Depth Floor",
+        "proposition", "Tri-Region Partition, Observation Design, and Finite-Horizon Depth Floor",
         r"Proposition IA.D.1",
         "CurrentProofs/SequenceMargin.lean", "robust_nonnegative_quantity_allowance_iff",
         "tests/test_breakthrough_experiments.py", "test_frontier_displacement_cap_enforced"

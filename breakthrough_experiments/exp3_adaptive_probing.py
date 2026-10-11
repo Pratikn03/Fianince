@@ -105,7 +105,7 @@ def simulate_sprt_trial(true_split, delta, V_eff=6.25, max_experiments=5000,
     stopped = False
     decision = None
     exp_count = 0
-    v_total = 0.0
+    v_pulses = []
     
     # Run independent probing cycles with quiescent resets
     while not stopped and exp_count < max_experiments:
@@ -114,7 +114,7 @@ def simulate_sprt_trial(true_split, delta, V_eff=6.25, max_experiments=5000,
         # Evidence-adapted dynamic trade size: throttle as evidence accumulates
         evidence_frac = min(1.0, abs(Lambda) / A_stop)
         v_pulse = float(max(0.5, V_eff * (1.0 - 0.40 * evidence_frac)))
-        v_total += v_pulse
+        v_pulses.append(v_pulse)
         
         # Each cycle runs for T_cycle steps starting from reset baseline
         x_true = 0.0; y_true = np.zeros(len(true_rates))
@@ -158,19 +158,25 @@ def simulate_sprt_trial(true_split, delta, V_eff=6.25, max_experiments=5000,
     if decision is None:
         decision = 1 if Lambda > 0 else 0
         
+    v_arr = np.array(v_pulses)
+    v_total = float(np.sum(v_arr))
     c_fee = 0.0004
     mu_margin = 0.005
     p0 = 100.0
     
-    # Dual Cost Models
-    cost_benchmark = float(exp_count * (0.5 * kappa * (V_eff ** 2) + c_fee * p0 * V_eff) + mu_margin * p0 * V_eff)
-    cost_executable = float(exp_count * (kappa * (V_eff ** 2) + 2.0 * c_fee * p0 * V_eff) + mu_margin * p0 * V_eff)
+    # Dual Cost Models: computed on actual dynamically executed trade sizes
+    cost_benchmark = float(np.sum(0.5 * kappa * (v_arr ** 2) + c_fee * p0 * v_arr) + mu_margin * p0 * np.max(v_arr))
+    cost_executable = float(np.sum(kappa * (v_arr ** 2) + 2.0 * c_fee * p0 * v_arr) + mu_margin * p0 * np.max(v_arr))
+    
+    # Also record capacity-saturating pricing for comparison
+    cost_benchmark_cap = float(exp_count * (0.5 * kappa * (V_eff ** 2) + c_fee * p0 * V_eff) + mu_margin * p0 * V_eff)
+    cost_executable_cap = float(exp_count * (kappa * (V_eff ** 2) + 2.0 * c_fee * p0 * V_eff) + mu_margin * p0 * V_eff)
     
     err = 1 if (decision != (1 if true_split else 0)) else 0
-    max_inventory = V_eff
-    max_single_trade = V_eff
+    max_inventory = float(np.max(v_arr))
+    max_single_trade = float(np.max(v_arr))
     
-    return err, exp_count, v_total, max_inventory, cost_benchmark, cost_executable, max_single_trade
+    return err, exp_count, v_total, max_inventory, cost_benchmark, cost_executable, max_single_trade, cost_benchmark_cap, cost_executable_cap
 
 def evaluate_probing_protocol(protocol, delta, V_target=None, T=4, sigma=0.01,
                                 kappa=0.8, q=0.2, a=0.5, eta=0.4, N_eval=1000, V_eff=6.25):
@@ -302,11 +308,13 @@ def evaluate_probing_protocol(protocol, delta, V_target=None, T=4, sigma=0.01,
         counts_h1 = []
         costs_bench = []
         costs_exec = []
+        costs_bench_cap = []
+        costs_exec_cap = []
         volumes = []
         
         for trial in range(N_eval):
             is_split = (trial % 2 == 1)
-            e, n_exp, v_tot, inv, c_b, c_e, m_tr = simulate_sprt_trial(
+            e, n_exp, v_tot, inv, c_b, c_e, m_tr, c_b_cap, c_e_cap = simulate_sprt_trial(
                 is_split, delta=delta, V_eff=V_eff, max_experiments=max(500, 3 * M_B + 20),
                 T_cycle=T, sigma=sigma, kappa=kappa, q=q, a=a, eta=eta,
                 alpha_target=0.05, beta_target=0.05
@@ -320,6 +328,8 @@ def evaluate_probing_protocol(protocol, delta, V_target=None, T=4, sigma=0.01,
             volumes.append(v_tot)
             costs_bench.append(c_b)
             costs_exec.append(c_e)
+            costs_bench_cap.append(c_b_cap)
+            costs_exec_cap.append(c_e_cap)
             
         type1_err = float(np.mean(errs_h0))
         type2_err = float(np.mean(errs_h1))
@@ -328,6 +338,8 @@ def evaluate_probing_protocol(protocol, delta, V_target=None, T=4, sigma=0.01,
         mean_v = float(np.mean(volumes))
         mean_c_bench = float(np.mean(costs_bench))
         mean_c_exec = float(np.mean(costs_exec))
+        mean_c_bench_cap = float(np.mean(costs_bench_cap))
+        mean_c_exec_cap = float(np.mean(costs_exec_cap))
         
         return {
             "protocol": protocol,
@@ -339,6 +351,8 @@ def evaluate_probing_protocol(protocol, delta, V_target=None, T=4, sigma=0.01,
             "per_trade_bounded": True,
             "is_unconstrained_benchmark": False,
             "seq_pulses_if_clamped": int(round(mean_n)),
+            "mean_reset_experiments": float(mean_n),
+            "full_pulse_equivalent_count": float(mean_v / V_eff),
             "d_prime": float(2.0 * norm.ppf(1.0 - emp_err)) if 0.0 < emp_err < 0.5 else 4.0,
             "theoretical_error": 0.05,
             "empirical_error": emp_err,
@@ -348,7 +362,9 @@ def evaluate_probing_protocol(protocol, delta, V_target=None, T=4, sigma=0.01,
             "mean_executed_quantity": mean_v,
             "mean_max_inventory": float(V_eff),
             "mean_capital_cost": mean_c_bench,
+            "mean_capital_cost_cap_charge": mean_c_bench_cap,
             "executable_capital_cost": mean_c_exec,
+            "executable_capital_cost_cap_charge": mean_c_exec_cap,
             "mean_stopping_time": mean_n
         }
         

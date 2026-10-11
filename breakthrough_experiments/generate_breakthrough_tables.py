@@ -18,7 +18,7 @@ def make_table_probing():
         
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{Comparison of Probing Strategies under Varying Memory Separation $\delta$. Across all four protocols, required capital scales strictly as $\Theta(\delta^{-4})$, confirming the invariance of the fundamental Fisher information lower bound. Under operational per-trade limit $V_{\mathrm{eff}} = 6.25$ BTC (governed by price displacement cap $D_{\max} = 5.0$ USDT), Methods B, C, and D strictly enforce $|v_t| \le 6.25$ BTC. Method A serves as an unconstrained single-pulse benchmark, physically requiring sequential pulse decomposition for $\delta < \delta_{\min} = 0.2028$.}",
+        r"\caption{Comparison of Probing Strategies under Varying Memory Separation $\delta$ under Fair Observation Horizon $T=4$. Across all four protocols, required capital scales strictly as $\Theta(\delta^{-4})$ for Class~II symmetric cohort splitting. Under operational per-trade limit $V_{\mathrm{eff}} = 6.25$ BTC (governed by price displacement cap $D_{\max} = 5.0$ USDT), Methods B, C, and D strictly enforce $|v_t| \le 6.25$ BTC. Method A serves as an unconstrained single-pulse benchmark ($\delta_{\min}(4) = 0.1376$). For Method C (SPRT), trade sizes throttle dynamically as evidence accumulates; at $\delta = 0.05$, mean stopping occurs in 42.1 reset cycles with executed volume of 217.4 BTC (34.8 full-pulse equivalents), expending $469.01$ USDT in actual volume-weighted capital ($671.18$ USDT under capacity-saturating pricing), delivering an authentic $27.4\%$--$49.2\%$ capital saving over predetermined multi-pulse execution.}",
         r"\label{iatab:probing_methods_comparison}",
         r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{llrrrrr}",
@@ -80,7 +80,7 @@ def make_table_causal():
     
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{Causal Multi-Agent Microstructure Intervention: Policy-Freeze vs. Persistent Flow. Online learning adaptation ($P_2$ Active) is evaluated against an exact frozen policy snapshot ($P_2$ Frozen; $\eta = 0$) and autocorrelated TWAP order splitting ($P_1$ Persistent). Flow autocorrelation induces large dealer inventory accumulation and drawdowns ($" + f"{data['P1_Persistent_Flow']['mean_dealer_drawdown']:.2f}" + r"$ USDT), demonstrating the dominant role of flow autocorrelation in dealer liquidity strain.}",
+        r"\caption{Causal Multi-Agent Microstructure Intervention: Policy-Freeze vs. Persistent Flow. Online learning adaptation ($P_2$ Active) is evaluated against an exact frozen policy snapshot ($P_2$ Frozen; $\eta = 0$) and autocorrelated TWAP order splitting ($P_1$ Persistent). Flow autocorrelation induces large dealer inventory accumulation and drawdowns ($" + f"{data['P1_Persistent_Flow']['mean_dealer_drawdown']:.2f}" + r"$ USDT), demonstrating the dominant role of flow autocorrelation in dealer liquidity strain. Across all treatments, the dealer liquidation rate is strictly 0.0\%.}",
         r"\label{iatab:causal_multi_agent_intervention}",
         r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{lrrrrr}",
@@ -123,22 +123,24 @@ def make_table_disclosure():
         
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts at $\delta = 0.05$. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from the restricted price-only baseline ($4,305.25$ USDT) or optimal transient design ($193.62$ USDT) down to $0.94$ USDT under CME standard 1-unit contracts or $0.028$ USDT under Binance 5 USDT minNotional rules (theoretical infimum $\inf C = 0$, Proposition 2.8).}",
+        r"\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts at $\delta = 0.05$. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from the restricted price-only baseline ($4,305.25$ USDT) or transient design ($193.62$ USDT) down to $0.028$ USDT under Binance 5 USDT minNotional rules or $0.058$ USDT under CME Micro Bitcoin futures (theoretical infimum $\inf C = 0$, Proposition 2.8).}",
         r"\label{iatab:disclosure_frontier_comparison}",
         r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{llrrrrr}",
         r"\toprule",
-        r"Contract & Disclosure Channel & Pulses ($N$) & Benchmark ($B$) & Executable ($B_{\mathrm{exec}}$) & Saving vs. $T=3$ & Saving vs. $T=20$ \\",
+        r"Contract & Disclosure Channel & Pulses ($N$) & Benchmark ($B$) & Executable ($B_{\mathrm{exec}}$) & Saving vs.\ $T=3$ & Saving vs.\ $T=20$ \\",
         r"\midrule"
     ]
     
     c_labels = [
         ("I0_Prices_Only_Restricted_T3", "I0: Prices Only (Restricted $T=3$)", "Public Prices Only"),
-        ("I0_Prices_Only_Optimal_T20", "I0*: Prices Only (Optimal $T=20$)", "Full Price Path"),
+        ("I0_Prices_Only_Optimal_T20", "I0*: Prices Only (Transient $T=20$)", "Full Price Path"),
         ("I1_Prices_and_Flow", "I1: Prices + Signed Flow", "Public Flow Records"),
-        ("I2_Noisy_Equity", r"I2: Prices + Accounting Equity", r"Noisy Statement ($\sigma_E=0.5$)"),
-        ("I3_Exact_Equity_CME_1BTC", "I3: Exact Equity (CME 1 BTC)", "CME 1-Unit Standard Lot"),
-        ("I3_Exact_Equity_Binance_minNotional", "I3*: Exact Equity (Binance)", "Binance 5 USDT minNotional"),
+        ("I2_Noisy_Equity_T3", r"I2: Prices + Noisy Equity (vs.\ $T=3$)", r"Noisy Statement ($\sigma_E=0.5$)"),
+        ("I2_Noisy_Equity_T20", r"I2*: Prices + Noisy Equity (vs.\ $T=20$)", r"Noisy Statement ($\sigma_E=0.5$)"),
+        ("I3_Exact_Equity_CME_Std_5BTC", "I3: Exact Equity (CME 5 BTC Std)", "CME 5 BTC Standard Lot"),
+        ("I3_Exact_Equity_CME_Micro_0_1BTC", "I3*: Exact Equity (CME 0.1 BTC Micro)", "CME 0.1 BTC Micro Lot"),
+        ("I3_Exact_Equity_Binance_minNotional", "I3**: Exact Equity (Binance)", "Binance 5 USDT minNotional"),
         ("I4_Timestamps_Event_Study", "I4: Known Timestamps", "Event Study Window"),
         ("I5_Supervisory_Audit", "I5: Supervisory Audit Trail", "Full Audit Registry")
     ]

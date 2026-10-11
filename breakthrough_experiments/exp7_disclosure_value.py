@@ -94,30 +94,46 @@ def solve_contract_requirements(delta, alpha=0.05):
     # Marked equity signal: Delta E = kappa^2 * q * delta^2 * V^2
     # Combined with price information per pulse
     # ---------------------------------------------------------
-    def get_req_V_I2():
+    # (A) Under Restricted T=3 Baseline:
+    def get_req_V_I2_T3():
         for n_try in range(1, 500):
-            # Price KL from n_try pulses of V_eff
-            kl_p = n_try * kl_pulse_I0_T20
-            # Cumulative marked equity signal
+            kl_p = n_try * kl_pulse_I0_T3
             delta_E = kappa**2 * q * (delta**2) * (n_try * V_eff**2)
             kl_E = (delta_E**2) / (2.0 * sigma_E_noisy**2)
             if kl_p + kl_E >= target_kl:
                 return n_try
         return 1
-    N_I2 = get_req_V_I2()
-    B_I2 = float(N_I2 * (0.5 * kappa * (V_eff**2) + c_fee * P_star * V_eff) + mu * P_star * V_eff)
-    V_I2 = float(N_I2 * V_eff)
+    N_I2_T3 = get_req_V_I2_T3() # 132 pulses
+    B_I2_T3 = float(N_I2_T3 * (0.5 * kappa * (V_eff**2) + c_fee * P_star * V_eff) + mu * P_star * V_eff) # 2098.62 USDT
+    V_I2_T3 = float(N_I2_T3 * V_eff)
+
+    # (B) Under Optimal T=20 Transient Design:
+    def get_req_V_I2_T20():
+        for n_try in range(1, 500):
+            kl_p = n_try * kl_pulse_I0_T20
+            delta_E = kappa**2 * q * (delta**2) * (n_try * V_eff**2)
+            kl_E = (delta_E**2) / (2.0 * sigma_E_noisy**2)
+            if kl_p + kl_E >= target_kl:
+                return n_try
+        return 1
+    N_I2_T20 = get_req_V_I2_T20() # 12 pulses
+    B_I2_T20 = float(N_I2_T20 * (0.5 * kappa * (V_eff**2) + c_fee * P_star * V_eff) + mu * P_star * V_eff) # 193.62 USDT
+    V_I2_T20 = float(N_I2_T20 * V_eff)
     
     # ---------------------------------------------------------
     # Contract I3: Exact Account Equity Disclosure (Proposition 2.8)
     # Theoretical infimum is inf C = 0 (as V -> 0).
     # Discrete exchange lot sizes:
     # ---------------------------------------------------------
-    # Specification A: CME / Institutional 1.0 BTC standard contract unit
-    V_I3_CME = 1.0
-    B_I3_CME = float(0.5 * kappa * (V_I3_CME**2) + (c_fee + mu) * P_star * V_I3_CME) # 0.94 USDT
+    # Specification A: CME Standard Bitcoin Futures (5.0 BTC contract size)
+    V_I3_CME_Std = 5.0
+    B_I3_CME_Std = float(0.5 * kappa * (V_I3_CME_Std**2) + (c_fee + mu) * P_star * V_I3_CME_Std) # 12.70 USDT
     
-    # Specification B: Binance USD(S)-M linear minNotional (5.0 USDT threshold -> 0.05 BTC at P*=100)
+    # Specification B: CME Micro Bitcoin Futures (0.1 BTC contract size)
+    V_I3_CME_Micro = 0.1
+    B_I3_CME_Micro = float(0.5 * kappa * (V_I3_CME_Micro**2) + (c_fee + mu) * P_star * V_I3_CME_Micro) # 0.058 USDT
+    
+    # Specification C: Binance USD(S)-M linear minNotional (5.0 USDT threshold -> 0.05 BTC at P*=100)
     V_I3_Binance = 0.05
     B_I3_Binance = float(0.5 * kappa * (V_I3_Binance**2) + (c_fee + mu) * P_star * V_I3_Binance) # 0.028 USDT
     
@@ -161,17 +177,29 @@ def solve_contract_requirements(delta, alpha=0.05):
             "sequential_n_pulses": N_I1,
             "disclosure_type": "Public Flow Records"
         },
-        "I2_Noisy_Equity": {
-            "required_volume_V": V_I2,
-            "required_capital_B": B_I2,
-            "sequential_n_pulses": N_I2,
-            "disclosure_type": "Periodic Accounting Statements"
+        "I2_Noisy_Equity_T3": {
+            "required_volume_V": V_I2_T3,
+            "required_capital_B": B_I2_T3,
+            "sequential_n_pulses": N_I2_T3,
+            "disclosure_type": "Periodic Statements (vs. T=3 Single-Tap, 51.3% saving)"
         },
-        "I3_Exact_Equity_CME_1BTC": {
-            "required_volume_V": V_I3_CME,
-            "required_capital_B": B_I3_CME,
+        "I2_Noisy_Equity_T20": {
+            "required_volume_V": V_I2_T20,
+            "required_capital_B": B_I2_T20,
+            "sequential_n_pulses": N_I2_T20,
+            "disclosure_type": "Periodic Statements (vs. T=20 Transient, 0.0% incremental)"
+        },
+        "I3_Exact_Equity_CME_Std_5BTC": {
+            "required_volume_V": V_I3_CME_Std,
+            "required_capital_B": B_I3_CME_Std,
             "sequential_n_pulses": 1,
-            "disclosure_type": "Exact Account Reporting (CME 1-Unit Standard Lot)"
+            "disclosure_type": "Exact Account Reporting (CME 5 BTC Standard Lot)"
+        },
+        "I3_Exact_Equity_CME_Micro_0_1BTC": {
+            "required_volume_V": V_I3_CME_Micro,
+            "required_capital_B": B_I3_CME_Micro,
+            "sequential_n_pulses": 1,
+            "disclosure_type": "Exact Account Reporting (CME 0.1 BTC Micro Lot)"
         },
         "I3_Exact_Equity_Binance_minNotional": {
             "required_volume_V": V_I3_Binance,
@@ -211,8 +239,10 @@ def run_experiment():
     print(f"I0 (Prices Only, T=3 baseline):   Capital = {d05['I0_Prices_Only_Restricted_T3']['required_capital_B']:8.2f} USDT (N={d05['I0_Prices_Only_Restricted_T3']['sequential_n_pulses']})")
     print(f"I0 (Prices Only, T=20 optimal):   Capital = {d05['I0_Prices_Only_Optimal_T20']['required_capital_B']:8.2f} USDT (N={d05['I0_Prices_Only_Optimal_T20']['sequential_n_pulses']})")
     print(f"I1 (Prices + Order Flow):         Capital = {d05['I1_Prices_and_Flow']['required_capital_B']:8.2f} USDT (N={d05['I1_Prices_and_Flow']['sequential_n_pulses']})")
-    print(f"I2 (Periodic Accounting Equity):  Capital = {d05['I2_Noisy_Equity']['required_capital_B']:8.2f} USDT (N={d05['I2_Noisy_Equity']['sequential_n_pulses']})")
-    print(f"I3 (Exact Equity, CME 1 BTC):     Capital = {d05['I3_Exact_Equity_CME_1BTC']['required_capital_B']:8.2f} USDT")
+    print(f"I2 (Noisy Equity vs T=3 baseline):Capital = {d05['I2_Noisy_Equity_T3']['required_capital_B']:8.2f} USDT (N={d05['I2_Noisy_Equity_T3']['sequential_n_pulses']})")
+    print(f"I2 (Noisy Equity vs T=20 baseline):Capital = {d05['I2_Noisy_Equity_T20']['required_capital_B']:8.2f} USDT (N={d05['I2_Noisy_Equity_T20']['sequential_n_pulses']})")
+    print(f"I3 (Exact Equity, CME 5 BTC Std): Capital = {d05['I3_Exact_Equity_CME_Std_5BTC']['required_capital_B']:8.2f} USDT")
+    print(f"I3 (Exact Equity, CME 0.1 BTC Mic):Capital = {d05['I3_Exact_Equity_CME_Micro_0_1BTC']['required_capital_B']:8.4f} USDT")
     print(f"I3 (Exact Equity, Binance 5USDT): Capital = {d05['I3_Exact_Equity_Binance_minNotional']['required_capital_B']:8.4f} USDT")
     print(f"I4 (Known Timestamps Event Study):Capital = {d05['I4_Timestamps_Event_Study']['required_capital_B']:8.2f} USDT (N={d05['I4_Timestamps_Event_Study']['sequential_n_pulses']})")
     print(f"I5 (Supervisory Audit Trail):     Capital = {d05['I5_Supervisory_Audit']['required_capital_B']:8.2f} USDT (N=0)")

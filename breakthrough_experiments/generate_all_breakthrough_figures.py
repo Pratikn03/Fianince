@@ -180,14 +180,14 @@ def plot_fig4():
         data = json.load(f)
         
     d5 = data["delta_0.05"]
-    c_names = ["I0 (T=3)", "I0* (T=20)", "I1 Flow", "I2 Balance", "I3 CME", "I3* Binance", "I4 Event", "I5 Audit"]
-    keys = ["I0_Prices_Only_Restricted_T3", "I0_Prices_Only_Optimal_T20", "I1_Prices_and_Flow", "I2_Noisy_Equity", 
-            "I3_Exact_Equity_CME_1BTC", "I3_Exact_Equity_Binance_minNotional", "I4_Timestamps_Event_Study", "I5_Supervisory_Audit"]
+    c_names = ["I0 (T=3)", "I0* (T=20)", "I1 Flow", "I2 (vs T=3)", "I2* (vs T=20)", "I3 CME Std", "I3 Micro", "I3* Binance", "I4 Event", "I5 Audit"]
+    keys = ["I0_Prices_Only_Restricted_T3", "I0_Prices_Only_Optimal_T20", "I1_Prices_and_Flow", "I2_Noisy_Equity_T3", "I2_Noisy_Equity_T20", 
+            "I3_Exact_Equity_CME_Std_5BTC", "I3_Exact_Equity_CME_Micro_0_1BTC", "I3_Exact_Equity_Binance_minNotional", "I4_Timestamps_Event_Study", "I5_Supervisory_Audit"]
     
     caps = [max(0.01, d5[k]["required_capital_B"]) for k in keys]
     vols = [d5[k]["required_volume_V"] for k in keys]
     
-    fig, ax1 = plt.subplots(figsize=(9, 5))
+    fig, ax1 = plt.subplots(figsize=(10, 5))
     
     x = np.arange(len(c_names))
     width = 0.38

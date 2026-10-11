@@ -336,10 +336,14 @@ def test_sequential_disclosure_schedules_under_veff():
         assert d05["I0_Prices_Only_Optimal_T20"]["sequential_n_pulses"] == 12
         assert np.isclose(d05["I0_Prices_Only_Optimal_T20"]["required_capital_B"], 193.62, atol=1.0)
     
-    # Contract I3 Exact equity marks: CME 1 BTC lot costs 0.94 USDT, Binance 5 USDT minNotional costs 0.028 USDT
-    cme_key = "I3_Exact_Equity_CME_1BTC" if "I3_Exact_Equity_CME_1BTC" in d05 else "I3_Exact_Equity"
-    assert d05[cme_key]["sequential_n_pulses"] == 1
-    assert np.isclose(d05[cme_key]["required_capital_B"], 0.94, atol=0.01)
+    # Contract I3 Exact equity marks: CME 5 BTC standard lot costs 12.70 USDT, CME 0.1 BTC micro lot costs 0.058 USDT, Binance 5 USDT minNotional costs 0.028 USDT
+    cme_std_key = "I3_Exact_Equity_CME_Std_5BTC"
+    assert d05[cme_std_key]["sequential_n_pulses"] == 1
+    assert np.isclose(d05[cme_std_key]["required_capital_B"], 12.70, atol=0.01)
+
+    cme_micro_key = "I3_Exact_Equity_CME_Micro_0_1BTC"
+    assert d05[cme_micro_key]["sequential_n_pulses"] == 1
+    assert np.isclose(d05[cme_micro_key]["required_capital_B"], 0.0580, atol=0.005)
     
     if "I3_Exact_Equity_Binance_minNotional" in d05:
         assert np.isclose(d05["I3_Exact_Equity_Binance_minNotional"]["required_capital_B"], 0.0280, atol=0.005)
@@ -574,12 +578,31 @@ def test_finite_horizon_counterexample_multi_observation():
     assert N10 * 10 == 150, "T=10 total observations must be 150"
     assert N10 * 10 < N3 * 3, "T=10 design must require fewer total price observations than T=3 design (150 < 813)"
     
-    # T=20
+    # T=20 capacity-saturating design (V = V_eff = 6.25 BTC)
     d20 = diff[:20]; kl_20 = (V_eff**2 * np.sum(d20**2)) / (2.0 * sigma**2)
     N20 = int(np.ceil(target_kl / kl_20))
     cost_20 = N20 * (0.5 * kappa * V_eff**2 + c_fee * P_star * V_eff) + mu * P_star * V_eff
     assert N20 == 12, f"T=20 must require exactly 12 pulses, got {N20}"
     assert np.isclose(cost_20, 193.63, atol=0.5), f"T=20 cost must be 193.63 USDT, got {cost_20}"
+    
+    # Volume-optimized design: N=12, V* = sqrt(Omega_20 / 12) = 6.057 BTC
+    omega_20 = 4.0 * (sigma ** 2) * (z_alpha ** 2) / np.sum(d20 ** 2)
+    v_opt_12 = np.sqrt(omega_20 / 12.0)
+    cost_opt_12 = 12.0 * (0.5 * kappa * (v_opt_12 ** 2) + c_fee * P_star * v_opt_12) + mu * P_star * v_opt_12
+    assert np.isclose(v_opt_12, 6.057, atol=0.01), f"Expected 6.057 BTC, got {v_opt_12}"
+    assert np.isclose(cost_opt_12, 182.02, atol=0.1), f"Expected 182.02 USDT, got {cost_opt_12}"
+    
+    # Verify exact single-pulse resolution floors delta_min(T) where V_req(delta) == V_eff
+    from scipy.optimize import brentq
+    for t_step, expected_floor in [(3, 0.20278), (4, 0.13760), (10, 0.09727), (20, 0.09142), (100, 0.09047)]:
+        def obj(d, t=t_step):
+            h0_d = get_mean_impulse_response(d, T=t, kappa=kappa, q=q, a=a, eta=eta, split=False)
+            h1_d = get_mean_impulse_response(d, T=t, kappa=kappa, q=q, a=a, eta=eta, split=True)
+            norm_dt = np.sqrt(np.sum((h1_d - h0_d) ** 2))
+            v_req = (2.0 * sigma * z_alpha) / norm_dt
+            return v_req - V_eff
+        floor_t = float(brentq(obj, 0.01, 0.35))
+        assert np.isclose(floor_t, expected_floor, atol=1e-4), f"Floor at T={t_step}: expected {expected_floor}, got {floor_t}"
     
     # Assert capital reduction exceeds 95%
     capital_saving = 1.0 - (cost_20 / cost_3)
@@ -657,14 +680,17 @@ def test_physically_executable_round_trip_unwind_accounting():
 # 24. Test Exchange Venue Filters: CME vs Binance Contract Rules (F9)
 # ----------------------------------------------------------------------
 def test_exchange_venue_filters_cme_vs_binance():
-    """Verify discrete exchange contract lot sizes: CME 1-unit lot vs Binance 5 USDT minNotional."""
+    """Verify discrete exchange contract lot sizes: CME standard 5 BTC lot ($12.70), CME micro 0.1 BTC lot ($0.058), vs Binance 5 USDT minNotional ($0.028)."""
     from breakthrough_experiments.exp7_disclosure_value import solve_contract_requirements
     
     res = solve_contract_requirements(delta=0.05)
     
-    # CME Specification (1.0 BTC standard contract unit)
-    b_cme = res["I3_Exact_Equity_CME_1BTC"]["required_capital_B"]
-    assert np.isclose(b_cme, 0.94, atol=0.01)
+    # CME Specifications
+    b_cme_std = res["I3_Exact_Equity_CME_Std_5BTC"]["required_capital_B"]
+    assert np.isclose(b_cme_std, 12.70, atol=0.01)
+    
+    b_cme_micro = res["I3_Exact_Equity_CME_Micro_0_1BTC"]["required_capital_B"]
+    assert np.isclose(b_cme_micro, 0.0580, atol=0.005)
     
     # Binance USD(S)-M Specification (minNotional = 5.0 USDT -> 0.05 BTC at P*=100)
     b_binance = res["I3_Exact_Equity_Binance_minNotional"]["required_capital_B"]
