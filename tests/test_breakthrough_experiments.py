@@ -702,5 +702,69 @@ def test_exchange_venue_filters_cme_vs_binance():
     assert res["I3_Exact_Equity_Binance_minNotional"]["theoretical_infimum_capital"] == 0.0
 
 
+# ----------------------------------------------------------------------
+# 25. Test Exact Capital Frontier & Adaptive Probing Bound (exp14)
+# ----------------------------------------------------------------------
+def test_exact_capital_frontier_spectral_bound():
+    """Verify exact spectral quadratic capital lower bound, finite-horizon executable probe gap <= 6%, and sequential SPRT performance."""
+    results_path = Path("breakthrough_experiments/results_exp14_capital_frontier_exact.json")
+    assert results_path.exists(), "exp14 results JSON must exist"
+    data = json.loads(results_path.read_text())
+    
+    # Check delta = 0.05 row
+    r005 = next(s for s in data["sweep"] if abs(s["delta"] - 0.05) < 1e-4)
+    
+    # 1. Minimizing frequency matches analytical prediction (~0.2526 rad)
+    assert np.isclose(r005["spectral"]["omega_star_0"], 0.2526, atol=0.005)
+    
+    # 2. Deterministic quadratic lower bound at delta = 0.05 is 61.44 USDT
+    assert np.isclose(r005["capital_lower_bound_deterministic"], 61.44, atol=0.10)
+    
+    # 3. Finite-horizon executable probe achieves bound within 6% (gap ratio = 1.051)
+    assert r005["upper_bound_capital"] is not None
+    assert np.isclose(r005["upper_bound_capital"], 64.59, atol=0.50)
+    assert r005["gap_ratio_upper_over_lower"] <= 1.06
+    
+    # 4. Strict delta^-4 scaling: delta^4 * LB_quad is strictly constant
+    for s in data["sweep"]:
+        assert np.isclose(s["delta4_times_quad_bound"], 3.8e-4, rtol=0.05), f"delta^4 * LB_quad must be constant, got {s['delta4_times_quad_bound']}"
+        
+    # 5. Adaptive lower bound is ~30.09 USDT (51.0% maximum theoretical dynamic saving)
+    assert np.isclose(r005["capital_lower_bound_adaptive_expected"], 30.09, atol=0.10)
+    
+    # 6. Sequential SPRT Monte Carlo strictly obeys 30.09 <= 45.96 <= 61.44
+    sprt = data["sequential_mc_delta_0_05"]
+    assert sprt["H0"]["mean_loss"] >= r005["capital_lower_bound_adaptive_expected"]
+    assert sprt["H0"]["mean_loss"] <= r005["capital_lower_bound_deterministic"]
+    assert sprt["H0"]["error"] <= 0.05
+    assert sprt["H1"]["error"] <= 0.05
+    assert sprt["chain_rule_check"]["holds"] is True
 
 
+# ----------------------------------------------------------------------
+# 26. Test Multi-Cohort Cramér-Rao Information Limits (exp15)
+# ----------------------------------------------------------------------
+def test_cohort_cramer_rao_information_bound():
+    """Verify that multi-cohort weight recovery failure is a Cramér-Rao information-theoretic limit with Theta((Delta eta)^-4) scaling."""
+    results_path = Path("breakthrough_experiments/results_exp15_cohort_information.json")
+    if not results_path.exists():
+        pytest.skip("exp15 results JSON not generated yet")
+    data = json.loads(results_path.read_text())
+    
+    # 1. Probes needed scaling slope is approximately -6 (joint rate-weight CRB inversion)
+    slope = data["separation_scaling"]["loglog_slope"]
+    assert -6.5 <= slope <= -5.5, f"Information scaling slope must be approximately -6, got {slope}"
+    
+    # 2. For delta=0.05 pair (Delta eta = 0.10), N* requires > 30,000 probes
+    r_pair = next(s for s in data["scenarios"] if "delta=0.05 pair" in s["scenario"])
+    assert r_pair["probes_needed_N_star"] > 30000.0
+    # Single-probe noise is > 100x above critical threshold
+    assert r_pair["single_probe_sigma_h"] / r_pair["sigma_h_critical"] > 100.0
+    
+    # 3. Maximum likelihood resolves noiseless weights with error < 5e-3 even when ERA fails
+    assert r_pair["ml_noiseless_max_weight_error"] < 5e-3
+    
+    # 4. At critical noise f=1.0, ML achieves CRB efficiency
+    mc1 = next(m for m in r_pair["monte_carlo"] if abs(m["noise_over_critical"] - 1.0) < 1e-4)
+    assert mc1["ml_rmse_weight"] / mc1["crb_sd_weight"] <= 1.5
+    assert mc1["ml_success_known_K"] >= 0.85

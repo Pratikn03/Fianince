@@ -27,3 +27,5 @@ import CurrentProofs.KreissRadius
 import CurrentProofs.KreissDefective
 import CurrentProofs.KreissResolvent
 import CurrentProofs.NetworkMonotone
+
+import CurrentProofs.SpectralCapital
