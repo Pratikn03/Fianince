@@ -18,10 +18,10 @@ This dossier provides complete independent reproducibility receipts, source code
      $$\delta_{\min}^{\mathrm{depth}}(T_{\text{session}}, V_{\max}) = \sqrt{\frac{2(z_\alpha + z_\beta)\sigma}{\kappa^2 q V_{\max}\sqrt{T_{\text{session}}}}} = 0.0717$$
    - Under an active market price-displacement cap $D_{\max} = 5.0$ ($\kappa = 0.8$), the effective per-fill quantity limit is $V_{\mathrm{eff}} = \min(V_{\max}, D_{\max}/\kappa) = \min(50, 6.25) = 6.25$, defining an operational single-pulse resolution floor:
      $$\delta_{\min} = \sqrt{\frac{2 z_\alpha \sigma}{\kappa^2 q V_{\mathrm{eff}}}} \approx 0.2028$$
-   - Established the tri-region phase diagram (1,949 Feasible, 6,536 Costly Sequential, 1,515 Infeasible):
+   - Established the tri-region phase diagram (1,949 Feasible, 5,151 Costly Sequential, 2,900 Infeasible):
      - **Regime 1 ($\delta \ge \delta_{\min}$):** Single-pulse probing achieves identification within horizon $N = \Theta(1)$ and capital $C = \Theta(\delta^{-4})$.
-     - **Regime 2 ($\delta < \delta_{\min}$):** Single pulse is insufficient because probe size is clipped at $V_{\mathrm{eff}}$. Identification requires sequential multi-pulse probing, expanding the required observation horizon to $N = \Theta(\delta^{-2})$ and incurring cumulative transaction fees $C = \Theta(\delta^{-2})$.
-     - Bounded depth does *not* create an infinite-horizon impossibility floor, but rather forces a structural regime transition from instantaneous single-pulse identification to extended sequential sampling.
+     - **Regime 2 ($\delta < \delta_{\min}$):** Single pulse is insufficient because probe size is clipped at $V_{\mathrm{eff}}$. Each bounded pulse supplies Fisher information $\mathcal{I} = \Theta(V_{\mathrm{eff}}^2 \delta^4 / \sigma^2)$. Therefore, accumulating fixed Fisher information requires $N_{\mathrm{pulses}} = \Theta(\delta^{-4})$ pulses and cumulative transaction capital $C_{\mathrm{seq}} = \Theta(\delta^{-4})$.
+     - Bounded depth does *not* create an infinite-horizon impossibility floor, but imposes a steep $\Theta(\delta^{-4})$ sequential capital barrier.
 
 2. **Resolution of Problem B (Kreiss Matrix Decoupling Lower Bound):**
    - Corrected the numerical Kreiss constant optimization algorithm (`breakthrough_experiments/exp12_nonnormal_balance_sheet.py`).

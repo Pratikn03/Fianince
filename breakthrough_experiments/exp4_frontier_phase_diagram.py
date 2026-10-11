@@ -47,34 +47,48 @@ def compute_frontier():
     phase_matrix = np.zeros((len(log_B), len(deltas)), dtype=int)
     delta_results = []
     
+    # Session limit on number of pulses (e.g. max 5,000 execution cycles in a surveillance window)
+    N_max_session = 5000
+    
     for j, delta in enumerate(deltas):
-        # Required single-pulse volume to achieve alpha under H0 vs H1
-        A_req = (2.0 * sigma * z_alpha) / (kappa**2 * q * (delta**2))
+        # 1. Single-pulse required volume (based on 3rd observation mean difference kappa^2 * q * delta^2):
+        # Under H0 vs H1, d_2 = -kappa^2 * q * delta^2.
+        # Single-pulse KL = A^2 * d_2^2 / (2 * sigma^2) >= 2 * z_alpha^2
+        diff_obs3 = kappa**2 * q * (delta**2)
+        A_req = (2.0 * sigma * z_alpha) / diff_obs3
         
-        # Required capital for single pulse (if feasible)
+        # Single-pulse capital (if feasible within effective depth V_eff):
         B_req_pulse = 0.5 * kappa * (A_req**2) + (c_fee + mu) * P_star * A_req
         
-        # Sequential multi-step probing requirement if A_req > V_eff:
-        # Probe is partitioned into N_pulses of size at most V_eff
-        N_pulses = max(1.0, np.ceil(A_req / V_eff))
-        v_sub = A_req / N_pulses # size per pulse <= V_eff
+        # 2. Sequential bounded probing (if A_req > V_eff):
+        # When each pulse is bounded by |v_t| <= V_eff = min(V_max, D_max / kappa) = 6.25,
+        # each independent pulse cycle provides Fisher information / KL divergence:
+        # KL_pulse = (V_eff^2 * d_2^2) / (2 * sigma^2).
+        # To accumulate target KL >= 2 * z_alpha^2, the required number of pulses is:
+        # N_pulses = ceil( (2 * z_alpha^2) / KL_pulse ) = ceil( (A_req / V_eff)^2 ) ~ Theta(delta^-4).
+        kl_per_pulse = (V_eff**2 * (diff_obs3**2)) / (2.0 * sigma**2)
+        target_kl = 2.0 * (z_alpha**2)
+        N_pulses = int(max(1, np.ceil(target_kl / kl_per_pulse)))
+        v_sub = V_eff if N_pulses > 1 else min(A_req, V_eff)
         
-        # Round-trip probing ensures inventory returns to zero between pulses:
-        # Peak inventory on each pulse is v_sub <= V_eff <= I_max
+        # Peak inventory on each pulse cycle is v_sub <= V_eff <= I_max
         inv_peak = v_sub
         
-        # Capital cost of sequential probing: cumulative impact + transaction fees + margin lockup
-        B_req_seq = N_pulses * (0.5 * kappa * (v_sub**2) + c_fee * P_star * v_sub) + mu * P_star * inv_peak
+        # Cumulative capital cost of sequential probing:
+        # Each pulse pays impact (0.5 * kappa * v_sub^2) + taker fees (c_fee * P_star * v_sub).
+        # Total capital scales strictly as Theta(delta^-4):
+        cost_per_pulse = 0.5 * kappa * (v_sub**2) + c_fee * P_star * v_sub
+        B_req_seq = float(N_pulses * cost_per_pulse + mu * P_star * inv_peak)
         
         for i, B in enumerate(B_grid):
             if delta >= delta_min and B >= B_req_pulse and A_req <= V_eff:
-                # Regime 1: Feasible Single-Pulse Probing
+                # Regime 1: Feasible Single-Pulse Probing (Theta(1) horizon, Theta(delta^-4) capital)
                 regime = 1
-            elif B >= B_req_seq and inv_peak <= I_max and v_sub <= V_eff:
-                # Regime 2: Feasible Sequential / Multi-Pulse Probing
+            elif B >= B_req_seq and N_pulses <= N_max_session and inv_peak <= I_max:
+                # Regime 2: Sequential Multi-Pulse Probing (Theta(delta^-4) horizon, Theta(delta^-4) capital)
                 regime = 2
             else:
-                # Regime 3: Infeasible (insufficient capital B < B_req_seq or exceeds limits)
+                # Regime 3: Infeasible (B < B_req_seq or session horizon N_pulses > N_max_session)
                 regime = 3
                 
             phase_matrix[i, j] = regime

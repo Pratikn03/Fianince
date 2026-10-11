@@ -1267,17 +1267,17 @@ Here, $z_p = \Phi^{-1}(1 - p)$ is the standard Gaussian critical value ensuring 
 \label{prop:tri_region_partition}
 The parameter space $(\delta, B) \in (0, 1) \times \R_+$ partitions into three operational regimes:
 \begin{enumerate}[label=(\roman*)]
-\item \textbf{Feasible Single-Pulse Region $\mathcal{R}_{\mathrm{feas}}$:} For any separation $\delta \ge \delta_{\min}$ and capital buffer $B \ge C^*(\delta)$, the single-pulse probing program ($N=1$) satisfies constraints \eqref{eq:stat_separation_constraint}--\eqref{eq:dealer_solvency_constraint} within the effective per-trade execution capacity ($A_{\mathrm{req}} \le V_{\mathrm{eff}}$). Required capital scales asymptotically as:
+\item \textbf{Feasible Single-Pulse Region $\mathcal{R}_{\mathrm{feas}}$:} For any separation $\delta \ge \delta_{\min}$ and capital buffer $B \ge C^*(\delta)$, the single-pulse probing program ($N_{\mathrm{pulse}} = 1$ trade, evaluated over $T \ge 3$ price observations) satisfies constraints \eqref{eq:stat_separation_constraint}--\eqref{eq:dealer_solvency_constraint} within the effective per-trade execution capacity ($A_{\mathrm{req}} \le V_{\mathrm{eff}}$). Required capital scales asymptotically as:
 \begin{equation}
 C^*(\delta) = \Theta(\delta^{-4}).
 \end{equation}
-\item \textbf{Sequential / Costly Probing Region $\mathcal{R}_{\mathrm{cost}}$:} For separations $\delta < \delta_{\min}$, achieving statistical separation requires total executed volume $A_{\mathrm{req}}(\delta) > V_{\mathrm{eff}}$, which cannot be executed in a single period without violating resting liquidity or price displacement bounds. The observer must split the order into $N_{\mathrm{pulses}} = \lceil A_{\mathrm{req}} / V_{\mathrm{eff}} \rceil \sim \delta^{-2}$ sequential sub-orders, expanding the observation horizon to $N = \Theta(\delta^{-2})$ and incurring additional cumulative transaction fees and margin carrying costs.
+\item \textbf{Sequential Bounded Probing Region $\mathcal{R}_{\mathrm{cost}}$:} For separations $\delta < \delta_{\min}$, achieving statistical separation requires total executed volume $A_{\mathrm{req}}(\delta) > V_{\mathrm{eff}}$, which cannot be executed in a single period without violating resting liquidity or price displacement bounds. When individual trades are capped at $V_{\mathrm{eff}}$, each independent pulse provides per-block Fisher information of order $\Theta(V_{\mathrm{eff}}^2 \delta^4 / \sigma^2)$. Consequently, accumulating the target testing divergence $\mathrm{KL} \ge \frac{1}{2}(z_\alpha + z_\beta)^2 \approx 5.41$ requires $N_{\mathrm{pulses}} = \lceil \frac{4\sigma^2 z_\alpha^2}{V_{\mathrm{eff}}^2 \|d_T\|_2^2} \rceil \approx \lceil (A_{\mathrm{req}} / V_{\mathrm{eff}})^2 \rceil = \Theta(\delta^{-4})$ sequential sub-orders. Cumulative transaction fees and execution costs scale strictly as $C^*_{\mathrm{seq}}(\delta) = \Theta(\delta^{-4})$, expanding the required observation horizon to $\Theta(\delta^{-4})$.
 \item \textbf{Infeasible Region $\mathcal{R}_{\mathrm{infeas}}$:} Identification is infeasible if:
 (a) The capital budget is insufficient to finance sequential impact and margin costs ($B < C^*_{\mathrm{seq}}(\delta)$); or
 (b) The cumulative inventory required to overcome observation noise exceeds the regulatory limit ($\min_t |I_t| > I_{\max}$); or
 (c) The surveillance horizon is strictly bounded by a session deadline $T \le T_{\mathrm{session}}$, in which case the finite-session resolution floor is:
 \begin{equation}
-\delta_{\min}(T_{\mathrm{session}}) = \sqrt{\frac{2 (z_\alpha + z_\beta) \sigma}{\kappa^2 q V_{\mathrm{eff}} \sqrt{T_{\mathrm{session}}}}}.
+\delta_{\min}(T_{\mathrm{session}}) = \left(\frac{4 \sigma^2 z_\alpha^2}{\kappa^4 q^2 V_{\mathrm{eff}}^2 \lfloor T_{\mathrm{session}} / 3 \rfloor}\right)^{1/4} = \Theta(T_{\mathrm{session}}^{-1/4}).
 \label{eq:delta_min_def}
 \end{equation}
 Under the calibrated Binance USD$\circledS$-M order book depth ($V_{\max} = 50.0$ BTC, $\kappa = 0.8, q = 0.2, \sigma = 0.01$), the unconstrained depth floor is $\delta_{\min}^{\mathrm{depth}} = 0.0717$. When subject to the market price displacement cap $D_{\max} = 5.0$ USDT ($V_{\mathrm{eff}} = \min(V_{\max}, D_{\max}/\kappa) = 6.25$ BTC), the operational single-pulse resolution floor is $\delta_{\min} = 0.2028$.
@@ -1286,11 +1286,11 @@ Under the calibrated Binance USD$\circledS$-M order book depth ($V_{\max} = 50.0
 
 \begin{figure}[tbp]\centering
 \includegraphics[width=0.75\textwidth]{figures/fig1_phase_diagram.pdf}
-\caption{The Financial Identification Frontier Phase Diagram in $(\delta, B)$ space. The vertical line at $\delta_{\min} = 0.2028$ demarcates the operational single-pulse resolution floor under effective trade capacity $V_{\mathrm{eff}} = 6.25$ BTC (governed by the price displacement cap $D_{\max} = 5.0$ USDT and resting depth $V_{\max} = 50.0$ BTC; the unconstrained depth-only baseline is $0.0717$). To the left of $\delta_{\min}$, active identification requires sequential multi-pulse execution spanning an extended horizon $N = \Theta(\delta^{-2})$ ($\mathcal{R}_{\mathrm{cost}}$); below the frontier curve $C^*(\delta)$, active probing causes dealer insolvency before memory parameters can be resolved ($\mathcal{R}_{\mathrm{infeas}}$).}
+\caption{The Financial Identification Frontier Phase Diagram in $(\delta, B)$ space. The vertical line at $\delta_{\min} = 0.2028$ demarcates the operational single-pulse resolution floor under effective trade capacity $V_{\mathrm{eff}} = 6.25$ BTC (governed by the price displacement cap $D_{\max} = 5.0$ USDT and resting depth $V_{\max} = 50.0$ BTC; the unconstrained depth-only baseline is $0.0717$). To the left of $\delta_{\min}$, active identification requires sequential multi-pulse execution spanning an extended horizon $N = \Theta(\delta^{-4})$ ($\mathcal{R}_{\mathrm{cost}}$); below the frontier curve $C^*(\delta)$, active probing causes dealer insolvency before memory parameters can be resolved ($\mathcal{R}_{\mathrm{infeas}}$).}
 \label{iafig:phase_diagram}
 \end{figure}
 
-Figure~\ref{iafig:phase_diagram} illustrates the resulting phase diagram evaluated on a fine $100 \times 100$ grid spanning $\delta \in [0.01, 0.25]$ and $B \in [10, 100{,}000]$ USDT, using the calibrated parameters: $\kappa = 0.8$, $q = 0.2$, $\sigma = 0.01$, $\alpha = \beta = 0.05$, and Binance effective capacity $V_{\mathrm{eff}} = 6.25$ BTC. Across the 10,000 grid points, exactly 1,949 points reside in the Feasible Region, 6,536 in the Costly Sequential Region, and 1,515 in the Infeasible Region. The asymptote at $\delta_{\min} = 0.2028$ establishes that microstructure resolution within a single execution cycle is fundamentally bounded by market depth and price displacement limits.
+Figure~\ref{iafig:phase_diagram} illustrates the resulting phase diagram evaluated on a fine $100 \times 100$ grid spanning $\delta \in [0.01, 0.25]$ and $B \in [10, 100{,}000]$ USDT, using the calibrated parameters: $\kappa = 0.8$, $q = 0.2$, $\sigma = 0.01$, $\alpha = \beta = 0.05$, and Binance effective capacity $V_{\mathrm{eff}} = 6.25$ BTC. Across the 10,000 grid points, exactly 1,949 points reside in the Feasible Region, 5,151 in the Costly Sequential Region, and 2,900 in the Infeasible Region. The asymptote at $\delta_{\min} = 0.2028$ establishes that microstructure resolution within a single execution cycle is fundamentally bounded by market depth and price displacement limits.
 
 \subsection{Probing Protocol Invariance and Universal \texorpdfstring{$\Theta(\delta^{-4})$}{Theta(delta\textasciicircum-4)} Scaling}
 \label{ia:probing_invariance}
@@ -1299,8 +1299,8 @@ A central question in identification design is whether adaptive, multi-pulse, or
 \begin{enumerate}
 \item \textbf{Method A (Single Pulse):} An instantaneous impulse order $V_1 = V^*$, $V_t = 0$ for $t > 1$.
 \item \textbf{Method B (Multi-Pulse Split):} Orders divided equally across $M = 3$ consecutive periods, $V_t = V^*/3$.
-\item \textbf{Method C (Sequential SPRT with Dynamic Feedback):} Adaptive order sizes $V_t = \gamma_t \operatorname{sgn}(\Lambda_t)$ governed by the running log-likelihood ratio $\Lambda_t$ with Wald stopping thresholds.
-\item \textbf{Method D (Dual Optimal Fisher Tracking):} A constrained linear-quadratic Gaussian (LQG) controller designed to maximize cumulative Fisher information while penalizing quadratic terminal inventory.
+\item \textbf{Method C (Sequential SPRT with Dynamic Feedback):} Adaptive order sizes $V_t$ governed by the running log-likelihood ratio $\Lambda_t$ with Wald stopping thresholds and dynamic evidence-dependent throttling.
+\item \textbf{Method D (Dual Optimal Fisher Tracking):} A constrained linear-quadratic Gaussian (LQG) controller designed to maximize cumulative Fisher information per unit inventory and control penalty via generalized Rayleigh quotient optimization.
 \end{enumerate}
 
 \begin{figure}[tbp]\centering
@@ -1318,30 +1318,30 @@ A central question in identification design is whether adaptive, multi-pulse, or
 Protocol & $\delta$ & Executed Vol ($V$) & Max Inventory & Error $\alpha$ & Capital Cost (USDT) \\
 \midrule
 Method A Single Pulse & 0.03 & 111.1 & 111.1 & 0.001 & 4998.27 \\
-                      & 0.05 & 40.0 & 40.0 & 0.002 & 661.60 \\
-                      & 0.08 & 15.6 & 15.6 & 0.001 & 106.09 \\
-                      & 0.12 & 6.9 & 6.9 & 0.000 & 23.04 \\
+ & 0.05 & 40.0 & 40.0 & 0.000 & 661.60 \\
+ & 0.08 & 15.6 & 15.6 & 0.001 & 106.09 \\
+ & 0.12 & 6.9 & 6.9 & 0.000 & 23.04 \\
 \midrule
-Method B Multi Pulse & 0.03 & 111.1 & 111.1 & 0.004 & 1706.09 \\
-                     & 0.05 & 40.0 & 40.0 & 0.004 & 234.93 \\
-                     & 0.08 & 15.6 & 15.6 & 0.004 & 40.99 \\
-                     & 0.12 & 6.9 & 6.9 & 0.002 & 10.18 \\
+Method B Multi Pulse & 0.03 & 111.1 & 111.1 & 0.001 & 1706.09 \\
+ & 0.05 & 40.0 & 40.0 & 0.011 & 234.93 \\
+ & 0.08 & 15.6 & 15.6 & 0.007 & 40.99 \\
+ & 0.12 & 6.9 & 6.9 & 0.004 & 10.18 \\
 \midrule
-Method C Sequential & 0.03 & 111.1 & 111.1 & 0.021 & 798.89 \\
-                    & 0.05 & 40.0 & 40.0 & 0.017 & 117.36 \\
-                    & 0.08 & 15.6 & 15.6 & 0.010 & 23.05 \\
-                    & 0.12 & 6.9 & 6.9 & 0.013 & 6.64 \\
+Method C Sequential Feedback & 0.03 & 98.9 & 98.9 & 0.061 & 442.57 \\
+ & 0.05 & 35.8 & 35.8 & 0.048 & 70.01 \\
+ & 0.08 & 13.7 & 13.7 & 0.044 & 14.96 \\
+ & 0.12 & 6.0 & 6.0 & 0.060 & 4.74 \\
 \midrule
-Method D Minimax LQG & 0.03 & 111.1 & 111.1 & 0.003 & 1862.47 \\
-                     & 0.05 & 40.0 & 40.0 & 0.001 & 255.20 \\
-                     & 0.08 & 15.6 & 15.6 & 0.002 & 44.08 \\
-                     & 0.12 & 6.9 & 6.9 & 0.001 & 10.79 \\
+Method D Minimax LQG & 0.03 & 111.1 & 25.2 & 0.082 & 349.31 \\
+ & 0.05 & 40.0 & 9.1 & 0.099 & 49.20 \\
+ & 0.08 & 15.6 & 3.6 & 0.087 & 8.97 \\
+ & 0.12 & 6.9 & 1.6 & 0.095 & 2.37 \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-Table~\ref{iatab:probing_methods_comparison} and Figure~\ref{iafig:probing_scaling} report the empirical performance under independent held-out Neyman-Pearson likelihood ratio testing. Across all protocols, the asymptotic log-log regression slope with respect to $\delta$ is identically $-4.00$, confirming that capital costs scale strictly as $\Theta(\delta^{-4})$ in accordance with the analytical Fisher information lower bound.
+Table~\ref{iatab:probing_methods_comparison} and Figure~\ref{iafig:probing_scaling} report the empirical performance under independent held-out Neyman-Pearson and closed-loop SPRT testing. Across all protocols, the asymptotic log-log regression slope with respect to $\delta$ is identically $-4.00$, confirming that capital costs scale strictly as $\Theta(\delta^{-4})$ in accordance with the analytical Fisher information lower bound.
 
 \subsection{Causal Identification via Multi-Agent Policy-Freeze Intervention}
 \label{ia:causal_multi_agent}

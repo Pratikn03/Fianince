@@ -27,8 +27,11 @@ def make_table_probing():
         r"\midrule"
     ]
     
+    prot_order = ["Method_A_Single_Pulse", "Method_B_Multi_Pulse", "Method_C_Sequential_Feedback", "Method_D_Minimax_LQG"]
+    data_sorted = sorted(data, key=lambda x: (prot_order.index(x["protocol"]) if x["protocol"] in prot_order else 99, x["delta"]))
+    
     current_prot = None
-    for r in data:
+    for r in data_sorted:
         prot_clean = r["protocol"].replace("_", " ")
         if prot_clean != current_prot:
             if current_prot is not None:

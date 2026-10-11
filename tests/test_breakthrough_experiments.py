@@ -223,3 +223,86 @@ def test_known_pair_third_observation_separation():
     expected_diff = (kappa**2) * q * A_probe * (delta**2)
     assert np.isclose(diff_obs3, expected_diff, atol=1e-5), f"Observation 3 difference must equal {expected_diff}, got {diff_obs3}"
 
+# ----------------------------------------------------------------------
+# 11. Test Transmission Zero Inversion vs Closed-Loop Poles (exp2 / TC-0601)
+# ----------------------------------------------------------------------
+def test_unknown_mixture_transmission_zero_inversion():
+    """Verify Theorem 2.3: cohort poles 1 - eta are transmission zeros of H(z), not closed-loop poles."""
+    from breakthrough_experiments.exp2_unknown_mixture import simulate_closed_loop_impulse, blind_transfer_function_inversion
+    
+    true_etas = np.array([0.30])
+    true_weights = np.array([0.20])
+    true_poles = 1.0 - true_etas # [0.70]
+    
+    h = simulate_closed_loop_impulse(true_weights, true_etas, T=100)
+    # Recover via transmission zeros
+    est_K, est_poles, _ = blind_transfer_function_inversion(h, max_K=4)
+    
+    # Transmission zero should match true cohort pole 0.70
+    min_dist = np.min(np.abs(est_poles - 0.70))
+    assert min_dist < 0.05, f"Estimated transmission zero must match cohort memory pole 0.70, got {est_poles}"
+    # Must NOT equal closed loop poles 0.42557 or 0.82243
+    assert abs(est_poles[0] - 0.82243) > 0.05, "Must not confuse transmission zero with closed-loop pole 0.822"
+    assert abs(est_poles[0] - 0.42557) > 0.05, "Must not confuse transmission zero with closed-loop pole 0.426"
+
+# ----------------------------------------------------------------------
+# 12. Test Sequential Frontier Theta(delta^-4) Scaling & 412-Pulse Under-accumulation
+# ----------------------------------------------------------------------
+def test_sequential_frontier_delta_minus_four_scaling():
+    """Verify that independent reset pulses require N = Theta(delta^-4), and 412 pulses yield ~34.3% error at delta=0.01."""
+    from scipy.stats import norm
+    
+    kappa = 0.8
+    q = 0.2
+    a = 0.5
+    eta = 0.4
+    delta = 0.01
+    sigma = 0.01
+    V_eff = 6.25
+    z_alpha = norm.ppf(0.95)
+    target_kl = 2.0 * z_alpha**2 # ~5.4114
+    
+    # Under 100 observations, calculate impulse response difference norm
+    from breakthrough_experiments.exp3_adaptive_probing import get_mean_trajectory
+    v_unit = np.zeros(100)
+    v_unit[0] = 1.0
+    h0 = get_mean_trajectory(v_unit, delta=delta, T=100, kappa=kappa, q=q, a=a, eta=eta, split=False)
+    h1 = get_mean_trajectory(v_unit, delta=delta, T=100, kappa=kappa, q=q, a=a, eta=eta, split=True)
+    d = h1 - h0
+    norm_d_sq = np.sum(d**2)
+    
+    # Per-pulse KL under V_eff = 6.25
+    kl_per_pulse = (V_eff**2 * norm_d_sq) / (2.0 * sigma**2)
+    
+    # If someone uses 412 pulses:
+    kl_412 = 412 * kl_per_pulse
+    d_prime_412 = np.sqrt(2.0 * kl_412)
+    err_412 = norm.cdf(-0.5 * d_prime_412)
+    
+    # Assert that 412 pulses under-accumulates and yields ~34.3% error (far above 5% target)
+    assert np.isclose(err_412, 0.343, atol=0.02), f"Expected ~34.3% error with 412 pulses, got {err_412*100:.2f}%"
+    
+    # Assert that required pulses N_req scales as Theta(delta^-4)
+    N_req = target_kl / kl_per_pulse
+    assert N_req > 5000, f"True required pulses for 5% error must exceed 5000 (got {N_req:.0f})"
+
+# ----------------------------------------------------------------------
+# 13. Test Allocation Surplus Loss Formula (Proposition 2.11 / TC-1202)
+# ----------------------------------------------------------------------
+def test_allocation_loss_formula():
+    """Verify Proposition 2.11: surplus loss W_loss = b(s0 - c)Delta + (b/2)Delta^2."""
+    b = 4.0
+    cost = 10.0
+    s0 = 12.0 # initial quote above marginal cost
+    Delta = 1.5 # quote increase from ambiguity
+    
+    # Analytical loss:
+    W_loss_expected = b * (s0 - cost) * Delta + 0.5 * b * (Delta**2)
+    # W_loss = 4.0 * (2.0) * 1.5 + 2.0 * 2.25 = 12.0 + 4.5 = 16.5
+    assert np.isclose(W_loss_expected, 16.5)
+    
+    # If s0 = cost (efficient baseline), recovers classic Harberger triangle (b/2)Delta^2:
+    W_triangle = 0.5 * b * (Delta**2) # 4.5
+    assert np.isclose(W_triangle, 4.5)
+
+

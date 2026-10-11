@@ -54,9 +54,8 @@ def plot_fig1():
     
     # Fill Regions
     ax.fill_between(deltas, B_pulse, 1e6, where=[d >= delta_min for d in deltas], color='green', alpha=0.15, label='Regime 1: Feasible Single-Pulse')
-    ax.fill_between(deltas, B_seq, B_pulse, where=[d >= delta_min for d in deltas], color='orange', alpha=0.15, label='Regime 2: Costly / Sequential')
+    ax.fill_between(deltas, B_seq, 1e6, where=[d < delta_min for d in deltas], color='orange', alpha=0.15, label='Regime 2: Sequential Multi-Pulse')
     ax.fill_between(deltas, 1.0, B_seq, color='red', alpha=0.15, label='Regime 3: Infeasible Identification')
-    ax.fill_between(deltas, B_seq, 1e6, where=[d < delta_min for d in deltas], color='orange', alpha=0.15)
     
     ax.set_yscale('log')
     ax.set_xlim(0.01, 0.25)
