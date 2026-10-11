@@ -54,16 +54,22 @@ def build_network_jacobian(M, rho_diag=0.7, cross_impact=0.15):
     return J_net
 
 def compute_kreiss_constant(J, N_points=200):
-    """Approximates Kreiss constant K(J) = sup_{|z|>1} (|z|-1) ||(zI - J)^{-1}||_2."""
+    """Approximates Kreiss constant K(J) = sup_{|z|>1} (|z|-1) ||(zI - J)^{-1}||_2.
+    By Spijker (1991), K(J) >= 1.00 for any matrix as |z| -> infinity.
+    """
     evals = np.linalg.eigvals(J)
     rho = np.max(np.abs(evals))
     if rho >= 1.0:
         return float('inf')
         
-    radii = np.linspace(1.001, 2.5, 40)
+    radii = np.concatenate([
+        1.0 + np.logspace(-4, 0, 80),
+        np.linspace(1.5, 10.0, 40),
+        [50.0, 100.0]
+    ])
     thetas = np.linspace(0, 2 * np.pi, N_points, endpoint=False)
     
-    max_k = 0.0
+    max_k = 1.0 # Mathematical floor: limit as |z| -> inf is identically 1.0
     I = np.eye(J.shape[0])
     
     for r in radii:
