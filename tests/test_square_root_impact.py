@@ -50,6 +50,7 @@ class TestSquareRootImpact:
         assert invar["liquidity_cliff_triggered"] is True
         assert invar["cliff_state_blowup"] > invar["nominal_state_without_cliff"]
 
+    @pytest.mark.skipif(not DATA_FILE.exists(), reason="Real L3 BTC data required")
     def test_end_to_end_pipeline_and_provenance(self):
         """Verify full pipeline execution and JSON artifact persistence."""
         res = run_square_root_impact_pipeline()

@@ -22,10 +22,12 @@ from research_extension.game_theory.structural_inverse_game import run_structura
 from empirical_pipeline.macro_event_welfare_frontier import run_macro_event_welfare_pipeline
 
 ROOT = Path(__file__).resolve().parents[1]
+DATA_FILE = ROOT / "empirical_pipeline" / "data" / "BTC_1sec.csv"
 
 
 class TestRealDataFrontiers:
     # ---------------------------------------------------------------- WP1: Hayashi-Yoshida & RMT
+    @pytest.mark.skipif(not DATA_FILE.exists(), reason="Real L3 BTC dataset (BTC_1sec.csv) required")
     def test_hayashi_yoshida_cross_impact(self):
         res = estimate_multi_asset_hayashi_yoshida(n_samples=5000)
         assert res["dataset_info"]["simultaneous_bars"] > 4000
@@ -38,6 +40,7 @@ class TestRealDataFrontiers:
         assert ps["coupled_safe_radius_usd"] <= ps["decoupled_safe_radius_usd"]
 
     # ---------------------------------------------------------------- WP2: Markov-Switching VAR
+    @pytest.mark.skipif(not DATA_FILE.exists(), reason="Real L3 BTC dataset (BTC_1sec.csv) required")
     def test_markov_switching_var_bifurcation(self):
         res = fit_markov_switching_var(n_samples=5000, max_iter=10)
         assert res["iterations_converged"] >= 1
@@ -65,6 +68,7 @@ class TestRealDataFrontiers:
         assert dealer["policy_r2"] > 0.80
 
     # ---------------------------------------------------------------- WP4: Macro Welfare Relaxation
+    @pytest.mark.skipif(not DATA_FILE.exists(), reason="Real L3 BTC dataset (BTC_1sec.csv) required")
     def test_macro_event_welfare_relaxation(self):
         res = run_macro_event_welfare_pipeline()
         assert res["volatility_events_detected"] >= 0
