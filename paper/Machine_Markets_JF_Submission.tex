@@ -777,6 +777,7 @@ Full price block 5 & 147,155 & 10 & 0.0001433 & 0.9824020 & 0.9881783 \\
 \bottomrule\end{tabular}\end{table}
 
 \subsection{Replayed Financial Scenarios and Accounting Limits}
+\label{sec:replayed_scenarios}
 The existing funded-scenario grid has been rerun with its saved seed and inputs. Capacity means an inventory limit at fixed initial capital. Effective persistence differs from nominal metadata; the unconstrained transitions in this grid are supercritical. The recorded limit-hit event does not halt later trading. These rows cannot establish insolvency inside a stable system.
 \begin{table}[htbp]
 \centering\footnotesize\setlength{\tabcolsep}{3pt}
@@ -828,7 +829,7 @@ $S$ & Saved variance & Analytic LRV & Feedback & B1 & B2 & B3 \\\midrule
 Here low-frequency power means long-run variance, not marginal variance. With two independent unit-variance shock streams, the lagged model's analytic flow LRV is $[(1-a)^2+(Q\sigma/\lambda)^2]/(1-S)^2$; its saved marginal variance is a separate quantity. B3 can match the severe halt pattern with exogenous persistent flow, so these simulations do not isolate adaptive learning as its cause. Pricing, spread, leverage, fees, funding, fills and queue priority are hypothetical inputs. A tested cash identity is necessary but insufficient for market calibration.
 
 \paragraph{Observed spread and displayed-depth calibration.}
-The authenticated January source supplies a calibration of observable quote frictions. We select the last recorded snapshot in every observed UTC minute before quote validation, retain all 15,593 selected books, and do not interpolate missing minutes. The median quoted spread is 0.1000 quote units (0.04813 basis points); median ten-level bid and ask sizes are 19.692 and 19.171 in reported size units. Hypothetical sweeps consuming half of a side's displayed ten-level size have 90th-percentile costs above midpoint of 0.51409 for buys and 0.50576 for sells per reported size unit. A scalar level-by-level calculation is retained separately from the vectorized calculation. These quantities measure displayed-book frictions under assumed immediate access, rather than realized fills or guaranteed executable depth. Their static depth slopes are not the theorem's dynamic impact coefficient. Zero-spread scenario fills omit an observed friction, while account fees, funding, margin rules, exposures and Gaussian measurement-error variance remain unavailable from snapshots. Consequently the revised financial interpretation is calibrated to observed quote frictions only; its dynamic and account primitives remain conditional.
+The authenticated January source supplies a calibration of observable quote frictions. We select the last recorded snapshot in every observed UTC minute before quote validation, retain all 15,593 selected books, and do not interpolate missing minutes. The median quoted spread is 0.1000 quote units (0.04813 basis points); median ten-level bid and ask sizes are 19.692 and 19.171 in reported size units. Hypothetical sweeps consuming half of a side's displayed ten-level size have 90th-percentile costs above midpoint of 0.51409 for buys and 0.50576 for sells per reported size unit. A scalar level-by-level calculation is retained separately from the vectorized calculation. These quantities measure displayed-book frictions under assumed immediate access, rather than realized fills or guaranteed executable depth. Their static depth slopes are not the theorem's dynamic impact coefficient. Zero-spread scenario fills omit an observed friction. Account fees, funding, exposures and Gaussian measurement-error variance remain unavailable. Internet Appendix~\ref{ia:venue_rules} instead applies the venue's published January 2023 fee, margin and funding rules to the scenario inputs; this is a venue-rule, not an account, calibration. Both leverages lie inside venue limits, and a regular taker fee is 166 times the median half-spread. Consequently the revised financial interpretation is calibrated to observed quote frictions only; its dynamic and account primitives remain conditional.
 
 A separate simulated five-input neural-policy study now has recovered saved weights. All 20 DQN/actor checkpoints independently reproduce 100 multiscale response records and their seed summaries. At the smallest radius, actor response $R^2$ ranges from 0.6540 to 0.9988, contradicting the saved claim that every neural policy lies below 0.70. The static fit/slope heuristic is not a proof of exponential-memory dynamics, and these checkpoints do not replace the distinct real-LOB policy or actual-execution records.
 
@@ -1191,7 +1192,39 @@ Whenever $\mathcal{K}(J) \gg 1$, small high-frequency liquidity shocks are magni
 \caption{Computed singular-value contours for the declared constructed matrix $J=\left(\begin{smallmatrix}0.5&3\\0&0.2\end{smallmatrix}\right)$ at 0.05 and 0.15. Its spectral radius is 0.5; the 0.15 contour crosses the unit circle. This fixed-coordinate illustration is not a calibrated cohort-market or monetary-loss experiment.}
 \label{fig:pseudospectrum}\end{figure}
 
+\section{Venue-Rule Calibration of the Scenario Inputs}
+\label{ia:venue_rules}
 
+\paragraph{Scope.} This section is a \emph{venue-rule calibration, not an account calibration}. It applies rules that Binance published for USD$\circledS$-margined (USD$\circledS$-M) perpetual futures in January 2023 to the paper's hypothetical scenario equity $E_0=10{,}000$ USDT and leverage parameters $L\in\{10,20\}$, reading model monetary units as USDT. No account, position, fill, margin-call or realized funding-payment record is used, and none is available to us. Liquidation prices follow the venue's published isolated-margin, one-way formula and ignore fees, funding accrual, the mark-to-last price basis, and insurance-fund or auto-deleveraging mechanics.
 
+\paragraph{Sources.} (i) The USD$\circledS$-M fee schedule archived by the Internet Archive on December 9, 2022 and January 22, 2023; the two snapshots bracket the January 9--20 sample and are identical. (ii) The public BTCUSDT leverage and maintenance-margin brackets archived on January 9, 17 and 23, 2023. The January 9 and 17 snapshots are identical (last update November 17, 2022). A venue update at 11:47 UTC on January 20 raised the maximum leverage of tiers 3--4 but left every maintenance rate and maintenance amount unchanged. (iii) The official monthly BTCUSDT funding file for January 2023 from \texttt{data.binance.vision}, whose SHA-256 matches the published checksum. Archive URLs, file hashes, the script and its receipt are in the replication package (\texttt{venue\_rule\_calibration\_20261010}). The midpoint and book frictions come from the displayed-book calibration in Section~\ref{sec:replayed_scenarios}.
+
+\paragraph{Fees and funding.} A regular (VIP~0) account paid 2.0 basis points as maker and 4.0 as taker on USDT-margined contracts (1.8 and 3.6 with the BNB discount). The highest tier, VIP~9, paid 0 and 1.7. At the median midpoint of 20,783.25 USDT, the regular one-way taker fee is 8.31 USDT per BTC. That is 166 times the median half-spread of 0.05 USDT and 16 times the 90th-percentile half-side sweep cost of 0.514 USDT. The 36 eight-hour funding settlements from January 9 to 20 average 0.949 basis points (range $-0.067$ to $4.585$; 34 positive). They sum to 0.342\% of notional, a simple annualized mean of 10.4\%. For a regular taker, fees and funding, not the displayed spread, therefore dominate trading frictions. The zero-spread scenario fills omit a friction that is small relative to these venue charges.
+
+\begin{table}[tbp]\centering\small
+\caption{Published January 2023 Binance rules applied to the hypothetical scenario equity $E_0=10{,}000$ USDT at the median midpoint. Venue-rule calibration, not account calibration.}
+\label{iatab:venue_rules}
+\begin{tabular}{lrr}
+\toprule
+ & $L=10$ & $L=20$ \\
+\midrule
+Notional (USDT) & 100,000 & 200,000 \\
+Margin tier (notional range, USDT) & 2 (50k--250k) & 2 (50k--250k) \\
+Venue maximum leverage in tier & 100 & 100 \\
+Minimum initial margin rate $\mu$ & 1.0\% & 1.0\% \\
+Buffer $A_0=E_0-\mu|I_0|p_0$ (USDT) & 9,000 & 8,000 \\
+Maintenance rate / maintenance amount & 0.5\% / 50 & 0.5\% / 50 \\
+Maintenance margin at entry (USDT) & 450 & 950 \\
+Loss to maintenance breach at entry (USDT) & 9,550 & 9,050 \\
+Adverse move to liquidation: long / short & 9.60\% / 9.50\% & 4.55\% / 4.50\% \\
+Regular taker round-trip fee (USDT) & 80 & 160 \\
+Funding paid by a long, Jan 9--20 (USDT) & 341.63 & 683.27 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Margin.} Table~\ref{iatab:venue_rules} reports the results. Both scenario leverages lie inside the venue's limit: each notional falls in tier~2, which allowed up to 100$\times$. With 10,000 USDT of equity the venue allowed at most 250,000 USDT of notional before the January 20 update and 500,000 afterwards, so $L=10$ and $L=20$ are well inside the feasible set. In the notation of \eqref{eq:dealer_buffer}, the venue's minimum initial margin rate is $\mu=1\%$. The archived simulations halt at nonpositive equity. The venue instead liquidates when equity reaches maintenance margin, so a venue-consistent loss budget is at most 9,550 USDT for $L=10$ and 9,050 for $L=20$. Because the exact safe radius in Part~1 of Theorem~\ref{thm:m5_kreiss_solvency} is linear in $B$, these budgets shrink $r^*_{\text{exact}}$ by 4.5\% and 9.5\% relative to $B=E_0$, for any $J$ and $C$.
+
+\paragraph{What remains uncalibrated.} The rules above do not identify any trader's actual fee tier, rebates, position, margin mode, realized funding, fills, queue priority or liquidation outcome. Those quantities require account records, so the dynamic and account primitives of the scenarios remain conditional.
 
 \end{document}
