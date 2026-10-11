@@ -174,6 +174,8 @@ def run_experiment():
                 K_recovered = []
                 pole_errors = []
                 weight_errors = []
+                per_cohort_errors = []
+                per_cohort_success = []
                 
                 for _ in range(trials):
                     noisy_h = true_h + np.random.normal(0, sigma, len(true_h))
@@ -184,6 +186,16 @@ def run_experiment():
                     pole_errors.append(p_err)
                     w_err = float(abs(np.sum(est_weights) - np.sum(true_weights)))
                     weight_errors.append(w_err)
+                    # Per-cohort scoring (audit): weights matched by sorted pole order; only defined when K is right
+                    if est_K == K and K > 0:
+                        order = np.argsort(true_poles)
+                        e = float(np.max(np.abs(np.asarray(est_weights) - true_weights[order])))
+                        per_cohort_errors.append(e)
+                        per_cohort_success.append(int(e < 0.01))
+                    elif est_K == K == 0:
+                        per_cohort_success.append(1)
+                    else:
+                        per_cohort_success.append(0)
                     
                 recovery_rate = float(np.mean(K_recovered))
                 mean_p_err = float(np.mean(pole_errors))
@@ -195,7 +207,10 @@ def run_experiment():
                     "sigma": sigma,
                     "blind_K_recovery_rate": recovery_rate,
                     "mean_pole_matching_error": mean_p_err,
-                    "mean_weight_error": mean_w_err
+                    "mean_weight_error": mean_w_err,
+                    "mean_weight_error_definition": "absolute error of the SUM of weights only",
+                    "median_per_cohort_weight_error_given_correct_K": (float(np.median(per_cohort_errors)) if per_cohort_errors else None),
+                    "per_cohort_weight_recovery_rate_tol_0_01": float(np.mean(per_cohort_success))
                 })
                 
     out_file = Path("breakthrough_experiments/results_exp2_unknown_mixture.json")

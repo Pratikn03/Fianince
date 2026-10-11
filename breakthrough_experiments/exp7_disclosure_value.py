@@ -7,7 +7,7 @@ to achieve statistical identification error alpha <= 0.05 under each contract.
 
 Clarifies:
 - Benchmark Public Prices: Reports savings against both the restricted T=3 baseline and the optimal T=20 transient design.
-- Concrete exchange filter rules: CME 1.0 BTC standard contract unit vs Binance USD(S)-M linear minNotional (0.05 BTC / 5 USDT).
+- Concrete exchange filter rules: CME 5 BTC standard and 0.1 BTC micro contracts vs Binance USD(S)-M linear minNotional (0.05 BTC / 5 USDT).
 - Exact joint likelihoods for prices, signed order flow, marked equity, and event study windows.
 """
 import json
@@ -91,40 +91,47 @@ def solve_contract_requirements(delta, alpha=0.05):
     
     # ---------------------------------------------------------
     # Contract I2: Prices + Noisy Marked Equity Disclosure (Proposition 2.8)
-    # Marked equity signal: Delta E = kappa^2 * q * delta^2 * V^2
-    # Combined with price information per pulse
+    # Observation model (stated explicitly): after EACH reset j = 1..N the observer
+    # receives one report E_j = E_j^0 + dE + e_j, e_j ~ N(0, sigma_E^2) iid, independent of
+    # price noise, where dE = kappa^2 q delta^2 V^2 is the mark difference of the
+    # probe position at the third observation. Independent Gaussian reports add KL linearly:
+    #     D_equity(N) = N dE^2 / (2 sigma_E^2).
+    # The earlier code used (N dE)^2 / (2 sigma_E^2), i.e. a single report whose
+    # signal grows with N. That corresponds to an unmodelled cumulative statement and
+    # is NOT implied by the reset experiment; it is retained only as a diagnostic.
     # ---------------------------------------------------------
-    # (A) Under Restricted T=3 Baseline:
-    def get_req_V_I2_T3():
-        for n_try in range(1, 500):
-            kl_p = n_try * kl_pulse_I0_T3
-            delta_E = kappa**2 * q * (delta**2) * (n_try * V_eff**2)
-            kl_E = (delta_E**2) / (2.0 * sigma_E_noisy**2)
-            if kl_p + kl_E >= target_kl:
-                return n_try
-        return 1
-    N_I2_T3 = get_req_V_I2_T3() # 132 pulses
-    B_I2_T3 = float(N_I2_T3 * (0.5 * kappa * (V_eff**2) + c_fee * P_star * V_eff) + mu * P_star * V_eff) # 2098.62 USDT
+    dE = kappa**2 * q * (delta**2) * (V_eff**2)
+    kl_E_per_report = dE**2 / (2.0 * sigma_E_noisy**2)
+
+    def n_required(kl_price_per_pulse, kl_equity_per_report):
+        return int(math.ceil(target_kl / (kl_price_per_pulse + kl_equity_per_report)))
+
+    def err_from_kl(kl_total):
+        return float(norm.cdf(-math.sqrt(kl_total / 2.0)))
+
+    N_I2_T3 = n_required(kl_pulse_I0_T3, kl_E_per_report)
+    B_I2_T3 = float(N_I2_T3 * (0.5 * kappa * (V_eff**2) + c_fee * P_star * V_eff) + mu * P_star * V_eff)
     V_I2_T3 = float(N_I2_T3 * V_eff)
 
-    # (B) Under Optimal T=20 Transient Design:
-    def get_req_V_I2_T20():
-        for n_try in range(1, 500):
-            kl_p = n_try * kl_pulse_I0_T20
-            delta_E = kappa**2 * q * (delta**2) * (n_try * V_eff**2)
-            kl_E = (delta_E**2) / (2.0 * sigma_E_noisy**2)
-            if kl_p + kl_E >= target_kl:
-                return n_try
-        return 1
-    N_I2_T20 = get_req_V_I2_T20() # 12 pulses
-    B_I2_T20 = float(N_I2_T20 * (0.5 * kappa * (V_eff**2) + c_fee * P_star * V_eff) + mu * P_star * V_eff) # 193.62 USDT
+    N_I2_T20 = n_required(kl_pulse_I0_T20, kl_E_per_report)
+    B_I2_T20 = float(N_I2_T20 * (0.5 * kappa * (V_eff**2) + c_fee * P_star * V_eff) + mu * P_star * V_eff)
     V_I2_T20 = float(N_I2_T20 * V_eff)
-    
+
+    # Diagnostic: the withdrawn quadratic-accumulation design and its true error
+    N_I2_T3_withdrawn = next(n for n in range(1, 5000)
+                             if n * kl_pulse_I0_T3 + (n * dE)**2 / (2.0 * sigma_E_noisy**2) >= target_kl)
+    err_withdrawn_true = err_from_kl(N_I2_T3_withdrawn * (kl_pulse_I0_T3 + kl_E_per_report))
+
     # ---------------------------------------------------------
     # Contract I3: Exact Account Equity Disclosure (Proposition 2.8)
-    # Theoretical infimum is inf C = 0 (as V -> 0).
-    # Discrete exchange lot sizes:
+    # Theoretical infimum is inf C = 0 (as V -> 0) ONLY under noiseless,
+    # infinite-precision reporting. If reports are rounded to a tick of 0.01 USDT,
+    # a difference is guaranteed to change the report only if |dE| >= tick:
+    #     V >= sqrt(tick / (kappa^2 q delta^2)).
     # ---------------------------------------------------------
+    report_tick = 0.01
+    V_I3_tick_guarantee = float(math.sqrt(report_tick / (kappa**2 * q * delta**2)))
+    B_I3_tick_guarantee = float(0.5 * kappa * V_I3_tick_guarantee**2 + (c_fee + mu) * P_star * V_I3_tick_guarantee)
     # Specification A: CME Standard Bitcoin Futures (5.0 BTC contract size)
     V_I3_CME_Std = 5.0
     B_I3_CME_Std = float(0.5 * kappa * (V_I3_CME_Std**2) + (c_fee + mu) * P_star * V_I3_CME_Std) # 12.70 USDT
@@ -138,17 +145,20 @@ def solve_contract_requirements(delta, alpha=0.05):
     B_I3_Binance = float(0.5 * kappa * (V_I3_Binance**2) + (c_fee + mu) * P_star * V_I3_Binance) # 0.028 USDT
     
     # ---------------------------------------------------------
-    # Contract I4: Algorithmic Update Timestamps (Event Study)
-    # Eliminates rolling window search: critical threshold drops from sqrt(2 ln(W/alpha)) to z_alpha
-    # For W = 1000 steps, critical value reduction factor is:
+    # Contract I4: Algorithmic Update Timestamps
+    # The previous version multiplied price information by (z_search / z_alpha)^2 ~ 7.32,
+    # a multiple-testing correction. That correction is not information: the price-only
+    # benchmark already knows the timing of its own controlled probes and never paid a
+    # search penalty. No timestamp observation with a hypothesis-dependent likelihood is
+    # defined in this model, so the timestamp contract carries zero additional KL here.
+    # A positive value of timestamps requires a separately specified timestamp likelihood
+    # (e.g. update times whose law differs between H0 and H1); not modelled -> no saving claimed.
     # ---------------------------------------------------------
-    W = 1000
-    z_search = math.sqrt(2.0 * math.log(W / alpha)) # ~4.45
-    info_mult_I4 = (z_search / z_alpha) ** 2 # ~7.32x
-    kl_pulse_I4 = kl_pulse_I0_T20 * info_mult_I4
-    N_I4 = int(math.ceil(target_kl / kl_pulse_I4))
-    B_I4 = float(N_I4 * (0.5 * kappa * (V_eff**2) + c_fee * P_star * V_eff) + mu * P_star * V_eff)
-    V_I4 = float(N_I4 * V_eff)
+    N_I4 = N_I0_T20
+    B_I4 = B_I0_T20
+    V_I4 = V_I0_T20
+    N_I4_withdrawn = 2
+    err_I4_withdrawn_true = err_from_kl(N_I4_withdrawn * kl_pulse_I0_T20)
     
     # ---------------------------------------------------------
     # Contract I5: Supervisory Algorithmic Tagging / Full Audit Trail
@@ -181,24 +191,30 @@ def solve_contract_requirements(delta, alpha=0.05):
             "required_volume_V": V_I2_T3,
             "required_capital_B": B_I2_T3,
             "sequential_n_pulses": N_I2_T3,
-            "disclosure_type": "Periodic Statements (vs. T=3 Single-Tap, 51.3% saving)"
+            "observation_model": "one independent N(0, sigma_E^2) equity report per reset; KL adds linearly",
+            "withdrawn_quadratic_design_n_pulses": N_I2_T3_withdrawn,
+            "withdrawn_quadratic_design_true_error": err_withdrawn_true,
+            "disclosure_type": "Periodic Statements, independent per-reset reports (vs. T=3 single-tap)"
         },
         "I2_Noisy_Equity_T20": {
             "required_volume_V": V_I2_T20,
             "required_capital_B": B_I2_T20,
             "sequential_n_pulses": N_I2_T20,
-            "disclosure_type": "Periodic Statements (vs. T=20 Transient, 0.0% incremental)"
+            "observation_model": "one independent N(0, sigma_E^2) equity report per reset; KL adds linearly",
+            "disclosure_type": "Periodic Statements, independent per-reset reports (vs. T=20 transient)"
         },
         "I3_Exact_Equity_CME_Std_5BTC": {
             "required_volume_V": V_I3_CME_Std,
             "required_capital_B": B_I3_CME_Std,
             "sequential_n_pulses": 1,
+            "assumption": "noiseless, infinite-precision equity report",
             "disclosure_type": "Exact Account Reporting (CME 5 BTC Standard Lot)"
         },
         "I3_Exact_Equity_CME_Micro_0_1BTC": {
             "required_volume_V": V_I3_CME_Micro,
             "required_capital_B": B_I3_CME_Micro,
             "sequential_n_pulses": 1,
+            "assumption": "noiseless, infinite-precision equity report",
             "disclosure_type": "Exact Account Reporting (CME 0.1 BTC Micro Lot)"
         },
         "I3_Exact_Equity_Binance_minNotional": {
@@ -206,13 +222,25 @@ def solve_contract_requirements(delta, alpha=0.05):
             "required_capital_B": B_I3_Binance,
             "sequential_n_pulses": 1,
             "theoretical_infimum_capital": 0.0,
+            "assumption": "noiseless, infinite-precision equity report",
             "disclosure_type": "Exact Account Reporting (Binance 5 USDT minNotional)"
+        },
+        "I3_Exact_Equity_Cent_Rounded": {
+            "report_tick_usdt": report_tick,
+            "required_volume_V": V_I3_tick_guarantee,
+            "required_capital_B": B_I3_tick_guarantee,
+            "sequential_n_pulses": 1,
+            "assumption": "noiseless report rounded to 0.01 USDT; |dE| >= tick guarantees a changed report",
+            "disclosure_type": "Exact Account Reporting with 0.01 USDT reporting precision"
         },
         "I4_Timestamps_Event_Study": {
             "required_volume_V": V_I4,
             "required_capital_B": B_I4,
             "sequential_n_pulses": N_I4,
-            "disclosure_type": "Known Update Timestamps"
+            "observation_model": "no hypothesis-dependent timestamp likelihood defined; zero added information",
+            "withdrawn_multiplier_design_n_pulses": N_I4_withdrawn,
+            "withdrawn_multiplier_design_true_error": err_I4_withdrawn_true,
+            "disclosure_type": "Known Update Timestamps (no saving established)"
         },
         "I5_Supervisory_Audit": {
             "required_volume_V": V_I5,

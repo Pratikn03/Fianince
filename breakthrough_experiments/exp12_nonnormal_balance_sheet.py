@@ -10,6 +10,14 @@ Rigorous Fixes:
 - Reports incremental transient gain relative to time-zero output
 - Computes genuine dealer marked margin depletion over time t=1..T
 - Demonstrates non-normal balance sheet decoupling: monotonic price output vs 160x leveraged margin surge
+
+AUDIT CORRECTION (Oct 11, 85-page audit, finding 5):
+The state here is z = (price deviation x, algorithmic memory y). It contains NO dealer
+inventory, cash or equity. The row C_w = (1, lambda/MMR) = (1, 160) is therefore only a
+coordinate-weighted output of a mathematical state; it is NOT a margin computation and its
+exceedance of 4.55% is NOT evidence of margin depletion or liquidation (e.g. z = (0, 0.005)
+gives C_w z = 0.8 with zero holdings). Output keys were renamed accordingly. Actual account
+margin is computed from recorded holdings in exp10 (dealer ledger) and exp13 (probe ledger).
 """
 import json
 from pathlib import Path
@@ -94,7 +102,7 @@ def run_experiment():
     # J_single = [[0.5, 0.16], [0.15, 0.748]]
     J1 = np.array([[0.5, 0.16], [0.15, 0.748]])
     C_price = np.array([[1.0, 0.0]]) # pure price output
-    C_margin = np.array([[1.0, 0.8 / 0.005]]) # leveraged dealer margin operator: lambda / MMR = 160.0
+    C_margin = np.array([[1.0, 0.8 / 0.005]]) # coordinate-weighted output (1, 160) on (price, memory); not a margin
     H1 = np.array([[0.8], [0.8 * 0.3]])
     
     m1_p, mc_p, mch_p = compute_amplifications(J1, C_price, H1)
@@ -153,10 +161,11 @@ def run_experiment():
             "kreiss_constant": float(kreiss_K),
             "initial_shock_pct": float(shock_size_pct),
             "peak_price_pct": float(peak_price_pct),
-            "peak_margin_depletion_pct": float(peak_margin_depletion),
+            "peak_weighted_output_pct": float(peak_margin_depletion),
             "price_breaches_L20": price_breaches_L20,
-            "margin_breaches_L20": margin_breaches_L20,
-            "margin_breaches_L10": margin_breaches_L10
+            "weighted_output_exceeds_4_55": margin_breaches_L20,
+            "weighted_output_exceeds_9_60": margin_breaches_L10,
+            "state_contains_inventory": False
         })
         
     summary = {
@@ -164,7 +173,9 @@ def run_experiment():
             "C_price": {"M1": m1_p, "MC": mc_p, "MCH": mch_p},
             "C_margin": {"M1": m1_b, "MC": mc_b, "MCH": mch_b}
         },
-        "multi_asset_network": network_results
+        "multi_asset_network": network_results,
+        "financial_interpretation": "none: state is (price, algorithmic memory); no holdings, cash or margin are modelled",
+        "zero_inventory_counterexample": {"state": [0.0, 0.005], "weighted_output": float((C_margin @ np.array([0.0, 0.005]))[0])}
     }
     
     out_file = Path("breakthrough_experiments/results_exp12_nonnormal_balance_sheet.json")
@@ -172,8 +183,7 @@ def run_experiment():
     print(f"Non-Normal Balance Sheet Experiment complete. Results written to {out_file}")
     for res in network_results:
         print(f"M={res['assets_M']}: rho={res['spectral_radius']:.4f}, K(J)={res['kreiss_constant']:.2f}, "
-              f"Peak Price={res['peak_price_pct']:.2f}%, Peak Margin Depletion={res['peak_margin_depletion_pct']:.2f}%, "
-              f"Breaches L=20 (4.55%)={res['margin_breaches_L20']}")
+              f"Peak Price={res['peak_price_pct']:.2f}%, Peak weighted output={res['peak_weighted_output_pct']:.2f}% (not a margin)")
 
 if __name__ == "__main__":
     run_experiment()

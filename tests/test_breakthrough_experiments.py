@@ -107,7 +107,9 @@ def test_nonnormal_initial_excursion_not_100_percent():
         for r in data["multi_asset_network"]:
             assert r["initial_shock_pct"] < 1.0, "Initial shock must be economically realistic (e.g. 0.50%), not 100%"
             assert not r["price_breaches_L20"], "Pure price shock must not breach 4.55% buffer"
-            assert r["margin_breaches_L20"], "Leveraged dealer margin operator must trigger breach"
+            assert r["weighted_output_exceeds_4_55"], "Coordinate-weighted (price, memory) output exceeds 4.55"
+            # Audit (Oct 11, finding 5): this is NOT a margin breach; the state holds no inventory.
+            assert r["state_contains_inventory"] is False
 
 # ----------------------------------------------------------------------
 # 5. Test Observable Bridge Regressor Shift & Quasi-Differencing (exp8)

@@ -1275,7 +1275,7 @@ C^*(\delta) = \Theta(\delta^{-4}).
 \begin{equation}
 N_{\mathrm{pulses}}(T, \delta) = \left\lceil \frac{4\sigma^2 z_\alpha^2}{V_{\mathrm{eff}}^2 \|d_T\|_2^2} \right\rceil.
 \end{equation}
-Cumulative transaction fees and execution costs scale strictly as $C^*_{\mathrm{seq}}(\delta) = \Theta(\delta^{-4})$ (for Class~II) and $\Theta(\delta^{-2})$ (for Class~I), expanding the required observation horizon to $\Theta(\delta^{-4})$ or $\Theta(\delta^{-2})$. Under the simplified benchmark cost model ($C_{\mathrm{bench}} = \frac{1}{2}\kappa V^2 + \phi P^* |V| = 15.875$ USDT/pulse at $V_{\mathrm{eff}} = 6.25$ BTC), required capital at $\delta = 0.05$ is $4{,}305.25$ USDT under the restricted single-tap design ($T=3$, $N=271$ pulses), but collapses to $193.62$ USDT under the capacity-saturating multi-observation transient design ($T=20$, $N=12$ pulses, $V=6.25$ BTC), or $182.02$ USDT under the exact volume-optimized design ($N=12$, $V^* = 6.057$ BTC), reaching $177.75$ USDT at horizon $T=100$ ($N=11$ pulses; $175.35$ USDT at $V^*=6.207$ BTC). Under the physically executable round-trip unwind model ($C_{\mathrm{exec}} = \kappa V^2 + 2\phi P^* |V| = 31.75$ USDT/pulse), required capital is $8{,}607.38$ USDT ($T=3$), $384.12$ USDT ($T=20$ capacity-saturating), and $360.77$ USDT ($T=20$ volume-optimized).
+Cumulative transaction fees and execution costs scale strictly as $C^*_{\mathrm{seq}}(\delta) = \Theta(\delta^{-4})$ (for Class~II) and $\Theta(\delta^{-2})$ (for Class~I), expanding the required observation horizon to $\Theta(\delta^{-4})$ or $\Theta(\delta^{-2})$. Under the simplified benchmark cost model ($C_{\mathrm{bench}} = \frac{1}{2}\kappa V^2 + \phi P^* |V| = 15.875$ USDT/pulse at $V_{\mathrm{eff}} = 6.25$ BTC), required capital at $\delta = 0.05$ is $4{,}305.25$ USDT under the restricted single-tap design ($T=3$, $N=271$ pulses), but collapses to $193.62$ USDT under the capacity-saturating multi-observation transient design ($T=20$, $N=12$ pulses, $V=6.25$ BTC), or $182.02$ USDT under the exact volume-optimized design ($N=12$, $V^* = 6.057$ BTC), reaching $177.75$ USDT at horizon $T=100$ ($N=11$ pulses; $175.35$ USDT at $V^*=6.207$ BTC). Under the physically executable round-trip unwind model ($C_{\mathrm{exec}} = \kappa V^2 + 2\phi P^* |V| = 31.75$ USDT/pulse), required capital is $8{,}607.38$ USDT ($T=3$), $384.12$ USDT ($T=20$ capacity-saturating), and $360.77$ USDT ($T=20$ volume-optimized). \emph{These figures are costs within the isolated-pulse design class, not minimum capital requirements.} The per-pulse formula charges initial margin once ($3.13$ USDT) and does not track the ledger; twelve buys that are never unwound carry $75$ BTC of inventory and $37.5$ USDT of margin. Section~\ref{ia:account_capital} replaces the formula by an explicit account ledger and shows that a non-pulse probe reaches the same $5\%$ error with about $65$ USDT of account capital.
 \item \textbf{Infeasible Region $\mathcal{R}_{\mathrm{infeas}}$:} Identification is infeasible if:
 (a) The capital budget is insufficient to finance sequential impact and margin costs ($B < C^*_{\mathrm{seq}}(\delta)$); or
 (b) The cumulative inventory required to overcome observation noise exceeds the regulatory limit ($\min_t |I_t| > I_{\max}$); or
@@ -1294,7 +1294,16 @@ Under the calibrated Binance USD$\circledS$-M order book depth ($V_{\max} = 50.0
 \label{iafig:phase_diagram}
 \end{figure}
 
-Figure~\ref{iafig:phase_diagram} illustrates the resulting phase diagram evaluated on a fine $100 \times 100$ grid spanning $\delta \in [0.01, 0.25]$ and $B \in [10, 100{,}000]$ USDT, using the calibrated parameters: $\kappa = 0.8$, $q = 0.2$, $\sigma = 0.01$, $\alpha = \beta = 0.05$, and Binance effective capacity $V_{\mathrm{eff}} = 6.25$ BTC. Under the restricted single-tap design ($T=3$, $\delta_{\min} = 0.2028$), exactly 1,949 points reside in the Feasible Region, 5,151 in the Costly Sequential Region, and 2,900 in the Infeasible Region. Under the multi-observation transient design ($T=20$, $\delta_{\min} = 0.0914$), the Feasible Region expands significantly, confirming that multi-period observation dramatically lowers the financial barriers to algorithmic market identification. The previously reported capital requirement of $4{,}305.25$ USDT at $\delta = 0.05$ is valid strictly under the single-tap constraint $T=3$; under the transient design ($T=20$), the required benchmark capital drops by $95.5\%$ to $193.62$ USDT ($182.02$ USDT volume-optimized; $384.12$ USDT executable saturating, $360.77$ USDT executable optimized).
+Figure~\ref{iafig:phase_diagram} illustrates the resulting phase diagram evaluated on a fine $100 \times 100$ grid spanning $\delta \in [0.01, 0.25]$ and $B \in [10, 100{,}000]$ USDT, using the calibrated parameters: $\kappa = 0.8$, $q = 0.2$, $\sigma = 0.01$, $\alpha = \beta = 0.05$, and Binance effective capacity $V_{\mathrm{eff}} = 6.25$ BTC. Under the restricted single-tap design ($T=3$, $\delta_{\min} = 0.2028$), exactly 1,949 points reside in the Feasible Region, 5,151 in the Costly Sequential Region, and 2,900 in the Infeasible Region. Under the multi-observation transient design ($T=20$, $\delta_{\min} = 0.0914$), the Feasible Region expands significantly, confirming that multi-period observation dramatically lowers the financial barriers to algorithmic market identification. The previously reported capital requirement of $4{,}305.25$ USDT at $\delta = 0.05$ is valid strictly under the single-tap constraint $T=3$; under the transient design ($T=20$), the required benchmark capital drops by $95.5\%$ to $193.62$ USDT ($182.02$ USDT volume-optimized; $384.12$ USDT executable saturating, $360.77$ USDT executable optimized). The region boundaries in Figure~\ref{iafig:phase_diagram} are drawn for the isolated-pulse design class; they are upper bounds on the true minimum capital, not the minimum itself.
+
+\subsection{Account-Level Capital and the Gap to the Lower Bound}
+\label{ia:account_capital}
+
+Theorem~2.9 is an order statement: required capital is $\Theta(\delta^{-4})$ and the isolated third-observation pulse attains that order. It does not identify the constant. At the calibrated parameters its explicit lower bound evaluates to $4.9\times10^{-4}$ USDT, roughly five orders of magnitude below any design we can execute, so the bound is correct but numerically uninformative. To measure what a trader actually needs, \texttt{exp13\_account\_capital.py} runs each design through an explicit ledger: fills at the average linear-book price, taker fees $\phi=4$ bp, marks to the prevailing price, and $0.5\%$ maintenance margin. Initial capital is $C_0=\max_t(\text{margin}_t-\text{equity}_t)$, maximised over both hypotheses, and the testing error uses the full price path including unwind legs.
+
+\input{../breakthrough_experiments/tables/table_account_capital.tex}
+
+Three conclusions follow from Table~\ref{iatab:account_capital}. First, twelve buys that are never unwound fail the $5\%$ target (KL $4.95<5.41$) once the test uses the joint price path rather than adding twelve independent per-pulse divergences, and they end with $75$ BTC of inventory. Second, if every unwind leg is itself treated as an informative probe, five or six buy/sell round trips meet the target with $158$--$189$ USDT and zero terminal inventory, so the pulse-class figure is attainable in a real account. Third, the pulse class is not optimal: the cost-minimising deterministic probe over a 120-step window (a generalised eigenvector of the executable round-trip cost form, which is positive definite with minimum eigenvalue $0.12$, so no round-trip arbitrage exists) needs about $65$ USDT, with maximum trade $1.25$ BTC and maximum price displacement $2.23$ USDT, inside the $5$ USDT limit. The exact minimum-capital design problem, including adaptive and randomised probes, remains open; the constant in Theorem~2.9 is not tight.
 
 \subsection{Probing Protocol Invariance and Universal \texorpdfstring{$\Theta(\delta^{-4})$}{Theta(delta\textasciicircum-4)} Scaling}
 \label{ia:probing_invariance}
@@ -1373,11 +1382,12 @@ To recover the true structural parameters without prior knowledge of $K$, we imp
 \item \textbf{Direct Closed-Loop Feedback Inversion:} Given recovered memory rates $\hat{\eta}_k$, invert the physical pricing relation $u_t = \frac{p_t - a p_{t-1}}{\kappa} = \sum_{k=1}^K w_k y_{k,t-1}$, where internal memory filters evolve as $y_{k,t} = (1 - \hat{\eta}_k) y_{k,t-1} + \hat{\eta}_k \Delta p_t$. Projecting unobserved algorithmic order flow $u_t$ onto the reconstructed filter basis $\{y_{k,t-1}\}$ resolves the structural cohort weights $w_k$ without confounding from closed-loop pole shifts.
 \end{enumerate}
 
-Evaluating this estimator on synthetic markets confirms exact recovery:
+Evaluating this estimator on synthetic markets gives exact recovery only for a single cohort or noiseless, well-separated cohorts:
 \begin{itemize}
 \item \textbf{Noiseless Benchmark ($K=1, \eta = 0.30, q = 0.20$):} The estimator blindly selects $\hat{K} = 1$, identifies the true memory pole $\hat{r} = 0.7000$ (numerical error $< 10^{-6}$), and recovers feedback weight $\hat{w} = 0.200000$ with $0.000\%$ error (resolving the previous $0.415$ bias from naive Hankel fitting).
 \item \textbf{Pure Dealer Edge Case ($K=0$):} In an economy with zero algorithmic learning, singular values truncate to order 0, identifying 0 transmission zeros and recovering strictly $0.0$ feedback weight.
-\item \textbf{Multi-Cohort Recovery ($K=2$, $\eta \in \{0.45, 0.25\}$):} In the noiseless regime, the estimator blindly recovers $[0.5500, 0.7500]$ and associated weights without model-order knowledge.
+\item \textbf{Multi-Cohort Recovery ($K=2$, $\eta \in \{0.45, 0.25\}$):} In the noiseless regime with well-separated rates, the estimator recovers poles $[0.5500, 0.7500]$ and both weights without model-order knowledge. This is the only multi-cohort case that succeeds.
+\item \textbf{Per-Cohort Failure Under Noise or Close Rates:} Scoring each weight separately (tolerance $0.01$), rather than only their sum, shows that recovery fails outside that case. For $K=2$ at $\sigma=10^{-3}$ per-cohort recovery is $0/50$ for well-separated rates; for the $\delta=0.05$ pair $\eta\in\{0.35,0.45\}$ ($\Delta\eta=0.10$) it fails even without noise; for $K=3$ it fails even without noise. In the \texttt{exp2} grid ($K\in\{2,3,5\}$, $\sigma\in\{10^{-4},10^{-3},5\times10^{-3}\}$) the per-cohort recovery rate is at most $0.07$ in every cell, while the earlier sum-of-weights metric looked accurate. A unit probe of $6.25$ BTC against price noise $\sigma=0.01$ gives effective impulse-response noise of about $0.0016$, inside the failure regime. Multi-cohort weight recovery is therefore an open problem, not a result of this paper.
 \item \textbf{Observation Noise and Model-Order Shrinkage ($\sigma \ge 0.005$):} When price observations contain measurement noise $\sigma \ge 0.005$, weak singular values fall below the noise threshold, inducing automatic shrinkage to the dominant single-cohort mode ($\hat{K} = 1$). While the dominant feedback mode is recovered robustly, general multi-cohort mixture recovery under arbitrary noise remains an open econometric challenge.
 \end{itemize}
 
@@ -1430,94 +1440,51 @@ Because active market probing imposes significant execution costs and risks inve
 \begin{itemize}
 \item $I_0$ (Public Tape Only): The observer observes noisy transaction prices $p_t$.
 \item $I_1$ (Public Prices and Aggregated Flow): The observer observes $p_t$ and executed flow $Q_t$.
-\item $I_2$ (Prices and Coarse Balance Sheet Disclosures): Periodic noisy reports of dealer marked equity ($\sigma_E = 0.50$, Proposition 2.8).
-\item $I_3$ (Prices and Audited Equity Marks): Exact marked equity reported at session close (Proposition 2.8).
-\item $I_4$ (Algorithmic Update Timestamps): Exact disclosure of the time intervals during which algorithms modify parameters.
+\item $I_2$ (Prices and Coarse Balance Sheet Disclosures): One independent noisy report of dealer marked equity per reset ($\sigma_E = 0.50$, Proposition 2.8).
+\item $I_3$ (Prices and Audited Equity Marks): Exact, infinite-precision marked equity reported at session close (Proposition 2.8); we also report the case of reports rounded to $0.01$ USDT.
+\item $I_4$ (Algorithmic Update Timestamps): Exact disclosure of the time intervals during which algorithms modify parameters. Timestamps do not enter any observable likelihood in our model, so we assign them no information value.
 \item $I_5$ (Full Supervisory Audit Registry): Continuous regulatory access to internal algorithm state logs.
 \end{itemize}
 
 \begin{figure}[tbp]\centering
 \includegraphics[width=0.75\textwidth]{figures/fig4_disclosure_frontier.pdf}
-\caption{The Information-Disclosure Value Frontier across Observation Contracts. Disclosing audited dealer equity marks ($I_3$, Proposition 2.8) substitutes for market-distorting active probing, collapsing required operational capital from the restricted price-only baseline ($4,305.25$ USDT) or transient design ($193.62$ USDT) down to $12.70$ USDT under CME standard 5 BTC contracts, $0.058$ USDT under CME micro 0.1 BTC contracts, or $0.028$ USDT under Binance 5 USDT minNotional rules (theoretical infimum $\inf C = 0$).}
+\caption{Disclosure contracts at $\delta=0.05$. Bars show pulse-design capital under the stated observation model of each contract. Noisy equity ($I_2$, independent per-reset reports) saves $1.5\%$ against the $T=3$ baseline and nothing against $T=20$; timestamps ($I_4$) are not modelled and give no saving. Exact-equity bars assume infinite-precision reports; the $0.01$ USDT-rounded bar ($15.52$ USDT) shows the effect of finite report precision.}
 \label{iafig:disclosure_frontier}
 \end{figure}
 
-\begin{table}[htbp]\centering\small
-\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts at $\delta = 0.05$. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from the restricted price-only baseline ($4,305.25$ USDT) or transient design ($193.62$ USDT) down to $0.028$ USDT under Binance 5 USDT minNotional rules or $0.058$ USDT under CME Micro Bitcoin futures (theoretical infimum $\inf C = 0$, Proposition 2.8).}
-\label{iatab:disclosure_frontier_comparison}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{llrrrrr}
-\toprule
-Contract & Disclosure Channel & Pulses ($N$) & Benchmark ($B$) & Executable ($B_{\mathrm{exec}}$) & Saving vs.\ $T=3$ & Saving vs.\ $T=20$ \\
-\midrule
-I0: Prices Only (Restricted $T=3$) & Public Prices Only & 271 & 4,305.25 & 8,607.38 & 0.0\% & -2123.5\% \\
-I0*: Prices Only (Transient $T=20$) & Full Price Path & 12 & 193.62 & 384.12 & 95.5\% & +0.0\% \\
-I1: Prices + Signed Flow & Public Flow Records & 12 & 193.62 & 384.12 & 95.5\% & +0.0\% \\
-I2: Prices + Noisy Equity (vs.\ $T=3$) & Noisy Statement ($\sigma_E=0.5$) & 104 & 1,654.12 & 3,305.12 & 61.6\% & -754.3\% \\
-I2*: Prices + Noisy Equity (vs.\ $T=20$) & Noisy Statement ($\sigma_E=0.5$) & 12 & 193.62 & 384.12 & 95.5\% & +0.0\% \\
-I3: Exact Equity (CME 5 BTC Std) & CME 5 BTC Standard Lot & 1 & 12.70 & 12.70 & 99.7\% & +93.4\% \\
-I3*: Exact Equity (CME 0.1 BTC Micro) & CME 0.1 BTC Micro Lot & 1 & 0.06 & 0.06 & 100.0\% & +100.0\% \\
-I3**: Exact Equity (Binance) & Binance 5 USDT minNotional & 1 & 0.03 & 0.03 & 100.0\% & +100.0\% \\
-I4: Known Timestamps & Event Study Window & 2 & 34.88 & 66.62 & 99.2\% & +82.0\% \\
-I5: Supervisory Audit Trail & Full Audit Registry & 0 & 0.00 & 0.00 & 100.0\% & +100.0\% \\
-\bottomrule
-\end{tabular}%
-}
-\end{table}
+\input{../breakthrough_experiments/tables/table_disclosure_frontier.tex}
 
-Table~\ref{iatab:disclosure_frontier_comparison} reports required probing volume and financial capital across observation contracts under both the restricted single-tap baseline ($T=3$) and the optimal transient design ($T=20$). For continuous, infinitely divisible order sizes, Proposition 2.8 establishes that the theoretical infimum of required capital under exact equity disclosure ($I_3$) is strictly $\inf C = 0$. In practice, exchange venue lot-size rules impose a positive operational lower bound: under CME standard 5.0 BTC contract units (ticker BTC), required benchmark capital is $12.70$ USDT; under CME Micro Bitcoin futures (ticker MBT, 0.1 BTC contract unit), required capital is $0.058$ USDT; under Binance USD$\circledS$-M linear perpetuals with a 5.00 USDT minimum notional threshold ($0.05$ BTC at calibrated reference price $P^* = 100$), required capital drops to $0.028$ USDT. Furthermore, Table~\ref{iatab:disclosure_frontier_comparison} evaluates disclosure savings against both the restricted $T=3$ baseline ($4{,}305.25$ USDT benchmark, $8{,}607.38$ USDT executable) and the optimal $T=20$ transient baseline ($193.62$ USDT benchmark, $384.12$ USDT executable). Periodic noisy accounting statements ($I_2$) provide a $61.6\%$ saving ($1{,}654.12$ USDT) against the single-tap benchmark ($4{,}305.25$ USDT), but offer $0.0\%$ incremental advantage against the multi-period transient baseline ($193.62$ USDT), as price trajectory dynamics alone match the informational content of noisy equity marks. In contrast, mandating audited dealer equity marks ($I_3$) collapses required capital by $93.4\%$ to $99.98\%$ even against the fully optimized $T=20$ price design. Crucially, this disclosure substitution rests on the econometric assumption that the supervisory observer knows the structural book accounting relationship mapping inventory to equity marks; when accounting reports contain substantial noise or reporting delays, the empirical value of disclosure contracts converges to the public price baseline. In contrast, supervisory audit registry access ($I_5$) requires zero trading volume ($V=0$) and zero capital ($C=0.00$), achieving passive verification without active market intervention.
+Table~\ref{iatab:disclosure_frontier_comparison} reports required probing volume and financial capital across observation contracts under both the restricted single-tap baseline ($T=3$) and the optimal transient design ($T=20$). For continuous, infinitely divisible order sizes, Proposition 2.8 establishes that the theoretical infimum of required capital under exact equity disclosure ($I_3$) is strictly $\inf C = 0$. In practice, exchange venue lot-size rules impose a positive operational lower bound: under CME standard 5.0 BTC contract units (ticker BTC), required benchmark capital is $12.70$ USDT; under CME Micro Bitcoin futures (ticker MBT, 0.1 BTC contract unit), required capital is $0.058$ USDT; under Binance USD$\circledS$-M linear perpetuals with a 5.00 USDT minimum notional threshold ($0.05$ BTC at calibrated reference price $P^* = 100$), required capital drops to $0.028$ USDT. Furthermore, Table~\ref{iatab:disclosure_frontier_comparison} evaluates disclosure savings against both the restricted $T=3$ baseline ($4{,}305.25$ USDT benchmark, $8{,}607.38$ USDT executable) and the optimal $T=20$ transient baseline ($193.62$ USDT benchmark, $384.12$ USDT executable). Periodic noisy accounting statements ($I_2$) are modelled as one independent Gaussian report per reset with $\sigma_E=0.5$, so divergence accumulates linearly, $\mathrm{KL}=N\Delta E^2/(2\sigma_E^2)$, not quadratically in $N$. Under that model $I_2$ needs $267$ resets ($4{,}241.75$ USDT) and saves only $1.5\%$ against the single-tap benchmark, and nothing against the $T=20$ price design. An earlier version of this table used $(N\Delta E)^2/(2\sigma_E^2)$ and reported $104$ resets and a $61.6\%$ saving; at $104$ resets the true testing error is $15.2\%$, so that figure is withdrawn. A single cumulative statement whose signal grows as $N\Delta E$ would be a different experiment that we have not modelled. Algorithmic update timestamps ($I_4$) do not enter the likelihood of any observable in our model, so they add no information and no saving is established; the earlier $82\%$ saving relied on an assumed $7.32\times$ information multiplier, and the two-pulse design it implied has a true price-only testing error of $24.4\%$. The audited-equity rows ($I_3$) assume a noiseless, infinite-precision report and a known accounting map from inventory to equity. The equity difference between hypotheses is $\Delta E=\kappa^2 q\delta^2V^2$, which is $8\times10^{-7}$ USDT at $V=0.05$ BTC; if reports are rounded to $0.01$ USDT, a guaranteed change requires $V\ge5.59$ BTC and $15.52$ USDT, so the Binance and CME-micro figures hold only under infinite precision. The flow contract ($I_1$) depends on an assumed flow-noise level $\sigma_q=0.05$ and gives no saving at $\delta=0.05$. Finally, supervisory audit registry access ($I_5$) requires zero trading volume ($V=0$) and zero capital ($C=0.00$), achieving passive verification without active market intervention.
 
-\subsection{Non-Normal Balance Sheet Decoupling and Multi-Asset Cross-Impact Inflation}
+\subsection{Coordinate-Weighted Output Sensitivity and Multi-Asset Cross-Impact}
 \label{ia:nonnormal_decoupling}
 
-We now examine the relationship between price stability and dealer balance-sheet sensitivity. Let the joint closed-loop state vector be $z_t = (p_t - p^*, \, I_t)^\top \in \R^2$, evolving according to:
+We now examine output-weighted amplification in the closed-loop price system. The state used in \texttt{exp12\_nonnormal\_balance\_sheet.py} is $z_t=(x_t,\,y_t)^\top$, where $x_t$ is the price deviation and $y_t$ the algorithmic memory, evolving as
 \begin{equation}
-z_{t+1} = J z_t + \begin{pmatrix} \lambda \\ 1 \end{pmatrix} u_t, \qquad J = \begin{pmatrix} 1 - \lambda \gamma & \lambda \theta \\ -\gamma & 1 - \theta \end{pmatrix}.
+z_{t+1} = J z_t, \qquad J = \begin{pmatrix} a & \kappa q \\ \eta a & 1-\eta+\eta\kappa q \end{pmatrix},
 \end{equation}
-While the closed-loop system is spectrally stable ($\rho(J) = 0.8224 < 1$), the matrix $J$ is non-normal ($J J^\top \neq J^\top J$).
+with $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.3$. The closed-loop system is spectrally stable ($\rho(J)=0.8224<1$) and $J$ is non-normal. An earlier version described the second coordinate as dealer inventory; it is algorithmic memory. \emph{The state contains no dealer inventory, cash or equity.}
 
-\begin{proposition}[Balance Sheet Decoupling and Coordinate Sensitivity]
+\begin{proposition}[Coordinate-Weighted Output Sensitivity]
 \label{prop:balance_sheet_decoupling}
-Let $C_{\mathrm{price}} = (1, 0)$ denote the price deviation operator, and let $C_{\mathrm{margin}} \equiv (1, \, \frac{\lambda}{\mathrm{MMR}})$ denote the leveraged dealer margin utilization operator, where $\mathrm{MMR} = 0.005$ is the Binance USD$\circledS$-M maintenance margin rate. Then:
+Let $C_{\mathrm{price}} = (1, 0)$ and let $C_w \equiv (1, \lambda/\mathrm{MMR}) = (1,160)$ with $\lambda=0.8$ and $\mathrm{MMR}=0.005$. Then:
 \begin{enumerate}[label=(\roman*)]
-\item The price operator exhibits monotonic damping without transient amplification:
-\begin{equation}
-M_{C_{\mathrm{price}}} \equiv \sup_{t \ge 0} \|C_{\mathrm{price}} J^t\|_2 = 1.0.
-\end{equation}
-\item The leveraged dealer margin operator achieves its supremum strictly at time zero:
-\begin{equation}
-M_{C_{\mathrm{margin}}} \equiv \sup_{t \ge 0} \|C_{\mathrm{margin}} J^t\|_2 = \|C_{\mathrm{margin}} J^0\|_2 = 160.003,
-\end{equation}
-and decays monotonically thereafter ($\|C_{\mathrm{margin}} J^1\|_2 = 122.319$, $\|C_{\mathrm{margin}} J^2\|_2 = 98.322$, $\|C_{\mathrm{margin}} J^3\|_2 = 80.793$). The multiplier reflects the static coordinate weighting $\frac{\lambda}{\mathrm{MMR}} = \frac{0.8}{0.005} = 160.0$, rather than dynamic transient growth.
+\item $M_{C_{\mathrm{price}}} \equiv \sup_{t \ge 0} \|C_{\mathrm{price}} J^t\|_2 = 1.0$, so the price output has no transient amplification.
+\item $M_{C_w} \equiv \sup_{t \ge 0} \|C_w J^t\|_2 = \|C_w\|_2 = 160.003$, attained at $t=0$, and it decays monotonically thereafter ($122.319$, $98.322$, $80.793$ at $t=1,2,3$).
 \end{enumerate}
 \end{proposition}
 
+The factor $160$ is the static coordinate weight $\lambda/\mathrm{MMR}$, not dynamic transient growth. Because the state has no inventory, $C_w z_t$ is not a margin calculation: for example $z=(0,0.005)$ gives $C_w z=0.8$ with zero holdings. The earlier interpretation of $C_w$ as a ``leveraged dealer margin operator'' and of its exceedance of the $4.55\%$ figure as margin depletion is withdrawn.
+
 \begin{figure}[tbp]\centering
 \includegraphics[width=0.75\textwidth]{figures/fig5_nonnormal_decoupling.pdf}
-\caption{Non-Normal Balance Sheet Decoupling and Cross-Impact Network Inflation ($\mathcal{K}(J) \equiv 1.00$). Left panel: The price output operator $C_{\mathrm{price}} J^t$ decays monotonically ($M_C = 1.0$). The leveraged dealer balance sheet operator $C_{\mathrm{margin}} J^t$ achieves its peak at $t=0$ ($M_C = 160.0$) and decays monotonically thereafter. Right panel: Multi-asset cross-impact networks inflate the spectral radius $\rho(J_{\mathrm{network}}) \to 1.0$, while the Kreiss constant remains $\mathcal{K}(J) \equiv 1.00$ across asset dimensions $M \in \{1, 2, 5, 10\}$.}
+\caption{Coordinate-weighted output and cross-impact networks ($\mathcal{K}(J) \equiv 1.00$). Left panel: the price output $C_{\mathrm{price}} J^t$ decays monotonically ($M_C = 1.0$); the weighted output $C_w J^t$ peaks at $t=0$ ($160.0$, the coordinate weight) and decays thereafter. It is not a margin quantity. Right panel: cross-impact raises the spectral radius toward $1$ while the Kreiss constant stays at $1.00$ for $M \in \{1, 2, 5, 10\}$.}
 \label{iafig:nonnormal_decoupling}
 \end{figure}
 
-\begin{table}[htbp]\centering\small
-\caption{Non-Normal Operator Amplification vs. Static Maintenance Margin Tiers. While single-asset price-only output has peak gain $M_C = 1.0$ (no Kreiss amplification, Lemma 2.6), the leveraged dealer balance-sheet operator exhibits $M_C = 160.0$. Following a 50 bps initial shock, unhedged operator output surges to 15.11\%--17.12\%, exceeding the static 4.55\% threshold for $L=20$ leverage under a 1:1 inventory exposure mapping (in dynamic simulation with hedged inventories, actual dealer liquidation rate is 0.0\%, Table~\ref{iatab:causal_multi_agent_intervention}).}
-\label{iatab:nonnormal_cross_impact_kreiss}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{lcccccc}
-\toprule
-Assets $M$ & State Dim & Spectral Radius $\rho(J)$ & Kreiss $\mathcal{K}(J)$ & Initial Shock & Unhedged Operator Output & Exceeds Static $L=20$ (4.55\%) \\
-\midrule
-1 & 2 & 0.8224 & 1.00 & 0.50\% & 15.11\% & Yes \\
-2 & 4 & 0.8407 & 1.00 & 0.50\% & 15.22\% & Yes \\
-5 & 10 & 0.8913 & 1.00 & 0.50\% & 15.68\% & Yes \\
-10 & 20 & 0.9671 & 1.00 & 0.50\% & 17.12\% & Yes \\
-\bottomrule
-\end{tabular}%
-}
-\end{table}
+\input{../breakthrough_experiments/tables/table_nonnormal_decoupling.tex}
 
-Table~\ref{iatab:nonnormal_cross_impact_kreiss} and Figure~\ref{iafig:nonnormal_decoupling} clarify the vital distinction between static operator sensitivity benchmarks and dynamic systemic solvency. Following an initial 50 bps disturbance, the pure price output decays monotonically without amplifying. For the balance sheet operator $C_{\mathrm{margin}}$, $\|C_{\mathrm{margin}} J^t\|_2$ achieves its maximum at $t=0$ ($160.003$) and decays monotonically for all $t \ge 1$ ($122.319 \to 98.322 \to 80.793 \dots$). The $160\times$ multiplier is therefore an unhedged coordinate-weighting sensitivity benchmark, reflecting the high ratio of price impact to maintenance margin ($\lambda / \mathrm{MMR} = 160.0$), rather than dynamic transient growth.
-
-Under an unhedged 1:1 exposure mapping, a 50 bps shock yields an unhedged operator output of 15.11\%--17.12\%, which exceeds the static 4.55\% threshold for $L=20$ leverage. However, in authentic closed-loop multi-agent execution where dealers manage inventory and earn the bid-ask spread, dealers remain fully solvent, yielding an empirical liquidation rate of 0.0\% (Table~\ref{iatab:causal_multi_agent_intervention}).
+Account-level margin must be computed from recorded holdings. In the closed-loop multi-agent ledger, where dealers hold inventory and earn the spread, the liquidation rate is $0.0\%$ (Table~\ref{iatab:causal_multi_agent_intervention}); this is specific to that model and its parameters. The probe ledger in Section~\ref{ia:account_capital} tracks the trader's own margin.
 In multi-asset markets with $M \in \{1, 2, 5, 10\}$ correlated instruments, asymmetric cross-impact coupling inflates the network spectral radius toward unity ($\rho(J_{\mathrm{network}}) = 0.9671$ for $M=10$), while the Kreiss constant remains $\mathcal{K}(J) \equiv 1.00$. This confirms that multi-asset algorithmic cross-hedging amplifies persistence and inventory sensitivity without inducing transient non-normal pseudospectral instability.
 
 \subsection{Observable-Data Bridge and Spurious Feedback Orthogonalization}
@@ -1544,10 +1511,10 @@ Crucially, in an economy with genuine positive feedback ($\gamma = 0.20$), regre
 \section{Formal Proof Coverage and Theorem-to-Code Mapping}
 \label{ia:formal_proof_coverage}
 
-To guarantee verifiable scientific integrity and prevent overclaiming, Table~\ref{tab:claim_map} establishes the exact correspondence between each mathematical statement in the manuscript, its kernel-checked Lean 4 formal subresult, and its automated Python empirical test in the scientific test suite.
+Table~\ref{tab:claim_map} maps each mathematical statement in the manuscript to the Lean~4 declarations that support it, the formal-coverage status recorded in \texttt{MANUSCRIPT\_COVERAGE.md}, and the Python test that checks it numerically. The automated bridge builds the named Lean declarations and audits them for \texttt{sorry} and unapproved axioms; it does not verify that a declaration states the full manuscript theorem.
 
 \input{generated/claim_to_code_map.tex}
 
-As documented in \texttt{MANUSCRIPT\_COVERAGE.md}, the 262 kernel-checked Lean 4 declarations formalize essential foundational subresults (including Gaussian KL divergence bounds, Toeplitz operator coercivity, Kreiss safe radius bounds, matrix power monotonicity, and disclosure solvency). Full end-to-end formalization of the complete manuscript remains an open scientific program. In particular, external classical mathematical theorems (such as Spijker's 1991 resolvent bound) enter strictly as explicit named hypotheses rather than unproved axioms.
+As documented in \texttt{MANUSCRIPT\_COVERAGE.md}, the 262 kernel-checked Lean~4 declarations formalize foundational subresults (including Gaussian KL divergence bounds, Toeplitz operator coercivity, Kreiss safe radius bounds, matrix power monotonicity, and disclosure solvency). Of the 17 statements in Table~\ref{tab:claim_map}, only one is fully formalized; five are partially formalized, seven have formalized subresults with remaining proof obligations, two are not formalized, and two are not yet listed in the coverage document. Full end-to-end formalization of the manuscript remains open; no statement other than the fully formalized one should be read as machine-checked. In particular, external classical mathematical theorems (such as Spijker's 1991 resolvent bound) enter strictly as explicit named hypotheses rather than unproved axioms.
 
 \end{document}

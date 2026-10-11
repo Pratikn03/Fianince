@@ -123,7 +123,7 @@ def make_table_disclosure():
         
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts at $\delta = 0.05$. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from the restricted price-only baseline ($4,305.25$ USDT) or transient design ($193.62$ USDT) down to $0.028$ USDT under Binance 5 USDT minNotional rules or $0.058$ USDT under CME Micro Bitcoin futures (theoretical infimum $\inf C = 0$, Proposition 2.8).}",
+        r"\caption{Disclosure Contracts at $\delta = 0.05$ under Stated Observation Models. Noisy equity ($I_2$) is one independent Gaussian report per reset, so its information adds linearly; it saves 1.5\% against the restricted $T=3$ baseline and nothing against $T=20$. Timestamps ($I_4$) have no hypothesis-dependent likelihood in this model and therefore add no information; no saving is established. Exact-equity rows ($I_3$) assume a noiseless, infinite-precision report; with reports rounded to 0.01 USDT a single trade must be at least 5.59 BTC (15.52 USDT). Pulse-design capital is the simplified one-leg benchmark; account-level capital is reported in Table~\ref{iatab:account_capital}.}",
         r"\label{iatab:disclosure_frontier_comparison}",
         r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{llrrrrr}",
@@ -141,7 +141,8 @@ def make_table_disclosure():
         ("I3_Exact_Equity_CME_Std_5BTC", "I3: Exact Equity (CME 5 BTC Std)", "CME 5 BTC Standard Lot"),
         ("I3_Exact_Equity_CME_Micro_0_1BTC", "I3*: Exact Equity (CME 0.1 BTC Micro)", "CME 0.1 BTC Micro Lot"),
         ("I3_Exact_Equity_Binance_minNotional", "I3**: Exact Equity (Binance)", "Binance 5 USDT minNotional"),
-        ("I4_Timestamps_Event_Study", "I4: Known Timestamps", "Event Study Window"),
+        ("I3_Exact_Equity_Cent_Rounded", "I3$^\\dagger$: Exact Equity, 0.01 USDT rounding", "Rounded report"),
+        ("I4_Timestamps_Event_Study", "I4: Known Timestamps (not modelled)", "No timestamp likelihood"),
         ("I5_Supervisory_Audit", "I5: Supervisory Audit Trail", "Full Audit Registry")
     ]
     
@@ -184,17 +185,17 @@ def make_table_nonnormal():
     
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{Non-Normal Operator Amplification vs. Static Maintenance Margin Tiers. While single-asset price-only output has peak gain $M_C = 1.0$ (no Kreiss amplification, Lemma 2.6), the leveraged dealer balance-sheet operator exhibits $M_C = 160.0$. Following a 50 bps initial shock, unhedged operator output surges to 15.11\%--17.12\%, exceeding the static 4.55\% threshold for $L=20$ leverage under a 1:1 inventory exposure mapping (in dynamic simulation with hedged inventories, actual dealer liquidation rate is 0.0\%, Table~\ref{iatab:causal_multi_agent_intervention}).}",
+        r"\caption{Coordinate-Weighted Operator Output in the (Price, Algorithmic-Memory) State. The state contains no dealer inventory, cash, or equity; the weighted row $C_w=(1,160)$ is a mathematical output, not a margin computation, and its comparison with the 4.55\% figure is not evidence of margin depletion. Account-based margin from recorded holdings is reported in Table~\ref{iatab:causal_multi_agent_intervention} (0.0\% liquidations) and Section~\ref{ia:account_capital}.}",
         r"\label{iatab:nonnormal_cross_impact_kreiss}",
         r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{lcccccc}",
         r"\toprule",
-        r"Assets $M$ & State Dim & Spectral Radius $\rho(J)$ & Kreiss $\mathcal{K}(J)$ & Initial Shock & Unhedged Operator Output & Exceeds Static $L=20$ (4.55\%) \\",
+        r"Assets $M$ & State Dim & Spectral Radius $\rho(J)$ & Kreiss $\mathcal{K}(J)$ & Initial Shock & Peak Weighted Output $C_w z_t$ & $C_w z_t > 4.55$ \\",
         r"\midrule"
     ]
     
     for r in net:
-        lines.append(f"{r['assets_M']} & {r['state_dim']} & {r['spectral_radius']:.4f} & {r['kreiss_constant']:.2f} & {r['initial_shock_pct']:.2f}\\% & {r['peak_margin_depletion_pct']:.2f}\\% & {'Yes' if r['margin_breaches_L20'] else 'No'} \\\\")
+        lines.append(f"{r['assets_M']} & {r['state_dim']} & {r['spectral_radius']:.4f} & {r['kreiss_constant']:.2f} & {r['initial_shock_pct']:.2f}\\% & {r['peak_weighted_output_pct']:.2f} & {'Yes' if r['weighted_output_exceeds_4_55'] else 'No'} \\\\")
         
     lines.extend([
         r"\bottomrule",
@@ -206,7 +207,30 @@ def make_table_nonnormal():
     (OUT_DIR / "table_nonnormal_decoupling.tex").write_text("\n".join(lines) + "\n")
     print("Table 4 (Non-Normal Decoupling) generated.")
 
+# -------------------------------------------------------------
+# Table 5: Account-Level Capital (exp13)
+# -------------------------------------------------------------
+def make_table_account_capital():
+    with open("breakthrough_experiments/results_exp13_account_capital.json") as f:
+        data = json.load(f)
+    lines = [
+        r"\begin{table}[htbp]\centering\small",
+        r"\caption{Account-Level Initial Capital at $\delta=0.05$. Each design is run through an explicit trader ledger (fills at the average linear-book price, taker fees, marks, 0.5\% maintenance margin); $C_0=\max_t(\text{margin}_t-\text{equity}_t)$, maximised over both hypotheses. KL uses the full price path including unwind legs. The formula benchmark for 12 one-leg pulses is " + f"{data['formula_benchmark_12_pulses']:.2f}" + r" USDT; the Theorem~2.9 lower bound at these parameters is " + f"{data['theorem_2_9_capital_lower_bound']:.1e}" + r" USDT.}",
+        r"\label{iatab:account_capital}",
+        r"\resizebox{\textwidth}{!}{%",
+        r"\begin{tabular}{lrrrrrr}",
+        r"\toprule",
+        r"Design & $C_0$ (USDT) & Error & End inventory & Peak margin & Max $|v_t|$ & Trades \\",
+        r"\midrule",
+    ]
+    for d in data["designs"]:
+        lines.append(f"{d['design']} & {d['C0_required']:.2f} & {d['testing_error']:.4f} & {d['end_inventory']:.2f} & {d['peak_margin']:.2f} & {d['max_abs_trade']:.2f} & {d['n_trades']} \\\\")
+    lines.extend([r"\bottomrule", r"\end{tabular}%", r"}", r"\end{table}"])
+    (OUT_DIR / "table_account_capital.tex").write_text("\n".join(lines) + "\n")
+    print("Table 5 (Account Capital) generated.")
+
 if __name__ == "__main__":
+    make_table_account_capital()
     make_table_probing()
     make_table_causal()
     make_table_disclosure()

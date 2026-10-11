@@ -180,9 +180,9 @@ def plot_fig4():
         data = json.load(f)
         
     d5 = data["delta_0.05"]
-    c_names = ["I0 (T=3)", "I0* (T=20)", "I1 Flow", "I2 (vs T=3)", "I2* (vs T=20)", "I3 CME Std", "I3 Micro", "I3* Binance", "I4 Event", "I5 Audit"]
+    c_names = ["I0 (T=3)", "I0* (T=20)", "I1 Flow", "I2 (vs T=3)", "I2* (vs T=20)", "I3 CME Std", "I3 Micro", "I3* Binance", "I3 0.01 tick", "I4 (no model)", "I5 Audit"]
     keys = ["I0_Prices_Only_Restricted_T3", "I0_Prices_Only_Optimal_T20", "I1_Prices_and_Flow", "I2_Noisy_Equity_T3", "I2_Noisy_Equity_T20", 
-            "I3_Exact_Equity_CME_Std_5BTC", "I3_Exact_Equity_CME_Micro_0_1BTC", "I3_Exact_Equity_Binance_minNotional", "I4_Timestamps_Event_Study", "I5_Supervisory_Audit"]
+            "I3_Exact_Equity_CME_Std_5BTC", "I3_Exact_Equity_CME_Micro_0_1BTC", "I3_Exact_Equity_Binance_minNotional", "I3_Exact_Equity_Cent_Rounded", "I4_Timestamps_Event_Study", "I5_Supervisory_Audit"]
     
     caps = [max(0.01, d5[k]["required_capital_B"]) for k in keys]
     vols = [d5[k]["required_volume_V"] for k in keys]
@@ -207,7 +207,7 @@ def plot_fig4():
     
     ax1.set_xticks(x)
     ax1.set_xticklabels(c_names, rotation=15, ha='right')
-    ax1.set_title(r'The Disclosure Frontier at $\delta = 0.05$: Multi-Observation & Contract Rules')
+    ax1.set_title(r'Disclosure contracts at $\delta = 0.05$ (I2: independent reports; I3: noiseless unless rounded)')
     ax1.grid(True, axis='y', ls='--', alpha=0.3)
     
     plt.tight_layout()
@@ -231,13 +231,13 @@ def plot_fig5():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4.5))
     
     # Left: Decoupling Bar Chart
-    labels = ['Price-Only Output\nC = [1, 0]', 'Margin Operator\nC = [1, lambda/MMR]']
+    labels = ['Price Output\nC = [1, 0]', 'Weighted (price, memory)\nC = [1, 160] (not a margin)']
     gains = [1.0, 160.003]
     colors = ['steelblue', 'crimson']
     
     bars = ax1.bar(labels, gains, color=colors, alpha=0.85, edgecolor='black', width=0.5)
     ax1.set_ylabel('Peak Transient Amplification Gain $M_C$')
-    ax1.set_title('Harmonizing Lemma 2.6 with Dealer Balance Sheet')
+    ax1.set_title('Coordinate-weighted operator gain (no holdings in state)')
     ax1.grid(True, axis='y', ls='--', alpha=0.3)
     for bar in bars:
         yval = bar.get_height()
