@@ -124,3 +124,102 @@ def test_observable_bridge_quasi_diff_and_shift():
     res_purged = run_bridge_simulation(seed=42, true_gamma=0.0, flow_persistence=0.80, use_quasi_diff=True, time_shift=0)
     assert abs(res_purged["beta"]) < 0.10, "Quasi-differenced slope must be near zero"
     assert abs(res_purged["t_stat"]) < 2.0, "Quasi-differenced t-stat must be non-significant"
+
+# ----------------------------------------------------------------------
+# 6. Test Proposition 2.8 Equity Delta^2 Scaling & BDD-06 (exp7 / TC-0701)
+# ----------------------------------------------------------------------
+def test_proposition_2_8_equity_delta_squared_scaling():
+    """Verify Scenario BDD-06: at A=20.28, delta=0.05, equity error is ~44.8%, not 5%."""
+    from scipy.stats import norm
+    kappa = 0.8
+    q = 0.2
+    delta = 0.05
+    A_old = 20.28
+    sigma_E = 0.50
+    
+    # Exact equity difference from Proposition 2.8: Delta E = kappa^2 * q * A^2 * delta^2
+    delta_E = (kappa**2) * q * (A_old**2) * (delta**2) # ~0.1316
+    d_prime = delta_E / sigma_E # ~0.2632
+    err_rate = norm.cdf(-0.5 * d_prime) # ~0.448
+    
+    assert np.isclose(err_rate, 0.448, atol=0.01), f"Expected error ~0.448 under old volume, got {err_rate}"
+    
+    # Required volume for alpha = 0.05:
+    z_alpha = norm.ppf(0.95)
+    A_req_correct = (1.0 / delta) * np.sqrt((2.0 * sigma_E * z_alpha) / (kappa**2 * q))
+    assert np.isclose(A_req_correct, 71.70, atol=0.1), f"Expected A_req ~71.70, got {A_req_correct}"
+
+# ----------------------------------------------------------------------
+# 7. Test Structural Gamma Recovery vs Reduced-Form Attenuation (exp8 / TC-0802)
+# ----------------------------------------------------------------------
+def test_structural_gamma_recovery():
+    """Verify Scenario BDD-07: structural memory regression recovers gamma ~0.20."""
+    results_path = Path("breakthrough_experiments/results_exp8_observable_bridge.json")
+    if results_path.exists():
+        data = json.loads(results_path.read_text())
+        rec = data["structural_recovery_true_gamma_0_20"]
+        assert abs(rec["mean_recovered_gamma_structural"] - 0.20) < 0.02, "Structural estimator must recover gamma = 0.20 within 0.02"
+        assert rec["mean_recovered_gamma_reduced_form"] < 0.05, "Reduced-form lag regression must show attenuation (~0.02)"
+
+# ----------------------------------------------------------------------
+# 8. Test Frozen Policy Nonzero Flow & Policy Freeze (exp10 / TC-0903)
+# ----------------------------------------------------------------------
+def test_frozen_policy_nonzero_execution():
+    """Verify Scenario BDD-08: frozen policy executes nonzero trades and has distinct drawdown."""
+    results_path = Path("breakthrough_experiments/results_exp10_multi_agent.json")
+    if results_path.exists():
+        data = json.loads(results_path.read_text())
+        summary = data["conditions_summary"]
+        dd_p0 = summary["P0_Baseline"]["mean_dealer_drawdown"]
+        dd_frozen = summary["P2_Frozen_Policy"]["mean_dealer_drawdown"]
+        dd_active = summary["P2_Active_Learning"]["mean_dealer_drawdown"]
+        
+        # Frozen policy must differ from P0 because it executes nonzero flow
+        assert dd_frozen > dd_p0, "Frozen policy must execute nonzero flow, producing distinct drawdown from baseline"
+        # All liquidation rates must be 0
+        for cond, stats in summary.items():
+            assert stats["liquidation_rate"] == 0.0, f"Liquidation rate in {cond} must be 0.0"
+
+# ----------------------------------------------------------------------
+# 9. Test Adaptive Probing Measurability (exp3 / TC-0501 / BDD-05)
+# ----------------------------------------------------------------------
+def test_adaptive_probing_measurability():
+    """Verify Scenario BDD-05: adaptive policy chooses different actions given different histories."""
+    from breakthrough_experiments.exp3_adaptive_probing import compute_adaptive_probe
+    
+    hist_high_response = [0.05, 0.08, 0.12]
+    hist_flat_response = [0.00, 0.00, 0.00]
+    
+    a1 = compute_adaptive_probe(hist_high_response, t=3, V_target=40.0)
+    a2 = compute_adaptive_probe(hist_flat_response, t=3, V_target=40.0)
+    
+    assert a1 != a2, "Adaptive policy MUST produce different actions after different feasible observation histories"
+    assert a1 < a2, "High response history should throttle probe to conserve capital"
+
+# ----------------------------------------------------------------------
+# 10. Test Known-Pair Third Observation Separation (TC-0201 / BDD-01)
+# ----------------------------------------------------------------------
+def test_known_pair_third_observation_separation():
+    """Verify Scenario BDD-01: first two observations have identical means; third differs by kappa^2 q A delta^2."""
+    from breakthrough_experiments.exp3_adaptive_probing import get_mean_trajectory
+    
+    A_probe = 10.0
+    delta = 0.05
+    kappa = 0.8
+    q = 0.2
+    
+    v_seq = np.zeros(10)
+    v_seq[0] = A_probe # single pulse at t=0
+    
+    mu_0 = get_mean_trajectory(v_seq, delta=delta, T=10, kappa=kappa, q=q, split=False)
+    mu_1 = get_mean_trajectory(v_seq, delta=delta, T=10, kappa=kappa, q=q, split=True)
+    
+    # First observation (t=1): x_1 = kappa * v_0 = 8.0 for both
+    assert np.isclose(mu_0[0], mu_1[0]), "Observation 1 mean must be identical across both models"
+    # Second observation (t=2): identical means because both models have merged weight q at common rate eta
+    assert np.isclose(mu_0[1], mu_1[1]), "Observation 2 mean must be identical across both models"
+    # Third observation (t=3): deterministic difference in magnitude kappa^2 * q * A * delta^2
+    diff_obs3 = abs(mu_1[2] - mu_0[2])
+    expected_diff = (kappa**2) * q * A_probe * (delta**2)
+    assert np.isclose(diff_obs3, expected_diff, atol=1e-5), f"Observation 3 difference must equal {expected_diff}, got {diff_obs3}"
+

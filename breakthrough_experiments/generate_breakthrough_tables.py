@@ -20,6 +20,7 @@ def make_table_probing():
         r"\begin{table}[htbp]\centering\small",
         r"\caption{Comparison of Probing Strategies under Varying Memory Separation $\delta$. Across all four protocols, required capital scales strictly as $\Theta(\delta^{-4})$, confirming the invariance of the fundamental Fisher information lower bound.}",
         r"\label{iatab:probing_methods_comparison}",
+        r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{llrrrr}",
         r"\toprule",
         r"Protocol & $\delta$ & Executed Vol ($V$) & Max Inventory & Error $\alpha$ & Capital Cost (USDT) \\",
@@ -41,7 +42,8 @@ def make_table_probing():
         
     lines.extend([
         r"\bottomrule",
-        r"\end{tabular}",
+        r"\end{tabular}%",
+        r"}",
         r"\end{table}"
     ])
     
@@ -57,10 +59,16 @@ def make_table_causal():
         data = full["conditions_summary"]
         causal = full["causal_intervention"]
         
+    af_diff = causal["active_minus_frozen_drawdown_mean"]
+    af_t = causal["active_minus_frozen_t_stat"]
+    ap_diff = causal["active_minus_persistent_drawdown_mean"]
+    ap_t = causal["active_minus_persistent_t_stat"]
+    
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{Causal Multi-Agent Microstructure Intervention: Policy-Freeze vs. Persistent Flow. Online learning adaptation (P2 Active) induces a controlled, moderate drawdown increase over a frozen copy (P2 Frozen; $+9.86$ USDT, $t = 4.10$). In contrast, non-adaptive autocorrelated TWAP order splitting (P1 Persistent) induces much larger dealer inventory accumulation and drawdowns ($218.50$ USDT), demonstrating the dominant role of flow autocorrelation in dealer liquidity strain.}",
+        r"\caption{Causal Multi-Agent Microstructure Intervention: Policy-Freeze vs. Persistent Flow. Online learning adaptation ($P_2$ Active) is evaluated against an exact frozen policy snapshot ($P_2$ Frozen; $\eta = 0$) and autocorrelated TWAP order splitting ($P_1$ Persistent). Flow autocorrelation induces large dealer inventory accumulation and drawdowns ($" + f"{data['P1_Persistent_Flow']['mean_dealer_drawdown']:.2f}" + r"$ USDT), demonstrating the dominant role of flow autocorrelation in dealer liquidity strain.}",
         r"\label{iatab:causal_multi_agent_intervention}",
+        r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{lrrrrr}",
         r"\toprule",
         r"Population / Treatment & Volatility & Return Autocorr & Mean Drawdown & SE & Liquidation Rate \\",
@@ -78,18 +86,14 @@ def make_table_causal():
         row = data[k]
         lines.append(f"{labels[k]} & {row['mean_volatility']:.4f} & {row['mean_return_autocorr']:+.4f} & {row['mean_dealer_drawdown']:,.2f} & {row['std_dealer_drawdown']:,.2f} & {row['liquidation_rate']*100:.1f}\\% \\\\")
         
-    af_diff = causal["active_minus_frozen_drawdown_mean"]
-    af_t = causal["active_minus_frozen_t_stat"]
-    ap_diff = causal["active_minus_persistent_drawdown_mean"]
-    ap_t = causal["active_minus_persistent_t_stat"]
-    
     lines.extend([
         r"\midrule",
         f"\\multicolumn{{6}}{{l}}{{\\textbf{{Causal Treatment Effects (Matched Seeds):}}}} \\\\",
-        f"Active vs. Frozen Policy (Pure Learning Effect): & \\multicolumn{{5}}{{l}}{{+{af_diff:.2f} USDT ($t = {af_t:.2f}$)}} \\\\",
-        f"Active vs. Persistent Flow (Autocorrelation Effect): & \\multicolumn{{5}}{{l}}{{{ap_diff:.2f} USDT ($t = {ap_t:.2f}$)}} \\\\",
+        f"Active vs. Frozen Policy (Pure Learning Effect): & \\multicolumn{{5}}{{l}}{{{af_diff:+.2f} USDT ($t = {af_t:.2f}$)}} \\\\",
+        f"Active vs. Persistent Flow (Autocorrelation Effect): & \\multicolumn{{5}}{{l}}{{{ap_diff:+.2f} USDT ($t = {ap_t:.2f}$)}} \\\\",
         r"\bottomrule",
-        r"\end{tabular}",
+        r"\end{tabular}%",
+        r"}",
         r"\end{table}"
     ])
     
@@ -105,8 +109,9 @@ def make_table_disclosure():
         
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts. Disclosing audited dealer equity marks (I3) substitutes for market-distorting active probing, collapsing required operational capital from 4,282.93 USDT down to 0.94 USDT under discrete contract lot constraints (theoretical infimum $\inf C = 0$).}",
+        r"\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from 4,282.93 USDT down to 0.94 USDT under discrete contract lot constraints (theoretical infimum $\inf C = 0$).}",
         r"\label{iatab:disclosure_frontier_comparison}",
+        r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{llrrrr}",
         r"\toprule",
         r"Contract & Information Level & Required $V$ ($\delta=0.05$) & Capital $B$ ($\delta=0.05$) & Capital $B$ ($\delta=0.08$) & Capital Savings \\",
@@ -137,7 +142,8 @@ def make_table_disclosure():
         
     lines.extend([
         r"\bottomrule",
-        r"\end{tabular}",
+        r"\end{tabular}%",
+        r"}",
         r"\end{table}"
     ])
     
@@ -157,6 +163,7 @@ def make_table_nonnormal():
         r"\begin{table}[htbp]\centering\small",
         r"\caption{Non-Normal Decoupling and Multi-Asset Cross-Impact Kreiss Inflation. While single-asset price-only output has peak gain $M_C = 1.0$ (no Kreiss amplification, Lemma 2.6), the leveraged dealer balance-sheet operator exhibits $M_C = 160.0$. Following a 50 bps initial shock, non-normal margin depletion surges to 15.11\%--17.12\%, triggering forced liquidation under Binance USD$\circledS$-M leverage tiers (4.55\% for $L=20$).}",
         r"\label{iatab:nonnormal_cross_impact_kreiss}",
+        r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{lcccccc}",
         r"\toprule",
         r"Assets $M$ & State Dim & Spectral Radius $\rho(J)$ & Kreiss $\mathcal{K}(J)$ & Initial Shock & Peak Margin Depletion & Breaches $L=20$ (4.55\%) \\",
@@ -168,7 +175,8 @@ def make_table_nonnormal():
         
     lines.extend([
         r"\bottomrule",
-        r"\end{tabular}",
+        r"\end{tabular}%",
+        r"}",
         r"\end{table}"
     ])
     

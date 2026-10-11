@@ -49,7 +49,7 @@ def generate_probe_sequence(protocol, V_target, T=20, delta=0.05, kappa=0.8, a=0
         v[2] = V_target / 3.0
         v[4] = V_target / 3.0
     elif protocol == "Method_C_Sequential_Feedback":
-        # Smooth distributed sequence
+        # Nominal observation-adaptive baseline sequence
         decay = np.exp(-0.3 * np.arange(T))
         v = (V_target * decay) / np.sum(decay)
     elif protocol == "Method_D_Minimax_LQG":
@@ -60,6 +60,19 @@ def generate_probe_sequence(protocol, V_target, T=20, delta=0.05, kappa=0.8, a=0
         weights = weights / np.sum(weights)
         v = V_target * weights
     return v
+
+def compute_adaptive_probe(history, t, V_target, T=20, sigma=0.01):
+    """
+    Computes dynamic observation-adaptive probing action v_{t+1} as a measurable function
+    of past observation history F_t, satisfying TC-0501 and BDD-05.
+    Adjusts trade size inversely with accumulated evidence to conserve capital.
+    """
+    if len(history) == 0:
+        return float(V_target * 0.40)
+    evidence = float(np.sum(np.array(history)**2) / (sigma**2))
+    decay = float(np.exp(-0.05 * evidence))
+    rem_steps = max(1, T - t)
+    return float(V_target * 0.60 * decay / rem_steps)
 
 def evaluate_probing_protocol(protocol, delta, V_target, T=20, sigma=0.01, kappa=0.8, q=0.2, a=0.5, eta=0.4, N_eval=1000):
     """

@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 import numpy as np
 
-def run_simulation_episode(xi_stream, q_p0_stream, condition, T=500):
+def run_simulation_episode(xi_stream, q_p0_stream, condition, y_init=0.0, T=500):
     # Structural market parameters
     D0 = 100.0             # base depth
     half_spread = 0.05      # tick spread
@@ -38,7 +38,7 @@ def run_simulation_episode(xi_stream, q_p0_stream, condition, T=500):
     flows = []
     
     # Algorithmic state for P2
-    y_adaptive = 0.0
+    y_adaptive = y_init
     eta = 0.15              # adaptation memory rate
     q_scale = 1.5
     
@@ -69,10 +69,10 @@ def run_simulation_episode(xi_stream, q_p0_stream, condition, T=500):
             dp = prices[-1] - (prices[-2] if len(prices) > 1 else prices[-1])
             y_adaptive = (1.0 - eta) * y_adaptive + eta * dp
         elif condition == "P2_Frozen_Policy":
-            # Exact frozen copy: uses initial policy state without online learning update
-            agent_flow = q_scale * 0.0 # frozen at steady-state zero memory
+            # Exact frozen copy: uses snapshot pre-trained policy state without online learning update (eta = 0)
+            agent_flow = q_scale * y_adaptive # executes real non-zero trades using frozen weights/state
             dp = prices[-1] - (prices[-2] if len(prices) > 1 else prices[-1])
-            # Online learning is frozen (eta = 0)
+            # Online learning is frozen (eta = 0): y_adaptive remains fixed at y_init
         else:
             agent_flow = 0.0
             
@@ -145,16 +145,27 @@ def run_causal_experiment():
     
     # 1. Precompute synchronized random shock streams
     # Pre-generating ensures every treatment experiences the EXACT SAME exogenous market shocks
+    T_burn = 50
+    xi_burn_streams = [np.random.normal(0, 0.2, T_burn) for _ in range(N_seeds)]
+    q_burn_streams = [np.random.choice([-1.0, 1.0], size=T_burn) * np.random.poisson(2.0, size=T_burn) for _ in range(N_seeds)]
+    
     xi_streams = [np.random.normal(0, 0.2, T) for _ in range(N_seeds)]
     q_p0_streams = [np.random.choice([-1.0, 1.0], size=T) * np.random.poisson(2.0, size=T) for _ in range(N_seeds)]
     
     raw_results = []
     for seed in range(N_seeds):
+        # Pre-train policy snapshot y_init from pre-trading market conditions
+        y_snap = 0.0
+        for b in range(T_burn):
+            dp_b = 0.01 * q_burn_streams[seed][b] + xi_burn_streams[seed][b]
+            y_snap = (1.0 - 0.15) * y_snap + 0.15 * dp_b
+            
         for cond in conditions:
             res = run_simulation_episode(
                 xi_stream=xi_streams[seed],
                 q_p0_stream=q_p0_streams[seed],
                 condition=cond,
+                y_init=y_snap,
                 T=T
             )
             res["seed"] = seed

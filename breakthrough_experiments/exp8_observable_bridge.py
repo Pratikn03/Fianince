@@ -137,12 +137,53 @@ def run_experiment():
     mean_t_persistent = float(np.mean(t_stats_persistent))
     mean_beta_quasi = float(np.mean(betas_quasi_diff))
     
-    # 2. Structural Recovery with True Feedback (gamma = 0.20)
-    recovery_betas = []
+    # 2. Structural and Reduced-Form Recovery with True Feedback (gamma = 0.20)
+    recovery_betas_struct = []
+    recovery_betas_rf = []
+    T = 2000
+    true_gamma = 0.20
+    flow_persistence = 0.80
+    eta_adapt = 0.15
+    a = 0.5
+    kappa = 0.8
     for seed in range(50):
-        res_true = run_bridge_simulation(seed, true_gamma=0.20, flow_persistence=0.80, use_quasi_diff=True, time_shift=0)
-        recovery_betas.append(res_true["beta"])
-    mean_recovered_gamma = float(np.mean(recovery_betas))
+        np.random.seed(seed)
+        u = np.zeros(T)
+        innov = np.random.normal(0, 1.0, T)
+        for t in range(1, T):
+            u[t] = flow_persistence * u[t-1] + innov[t]
+        x = np.zeros(T)
+        y = np.zeros(T)
+        q = np.zeros(T)
+        xi = np.random.normal(0, 0.2, T)
+        for t in range(T-1):
+            q[t] = true_gamma * y[t] + u[t]
+            x[t+1] = a * x[t] + kappa * q[t] + xi[t]
+            dp = x[t+1] - x[t]
+            y[t+1] = (1.0 - eta_adapt) * y[t] + eta_adapt * dp
+        q[T-1] = true_gamma * y[T-1] + u[T-1]
+        
+        # Observed prices with noise
+        obs_p = x + np.random.normal(0, 0.02, T)
+        dp_series = np.diff(obs_p)
+        y_hat = np.zeros(T-1)
+        for t in range(len(dp_series)-1):
+            y_hat[t+1] = (1.0 - eta_adapt) * y_hat[t] + eta_adapt * dp_series[t]
+            
+        start = 50
+        # Structural quasi-differenced regression: q on y_hat
+        Y_q = q[start:T-1] - flow_persistence * q[start-1:T-2]
+        X_y = y_hat[start:T-1] - flow_persistence * y_hat[start-1:T-2]
+        b_struct = float(np.cov(X_y, Y_q)[0, 1] / np.var(X_y))
+        recovery_betas_struct.append(b_struct)
+        
+        # Reduced-form quasi-differenced regression: q on raw dp
+        X_dp = dp_series[start-1:T-2] - flow_persistence * dp_series[start-2:T-3]
+        b_rf = float(np.cov(X_dp, Y_q)[0, 1] / np.var(X_dp))
+        recovery_betas_rf.append(b_rf)
+        
+    mean_recovered_gamma_structural = float(np.mean(recovery_betas_struct))
+    mean_recovered_gamma_rf = float(np.mean(recovery_betas_rf))
     
     summary = {
         "false_discovery_analysis_true_gamma_zero": {
@@ -156,8 +197,11 @@ def run_experiment():
             "false_positive_rate_forward_shifted": fp_rate_shifted
         },
         "structural_recovery_true_gamma_0_20": {
-            "mean_recovered_gamma": mean_recovered_gamma,
-            "bias": float(mean_recovered_gamma - 0.20)
+            "true_gamma": true_gamma,
+            "mean_recovered_gamma_structural": mean_recovered_gamma_structural,
+            "structural_bias": float(mean_recovered_gamma_structural - true_gamma),
+            "mean_recovered_gamma_reduced_form": mean_recovered_gamma_rf,
+            "attenuation_factor": float(mean_recovered_gamma_rf / true_gamma)
         }
     }
     
@@ -168,6 +212,8 @@ def run_experiment():
     print(f"White-noise flow benchmark:        {fp_rate_white*100:.1f}% false positives (nominal size = 5.0%)")
     print(f"Quasi-differenced projection:      {fp_rate_quasi*100:.1f}% false positives (purged mean beta = {mean_beta_quasi:.3f})")
     print(f"Forward shifted (+1 step):         {fp_rate_shifted*100:.1f}% false positives")
+    print(f"Structural gamma recovery (true=0.20): hat(gamma) = {mean_recovered_gamma_structural:.4f} (bias = {mean_recovered_gamma_structural - true_gamma:.4f})")
+    print(f"Reduced-form lag beta (attenuated):    hat(beta)  = {mean_recovered_gamma_rf:.4f}")
 
 if __name__ == "__main__":
     run_experiment()

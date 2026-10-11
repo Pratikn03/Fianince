@@ -48,11 +48,13 @@ def solve_contract_requirements(delta, alpha=0.05):
     req_B_I1 = float(0.5 * kappa * (req_V_I1**2) + (c_fee + mu) * P_star * req_V_I1)
     
     # ---------------------------------------------------------
-    # Contract I2: Prices + Noisy Marked Equity Disclosure
-    # Marked equity difference: Delta E = 0.5 * kappa * q * delta * V^2
-    # Yields scaling V ~ delta^{-1}
+    # Contract I2: Prices + Noisy Marked Equity Disclosure (Proposition 2.8)
+    # Marked equity difference: Delta E = kappa^2 * q * delta^2 * V^2
+    # Under test with error target alpha: Delta E / sigma_E >= 2 * z_alpha
+    # Yields scaling V ~ delta^{-1}:
+    # V_req = (1 / delta) * sqrt((2 * sigma_E * z_alpha) / (kappa^2 * q))
     # ---------------------------------------------------------
-    req_V_I2 = float(math.sqrt((2.0 * sigma_E_noisy * z_alpha) / (0.5 * kappa * q * delta)))
+    req_V_I2 = float((1.0 / delta) * math.sqrt((2.0 * sigma_E_noisy * z_alpha) / (kappa**2 * q)))
     req_B_I2 = float(0.5 * kappa * (req_V_I2**2) + (c_fee + mu) * P_star * req_V_I2)
     
     # ---------------------------------------------------------

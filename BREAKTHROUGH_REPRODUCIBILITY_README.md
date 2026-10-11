@@ -13,12 +13,14 @@ This dossier provides complete independent reproducibility receipts, source code
 
 ### Comprehensive Audit Resolutions:
 1. **Resolution of Problem A ($\delta_{\min}$ Definition & Scope):**
-   - Eliminated the circular definition and corrected the interpretation of $\delta_{\min}$.
-   - Rigorously proved that under a single probe pulse within a finite trading session ($T_{\text{session}}$) subject to depth limit $V_{\max}$, the minimum distinguishable difference is:
-     $$\delta_{\min}(T_{\text{session}}, V_{\max}) = \sqrt{\frac{2(z_\alpha + z_\beta)\sigma}{\kappa^2 q V_{\max}\sqrt{T_{\text{session}}}}} = 0.0717$$
-   - Established the two-regime phase diagram:
+   - Eliminated the circular definition and harmonized the resolution floors.
+   - Proved that under a single probe pulse within a finite trading session ($T_{\text{session}}$) subject to resting depth limit $V_{\max} = 50.0$, the unconstrained depth floor is:
+     $$\delta_{\min}^{\mathrm{depth}}(T_{\text{session}}, V_{\max}) = \sqrt{\frac{2(z_\alpha + z_\beta)\sigma}{\kappa^2 q V_{\max}\sqrt{T_{\text{session}}}}} = 0.0717$$
+   - Under an active market price-displacement cap $D_{\max} = 5.0$ ($\kappa = 0.8$), the effective per-fill quantity limit is $V_{\mathrm{eff}} = \min(V_{\max}, D_{\max}/\kappa) = \min(50, 6.25) = 6.25$, defining an operational single-pulse resolution floor:
+     $$\delta_{\min} = \sqrt{\frac{2 z_\alpha \sigma}{\kappa^2 q V_{\mathrm{eff}}}} \approx 0.2028$$
+   - Established the tri-region phase diagram (1,949 Feasible, 6,536 Costly Sequential, 1,515 Infeasible):
      - **Regime 1 ($\delta \ge \delta_{\min}$):** Single-pulse probing achieves identification within horizon $N = \Theta(1)$ and capital $C = \Theta(\delta^{-4})$.
-     - **Regime 2 ($\delta < \delta_{\min}$):** Single pulse is insufficient because probe size is clipped at $V_{\max}$. Identification requires sequential multi-pulse probing, expanding the required observation horizon to $N = \Theta(\delta^{-2})$ and incurring cumulative transaction fees $C = \Theta(\delta^{-2})$.
+     - **Regime 2 ($\delta < \delta_{\min}$):** Single pulse is insufficient because probe size is clipped at $V_{\mathrm{eff}}$. Identification requires sequential multi-pulse probing, expanding the required observation horizon to $N = \Theta(\delta^{-2})$ and incurring cumulative transaction fees $C = \Theta(\delta^{-2})$.
      - Bounded depth does *not* create an infinite-horizon impossibility floor, but rather forces a structural regime transition from instantaneous single-pulse identification to extended sequential sampling.
 
 2. **Resolution of Problem B (Kreiss Matrix Decoupling Lower Bound):**
@@ -32,13 +34,13 @@ This dossier provides complete independent reproducibility receipts, source code
 3. **Resolution of Problem C (Tone Calibration & Empirical Hypothesis Testing):**
    - Removed all overclaiming assertions of "universal theorems over all adaptive algorithms".
    - Characterized results as empirical invariance across four canonical probing architectures (single pulse, multi-pulse, sequential SPRT, minimax LQG) consistent with the continuous-time Fisher information lower bound.
-   - Clarified that in the multi-agent causal intervention experiment, $p = 0.54$ represents failure to reject the null hypothesis of policy invariance under observational data, not proof of "zero effect".
+   - In the multi-agent causal intervention experiment, upgraded the frozen benchmark to an authentic pre-trained policy snapshot with learning disabled ($\eta = 0$), producing non-zero execution flow and isolating the causal effect of online adaptation from flow persistence.
 
 4. **Resolution of Detailed Critique Points (5.A – 5.D):**
-   - **5.A (Observation Contract):** Explicitly formalized Contract $I_0$ with homoskedastic additive observation noise $\epsilon_t \sim \mathcal{N}(0, \sigma^2)$, proving exact quadratic KL divergence $\mathrm{KL} = \frac{1}{2\sigma^2}\sum_{t=1}^N ((h_1*V)_t - (h_0*V)_t)^2$. Added the general Kalman innovation sequence log-likelihood for state-space systems with process noise.
-   - **5.B (Capital Infimum vs Minimum Lot Size):** Clarified that under exact noiseless equity disclosure ($I_3$), the theoretical infimum is $\inf C = 0$ (Proposition 2.8), and the empirical figure $\$0.90$ USDT reflects the physical exchange constraint of the discrete minimum contract lot size ($V_{\min} = 1.0$ unit on Binance USDⓈ-M).
+   - **5.A (Observation Contract):** Explicitly formalized Contract $I_0$ with homoskedastic additive observation noise $\epsilon_t \sim \mathcal{N}(0, \sigma^2)$, proving exact Gaussian testing separation $\frac{1}{2}(z_\alpha + z_\beta)^2 = 2 z_\alpha^2 \approx 5.41$, matching $A_{\mathrm{req}} = \frac{2\sigma z_\alpha}{\kappa^2 q \delta^2}$.
+   - **5.B (Exact Equity Scaling & Minimum Lot Size):** Formalized Proposition 2.8 exact equity difference $\Delta E = \kappa^2 q A^2 \delta^2$. Under Gaussian measurement noise $\sigma_E = 0.50$, required volume scales as $\Theta(\delta^{-1})$ ($A_{\mathrm{req}} \approx 71.70$ at $\delta = 0.05$, saving 51.1% over price-only probing). Under continuous quantities and exact audit marks, the theoretical infimum is $\inf C = 0$, while Binance minimum lot $V_{\min} = 1.0$ sets an operational floor of $\$0.94$ USDT (99.98% savings).
    - **5.C (Balance Sheet Operator):** Clarified the leveraged dealer margin operator mapping $C_{\text{margin}} x_t = r_t + 160.0 \cdot \Delta I_t^{\text{dealer}}$.
-   - **5.D (Observable Data Regression):** Formulated the structural econometric model $q_t = \gamma r_{t-1} + u_t$ with AR(1) execution flow $u_t = \rho u_{t-1} + \eta_t$. Demonstrated analytically and numerically why naive OLS is severely biased ($\hat{\gamma} = 0.284, t = 9.42$ when true $\gamma = 0$), and proved that quasi-differencing ($q_t - \rho q_{t-1}$) recovers the unbiased orthogonal estimate ($\hat{\gamma}^\perp = 0.003, t = 0.42$).
+   - **5.D (Observable Data Regression & Structural Recovery):** Uncovered that naive lag regression estimates $\beta_{\mathrm{RF}} \approx \gamma \cdot \eta \approx 0.0208$ due to exponential memory filtering. Implemented Cochrane-Orcutt quasi-differencing on reconstructed filtered memory state $\hat{y}_t$, successfully recovering true structural feedback $\hat{\gamma} = 0.1965$ (bias $-0.0035$ against true $\gamma = 0.20$).
 
 ---
 
