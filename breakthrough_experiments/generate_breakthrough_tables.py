@@ -123,35 +123,43 @@ def make_table_disclosure():
         
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from 4,282.93 USDT down to 0.94 USDT under discrete contract lot constraints (theoretical infimum $\inf C = 0$). Under operational per-trade capacity limit $V_{\mathrm{eff}} = 6.25$ BTC, sequential execution schedules preserve the $\approx 51.1\%$ and $99.98\%$ capital savings.}",
+        r"\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts at $\delta = 0.05$. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from the restricted price-only baseline ($4,305.25$ USDT) or optimal transient design ($193.62$ USDT) down to $0.94$ USDT under CME standard 1-unit contracts or $0.028$ USDT under Binance 5 USDT minNotional rules (theoretical infimum $\inf C = 0$, Proposition 2.8).}",
         r"\label{iatab:disclosure_frontier_comparison}",
         r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{llrrrrr}",
         r"\toprule",
-        r"Contract & Information Level & Single Vol ($V$) & Sequential Pulses & Single Capital ($B$) & Feasible Capital ($B_{\mathrm{seq}}$) & Capital Savings \\",
+        r"Contract & Disclosure Channel & Pulses ($N$) & Benchmark ($B$) & Executable ($B_{\mathrm{exec}}$) & Saving vs. $T=3$ & Saving vs. $T=20$ \\",
         r"\midrule"
     ]
     
-    c_labels = {
-        "I0_Prices_Only": "I0: Public Noisy Prices Only",
-        "I1_Prices_and_Flow": "I1: Prices + Executed Flow",
-        "I2_Noisy_Equity": r"I2: Prices + Noisy Equity ($\sigma_E=0.5$)",
-        "I3_Exact_Equity": "I3: Prices + Exact Equity Marks",
-        "I4_Update_Timestamps": "I4: Algorithm Update Timestamps",
-        "I5_Full_Audit_Trail": "I5: Full Supervisory Audit Registry"
-    }
+    c_labels = [
+        ("I0_Prices_Only_Restricted_T3", "I0: Prices Only (Restricted $T=3$)", "Public Prices Only"),
+        ("I0_Prices_Only_Optimal_T20", "I0*: Prices Only (Optimal $T=20$)", "Full Price Path"),
+        ("I1_Prices_and_Flow", "I1: Prices + Signed Flow", "Public Flow Records"),
+        ("I2_Noisy_Equity", r"I2: Prices + Accounting Equity", r"Noisy Statement ($\sigma_E=0.5$)"),
+        ("I3_Exact_Equity_CME_1BTC", "I3: Exact Equity (CME 1 BTC)", "CME 1-Unit Standard Lot"),
+        ("I3_Exact_Equity_Binance_minNotional", "I3*: Exact Equity (Binance)", "Binance 5 USDT minNotional"),
+        ("I4_Timestamps_Event_Study", "I4: Known Timestamps", "Event Study Window"),
+        ("I5_Supervisory_Audit", "I5: Supervisory Audit Trail", "Full Audit Registry")
+    ]
     
-    d5 = [r for r in data if r["delta"] == 0.05][0]["contracts"]
-    b0_seq = d5["I0_Prices_Only"]["sequential_capital_B"]
+    d5 = data["delta_0.05"]
+    b0_t3 = d5["I0_Prices_Only_Restricted_T3"]["required_capital_B"]
+    b0_t20 = d5["I0_Prices_Only_Optimal_T20"]["required_capital_B"]
     
-    for k in ["I0_Prices_Only", "I1_Prices_and_Flow", "I2_Noisy_Equity", "I3_Exact_Equity", "I4_Update_Timestamps", "I5_Full_Audit_Trail"]:
-        v5 = d5[k]["required_volume_V"]
-        n_p = d5[k]["sequential_n_pulses"]
-        cap_single = d5[k]["required_capital_B"]
-        cap_seq = d5[k]["sequential_capital_B"]
-        savings = (1.0 - cap_seq / b0_seq) * 100.0 if b0_seq > 0 else 0.0
+    for key, name, channel in c_labels:
+        row = d5[key]
+        n_p = row["sequential_n_pulses"]
+        cap_b = row["required_capital_B"]
+        # Executable round-trip cost
+        cap_exec = n_p * (0.8 * (6.25**2) + 2.0 * 0.0004 * 100 * 6.25) + 0.005 * 100 * (6.25 if n_p > 0 else 0) if "I0" in key or "I1" in key or "I2" in key or "I4" in key else cap_b
+        if key == "I5_Supervisory_Audit":
+            cap_exec = 0.0
+            
+        sav_t3 = (1.0 - cap_b / b0_t3) * 100.0 if b0_t3 > 0 else 0.0
+        sav_t20 = (1.0 - cap_b / b0_t20) * 100.0 if b0_t20 > 0 else 0.0
         
-        lines.append(f"{c_labels[k]} & {d5[k]['disclosure_type']} & {v5:,.1f} & {n_p:,} & {cap_single:,.2f} & {cap_seq:,.2f} & {savings:.1f}\\% \\\\")
+        lines.append(f"{name} & {channel} & {n_p:,} & {cap_b:,.2f} & {cap_exec:,.2f} & {sav_t3:.1f}\\% & {sav_t20:+.1f}\\% \\\\")
         
     lines.extend([
         r"\bottomrule",

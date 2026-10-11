@@ -43,11 +43,14 @@ def simulate_closed_loop_impulse(weights, etas, T=120, kappa=0.8, a=0.5):
         
     return h
 
+from scipy.optimize import nnls
+
 def blind_transfer_function_inversion(noisy_h, max_K=6, kappa=0.8, a=0.5):
     """
-    Inverts the closed-loop transfer function H(z) to extract hidden cohort poles.
+    Inverts the closed-loop transfer function H(z) to extract hidden cohort poles and feedback weights.
     Theorem 2.3: H(z) = kappa / (z - a - kappa G(z))
     Transmission zeros of H(z) are identically the poles of G(z): r_i = 1 - eta_i.
+    Feedback weights w_i are recovered by inverting u_t = (x_t - a x_{t-1}) / kappa = sum_i w_i y_{i, t-1}.
     """
     D_est = float(noisy_h[0]) if abs(noisy_h[0]) > 1e-4 else kappa
     g = noisy_h[1:]
@@ -67,9 +70,13 @@ def blind_transfer_function_inversion(noisy_h, max_K=6, kappa=0.8, a=0.5):
         med_s = float(np.median(S))
         thresh = max(S[0] * 0.0005, 2.80 * med_s)
         n_est = int(np.sum(S > thresh))
-        n_est = max(2, min(n_est, max_K + 1))
+        n_est = max(1, min(n_est, max_K + 1))
     else:
-        n_est = 2
+        n_est = 1
+        
+    if n_est <= 1:
+        # Pure dealer market: K = 0 (zero algorithmic learning)
+        return 0, np.array([]), np.array([])
         
     U_k = U[:, :n_est]
     S_k = np.diag(S[:n_est])
@@ -91,29 +98,45 @@ def blind_transfer_function_inversion(noisy_h, max_K=6, kappa=0.8, a=0.5):
     # By Theorem 2.3, these zeros are the cohort poles r_i = 1 - eta_i
     zeros = np.roots(num)
     
-    # Filter valid real roots in (0, 1)
+    # Filter valid real roots in (0.05, 0.98) representing algorithmic memory
     poles = []
     for z in zeros:
         if abs(z.imag) < 0.15 and 0.05 < np.real(z) < 0.98:
             poles.append(float(np.real(z)))
             
     if len(poles) == 0:
-        # Fallback to dominant real component
-        poles = [0.65]
+        # No detectable algorithmic poles (order collapsed to pure price mode)
+        return 0, np.array([]), np.array([])
         
     poles = np.sort(poles)
     est_K = len(poles)
+    est_etas = 1.0 - poles
     
-    # Estimate weights by least squares on impulse response
-    # h_t ~ sum_i w_i * (p_i)^t
-    Vand = np.column_stack([p ** np.arange(len(g)) for p in poles])
-    est_weights, _, _, _ = np.linalg.lstsq(Vand, g, rcond=None)
-    est_weights = np.maximum(0.0, est_weights)
+    # Exact Physical Inversion for Feedback Weights w_i:
+    # 1. Reconstruct latent memory states y_{k, t} from observed price history x_t:
+    #    y_{k, 0} = eta_k * x_0
+    #    y_{k, t} = (1 - eta_k) * y_{k, t-1} + eta_k * x_t
+    # 2. Invert feedback: u_t = (x_t - a * x_{t-1}) / kappa = sum_k w_k y_{k, t-1}
+    T_obs = len(noisy_h)
+    y_rec = np.zeros((est_K, T_obs))
+    for k in range(est_K):
+        y_rec[k, 0] = est_etas[k] * noisy_h[0]
+        for t in range(1, T_obs):
+            y_rec[k, t] = (1.0 - est_etas[k]) * y_rec[k, t-1] + est_etas[k] * noisy_h[t]
+            
+    lhs = (noisy_h[1:] - a * noisy_h[:-1]) / kappa
+    rhs = y_rec[:, :-1].T # shape (T_obs - 1, est_K)
+    
+    est_weights, _ = nnls(rhs, lhs)
     
     return est_K, np.array(poles), np.array(est_weights)
 
 def matched_pole_error(true_poles, est_poles):
     """Computes directed Hausdorff matching distance between true and estimated poles."""
+    if len(true_poles) == 0 and len(est_poles) == 0:
+        return 0.0
+    if len(est_poles) == 0 or len(true_poles) == 0:
+        return 1.0
     errs = []
     for tp in true_poles:
         min_dist = np.min(np.abs(est_poles - tp))
@@ -123,7 +146,7 @@ def matched_pole_error(true_poles, est_poles):
 def run_experiment():
     np.random.seed(42)
     T = 120
-    K_list = [1, 2, 3, 5]
+    K_list = [0, 1, 2, 3, 5]
     delta_list = [0.03, 0.08, 0.15]
     sigma_list = [0.0001, 0.001, 0.005]
     
@@ -132,7 +155,10 @@ def run_experiment():
     for K in K_list:
         for delta in delta_list:
             for sigma in sigma_list:
-                if K == 1:
+                if K == 0:
+                    true_etas = np.array([])
+                    true_weights = np.array([])
+                elif K == 1:
                     true_etas = np.array([0.30])
                     true_weights = np.array([0.20])
                 else:

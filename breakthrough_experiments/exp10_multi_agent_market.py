@@ -14,6 +14,7 @@ Features:
 - Invariant tests for cash, inventory, and marked equity conservation
 """
 import json
+import math
 from pathlib import Path
 import numpy as np
 
@@ -23,7 +24,7 @@ def run_simulation_episode(xi_stream, q_p0_stream, condition, y_init=0.0, T=500)
     half_spread = 0.05      # tick spread
     p0 = 100.0             # initial price
     p = p0
-    taker_fee_rate = 0.0004 # 4 bps taker fee
+    maker_fee_rate = 0.0001 # 1 bp maker fee on passive limit order fills (Binance VIP maker tier)
     
     # Dealer balance sheet: double-entry ledger
     initial_equity = 10000.0
@@ -61,7 +62,7 @@ def run_simulation_episode(xi_stream, q_p0_stream, condition, y_init=0.0, T=500)
             agent_flow = 0.0
         elif condition == "P1_Persistent_Flow":
             # Autocorrelated order flow matching P2's empirical variance
-            flow_ar = rho_ar * flow_ar + xi_stream[t] # uses common innovation
+            flow_ar = rho_ar * flow_ar + math.sqrt(1.0 - rho_ar**2) * xi_stream[t] # matched variance
             agent_flow = q_scale * flow_ar
         elif condition == "P2_Active_Learning":
             # Active online adaptive momentum
@@ -96,7 +97,7 @@ def run_simulation_episode(xi_stream, q_p0_stream, condition, y_init=0.0, T=500)
         # If dealer sells (fill_qty < 0): receives (p + half_spread) per unit
         exec_price = p - half_spread if fill_qty > 0 else p + half_spread
         trade_cash_flow = - fill_qty * exec_price
-        trade_fee = taker_fee_rate * abs(fill_qty) * exec_price
+        trade_fee = maker_fee_rate * abs(fill_qty) * exec_price # passive maker fee
         
         dealer_cash += trade_cash_flow - trade_fee
         dealer_inv += fill_qty

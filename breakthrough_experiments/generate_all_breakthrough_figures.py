@@ -36,35 +36,41 @@ def plot_fig1():
     with open("breakthrough_experiments/results_exp4_phase_diagram.json") as f:
         data = json.load(f)
         
-    delta_min = data["parameters"]["delta_min"]
-    delta_curve = data["delta_curve"]
+    delta_min_t3 = data["parameters"]["delta_min_3rd_tap_approx"] # 0.2028
+    delta_min_t20 = data["parameters"]["delta_min_T20"] # 0.0769
     
-    deltas = [d["delta"] for d in delta_curve]
-    B_pulse = [d["B_req_pulse"] for d in delta_curve]
-    B_seq = [d["B_req_sequential"] for d in delta_curve]
+    curve_t20 = data["phase_diagram_T20_optimal"]["delta_curve"]
+    curve_t3 = data["phase_diagram_T3_restricted"]["delta_curve"]
+    
+    deltas = [d["delta"] for d in curve_t20]
+    B_pulse_t20 = [d["B_req_pulse"] for d in curve_t20]
+    B_seq_t20 = [d["B_req_sequential"] for d in curve_t20]
+    B_seq_t3 = [d["B_req_sequential"] for d in curve_t3]
     
     fig, ax = plt.subplots(figsize=(8, 5.5))
     
     # Plot boundaries
-    ax.plot(deltas, B_pulse, label=r'Single-Pulse Solvency Boundary $B_A(\delta)$', color='darkblue', lw=2.2)
-    ax.plot(deltas, B_seq, label=r'Distributed Sequential Boundary $B_{\mathrm{seq}}(\delta)$', color='darkorange', lw=2.0, ls='--')
+    ax.plot(deltas, B_pulse_t20, label=r'Single-Pulse Boundary ($T=20$)', color='darkblue', lw=2.2)
+    ax.plot(deltas, B_seq_t20, label=r'Sequential Optimal Boundary ($T=20$)', color='darkorange', lw=2.0)
+    ax.plot(deltas, B_seq_t3, label=r'Sequential Restricted Baseline ($T=3$)', color='gray', lw=1.8, ls=':')
     
-    # Vertical line for physical depth limit delta_min
-    ax.axvline(delta_min, color='crimson', lw=2.0, ls=':', label=rf'Physical Resolution Floor $\delta_{{\min}} = {delta_min:.3f}$')
+    # Vertical lines for physical depth limits
+    ax.axvline(delta_min_t20, color='darkgreen', lw=1.8, ls='--', label=rf'Full Transient Floor $\delta_{{\min}}(20) = {delta_min_t20:.3f}$')
+    ax.axvline(delta_min_t3, color='crimson', lw=1.8, ls='--', label=rf'Restricted Single-Tap Floor $\delta_{{\min}}(3) = {delta_min_t3:.3f}$')
     
-    # Fill Regions
-    ax.fill_between(deltas, B_pulse, 1e6, where=[d >= delta_min for d in deltas], color='green', alpha=0.15, label='Regime 1: Feasible Single-Pulse')
-    ax.fill_between(deltas, B_seq, 1e6, where=[d < delta_min for d in deltas], color='orange', alpha=0.15, label='Regime 2: Sequential Multi-Pulse')
-    ax.fill_between(deltas, 1.0, B_seq, color='red', alpha=0.15, label='Regime 3: Infeasible Identification')
+    # Fill Regions for optimal T=20 design
+    ax.fill_between(deltas, B_pulse_t20, 1e6, where=[d >= delta_min_t20 for d in deltas], color='green', alpha=0.12, label='Regime 1: Feasible Single-Pulse ($T=20$)')
+    ax.fill_between(deltas, B_seq_t20, 1e6, where=[d < delta_min_t20 for d in deltas], color='orange', alpha=0.12, label='Regime 2: Sequential Multi-Pulse')
+    ax.fill_between(deltas, 1.0, B_seq_t20, color='red', alpha=0.12, label='Regime 3: Infeasible Identification')
     
     ax.set_yscale('log')
     ax.set_xlim(0.01, 0.25)
     ax.set_ylim(10.0, 1e6)
     ax.set_xlabel(r'Memory Separation Parameter $\delta$')
     ax.set_ylabel(r'Required Trader Capital $B$ (USDT, log scale)')
-    ax.set_title('The Financial Identification Frontier: Tri-Region Phase Diagram')
+    ax.set_title('The Financial Identification Frontier: Multi-Observation Phase Diagram')
     ax.grid(True, which='both', ls='-', alpha=0.2)
-    ax.legend(loc='upper right', frameon=True)
+    ax.legend(loc='upper right', frameon=True, fontsize=8.5)
     
     plt.tight_layout()
     plt.savefig(OUT_DIR / "fig1_phase_diagram.pdf")
@@ -173,11 +179,12 @@ def plot_fig4():
     with open("breakthrough_experiments/results_exp7_disclosure_value.json") as f:
         data = json.load(f)
         
-    d5 = [r for r in data if r["delta"] == 0.05][0]["contracts"]
-    c_names = ["I0 Prices Only", "I1 Prices+Flow", "I2 Noisy Equity", "I3 Exact Equity", "I4 Timestamps", "I5 Full Audit"]
-    keys = ["I0_Prices_Only", "I1_Prices_and_Flow", "I2_Noisy_Equity", "I3_Exact_Equity", "I4_Update_Timestamps", "I5_Full_Audit_Trail"]
+    d5 = data["delta_0.05"]
+    c_names = ["I0 (T=3)", "I0* (T=20)", "I1 Flow", "I2 Balance", "I3 CME", "I3* Binance", "I4 Event", "I5 Audit"]
+    keys = ["I0_Prices_Only_Restricted_T3", "I0_Prices_Only_Optimal_T20", "I1_Prices_and_Flow", "I2_Noisy_Equity", 
+            "I3_Exact_Equity_CME_1BTC", "I3_Exact_Equity_Binance_minNotional", "I4_Timestamps_Event_Study", "I5_Supervisory_Audit"]
     
-    caps = [d5[k]["sequential_capital_B"] for k in keys]
+    caps = [max(0.01, d5[k]["required_capital_B"]) for k in keys]
     vols = [d5[k]["required_volume_V"] for k in keys]
     
     fig, ax1 = plt.subplots(figsize=(9, 5))
@@ -186,10 +193,10 @@ def plot_fig4():
     width = 0.38
     
     color1 = 'navy'
-    bars1 = ax1.bar(x - width/2, caps, width, label='Required Capital B (USDT)', color=color1, alpha=0.85, edgecolor='black')
+    bars1 = ax1.bar(x - width/2, caps, width, label='Benchmark Capital B (USDT)', color=color1, alpha=0.85, edgecolor='black')
     ax1.set_ylabel('Required Capital B (USDT, log scale)', color=color1)
     ax1.set_yscale('log')
-    ax1.set_ylim(0.1, 1e5)
+    ax1.set_ylim(0.005, 1e5)
     ax1.tick_params(axis='y', labelcolor=color1)
     
     ax2 = ax1.twinx()
@@ -200,13 +207,9 @@ def plot_fig4():
     
     ax1.set_xticks(x)
     ax1.set_xticklabels(c_names, rotation=15, ha='right')
-    ax1.set_title(r'The Disclosure Frontier at $\delta = 0.05$: Financial Reporting Replaces Trading')
+    ax1.set_title(r'The Disclosure Frontier at $\delta = 0.05$: Multi-Observation & Contract Rules')
     ax1.grid(True, axis='y', ls='--', alpha=0.3)
     
-    # Percentage reduction label
-    ax1.text(3, 3, '99.98% Capital\nCollapse', ha='center', fontsize=9, color='darkgreen', fontweight='bold',
-             bbox=dict(boxstyle="round,pad=0.2", fc="lightgreen", ec="darkgreen", lw=1))
-             
     plt.tight_layout()
     plt.savefig(OUT_DIR / "fig4_disclosure_frontier.pdf")
     plt.savefig(OUT_DIR / "fig4_disclosure_frontier.png", dpi=300)

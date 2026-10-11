@@ -1263,34 +1263,38 @@ subject to three operational and physical constraints:
 \end{align}
 Here, $z_p = \Phi^{-1}(1 - p)$ is the standard Gaussian critical value ensuring hypothesis test error probabilities at most $(\alpha, \beta)$ (for equal targets $\alpha = \beta$, standardized separation requires $d' \ge 2 z_\alpha$, corresponding to boundary KL divergence $\frac{1}{2}(2 z_\alpha)^2 = 2 z_\alpha^2 \approx 5.41$), $V_{\mathrm{eff}} \equiv \min(V_{\max}, D_{\max}/\kappa)$ is the effective per-trade execution capacity combining resting depth $V_{\max}$ and price displacement limit $D_{\max}$, $I_{\max}$ is the regulatory inventory cap, and $B$ is the trader's cash and margin capital buffer.
 
-\begin{proposition}[Tri-Region Partition and Finite-Horizon Depth Floor]
+\begin{proposition}[Tri-Region Partition, Observation Design, and Finite-Horizon Depth Floor]
 \label{prop:tri_region_partition}
-The parameter space $(\delta, B) \in (0, 1) \times \R_+$ partitions into three operational regimes:
+The parameter space $(\delta, B) \in (0, 1) \times \R_+$ partitions into three operational regimes under observation horizon $T$ per pulse:
 \begin{enumerate}[label=(\roman*)]
-\item \textbf{Feasible Single-Pulse Region $\mathcal{R}_{\mathrm{feas}}$:} For any separation $\delta \ge \delta_{\min}$ and capital buffer $B \ge C^*(\delta)$, the single-pulse probing program ($N_{\mathrm{pulse}} = 1$ trade, evaluated over $T \ge 3$ price observations) satisfies constraints \eqref{eq:stat_separation_constraint}--\eqref{eq:dealer_solvency_constraint} within the effective per-trade execution capacity ($A_{\mathrm{req}} \le V_{\mathrm{eff}}$). Required capital scales asymptotically as:
+\item \textbf{Feasible Single-Pulse Region $\mathcal{R}_{\mathrm{feas}}$:} For any separation $\delta \ge \delta_{\min}(T)$ and capital buffer $B \ge C^*(\delta)$, the single-pulse probing program ($N_{\mathrm{pulse}} = 1$ trade, evaluated over transient price trajectory of length $T$) satisfies constraints \eqref{eq:stat_separation_constraint}--\eqref{eq:dealer_solvency_constraint} within the effective per-trade execution capacity ($A_{\mathrm{req}} \le V_{\mathrm{eff}}$). For Class~I hypothesis testing (simple rate shift $\eta_1 = \eta_0 + \delta$), $\Delta h_t = \Theta(\delta) \implies \mathrm{KL} = \Theta(\delta^2)$, yielding $C^*(\delta) = \Theta(\delta^{-2})$. For Class~II hypothesis testing (symmetric cohort splitting $\eta \in \{\eta_0 - \delta, \eta_0 + \delta\}$ with equal weights $w_1 = w_2 = q/2$), the first-order variation vanishes by symmetry ($\sum_k w_k \Delta \eta_k = 0$), so $\Delta h_t = \Theta(\delta^2) \implies \mathrm{KL} = \Theta(\delta^4)$, yielding:
 \begin{equation}
 C^*(\delta) = \Theta(\delta^{-4}).
 \end{equation}
-\item \textbf{Sequential Bounded Probing Region $\mathcal{R}_{\mathrm{cost}}$:} For separations $\delta < \delta_{\min}$, achieving statistical separation requires total executed volume $A_{\mathrm{req}}(\delta) > V_{\mathrm{eff}}$, which cannot be executed in a single period without violating resting liquidity or price displacement bounds. When individual trades are capped at $V_{\mathrm{eff}}$, each independent pulse provides per-block Fisher information of order $\Theta(V_{\mathrm{eff}}^2 \delta^4 / \sigma^2)$. Consequently, accumulating the target testing divergence $\mathrm{KL} \ge \frac{1}{2}(z_\alpha + z_\beta)^2 \approx 5.41$ requires $N_{\mathrm{pulses}} = \lceil \frac{4\sigma^2 z_\alpha^2}{V_{\mathrm{eff}}^2 \|d_T\|_2^2} \rceil \approx \lceil (A_{\mathrm{req}} / V_{\mathrm{eff}})^2 \rceil = \Theta(\delta^{-4})$ sequential sub-orders. Cumulative transaction fees and execution costs scale strictly as $C^*_{\mathrm{seq}}(\delta) = \Theta(\delta^{-4})$, expanding the required observation horizon to $\Theta(\delta^{-4})$.
+\item \textbf{Sequential Bounded Probing Region $\mathcal{R}_{\mathrm{cost}}$:} For separations $\delta < \delta_{\min}(T)$, achieving statistical separation requires total executed volume $A_{\mathrm{req}}(\delta) > V_{\mathrm{eff}}$, which cannot be executed in a single period without violating resting liquidity or price displacement bounds. When individual trades are capped at $V_{\mathrm{eff}}$, each independent pulse cycle provides per-block Fisher information of order $\mathrm{KL}_1(T) = \frac{V_{\mathrm{eff}}^2 \|d_T\|_2^2}{2\sigma^2}$, where $d_T = (\Delta h_1, \dots, \Delta h_T)^\top$ is the transient signal difference kernel. Accumulating target divergence $\mathrm{KL} \ge \frac{1}{2}(z_\alpha + z_\beta)^2 \approx 5.4119$ requires:
+\begin{equation}
+N_{\mathrm{pulses}}(T, \delta) = \left\lceil \frac{4\sigma^2 z_\alpha^2}{V_{\mathrm{eff}}^2 \|d_T\|_2^2} \right\rceil.
+\end{equation}
+Cumulative transaction fees and execution costs scale strictly as $C^*_{\mathrm{seq}}(\delta) = \Theta(\delta^{-4})$ (for Class~II) and $\Theta(\delta^{-2})$ (for Class~I), expanding the required observation horizon to $\Theta(\delta^{-4})$ or $\Theta(\delta^{-2})$. Under the simplified benchmark cost model ($C_{\mathrm{bench}} = \frac{1}{2}\kappa V^2 + \phi P^* |V| = 15.875$ USDT/pulse at $V_{\mathrm{eff}} = 6.25$ BTC), required capital at $\delta = 0.05$ is $4{,}305.25$ USDT under the restricted single-tap design ($T=3$, $N=271$ pulses), but collapses to $193.62$ USDT under the multi-observation transient design ($T=20$, $N=12$ pulses) and $177.75$ USDT ($T=100$, $N=11$ pulses). Under the physically executable round-trip unwind model ($C_{\mathrm{exec}} = \kappa V^2 + 2\phi P^* |V| = 31.75$ USDT/pulse), required capital is $8{,}607.38$ USDT ($T=3$) and $384.12$ USDT ($T=20$).
 \item \textbf{Infeasible Region $\mathcal{R}_{\mathrm{infeas}}$:} Identification is infeasible if:
 (a) The capital budget is insufficient to finance sequential impact and margin costs ($B < C^*_{\mathrm{seq}}(\delta)$); or
 (b) The cumulative inventory required to overcome observation noise exceeds the regulatory limit ($\min_t |I_t| > I_{\max}$); or
-(c) The surveillance horizon is strictly bounded by a session deadline $T \le T_{\mathrm{session}}$, in which case the finite-session resolution floor is:
+(c) The surveillance horizon is strictly bounded by a session deadline $T_{\mathrm{session}}$, in which case the finite-session resolution floor under cycle length $T_{\mathrm{cycle}}$ is:
 \begin{equation}
-\delta_{\min}(T_{\mathrm{session}}) = \left(\frac{4 \sigma^2 z_\alpha^2}{\kappa^4 q^2 V_{\mathrm{eff}}^2 \lfloor T_{\mathrm{session}} / 3 \rfloor}\right)^{1/4} = \Theta(T_{\mathrm{session}}^{-1/4}).
+\delta_{\min}(T_{\mathrm{session}}) = \left(\frac{4 \sigma^2 z_\alpha^2}{V_{\mathrm{eff}}^2 \|d_{T_{\mathrm{cycle}}}\|_2^2 \lfloor T_{\mathrm{session}} / T_{\mathrm{cycle}} \rfloor}\right)^{1/4} = \Theta(T_{\mathrm{session}}^{-1/4}).
 \label{eq:delta_min_def}
 \end{equation}
-Under the calibrated Binance USD$\circledS$-M order book depth ($V_{\max} = 50.0$ BTC, $\kappa = 0.8, q = 0.2, \sigma = 0.01$), the unconstrained depth floor is $\delta_{\min}^{\mathrm{depth}} = 0.0717$. When subject to the market price displacement cap $D_{\max} = 5.0$ USDT ($V_{\mathrm{eff}} = \min(V_{\max}, D_{\max}/\kappa) = 6.25$ BTC), the operational single-pulse resolution floor is $\delta_{\min} = 0.2028$.
+Under the calibrated Binance USD$\circledS$-M order book depth ($V_{\max} = 50.0$ BTC, $\kappa = 0.8, q = 0.2, \sigma = 0.01$) and price displacement limit $D_{\max} = 5.0$ USDT ($V_{\mathrm{eff}} = 6.25$ BTC), the operational single-pulse resolution floor is $\delta_{\min}(3) = 0.2028$ under the restricted single-tap design ($T=3$), shifting down to $\delta_{\min}(20) = 0.0769$ under the multi-observation transient design ($T=20$).
 \end{enumerate}
 \end{proposition}
 
 \begin{figure}[tbp]\centering
 \includegraphics[width=0.75\textwidth]{figures/fig1_phase_diagram.pdf}
-\caption{The Financial Identification Frontier Phase Diagram in $(\delta, B)$ space. The vertical line at $\delta_{\min} = 0.2028$ demarcates the operational single-pulse resolution floor under effective trade capacity $V_{\mathrm{eff}} = 6.25$ BTC (governed by the price displacement cap $D_{\max} = 5.0$ USDT and resting depth $V_{\max} = 50.0$ BTC; the unconstrained depth-only baseline is $0.0717$). To the left of $\delta_{\min}$, active identification requires sequential multi-pulse execution spanning an extended horizon $N = \Theta(\delta^{-4})$ ($\mathcal{R}_{\mathrm{cost}}$); below the frontier curve $C^*(\delta)$, active probing causes dealer insolvency before memory parameters can be resolved ($\mathcal{R}_{\mathrm{infeas}}$).}
+\caption{The Financial Identification Frontier Phase Diagram in $(\delta, B)$ space. The vertical line at $\delta_{\min} = 0.2028$ demarcates the operational single-pulse resolution floor under effective trade capacity $V_{\mathrm{eff}} = 6.25$ BTC (governed by displacement limit $D_{\max} = 5.0$ USDT) for the restricted single-tap design ($T=3$). The optimal transient design ($T=20$) extends single-pulse feasibility down to $\delta_{\min} = 0.0769$. To the left of $\delta_{\min}$, active identification requires sequential multi-pulse execution spanning horizon $N = \Theta(\delta^{-4})$ ($\mathcal{R}_{\mathrm{cost}}$); below the frontier curve $C^*(\delta)$, active probing causes dealer insolvency before memory parameters can be resolved ($\mathcal{R}_{\mathrm{infeas}}$).}
 \label{iafig:phase_diagram}
 \end{figure}
 
-Figure~\ref{iafig:phase_diagram} illustrates the resulting phase diagram evaluated on a fine $100 \times 100$ grid spanning $\delta \in [0.01, 0.25]$ and $B \in [10, 100{,}000]$ USDT, using the calibrated parameters: $\kappa = 0.8$, $q = 0.2$, $\sigma = 0.01$, $\alpha = \beta = 0.05$, and Binance effective capacity $V_{\mathrm{eff}} = 6.25$ BTC. Across the 10,000 grid points, exactly 1,949 points reside in the Feasible Region, 5,151 in the Costly Sequential Region, and 2,900 in the Infeasible Region. The asymptote at $\delta_{\min} = 0.2028$ establishes that microstructure resolution within a single execution cycle is fundamentally bounded by market depth and price displacement limits.
+Figure~\ref{iafig:phase_diagram} illustrates the resulting phase diagram evaluated on a fine $100 \times 100$ grid spanning $\delta \in [0.01, 0.25]$ and $B \in [10, 100{,}000]$ USDT, using the calibrated parameters: $\kappa = 0.8$, $q = 0.2$, $\sigma = 0.01$, $\alpha = \beta = 0.05$, and Binance effective capacity $V_{\mathrm{eff}} = 6.25$ BTC. Under the restricted single-tap design ($T=3$, $\delta_{\min} = 0.2028$), exactly 1,949 points reside in the Feasible Region, 5,151 in the Costly Sequential Region, and 2,900 in the Infeasible Region. Under the multi-observation transient design ($T=20$, $\delta_{\min} = 0.0769$), the Feasible Region expands significantly, confirming that multi-period observation dramatically lowers the financial barriers to algorithmic market identification. The previously reported capital requirement of $4{,}305.25$ USDT at $\delta = 0.05$ is valid strictly under the single-tap constraint $T=3$; under the unrestricted transient design ($T=20$), the required benchmark capital drops by $95.5\%$ to $193.62$ USDT ($384.12$ USDT executable).
 
 \subsection{Probing Protocol Invariance and Universal \texorpdfstring{$\Theta(\delta^{-4})$}{Theta(delta\textasciicircum-4)} Scaling}
 \label{ia:probing_invariance}
@@ -1310,38 +1314,38 @@ A central question in identification design is whether adaptive, multi-pulse, or
 \end{figure}
 
 \begin{table}[htbp]\centering\small
-\caption{Comparison of Probing Strategies under Varying Memory Separation $\delta$. Across all four protocols, required capital scales strictly as $\Theta(\delta^{-4})$, confirming the invariance of the fundamental Fisher information lower bound. Under operational per-trade limit $V_{\mathrm{eff}} = 6.25$ BTC (governed by price displacement cap $D_{\max} = 5.0$ USDT), Methods B, C, and D strictly enforce $|v_t| \le 6.25$ BTC. Method A serves as an unconstrained single-pulse benchmark, physically requiring sequential pulse decomposition for $\delta < \delta_{\min} = 0.2028$.}
+\caption{Comparison of Probing Strategies under Varying Memory Separation $\delta$ under Fair Observation Horizon $T=4$. Across all four protocols, required capital scales strictly as $\Theta(\delta^{-4})$, confirming the invariance of the fundamental Fisher information lower bound for Class~II cohort splitting. Under operational per-trade limit $V_{\mathrm{eff}} = 6.25$ BTC (governed by price displacement cap $D_{\max} = 5.0$ USDT), Methods B, C, and D strictly enforce $|v_t| \le 6.25$ BTC. Method A serves as an unconstrained single-pulse benchmark, physically requiring sequential pulse decomposition for $\delta < \delta_{\min}(4) = 0.1387$.}
 \label{iatab:probing_methods_comparison}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llrrrrr}
 \toprule
 Protocol & $\delta$ & Executed Vol ($V$) & Max Single Trade & Max Inventory & Error $\hat{\alpha}$ (SE) & Capital Cost (USDT) \\
 \midrule
-Method A: Single Pulse (Unconstrained) & 0.03 & 285.6 & 285.6 & 285.6 & 0.046 (0.007) & 32773.12 \\
- & 0.05 & 102.8 & 102.8 & 102.8 & 0.050 (0.007) & 4282.93 \\
- & 0.08 & 40.2 & 40.2 & 40.2 & 0.051 (0.007) & 666.74 \\
- & 0.12 & 17.8 & 17.8 & 17.8 & 0.047 (0.007) & 137.06 \\
+Method A: Single Pulse (Unconstrained) & 0.03 & 131.5 & 131.5 & 131.5 & 0.046 (0.007) & 6985.91 \\
+ & 0.05 & 47.3 & 47.3 & 47.3 & 0.053 (0.007) & 921.73 \\
+ & 0.08 & 18.5 & 18.5 & 18.5 & 0.053 (0.007) & 146.73 \\
+ & 0.12 & 8.2 & 8.2 & 8.2 & 0.040 (0.006) & 31.45 \\
 \midrule
-Method B: Multi-Pulse ($V_t \le 6.25$) & 0.03 & 13050.0 & 6.2 & 6.2 & 0.056 (0.007) & 33150.12 \\
- & 0.05 & 1693.8 & 6.2 & 6.2 & 0.054 (0.007) & 4305.25 \\
- & 0.08 & 262.5 & 6.2 & 6.2 & 0.057 (0.007) & 669.88 \\
- & 0.12 & 56.2 & 6.2 & 6.2 & 0.034 (0.006) & 146.00 \\
+Method B: Multi-Pulse ($V_t \le 6.25$) & 0.03 & 2768.8 & 6.2 & 6.2 & 0.056 (0.007) & 7035.75 \\
+ & 0.05 & 362.5 & 6.2 & 6.2 & 0.051 (0.007) & 923.88 \\
+ & 0.08 & 56.2 & 6.2 & 6.2 & 0.051 (0.007) & 146.00 \\
+ & 0.12 & 12.5 & 6.2 & 6.2 & 0.033 (0.006) & 34.88 \\
 \midrule
-Method C: Sequential Feedback ($V_t \le 6.25$) & 0.03 & 2080.5 & 6.2 & 6.2 & 0.031 (0.005) & 6828.99 \\
- & 0.05 & 266.3 & 6.2 & 6.2 & 0.037 (0.006) & 881.12 \\
- & 0.08 & 44.6 & 6.2 & 6.2 & 0.025 (0.005) & 148.38 \\
- & 0.12 & 10.5 & 6.2 & 6.2 & 0.011 (0.003) & 34.03 \\
+Method C: Sequential Feedback ($V_t \le 6.25$) & 0.03 & 1632.3 & 6.2 & 6.2 & 0.051 (0.007) & 4993.84 \\
+ & 0.05 & 217.4 & 6.2 & 6.2 & 0.036 (0.006) & 671.18 \\
+ & 0.08 & 39.2 & 6.2 & 6.2 & 0.023 (0.005) & 122.31 \\
+ & 0.12 & 10.2 & 6.2 & 6.2 & 0.007 (0.003) & 31.72 \\
 \midrule
 Method D: Minimax LQG ($V_t \le 6.25$) & 0.03 & 7700.0 & 3.7 & 3.8 & 0.055 (0.007) & 8771.37 \\
- & 0.05 & 1000.0 & 3.7 & 3.8 & 0.052 (0.007) & 1140.80 \\
- & 0.08 & 156.2 & 3.7 & 3.8 & 0.043 (0.006) & 179.86 \\
- & 0.12 & 31.2 & 3.7 & 3.8 & 0.040 (0.006) & 37.50 \\
+ & 0.05 & 1000.0 & 3.7 & 3.8 & 0.044 (0.006) & 1140.80 \\
+ & 0.08 & 156.2 & 3.7 & 3.8 & 0.046 (0.007) & 179.86 \\
+ & 0.12 & 31.2 & 3.7 & 3.8 & 0.048 (0.007) & 37.50 \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-Table~\ref{iatab:probing_methods_comparison} and Figure~\ref{iafig:probing_scaling} report empirical performance under independent held-out Neyman-Pearson and closed-loop SPRT testing. Under operational per-trade execution capacity $V_{\mathrm{eff}} = 6.25$ BTC (governed by the price displacement limit $D_{\max} = 5.0$ USDT), Methods B, C, and D strictly clamp single-order execution to $|V_t| \le 6.25$ BTC. Method A serves as an unconstrained impulse benchmark ($V_A = 17.8$--$285.6$ BTC); for $\delta < \delta_{\min} = 0.2028$, physically executing this volume in a single trade violates resting book depth, requiring sequential multi-pulse execution as proved in Proposition~\ref{prop:tri_region_partition}. All methods strictly meet the target error $\alpha \le 0.05$ within sampling uncertainty, with Method C achieving $\hat{\alpha} \le 0.037 \pm 0.006$ and delivering $76.7\%$--$79.5\%$ capital savings over predetermined multi-pulse execution. Across all protocols, the empirical log-log capital scaling with respect to $\delta$ is strictly $\Theta(\delta^{-4})$, confirming the invariance of the fundamental Fisher information lower bound.
+Table~\ref{iatab:probing_methods_comparison} and Figure~\ref{iafig:probing_scaling} report empirical performance under independent held-out Neyman-Pearson and closed-loop SPRT testing evaluated under an identical fair observation horizon ($T=4$ per pulse cycle). Under operational per-trade execution capacity $V_{\mathrm{eff}} = 6.25$ BTC (governed by the price displacement limit $D_{\max} = 5.0$ USDT), Methods B, C, and D strictly clamp single-order execution to $|V_t| \le 6.25$ BTC. Method A serves as an unconstrained impulse benchmark ($V_A = 8.2$--$131.5$ BTC); for $\delta < \delta_{\min}(4) = 0.1387$, physically executing this volume in a single trade violates resting book depth, requiring sequential multi-pulse execution as proved in Proposition~\ref{prop:tri_region_partition}. All methods strictly meet the target error $\alpha \le 0.05$ within sampling uncertainty. Crucially, at $\delta = 0.05$, predetermined multi-pulse execution (Method B) requires 58 pulses ($923.88$ USDT), whereas adaptive sequential SPRT (Method C) terminates in a mean of $34.8$ pulses ($671.18$ USDT, error $0.036$), delivering an authentic $27.4\%$ capital saving. Comparing this to the restricted single-tap baseline ($4{,}305.25$ USDT at $T=3$) demonstrates that $78.5\%$ of the apparent gross savings from $4{,}305$ to $671$ USDT originates from observing the transient response ($T=4$ vs.\ $T=3$), while dynamic SPRT stopping provides an additional authentic $27.4\%$ saving at equal observation horizon. Across all protocols, the empirical log-log capital scaling with respect to $\delta$ is strictly $\Theta(\delta^{-4})$, confirming the invariance of the fundamental Fisher information lower bound.
 
 \subsection{Unknown-Mixture Identification via Closed-Loop Transfer Function Inversion}
 \label{ia:unknown_mixture_inversion}
@@ -1366,9 +1370,16 @@ To recover the true structural parameters without prior knowledge of $K$, we imp
 \item \textbf{Impulse Decoupling:} Extract the strictly proper transfer component $g_t \equiv h_{t+1} - a h_t$ from the empirical price response.
 \item \textbf{Minimal State-Space Realization:} Form the block Hankel matrix $\mathcal{H}_{i,j} = g_{i+j-1}$ and execute Kung's Eigenrealization Algorithm (ERA) via truncated singular value decomposition to obtain a balanced realization $(A, B, C, D)$.
 \item \textbf{Transmission Zero Inversion:} Compute the transmission zeros of $(A, B, C, D)$, which invert the feedback loop under known $(\kappa, a)$ and isolate the roots of $D_G(z) = 0$.
+\item \textbf{Direct Closed-Loop Feedback Inversion:} Given recovered memory rates $\hat{\eta}_k$, invert the physical pricing relation $u_t = \frac{p_t - a p_{t-1}}{\kappa} = \sum_{k=1}^K w_k y_{k,t-1}$, where internal memory filters evolve as $y_{k,t} = (1 - \hat{\eta}_k) y_{k,t-1} + \hat{\eta}_k \Delta p_t$. Projecting unobserved algorithmic order flow $u_t$ onto the reconstructed filter basis $\{y_{k,t-1}\}$ resolves the structural cohort weights $w_k$ without confounding from closed-loop pole shifts.
 \end{enumerate}
 
-Evaluating this estimator on synthetic markets confirms exact recovery: For $K=1$ ($\eta = 0.30$, true pole $r = 0.70$), the estimator blindly selects $\hat{K} = 1$ and recovers $\hat{r} = 0.7000$ (numerical error $< 10^{-6}$), while the roots of the closed-loop denominator remain at $0.4256$ and $0.8224$. For $K=2$ ($\eta \in \{0.45, 0.25\}$, true poles $r \in \{0.55, 0.75\}$), the estimator blindly recovers $[0.5500, 0.7500]$ without model-order knowledge. This resolves the pole-zero confounding critique and validates Theorem~\ref{thm:m1_equivalence} under unknown model order.
+Evaluating this estimator on synthetic markets confirms exact recovery:
+\begin{itemize}
+\item \textbf{Noiseless Benchmark ($K=1, \eta = 0.30, q = 0.20$):} The estimator blindly selects $\hat{K} = 1$, identifies the true memory pole $\hat{r} = 0.7000$ (numerical error $< 10^{-6}$), and recovers feedback weight $\hat{w} = 0.200000$ with $0.000\%$ error (resolving the previous $0.415$ bias from naive Hankel fitting).
+\item \textbf{Pure Dealer Edge Case ($K=0$):} In an economy with zero algorithmic learning, singular values truncate to order 0, identifying 0 transmission zeros and recovering strictly $0.0$ feedback weight.
+\item \textbf{Multi-Cohort Recovery ($K=2$, $\eta \in \{0.45, 0.25\}$):} In the noiseless regime, the estimator blindly recovers $[0.5500, 0.7500]$ and associated weights without model-order knowledge.
+\item \textbf{Observation Noise and Model-Order Shrinkage ($\sigma \ge 0.005$):} When price observations contain measurement noise $\sigma \ge 0.005$, weak singular values fall below the noise threshold, inducing automatic shrinkage to the dominant single-cohort mode ($\hat{K} = 1$). While the dominant feedback mode is recovered robustly, general multi-cohort mixture recovery under arbitrary noise remains an open econometric challenge.
+\end{itemize}
 
 \subsection{Causal Identification via Multi-Agent Policy-Freeze Intervention}
 \label{ia:causal_multi_agent}
@@ -1385,32 +1396,32 @@ To establish causal attribution, we deploy a paired microstructure simulation wi
 
 \begin{figure}[tbp]\centering
 \includegraphics[width=0.75\textwidth]{figures/fig3_causal_multi_agent.pdf}
-\caption{Causal Multi-Agent Microstructure Intervention: Policy-Freeze vs.\ Flow Autocorrelation. Left panel: Distribution of maximum dealer drawdowns across 100 paired seeds. Active online learning ($P_2^{\mathrm{active}}$) induces a drawdown of 122.94 USDT, compared to 134.56 USDT for the frozen policy ($-11.62$ USDT, $t = -1.31$, $p > 0.15$). Right panel: Under verified Binance USD$\circledS$-M margin rules ($L=20$), persistent non-adaptive execution flow ($P_1$) creates substantial dealer inventory strain (drawdown 177.11 USDT, $+54.17$ USDT excess drawdown, $t = -4.24$, $p < 0.0001$), demonstrating that flow autocorrelation dominates online learning as a driver of liquidity strain.}
+\caption{Causal Multi-Agent Microstructure Intervention: Policy-Freeze vs.\ Flow Autocorrelation. Left panel: Distribution of maximum dealer drawdowns across 100 paired seeds under passive maker fee accounting ($0.0001$). Active online learning ($P_2^{\mathrm{active}}$) induces a drawdown of 106.80 USDT, compared to 118.06 USDT for the frozen policy ($-11.26$ USDT, $t = -1.31$, $p = 0.19$). Right panel: Under verified Binance USD$\circledS$-M margin rules ($L=20$), persistent non-adaptive execution flow ($P_1$) creates substantial dealer inventory strain (drawdown 122.72 USDT, $+15.92$ USDT excess drawdown, $t = -3.04$, $p = 0.003$), demonstrating that flow autocorrelation dominates online learning as a driver of liquidity strain.}
 \label{iafig:causal_multi_agent}
 \end{figure}
 
 \begin{table}[htbp]\centering\small
-\caption{Causal Multi-Agent Microstructure Intervention: Policy-Freeze vs.\ Persistent Flow. An authentic frozen policy snapshot ($P_2$ Frozen; $\eta = 0$) executes non-zero trading flow, inducing a mean dealer drawdown of 134.56 USDT (vs.\ 117.05 USDT for non-trading noise baseline $P_0$). Active online adaptation ($P_2$ Active) yields 122.94 USDT. In contrast, non-adaptive autocorrelated TWAP order splitting ($P_1$ Persistent) induces substantial dealer inventory accumulation and drawdowns ($177.11$ USDT, excess drawdown $+54.17$ USDT, $t = -4.24$), demonstrating the dominant role of flow autocorrelation in dealer liquidity strain.}
+\caption{Causal Multi-Agent Microstructure Intervention: Policy-Freeze vs.\ Persistent Flow. An authentic frozen policy snapshot ($P_2$ Frozen; $\eta = 0$) executes non-zero trading flow, inducing a mean dealer drawdown of 118.06 USDT (vs.\ 100.63 USDT for non-trading noise baseline $P_0$). Active online adaptation ($P_2$ Active) yields 106.80 USDT. In contrast, non-adaptive autocorrelated TWAP order splitting ($P_1$ Persistent) induces substantial dealer inventory accumulation and drawdowns ($122.72$ USDT, excess drawdown $+15.92$ USDT, $t = -3.04$), demonstrating the dominant role of flow autocorrelation in dealer liquidity strain. Across all treatments, the dealer liquidation rate is strictly 0.0\%.}
 \label{iatab:causal_multi_agent_intervention}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{lrrrrr}
 \toprule
 Population / Treatment & Volatility & Return Autocorr & Mean Drawdown & SE & Liquidation Rate \\
 \midrule
-P0: Baseline Noise Traders & 0.2011 & -0.0053 & 117.05 & 12.12 & 0.0\% \\
-P2: Frozen Policy (No Online Learning) & 0.2011 & -0.0053 & 134.56 & 14.35 & 0.0\% \\
-P2: Active Adaptive Learning & 0.2011 & -0.0054 & 122.94 & 13.42 & 0.0\% \\
-P1: Persistent Flow (TWAP Splitting) & 0.2041 & +0.0070 & 177.11 & 22.25 & 0.0\% \\
+P0: Baseline Noise Traders & 0.2011 & -0.0053 & 100.63 & 11.54 & 0.0\% \\
+P2: Frozen Policy (No Online Learning) & 0.2011 & -0.0053 & 118.06 & 13.73 & 0.0\% \\
+P2: Active Adaptive Learning & 0.2011 & -0.0054 & 106.80 & 12.88 & 0.0\% \\
+P1: Persistent Flow (TWAP Splitting) & 0.2027 & +0.0011 & 122.72 & 16.23 & 0.0\% \\
 \midrule
 \multicolumn{6}{l}{\textbf{Causal Treatment Effects (Matched Seeds):}} \\
-Active vs.\ Frozen Policy (Pure Learning Effect): & \multicolumn{5}{l}{-11.62 USDT ($t = -1.31$, $p = 0.19$)} \\
-Active vs.\ Persistent Flow (Autocorrelation Effect): & \multicolumn{5}{l}{-54.17 USDT ($t = -4.24$, $p < 10^{-4}$)} \\
+Active vs.\ Frozen Policy (Pure Learning Effect): & \multicolumn{5}{l}{-11.26 USDT ($t = -1.31$, $p = 0.19$)} \\
+Active vs.\ Persistent Flow (Autocorrelation Effect): & \multicolumn{5}{l}{-15.92 USDT ($t = -3.04$, $p = 0.003$)} \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-The results in Table~\ref{iatab:causal_multi_agent_intervention} and Figure~\ref{iafig:causal_multi_agent} illustrate the empirical decomposition in this matched multi-agent simulation: while online learning adaptation produces no significant excess drawdown over the frozen counterfactual policy ($-11.62$ USDT, $t = -1.31$, $p = 0.19$), the non-adaptive persistent execution benchmark ($P_1$) produces an excess drawdown of $+54.17$ USDT ($177.11$ vs.\ $122.94$ USDT, $t = -4.24$, $p < 0.0001$). This indicates that within this simulated microstructure environment, order flow persistence and inventory accumulation dominate online learning adaptation as sources of dealer drawdown. Furthermore, across all four experimental conditions, the empirical dealer liquidation rate is exactly 0.0\% under the verified Binance USD$\circledS$-M margin parameters ($L=20$), demonstrating that dealer inventory buffering successfully prevents default under ordinary market flow.
+The results in Table~\ref{iatab:causal_multi_agent_intervention} and Figure~\ref{iafig:causal_multi_agent} illustrate the empirical decomposition in this matched multi-agent simulation: while online learning adaptation produces no significant excess drawdown over the frozen counterfactual policy ($-11.26$ USDT, $t = -1.31$, $p = 0.19$), the non-adaptive persistent execution benchmark ($P_1$) produces an excess drawdown of $+15.92$ USDT ($122.72$ vs.\ $106.80$ USDT, $t = -3.04$, $p = 0.003$). This indicates that within this simulated microstructure environment, order flow persistence and inventory accumulation dominate online learning adaptation as sources of dealer drawdown. Furthermore, across all four experimental conditions, the empirical dealer liquidation rate is exactly 0.0\% under the verified Binance USD$\circledS$-M margin parameters ($L=20$), demonstrating that dealer inventory buffering successfully prevents default under ordinary market flow.
 
 \subsection{The Information-Disclosure Value Frontier and Regulatory Substitutability}
 \label{ia:disclosure_frontier}
@@ -1432,25 +1443,27 @@ Because active market probing imposes significant execution costs and risks inve
 \end{figure}
 
 \begin{table}[htbp]\centering\small
-\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from 4,282.93 USDT down to 0.94 USDT under discrete contract lot constraints (theoretical infimum $\inf C = 0$). Under operational per-trade capacity limit $V_{\mathrm{eff}} = 6.25$ BTC, sequential execution schedules preserve the $\approx 51.1\%$ and $99.98\%$ capital savings.}
+\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts at $\delta = 0.05$. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from the restricted price-only baseline ($4,305.25$ USDT) or optimal transient design ($193.62$ USDT) down to $0.94$ USDT under CME standard 1-unit contracts or $0.028$ USDT under Binance 5 USDT minNotional rules (theoretical infimum $\inf C = 0$, Proposition 2.8).}
 \label{iatab:disclosure_frontier_comparison}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llrrrrr}
 \toprule
-Contract & Information Level & Single Vol ($V$) & Sequential Pulses & Single Capital ($B$) & Feasible Capital ($B_{\mathrm{seq}}$) & Capital Savings \\
+Contract & Disclosure Channel & Pulses ($N$) & Benchmark ($B$) & Executable ($B_{\mathrm{exec}}$) & Saving vs.\ $T=3$ & Saving vs.\ $T=20$ \\
 \midrule
-I0: Public Noisy Prices Only & Public Prices Only & 102.8 & 271 & 4,282.93 & 4,305.25 & 0.0\% \\
-I1: Prices + Executed Flow & Public Flow Records & 101.5 & 264 & 4,176.71 & 4,194.12 & 2.6\% \\
-I2: Prices + Noisy Equity ($\sigma_E=0.5$) & Periodic Accounting Statements & 71.7 & 132 & 2,094.78 & 2,098.62 & 51.3\% \\
-I3: Prices + Exact Equity Marks & Exact Account Reporting (Min Lot) & 1.0 & 1 & 0.94 & 0.94 & 100.0\% \\
-I4: Algorithm Update Timestamps & Event Timestamps Registry & 10.0 & 3 & 45.40 & 50.75 & 98.8\% \\
-I5: Full Supervisory Audit Registry & Ex-Ante Regulatory Model Tagging & 0.0 & 0 & 0.00 & 0.00 & 100.0\% \\
+I0: Prices Only (Restricted $T=3$) & Public Prices Only & 271 & 4,305.25 & 8,607.38 & 0.0\% & -2123.5\% \\
+I0*: Prices Only (Optimal $T=20$) & Full Price Path & 12 & 193.62 & 384.12 & 95.5\% & +0.0\% \\
+I1: Prices + Signed Flow & Public Flow Records & 12 & 193.62 & 384.12 & 95.5\% & +0.0\% \\
+I2: Prices + Accounting Equity & Noisy Statement ($\sigma_E=0.5$) & 12 & 193.62 & 384.12 & 95.5\% & +0.0\% \\
+I3: Exact Equity (CME 1 BTC) & CME 1-Unit Standard Lot & 1 & 0.94 & 0.94 & 100.0\% & +99.5\% \\
+I3*: Exact Equity (Binance) & Binance 5 USDT minNotional & 1 & 0.03 & 0.03 & 100.0\% & +100.0\% \\
+I4: Known Timestamps & Event Study Window & 2 & 34.88 & 66.62 & 99.2\% & +82.0\% \\
+I5: Supervisory Audit Trail & Full Audit Registry & 0 & 0.00 & 0.00 & 100.0\% & +100.0\% \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
 
-Table~\ref{iatab:disclosure_frontier_comparison} reports required probing volume and financial capital across both unconstrained single-pulse execution and feasible sequential schedules under $V_{\mathrm{eff}} = 6.25$ BTC. For continuous, infinitely divisible quantities, Proposition 2.8 establishes that the theoretical infimum of required capital under exact equity disclosure ($I_3$) is $\inf C = 0$. The value of 0.94 USDT reported in Table~\ref{iatab:disclosure_frontier_comparison} reflects operational capital under an integer 1 BTC lot constraint on Binance USD$\circledS$-M (under venue minNotional $= 5.00$ USDT, or $0.05$ BTC at $P_* = 100$, operational cost is 0.028 USDT). Crucially, when subject to the per-trade execution capacity limit $V_{\mathrm{eff}} = 6.25$ BTC, sequential execution schedules preserve the dramatic capital reduction: $I_0$ requires 271 pulses ($B_{\mathrm{seq}} = 4{,}305.25$ USDT), $I_2$ requires 132 pulses ($B_{\mathrm{seq}} = 2{,}098.62$ USDT, 51.3\% savings), and $I_3$ executes in a single pulse ($B_{\mathrm{seq}} = 0.94$ USDT, 99.98\% savings). In contrast, supervisory audit registry access ($I_5$) requires zero trading volume ($V=0$) and zero capital ($C=0.00$), achieving exact passive verification without market intervention.
+Table~\ref{iatab:disclosure_frontier_comparison} reports required probing volume and financial capital across observation contracts under both the restricted single-tap baseline ($T=3$) and the optimal transient design ($T=20$). For continuous, infinitely divisible order sizes, Proposition 2.8 establishes that the theoretical infimum of required capital under exact equity disclosure ($I_3$) is strictly $\inf C = 0$. In practice, exchange venue lot-size rules impose a positive operational lower bound: under CME standard 1.0 BTC contract units, required benchmark capital is 0.94 USDT; under Binance USD$\circledS$-M linear perpetuals with a 5.00 USDT minimum notional threshold ($0.05$ BTC at $P^* = 100$), required capital drops to $0.028$ USDT. Furthermore, Table~\ref{iatab:disclosure_frontier_comparison} evaluates disclosure savings against both the restricted $T=3$ baseline ($4{,}305.25$ USDT benchmark, $8{,}607.38$ USDT executable) and the optimal $T=20$ transient baseline ($193.62$ USDT benchmark, $384.12$ USDT executable). Mandating audited dealer equity disclosure collapses required capital by $99.5\%$ to $99.98\%$ even against the fully optimized multi-period price design. Crucially, this disclosure substitution rests on the econometric assumption that the supervisory observer knows the structural book accounting relationship mapping inventory to equity marks; when accounting reports contain substantial noise or reporting delays, the empirical value of disclosure contracts converges to the public price baseline. In contrast, supervisory audit registry access ($I_5$) requires zero trading volume ($V=0$) and zero capital ($C=0.00$), achieving passive verification without active market intervention.
 
 \subsection{Non-Normal Balance Sheet Decoupling and Multi-Asset Cross-Impact Inflation}
 \label{ia:nonnormal_decoupling}
