@@ -18,3 +18,8 @@ import CurrentProofs.PriceOutputGain
 import CurrentProofs.CohortConvolution
 import CurrentProofs.DisclosureSolvency
 import CurrentProofs.SequenceMargin
+import CurrentProofs.SpectralCohorts
+import CurrentProofs.ZeroAnchorKernel
+import CurrentProofs.PhysicalAccounts
+import CurrentProofs.PerpetualBridge
+import CurrentProofs.WindowGate

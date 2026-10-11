@@ -2,7 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
-\usepackage[margin=1in]{geometry}
+\usepackage[left=1in,right=1in,top=1.5in,bottom=1.5in]{geometry}
 \usepackage{setspace}
 \onehalfspacing
 \usepackage{amsmath,amssymb,amsthm,mathtools,bm}
@@ -74,7 +74,7 @@
 
 \vspace{-0.5em}
 \begin{abstract}
-\noindent We study what a controlled aggregate price experiment can reveal about adaptive memory, and which financially specified resources make that inference possible. For a known symmetric single-versus-split cohort pair, total executed probing quantity has necessary and sufficient order $\delta^{-2}$ under Gaussian observation noise. A fixed lifetime quantity budget cannot be overcome by waiting, whereas an average-power budget yields horizon order $\delta^{-4}$. A self-financing probe-trader account yields matching capital order $\delta^{-4}$ for the restricted noisy-price observer; a separate counterparty account gives a sharp robust margin allowance. This is distinct from the time requirement and from a fixed-exposure output bound. These are conditional experiment results, distinct from public participant attribution or operational solvency guarantees. Empirically, reconstruction of the original 768-unit market panel shows pronounced flow-timing and filter sensitivity; raw-return date intervals include zero and maintained covariance restrictions reject. Replayed financial simulations separate model inventory-limit events from defaults and expose nominal/effective persistence differences. The resulting evidence supports precise information and calibration requirements, while leaving causal learning attribution and real-market safety validation unresolved.
+\noindent We ask what a controlled aggregate price experiment can reveal about traders' adaptive memory, and at what financial cost. For a known symmetric cohort pair under Gaussian price noise, total probing quantity of order $\delta^{-2}$ is necessary and sufficient. Waiting cannot substitute for quantity; an average-power budget implies horizon order $\delta^{-4}$, and a self-financing probe trader needs capital of order $\delta^{-4}$. These results are conditional on the declared experiment, not public attribution or solvency guarantees. In a reconstructed 768-unit cryptocurrency panel, feedback estimates are highly sensitive to flow timing and filtering. Causal attribution and real-market safety remain unresolved.
 
 
 \end{abstract}
@@ -480,33 +480,14 @@ Let $z_t = J^t z_0$ with $\rho(J) < 1$, balance-sheet buffer $B > 0$, and observ
 \end{theorem}
 
 \begin{proof}[Proof Sketch]
-Part~1 follows from the Cauchy--Schwarz inequality for operator norms: maximum loss across $\|z_0\|_2 \le r$ is $r \cdot \sup_{t \ge 0} \|C J^t\|_2 = r M_C$, yielding $r^*_{\text{exact}} = B/M_C$. Part~2 applies Spijker's (1991) optimal resolution of the Kreiss matrix conjecture, establishing $\mathcal{K}(J) \le \sup_{t \ge 0} \|J^t\|_2 \le e \cdot n \cdot \mathcal{K}(J)$ for $C=I$. Part~3 uses $J_\theta=\left(\begin{smallmatrix}\rho&\theta\\0&\rho\end{smallmatrix}\right)$. Then $CJ_\theta=(\rho,\theta)$, so $M_C\ge\sqrt{\rho^2+\theta^2}\to\infty$. The family is defective; no eigenvector-basis argument is required.
+Part~1 follows from the Cauchy--Schwarz inequality for operator norms: maximum loss across $\|z_0\|_2 \le r$ is $r \cdot \sup_{t \ge 0} \|C J^t\|_2 = r M_C$, yielding $r^*_{\text{exact}} = B/M_C$. Part~2 applies Spijker's (1991) optimal resolution of the Kreiss matrix conjecture, establishing $\mathcal{K}(J) \le \sup_{t \ge 0} \|J^t\|_2 \le e \cdot n \cdot \mathcal{K}(J)$ for $C=I$. Part~3 uses $J_\theta=\left(\begin{smallmatrix}\rho&\theta\\0&\rho\end{smallmatrix}\right)$. Then $CJ_\theta=(\rho,\theta)$, so $M_C\ge\sqrt{\rho^2+\theta^2}\to\infty$. The family is defective; no eigenvector-basis argument is required. A complete proof is given in Internet Appendix~\ref{ia:kreiss_proof}.
 \end{proof}
 
 \begin{remark}[Output and disturbance geometry]
 The theorem applies to a specified initial-state ball and output norm. State coordinate changes require a corresponding change in the disturbance set; arbitrary latent-state units cannot be interpreted as monetary losses. A physical execution-input experiment has a different gain, as Theorem~\ref{thm:resource_frontier} shows. The Kreiss lower radius concerns full-state observation. A small spectral radius alone supplies no universal bound, but non-normality alone does not establish severe monetary losses in a calibrated market.
 \end{remark}
 
-\subsection{Pseudospectral Contours and Non-Normal Resolvent Bounds}
-To gain deeper visual and geometric intuition into why the spectral radius fails to predict dealer solvency, we examine the $\epsilon$-pseudospectrum of the closed-loop market Jacobian. For any $\epsilon > 0$, the $\epsilon$-pseudospectrum $\sigma_\epsilon(J)$ of matrix $J$ is defined as the set of complex numbers $z \in \mathbb{C}$ satisfying:
-\begin{equation}
-\sigma_\epsilon(J) \equiv \left\{ z \in \mathbb{C} : \|(zI - J)^{-1}\|_2 \ge \epsilon^{-1} \right\}.
-\label{eq:pseudospectrum_def}
-\end{equation}
-Equivalently, $\sigma_\epsilon(J)$ represents the union of all eigenvalues of perturbed matrices $J + E$ across all perturbations with $\|E\|_2 \le \epsilon$.
-
-As visualized in Figure~\ref{fig:pseudospectrum}, in a normal system, the pseudospectrum consists of concentric disks of radius $\epsilon$ centered at the eigenvalues: $\sigma_\epsilon(J) = \bigcup_i \{z : |z - \lambda_i| \le \epsilon\}$. However, for a constructed non-normal matrix, computed pseudospectral contours can stretch along the off-diagonal coupling direction, protruding significantly outside the unit circle $\{|z| = 1\}$ even when the spectral radius $\rho(J) = 0.50$ is well within the interior. 
-
-The Kreiss constant $\mathcal{K}(J)$ measures the maximum ratio by which these pseudospectral contours protrude beyond the unit circle:
-\begin{equation}
-\mathcal{K}(J) = \sup_{\epsilon > 0} \frac{\alpha_\epsilon(J) - 1}{\epsilon}, \qquad \alpha_\epsilon(J) \equiv \sup_{z \in \sigma_\epsilon(J)} |z|.
-\end{equation}
-Whenever $\mathcal{K}(J) \gg 1$, small high-frequency liquidity shocks are magnified by the non-normal resolvent, inducing large transient balance-sheet losses that exhaust dealer margin buffers before eigenvalue decay can assert itself.
-
-\begin{figure}[tbp]\centering
-\includegraphics[width=0.65\textwidth]{figures/fig_verified_pseudospectrum_20261008.pdf}
-\caption{Computed singular-value contours for the declared constructed matrix $J=\left(\begin{smallmatrix}0.5&3\\0&0.2\end{smallmatrix}\right)$ at 0.05 and 0.15. Its spectral radius is 0.5; the 0.15 contour crosses the unit circle. This fixed-coordinate illustration is not a calibrated cohort-market or monetary-loss experiment.}
-\label{fig:pseudospectrum}\end{figure}
+Internet Appendix~\ref{ia:pseudospectra} illustrates the same separation geometrically: for a constructed matrix with spectral radius $0.5$, pseudospectral contours cross the unit circle.
 
 \subsection{Multi-Asset Generalization and Cross-Impact Kreiss Inflation}
 Modern market makers operate simultaneously across multiple correlated instruments (e.g., BTC, ETH, and altcoins; or equity index components and ETFs). In multi-asset environments, cross-asset price impact creates additional non-normal coupling.
@@ -1139,5 +1120,78 @@ Chatzikiriakos, N., and A. Iannelli, 2024, Sample complexity bounds for linear s
 Chatzikiriakos, N., K. Jamieson, and A. Iannelli, 2026, High effort, low gain: Fundamental limits of active learning for linear dynamical systems, \emph{Proceedings of Machine Learning Research} 300, 3115--3123.
 
 \end{thebibliography}
+
+\clearpage
+\appendix
+\setcounter{section}{0}
+\renewcommand{\thesection}{IA.\Alph{section}}
+\renewcommand{\theequation}{IA.\arabic{equation}}
+\setcounter{equation}{0}
+\begin{center}
+{\LARGE\bfseries Internet Appendix}\\[0.6em]
+{\large From Human Markets to Machine Markets}
+\end{center}
+\vspace{1em}
+
+\section{Complete Proof of Theorem~\ref{thm:m5_kreiss_solvency}}
+\label{ia:kreiss_proof}
+
+Throughout, $\|\cdot\|$ is the Euclidean vector norm and the induced operator (spectral) norm, and $z_t=J^tz_0$ with $\rho(J)<1$.
+
+\paragraph{Preliminary: the gains are finite.}
+By Gelfand's formula, $\|J^t\|^{1/t}\to\rho(J)<1$, so $\|J^t\|\to0$ and $M_I\equiv\sup_{t\ge0}\|J^t\|<\infty$. Hence $M_C=\sup_{t\ge0}\|CJ^t\|\le\|C\|M_I<\infty$. Taking $t=0$ gives $M_C\ge\|C\|$ and $M_I\ge\|I\|=1$.
+
+\paragraph{Part 1 (exact safe radius).}
+If $C=0$, every $z_0$ satisfies $\sup_t\|CJ^tz_0\|=0\le B$, so the criterion imposes no bound. Suppose $C\neq0$, so $M_C\ge\|C\|>0$.
+\emph{Sufficiency.} If $\|z_0\|\le B/M_C$, then for every $t$,
+\begin{equation}
+\|CJ^tz_0\|\le\|CJ^t\|\,\|z_0\|\le M_C\cdot B/M_C=B .
+\end{equation}
+\emph{Necessity.} Let $r>B/M_C$. Then $B/r<M_C$, so by the definition of the supremum there is $t^*$ with $\|CJ^{t^*}\|>B/r$. The spectral norm of a finite matrix is attained: there is a unit vector $v$ with $\|CJ^{t^*}v\|=\|CJ^{t^*}\|$. The initial state $z_0=rv$ has $\|z_0\|=r$ and $\|CJ^{t^*}z_0\|=r\|CJ^{t^*}\|>B$, violating the criterion. Hence the set of radii $r$ for which every $\|z_0\|\le r$ satisfies the criterion is exactly $[0,B/M_C]$, and its maximum is $r^*_{\text{exact}}=B/M_C$.
+
+\paragraph{Part 2 (Kreiss bounds), with $C=I$.}
+\emph{Lower bound.} Fix $z\in\mathbb{C}$ with $|z|>1$. The partial sums $S_T=\sum_{t=0}^{T}z^{-(t+1)}J^t$ converge absolutely, because $\sum_t|z|^{-(t+1)}\|J^t\|\le M_I\sum_t|z|^{-(t+1)}=M_I/(|z|-1)<\infty$. Telescoping gives $(zI-J)S_T=I-z^{-(T+1)}J^{T+1}\to I$, so $zI-J$ is invertible and $(zI-J)^{-1}=\sum_{t\ge0}z^{-(t+1)}J^t$. Therefore
+\begin{equation}
+(|z|-1)\,\|(zI-J)^{-1}\|\le(|z|-1)\cdot\frac{M_I}{|z|-1}=M_I .
+\end{equation}
+Taking the supremum over $|z|>1$ yields $\mathcal{K}(J)\le M_I$.
+
+\emph{Upper bound.} For any $n\times n$ complex matrix, \citet{spijker1991} proved $\sup_{t\ge0}\|J^t\|\le e\,n\,\mathcal{K}(J)$ in the spectral norm, with $\mathcal{K}$ defined exactly as in \eqref{eq:kreiss_def}; this resolved the LeVeque--Trefethen conjecture. Real matrices are a special case. We use this published theorem without reproving it.
+
+\emph{Radius bounds.} Combining, $\mathcal{K}(J)\le M_I\le e\,n\,\mathcal{K}(J)$. Since $M_I\ge1$, $\mathcal{K}(J)\ge M_I/(e\,n)>0$, so all three quantities are positive and finite. Dividing $B$ through the chain and using Part~1 with $C=I$ ($r^*_{\text{exact}}=B/M_I$) gives \eqref{eq:kreiss_bilateral_bound}.
+
+\paragraph{Part 3 (fixed spectrum, vanishing radius).}
+Fix $\rho\in(0,1)$ and $B>0$. For $\theta>0$ let $J_\theta=\left(\begin{smallmatrix}\rho&\theta\\0&\rho\end{smallmatrix}\right)$ and $C=(1,0)$. The characteristic polynomial is $(\lambda-\rho)^2$, so $\rho(J_\theta)=\rho$ for every $\theta$. The matrix is non-normal: $J_\theta J_\theta^\top-J_\theta^\top J_\theta=\operatorname{diag}(\theta^2,-\theta^2)\neq0$. Its powers are $J_\theta^t=\left(\begin{smallmatrix}\rho^t&t\theta\rho^{t-1}\\0&\rho^t\end{smallmatrix}\right)\to0$, so $M_C(J_\theta)<\infty$ and Part~1 applies. Since $CJ_\theta=(\rho,\theta)$,
+\begin{equation}
+M_C(J_\theta)\ge\|CJ_\theta\|=\sqrt{\rho^2+\theta^2}\ge\theta,
+\qquad\text{so}\qquad
+r^*_{\text{exact}}(J_\theta)=\frac{B}{M_C(J_\theta)}\le\frac{B}{\theta}\xrightarrow[\theta\to\infty]{}0 .
+\end{equation}
+This holds for every fixed $B>0$ while the spectral radius stays at $\rho$. \hfill$\square$
+
+\section{Pseudospectral Contours and Non-Normal Resolvent Bounds}
+\label{ia:pseudospectra}
+To gain deeper visual and geometric intuition into why the spectral radius fails to predict dealer solvency, we examine the $\epsilon$-pseudospectrum of the closed-loop market Jacobian. For any $\epsilon > 0$, the $\epsilon$-pseudospectrum $\sigma_\epsilon(J)$ of matrix $J$ is defined as the set of complex numbers $z \in \mathbb{C}$ satisfying:
+\begin{equation}
+\sigma_\epsilon(J) \equiv \left\{ z \in \mathbb{C} : \|(zI - J)^{-1}\|_2 \ge \epsilon^{-1} \right\}.
+\label{eq:pseudospectrum_def}
+\end{equation}
+Equivalently, $\sigma_\epsilon(J)$ represents the union of all eigenvalues of perturbed matrices $J + E$ across all perturbations with $\|E\|_2 \le \epsilon$.
+
+As visualized in Figure~\ref{fig:pseudospectrum}, in a normal system, the pseudospectrum consists of concentric disks of radius $\epsilon$ centered at the eigenvalues: $\sigma_\epsilon(J) = \bigcup_i \{z : |z - \lambda_i| \le \epsilon\}$. However, for a constructed non-normal matrix, computed pseudospectral contours can stretch along the off-diagonal coupling direction, protruding significantly outside the unit circle $\{|z| = 1\}$ even when the spectral radius $\rho(J) = 0.50$ is well within the interior. 
+
+The Kreiss constant $\mathcal{K}(J)$ measures the maximum ratio by which these pseudospectral contours protrude beyond the unit circle:
+\begin{equation}
+\mathcal{K}(J) = \sup_{\epsilon > 0} \frac{\alpha_\epsilon(J) - 1}{\epsilon}, \qquad \alpha_\epsilon(J) \equiv \sup_{z \in \sigma_\epsilon(J)} |z|.
+\end{equation}
+Whenever $\mathcal{K}(J) \gg 1$, small high-frequency liquidity shocks are magnified by the non-normal resolvent, inducing large transient balance-sheet losses that exhaust dealer margin buffers before eigenvalue decay can assert itself.
+
+\begin{figure}[tbp]\centering
+\includegraphics[width=0.65\textwidth]{figures/fig_verified_pseudospectrum_20261008.pdf}
+\caption{Computed singular-value contours for the declared constructed matrix $J=\left(\begin{smallmatrix}0.5&3\\0&0.2\end{smallmatrix}\right)$ at 0.05 and 0.15. Its spectral radius is 0.5; the 0.15 contour crosses the unit circle. This fixed-coordinate illustration is not a calibrated cohort-market or monetary-loss experiment.}
+\label{fig:pseudospectrum}\end{figure}
+
+
+
 
 \end{document}
