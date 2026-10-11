@@ -37,31 +37,44 @@ def plot_fig1():
         data = json.load(f)
         
     delta_min_t3 = data["parameters"]["delta_min_3rd_tap_approx"] # 0.2028
-    delta_min_t20 = data["parameters"]["delta_min_T20"] # 0.0769
+    delta_min_t20 = data["parameters"]["delta_min_T20"] # 0.0914
     
     curve_t20 = data["phase_diagram_T20_optimal"]["delta_curve"]
     curve_t3 = data["phase_diagram_T3_restricted"]["delta_curve"]
     
-    deltas = [d["delta"] for d in curve_t20]
-    B_pulse_t20 = [d["B_req_pulse"] for d in curve_t20]
-    B_seq_t20 = [d["B_req_sequential"] for d in curve_t20]
-    B_seq_t3 = [d["B_req_sequential"] for d in curve_t3]
+    deltas = np.array([d["delta"] for d in curve_t20])
+    B_pulse_t20 = np.array([d["B_req_pulse"] for d in curve_t20])
+    B_seq_t20 = np.array([d["B_req_sequential"] for d in curve_t20])
+    B_seq_t3 = np.array([d["B_req_sequential"] for d in curve_t3])
     
-    fig, ax = plt.subplots(figsize=(8, 5.5))
+    # Proved exact spectral lower bounds from Theorem IA.D.1 and IA.D.2
+    # At delta=0.05: C*_det = 61.44 USDT, E[C*_adapt] = 30.09 USDT
+    # Invariant constant: delta^4 * C*_det = 3.84e-4
+    C_star_det = 3.84e-4 / (deltas ** 4)
+    C_star_adapt = 0.4897 * C_star_det # 1.88e-4 / delta^4
+    
+    fig, ax = plt.subplots(figsize=(8.5, 6))
     
     # Plot boundaries
-    ax.plot(deltas, B_pulse_t20, label=r'Single-Pulse Boundary ($T=20$)', color='darkblue', lw=2.2)
-    ax.plot(deltas, B_seq_t20, label=r'Sequential Optimal Boundary ($T=20$)', color='darkorange', lw=2.0)
-    ax.plot(deltas, B_seq_t3, label=r'Sequential Restricted Baseline ($T=3$)', color='gray', lw=1.8, ls=':')
+    ax.plot(deltas, B_pulse_t20, label=r'Single-Pulse Boundary ($T=20$)', color='darkblue', lw=2.0)
+    ax.plot(deltas, B_seq_t20, label=r'Isolated-Pulse Boundary ($T=20$, $|v|\leq 6.25$)', color='darkorange', lw=2.0)
+    ax.plot(deltas, B_seq_t3, label=r'Isolated-Pulse Baseline ($T=3$)', color='gray', lw=1.6, ls=':')
+    ax.plot(deltas, C_star_det, label=r'Proved Deterministic Lower Bound $C^*_{\mathrm{det}}(\delta)$ ($61.44$ at $\delta=0.05$)', color='crimson', lw=2.2)
+    ax.plot(deltas, C_star_adapt, label=r'Proved Adaptive Lower Bound $\mathbb{E}[C^*_{\mathrm{adapt}}](\delta)$ ($30.09$ at $\delta=0.05$)', color='purple', lw=1.8, ls='-.')
+    
+    # Feasible non-pulse candidate point from Theorem IA.D.1 / Exp 13
+    ax.scatter([0.05], [65.05], color='black', marker='*', s=160, zorder=6,
+               label='Constructed Feasible Non-Pulse Candidate (65.05 USDT, 5.0% error)')
     
     # Vertical lines for physical depth limits
-    ax.axvline(delta_min_t20, color='darkgreen', lw=1.8, ls='--', label=rf'Full Transient Floor $\delta_{{\min}}(20) = {delta_min_t20:.3f}$')
-    ax.axvline(delta_min_t3, color='crimson', lw=1.8, ls='--', label=rf'Restricted Single-Tap Floor $\delta_{{\min}}(3) = {delta_min_t3:.3f}$')
+    ax.axvline(delta_min_t20, color='darkgreen', lw=1.6, ls='--', label=rf'Single-Pulse Floor $\delta_{{\min}}(20) = {delta_min_t20:.4f}$')
+    ax.axvline(delta_min_t3, color='crimson', lw=1.6, ls='--', label=rf'Single-Pulse Floor $\delta_{{\min}}(3) = {delta_min_t3:.4f}$')
     
-    # Fill Regions for optimal T=20 design
-    ax.fill_between(deltas, B_pulse_t20, 1e6, where=[d >= delta_min_t20 for d in deltas], color='green', alpha=0.12, label='Regime 1: Feasible Single-Pulse ($T=20$)')
-    ax.fill_between(deltas, B_seq_t20, 1e6, where=[d < delta_min_t20 for d in deltas], color='orange', alpha=0.12, label='Regime 2: Sequential Multi-Pulse')
-    ax.fill_between(deltas, 1.0, B_seq_t20, color='red', alpha=0.12, label='Regime 3: Infeasible Identification')
+    # Fill Regions
+    ax.fill_between(deltas, B_pulse_t20, 1e6, where=[d >= delta_min_t20 for d in deltas], color='green', alpha=0.10, label='Regime 1: Feasible Single-Pulse ($T=20$)')
+    ax.fill_between(deltas, B_seq_t20, 1e6, where=[d < delta_min_t20 for d in deltas], color='orange', alpha=0.10, label='Regime 2: Feasible Sequential Isolated-Pulse')
+    ax.fill_between(deltas, C_star_det, B_seq_t20, color='gold', alpha=0.10, label=r'Regime 3: Infeasible via Isolated Pulses ($T\leq 20$)')
+    ax.fill_between(deltas, 1.0, C_star_adapt, color='red', alpha=0.12, label='Regime 4: Proved Infeasible (All Adaptive & Determ.)')
     
     ax.set_yscale('log')
     ax.set_xlim(0.01, 0.25)
@@ -70,7 +83,7 @@ def plot_fig1():
     ax.set_ylabel(r'Required Trader Capital $B$ (USDT, log scale)')
     ax.set_title('The Financial Identification Frontier: Multi-Observation Phase Diagram')
     ax.grid(True, which='both', ls='-', alpha=0.2)
-    ax.legend(loc='upper right', frameon=True, fontsize=8.5)
+    ax.legend(loc='upper right', frameon=True, fontsize=7.5)
     
     plt.tight_layout()
     plt.savefig(OUT_DIR / "fig1_phase_diagram.pdf")
@@ -91,10 +104,10 @@ def plot_fig2():
     colors = {'Method_A_Single_Pulse': 'navy', 'Method_B_Multi_Pulse': 'crimson', 
               'Method_C_Sequential_Feedback': 'forestgreen', 'Method_D_Minimax_LQG': 'darkorange'}
     labels = {
-        'Method_A_Single_Pulse': 'Method A: Single Pulse',
-        'Method_B_Multi_Pulse': 'Method B: Multi-Pulse',
-        'Method_C_Sequential_Feedback': 'Method C: Sequential Feedback',
-        'Method_D_Minimax_LQG': 'Method D: Minimax LQG'
+        'Method_A_Single_Pulse': 'Method A: Unconstrained Single Pulse',
+        'Method_B_Multi_Pulse': 'Method B: Repeated Capacity Pulses (|v_t| <= 6.25 BTC)',
+        'Method_C_Sequential_Feedback': 'Method C: Sequential SPRT Stopping',
+        'Method_D_Minimax_LQG': 'Method D: Predetermined Gen.-Eigenvector Trajectory'
     }
     
     for prot in protocols:
@@ -113,9 +126,9 @@ def plot_fig2():
     ax.set_yscale('log')
     ax.set_xlabel(r'Separation $\delta$ (log scale)')
     ax.set_ylabel(r'Probing Capital Cost $\mathcal{C}$ (USDT, log scale)')
-    ax.set_title(r'Universal Probing Capital Scaling: Invariance of $\Theta(\delta^{-4})$')
+    ax.set_title(r'Observed Capital Scaling Across Evaluated Probing Protocols ($\delta \in [0.03, 0.12]$)')
     ax.grid(True, which='both', ls='-', alpha=0.2)
-    ax.legend(frameon=True)
+    ax.legend(frameon=True, fontsize=8)
     
     plt.tight_layout()
     plt.savefig(OUT_DIR / "fig2_probing_cost_scaling.pdf")
@@ -248,7 +261,7 @@ def plot_fig5():
     ax2.plot(M_vals, rho_vals, marker='o', color='navy', lw=2.0, ls='--', label=r'Network Spectral Radius $\rho(J_{\mathrm{network}}) \to 1.0$')
     ax2.set_xlabel('Number of Cross-Impacted Assets $M$')
     ax2.set_ylabel('Stability & Resolvent Metrics')
-    ax2.set_title('Cross-Impact Network Spectral Inflation ($\mathcal{K}(J) \equiv 1.00$)')
+    ax2.set_title(r'Cross-Impact Network Spectral Inflation ($\mathcal{K}(J) \equiv 1.00$)')
     ax2.grid(True, ls='--', alpha=0.3)
     ax2.legend(frameon=True)
     

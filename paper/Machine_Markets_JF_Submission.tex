@@ -1276,25 +1276,26 @@ C^*(\delta) = \Theta(\delta^{-4}).
 N_{\mathrm{pulses}}(T, \delta) = \left\lceil \frac{4\sigma^2 z_\alpha^2}{V_{\mathrm{eff}}^2 \|d_T\|_2^2} \right\rceil.
 \end{equation}
 Cumulative transaction fees and execution costs scale strictly as $C^*_{\mathrm{seq}}(\delta) = \Theta(\delta^{-4})$ (for Class~II) and $\Theta(\delta^{-2})$ (for Class~I), expanding the required observation horizon to $\Theta(\delta^{-4})$ or $\Theta(\delta^{-2})$. Under the simplified benchmark cost model ($C_{\mathrm{bench}} = \frac{1}{2}\kappa V^2 + \phi P^* |V| = 15.875$ USDT/pulse at $V_{\mathrm{eff}} = 6.25$ BTC), required capital at $\delta = 0.05$ is $4{,}305.25$ USDT under the restricted single-tap design ($T=3$, $N=271$ pulses), but collapses to $193.62$ USDT under the capacity-saturating multi-observation transient design ($T=20$, $N=12$ pulses, $V=6.25$ BTC), or $182.02$ USDT under the exact volume-optimized design ($N=12$, $V^* = 6.057$ BTC), reaching $177.75$ USDT at horizon $T=100$ ($N=11$ pulses; $175.35$ USDT at $V^*=6.207$ BTC). Under the physically executable round-trip unwind model ($C_{\mathrm{exec}} = \kappa V^2 + 2\phi P^* |V| = 31.75$ USDT/pulse), required capital is $8{,}607.38$ USDT ($T=3$), $384.12$ USDT ($T=20$ capacity-saturating), and $360.77$ USDT ($T=20$ volume-optimized). \emph{These figures are costs within the isolated-pulse design class, not minimum capital requirements.} The per-pulse formula charges initial margin once ($3.13$ USDT) and does not track the ledger; twelve buys that are never unwound carry $75$ BTC of inventory and $37.5$ USDT of margin. Section~\ref{ia:account_capital} replaces the formula by an explicit account ledger and shows that a non-pulse probe reaches the same $5\%$ error with about $65$ USDT of account capital.
-\item \textbf{Infeasible Region $\mathcal{R}_{\mathrm{infeas}}$:} Identification is infeasible if:
+\item \textbf{Isolated-Pulse Infeasible Region $\mathcal{R}_{\mathrm{pulse-infeas}}$:} Identification within the isolated-pulse design class is infeasible if:
 (a) The capital budget is insufficient to finance sequential impact and margin costs ($B < C^*_{\mathrm{seq}}(\delta)$); or
 (b) The cumulative inventory required to overcome observation noise exceeds the regulatory limit ($\min_t |I_t| > I_{\max}$); or
-(c) The surveillance horizon is strictly bounded by a session deadline $T_{\mathrm{session}}$, in which case the finite-session resolution floor under cycle length $T_{\mathrm{cycle}}$ is:
-\begin{equation}
-\delta_{\min}(T_{\mathrm{session}}) = \left(\frac{4 \sigma^2 z_\alpha^2}{V_{\mathrm{eff}}^2 \|d_{T_{\mathrm{cycle}}}\|_2^2 \lfloor T_{\mathrm{session}} / T_{\mathrm{cycle}} \rfloor}\right)^{1/4} = \Theta(T_{\mathrm{session}}^{-1/4}).
+(c) The surveillance horizon is strictly bounded by a session deadline $T_{\mathrm{session}}$, in which case the finite-session resolution floor under cycle length $T_{\mathrm{cycle}}$ and normalized directional memory curvature vector $\tilde{d}_{T_{\mathrm{cycle}}} \equiv \lim_{\delta \to 0} \frac{d_{T_{\mathrm{cycle}}}(\delta)}{\delta^2}$ is:
+\begin{align}
+\delta_{\min}(T_{\mathrm{session}}) &= \left(\frac{4 \sigma^2 z_\alpha^2}{V_{\mathrm{eff}}^2 \|\tilde{d}_{T_{\mathrm{cycle}}}\|_2^2 \lfloor T_{\mathrm{session}} / T_{\mathrm{cycle}} \rfloor}\right)^{1/4} \nonumber \\
+&= \sqrt{\frac{2 \sigma z_\alpha}{V_{\mathrm{eff}} \|\tilde{d}_{T_{\mathrm{cycle}}}\|_2 \sqrt{\lfloor T_{\mathrm{session}} / T_{\mathrm{cycle}} \rfloor}}} = \Theta(T_{\mathrm{session}}^{-1/4}).
 \label{eq:delta_min_def}
-\end{equation}
-Under the calibrated Binance USD$\circledS$-M order book depth ($V_{\max} = 50.0$ BTC, $\kappa = 0.8, q = 0.2, \sigma = 0.01$) and price displacement limit $D_{\max} = 5.0$ USDT ($V_{\mathrm{eff}} = 6.25$ BTC), the operational single-pulse resolution floor is $\delta_{\min}(3) = 0.2028$ under the restricted single-tap design ($T=3$), shifting down to $\delta_{\min}(4) = 0.1376$, $\delta_{\min}(10) = 0.0973$, $\delta_{\min}(20) = 0.0914$, and $\delta_{\min}(100) = 0.0905$ under extended transient price observation.
+\end{align}
+Non-asymptotically, $\delta_{\min}(T)$ is the exact unique positive root $\delta^*$ of $V_{\mathrm{eff}} \|d_T(\delta)\|_2 = 2 \sigma z_\alpha / \sqrt{\lfloor T_{\mathrm{session}} / T_{\mathrm{cycle}} \rfloor}$. Under the calibrated Binance USD$\circledS$-M order book depth ($V_{\max} = 50.0$ BTC, $\kappa = 0.8, q = 0.2, \sigma = 0.01$) and price displacement limit $D_{\max} = 5.0$ USDT ($V_{\mathrm{eff}} = 6.25$ BTC), the operational single-pulse resolution floor evaluates to $\delta_{\min}(3) = 0.2028$ (where $\|\tilde{d}_3\|_2 = \kappa^2 q = 0.128$), shifting down to $\delta_{\min}(4) = 0.1376$, $\delta_{\min}(10) = 0.0973$, $\delta_{\min}(20) = 0.0914$, and $\delta_{\min}(100) = 0.0905$ under extended transient price observation. Crucially, as proved in Theorem~\ref{thm:ia_exact_capital}, this infeasibility boundary applies strictly to the tested isolated-pulse protocol ($T \le 20$). The true information-theoretic lower bound below which no deterministic trading sequence can achieve $5\%$ error is $C^*_{\mathrm{det}}(0.05) = 61.44$ USDT (adaptive lower bound $30.09$ USDT, Theorem~\ref{thm:ia_adaptive_capital}).
 \end{enumerate}
 \end{proposition}
 
 \begin{figure}[tbp]\centering
 \includegraphics[width=0.75\textwidth]{figures/fig1_phase_diagram.pdf}
-\caption{The Financial Identification Frontier Phase Diagram in $(\delta, B)$ space. The vertical line at $\delta_{\min} = 0.2028$ demarcates the operational single-pulse resolution floor under effective trade capacity $V_{\mathrm{eff}} = 6.25$ BTC (governed by displacement limit $D_{\max} = 5.0$ USDT) for the restricted single-tap design ($T=3$). The optimal transient design ($T=20$) extends single-pulse feasibility down to $\delta_{\min} = 0.0914$. To the left of $\delta_{\min}$, active identification requires sequential multi-pulse execution spanning horizon $N = \Theta(\delta^{-4})$ ($\mathcal{R}_{\mathrm{cost}}$); below the frontier curve $C^*(\delta)$, active probing causes dealer insolvency before memory parameters can be resolved ($\mathcal{R}_{\mathrm{infeas}}$).}
+\caption{The Financial Identification Frontier Phase Diagram in $(\delta, B)$ space. The vertical line at $\delta_{\min}(3) = 0.2028$ demarcates the operational single-pulse resolution floor under effective trade capacity $V_{\mathrm{eff}} = 6.25$ BTC (governed by displacement limit $D_{\max} = 5.0$ USDT) for the restricted single-tap baseline ($T=3$). The extended transient design ($T=20$) extends single-pulse feasibility down to $\delta_{\min}(20) = 0.0914$. Between the single-pulse floor and the isolated-pulse boundary, identification requires sequential multi-pulse execution spanning horizon $N = \Theta(\delta^{-4})$ ($\mathcal{R}_{\mathrm{cost}}$); below that curve, identification cannot be achieved using the tested isolated-pulse protocol ($T \le 20$). Probing with non-pulse generalized-eigenvector sequences achieves $5\%$ error with $65.05$ USDT (Section~\ref{ia:account_capital}), and the true information-theoretic lower bound below which all deterministic policies fail is $C^*_{\mathrm{det}}(0.05) = 61.44$ USDT (adaptive lower bound $30.09$ USDT, Theorem~\ref{thm:ia_exact_capital}).}
 \label{iafig:phase_diagram}
 \end{figure}
 
-Figure~\ref{iafig:phase_diagram} illustrates the resulting phase diagram evaluated on a fine $100 \times 100$ grid spanning $\delta \in [0.01, 0.25]$ and $B \in [10, 100{,}000]$ USDT, using the calibrated parameters: $\kappa = 0.8$, $q = 0.2$, $\sigma = 0.01$, $\alpha = \beta = 0.05$, and Binance effective capacity $V_{\mathrm{eff}} = 6.25$ BTC. Under the restricted single-tap design ($T=3$, $\delta_{\min} = 0.2028$), exactly 1,949 points reside in the Feasible Region, 5,151 in the Costly Sequential Region, and 2,900 in the Infeasible Region. Under the multi-observation transient design ($T=20$, $\delta_{\min} = 0.0914$), the Feasible Region expands significantly, confirming that multi-period observation dramatically lowers the financial barriers to algorithmic market identification. The previously reported capital requirement of $4{,}305.25$ USDT at $\delta = 0.05$ is valid strictly under the single-tap constraint $T=3$; under the transient design ($T=20$), the required benchmark capital drops by $95.5\%$ to $193.62$ USDT ($182.02$ USDT volume-optimized; $384.12$ USDT executable saturating, $360.77$ USDT executable optimized). The region boundaries in Figure~\ref{iafig:phase_diagram} are drawn for the isolated-pulse design class; they are upper bounds on the true minimum capital, not the minimum itself.
+Figure~\ref{iafig:phase_diagram} illustrates the resulting phase diagram evaluated on a fine $100 \times 100$ grid spanning $\delta \in [0.01, 0.25]$ and $B \in [10, 100{,}000]$ USDT, using the calibrated parameters: $\kappa = 0.8$, $q = 0.2$, $\sigma = 0.01$, $\alpha = \beta = 0.05$, and Binance effective capacity $V_{\mathrm{eff}} = 6.25$ BTC. Under the restricted single-tap design ($T=3$, $\delta_{\min} = 0.2028$), exactly 1,949 points reside in the Feasible Region, 5,151 in the Costly Sequential Region, and 2,900 in the Isolated-Pulse Infeasible Region. Under the multi-observation transient design ($T=20$, $\delta_{\min} = 0.0914$), the Feasible Region expands significantly, confirming that multi-period observation dramatically lowers the financial barriers to algorithmic market identification. The previously reported capital requirement of $4{,}305.25$ USDT at $\delta = 0.05$ is valid strictly under the single-tap constraint $T=3$; under the transient design ($T=20$), the required benchmark capital drops by $95.5\%$ to $193.62$ USDT ($182.02$ USDT volume-optimized; $384.12$ USDT executable saturating, $360.77$ USDT executable optimized). The region boundaries in Figure~\ref{iafig:phase_diagram} are drawn for the isolated-pulse design class; they are upper bounds on the true minimum capital, not the minimum itself.
 
 \subsection{Account-Level Capital and the Gap to the Lower Bound}
 \label{ia:account_capital}
@@ -1305,7 +1306,17 @@ Theorem~2.9 is an order statement: required capital is $\Theta(\delta^{-4})$ and
 
 Three conclusions follow from Table~\ref{iatab:account_capital}. First, twelve buys that are never unwound fail the $5\%$ target (KL $4.95<5.41$) once the test uses the joint price path rather than adding twelve independent per-pulse divergences, and they end with $75$ BTC of inventory. Second, if every unwind leg is itself treated as an informative probe, five or six buy/sell round trips meet the target with $158$--$189$ USDT and zero terminal inventory, so the pulse-class figure is attainable in a real account. Third, the pulse class is not optimal: the cost-minimising deterministic probe over a 120-step window (a generalised eigenvector of the executable round-trip cost form, which is positive definite with minimum eigenvalue $0.12$, so no round-trip arbitrage exists) needs about $65$ USDT, with maximum trade $1.25$ BTC and maximum price displacement $2.23$ USDT, inside the $5$ USDT limit.
 
-The exact minimum-capital design problem and the information-theoretic value of adaptivity are resolved by Theorems~\ref{thm:ia_exact_capital} and \ref{thm:ia_adaptive_capital} and Table~\ref{iatab:capital_frontier_exact} below.
+We formulate the complete capital minimization problem over all feasible flat, fee-paying trading policies $v = (v_0, \dots, v_{L-1})^\top \in \R^L$ with zero terminal inventory:
+\begin{equation}
+\begin{aligned}
+\min_{v \in \R^L} \; & C(v) \equiv \sum_{t=0}^{L-1} \left( \frac{1}{2} \kappa v_t^2 + \phi P^* |v_t| \right) + \max_{0 \le t \le L-1} \mu P^* |I_t| \\
+\text{s.t.} \; & \|(H_1 - H_0) v\|_2 \ge 2 \sigma z_{1-\alpha}, \quad \sum_{t=0}^{L-1} v_t = 0.
+\end{aligned}
+\label{eq:general_capital_optimization}
+\end{equation}
+The constructed $65.05$ USDT sequence is a constructed feasible candidate solution to \eqref{eq:general_capital_optimization}, not a proven global optimum. Finding the absolute global minimum under non-convex $L_1$ transaction fees $\phi P^* |v_t|$ and supremum inventory margin $\max_t \mu P^* |I_t|$ is an open non-convex trajectory problem. However, Theorem~\ref{thm:ia_exact_capital} establishes the fee-free spectral infimum $C^*_{\mathrm{det}}(0.05) = 61.44$ USDT, ensuring that the true global minimum under all non-convex fee schedules and margin constraints is strictly bounded in $[61.44, 65.05]$ USDT.
+
+The exact minimum-capital lower bounds and the information-theoretic value of adaptivity are resolved by Theorems~\ref{thm:ia_exact_capital} and \ref{thm:ia_adaptive_capital} and Table~\ref{iatab:capital_frontier_exact} below.
 
 \begin{theorem}[Exact Minimum Execution Loss for Deterministic Identification Probes]
 \label{thm:ia_exact_capital}
@@ -1358,15 +1369,15 @@ establishing that dynamic adaptation can save at most $51.03\%$ of expected capi
 
 A central question in identification design is whether adaptive, multi-pulse, or closed-loop feedback probing strategies can circumvent the $\Theta(\delta^{-4})$ capital cost scaling. We systematically evaluate four distinct active probing protocols across $\delta \in \{0.03, 0.05, 0.08, 0.12\}$ with 100 independent Monte Carlo replications per cell:
 \begin{enumerate}
-\item \textbf{Method A (Single Pulse):} An instantaneous impulse order $V_1 = V^*$, $V_t = 0$ for $t > 1$.
-\item \textbf{Method B (Multi-Pulse Split):} Orders divided equally across $M = 3$ consecutive periods, $V_t = V^*/3$.
+\item \textbf{Method A (Unconstrained Single Pulse):} An instantaneous impulse order $V_1 = V^*$, $V_t = 0$ for $t > 1$, decomposed sequentially when $V^* > V_{\mathrm{eff}}$.
+\item \textbf{Method B (Repeated Capacity-Clamped Pulses):} Sequentially executes independent capacity-clamped probing cycles ($|v_t| \le 6.25$ BTC) with $T=4$ price observation periods per cycle, accumulating statistical evidence across $N_{\mathrm{pulses}}$ independent resets.
 \item \textbf{Method C (Sequential SPRT with Dynamic Feedback):} Adaptive order sizes $V_t$ governed by the running log-likelihood ratio $\Lambda_t$ with Wald stopping thresholds and dynamic evidence-dependent throttling.
-\item \textbf{Method D (Dual Optimal Fisher Tracking):} A constrained linear-quadratic Gaussian (LQG) controller designed to maximize cumulative Fisher information per unit inventory and control penalty via generalized Rayleigh quotient optimization.
+\item \textbf{Method D (Predetermined Generalized-Eigenvector Trajectory):} Executes a predetermined generalized-eigenvector trading sequence designed to maximize cumulative Fisher information per unit quadratic execution cost across repeated cycles.
 \end{enumerate}
 
 \begin{figure}[tbp]\centering
 \includegraphics[width=0.75\textwidth]{figures/fig2_probing_cost_scaling.pdf}
-\caption{Universal Capital Scaling $\Theta(\delta^{-4})$ Across Active Probing Protocols. Empirical log-log regression slopes: Method A single pulse ($-3.952$, $R^2 = 1.000$), Method B multi-pulse ($-3.921$, $R^2 = 1.000$), Method C sequential feedback ($-3.825$, $R^2 = 1.000$), and Method D dual optimal ($-3.936$, $R^2 = 1.000$).}
+\caption{Observed Capital Scaling $\Theta(\delta^{-4})$ Across Evaluated Probing Protocols on Tested Separations $\delta \in [0.03, 0.12]$. Empirical log-log regression slopes: Method A single pulse ($-3.952$, $R^2 = 1.000$), Method B repeated pulses ($-3.921$, $R^2 = 1.000$), Method C sequential feedback ($-3.825$, $R^2 = 1.000$), and Method D predetermined eigenvector ($-3.936$, $R^2 = 1.000$).}
 \label{iafig:probing_scaling}
 \end{figure}
 
@@ -1383,7 +1394,7 @@ Method A: Single Pulse (Unconstrained) & 0.03 & 131.5 & 131.5 & 131.5 & 0.046 (0
  & 0.08 & 18.5 & 18.5 & 18.5 & 0.053 (0.007) & 146.73 \\
  & 0.12 & 8.2 & 8.2 & 8.2 & 0.040 (0.006) & 31.45 \\
 \midrule
-Method B: Multi-Pulse ($V_t \le 6.25$) & 0.03 & 2768.8 & 6.2 & 6.2 & 0.056 (0.007) & 7035.75 \\
+Method B: Repeated Capacity Pulses ($V_t \le 6.25$) & 0.03 & 2768.8 & 6.2 & 6.2 & 0.056 (0.007) & 7035.75 \\
  & 0.05 & 362.5 & 6.2 & 6.2 & 0.051 (0.007) & 923.88 \\
  & 0.08 & 56.2 & 6.2 & 6.2 & 0.051 (0.007) & 146.00 \\
  & 0.12 & 12.5 & 6.2 & 6.2 & 0.033 (0.006) & 34.88 \\
@@ -1393,7 +1404,7 @@ Method C: Sequential Feedback ($V_t \le 6.25$) & 0.03 & 1632.3 & 6.2 & 6.2 & 0.0
  & 0.08 & 39.2 & 6.2 & 6.2 & 0.023 (0.005) & 88.20 \\
  & 0.12 & 10.2 & 6.2 & 6.2 & 0.007 (0.003) & 27.26 \\
 \midrule
-Method D: Minimax LQG ($V_t \le 6.25$) & 0.03 & 7700.0 & 3.7 & 3.8 & 0.055 (0.007) & 8771.37 \\
+Method D: Predetermined Gen.-Eigenvector ($V_t \le 6.25$) & 0.03 & 7700.0 & 3.7 & 3.8 & 0.055 (0.007) & 8771.37 \\
  & 0.05 & 1000.0 & 3.7 & 3.8 & 0.044 (0.006) & 1140.80 \\
  & 0.08 & 156.2 & 3.7 & 3.8 & 0.046 (0.007) & 179.86 \\
  & 0.12 & 31.2 & 3.7 & 3.8 & 0.048 (0.007) & 37.50 \\
@@ -1402,18 +1413,19 @@ Method D: Minimax LQG ($V_t \le 6.25$) & 0.03 & 7700.0 & 3.7 & 3.8 & 0.055 (0.00
 }
 \end{table}
 
-Table~\ref{iatab:probing_methods_comparison} and Figure~\ref{iafig:probing_scaling} report empirical performance under independent held-out Neyman-Pearson and closed-loop SPRT testing evaluated under an identical fair observation horizon ($T=4$ per pulse cycle). Under operational per-trade execution capacity $V_{\mathrm{eff}} = 6.25$ BTC (governed by the price displacement limit $D_{\max} = 5.0$ USDT), Methods B, C, and D strictly clamp single-order execution to $|V_t| \le 6.25$ BTC. Method A serves as an unconstrained impulse benchmark ($V_A = 8.2$--$131.5$ BTC); for $\delta < \delta_{\min}(4) = 0.1376$, physically executing this volume in a single trade violates resting book depth, requiring sequential multi-pulse execution as proved in Proposition~\ref{prop:tri_region_partition}. All methods strictly meet the target error $\alpha \le 0.05$ within sampling uncertainty. Crucially, at $\delta = 0.05$, predetermined multi-pulse execution (Method B) requires 58 pulses ($923.88$ USDT), whereas adaptive sequential SPRT (Method C) terminates in an empirical mean of $42.1$ reset cycles and $217.4$ BTC executed volume ($34.8$ full-pulse equivalents), incurring an actual volume-weighted cost of $469.01$ USDT ($49.2\%$ capital saving over Method B; or $671.18$ USDT under capacity-saturating pricing, a $27.4\%$ saving). Comparing this to the restricted single-tap baseline ($4{,}305.25$ USDT at $T=3$) demonstrates that $78.5\%$ of the apparent gross savings from $4{,}305$ to $924$ USDT originates from observing the transient response ($T=4$ vs.\ $T=3$), while dynamic SPRT stopping provides an additional authentic $27.4\%$--$49.2\%$ saving at equal observation horizon. Across all protocols, the empirical log-log capital scaling with respect to $\delta$ is strictly $\Theta(\delta^{-4})$, confirming the invariance of the fundamental Fisher information lower bound.
+Table~\ref{iatab:probing_methods_comparison} and Figure~\ref{iafig:probing_scaling} report empirical performance under independent held-out Neyman-Pearson and closed-loop SPRT testing evaluated under an identical fair observation horizon ($T=4$ per pulse cycle). Under operational per-trade execution capacity $V_{\mathrm{eff}} = 6.25$ BTC (governed by the price displacement limit $D_{\max} = 5.0$ USDT), Methods B, C, and D strictly clamp single-order execution to $|V_t| \le 6.25$ BTC. Method A serves as an unconstrained impulse benchmark ($V_A = 8.2$--$131.5$ BTC); for $\delta < \delta_{\min}(4) = 0.1376$, physically executing this volume in a single trade violates resting book depth, requiring sequential multi-pulse execution as proved in Proposition~\ref{prop:tri_region_partition}. All methods strictly meet the target error $\alpha \le 0.05$ within sampling uncertainty. Crucially, at $\delta = 0.05$, predetermined multi-pulse execution (Method B) requires 58 pulses ($923.88$ USDT), whereas adaptive sequential SPRT (Method C) terminates in an empirical mean of $42.1$ reset cycles and $217.4$ BTC executed volume ($34.8$ full-pulse equivalents), incurring an actual volume-weighted cost of $469.01$ USDT ($49.2\%$ capital saving over Method B; or $671.18$ USDT under capacity-saturating pricing, a $27.4\%$ saving). Comparing this to the restricted single-tap baseline ($4{,}305.25$ USDT at $T=3$) demonstrates that $78.5\%$ of the apparent gross savings from $4{,}305$ to $924$ USDT originates from observing the transient response ($T=4$ vs.\ $T=3$), while dynamic SPRT stopping provides an additional authentic $27.4\%$--$49.2\%$ saving at equal observation horizon. Across all protocols, the empirical log-log capital scaling with respect to $\delta$ is strictly $\Theta(\delta^{-4})$ on the evaluated separations, confirming the invariance of the fundamental Fisher information lower bound.
 
 \subsection{Unknown-Mixture Identification via Closed-Loop Transfer Function Inversion}
 \label{ia:unknown_mixture_inversion}
 
 Theorem~\ref{thm:m1_equivalence} establishes that algorithmic cohorts sharing an adaptation rate merge into an observationally equivalent composite weight. A critical identification challenge in general unknown-cohort markets is separating the latent memory poles $r_i = 1 - \eta_i$ from the closed-loop system dynamics without conditioning on the true cohort count $K$.
 
-Consider the closed-loop pricing equation with $K$ hidden adaptive cohorts:
+Consider the closed-loop pricing equation with $K$ hidden adaptive cohorts expressed in price displacement $x_t \equiv p_t - P^*$:
 \begin{equation}
-p_t = a p_{t-1} + \kappa \sum_{i=1}^K q_i y_{i,t} + v_t, \qquad y_{i,t} = (1 - \eta_i) y_{i,t-1} + \eta_i \Delta p_t.
+x_t = a x_{t-1} + \kappa \sum_{i=1}^K q_i y_{i,t-1} + \kappa v_t, \qquad y_{i,t} = (1 - \eta_i) y_{i,t-1} + \eta_i x_t.
+\label{eq:closed_loop_pricing_displacement}
 \end{equation}
-In the frequency domain, the transfer function from probe input $v_t$ to price $p_t$ is:
+In the frequency domain, the transfer function from probe input $v_t$ to price displacement $x_t$ is:
 \begin{equation}
 H(z) = \frac{\kappa}{z - a - \kappa G(z)}, \qquad G(z) = \sum_{i=1}^K \frac{q_i \eta_i z}{z - (1 - \eta_i)}.
 \label{eq:closed_loop_H_transfer}
@@ -1427,7 +1439,7 @@ To recover the true structural parameters without prior knowledge of $K$, we imp
 \item \textbf{Impulse Decoupling:} Extract the strictly proper transfer component $g_t \equiv h_{t+1} - a h_t$ from the empirical price response.
 \item \textbf{Minimal State-Space Realization:} Form the block Hankel matrix $\mathcal{H}_{i,j} = g_{i+j-1}$ and execute Kung's Eigenrealization Algorithm (ERA) via truncated singular value decomposition to obtain a balanced realization $(A, B, C, D)$.
 \item \textbf{Transmission Zero Inversion:} Compute the transmission zeros of $(A, B, C, D)$, which invert the feedback loop under known $(\kappa, a)$ and isolate the roots of $D_G(z) = 0$.
-\item \textbf{Direct Closed-Loop Feedback Inversion:} Given recovered memory rates $\hat{\eta}_k$, invert the physical pricing relation $u_t = \frac{p_t - a p_{t-1}}{\kappa} = \sum_{k=1}^K w_k y_{k,t-1}$, where internal memory filters evolve as $y_{k,t} = (1 - \hat{\eta}_k) y_{k,t-1} + \hat{\eta}_k \Delta p_t$. Projecting unobserved algorithmic order flow $u_t$ onto the reconstructed filter basis $\{y_{k,t-1}\}$ resolves the structural cohort weights $w_k$ without confounding from closed-loop pole shifts.
+\item \textbf{Direct Closed-Loop Feedback Inversion:} Given recovered memory rates $\hat{\eta}_k$, invert the physical pricing relation $u_t = \frac{x_t - a x_{t-1}}{\kappa} = \sum_{k=1}^K w_k y_{k,t-1}$, where internal memory filters evolve as $y_{k,t} = (1 - \hat{\eta}_k) y_{k,t-1} + \hat{\eta}_k x_t$. Projecting unobserved algorithmic order flow $u_t$ onto the reconstructed filter basis $\{y_{k,t-1}\}$ resolves the structural cohort weights $w_k$ without confounding from closed-loop pole shifts.
 \end{enumerate}
 
 Evaluating this estimator on synthetic markets gives exact recovery only for a single cohort or noiseless, well-separated cohorts:
