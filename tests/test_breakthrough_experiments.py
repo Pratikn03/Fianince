@@ -305,4 +305,69 @@ def test_allocation_loss_formula():
     W_triangle = 0.5 * b * (Delta**2) # 4.5
     assert np.isclose(W_triangle, 4.5)
 
+# ----------------------------------------------------------------------
+# 14. Test Sequential Disclosure Schedules under V_eff = 6.25 (exp7)
+# ----------------------------------------------------------------------
+def test_sequential_disclosure_schedules_under_veff():
+    """Verify that financial disclosure contracts reduce sequential probing pulses and capital under V_eff = 6.25."""
+    res_path = Path("breakthrough_experiments/results_exp7_disclosure_value.json")
+    assert res_path.exists(), "Results file for exp7 must exist"
+    data = json.loads(res_path.read_text())
+    
+    # Locate delta = 0.05 contracts block
+    entry_05 = next(item for item in data if abs(item["delta"] - 0.05) < 1e-4)
+    d05 = entry_05["contracts"]
+    
+    # Contract I0 requires 271 sequential pulses and 4305.25 USDT
+    assert d05["I0_Prices_Only"]["sequential_n_pulses"] == 271
+    assert np.isclose(d05["I0_Prices_Only"]["sequential_capital_B"], 4305.25, atol=1.0)
+    
+    # Contract I2 (noisy balance sheet) cuts pulses to 132 and capital by >50%
+    assert d05["I2_Noisy_Equity"]["sequential_n_pulses"] == 132
+    savings_I2 = 1.0 - (d05["I2_Noisy_Equity"]["sequential_capital_B"] / d05["I0_Prices_Only"]["sequential_capital_B"])
+    assert np.isclose(savings_I2, 0.5125, atol=0.01)
+    
+    # Contract I3 (exact equity marks) executes in exactly 1 pulse at 0.94 USDT
+    assert d05["I3_Exact_Equity"]["sequential_n_pulses"] == 1
+    assert np.isclose(d05["I3_Exact_Equity"]["sequential_capital_B"], 0.94, atol=0.01)
+    
+    # Contract I5 (supervisory audit) requires 0 pulses and 0.00 capital
+    assert d05["I5_Full_Audit_Trail"]["sequential_n_pulses"] == 0
+    assert d05["I5_Full_Audit_Trail"]["sequential_capital_B"] == 0.0
+
+# ----------------------------------------------------------------------
+# 15. Test Non-Normal Operator Monotonic Decay vs 0.0% Dynamic Liquidation (exp10 / exp12)
+# ----------------------------------------------------------------------
+def test_nonnormal_operator_monotonic_decay_and_zero_liquidation():
+    """Verify that ||C J^t|| strictly decreases from t=0 (no dynamic transient growth),
+    and multi-agent dynamic simulation yields exactly 0.0% liquidations."""
+    from breakthrough_experiments.exp12_nonnormal_balance_sheet import build_network_jacobian
+    
+    # For M=1 asset:
+    J = build_network_jacobian(M=1)
+    # C_margin = (1, lambda / MMR) = (1, 160)
+    C_margin = np.array([[1.0, 160.0]])
+    
+    # Norm at t=0:
+    norm_0 = float(np.linalg.norm(C_margin, 2))
+    assert np.isclose(norm_0, 160.00312497, atol=1e-3)
+    
+    # Norms at t=1, 2, 3:
+    norm_1 = float(np.linalg.norm(C_margin @ J, 2))
+    norm_2 = float(np.linalg.norm(C_margin @ np.linalg.matrix_power(J, 2), 2))
+    norm_3 = float(np.linalg.norm(C_margin @ np.linalg.matrix_power(J, 3), 2))
+    
+    # Verify strictly monotonic decay from t=0
+    assert norm_0 > norm_1 > norm_2 > norm_3, f"||C J^t|| must decay monotonically from t=0: {norm_0} > {norm_1} > {norm_2} > {norm_3}"
+    assert np.isclose(norm_1, 122.319, atol=0.1)
+    assert np.isclose(norm_2, 98.322, atol=0.1)
+    assert np.isclose(norm_3, 80.296, atol=0.1)
+    
+    # Check that in authentic multi-agent dynamic simulation, dealer liquidation rate is 0.0%
+    res_exp10 = Path("breakthrough_experiments/results_exp10_multi_agent.json")
+    if res_exp10.exists():
+        data10 = json.loads(res_exp10.read_text())
+        for pop, summary in data10["conditions_summary"].items():
+            assert summary["liquidation_rate"] == 0.0, f"Dynamic liquidation rate must be 0.0% for {pop}, got {summary['liquidation_rate']}"
+
 

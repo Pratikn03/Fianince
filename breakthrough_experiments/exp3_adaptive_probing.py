@@ -84,9 +84,10 @@ def compute_adaptive_probe(history, t, V_target, T=20, sigma=0.01):
     rem_steps = max(1, T - t)
     return float(V_target * 0.60 * decay / rem_steps)
 
-def simulate_sprt_trial(true_split, delta, V_target, T=20, sigma=0.01, kappa=0.8, q=0.2, a=0.5, eta=0.4, alpha=0.05, beta=0.05):
+def simulate_sprt_trial(true_split, delta, V_target, T=20, sigma=0.01, kappa=0.8, q=0.2, a=0.5, eta=0.4, alpha=0.05, beta=0.05, V_eff=6.25):
     """
-    Simulates an authentic step-by-step closed-loop SPRT trial with Wald stopping and dynamic probing.
+    Simulates an authentic step-by-step closed-loop SPRT trial with Wald stopping and dynamic probing,
+    strictly enforcing per-trade order book capacity |v_t| <= V_eff = 6.25 BTC.
     """
     A_stop = float(np.log((1.0 - beta) / alpha))
     B_stop = float(np.log(beta / (1.0 - alpha)))
@@ -121,6 +122,8 @@ def simulate_sprt_trial(true_split, delta, V_target, T=20, sigma=0.01, kappa=0.8
             # Dynamic probing: throttle action as evidence Lambda approaches Wald threshold
             evidence_fraction = min(1.0, abs(Lambda) / A_stop)
             v_t = float(max(0.01 * v_base, v_base * (1.0 - 0.70 * evidence_fraction)))
+            # Strict physical capacity limit under price displacement cap V_eff = min(V_max, D_max/kappa) = 6.25
+            v_t = min(v_t, V_eff)
         else:
             v_t = 0.0
             
@@ -172,13 +175,16 @@ def simulate_sprt_trial(true_split, delta, V_target, T=20, sigma=0.01, kappa=0.8
     p0 = 100.0
     cost = float(0.5 * kappa * np.sum(v_arr ** 2) + c_fee * p0 * np.sum(v_arr) + mu_margin * p0 * np.max(np.abs(inv_path)))
     err = 1 if (decision != (1 if true_split else 0)) else 0
-    return err, tau, float(np.sum(v_arr)), float(np.max(np.abs(inv_path))), cost
+    max_trade = float(np.max(np.abs(v_arr)))
+    return err, tau, float(np.sum(v_arr)), float(np.max(np.abs(inv_path))), cost, max_trade
 
-def evaluate_probing_protocol(protocol, delta, V_target, T=20, sigma=0.01, kappa=0.8, q=0.2, a=0.5, eta=0.4, N_eval=1000):
+def evaluate_probing_protocol(protocol, delta, V_target, T=20, sigma=0.01, kappa=0.8, q=0.2, a=0.5, eta=0.4, N_eval=1000, V_eff=6.25):
     """
     Evaluates identification error, executed quantity, inventory, and capital cost.
-    For Method C: runs step-by-step closed-loop SPRT with Wald stopping.
+    For Method C: runs step-by-step closed-loop SPRT with Wald stopping and per-trade cap V_eff=6.25.
     For Methods A, B, D: evaluates Neyman-Pearson likelihood ratio testing on held-out samples.
+    Method A is explicitly flagged as unconstrained benchmark when V_target > V_eff.
+    Methods B and D strictly enforce |v_t| <= V_eff = 6.25 BTC.
     """
     c_fee = 0.0004
     mu_margin = 0.005
@@ -191,24 +197,30 @@ def evaluate_probing_protocol(protocol, delta, V_target, T=20, sigma=0.01, kappa
         volumes = []
         inventories = []
         costs = []
+        max_trades = []
         
         for i in range(N_eval):
             is_split = (i % 2 == 1)
-            e, tau, v_tot, inv, c = simulate_sprt_trial(
+            e, tau, v_tot, inv, c, m_trade = simulate_sprt_trial(
                 is_split, delta=delta, V_target=V_target, T=T, sigma=sigma,
-                kappa=kappa, q=q, a=a, eta=eta
+                kappa=kappa, q=q, a=a, eta=eta, V_eff=V_eff
             )
             errs.append(e)
             taus.append(tau)
             volumes.append(v_tot)
             inventories.append(inv)
             costs.append(c)
+            max_trades.append(m_trade)
             
         emp_err = float(np.mean(errs))
         return {
             "protocol": protocol,
             "delta": float(delta),
             "target_V": float(V_target),
+            "V_eff": float(V_eff),
+            "max_single_trade": float(np.max(max_trades)),
+            "per_trade_bounded": bool(np.max(max_trades) <= V_eff + 1e-6),
+            "is_unconstrained_benchmark": False,
             "d_prime": float(2.0 * norm.ppf(1.0 - emp_err)) if 0.0 < emp_err < 0.5 else 5.0,
             "theoretical_error": 0.05,
             "empirical_error": emp_err,
@@ -221,14 +233,25 @@ def evaluate_probing_protocol(protocol, delta, V_target, T=20, sigma=0.01, kappa
         
     # Open-loop protocols
     v = np.zeros(T)
+    is_unconstrained_benchmark = False
+    seq_pulses_if_clamped = 1
+    
     if protocol == "Method_A_Single_Pulse":
         v[0] = V_target
+        is_unconstrained_benchmark = bool(V_target > V_eff)
+        seq_pulses_if_clamped = int(math.ceil((V_target / V_eff) ** 2)) if V_target > V_eff else 1
     elif protocol == "Method_B_Multi_Pulse":
-        v[0] = V_target / 3.0
-        v[2] = V_target / 3.0
-        v[4] = V_target / 3.0
+        # Strictly enforce per-trade volume cap |v_t| <= V_eff = 6.25 BTC
+        M = max(3, int(math.ceil(V_target / V_eff)))
+        M = min(M, T)
+        v_pulse = min(V_eff, V_target / M)
+        pulse_indices = np.linspace(0, T - 1, M, dtype=int)
+        for idx in pulse_indices:
+            v[idx] = v_pulse
     elif protocol == "Method_D_Minimax_LQG":
         v = compute_lqg_optimal_probe(delta, V_target, T=T, kappa=kappa, q=q, a=a, eta=eta, sigma=sigma)
+        # Strictly clamp per-trade volume to V_eff = 6.25 BTC
+        v = np.clip(v, -V_eff, V_eff)
         
     mu_0 = get_mean_trajectory(v, delta, T=T, kappa=kappa, q=q, a=a, eta=eta, split=False)
     mu_1 = get_mean_trajectory(v, delta, T=T, kappa=kappa, q=q, a=a, eta=eta, split=True)
@@ -255,11 +278,17 @@ def evaluate_probing_protocol(protocol, delta, V_target, T=20, sigma=0.01, kappa
     max_inv = float(np.max(np.abs(inv_path)))
     total_qty = float(np.sum(np.abs(v)))
     capital_cost = float(0.5 * kappa * np.sum(v ** 2) + c_fee * p0 * total_qty + mu_margin * p0 * max_inv)
+    max_trade = float(np.max(np.abs(v)))
     
     return {
         "protocol": protocol,
         "delta": float(delta),
         "target_V": float(V_target),
+        "V_eff": float(V_eff),
+        "max_single_trade": max_trade,
+        "per_trade_bounded": bool(max_trade <= V_eff + 1e-6),
+        "is_unconstrained_benchmark": is_unconstrained_benchmark,
+        "seq_pulses_if_clamped": seq_pulses_if_clamped,
         "d_prime": float(d_prime),
         "theoretical_error": float(theor_error),
         "empirical_error": float(emp_err),

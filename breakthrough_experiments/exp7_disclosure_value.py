@@ -80,37 +80,79 @@ def solve_contract_requirements(delta, alpha=0.05):
     # ---------------------------------------------------------
     req_V_I5 = 0.0
     req_B_I5 = 0.0
+
+    # Operational per-trade capacity limit
+    V_eff = 6.25
+
+    def get_sequential_schedule(V_unconstrained):
+        if V_unconstrained <= 0.0:
+            return 0, 0.0, 0.0
+        if V_unconstrained <= V_eff:
+            n_p = 1
+            b_seq = float(0.5 * kappa * (V_unconstrained**2) + (c_fee + mu) * P_star * V_unconstrained)
+            return n_p, float(V_unconstrained), b_seq
+        else:
+            n_p = int(math.ceil((V_unconstrained / V_eff)**2))
+            cost_pulse = float(0.5 * kappa * (V_eff**2) + c_fee * P_star * V_eff)
+            margin_lockup = float(mu * P_star * V_eff)
+            b_seq = float(n_p * cost_pulse + margin_lockup)
+            return n_p, float(V_eff), b_seq
+
+    n_p_I0, v_pulse_I0, b_seq_I0 = get_sequential_schedule(req_V_I0)
+    n_p_I1, v_pulse_I1, b_seq_I1 = get_sequential_schedule(req_V_I1)
+    n_p_I2, v_pulse_I2, b_seq_I2 = get_sequential_schedule(req_V_I2)
+    n_p_I3, v_pulse_I3, b_seq_I3 = get_sequential_schedule(req_V_I3_phys)
+    n_p_I4, v_pulse_I4, b_seq_I4 = get_sequential_schedule(req_V_I4)
+    n_p_I5, v_pulse_I5, b_seq_I5 = get_sequential_schedule(req_V_I5)
     
     return {
         "I0_Prices_Only": {
             "required_volume_V": req_V_I0,
             "required_capital_B": req_B_I0,
+            "sequential_n_pulses": n_p_I0,
+            "sequential_pulse_size": v_pulse_I0,
+            "sequential_capital_B": b_seq_I0,
             "disclosure_type": "Public Prices Only"
         },
         "I1_Prices_and_Flow": {
             "required_volume_V": req_V_I1,
             "required_capital_B": req_B_I1,
+            "sequential_n_pulses": n_p_I1,
+            "sequential_pulse_size": v_pulse_I1,
+            "sequential_capital_B": b_seq_I1,
             "disclosure_type": "Public Flow Records"
         },
         "I2_Noisy_Equity": {
             "required_volume_V": req_V_I2,
             "required_capital_B": req_B_I2,
+            "sequential_n_pulses": n_p_I2,
+            "sequential_pulse_size": v_pulse_I2,
+            "sequential_capital_B": b_seq_I2,
             "disclosure_type": "Periodic Accounting Statements"
         },
         "I3_Exact_Equity": {
             "required_volume_V": req_V_I3_phys,
             "required_capital_B": req_B_I3_phys,
             "theoretical_infimum_capital": req_B_I3_theor,
+            "sequential_n_pulses": n_p_I3,
+            "sequential_pulse_size": v_pulse_I3,
+            "sequential_capital_B": b_seq_I3,
             "disclosure_type": "Exact Account Reporting (Min Lot)"
         },
         "I4_Update_Timestamps": {
             "required_volume_V": req_V_I4,
             "required_capital_B": req_B_I4,
+            "sequential_n_pulses": n_p_I4,
+            "sequential_pulse_size": v_pulse_I4,
+            "sequential_capital_B": b_seq_I4,
             "disclosure_type": "Event Timestamps Registry"
         },
         "I5_Full_Audit_Trail": {
             "required_volume_V": req_V_I5,
             "required_capital_B": req_B_I5,
+            "sequential_n_pulses": n_p_I5,
+            "sequential_pulse_size": v_pulse_I5,
+            "sequential_capital_B": b_seq_I5,
             "disclosure_type": "Ex-Ante Regulatory Model Tagging"
         }
     }

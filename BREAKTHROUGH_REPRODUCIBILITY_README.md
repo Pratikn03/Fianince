@@ -107,6 +107,5 @@ cd breakthrough_experiments
 ```bash
 cd paper
 pdflatex -interaction=nonstopmode Machine_Markets_JF_Submission.tex
-pdflatex -interaction=nonstopmode Machine_Markets_JF_Submission.tex
-# Main paper terminates exactly on Page 60; Internet Appendix spans Pages 61–77.
+# Main paper terminates on Page 59/60 (strictly <= 60 pages); Internet Appendix spans Pages 61–82.
 ```

@@ -177,7 +177,7 @@ def plot_fig4():
     c_names = ["I0 Prices Only", "I1 Prices+Flow", "I2 Noisy Equity", "I3 Exact Equity", "I4 Timestamps", "I5 Full Audit"]
     keys = ["I0_Prices_Only", "I1_Prices_and_Flow", "I2_Noisy_Equity", "I3_Exact_Equity", "I4_Update_Timestamps", "I5_Full_Audit_Trail"]
     
-    caps = [d5[k]["required_capital_B"] for k in keys]
+    caps = [d5[k]["sequential_capital_B"] for k in keys]
     vols = [d5[k]["required_volume_V"] for k in keys]
     
     fig, ax1 = plt.subplots(figsize=(9, 5))
@@ -240,12 +240,12 @@ def plot_fig5():
         yval = bar.get_height()
         ax1.text(bar.get_x() + bar.get_width()/2.0, yval + 3, f"{yval:.1f}x", ha='center', va='bottom', fontsize=10, fontweight='bold')
         
-    # Right: Multi-Asset Kreiss Inflation
-    ax2.plot(M_vals, kreiss, marker='s', color='darkred', lw=2.2, label=r'Kreiss Constant $\mathcal{K}(J_{\mathrm{network}}) \geq 1.00$')
-    ax2.plot(M_vals, rho_vals, marker='o', color='navy', lw=2.0, ls='--', label=r'Spectral Radius $\rho(J_{\mathrm{network}})<1$')
+    # Right: Multi-Asset Cross-Impact Coupling
+    ax2.plot(M_vals, kreiss, marker='s', color='darkred', lw=2.2, label=r'Kreiss Constant $\mathcal{K}(J) = 1.00$ (Lower Bound)')
+    ax2.plot(M_vals, rho_vals, marker='o', color='navy', lw=2.0, ls='--', label=r'Network Spectral Radius $\rho(J_{\mathrm{network}}) \to 1.0$')
     ax2.set_xlabel('Number of Cross-Impacted Assets $M$')
     ax2.set_ylabel('Stability & Resolvent Metrics')
-    ax2.set_title('Cross-Impact Network Kreiss Inflation')
+    ax2.set_title('Cross-Impact Network Spectral Inflation ($\mathcal{K}(J) \equiv 1.00$)')
     ax2.grid(True, ls='--', alpha=0.3)
     ax2.legend(frameon=True)
     

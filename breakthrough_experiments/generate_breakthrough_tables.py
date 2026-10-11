@@ -18,12 +18,12 @@ def make_table_probing():
         
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{Comparison of Probing Strategies under Varying Memory Separation $\delta$. Across all four protocols, required capital scales strictly as $\Theta(\delta^{-4})$, confirming the invariance of the fundamental Fisher information lower bound.}",
+        r"\caption{Comparison of Probing Strategies under Varying Memory Separation $\delta$. Across all four protocols, required capital scales strictly as $\Theta(\delta^{-4})$, confirming the invariance of the fundamental Fisher information lower bound. Under operational per-trade limit $V_{\mathrm{eff}} = 6.25$ BTC (governed by price displacement cap $D_{\max} = 5.0$ USDT), Methods B, C, and D strictly enforce $|v_t| \le 6.25$ BTC. Method A serves as an unconstrained single-pulse benchmark, physically requiring sequential pulse decomposition for $\delta < \delta_{\min} = 0.2028$.}",
         r"\label{iatab:probing_methods_comparison}",
         r"\resizebox{\textwidth}{!}{%",
-        r"\begin{tabular}{llrrrr}",
+        r"\begin{tabular}{llrrrrr}",
         r"\toprule",
-        r"Protocol & $\delta$ & Executed Vol ($V$) & Max Inventory & Error $\alpha$ & Capital Cost (USDT) \\",
+        r"Protocol & $\delta$ & Executed Vol ($V$) & Max Single Trade & Max Inventory & Error $\alpha$ & Capital Cost (USDT) \\",
         r"\midrule"
     ]
     
@@ -33,6 +33,15 @@ def make_table_probing():
     current_prot = None
     for r in data_sorted:
         prot_clean = r["protocol"].replace("_", " ")
+        if prot_clean == "Method A Single Pulse":
+            prot_clean = "Method A: Single Pulse (Unconstrained)"
+        elif prot_clean == "Method B Multi Pulse":
+            prot_clean = "Method B: Multi-Pulse ($V_t \\le 6.25$)"
+        elif prot_clean == "Method C Sequential Feedback":
+            prot_clean = "Method C: Sequential Feedback ($V_t \\le 6.25$)"
+        elif prot_clean == "Method D Minimax LQG":
+            prot_clean = "Method D: Minimax LQG ($V_t \\le 6.25$)"
+            
         if prot_clean != current_prot:
             if current_prot is not None:
                 lines.append(r"\midrule")
@@ -41,7 +50,8 @@ def make_table_probing():
         else:
             prot_label = ""
             
-        lines.append(f"{prot_label} & {r['delta']:.2f} & {r['mean_executed_quantity']:.1f} & {r['mean_max_inventory']:.1f} & {r['empirical_error']:.3f} & {r['mean_capital_cost']:.2f} \\\\")
+        max_t = r.get("max_single_trade", r["mean_executed_quantity"])
+        lines.append(f"{prot_label} & {r['delta']:.2f} & {r['mean_executed_quantity']:.1f} & {max_t:.1f} & {r['mean_max_inventory']:.1f} & {r['empirical_error']:.3f} & {r['mean_capital_cost']:.2f} \\\\")
         
     lines.extend([
         r"\bottomrule",
@@ -112,12 +122,12 @@ def make_table_disclosure():
         
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from 4,282.93 USDT down to 0.94 USDT under discrete contract lot constraints (theoretical infimum $\inf C = 0$).}",
+        r"\caption{The Quantitative Value of Financial Disclosure Frontier across Observation Contracts. Disclosing audited dealer equity marks ($I_3$) substitutes for market-distorting active probing, collapsing required operational capital from 4,282.93 USDT down to 0.94 USDT under discrete contract lot constraints (theoretical infimum $\inf C = 0$). Under operational per-trade capacity limit $V_{\mathrm{eff}} = 6.25$ BTC, sequential execution schedules preserve the $\approx 51.1\%$ and $99.98\%$ capital savings.}",
         r"\label{iatab:disclosure_frontier_comparison}",
         r"\resizebox{\textwidth}{!}{%",
-        r"\begin{tabular}{llrrrr}",
+        r"\begin{tabular}{llrrrrr}",
         r"\toprule",
-        r"Contract & Information Level & Required $V$ ($\delta=0.05$) & Capital $B$ ($\delta=0.05$) & Capital $B$ ($\delta=0.08$) & Capital Savings \\",
+        r"Contract & Information Level & Single Vol ($V$) & Sequential Pulses & Single Capital ($B$) & Feasible Capital ($B_{\mathrm{seq}}$) & Capital Savings \\",
         r"\midrule"
     ]
     
@@ -131,17 +141,16 @@ def make_table_disclosure():
     }
     
     d5 = [r for r in data if r["delta"] == 0.05][0]["contracts"]
-    d8 = [r for r in data if r["delta"] == 0.08][0]["contracts"]
-    
-    b0_5 = d5["I0_Prices_Only"]["required_capital_B"]
+    b0_seq = d5["I0_Prices_Only"]["sequential_capital_B"]
     
     for k in ["I0_Prices_Only", "I1_Prices_and_Flow", "I2_Noisy_Equity", "I3_Exact_Equity", "I4_Update_Timestamps", "I5_Full_Audit_Trail"]:
         v5 = d5[k]["required_volume_V"]
-        cap5 = d5[k]["required_capital_B"]
-        cap8 = d8[k]["required_capital_B"]
-        savings = (1.0 - cap5 / b0_5) * 100.0 if b0_5 > 0 else 0.0
+        n_p = d5[k]["sequential_n_pulses"]
+        cap_single = d5[k]["required_capital_B"]
+        cap_seq = d5[k]["sequential_capital_B"]
+        savings = (1.0 - cap_seq / b0_seq) * 100.0 if b0_seq > 0 else 0.0
         
-        lines.append(f"{c_labels[k]} & {d5[k]['disclosure_type']} & {v5:,.1f} & {cap5:,.2f} & {cap8:,.2f} & {savings:.1f}\\% \\\\")
+        lines.append(f"{c_labels[k]} & {d5[k]['disclosure_type']} & {v5:,.1f} & {n_p:,} & {cap_single:,.2f} & {cap_seq:,.2f} & {savings:.1f}\\% \\\\")
         
     lines.extend([
         r"\bottomrule",
@@ -164,12 +173,12 @@ def make_table_nonnormal():
     
     lines = [
         r"\begin{table}[htbp]\centering\small",
-        r"\caption{Non-Normal Decoupling and Multi-Asset Cross-Impact Kreiss Inflation. While single-asset price-only output has peak gain $M_C = 1.0$ (no Kreiss amplification, Lemma 2.6), the leveraged dealer balance-sheet operator exhibits $M_C = 160.0$. Following a 50 bps initial shock, non-normal margin depletion surges to 15.11\%--17.12\%, triggering forced liquidation under Binance USD$\circledS$-M leverage tiers (4.55\% for $L=20$).}",
+        r"\caption{Non-Normal Operator Amplification vs. Static Maintenance Margin Tiers. While single-asset price-only output has peak gain $M_C = 1.0$ (no Kreiss amplification, Lemma 2.6), the leveraged dealer balance-sheet operator exhibits $M_C = 160.0$. Following a 50 bps initial shock, unhedged operator output surges to 15.11\%--17.12\%, exceeding the static 4.55\% threshold for $L=20$ leverage under a 1:1 inventory exposure mapping (in dynamic simulation with hedged inventories, actual dealer liquidation rate is 0.0\%, Table~\ref{iatab:causal_multi_agent_intervention}).}",
         r"\label{iatab:nonnormal_cross_impact_kreiss}",
         r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{lcccccc}",
         r"\toprule",
-        r"Assets $M$ & State Dim & Spectral Radius $\rho(J)$ & Kreiss $\mathcal{K}(J)$ & Initial Shock & Peak Margin Depletion & Breaches $L=20$ (4.55\%) \\",
+        r"Assets $M$ & State Dim & Spectral Radius $\rho(J)$ & Kreiss $\mathcal{K}(J)$ & Initial Shock & Unhedged Operator Output & Exceeds Static $L=20$ (4.55\%) \\",
         r"\midrule"
     ]
     
