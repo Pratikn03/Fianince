@@ -4,8 +4,11 @@ Comprehensive Unit & Integration Tests for the 5 Scientific Frontiers
 Machine Markets — Top-Tier Institutional Verification Suite
 """
 from __future__ import annotations
+from pathlib import Path
 import numpy as np
 import pytest
+
+DATA_FILE = Path(__file__).resolve().parents[1] / "empirical_pipeline" / "data" / "BTC_1sec.csv"
 
 from research_extension.game_theory.strategic_equilibrium import (
     analyze_boundary_chipping, simulate_predatory_shorting_game
@@ -46,6 +49,7 @@ class TestFiveFrontiers:
         assert amip["predator_strategy_profit_usd"] < naive["predator_strategy_profit_usd"]
 
     # ---------------------------------------------------------------- WP2: Regime-Dependent TVAR
+    @pytest.mark.skipif(not DATA_FILE.exists(), reason="Real L3 BTC dataset (BTC_1sec.csv) required")
     def test_threshold_var_econometrics(self):
         res = estimate_threshold_var(n_rows=5000, depth_quantile_threshold=0.90)
         assert res["sample_size"] == 4999

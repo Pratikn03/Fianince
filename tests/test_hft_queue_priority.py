@@ -40,6 +40,7 @@ class TestHFTQueuePriority:
         # Inventory variance must be strictly reduced
         assert res["inventory_variance_reduction_pct"] > 30.0
 
+    @pytest.mark.skipif(not DATA_FILE.exists(), reason="Real L3 BTC data required")
     def test_end_to_end_pipeline_and_provenance(self):
         """Test full execution and JSON provenance artifact persistence."""
         res = run_hft_queue_priority_pipeline()
