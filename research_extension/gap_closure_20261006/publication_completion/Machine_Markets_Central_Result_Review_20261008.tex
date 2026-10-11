@@ -1,0 +1,288 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}\usepackage{amsmath,amssymb,amsthm}
+\usepackage[round]{natbib}\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+\newtheorem{theorem}{Theorem}[section]\newtheorem{proposition}[theorem]{Proposition}\newtheorem{lemma}[theorem]{Lemma}
+\title{Memory Identification under Probing and Capital Constraints}
+\author{Pratik Niroula and Prashant Niroula}
+\date{October 8, 2026}
+\begin{document}\maketitle
+\noindent This standalone review packet contains the current central proofs. It is a conditional theoretical result and an independent-review candidate, not a novelty, market-calibration or publication certification.
+\section{Declared Model and Observation Contract}
+Use a price-first positive cohort economy:
+\[
+x_{t+1}=a x_t+\kappa\sum_iq_i y_{i,t}+\kappa v_t,
+\qquad y_{i,t+1}=(1-\eta_i)y_{i,t}+\eta_i x_{t+1}.
+\]
+Here $0\le a<1$, $\kappa>0$, $q_i\ge0$, $\eta_i\in(0,1)$, and $S=a+\kappa\sum_iq_i<1$. All states reset to zero. With $z=(x,y_1,\ldots,y_K)$, the transition has price row $(a,\kappa q_1,\ldots,\kappa q_K)$ and cohort row $i$ equal to $\eta_i$ times that row plus $1-\eta_i$ in its own coordinate. The execution input is $H=\kappa(1,\eta_1,\ldots,\eta_K)^\top$; the price selector is $e_x^\top$.
+
+The statistical pair has known common $a,\kappa,q,\eta$: one weight$q$ at rate$\eta$ versus two weights$q/2$ at rates$\eta\pm\delta$. The first two results have no process noise and independent centered Gaussian observation noise of variance$\sigma^2>0$. The last result deliberately changes the process-noise contract. No unknown-mixture, participant-identity or feedback-adaptive optimality assertion is made.
+\section{Resource and Financial Results}
+\subsection{Probing Resources, Memory Resolution and Monetary Output}
+\label{sec:resource_frontier}
+The central model question is which resource buys identification. Observation length alone is insufficient when the lifetime quantity of controlled executions is fixed. This connects the merged-memory experiment to a financially specified input/output contract, rather than equating a state-norm shock with executed volume. Here $\Phi$ is the standard normal distribution function.
+
+\begin{theorem}[Sharp probing-resource orders for a known symmetric pair]
+\label{thm:resource_frontier}
+Fix $0\le a<1$, $\kappa,q>0$, $S=a+\kappa q<1$, and $\eta\in(0,1)$. Compare a single cohort of weight $q$ and rate $\eta$ with two cohorts of weights $q/2$ and rates $\eta\pm\delta$. Require both split rates to lie in $[\epsilon,1-\epsilon]$, with $\epsilon>0$. All parameters of the two alternatives are known. The price recursion receives executed quantity $v_t$ through $\kappa v_t$, starts from zero, has no process noise, and is observed with independent $N(0,\sigma^2)$ measurement noise, $\sigma>0$. Probes are deterministic and common to both alternatives. Let $h_j=\kappa e_x^\top J^j(1,\eta_1,\ldots,\eta_K)^\top$ denote the impulse response.
+
+Set $K_*=2\kappa^2q/[\epsilon^3(1-S)^2]$. For every finite horizon and every probe with total quantity $\sum_t|v_t|\le V$,
+\begin{equation}
+D_{\rm KL}(P_0^v\|P_\delta^v)
+\le \frac{K_*^2 V^2\delta^4}{2\sigma^2},\qquad
+e_{\rm worst}\ge\frac12\left(1-\frac{K_*V\delta^2}{2\sigma}\right)_+.
+\label{eq:quantity_information}
+\end{equation}
+More precisely, with observations $x_1,\ldots,x_T$, define $d_T=(h_{\delta,j}-h_{0,j})_{j=0}^{T-1}$. The optimal worst-case error over these deterministic total-quantity probes and all classifiers is exactly
+\begin{equation}
+e^*_T(V)=\Phi\!\left(-\frac{V\|d_T\|_2}{2\sigma}\right).
+\label{eq:exact_quantity_error}
+\end{equation}
+A pulse at the first input, followed by the Gaussian likelihood-ratio test using all observations, attains this value. Waiting adds impulse-response information but $\|d_T\|_2\uparrow\|d_\infty\|_2<\infty$; it cannot make the error arbitrarily small at fixed $V$.
+Consequently error at most $\alpha<1/2$ requires
+$V\ge2\sigma(1-2\alpha)/(K_*\delta^2)$, independently of observation length. Conversely, one pulse of magnitude
+\begin{equation}
+A=\frac{2\sigma\Phi^{-1}(1-\alpha)}{\kappa^2q\delta^2}
+\label{eq:quantity_attainability}
+\end{equation}
+and the third price observation achieve worst-case error exactly $\alpha$. Thus the necessary and sufficient total-quantity order is $\delta^{-2}$ for this known pair.
+
+Under average power $\sum_{t=0}^{T-1}v_t^2\le PT$, $P>0$, the same experiment instead has necessary horizon order $\delta^{-4}$, attained by the pulse above whenever $T\ge\max\{3,\lceil A^2/P\rceil\}$. This does not solve estimation of an unknown mixture.
+
+Finally, for a fixed monetary price exposure $\lambda\ne0$, an additive reserve $L$ and cost envelope $c\sum|v_t|$, $c\ge0$, the sharp robust total-quantity allowance under budget $B>L$ is
+\begin{equation}
+V_B=\frac{B-L}{|\lambda|\kappa+c}.
+\label{eq:financial_resolution}
+\end{equation}
+Within that allowance, error at most $\alpha$ requires
+$\delta^2\ge2\sigma(1-2\alpha)/(K_*V_B)$; the pulse construction suffices if $A\le V_B$. These are distinct lower and upper constants, not an exact optimal-test threshold or a universal financial safety ceiling.
+\end{theorem}
+
+\begin{proof}
+For either positive economy, $J$ is nonnegative and its price row sums to $S$. Cohort row $i$ sums to $1-\eta_i+\eta_i S$. Hence $\|J\|_\infty\le1-\epsilon(1-S)<1$, and the impulse response is nonnegative. Its maximum is $h_0=\kappa$, and its sum is $H(1)=\kappa/(1-S)$.
+
+Write $G_0(z)=q\eta z/(z-1+\eta)$ and
+$G_\delta(z)=(q/2)\sum_{s=\pm1}(\eta+s\delta)z/(z-1+\eta+s\delta)$.
+Direct algebra gives
+\[
+G_\delta-G_0
+=-\frac{qz(z-1)\delta^2}{(z-1+\eta)((z-1+\eta)^2-\delta^2)}.
+\]
+On $|z|=1$, each of the three denominator factors has modulus at least $\epsilon$, so $|G_\delta-G_0|\le2q\delta^2/\epsilon^3$. Since $H(z)=\kappa/[z-a-\kappa G(z)]$, the identity $H_\delta-H_0=H_\delta H_0(G_\delta-G_0)$ and positivity give
+$\|H_\delta-H_0\|_\infty\le K_*\delta^2$.
+Parseval bounds $\|h_\delta-h_0\|_2$ by the same quantity. Young's convolution inequality yields $\|\mu_\delta-\mu_0\|_2\le K_*\delta^2\|v\|_1$; Gaussian equal-covariance KL and Pinsker give \eqref{eq:quantity_information}. For average power, the induced $\ell_2$ gain instead gives $D_{\rm KL}\le K_*^2\delta^4PT/(2\sigma^2)$, proving the horizon lower order.
+
+For the exact finite-horizon statement, the mean difference is a lower-triangular convolution matrix times $v$. Each column is a shorter suffix-shifted copy of $d_T$, with norm at most $\|d_T\|_2$. The triangle inequality therefore gives $\|\mu_\delta-\mu_0\|_2\le V\|d_T\|_2$, with equality for the first pulse. For two known equal-covariance Gaussian laws, their minimax error is $\Phi[-\|\mu_\delta-\mu_0\|_2/(2\sigma)]$, attained by the midpoint likelihood-ratio test. This proves \eqref{eq:exact_quantity_error} including the indistinguishable first-two-observation case.
+
+The first two impulse taps are equal. Multiplying the price-first cohort transitions twice gives
+$h_{\delta,2}-h_{0,2}=-\kappa^2q\delta^2$. A pulse $A$ therefore produces a third-observation mean separation $A\kappa^2q\delta^2$. The Gaussian midpoint test has error $\Phi[-A\kappa^2q\delta^2/(2\sigma)]$, proving attainability for both resource protocols. Extending the observation horizon does not create additional executed quantity.
+
+Superposition and $\max_jh_j=\kappa$ imply $\sup_t|\lambda x_t|\le|\lambda|\kappa V$. A single pulse attains the bound at its first response, simultaneously attaining the declared cost envelope, so \eqref{eq:financial_resolution} is sharp for that robust output-plus-cost criterion. Substitution in the information bounds proves the final statements.
+\end{proof}
+
+The monetary reserve and cost functional are imposed model inputs, not estimated market losses. The result concerns an open-loop controlled experiment with no natural process excitation. A fixed lifetime quantity constraint, an average-power constraint and a repeatedly refreshed risk allowance are different experiments. In particular, without accumulated costs a maintained bounded-amplitude probe can continue; the theorem does not impose a capital ceiling on every safe adaptive strategy. Applying it to public markets requires actual executions, exposures, model-error coverage and a valid observation law.
+
+The paper-specific advance proposed here is the explicit connection between memory resolution, probing resources and monetary output, with matching orders for a known pair. Partial fractions, Gaussian testing, convolution inequalities and positive-system gains are established tools. Closely spaced source recovery is already studied in mixture and super-resolution theory \citep{manoleho2022,liuammari2023}; non-normal financial bubbles and Kreiss diagnostics also precede this paper \citep{sornette2023nonnormal}. These comparisons exclude first-use claims. Independent assessment of the importance and novelty of this particular connection remains necessary.
+
+
+\subsection{A Financially Specified Probe Account}
+\label{sec:capital_frontier}
+A probe changes inventory as well as price. We therefore specify actual cash and execution timing, rather than treating a fixed price exposure as its complete financial loss. Price has units of currency per asset quantity, and $\kappa$ has units of currency per squared quantity.
+
+\begin{lemma}[Positive price-response geometry and fair execution]
+\label{lem:positive_price_kernel}
+In the positive, stable, price-first cohort economy, the physical execution-to-price impulse response is a nonnegative mixture of decaying exponentials:
+\[
+h_j=\sum_\ell w_\ell\lambda_\ell^j,\qquad
+w_\ell\ge0,\quad \sum_\ell w_\ell=\kappa,\quad 0\le\lambda_\ell<1.
+\]
+It is completely monotone and nonincreasing. In particular its peak is direct impact $\kappa$, even when the full transition is non-normal in its original coordinates.
+
+In the declared price/memory coordinates, a fixed price-only operator $C=\lambda e_x^\top$ also has initial-state gain $\sup_{t\ge0}\|CJ^t\|_2=|\lambda|$. Thus full-state non-normal amplification cannot by itself establish a transient loss in this particular monetary price-only experiment.
+
+For a quote schedule refreshed after the uncontrolled state update, execution at the average price of a linear book gives cost relative to the constant fundamental mark
+\[
+\mathcal C(v)=\frac12v^\top T_hv,\qquad
+(T_h)_{ij}=h_{|i-j|}.
+\]
+The matrix is positive definite, so no nonzero signed roundtrip produces a deterministic gain under this fill/noise contract. Nonnegative execution fees add cost.
+\end{lemma}
+\begin{proof}
+Omit zero-weight cohorts, which do not affect price. For $a>0$, put $b_i=\kappa q_i$, $r_i=1-\eta_i$ and
+\[
+T=\operatorname{diag}(\sqrt a,\sqrt{b_1/\eta_1},\ldots),\qquad
+v=(\sqrt a,\sqrt{b_1\eta_1},\ldots)^\top.
+\]
+The transformed transition is the symmetric positive-definite matrix
+\[
+J'=TJT^{-1}=\operatorname{diag}(0,r_1,\ldots)+vv^\top.
+\]
+The input transforms to $TH=\kappa v$ and $J'e_x=\sqrt a\,v$. Consequently,
+\[
+h_j=(\kappa/a)e_x^\top(J')^{j+1}e_x.
+\]
+Spectral decomposition gives the claimed nonnegative weights, whose sum is $h_0=\kappa$. Schur stability puts the eigenvalues below one. The case $a=0$ follows by continuity from positive anchors, with the same uniformly stable rate family; the zero-feedback case is simply $h_j=\kappa a^j$. This also covers repeated rates after merging.
+
+The nonnegative transition has row sums at most one. Hence every price row of $J^t$ has $\ell_1$ norm at most one, and therefore $\ell_2$ norm at most one. Time zero attains one, proving the fixed price-only gain statement. Its initial-state geometry is specified; coordinate changes require transforming that set.
+
+After the uncontrolled update, the pre-probe displacement at step $j$ is $\sum_{i<j}h_{j-i}v_i$. Average linear-book execution adds $\kappa v_j/2$. Summing signed execution cost gives the displayed Toeplitz quadratic form. Each kernel $\lambda^{|i-j|}$ is a positive-definite AR(1) covariance matrix for $0\le\lambda<1$. Their nonnegative mixture with positive total weight is positive definite. For a roundtrip $\sum v_j=0$, the fundamental-price cash term cancels, so a positive execution cost excludes a gain.
+\end{proof}
+
+\begin{theorem}[Sharp robust quantity cap from cash and margin]
+\label{thm:cash_capital_frontier}
+Use that positive, stable, reset economy with constant fundamental price $P_*>0$ and no process noise. At step $t$, first update the uncontrolled baseline
+$z^0_{t+1}=Jz_t$, with price $P^0_{t+1}=P_*+e_x^\top z^0_{t+1}$.
+A designated dealer fills only controlled nonnegative probes $v_t\ge0$ on a linear quote schedule, at average price $P^0_{t+1}+\kappa v_t/2$. Other market flow is executed elsewhere. The final state is $z_{t+1}=z^0_{t+1}+Hv_t$ and the final mark is $P_{t+1}=P_*+x_{t+1}$. Initially inventory is zero and cash/equity is $B>0$. Each fill costs $cv_t$, $c\ge0$, with no other positions, fees or funding flows:
+\[
+I_{t+1}=I_t-v_t,\quad
+K_{t+1}=K_t+v_t(P^0_{t+1}+\kappa v_t/2)-cv_t,
+\quad E_t=K_t+I_tP_t.
+\]
+For fixed margin $\mu>0$, require $\mu|I_t|P_t\le E_t$. For the robust contract admitting every nonnegative probe sequence with $\sum_t v_t\le V$, the largest quantity allowance guaranteeing margin at every time is exactly
+\begin{equation}
+V_B=\frac{2B}{\beta+\sqrt{\beta^2+4(\mu+1/2)\kappa B}},
+\qquad\beta=c+\mu P_*.
+\label{eq:cash_quantity_cap}
+\end{equation}
+Equivalently, the necessary and sufficient robust condition is
+\begin{equation}
+(\mu+1/2)\kappa V^2+(c+\mu P_*)V\le B.
+\label{eq:cash_margin_budget}
+\end{equation}
+The cap holds across all positive cohort representations satisfying $S<1$, without resolving individual adaptation rates.
+
+For the known symmetric testing pair and the declared deterministic probes, suppose the statistical observer receives only noisy price-state observations and executed quantities, without exact execution-price, cash or equity records. Its best finite-horizon error within this robust quantity allowance is exactly $\Phi[-V_B\|d_T\|_2/(2\sigma)]$. Holding the other primitives fixed, achieving a fixed error $\alpha<1/2$ requires capital of order at least $\delta^{-4}$ under this observation/probing contract, and a single positive pulse attains that order. This capital order is distinct from the average-power horizon order and does not bound every tailored safe, hedged or adaptive experiment or richer financial disclosure.
+\end{theorem}
+\begin{proof}
+Let $U_t=\sum_{j<t}v_j$. Positive impulse responses give $0\le x_t\le\kappa U_t$ and $I_t=-U_t$. Summing actual cash and marking inventory gives
+\[
+B-E_t=U_tx_t-\sum_{j<t}v_jx^0_{j+1}
+-\frac\kappa2\sum_{j<t}v_j^2+cU_t.
+\]
+Write its quadratic terms as $v^\top A_tv$. The diagonal entry for probe $i$ is $h_{t-1-i}-\kappa/2$. For $i<j$, the off-diagonal entry is
+\[
+(A_t)_{ij}=\tfrac12\{h_{t-1-i}+h_{t-1-j}-h_{j-i}\}.
+\]
+Monotonicity and $t-1-i\ge j-i$ imply that every off-diagonal entry is at most $\kappa/2$; the diagonals satisfy the same bound. Therefore
+$B-E_t\le\kappa U_t^2/2+cU_t\le\kappa V^2/2+cV$.
+Position value is bounded by $U_t(P_*+x_t)\le V(P_*+\kappa V)$.
+Condition~\eqref{eq:cash_margin_budget} guarantees margin and positive equity/marks. During a nonnegative linear-book fill, the adverse mark and position value worsen monotonically, so the endpoint check also covers intermediate fills. Without a fill, monotone positive impulse decay improves the short probe-only account's mark.
+
+A single reset pulse gives $x_1=\kappa V$, $I_1=-V$ and $E_1=B-\kappa V^2/2-cV$, simultaneously attaining both adverse bounds. Any larger quantity allowance fails at that first response. Solving the quadratic in a form avoiding subtraction cancellation gives~\eqref{eq:cash_quantity_cap}.
+
+The first positive pulse also attains the statistical convolution-column bound. The quantity lower bound requires $V_B\ge c_\alpha\delta^{-2}$, so~\eqref{eq:cash_margin_budget} requires $B\ge(\mu+1/2)\kappa c_\alpha^2\delta^{-4}$. The third-observation pulse $A$ in~\eqref{eq:quantity_attainability}, funded with $B=(\mu+1/2)\kappa A^2+(c+\mu P_*)A$, meets margin and attains error $\alpha$, proving the matching order.
+\end{proof}
+
+Quadratic impact costs and execution timing are established microstructure issues \citep{almgren2000}; this paper proposes their connection to a particular memory-testing and robust margin contract. Even with initial inventory zero, the probe creates a quadratic adverse mark. A fixed initial price exposure would miss it. The refreshed average-fill convention is imposed, not an estimated competitive equilibrium or real fill calibration. The capital comparison assumes validity of the linear response over growing probes; fixed model-validity or position limits add a resolution floor. Uncertain impact, process shocks, other inventory, funding and collateral rules require an expanded account. Anonymous VAR estimates do not authenticate its physical $\kappa$.
+
+\begin{proposition}[Exact financial disclosure changes the experiment]
+\label{prop:equity_disclosure}
+In this noiseless-state account, exact disclosure of the third equity mark after a single positive reset pulse $A$ distinguishes the known symmetric pair with zero error for every $\delta>0$. The pulse can be any $0<A\le V_B$.
+\end{proposition}
+\begin{proof}
+The initial cash receipt is common to both alternatives, and the dealer subsequently holds inventory $-A$. At time three,
+\[E_{3,r}=B+\kappa A^2/2-cA-A^2h_{r,2}.\]
+The exact tap difference gives $E_{3,\delta}-E_{3,0}=A^2\kappa^2q\delta^2>0$. Exact equity disclosure therefore determines which known alternative generated the path. No Gaussian price-observation test is involved, and the admissible positive pulse can be arbitrarily small.
+\end{proof}
+Exact marked equity is extra information, not a free observation assumed in the price-only theorem. Real account marks, executions and fees have their own precision and model error. The counterexample prevents interpreting the capital order as a universal limit for an account owner who receives richer financial records.
+
+
+\subsection{Capital Paid by the Probe Trader}
+\label{sec:trader_capital}
+The counterparty's margin allowance and the probe trader's funding are different accounts. The next result uses the actual cost borne by the trader, rather than inferring a universal capital limit from an imposed total-quantity ball.
+
+\begin{theorem}[Matching capital order for funded deterministic probes]
+\label{thm:trader_capital_frontier}
+Use the same positive, stable, reset economy and refreshed average linear-book execution law, with no process noise. The statistical observer receives only the declared noisy price-state observations and known executed quantities. Exact execution prices, cash, inventory marks and other noiseless financial signals are not disclosed to that observer.
+
+The probe trader starts with cash/equity $B>0$ and inventory zero. A deterministic finite sequence of signed quantities $v$ changes its inventory by $+v_t$ and cash by
+\[
+K_{t+1}=K_t-v_t(P^0_{t+1}+\kappa v_t/2)-c|v_t|,
+\qquad c\ge0.
+\]
+Thereafter quantities stop and the trader must remain solvent as price returns to $P_*>0$. Let all relevant true prices be positive. For the symmetric known pair with rates at least $\epsilon$ from the endpoints, put
+\[
+r=1-\epsilon(1-S)<1,\qquad
+m=\kappa\frac{1-r}{1+r}>0,
+\qquad K_*=\frac{2\kappa^2q}{\epsilon^3(1-S)^2}.
+\]
+Every such solvent strategy satisfies
+\begin{equation}
+D_{\rm KL}(P_0^v\|P_\delta^v)
+\le \frac{K_*^2B\delta^4}{\sigma^2m}.
+\label{eq:trader_capital_information}
+\end{equation}
+Hence worst-case error at most $\alpha<1/2$ requires
+\begin{equation}
+B\ge\frac{2\sigma^2m(1-2\alpha)^2}{K_*^2\delta^4}.
+\label{eq:capital_lower_order}
+\end{equation}
+This applies without a total-quantity cap and with any finite observation horizon.
+
+Conversely, for any fixed margin fraction $0<\mu\le1$, the positive reset pulse $A$ in~\eqref{eq:quantity_attainability} achieves error $\alpha$ at the third observation and remains margin-solvent at every later mark when its trader capital is
+\begin{equation}
+B_A=\frac\kappa2A^2+(c+\mu P_*)A.
+\label{eq:trader_pulse_capital}
+\end{equation}
+Thus necessary and sufficient capital orders are $\delta^{-4}$ in this deterministic experiment with no process noise and a restricted observer. Counterparty funding can additionally be supplied by~\eqref{eq:cash_margin_budget} and has the same order. Neither result applies unchanged to richer disclosure or natural excitation.
+\end{theorem}
+
+\begin{proof}
+Let $I_T=\sum_t v_t$. Summing actual trader cash and marking the residual inventory at the limiting price $P_*$ gives
+\[
+E_\infty=B-\tfrac12v^\top T_hv-c\sum_t|v_t|.
+\]
+Solvency requires $E_\infty\ge0$. For each exponential mode $\lambda\le r$, the Toeplitz kernel has spectral density
+\[
+f_\lambda(\omega)=\frac{1-\lambda^2}{1-2\lambda\cos\omega+\lambda^2}
+\ge\frac{1-r}{1+r}.
+\]
+Fourier integration of the finite probe polynomial and the positive mixture weights therefore gives
+$v^\top T_hv\ge m\|v\|_2^2$.
+Consequently $\|v\|_2^2\le2B/m$.
+The transfer-difference bound of Theorem~\ref{thm:resource_frontier} gives Gaussian mean-difference squared norm at most $K_*^2\delta^4\|v\|_2^2$, including zero-padded observations after probing stops. Equal-noise KL proves~\eqref{eq:trader_capital_information}; Pinsker and the two-point error requirement prove~\eqref{eq:capital_lower_order}.
+
+For one positive pulse, cash becomes $B_A-A(P_*+\kappa A/2)-cA$ and inventory is $A$. At any subsequent mark,
+\[
+E_t=\mu A P_*+A^2h_{t-1},\qquad
+\mu|I_t|P_t=\mu A P_*+\mu A^2h_{t-1}.
+\]
+Because $h_j\ge0$ and $\mu\le1$, margin holds, including its limiting fundamental mark. True prices remain at least $P_*$. The known-pair third-observation test has error $\alpha$, and $A$ has order $\delta^{-2}$, so~\eqref{eq:trader_pulse_capital} has order $\delta^{-4}$.
+\end{proof}
+
+The lower bound uses solvency after temporary impact dissipates. It does not credit self-generated temporary price appreciation as permanent funding. The financial model permits a margin loan and assumes no holding interest, other positions or fundamental-price risk. Fixed model-validity and position limits constrain the attainable pulse. These assumptions and the observer's restricted information must accompany the capital interpretation.
+
+
+\subsection{A Constructive Boundary: Natural Excitation Supplies Information}
+\label{sec:natural_excitation}
+The fixed-quantity information limit is not universal for naturally excited markets. The following example shows precisely why the no-process-noise assumption matters.
+
+\begin{proposition}[Passive distinction with zero controlled quantity]
+\label{prop:passive_excitation}
+Keep the same known symmetric cohort pair, but add independent uniform price innovations $w_t\in[-b,b]$, $b>0$, of variance $s_w^2=b^2/3$ at each price update, followed by the price-first memory update. Observe the centered price state $\tilde x_t=x_t+\nu_t$, with independent Gaussian noise of variance $\sigma^2$. Consider independent three-step reset blocks and no controlled probes, with $P_*>3b$ so actual price marks remain positive. Write
+\[
+b_1=a+\kappa q\eta,\qquad
+b_{2,0}=b_1^2+\kappa q\eta(1-\eta),\qquad
+b_{2,\delta}=b_{2,0}-\kappa q\delta^2.
+\]
+For each block, the covariance of its first and third noisy price observations differs by $\Delta=\kappa q s_w^2\delta^2$. Let
+\[
+R=\max_{r\in\{0,\delta\}}
+\left\{(s_w^2+\sigma^2)
+[s_w^2(1+b_1^2+b_{2,r}^2)+\sigma^2]
++s_w^4 b_{2,r}^2\right\}.
+\]
+The midpoint test of the average product of those two observations has worst-case error at most $\alpha$ whenever $n\ge4R/(\alpha\Delta^2)$ independent blocks are observed. Thus this experiment can distinguish the pair with controlled quantity zero and order $\delta^{-4}$ passive blocks. The designated probe-only dealer has inventory zero and equity $B$ throughout.
+\end{proposition}
+\begin{proof}
+In each block $x_1=w_1$, $x_2=b_1w_1+w_2$ and $x_3=b_{2,r}w_1+b_1w_2+w_3$. The positive process impulse coefficients are at most one, so $|x_t|\le3b$ in the block. Independent observation noise changes marginal variances but not the covariance $s_w^2b_{2,r}$. The product variance equals the product of marginal variances plus squared covariance, with an additional fourth-cumulant term $b_{2,r}^2(Ew_1^4-3s_w^4)$. Uniform innovations have fourth cumulant $-2b^4/15$, so this term is nonpositive and the variance is bounded by $R$. The variance of the independent-block average is at most $R/n$. Its two means are separated by $\Delta$, so Chebyshev bounds either midpoint-test error by $4R/(n\Delta^2)$. No controlled fill occurs, hence the stated probe-only account has no inventory or trading cost.
+\end{proof}
+
+Independent resets and known innovations are extra information conditions, not assumptions verified in the empirical samples. This counterexample does not prove that anonymous public records identify participants. It shows that passive process excitation can accumulate memory information even when controlled quantity and the designated account's capital remain fixed. Reset costs, other exposures and unknown noise laws would change that experiment. The paper's capital and quantity conclusions consequently belong to their declared controlled contracts.
+
+\begin{thebibliography}{9}
+\bibitem[Almgren and Chriss(2001)]{almgren2000}Almgren, R., and N. Chriss, 2001, Optimal execution of portfolio transactions, Journal of Risk 3, 5--39. Primary December 2000 manuscript also available at \url{https://www.smallake.kr/wp-content/uploads/2016/03/optliq.pdf}.
+\bibitem[Manole and Ho(2022)]{manoleho2022}Manole, T., and N. Ho, 2022, Refined convergence rates for maximum likelihood estimation under finite mixture models, PMLR 162, 14979--15006.
+\bibitem[Liu and Ammari(2023)]{liuammari2023}Liu, P., and H. Ammari, 2023, Super-resolution of positive near-colliding point sources, Information and Inference 12, 3087--3111; primary preprint arXiv:2212.00536.
+\bibitem[Sornette et al.(2023)]{sornette2023nonnormal}Sornette, D., S. Lera, J. Lin, and K. Wu, 2023, Non-normal interactions create socio-economic bubbles, arXiv:2205.08661v5.
+\end{thebibliography}\end{document}

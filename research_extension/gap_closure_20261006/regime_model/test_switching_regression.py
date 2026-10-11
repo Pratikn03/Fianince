@@ -49,3 +49,23 @@ def test_compiled_backend_matches_log_domain_reference_with_tail_observations():
     rng=np.random.default_rng(22);e=-rng.exponential(200,size=(200,2));P=np.array([[.97,.03],[.04,.96]]);pi=np.array([.7,.3])
     a=forward_backward(e,P,pi);b=forward_backward_python(e,P,pi)
     for key in a:np.testing.assert_allclose(a[key],b[key],rtol=1e-8,atol=1e-10)
+
+
+def test_predictive_score_reduces_to_independent_single_gaussian_formula():
+    from run_market_study import score
+    X=np.array([[1.,-1.],[1.,.5],[1.,2.]]);y=np.array([.1,-.3,1.2]);b=np.array([.2,.4]);v=.7;ys=3.5
+    model={'initial':np.array([.9,.1]),'beta':np.tile(b,(2,1)),'variance':np.array([v,v]),'transition':np.array([[.93,.07],[.23,.77]])}
+    actual=score([(X,y)],model,ys);res=y-X@b
+    assert np.isclose(actual['mse'],np.mean(res**2)*ys**2)
+    assert np.isclose(actual['negative_log_score'],np.mean(.5*np.log(2*np.pi*v)+res**2/(2*v))+np.log(ys))
+
+
+def test_validation_scaling_uses_fixed_training_parameters():
+    from run_market_study import prepare
+    train=[{'state':'x','z':np.array([[1.,2.],[2.,1.],[4.,3.],[3.,5.]])}]
+    _,sc=prepare(train);a=[{'state':'x','z':np.array([[3.,1.],[4.,2.],[5.,3.]])}]
+    b=[{'state':'x','z':a[0]['z'].copy()}];b[0]['z'][-1]*=1000
+    sa,_=prepare(a,**sc);sb,_=prepare(b,**sc)
+    np.testing.assert_allclose(sa[0][0],sb[0][0])
+    assert sa[0][1][0]==sb[0][1][0]
+    assert sa[0][1][-1]!=sb[0][1][-1]

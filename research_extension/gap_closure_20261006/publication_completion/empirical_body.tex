@@ -1,0 +1,304 @@
+\paragraph{Controlling for Order-Splitting Memory.}
+The diagnostic $Q_L=\hat J_{12}\hat c_L/(1-\sum_{\ell=1}^L\hat\phi_\ell)$ uses the regression $F_{b+1}$ on $x_b,F_b,\ldots,F_{b-L+1}$. Here $L$ counts bars, not seconds, and $L=1$ recovers VAR(1). This is an observable long-run response functional; omitted fundamentals, endogenous flow, near-zero denominators and filtering can prevent a structural interpretation.
+
+\subsection{Covariance Restrictions and the Limits of Heteroskedastic Identification}
+For a stationary VAR, $\Gamma_0=J\Gamma_0J^\top+\Sigma$ and $\Gamma_k=J^k\Gamma_0$. Matching three contemporaneous and eight lagged covariance entries gives 11 moments and seven transition/noise parameters. Our diagnostic uses a full stable transition and positive-definite innovation parameterization, segment-aware moment HAC and six starts per declared case. All 24 cases (three assets, two centering rules and four bandwidths) reject their maintained restrictions under their stated asymptotic reference. For global centering and bandwidth ten bars, $J$ statistics are 41.4063, 28.3094 and 12.1175 for BTC, ETH and ADA. These rejections do not validate the fitted economic model. The earlier restricted-fit statistic 73 concerns a different parameter class and is retained only in the historical ledger.
+
+Contemporaneous heteroskedastic identification additionally requires invariant structural coefficients, valid innovations, orthogonal structural shocks and a defended regime partition. Nonproportional variance shifts alone do not supply all of these. In the two-equation system, exchanging shock labels maps $(\lambda,c)$ to $(1/c,1/\lambda)$ while preserving each covariance after variance rescaling. Sign or economic exclusions can distinguish some branches, but the current source's single bounded numerical root is not an identification proof. Its forward-flow pairing and endogenous volatility grouping do not establish the required assumptions. Thus the old negative coefficient is not evidence that market makers provide identified instantaneous buffering. The exact branch-equivalence witness and all covariance sensitivities are retained.
+
+\subsection{Data Coverage, Representation and Authentication}
+The supplied data are different measurement objects. Official Binance trade bars have raw executed-volume fields; the recorder files contain supplied quote/flow features; the equity representation is event-indexed; the January file contains depth snapshots. Counts of these objects cannot be combined into a count of independent, continuous one-second transitions.
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Exact working-sample coverage. Original-provider attribution and reuse permission are separate from local file hashes.}
+\label{tab:datasets}
+\begin{tabularx}{\textwidth}{lXXX}\toprule
+Sample & Coverage & Raw rows / representation & Source status \\\midrule
+Binance spot & 96 dates, 2021--2024 & 66,316,704 one-second bar rows & Current official checksums \\
+Recorded BTC/ETH/ADA & April 7--19, 2021 & Existing second-indexed feature files & Recorder/provider unresolved \\
+Supplied equity & 49 stock/day sessions & 272,941 event snapshots & Upstream mapping unresolved \\
+January BTC depth & January 9--20, 2023 & 3,730,870 raw snapshots & Provider/licence unresolved \\
+\bottomrule\end{tabularx}
+\end{table}
+
+The Binance reconstruction retains the first duplicate timestamp and requires all ten observed seconds per primary bar. It resets the EMA at each gap and date, burns 150 ten-second states and estimates sufficiently long segments separately. There are 38,859 missing seconds and 363 duplicate seconds across the reconstructed study units, without conflicting duplicate rows. Legacy filling is reproduced solely to explain the original outputs. The recorder EMA is reset at gaps, continues across contiguous dates, and regressions split dates and gaps. Consecutively repeated feature renders have their recorded flow set to zero under the archived deduplication rule; this reconstructs the cache but does not authenticate the underlying execution window. No universal winsorization or quote-filter percentage is asserted.
+
+For quote OFI, a price increase contributes new bid size and a bid-price decrease removes old bid size; an unchanged bid contributes its size change. Ask signs reverse. Quote OFI is distinct from executed signed flow. The previous simplified price-indicator formula and claim that a depth proxy automatically purges endogeneity are not used.
+
+\section{Original Panel, Timing Sensitivity and the Fee-Schedule Comparison}
+\label{sec:baseline_natural_exp}
+\subsection{Baseline Reconstruction and Cross-Asset Measurement}
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Original-panel measurement reconstruction: equal-weight means across assets within each of 96 sampled dates, followed by date means and exploratory Student intervals. The 768 study units contain 66,316,704 raw one-second rows; primary fits use 6,513,239 ten-second transitions. These are reduced-form diagnostics.}
+\label{tab:binance_panel}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrr}\toprule
+Construction & $Q$ & Date interval & $S$ & Date interval & $Q>0$ share \\\midrule
+Legacy forward-flow & 0.0081536 & [0.0072958, 0.0090114] & 0.9205544 & [0.9164297, 0.9246791] & 86.85\% \\
+Observed-flow EMA & 0.0003807 & [0.0002412, 0.0005201] & 0.9203825 & [0.9160228, 0.9247423] & 62.37\% \\
+Observed raw return & -0.0001625 & [-0.0003836, 0.0000585] & -0.0414724 & [-0.0517954, -0.0311494] & 48.83\% \\
+\bottomrule\end{tabular}}
+\end{table}
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Original-panel asset means under explicit timing/state choices. $Q_{30}$ controls 30 ten-second bars (300 seconds); it is a long-run regression diagnostic. No participant or regulatory causal effect is identified.}
+\label{tab:cross_asset_panel}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrr}\toprule
+Pair & Days & Legacy $Q$ & Observed $Q$ & $Q_{30}$ & Return $Q$ & Observed $S$ \\\midrule
+BTC/USDT & 96 & 0.0142386 & 0.0006350 & 0.0005751 & 0.0000594 & 0.9346384 \\
+ETH/USDT & 96 & 0.0131252 & 0.0005657 & 0.0003358 & -0.0005013 & 0.9349149 \\
+SOL/USDT & 96 & 0.0087132 & 0.0002036 & 0.0001314 & -0.0005210 & 0.9190796 \\
+ADA/USDT & 96 & 0.0067986 & 0.0003953 & 0.0003623 & 0.0000840 & 0.9142432 \\
+DOGE/USDT & 96 & 0.0059319 & 0.0002511 & 0.0001622 & -0.0002345 & 0.9245799 \\
+BNB/USDT & 96 & 0.0057950 & 0.0004587 & 0.0002731 & -0.0000789 & 0.8946552 \\
+XRP/USDT & 96 & 0.0057009 & 0.0002292 & 0.0001741 & -0.0004279 & 0.9233588 \\
+LTC/USDT & 96 & 0.0049256 & 0.0003068 & 0.0002650 & 0.0003200 & 0.9175903 \\
+\bottomrule\end{tabular}}
+\end{table}
+
+The original panel is fully reconstructed at its 768 named study units using current official archives. The large legacy positive estimate changes materially under observed-flow alignment; raw-return date intervals include zero for the pooled diagnostic. This is a measurement result, not a proof that learning is absent. A stable fitted VAR or $S<1$ is not an authenticated structural stability statement about the market.
+\begin{figure*}[htbp]\centering
+\includegraphics[width=\textwidth]{figures/fig_verified_panel_20261008.pdf}
+\caption{Reconstructed original panel: observed EMA index by date, legacy versus observed asset means, and pooled date-level uncertainty for three measurement constructions. Every panel uses the raw-reproduced study units. No identified market-maker buffering coefficient is plotted.}
+\label{fig:binance_panel_and_identification}\end{figure*}
+
+\subsection{July 2022 Fee-Schedule Comparison and Inference}
+For the 24 sampled 2022 dates, fit $Y_{it}=\beta_0+\beta_1\mathrm{BTC}_i+\beta_2\mathrm{Post}_t+\beta_3\mathrm{BTC}_i\mathrm{Post}_t+e_{it}$, where post means dates on/after July 8. There are 192 rows and one treated asset. The reconstructed sampled-date mean BTC quote volume increases by 75.010858 percent; that descriptive difference is not a fee-induced causal estimate. Table~\ref{tab:natural_experiment_did} separates the actual covariance references instead of calling classical uncertainty clustered.
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Recomputed BTC-by-post association in the original 192-unit 2022 panel. The same four-regressor specification is evaluated under three covariance references; cluster counts are eight assets and 24 sampled dates. The assignment is not randomized.}
+\label{tab:natural_experiment_did}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrr}\toprule
+State & Index & Reference & $\hat\beta_3$ & SE & df & $p$ \\\midrule
+Legacy & Q & classical & -0.0018555 & 0.0030720 & 188 & 0.546569 \\
+Legacy & Q & asset\ cluster & -0.0018555 & 0.0008841 & 7 & 0.074018 \\
+Legacy & Q & date\ cluster & -0.0018555 & 0.0034116 & 23 & 0.591756 \\
+Legacy & S & classical & -0.0003897 & 0.0245851 & 188 & 0.987370 \\
+Legacy & S & asset\ cluster & -0.0003897 & 0.0195257 & 7 & 0.984634 \\
+Legacy & S & date\ cluster & -0.0003897 & 0.0132341 & 23 & 0.976763 \\
+Observed & Q & classical & -0.0001057 & 0.0004038 & 188 & 0.793794 \\
+Observed & Q & asset\ cluster & -0.0001057 & 0.0002139 & 7 & 0.636344 \\
+Observed & Q & date\ cluster & -0.0001057 & 0.0004449 & 23 & 0.814284 \\
+Observed & S & classical & -0.0036464 & 0.0254227 & 188 & 0.886102 \\
+Observed & S & asset\ cluster & -0.0036464 & 0.0203732 & 7 & 0.863022 \\
+Observed & S & date\ cluster & -0.0036464 & 0.0140420 & 23 & 0.797420 \\
+\bottomrule\end{tabular}}
+\end{table}
+
+For observed $Q$, the date-cluster interval is $[-0.001025969,0.000814559]$. Neither a non-rejection nor the cross-asset placebo ranking proves invariance or a parallel counterfactual. The old equivalence margin 0.007 is about 18 times the corrected pooled baseline; passing such a margin cannot establish economically meaningful equivalence. Asset comparisons are not random treatment reassignments. Serial dependence across sampled dates, spillovers and the single treated unit remain material inference limitations.
+\subsection{Dynamic Monthly Event Study and Pretrend Sensitivity}
+The rebuilt analysis uses the original 192 sampled asset-days in 2022, eight assets and two dates per calendar month. Asset and sampled-date effects are combined with eleven BTC-by-calendar-month interactions, using the June monthly mean as reference. The design has rank 42 and 150 residual degrees of freedom. January has event month $-6$, June $-1$, July zero and December five. These are calendar months, not separate twice-monthly sampling periods. Each coefficient independently matches the monthly treated-minus-control mean gap relative to June.
+
+\begin{table}[htbp]
+\centering\footnotesize
+\caption{Rebuilt monthly event effects for corrected observed-flow $Q$. June is omitted. Displayed uncertainty uses the declared date-cluster $t_{23}$ approximation, with one treated asset and serial-dependence limitations.}
+\label{tab:dynamic_event_study}
+\begin{tabular}{lrrrr}\toprule
+Month & Event month & Effect & Date-cluster SE & Reference $p$ \\\midrule
+1 & -6 & 0.0016829 & 0.0015641 & 0.2931 \\
+2 & -5 & 0.0012269 & 0.0009032 & 0.1875 \\
+3 & -4 & 0.0022112 & 0.0010371 & 0.0439 \\
+4 & -3 & 0.0008700 & 0.0001785 & 6.358e-05 \\
+5 & -2 & 0.0013016 & 0.0003074 & 0.0003145 \\
+7 & 0 & 0.0011669 & 0.0002622 & 0.0001829 \\
+8 & 1 & 0.0005572 & 0.0000298 & 2.028e-15 \\
+9 & 2 & 0.0021332 & 0.0000930 & 2.368e-17 \\
+10 & 3 & -0.0000813 & 0.0003043 & 0.7916 \\
+11 & 4 & 0.0010152 & 0.0000057 & 1.52e-37 \\
+12 & 5 & 0.0018673 & 0.0004409 & 0.000313 \\
+\bottomrule\end{tabular}
+\end{table}
+
+The January--May joint pretrend reference is covariance-sensitive: classical $p=0.323499$, HC3 $p=0.288727$ and date-cluster $p=0.0000392661$. The earlier literal $F=0.42,p=0.835$ is untraced and withdrawn. Month-cluster uncertainty degenerates because treated-month effects fit each month contrast; date-saturated interactions likewise degenerate under date clustering, and HC3 is unavailable at unit leverage. These failures do not imply zero uncertainty. No selected non-rejection validates parallel counterfactual trends. The complete legacy/observed, $Q/S$ coefficient and six-covariance ledgers are retained in the event-study supplement.
+
+The prior temporal- and cross-sectional-placebo literals have no verified generating chain in this revision. Their study questions remain open; the literals are withheld pending a reproducible design and appropriate exchangeability assumptions. Concurrent policies, spillovers, one treated asset and sampled-date outcome construction remain barriers to causal attribution.
+
+
+\subsection{Joint Cross-Venue Predictive Association}
+\label{sec:cross_venue_verified}
+An unrestricted joint four-variable VAR uses price and flow from the recorder and Binance on 11 overlapping April 2021 dates, with ten-second bins, complete-bin restrictions and segment intercepts. Its baseline EMA spectral radii are 0.950614 (BTC), 0.949934 (ETH) and 0.948204 (ADA). At the BTC 60-second horizon, the normalized generalized Binance-to-recorder price share is 0.442926; the corresponding share across all 24 orthogonal orderings ranges approximately 0.17--0.8483. That interval concerns this asset, direction and horizon; it is not the range over all horizons. Raw-return and timestamp-shift sensitivities and all six horizons are retained. Quote-currency differences, subsecond alignment and shock identification prevent a causal transmission claim.
+
+\section{Liquidity States, Equity Representation and Financial Simulations}
+\label{sec:stress_fragility}
+\subsection{Spread-Interaction and Switching-Regression Diagnostics}
+The exploratory spread regression uses the first 50,000 supplied BTC records, a 100-event EMA deviation in dollars, observed signed base-unit flow, valid consecutive-second pairs, burn 500 and the lagged-spread 90th percentile. Its selected threshold is 5.874 dollars. The flow-slope contrast is 0.1242465 dollars per base unit, with 60-second HAC SE 0.2181307 and normal-reference $p=0.568951$. These dimensional slopes are not the theoretical feedback $Q$; an assumed 10-basis-point conversion cannot create an empirical instability index.
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Exploratory BTC spread-interaction regression on the first 50,000 supplied records, with 49,497 valid transitions after burn and gap filtering. Flow is signed base quantity; the slope has dollars per base unit and is not the dimensionless $Q$.}
+\label{tab:threshold_var}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrr}\toprule
+Regime & Transitions & Flow slope & Mean inside notional & Residual SD \\\midrule
+Spread at/below threshold & 44,547 & 0.6267284 & 152,578.07 & 5.03849 \\
+Spread above threshold & 4,950 & 0.7509749 & 29,216.24 & 7.30897 \\
+\bottomrule\end{tabular}}
+\end{table}
+
+The wider-spread subset has lower recorded inside depth and residual SD ratio 1.450627. Selection on observed spread is descriptive. The repaired switching regression uses exact joint transition posteriors, two specifications, four starts, two variance floors and all three assets under EMA/return measurements. On the seven expanding test dates April 13--19, all MSE-contrast intervals include zero, and every full-coefficient versus variance-only contrast interval includes zero. Some density scores improve relative to OLS. BTC full-switching SD ratios change from about 1,103 to 112 across the two variance floors, and four selected forecast fits reach their iteration limit. Neither this sensitivity nor non-rejection proves absent regimes.
+
+\subsection{Historical Flash-Crash Question and Constructed Scenarios}
+\label{sec:historical_flash_crashes}
+The 2010 equity flash crash and 2014 Treasury event motivate the question of liquidity depletion and feedback. The retained historical script does not ingest either event's transaction/account data: it assigns feedback coefficients and simulates one price/depth path; the Treasury function returns fixed inputs. Its protected path changes depth and external liquidation flow as well as clipping adaptive flow. The calculated scenario differences therefore cannot be attributed to gating alone, calibrated historical dealer losses, or measured policy protection. The original numerical outputs remain archived as constructed illustrations. Authenticating event-level data and an isolated counterfactual remains an open question.
+\begin{figure*}[htbp]\centering
+\begin{tabularx}{\textwidth}{XX}\toprule
+Constructed 2010 scenario & Constructed 2014 scenario \\\midrule
+Assigned depth and adaptive coefficients; simulated price paths & Assigned yield excursion and protected excursion \\
+Protected path changes multiple inputs & Suppression follows from assigned endpoints \\
+No historical TAQ ingest & No historical order/account ingest \\\bottomrule\end{tabularx}
+\caption{Source audit of the retained historical illustrations. Neither scenario supplies a measured historical intervention effect. The original numerical studies and their questions are preserved in the evidence archive.}
+\label{fig:equity_flash_crash_taq}\end{figure*}
+
+\subsection{Supplied Equity Representation}
+The equity calculations use top-quote OFI, a 100-event EMA, burn 500 and session resets. Negative-feedback sessions are retained. The anonymous STOCK/DAY labels and event clock do not authenticate original company identities, exchange rules or a causal comparison with crypto.
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Supplied event-indexed equity representation: actual counts and means of separately reset sessions. The original stock/day mapping, decimal reconstruction and upstream licence require authentication; identities are not inferred from anonymous stock labels.}
+\label{tab:equity_benchmark}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrr}\toprule
+Identifier & Rows & Sessions & Mean $Q$ & Mean $S$ & Maximum $\rho$ \\\midrule
+Stock 1 & 18,308 & 9 & 0.0000761 & 0.9793583 & 0.9880957 \\
+Stock 2 & 39,555 & 10 & 0.0002951 & 0.9766554 & 0.9837613 \\
+Stock 3 & 66,862 & 10 & 0.0004724 & 0.9768337 & 0.9860589 \\
+Stock 4 & 71,750 & 10 & 0.0004652 & 0.9756506 & 0.9809941 \\
+Stock 5 & 76,466 & 10 & 0.0005936 & 0.9727355 & 0.9890673 \\
+\bottomrule\end{tabular}}
+\end{table}
+
+\subsection{Replayed Financial Scenarios and Accounting Limits}
+The existing funded-scenario grid has been rerun with its saved seed and inputs. Capacity means an inventory limit at fixed initial capital. Effective persistence differs from nominal metadata; the unconstrained transitions in this grid are supercritical. The recorded limit-hit event does not halt later trading. These rows cannot establish insolvency inside a stable system.
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Replayed existing funded scenarios: 1,000 paths per cell, fixed initial equity 10,000, capacity multiplier scales a 25-share limit. Halts are sticky inventory-limit hits, not a permanent trading ban or insolvency. The unconstrained system uses effective anchor 0.80 instead of nominal 0.40; all shown effective systems are supercritical.}
+\label{tab:funded_risk_surface}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrrr}\toprule
+$S_{nom}$ & $S_{eff}$ & $\rho$ & Capacity & Shock & Hits & Defaults & Mean min equity \\\midrule
+0.70 & 1.10 & 1.027 & 0.5 & -0.2 & 691 & 0 & 9,998.95 \\
+0.70 & 1.10 & 1.027 & 0.5 & -0.6 & 1000 & 0 & 9,999.95 \\
+0.70 & 1.10 & 1.027 & 1.0 & -0.2 & 0 & 0 & 9,999.12 \\
+0.70 & 1.10 & 1.027 & 1.0 & -0.6 & 0 & 0 & 9,998.66 \\
+0.70 & 1.10 & 1.027 & 2.0 & -0.6 & 0 & 0 & 9,997.42 \\
+0.70 & 1.10 & 1.027 & 2.0 & -2.0 & 0 & 0 & 9,983.77 \\
+0.82 & 1.22 & 1.074 & 0.5 & -0.2 & 1000 & 0 & 9,999.56 \\
+0.82 & 1.22 & 1.074 & 0.5 & -0.4 & 1000 & 0 & 9,999.56 \\
+0.82 & 1.22 & 1.074 & 1.0 & -0.2 & 1000 & 0 & 9,995.35 \\
+0.82 & 1.22 & 1.074 & 1.0 & -0.4 & 1000 & 0 & 9,996.44 \\
+0.82 & 1.22 & 1.074 & 1.0 & -0.6 & 1000 & 0 & 9,998.41 \\
+0.82 & 1.22 & 1.074 & 1.0 & -0.8 & 1000 & 0 & 9,999.91 \\
+0.82 & 1.22 & 1.074 & 2.0 & -0.6 & 1000 & 0 & 9,978.23 \\
+0.82 & 1.22 & 1.074 & 2.0 & -1.0 & 1000 & 0 & 9,979.79 \\
+0.82 & 1.22 & 1.074 & 2.0 & -2.0 & 1000 & 0 & 9,985.62 \\
+1.18 & 1.58 & 1.226 & 0.5 & -0.2 & 1000 & 0 & 9,998.80 \\
+1.18 & 1.58 & 1.226 & 0.5 & -0.4 & 1000 & 0 & 9,998.80 \\
+1.18 & 1.58 & 1.226 & 1.0 & -0.2 & 1000 & 0 & 9,994.98 \\
+1.18 & 1.58 & 1.226 & 1.0 & -0.6 & 1000 & 0 & 9,994.98 \\
+1.18 & 1.58 & 1.226 & 1.0 & -0.8 & 1000 & 0 & 9,994.98 \\
+1.18 & 1.58 & 1.226 & 2.0 & -1.0 & 1000 & 0 & 9,979.76 \\
+1.18 & 1.58 & 1.226 & 2.0 & -2.0 & 1000 & 0 & 9,979.76 \\
+\bottomrule\end{tabular}}
+\end{table}
+
+The separate lagged-memory dealer experiment has 48 cells with 400 paths each. Its own implemented matrix is $J_{lag}=\left(\begin{smallmatrix}a&1\\\eta Q&1-\eta\end{smallmatrix}\right)$, so its eigenvalues must be calculated under that timing rather than the price-first theoretical matrix. Cash receives signed fills at the current mark plus half-spread, inventory takes the opposite fill, then equity is marked at the next price. Saved halt counts combine equity and position-limit events. They illustrate a model risk limit, not observed dealer defaults.
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Reproduced existing lagged-memory dealer simulations at leverage parameter 10. A halt occurs at nonpositive equity or the model position limit; these causes are not separated in the archived counts. B1/B2/B3 reuse saved model flow moments, not estimated real dealer fills. All 48 cells and exact binomial intervals remain available.}
+\label{tab:dealer_drawdown_stats}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrr}\toprule
+$S$ & Saved variance & Analytic LRV & Feedback & B1 & B2 & B3 \\\midrule
+0.50 & 1.0029 & 1.0000 & 44/400 & 45/400 & 42/400 & 43/400 \\
+0.60 & 1.0072 & 1.5664 & 118/400 & 46/400 & 45/400 & 126/400 \\
+0.70 & 1.0252 & 2.8056 & 249/400 & 52/400 & 56/400 & 276/400 \\
+0.80 & 1.0756 & 6.3906 & 373/400 & 59/400 & 89/400 & 391/400 \\
+0.90 & 1.2518 & 26.0000 & 400/400 & 106/400 & 188/400 & 400/400 \\
+0.95 & 1.6197 & 105.0625 & 400/400 & 211/400 & 350/400 & 400/400 \\
+\bottomrule\end{tabular}}
+\end{table}
+
+Here low-frequency power means long-run variance, not marginal variance. With two independent unit-variance shock streams, the lagged model's analytic flow LRV is $[(1-a)^2+(Q\sigma/\lambda)^2]/(1-S)^2$; its saved marginal variance is a separate quantity. B3 can match the severe halt pattern with exogenous persistent flow, so these simulations do not isolate adaptive learning as its cause. Pricing, spread, leverage, fees, funding, fills and queue priority are hypothetical inputs. A tested cash identity is necessary but insufficient for market calibration.
+
+\section{Observation Contracts and Reconstructed Robustness}
+\label{sec:surveillance}
+\subsection{Participant Information and Reset Requirements}
+Anonymous aggregate market features do not reveal participant identities. The exact merged-rate equivalence theorem concerns a reset modeled price state with known anchor and impact; it does not imply that an arbitrary public VAR identifies its latent cohort measure. A hypothetical audited contract would provide participant-specific flow, state definitions and a verifiable reset. Such information can change identification, but regression consistency additionally needs excitation and valid innovations. These are proposed information requirements, not a statement that existing legal identifiers reveal every algorithm or internal learning state.
+
+\begin{figure*}[htbp]\centering
+\begin{tikzpicture}[node distance=1.4cm]
+\node[draw,align=center,text width=5.5cm] (public) {Aggregate observed features\\Timing/filter-dependent diagnostics};
+\node[draw,align=center,text width=5.5cm,right=0.6cm of public] (audit) {Hypothetical audited experiment\\Defined state, input and reset};
+\node[draw,align=center,text width=5.5cm,below=of public] (limit) {No participant attribution\\No automatic structural identification};
+\node[draw,align=center,text width=5.5cm,below=of audit] (req) {Needs excitation and innovation assumptions\\Monetary loss requires exposures};
+\draw[->] (public)--(limit);\draw[->] (audit)--(req);
+\end{tikzpicture}
+\caption{Information requirements for distinct experiments. Legal audit tags alone do not disclose a learning recursion or authenticate a cash-loss functional.}
+\label{fig:surveillance_contracts}\end{figure*}
+
+\subsection{Reconstructed Date-Shuffle, Lead-Flow and Sign Diagnostics}
+The previously untraced placebo questions have now been computed under a written retrospective protocol on the existing recorder sample. Date relabelling uses each date's longest continuous segment, position alignment and truncation; all relabellings exclude fixed points. The six-tap price-to-flow regression has a date-mean covariance and is projected onto the negative orthant. That orthant contains the negative Hausdorff-memory cone, so its rejection is a sufficient observable sign restriction diagnostic under the assumed Gaussian covariance law. The diagnostic does not establish that regression taps equal latent algorithm kernels. It does not certify the full continuous-cone test or repair endogenous regressors.
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Reconstructed recorder diagnostics: 199 fixed-point-free whole-date flow relabellings and 1,999 Gaussian vertex draws for the six-tap negative orthant. The printed ranks are simulation diagnostics at finite resolution, not randomized-treatment or finite-sample market $p$ values.}
+\label{tab:falsification}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrr}\toprule
+Asset & Date-shuffle rank & Forward-paired $Q$ & Negative-orthant rank \\\midrule
+BTC & 0.0050 & 0.0125227 & 0.0005 \\
+ETH & 0.0050 & 0.0113018 & 0.0005 \\
+ADA & 0.0050 & 0.0072058 & 0.0005 \\
+\bottomrule\end{tabular}}
+\end{table}
+
+All three shuffle ranks reach the 1/200 simulation floor, and all three Gaussian orthant ranks reach the 1/2000 floor. These are lower-resolution ranks rather than exact zero probabilities. Cross-date exchangeability and the Gaussian covariance reference remain unproved in 13 dates. Lead-flow pairing reproduces the much larger forward diagnostic; it is evidence that timing matters, not a valid exclusion of reverse causation. The independent ledger retains all coefficients, covariances and relabelling indices.
+
+\subsection{Original-Panel Lag Controls and Horizon Units}
+The original 768-unit lag grid is newly recomputed from the authenticated current archives. It uses observed flow and complete ten-second bars, without filling or cross-gap regressors. The digital ledger retains every coefficient and denominator as well as date means and intervals. A positive adjusted mean cannot distinguish meta-order execution from adaptive feedback, and finite lag controls do not prove a positive asymptotic floor.
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Fresh controls on all 768 original study units, using observed flow. $L$ counts ten-second bars: the displayed horizons are 10, 50, 150, 300, 600 and 900 seconds. $L=1$ equals baseline VAR. Date intervals and every segment denominator are retained in the digital ledger.}
+\label{tab:lag_memory_controls}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrr}\toprule
+Pair & $L=1$ & $L=5$ & $L=15$ & $L=30$ & $L=60$ & $L=90$ \\\midrule
+BTC/USDT & 0.0006350 & 0.0006233 & 0.0005719 & 0.0005751 & 0.0006352 & 0.0006545 \\
+ETH/USDT & 0.0005657 & 0.0003970 & 0.0003256 & 0.0003358 & 0.0003685 & 0.0003876 \\
+SOL/USDT & 0.0002036 & 0.0001401 & 0.0001265 & 0.0001314 & 0.0001270 & 0.0001371 \\
+ADA/USDT & 0.0003953 & 0.0003466 & 0.0003536 & 0.0003623 & 0.0003734 & 0.0004001 \\
+DOGE/USDT & 0.0002511 & 0.0001911 & 0.0001588 & 0.0001622 & 0.0001604 & 0.0002019 \\
+BNB/USDT & 0.0004587 & 0.0003060 & 0.0002888 & 0.0002731 & 0.0003099 & 0.0003253 \\
+XRP/USDT & 0.0002292 & 0.0002245 & 0.0001978 & 0.0001741 & 0.0002046 & 0.0002194 \\
+LTC/USDT & 0.0003068 & 0.0002120 & 0.0002666 & 0.0002650 & 0.0002881 & 0.0003046 \\
+\bottomrule\end{tabular}}
+\end{table}
+
+\subsection{Sampling and Filter Sensitivity}
+The complete recorder grid reports each computed construction. The mechanical EMA anchor is $1-2/(W/\Delta+1)$ and is distinct from a fitted VAR coefficient. Finite grid comparisons do not establish a universal $O(1/W)$ economic law or robustness to every discretization. Some coarse-clock $Q$ intervals include zero.
+\begin{table}[htbp]
+\centering\footnotesize\setlength{\tabcolsep}{3pt}
+\caption{Complete computed recorder grid: existing BTC/ETH/ADA sample, observed flow, gap-aware filters. Each cell uses 13 dates. Intervals use a retrospective date Student reference; 60-second windows at 60-second sampling are excluded because the filter is degenerate.}
+\label{tab:empirical_grid}
+\resizebox{\textwidth}{!}{\begin{tabular}{lrrrrrr}\toprule
+Asset & $\Delta$ (s) & $W$ (s) & $Q$ & Date interval & $S$ & Date interval \\\midrule
+BTC & 1 & 60 & 0.0006658 & [0.0004847, 0.0008469] & 0.9771337 & [0.9762386, 0.9780288] \\
+BTC & 1 & 300 & 0.0003072 & [0.0002163, 0.0003982] & 0.9952180 & [0.9949597, 0.9954762] \\
+BTC & 1 & 900 & 0.0001660 & [0.0001031, 0.0002288] & 0.9981992 & [0.9981008, 0.9982977] \\
+BTC & 10 & 60 & 0.0021823 & [0.0002850, 0.0040796] & 0.7497710 & [0.7362451, 0.7632969] \\
+BTC & 10 & 300 & 0.0019353 & [0.0003179, 0.0035527] & 0.9425983 & [0.9388340, 0.9463626] \\
+BTC & 10 & 900 & 0.0011979 & [0.0002926, 0.0021032] & 0.9785557 & [0.9768400, 0.9802714] \\
+BTC & 60 & 300 & 0.0017936 & [-0.0028178, 0.0064051] & 0.6494995 & [0.6307149, 0.6682842] \\
+BTC & 60 & 900 & 0.0017777 & [-0.0024546, 0.0060101] & 0.8562867 & [0.8458932, 0.8666802] \\
+ETH & 1 & 60 & 0.0004845 & [0.0002733, 0.0006958] & 0.9728547 & [0.9714421, 0.9742673] \\
+ETH & 1 & 300 & 0.0002829 & [0.0001828, 0.0003830] & 0.9941826 & [0.9937325, 0.9946327] \\
+ETH & 1 & 900 & 0.0001629 & [0.0000982, 0.0002275] & 0.9978294 & [0.9976065, 0.9980522] \\
+ETH & 10 & 60 & 0.0011250 & [-0.0001413, 0.0023913] & 0.7299855 & [0.7150779, 0.7448931] \\
+ETH & 10 & 300 & 0.0009795 & [0.0000628, 0.0018963] & 0.9391562 & [0.9338698, 0.9444427] \\
+ETH & 10 & 900 & 0.0007203 & [0.0000851, 0.0013554] & 0.9781093 & [0.9759674, 0.9802512] \\
+ETH & 60 & 300 & -0.0027069 & [-0.0078037, 0.0023900] & 0.6705125 & [0.6512727, 0.6897523] \\
+ETH & 60 & 900 & -0.0009565 & [-0.0048536, 0.0029407] & 0.8679761 & [0.8593363, 0.8766159] \\
+ADA & 1 & 60 & 0.0002474 & [0.0001359, 0.0003589] & 0.9705855 & [0.9686803, 0.9724907] \\
+ADA & 1 & 300 & 0.0001361 & [0.0000809, 0.0001913] & 0.9935311 & [0.9930170, 0.9940453] \\
+ADA & 1 & 900 & 0.0000793 & [0.0000438, 0.0001148] & 0.9974690 & [0.9971371, 0.9978008] \\
+ADA & 10 & 60 & 0.0007698 & [0.0001114, 0.0014281] & 0.7232232 & [0.7138175, 0.7326289] \\
+ADA & 10 & 300 & 0.0006163 & [0.0001565, 0.0010762] & 0.9350377 & [0.9304137, 0.9396617] \\
+ADA & 10 & 900 & 0.0003875 & [0.0000696, 0.0007053] & 0.9763042 & [0.9741121, 0.9784963] \\
+ADA & 60 & 300 & 0.0016322 & [-0.0006946, 0.0039589] & 0.6486999 & [0.6276182, 0.6697817] \\
+ADA & 60 & 900 & 0.0014004 & [-0.0007271, 0.0035280] & 0.8586178 & [0.8480483, 0.8691874] \\
+\bottomrule\end{tabular}}
+\end{table}
+
+\subsection{January Depth and Retrospective Forecasts}
+The January sample has 3,730,870 raw snapshots spanning January 9--20, 2023. Top-quote OFI and the 120-second EMA yield 844,621 valid transitions in 152 segments over 12 dates. Mean $Q=0.000910232$, while $Q_{30}=-0.001296032$ with date interval $[-0.001567464,-0.001024600]$. The provider is unresolved and the sample was previously examined; it is not an untouched prospective holdout. Existing expanding-date AR/VAR forecasts use training-only scaling and retain all contrasts; price-loss intervals include zero. Non-rejection neither proves equal prediction nor validates a learning mechanism.

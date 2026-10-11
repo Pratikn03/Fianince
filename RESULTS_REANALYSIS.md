@@ -1,3 +1,5 @@
+> **Current October 8 publication revision:** The detailed current result and remaining gates are in `PUBLICATION_WORK_STATUS_20261008.md`, `PUBLICATION_COMPLETION_PLAN_20261008.md` and `ACCEPTANCE_MATRIX_20261008.md`. Older counts, page totals, provider status and completion declarations below are historical snapshots, not the authority for the current manuscript. The publication goal remains active.
+
 # Machine Markets — actual revision results
 
 October 6, 2026. These are computed results, not promised future experiments. The review candidate retains all ten original study questions and includes a disposition of all 48 original pages. Its scientific gaps remain explicit. The original PDFs are preserved.
@@ -99,3 +101,23 @@ Month clustering is degenerate because monthly treated interactions fit the trea
 
 Seven focused tests cover point aggregation, QR covariance calculations, relabeling, event clocks, and saturation/high-leverage failures. The cumulative revision suite passes 41 tests. The manuscript lineage ledger checks 28 tables and 3,135 cells against named output fields; this checks rendering and numerical provenance, not scientific validity.
 
+
+## October 7, 2026: current-source reconciliation and regime diagnosis
+
+The completed switching-study data are April2021 ten-second states; forecasts evaluate April13–19, not the2022 dates recorded in the earlier completion receipt. All264 fit likelihoods are independently recalculated; all96 full starts converge, while12 forecast starts and4 selected fits hit iteration limits. BTC low variances bind at the two floors and its SD ratio changes roughly tenfold. All full-versus-volatility-only forecast comparison intervals span zero, which supplies no clear additional coefficient-switching advantage and does not prove absent regimes. Detailed evidence is in `regime_model/market_verification.json`.
+
+The current manuscript contains later edits beyond the source certified by the prior table ledger. Those edits are preserved; localized empirical corrections restore rebuilt monthly contrasts, actual January coverage/negativeQ30 and declared regime limitations. Full current-source lineage, semantic/theorem/policy review and the remaining scientific gates remain active. The old100% local-completion statement is superseded, not used as evidence.
+
+## Economic-contract repair — October 7, 2026
+
+The newly added universal opacity premium/welfare/depth claims are not consequences of the existing identification theorem. The current source now gives a fixed-ticket Gaussian/CARA robust quote with zero-premium cases, an allocation-surplus formula with the missing initial-markup term, a solved explicit static capacity problem, exact depth-dependent Schur conditions, and a positive-feedback counterexample in which higher impact reduces transient magnification. Dealer cash/inventory accounting is repaired to use post-trade inventory in marked P&L. Exact symbolic/rational witnesses and six independent tests are in `economic_contracts/`.
+
+These solve the named conditional formulas and falsify the unsupported universal extensions. Dynamic competitive equilibrium, actual welfare/ambiguity costs, financial calibration and the operational rate/input map remain active gaps. The full work toward9+ is recorded in `NINE_PLUS_PLAN.md`; a rating is not a completion certificate.
+
+## October 8, 2026: input/output gate and current empirical lineage
+
+The old displayed-depth rate map is replaced by a proved finite-window quantity bound with explicit input H, monetary output C, carried initial state, per-quantity cost and other-risk reserve. The bound is sharp for its declared linear criterion and invariant to consistent state-coordinate/quantity-unit changes. Independent LP checks, a repeated-window failure, an omitted-component counterexample and zero-gain/background cases are retained. Exact cohort-splitting checks also show that identical reset price responses can give identical financial input caps without identifying cohort count; cohort ambiguity does not universally imply financial ignorance. Actual exposure/input/noise/capital calibration and operational validity remain open.
+
+The recorded-series measurement table now contains BTC, ETH and ADA and all nine actual state/alignment outputs.54 cells match independently recomputed weighted date means and intervals; the previous SOL label and untraced narrow HAC/raw-return literals are corrected. The actual constructor shifts one future bin, not a separately authenticated future60-second execution window. Cache integrity is verified; provider/licence and serial-inference gates remain open.
+
+All eight user acceptance criteria are preserved with evidence and remaining work in `ACCEPTANCE_MATRIX_20261008.md`. The novelty boundary is provisional, with primary-literature access limits recorded in `NOVELTY_BOUNDARY_20261008.md`. Specialist review has not been obtained.

@@ -3,6 +3,8 @@ import hashlib,json,re
 from pathlib import Path
 HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[1]
 d=json.loads((HERE/'claim_lineage.json').read_text())
+assert hashlib.sha256((ROOT/'paper/Machine_Markets_JF_Submission.tex').read_bytes()).hexdigest()==d['source_sha256'], 'STALE LINEAGE: current main source differs from the ledger source; regenerate and reconcile before claiming current-source verification'
+assert hashlib.sha256((ROOT/'research_extension/paper_revision_20261006/full_scope_appendix.tex').read_bytes()).hexdigest()==d['appendix_sha256'], 'STALE LINEAGE: current appendix differs from ledger source'
 assert not d['rendering_failures']
 tables=[b for b in d['blocks'] if b['environment'] in ['table','longtable']]
 assert len(tables)==29

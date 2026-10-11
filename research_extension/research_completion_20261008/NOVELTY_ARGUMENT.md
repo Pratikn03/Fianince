@@ -1,0 +1,21 @@
+# Precise contribution and closest-research comparison
+
+The proposed contribution is a resolution-and-disclosure result for a declared financial experiment: two known latent memory configurations, scalar noisy price reports, common deterministic executed-quantity probes, and a specified self-financing account. It combines an exact finite-horizon quantity optimum, matching quantity/capital orders, and a constructive failure of the capital barrier under exact marked-equity disclosure. The manuscript now states the relevant outside-observer interpretation and why public quote residuals do not calibrate measurement noise.
+
+| Closest primary research | Established result or tool | Increment proposed here | Claim excluded |
+|---|---|---|---|
+| [Chatzikiriakos and Iannelli (2024)](https://andreaian.github.io/pub/LCSS_24_FiniteSetBnds.pdf), Section II and Theorems 1–2 | Finite-model linear-system identification; Gaussian input/process noise; likelihood upper and information lower bounds. | Scalar price observation of different latent cohort configurations with a lifetime quantity budget and explicit financing account. | First finite-model identification or first information lower bound. |
+| [Chatzikiriakos, Jamieson and Iannelli (2026)](https://proceedings.mlr.press/v300/chatzikiriakos26a.html), Equation 1, Assumption 1 and Sections 3–5 | Fully observed states, Gaussian process noise, bounded expected average input power, excitation design and active learning. | Fixed lifetime absolute quantity versus average power; exact first-pulse signal optimum; account-resource and disclosure comparison for a known pair. | First active identification, excitation design or sample-complexity result. |
+| [Alfonsi, Schied and Klöck (2016)](https://arxiv.org/abs/1310.4471) | Multivariate transient impact, positive-definite kernels and execution-cost structure. | Compose actual deterministic probe execution cost with the specified noisy-price resolution experiment. | First quadratic execution cost, positive-kernel analysis or no-manipulation condition. |
+| [Sornette et al. (2023)](https://www.nature.com/articles/s42005-023-01379-7) | Non-normal financial dynamics, bubbles and Kreiss diagnostics. | Keep declared monetary input/output geometry separate from latent state norms and account changes. | First use of non-normality or Kreiss bounds in finance. |
+
+## What the additional connection establishes
+
+1. A first pulse maximizes finite-record signal norm under the lifetime absolute-quantity constraint. The physical cohort recursion is now connected directly to the causal convolution representation in Lean.
+2. The controlled model's first two taps agree; the third separation is proportional to the square of rate separation. Consequently a known pair requires quantity of order the inverse square of that separation under the declared Gaussian price reports.
+3. Quadratic probe execution cost turns that quantity requirement into a different capital order for the particular funded deterministic-probe account. This is not a universal risk-constrained learning theorem.
+4. A positive reset pulse can remain within the counterparty's margin allowance at every later mark. Exact third-equity disclosure separates the pair even for arbitrarily small positive pulses. The all-time pulse-margin composition passes the October 9 strict axiom audit. The audit now covers 150 declarations, including the finite nonnegative sequence account and partial-fill results; full manuscript formalization remains incomplete.
+
+The economic point is which records an outside analyst is allowed to receive. Richer account observations can eliminate a barrier proved for noisy aggregate prices. This gives a testable disclosure-design question rather than a general claim that market participants cannot be identified. Demonstrating substantial scholarly importance and priority of the entire connection still requires adversarial comparison and independent specialist assessment. The comparison above supports a precise proposed increment, not a certificate that no earlier paper contains it.
+
+No novelty rating or publication acceptance is inferred from a Lean build. The new source does not claim unknown-mixture estimation, adaptive-probe optimality, identified learning in public data, or calibrated operational solvency.

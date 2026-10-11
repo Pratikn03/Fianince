@@ -1,0 +1,64 @@
+\subsection{Capital Paid by the Probe Trader}
+\label{sec:trader_capital}
+The counterparty's margin allowance and the probe trader's funding are different accounts. The next result uses the actual cost borne by the trader, rather than inferring a universal capital limit from an imposed total-quantity ball.
+
+\begin{theorem}[Matching capital order for funded deterministic probes]
+\label{thm:trader_capital_frontier}
+Use the same positive, stable, reset economy and refreshed average linear-book execution law, with no process noise. The statistical observer receives only the declared noisy price-state observations and known executed quantities. Exact execution prices, cash, inventory marks and other noiseless financial signals are not disclosed to that observer.
+
+The probe trader starts with cash/equity $B>0$ and inventory zero. A deterministic finite sequence of signed quantities $v$ changes its inventory by $+v_t$ and cash by
+\[
+K_{t+1}=K_t-v_t(P^0_{t+1}+\kappa v_t/2)-c|v_t|,
+\qquad c\ge0.
+\]
+Thereafter quantities stop and the trader must remain solvent as price returns to $P_*>0$. Let all relevant true prices be positive. For the symmetric known pair with rates at least $\epsilon$ from the endpoints, put
+\[
+r=1-\epsilon(1-S)<1,\qquad
+m=\kappa\frac{1-r}{1+r}>0,
+\qquad K_*=\frac{2\kappa^2q}{\epsilon^3(1-S)^2}.
+\]
+Every such solvent strategy satisfies
+\begin{equation}
+D_{\rm KL}(P_0^v\|P_\delta^v)
+\le \frac{K_*^2B\delta^4}{\sigma^2m}.
+\label{eq:trader_capital_information}
+\end{equation}
+Hence worst-case error at most $\alpha<1/2$ requires
+\begin{equation}
+B\ge\frac{2\sigma^2m(1-2\alpha)^2}{K_*^2\delta^4}.
+\label{eq:capital_lower_order}
+\end{equation}
+This applies without a total-quantity cap and with any finite observation horizon.
+
+Conversely, for any fixed margin fraction $0<\mu\le1$, the positive reset pulse $A$ in~\eqref{eq:quantity_attainability} achieves error $\alpha$ at the third observation and remains margin-solvent at every later mark when its trader capital is
+\begin{equation}
+B_A=\frac\kappa2A^2+(c+\mu P_*)A.
+\label{eq:trader_pulse_capital}
+\end{equation}
+Thus necessary and sufficient capital orders are $\delta^{-4}$ in this deterministic experiment with no process noise and a restricted observer. Counterparty funding can additionally be supplied by~\eqref{eq:cash_margin_budget} and has the same order. Neither result applies unchanged to richer disclosure or natural excitation.
+\end{theorem}
+
+\begin{proof}
+Let $I_T=\sum_t v_t$. Summing actual trader cash and marking the residual inventory at the limiting price $P_*$ gives
+\[
+E_\infty=B-\tfrac12v^\top T_hv-c\sum_t|v_t|.
+\]
+Solvency requires $E_\infty\ge0$. For each exponential mode $\lambda\le r$, the Toeplitz kernel has spectral density
+\[
+f_\lambda(\omega)=\frac{1-\lambda^2}{1-2\lambda\cos\omega+\lambda^2}
+\ge\frac{1-r}{1+r}.
+\]
+Fourier integration of the finite probe polynomial and the positive mixture weights therefore gives
+$v^\top T_hv\ge m\|v\|_2^2$.
+Consequently $\|v\|_2^2\le2B/m$.
+The transfer-difference bound of Theorem~\ref{thm:resource_frontier} gives Gaussian mean-difference squared norm at most $K_*^2\delta^4\|v\|_2^2$, including zero-padded observations after probing stops. Equal-noise KL proves~\eqref{eq:trader_capital_information}; Pinsker and the two-point error requirement prove~\eqref{eq:capital_lower_order}.
+
+For one positive pulse, cash becomes $B_A-A(P_*+\kappa A/2)-cA$ and inventory is $A$. At any subsequent mark,
+\[
+E_t=\mu A P_*+A^2h_{t-1},\qquad
+\mu|I_t|P_t=\mu A P_*+\mu A^2h_{t-1}.
+\]
+Because $h_j\ge0$ and $\mu\le1$, margin holds, including its limiting fundamental mark. True prices remain at least $P_*$. The known-pair third-observation test has error $\alpha$, and $A$ has order $\delta^{-2}$, so~\eqref{eq:trader_pulse_capital} has order $\delta^{-4}$.
+\end{proof}
+
+The lower bound uses solvency after temporary impact dissipates. It does not credit self-generated temporary price appreciation as permanent funding. The financial model permits a margin loan and assumes no holding interest, other positions or fundamental-price risk. Fixed model-validity and position limits constrain the attainable pulse. These assumptions and the observer's restricted information must accompany the capital interpretation.

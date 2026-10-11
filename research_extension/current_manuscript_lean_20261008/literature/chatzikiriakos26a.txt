@@ -1,0 +1,2414 @@
+  High Effort, Low Gain: Fundamental Limits of Active Learning for
+                     Linear Dynamical Systems
+
+
+
+       Nicolas Chatzikiriakos*                  Kevin Jamieson†                        Andrea Iannelli*
+        University of Stuttgart               University of Washington                University of Stuttgart
+
+
+                      Abstract                                1    INTRODUCTION
+
+                                                              The problem of learning a model of an unknown dy-
+    We consider the problem of identifying an un-             namical system from data is important across domains
+    known linear dynamical system from a finite               such as reinforcement learning, data-driven control and
+    hypothesis class. In particular, we analyze the           robotics. Hereby, it is of particular interest to obtain
+    effect of the excitation input on the sample              an accurate model with high confidence from as few
+    complexity of identifying the true system with            samples as possible, since data collection is often ex-
+    high probability. To this end, we present sam-            pensive. To tackle this problem, there exists a large
+    ple complexity lower bounds that capture the              literature on experiment design both in dynamical sys-
+    choice of the selected excitation input. The              tems and learning theory. However, experiment design
+    sample complexity lower bound gives rise to               algorithms can be computationally demanding and a
+    a system-theoretic condition to determine the             study of the potential benefit of experiment design algo-
+    potential benefit of experiment design. In-               rithms is lacking in the literature of dynamical systems.
+    formed by the analysis of the sample complex-             This raises the question of whether experiment design
+    ity lower bound, we propose a persistency of              algorithms should be applied universally, or whether a
+    excitation (PE) condition tailored to the con-            more nuanced answer is appropriate.
+    sidered setting, which we then use to establish           Motivated by these challenges, we consider the setting
+    sample complexity upper bounds. Notably,                  where the learner has prior knowledge of the true sys-
+    the PE condition is weaker than in the case of            tem through a finite hypothesis class. This reflects
+    an infinite hypothesis class and allows analyz-           cases where some prior knowledge is available, e.g.,
+    ing different excitation inputs modularly. Cru-           based on first principles, yet certain parameters are
+    cially, the lower and upper bounds share the              hard to model or vary across different instances. When
+    same dependency on key problem parameters.                it comes to dynamical systems, the data is usually
+    Finally, we leverage these insights to propose            collected from a single trajectory and hence is highly
+    an active learning algorithm that sequentially            correlated. This poses a key challenge when analyz-
+    excites the system optimally with respect to              ing learning in the finite sample regime. In particular,
+    the current estimate, and provide sample com-             existing works considering the identification of dynam-
+    plexity guarantees for the presented algorithm.           ical systems1 mostly consider the case of an infinite
+    Concluding simulations showcase the effective-            hypothesis class and rely on the least squares estimator.
+    ness of the proposed algorithm.                           Early works derived sample complexity upper bounds
+                                                              for Gaussian inputs for linear (Sarkar and Rakhlin,
+                                                              2019; Simchowitz et al., 2018) and certain classes of
+   ∗
+     Institute   for Systems   Theory    and   Auto-          non-linear systems (Foster et al., 2020; Sattar et al.,
+matic       Control,   nchatzi@ist.uni-stuttgart.de,          2022; Sattar and Oymak, 2022). These results have
+iannelli@ist.uni-stuttgart.de                                 been complemented by the sample complexity lower
+   †
+     Allen School of Computer Science & Engineering,          bounds for Gaussian excitations and linear systems
+jamieson@cs.washington.edu                                    presented by Jedra and Proutiere (2022); Tsiamis and
+                                                              Pappas (2021). For the case of a finite hypothesis
+Proceedings of the 29th International Conference on Arti-     class, Chatzikiriakos and Iannelli (2024); Muehlebach
+ficial Intelligence and Statistics (AISTATS) 2026, Tangier,
+Morocco. PMLR: Volume 300. Copyright 2026 by the au-             1
+                                                                   We provide an extended overview of the related litera-
+thor(s).
+                                                              ture in Appendix A.
+     High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+et al. (2025) provide sample complexity upper and           4. Notably, our analysis also uncovers cases where
+lower bounds when the excitation is Gaussian.                  the benefit of experiment design is small even in
+                                                               an oracle setup, indicating that the usefulness
+The problem of experiment design has a long history in
+                                                               of experiment design needs to be evaluated on a
+system identification (see, e.g., Bombois et al. (2011);
+                                                               problem-specific level.
+Goodwin and Payne (1977)). While these classical
+works consider the asymptotic case, recent works pro-
+vided a finite sample perspective on the topic for lin-    Notation: The n-dimensional simplex is denoted by ∆n .
+ear (Wagenmaker and Jamieson, 2020; Wagenmaker             We denote the set of symmetric positive (semi-)definite
+et al., 2021; Chatzikiriakos et al., 2025) and certain     matrices of dimension n × n by Sn++ (Sn+ ). Given a
+classes of non-linear systems (Lee et al., 2024; Mania     vector v ∈ Rn and a matrix M ∈ Sn++ we define
+                                                                      √
+et al., 2022). While the underlying principles in the      ∥v∥M := v ⊤ M v. Given a matrix M ∈ Rn×n we de-
+finite-sample analysis are always similar, there exists    note its largest eigenvalue by λmax (M ) and the mean of
+no modular framework for the analysis. Further, the        all eigenvalues by λmean (M ) = n1 tr (M ), where tr (M )
+benefit of experiment design over randomly exciting the    indicates the trace of the matrix M . Given a se-
+systems has not been explicitly investigated, even for     quence {u(t)}tt=t1
+                                                                               0
+                                                                                 we denote the stacked collection
+                                                                                              ⊤
+linear dynamical systems. This work addresses these        as U = u(t0 )    ⊤
+                                                                                 . . . u(t1 )⊤ , where the bound-
+                                                                      
+gaps by answering the following questions to improve       aries of the interval will be clear from the context.
+our understanding of experiment design and active          We use diagt (M ) to denote a block-diagonal matrix
+learning:                                                  which repeats the matrix M on its diagonal t-times, i.e.,
+Q1)How large is the problem-specific benefit of oracle     diagt (M ) := It ⊗ M , where ⊗ denotes the Kronecker
+   experiment design over isotropic Gaussian excita-       product.
+   tions in terms of the sample complexity?
+Q2)How can sample complexity upper bounds be es-           2      PRELIMINARIES
+   tablished for general excitation inputs?
+                                                           We consider the unknown discrete-time linear time-
+Q3)How can active learning algorithms generate ex-
+                                                           invariant (LTI) dynamical system
+   citation inputs to provably outperform random
+   isotropic excitations?                                              x(t + 1) = A∗ x(t) + B∗ u(t) + w(t),            (1)
+Q4)How does a finite hypothesis class simplify exper-
+   iment design compared to an infinite hypothesis         where x(t) ∈ Rnx , u(t) ∈ Rnu are the state and the
+   class?                                                  input of the system at timestep t, and w(t) is process
+                                                                                   i.i.d
+                                                           noise. We assume w(t) ∼ N (0, Σw ) with a known co-
+With respect to these key questions, our primary con-
+                                                           variance matrix Σw ∈ Sn++ x
+                                                                                        . However, all the presented
+tributions can be summarized as follows:
+                                                           results and the proposed algorithm can be adapted
+                                                           to the case where Σw is unknown and only an upper
+ 1. We provide instance-dependent lower bounds on
+                                                           bound σw 2
+                                                                      Inx ⪰ Σw or an informative prior is available.
+    the sample complexity of identifying the true sys-
+                                                           For notational simplicity, we assume x(0) = 0 unless
+    tem with high probability. To this end, we leverage
+                                                           stated otherwise. Further, we assume the learner has
+    tools from information theory and derive the opti-
+                                                           access to a finite set of systems, containing the true
+    mal oracle excitation input during data collection.
+                                                           system, i.e.,
+    We analyze the system-theoretic quantities dictat-
+    ing how the sample complexity lower bounds differ          θ∗ = (A∗ , B∗ ) ∈ S := {(A0 , B0 ), . . . , (AN , BN )}, (2)
+    for different excitation inputs.
+                                                             where S is known to the learner. We assume
+ 2. Building on the notion of persistency of excita-       (A∗ , B∗ ) = (A0 , B0 ) for notational simplicity. The
+    tion (PE), we propose a modular framework to           goal of the learner is to identify the true system ma-
+    derive sample complexity upper bounds for dif-         trices θ∗ ∈ S from a single data trajectory DT =
+    ferent excitation inputs. While the probability                              −1
+                                                           ({x(t)}Tt=0 , {u(t)}Tt=0 ), where the excitation input u
+    of miss-specification decays exponentially for all     can be selected by the learner. Thus, in the context
+    excitations satisfying PE, we establish that the       of this work, an identification problem is defined by
+    decay rate depends on system theoretic quantities      the tuple (θ∗ , S). The problem of identifying the true
+    that match the lower bounds.                           system from a finite hypothesis class naturally emerges
+ 3. Using the notion of PE we establish an inter-          in many settings, such as fault detection (Miljković,
+    pretable condition pointing out when experiment        2011) or validation of ecological and evolutionary mod-
+    design using certainty equivalence is more efficient   els (Johnson and Omland, 2004). More generally, the
+    than random excitations.                               set S can be viewed as a principled, model-driven way
+                                       Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+to introduce knowledge of the real process into the                         (6), computing the expectation in (5) and writing the
+identification problem.                                                     statement in matrix form simplifies to
+The performance of the learner is evaluated in terms
+                                                                                                  h
+                                                                             E [ε̃θi (0, τ )] = E U ⊤ RΣ   i                 ⊤ i
+                                                                                                             −1 (τ )+Su (τ ) Q −1 (τ )Su (τ )
+                                                                                                                                 Σw
+of the samples required to identify the true system                                                          w
+                                                                                                                                           i
+with confidence δ. For our analysis, it is important                                          + NΣi −1 (τ )Su (τ ) + (NΣi −1 (τ )Su (τ ))⊤ U
+                                                                                                    w                     w
+to understand how predictions using θ∗ compare to                                                                          
+predictions using θi , for some i ∈ [1, N ]. To this end,
+                                                                                                            ⊤ i
+                                                                                              + tr Sw (τ ) QΣ−1 Sw (τ ) ,                   (7)
+                                                                                                               w
+we denote the sum of one-step prediction errors between
+θ∗ and θi by                                                                where U ∈ R    nu τ
+                                                                                                    and we introduced the block-diagonal
+                                                                            matrices
+                          τ −1
+        ε̃θi (0, τ ) :=
+                          X
+                                 ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1 ,        (3)                 QiΣ−1 (τ ) := diagτ (∆A⊤  −1
+                                                                                                               i Σw ∆Ai ),                 (8a)
+                                                                                            w
+                                                            w
+                          t=0                                                            i
+                                                                                        RΣ                       ⊤ −1
+                                                                                            −1 (τ ) := diagτ (∆Bi Σw ∆Bi )                 (8b)
+                                                                                            w
+
+where we defined ∆Ai := A∗ − Ai and ∆Bi := B∗ − Bi .                                    NΣi −1 (τ ) := diagτ (∆Bi⊤ Σ−1
+                                                                                                                    w ∆Ai )                (8c)
+Recall that the data Dτ is collected along a trajectory
+                                                                                            w
+
+
+of the dynamical system (1). Recursively plugging in                        Note that, leveraging the system-theoretic interpre-
+the dynamics (1) for x(t) yields                                            tation of the Toeplitz matrices (6), U ⊤ RΣ     i
+                                                                                                                              −1 (τ )U =
+                                                                            Pτ                                                w
+
+                                                                                t=0 ∥∆B i u(t)∥ 2
+                                                                                                Σ−1
+                                                                                                    measures    to  what extent   the dif-
+                 τ −1          t−1                                                                w
+                                                                            ference between B∗ and Bi can be seen in the weighted
+                 X            X
+ε̃θi (0, τ ) =          ∆Ai            At−1−s B∗ u(s)               (4)
+                                        ∗
+                                                                            prediction error when applying the input sequence U .
+                 t=0             s=0
+                                                            2               Similarly, U ⊤ Su (τ )⊤ QiΣ−1 (τ )Su (τ )U measures to what
+                                                                                                      w
+                                 + At−1−s
+                                    ∗     w(s)  + ∆B i u(t)                 extent the difference between A∗ and Ai can be seen
+                                                                Σ−1
+                                                                 w          in the weighted prediction
+                                                                                                       error when applying U and
+which reveals that ε̃θi (0, τ ) is a random quantity even if                tr Sw (τ ) QΣ−1 Sw (τ ) measures the influence of the
+                                                                                      ⊤ i
+                                                                                            w
+the excitation input is deterministic2 . This is due to the                 process noise on this quantity. Accounting for the cross
+process noise affecting the evolution of the system (1).                    term, for any i ∈ [1, N ], the matrices
+                                             i.i.d.
+Taking the expectation and using w(t) ∼ N (0, Σw )                                          i
+                                                                                Wi (τ ) := RΣ                  ⊤ i
+                                                                                              −1 (τ ) + Su (τ ) Q −1 (τ )Su (τ )
+it can be shown that                                                                            w                Σ   w
+                                                                                                                                            (9)
+                         −1
+                      h τX          t                                                     + NΣi −1 (τ )Su (τ ) + (NΣi −1 (τ )Su (τ ))⊤ ,
+                                                                        i                           w                  w
+                                                                2
+                                    X
+E [ε̃θi (0, τ )] =E           ∆Ai         At−s
+                                           ∗ B∗ u(s)+∆Bi u(t) Σ−1
+                        t=0         s=1
+                                                                    w       measure the difficulty of distinguishing between θ∗ and
+                            −1
+                         h τX           t                                   θi and the sensitivity of (3) to changes in the excitation
+                                                                            input.
+                                                         i
+                                                      2
+                                        X
+                   +E             ∆Ai         At−s
+                                               ∗ w(s) Σ−1 .         (5)
+                                                        w
+                          t=0           s=1
+
+
+ To simplify notation, we define the Toeplitz matrices                      3     CAN ACTIVE LEARNING
+                                                                                ENHANCE IDENTIFICATION?
+                  B∗           0          ...       0
+                                                    ..                     To analyze the influence of the data collection scheme
+                                                     . 
+              
+               A∗ B ∗         B∗          0
+   Su (τ ) :=      ..
+                                                       ,                   on the sample complexity, we first derive a sample
+                                          .
+              
+                     .                      . . 0
+                                                       
+                                                                           complexity lower bound that holds for any reasonable
+               Aτ∗ −1 B∗ Aτ∗ −2 B∗ . . . B∗                                 algorithm. This instance-specific lower bound quanti-
+                     1/2
+                                                              (6)          fies the hardness of learning in our setup and provides a
+                  Σw             0            ...       0
+                        1/2      1/2                   ..                nuanced answer on whether active learning algorithms
+               A ∗ Σw          Σw              0        .                 can significantly reduce the sample complexity. Fur-
+              
+   Sw (τ ) :=        ..                                    .
+                                               ..                           ther, in Section 3.2 we provide a modular framework
+                       .                          .     0 
+                                                           
+                                                                            for deriving complementary sample complexity upper
+              
+                           1/2        1/2               1/2
+               Aτ∗ −1 Σw Aτ∗ −2 Σw . . . Σw                                 bounds. In this work, we make the following assump-
+These matrices are tightly connected to the controlla-                      tion on the excitation input, which is standard in the
+bility of (A∗ , B∗ ), and are commonly used in systems                      relevant literature (see, e.g., Wagenmaker and Jamieson
+theory to map from the τ -step noise and input tra-                         (2020))
+jectories to the corresponding state trajectory. Using                      Assumption 1 (Bounded input power). The ex-
+   2
+                                                                            pected average power of the (potentially random)
+    A detailed derivation, for the general case x(0) ∈ Rnx                                            T −1                    2
+that includes the case where u(t) consists of both a deter-                    hP sequence i{u(t)}t=0 is bounded by γu , i.e.,
+                                                                            input
+                                                                                   T −1       2
+ministic and a random part is presented in Appendix G.                      E      t=0 ∥u(t)∥    ≤ γu2 T .
+       High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+3.1    Sample complexity lower bounds                                       Thus, Theorem 3.1 implies        that the optimal excita-
+                                                                            tion U ∗ maximizes E ε̃θi (0, T̄ ) uniformly over θi ∈
+                                                                                                    
+To formalize the class of algorithms considered in this                     S \ {θ∗ }. Thus,   U ∗ maximizes      the distance between
+section, we define the class of δ-correct algorithms.
+                                                                                                     
+                                                                            E ε̃θ∗ (0, T̄ ) = 0 and E ε̃θi (0, T̄ ) , to separate the true
+Definition 1 (δ-correct algorithms). Consider the                           system θ∗ from all other systems θi ∈ S \{θ∗ } as clearly
+setup described in Section 2. An algorithm is called δ-                     as possible.
+correct, if for all δ ∈ (0, 1), and any (θ∗ , S) there exists
+a finite time T̄ such that for all t ≥ T̄ the algorithm                     Theorem 3.1 can be used to obtain a sample complexity
+returns an estimate θ̂t that satisfies P[θ̂t = θ∗ ] ≥ 1 − δ.                lower bound for isotropic Gaussian inputs.
+                                                                            Corollary 3.2. Consider the unknown dynamical sys-
+Note that by restricting to δ-correct algorithms, we                        tem (1) with x(0) = 0 and the set S defined in (2).
+can obtain instance-specific sample complexity lower                                              i.i.d.       γ2
+                                                                            Suppose that u(t) ∼ N (0, nuu Inu ). Then for any δ-
+bounds that hold for any reasonable algorithm and any
+                                                                            correct algorithm it holds that
+input sequence.
+                                                                              min γu2 T̄ λmean Wi (T̄ )                              (14)
+                                                                                                         
+Theorem 3.1. Consider the unknown dynamical sys-
+                                                                            i∈[1,N ]
+tem (1) with x(0) = 0 and the set S defined in (2).                                                                                   
+Then for any (potentially random) excitation input se-
+                                                                                                                                 1
+                                                                                     + tr Sw (T̄ )⊤ QiΣ−1 (T̄ )Sw (T̄ ) ≥ 2 log          .
+quence3 U ∈ Rnu T̄ and any δ-correct algorithm it holds                                                  w                        2.4δ
+that
+                                                                            The proof is provided in Appendix B.2. To gain an
+  min E U ⊤ Wi (T̄ )U                                    (10)
+                       
+i∈[1,N ]                                                                    intuition for the results in this chapter consider the
+                                                                          following example, where S consists of only two systems
+                                                     1
+         + tr Sw (T̄ )⊤ QiΣ−1 (T̄ )Sw (T̄ ) ≥ 2 log          .              which eliminates the need for minimization.
+                           w                          2.4δ
+                                                                            Example 3.1. First, consider the identification prob-
+Furthermore, under Assumption 1, the lower bound is                         lem defined by
+minimized by the excitation input                                                                                   
+                                                                                      0 0.1          0           0 0.2
+ U ∗ ∈ arg max min U ⊤ Wi (T̄ )U                                    (11)       A∗ =          B∗ =         A1 =               (15)
+                                                                                      0 0            1           0 0
+                2 T̄ i∈[1,N ]
+        U ⊤ U ≤γu
+
+                                + tr Sw (T̄ )⊤ QiΣ−1 (T̄ )Sw (T̄ ) ,        and S = {(A∗ , B∗ ), (A1 , B∗ )}. A straightforward calcu-
+                                                                  
+                                                    w
+                                                                                                                      
+                                                                            lation yields W1 (t) = diagt 0.01 and λj (W1 (t)) =
+and when applying U ∗ any δ-correct algorithm satisfies                     0.01, ∀j ∈ [1, t], ∀t ≥ 1. Thus, in this case isotropic
+                                                                            Gaussian excitations are optimal in the sense of the
+                    N
+                   X                                                      sample complexity lower bound. Next, consider S̃ =
+ min γu2 T̄ λmax           pi Wi (T̄ )                              (12)
+p∈∆N                                                                        {(Ã∗ , B̃∗ ), (Ã1 , B̃∗ )} with
+                     i=1
+                                                                     
+                                                                  1
+                                                                                                                            
+                                                                                             A∗ 02×d                   B∗ 02×d
+                                              
+                        ⊤
++ max tr Sw (T̄ )           QiΣ−1 (T̄ )Sw (T̄ )    ≥ 2 log              .        Ã∗ =                        B̃∗ =
+   i∈[1,N ]                    w                                 2.4δ                       0d×2       Id            0d×1  Id
+                                                                                                                                 (16)
+                                                                                             A1 02×d
+While using the maximum of the trace term in (12)                                Ã1 =                        B̃1 = B̃∗ ,
+                                                                                            0d×2       Id
+introduces some conservatism, in practical applications
+the noise is often significantly smaller than the input. In                 for some fixed d > 0. Through
+                                                                                                               direct 
+                                                                                                                         calculations,
+these cases (12) is dominated by the first term and the                     we obtain W̃1 (t) = diagt
+                                                                                                            0.01 01×d
+                                                                                                                             , ∀t ≥ 1
+added conservatism is small. The proof of Theorem 3.1                                                      0d×1 0d×d
+is presented in Appendix B.1. Note that while the                           and hence λmean (W̃1 (t)) = d+11
+                                                                                                               λmax (W̃1 (t)). Hence,
+solution to (11) might not be unique, any optimizer                         when d is large, the sample complexity lower bound
+suffices to achieve the optimal lower bound. As shown                       for isotropic Gaussian excitations is significantly larger
+in Appendix C, an optimal solution exists.                                  than for the optimal oracle excitation. This indicates
+Remark 3.1. Recall from (7)-(9) that, given x(0) = 0,                       that using isotropic Gaussian excitations requires more
+(11) is equivalent to                                                       samples to achieve the same confidence δ if algorithms
+                                                                            matching the lower bound are used. This can also be ob-
+          U ∗ ∈ arg max min E ε̃θi (0, T̄ ) .    (13)
+                                          
+                                                                            served in the sample complexity upper bounds we present
+                           2 T̄ i∈[1,N ]
+                   U ⊤ U ≤γu                                                in the next section. Further, under the same process
+   3
+    Random and deterministic input sequences are denoted                    noise conditions the sample complexity lower bound of
+identically. The interpretation will be clear from the con-                 the identification problems (θ∗ , S) and (θ̃∗ , S̃) is iden-
+text.                                                                       tical given the respective optimal oracle excitation is
+                             Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+used for both instances, as λmax (W1 (t)) ≡ λmax (W̃1 (t)).     data. In the following, we show that isotropic Gaus-
+Hence, in this sense the difficulty of the problems (θ∗ , S)    sian excitations and the optimal oracle excitation U ∗
+and (θ̃∗ , S̃) is identical. This is due to the fact that       defined in (11) satisfy Definition 2, i.e., satisfy PE.
+the last d modes of the system (16) are not relevant            Lemma 3.3 (PE for isotropic Gaussian inputs). Con-
+for the identification problem since they are decoupled         sider the system (1) and the set S defined in (2). Then
+from the unknown part. Confirming this intuition, Ũ ∗               i.i.d.      2
+
+only excites the system with the first input. Crucially,        u(t) ∼ N (0, nγu Inu ) is PE for any block length τ > 0
+our mathematical formulation enables the analysis of            with
+                                                                                          N            
+complex problem setups, where the optimal excitation
+                                                                                           X
+                                                                  crand
+                                                                   u    (τ ) = min λmean      pi Wi (τ ) ,          (19)
+and hardness cannot be determined intuitively.                                 p∈∆N
+                                                                                                i=1
+                                                                                      1                       
+3.2     Sample complexity upper bounds                              cw (τ ) = min tr Sw (τ )⊤ QiΣ−1 (τ )Sw (τ ) . (20)
+                                                                             i∈[1,N ] τ          w
+
+
+In this section, we establish a modular framework to            Lemma 3.4 (PE for optimal oracle excitation). Con-
+derive sample complexity upper bounds for identifying           sider the system (1) and the set S defined in (2). Then
+θ∗ with high probability. Our proposed framework
+builds on the notion of persistency of excitation which          U ∗ ∈ arg max min
+is closely connected to the observations made in the                            2 τ i∈[1,N ]
+                                                                        U ⊤ U ≤γu
+previous section.                                                                   τ
+                                                                                    X  h                          i (21)
+                                                                                      E ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1
+                                                                                                                    w
+3.2.1    Persistency of excitation                                                  t=0
+
+Recall that in Example 3.1, the goal of identifying the         is PE for block length τ with
+true system can be accomplished by exciting only the
+                                                                                                N
+first mode of the system using only the first control                                          X              
+input. Clearly, there exists no c > 0 for which this              copt
+                                                                   u (τ ) = min λmax                 pi Wi (τ ) ,       (22)
+                                                                              p∈∆N
+input satisfies                                                                                i=1
+                                                                                       1                             
+          −1 
+       h τX                                                        cw (τ ) = min         tr Sw (τ )⊤ QiΣ−1 (τ )Sw (τ ) . (23)
+                                                                              i∈[1,N ] τ
+                                                                                                       w
+               x(t)                 i
+      E              x(t)⊤   u(t)⊤        ⪰ cInx +nu ,   (17)
+              u(t)
+         t=0
+                                                                The proof of both results is given in Appendices D.1
+which is the PE condition required in the case of an            and D.2, respectively. Importantly, the PE coefficients
+infinite hypothesis class (cf. Tsiamis et al. (2023)). In       crand
+                                                                 u    (τ ) and copt
+                                                                                u (τ ) coincide with the key problem
+fact, it is only necessary to excite the parts of the system    parameters influencing the sample complexity lower
+that carry uncertainty. Thus, we introduce a weaker             bounds in Theorem 3.1 and Corollary 3.2. Further, the
+PE condition, which has been used as an assumption              optimal excitation U ∗ derived in Theorem 3.1 maxi-
+in a similar form by Muehlebach et al. (2025).                  mizes the PE coefficients cu (τ ), cw (τ ) in (18).
+Definition 2 (Persistency of excitation (PE)).                  Remark 3.2. If Σw is unknown and instead an es-
+                                           −1
+Consider an input sequence {u(t)}τt=0         , satisfying      timate Σ̂w or upper bound σw   2
+                                                                                                 Inx ⪰ Σw is used to
+  Pτ −1         2        2
+E[ t=0 ∥u(t)∥ ] = γu τ for some γu > 0. We say                  solve (21), the corresponding input sequence is PE, al-
+        −1
+{u(t)}τt=0  is persistently exciting for (θ∗ , S) if there      though with potentially suboptimal coefficients. This
+exist coefficients cu (τ ) > 0, cw (τ ) > 0 such that for       sub-optimality is due to the lack of absence of infor-
+any x(0) ∈ Rnx and θi ∈ S \ {θ∗ }                               mation which could be used when designing excita-
+  τ −1                                                          tion inputs. The degree of sub-optimality is instance-
+1X h                              i
+                                                                dependent and can be analyzed by computing and com-
+       E ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1 ≥ cu (τ )γu2 +cw (τ ).
+τ t=0                           w
+                                                                paring the coefficients.
+                                                   (18)
+                                                                3.2.2    High probability identification with
+Note that the PE coefficients cu and cw are problem-                     finite samples
+specific and depend on the block length τ . By the
+sample complexity lower bound, the excitation input             After establishing PE, we now show that PE guarantees
+needs to satisfy Definition 2 for some τ > 0 to guar-           fast identification of the true system θ∗ with high prob-
+antee identification of θ∗ with high probability (see           ability. To do so, we introduce a sequential estimation
+Remark 3.1 and Theorem B.1). If not, there exists               algorithm for general input sequences. In particular,
+some θi ̸= θ∗ which yields the same state trajectory            we derive a sample complexity upper bound for Alg. 1
+as θ∗ and hence is indistinguishable from θ∗ given the          that holds for any PE input sequence. For estimation,
+      High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+Algorithm 1 Sequential identification algorithm                             Corollary 3.6. Consider the same setup as in Theo-
+                                                                                              i.i.d.     γ2
+Require: S, epoch length τ , desired confidence δ                           rem 3.5. If u(t) ∼ N (0, nuu Inu ) then Alg. 1 yields an
+ 1: for k = 1, 2, . . . do
+                                                                                                               
+                                                                            estimate θ̂ satisfying P θ̂ ̸= θ∗ ≤ δ and with probabil-
+ 2:    Collect data using PE excitation input                               ity at least 1 − δ terminates at the latest when k first
+                −1
+              t=(k−1)τ with coefficients cuk (τ ), cw (τ )
+       {u(t)}kτ                                                             satisfies
+ 3:    Compute εθi (kτ ) for all i ∈ [0, N ]                                                  X  N           
+ 4:    if ∃θ̂ ∈ S : εθi (kτ ) − εθ̂ (kτ ) > 2 log Nδ for all
+                                                                                2
+                                                                            k γu min λmean           pi Wi (τ )                 (26)
+                                                                                  p∈∆N
+                                                                                                  i=1
+       θi ∈ S \ θ̂ then                                                                                                                     
+                                                                                           1                                          N
+ 5:        Stop and return estimate θ̂                                          + min        tr Sw (τ )⊤ QiInx Sw (τ )    ≥ c′ log               .
+                                                                                  i∈[1,N ] τ                                             δ
+
+                                                                            Further, if the optimal oracle excitation input U ∗ de-
+the algorithm evaluates the sum of weighted empirical                       fined in (21) is applied the estimate θ̂ satisfies P[θ̂ ̸=
+one-step prediction errors of θi up to time t defined as                    θ∗ ] ≤ δ, and with probability at least 1 − δ Alg. 1 ter-
+               t−1
+               X                                                            minates at the latest when k first satisfies
+  εθi (t) :=         ∥x(s + 1) − Ai x(s) − Bi u(s)∥2Σ−1 . (24)                              N
+                                                                 w                        X           
+               s=0                                                          k γu2 min λmax    pi Wi (τ )                                 (27)
+                                                                                  p∈∆N
+                                                                                                  i=1
+Clearly, εθi (t) can be interpreted as the negative log-                                                                           
+likelihood of system i given the data collected from                                      1                                     N
+                                                                                + min       tr Sw (τ )⊤ QiInx Sw (τ )   ≥ c′′ log     ,
+time 0 to t. Thus, the termination criterion of Alg. 1                           i∈[1,N ] τ                                        δ
+is equivalent to a log-likelihood test. While related
+                                                                            where c′ and c′′ are constants influenced by the variance
+works considering this setup (Chatzikiriakos and Ian-
+                                                                            in ε̃θi .
+nelli, 2024; Muehlebach et al., 2025) only analyze the
+case where the data is generated by Gaussian exci-                          After leveraging PE, Corollary 3.6 follows directly
+tations, the results in this work hold for any input                        from Theorem 3.5. We provide the proof and the
+satisfying PE. In particular, this allows us to system-                     full version in Appendix E.3. Note that since PE co-
+atically reason about how learning can be accelerated                       efficients (19),(22) coincide with the key parameters
+through particular choices of the excitation input. To                      entering the sample complexity lower bounds, the sam-
+formalize this, we propose the following result.                            ple complexity upper bounds depend on the same pa-
+Theorem 3.5. Consider the unknown system (1), set                           rameters as the lower bounds. Thus, the lower and
+S as definedhin (2).i Then Alg. 1 yields an estimate θ̂                     upper bounds qualitatively match, suggesting that they
+satisfying P θ̂ ̸= θ∗ ≤ δ and with probability at least                     capture the key quantities contributing to the sample
+                                                                            complexity. The epoch length τ can be used as a degree
+1 − δ terminates no later than when k satisfies
+                                                                            of freedom to optimize the sample complexity bound.
+                        k                                                 Comparing Corollaries 3.2 and 3.6, we see that, loosely
+                                                         N
+                                                                            speaking, whenever the matrices Wi are ill-conditioned,
+                        X
+         kcw (τ ) +           cuj (τ )γu2 ≥ c′ log               ,   (25)
+                        j=1
+                                                         δ                  input design can provide significant benefits in terms
+                                                                            of the sample complexity. On the other hand, when
+where c′ is a constant influenced by the variance in ε̃θi .                 all eigenvalues are identical, isotropic Gaussian excita-
+                                                                            tion is already optimal and cannot be improved upon
+The proof of Theorem 3.5 is presented in Appendix E.1,                      (cf. Example 3.1). Notably, the matrices Wi are of-
+where we also present the full version of the result. If                    ten ill-conditioned in settings where prior knowledge
+the input sequence in each epoch is PE, Theorem 3.5                         is available. Hence, in settings where the uncertainty
+guarantees that the risk of miss-specification decays                       only lies in certain directions, input design can yield
+exponentially in k. Further, Theorem 3.5 establishes a                      large benefits, which confirms intuition. If, however,
+modular framework to derive sample complexity upper                         the uncertainty is unstructured, the benefits of experi-
+bounds for different excitations. That is, to provide a                     ment design are significantly smaller since this yields
+sample complexity upper bound for Alg. 1 it is only                         matrices Wi which are well-conditioned.
+necessary to show the excitation satisfies Definition 2.
+Given the PE coefficients cuj (τ ), cw (τ ) the sample
+complexity upper bound follows immediately. Clearly,                        4    SEQUENTIAL INPUT DESIGN
+the level of PE of the excitation dictates the speed                             ALGORITHM
+of identification, where larger PE coefficients result in
+faster identification. For the input sequences analyzed                     In the previous section, we established that the matri-
+previously, the following result holds.                                     ces Wi (τ ) are the key quantities that determine the
+                              Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+Algorithm 2 Input design subroutine                            showing that Alg. 2 produces PE inputs.
+Require: S, epoch length τ , prediction errors εθi ((k −       Lemma 4.1. Consider the system (1), set S as de-
+             1)τ ), state x, scaling ρk ∈ [0, 1]               fined in (2). Consider the excitation input sequence
+ 1: Compute weights using exponential weighting                u∗k generated by Alg. 2 at some fixed iterate k and let
+    wk+1 (i) = exp (−ηεθi ((k − 1)τ ))                         P[θ̂k ̸= θ∗ ] ≤ pk ∈ [0, 1], where θ̂k is the estimate drawn
+ 2: Sample îk ∼ pk (i), where pk (i) =                        using exponential weights in round k. Then u∗k satisfies
+            PN
+    wk (i)/ j=0 wk (j)                                         PE with
+ 3: Set θ̂k = θîk and compute optimal input sequence
+    Uθ̂∗ (x) by solving (28)                                    cAlg                          opt          rand
+                                                                 uk (τ ) = (1 − pk )(1 − ρk )cu (τ ) + ρk cu    (τ ), (29a)
+        k
+ 4: Define excitation according to ρk : u∗k (t) =                                   1                           
+    √                                                            cw (τ ) = min tr Sw (τ )⊤ QiΣ−1 (τ )Sw (τ ) , (29b)
+                        √                 i.i.d.   γ2                      i∈[1,N ] τ              w
+       1 − ρk u∗θ̂ (t) + ρk uη (t), uη (t) ∼ N (0, nuu Inu )
+                  k
+    return excitation sequence u∗k                             where copt
+                                                                       u (τ ) is the PE coefficient for optimal excitation
+                                                               as defined in (22) and crand
+                                                                                         u   (τ ) is the PE coefficient for
+                                                               isotropic Gaussian excitations as defined in (19).
+degree of sub-optimality of random excitations com-
+pared to the optimal oracle excitation. However, since         The proof of Lemma 4.1 can be found in Appendix D.3.
+the optimal oracle excitation input depends on θ∗ it           Note that while it might seem intuitive that any convex
+cannot be computed in practice. This phenomenon                combination of two PE inputs is also PE this is not
+is well known in the literature of experiment design           necessarily true. Given the setup in Example     3.1 with
+and is usually tackled by using sequential algorithms          d = 1 it is easy  to  see  that   ⊤
+                                                                                                                , ∀t ≥ 0
+                                                                                                         
+                                                                                               u 1 (t) =  1  0
+to generate approximately optimal excitations. In line         and u⊤                  ,        are  both  PE.  However,
+                                                                                    
+                                                                     2 (t) =  −1    0    ∀t ≥ 0
+with these approaches, our proposed input design sub-          u(t) = 0.5(u1 (t) + u2 (t)) = 0 is clearly not PE. With
+routine, which is presented as Alg. 2, can be called           Lemma 4.1 we can directly obtain the following sample
+by Alg. 1 in each epoch and returns an excitation in-          complexity upper bound.
+put sequence. To derive the excitation, Alg. 2 draws
+                                                               Theorem 4.2. Consider Alg. 1 where the excitation
+an estimate θ̂k using exponential weights and solves
+                                                               input is derived hby Alg.i2. Then, the estimate θ̂ of
+the optimization (21) using certainty equivalence (CE),
+i.e., using θ̂k as if it were the true system. Thus, after     Alg. 1 satisfies P θ̂ ̸= θ∗ ≤ δ and terminates no later
+sampling θ̂k = (Âk , B̂k ) and defining ∆Âi := Âk − Ai      than when k satisfies
+and ∆B̂i := B̂k − Bi the optimization problem                                         k                               
+                                                                                      X                            N
+                                                                         kcw (τ ) +         cAlg        ′
+                                                                                             uj (τ ) ≥ c log               ,   (30)
+   Uθ̂∗ (x(kτ )) ∈ arg max min                          (28)                                                       δ
+      k                   2 τ θi ̸=θ̂k                                                j=1
+                  U ⊤ U ≤γu
+
+                hτ (k+1)−1
+                                                                      uj (τ ), cw (τ ) are defined in (29) and c is a
+                                                                                                                ′
+                     X                                 i       where cAlg
+               E           ∥∆Âi x(t) + ∆B̂i u(t)∥2Σ−1         constant influenced by the variance in ε̃θi .
+                                                    w
+                   t=kτ
+
+is solved to compute the excitation input. While this          The full version of Theorem 4.2 and its proof are pre-
+optimization problem uses knowledge of Σw , this is not        sented in Appendix E.4. In essence, Lemma 4.1 spec-
+required by our algorithm, and Alg. 2 still provides PE        ifies that whenever the uncertainty is small enough
+inputs even when only an upper bound or no knowledge           compared to the expected benefit in PE from the op-
+of Σw is available (cf. Remark 3.2). We note that the          timal excitation, CE will provably improve the PE
+optimization problem (28) is generally non-convex and,         coefficients compared to random Gaussian excitations.
+especially for N ≫ 0 might be challenging to solve.            Theorem 4.2 shows that experiment design using CE
+Since the focus of this work is statistical, we defer find-    provably improves the sample complexity of identifi-
+ing scalable approximations, as done by Chatzikiriakos         cation in these cases. Building on these arguments,
+et al. (2025) for a similar setting, to future research.       the following result shows that as δ → 0 the proposed
+Due to the uncertainty in the estimate, we add random          Algorithm exhibits a sample complexity upper bound
+excitations to the optimal excitation input (28) accord-       that matches the lower bound up to constants.
+ing to a scaling parameter ρk , which can be adapted           Theorem 4.3. Consider Alg. 1 where the excitation
+over time. We will analyze the choice of ρk and its            input is derived by Alg. 2, with η small enough. Let
+consequences on the speed of identification throughout         further ρ0 = c0 ∈ (0, 1), limk→∞ ρk = c∞ ∈ [0, c0 ],
+this section. Note that any ρk ∈ [0, 1] yields excitation      ρk−1 ≥ ρk ≥ (1 − ε)ρk−1 where ε is a small enough
+inputs satisfying Assumption 1. As shown above, es-            non-negative constant. Then for any δ ∈ (0, 1) there
+tablishing sample complexity upper bounds reduces to           exists a kδ , such that with probability 1 − δ Alg. 1
+      High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+terminates after at most kδ epochs with an estimate θ̂           when its benefits are significantly smaller.4 First, we
+that satisfies P[θ̂ ̸= θ∗ ] ≤ δ and                             consider an example where |S| is small and exhibits
+                                               N
+     c′ log Nδ                               X              
+                                                                 structure. In a second example, we consider the case
+ lim                ≤ γu2 (1 − c∞ ) min λmax      pi Wi (τ )
+ δ→0      kδ                       p∈∆N                          where S is larger and generated randomly. While in
+                                              i=1
+                  1                                            the first case, active learning provides significant bene-
+     + min tr Sw (τ )⊤ QiΣ−1 (τ )Sw (τ )                 (31)    fits in terms of identification speed, these benefits are
+         i∈[1,N ] τ                 w
+                                                                 significantly smaller in the second case.
+where c′ is a constant influenced by the variance in ε̃θi .      Active learning can be high gain: Consider the
+                                                                 set S = {(A∗ , B∗ ), (A1 , B∗ ), (A2 , B∗ ), (A3 , B∗ )} with
+The full version of Theorem 4.3 and its proof are pre-           B∗⊤ = 02×1 I2 and
+sented in Appendix F. This result shows that, Alg. 2
+recovers the sample complexity lower bound up to con-
+                                                                                                                     
+                                                                               0 0.1 0                     0 0 0.1
+stants as δ → 0 (cf. Theorem 3.1).                                      A∗ = 0 0         0  A1 = 0 0 0 
+Remark 4.1. Note that we need to resort to a blocking                          0 0 0.9                     0 0 0.9
+technique to show the result since the data is corre-                         
+                                                                               0 0 0.1
+                                                                                                      
+                                                                                                          0 0.1 0
+                                                                                                                        
+lated. This has two consequences. First, compared to                    A2 = 0 0 0  A3 = 0 0                       0 .
+Theorem 3.1 the upper bound depends on Wi (τ ) in-                             0 0 0.8                    0 0 0.8
+stead of Wi (T̄ ), where τ ≪ T̄ . For stable systems
+Wi (τ ) converges quickly as τ increases, i.e., we have          The noise covariance and input power are given by
+Wi (τ ) ≈ Wi (T̄ ) even for small τ . However, if the sys-       Σw = Inx and γu = 1, respectively. For the numerical
+tem (1) is unstable, Wi (τ ) can grow unbounded. Hence,          evaluation, we consider Alg. 1 where the excitation in-
+while the upper bound remains valid for unstable sys-            put is computed using Alg. 2 with ρk ≡ 0 and η = 0.01,
+tems, the gap to the lower bound is larger. Second, the          and compare it to the following data collection strate-
+sample complexity upper bound depends on the num-                gies used with Alg. 1: 1) Alg. 2 with oracle knowledge
+ber of epochs k instead of the total number of samples           (in each epoch (28) is solved using θ∗ ), 2) the optimiza-
+T = kτ . Since the epoch length τ is usually a small             tion criterion proposed by Wagenmaker and Jamieson
+                                                                                                           i.i.d.
+integer, this only introduces a small constant factor.           (2020) with oracle knowledge, 3) u(t) ∼ N (0, 21 Inu ),
+                                                                 and 4) optimal oracle excitation for the considered data
+Further, as shown by Proposition F.4, if ρk decreases
+                                                                 length (fully offline). We conduct 100 Monte Carlo sim-
+slow enough the PE-coefficient of Alg. 2, cAlg  uk (τ ), in-     ulations with 5 epochs and an epoch length of 15 time
+creases as k increases. Hence, Alg. 2 outperforms ran-
+                                                                 steps. In Figure 1a we display the mean and σ2 -band of
+dom excitations after a finite number of iterations and,
+                                                                 the likelihood of θ∗ given the data over the epochs for
+according to Proposition F.3, up to constants converges
+                                                                 the different data collection procedures. We investigate
+to the optimal PE coefficients. Note that while ε in
+                                                                 the likelihood since it is directly linked to the termina-
+Theorem 4.3 depends on oracle knowledge, any decrease
+                                                                 tion criterion of Alg. 1 and provides more insights than
+that is slower than exponential can be used in practice,
+                                                                 the termination times. It is easy to see that the opti-
+so that Theorem 4.3 guides the practical selection of ρk .
+                                                                 mal oracle excitation performs best. To see why this is
+In particular, by Theorem 4.3, even selecting a constant
+                                                                 the case, note that the uncertainty in S is structured
+ρk ∈ (0, 1) (e.g., ρk ≡ 12 ) will only impact the optimal-
+                                                                 and only affects particular directions in the state space.
+ity by a constant as δ → 0. We numerically evaluate
+                                                                 Hence, according to the theoretical insights presented in
+how different selections of ρk influence identification
+                                                                 the previous sections, this setting admits large benefits
+in Section 5. Interestingly, in our numerical studies,
+                                                                 of active learning. Consequently, isotropic Gaussian
+selecting ρk = 0, i.e., greedily using CE, yielded the
+                                                                 excitations perform significantly worse compared to
+best results.
+                                                                 all other input sequences. While the active learning
+Example 3.1 (continued). Recall that in Exam-                    criterion by Wagenmaker and Jamieson (2020), which
+ple 3.1 knowledge of the true system is not necessary            does not account for the finite hypothesis class, outper-
+to select the optimal excitation input sequence. This is         forms isotropic Gaussian excitations, it falls short of
+due to the structure in S, which yields greedy CE-based          the criterion presented in this work even when using
+experiment design optimal (see numerical evaluation in           oracle knowledge. This highlights the importance of
+Appendix H). Deriving properties of S causing this is            leveraging knowledge of the finite hypothesis class in
+an interesting topic for future research.                        input design, when it is available.
+                                                                   Experiment design can be low gain: Now we consider
+5    NUMERICAL EXPERIMENTS                                          4
+                                                                      All experiments are carried out in Python using a
+                                                                 standard notebook. The code for the numerical exam-
+In this section, we provide two numerical evaluations            ple can be accessed at: https://github.com/col-tasas/
+that showcase when active learning is beneficial and             2025-high-effort-low-gain
+                                        Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+                      1                                                                             1
+
+
+                     0.8                                                                           0.8
+
+
+
+
+  Likelihood of θ∗                                                              Likelihood of θ∗
+                     0.6                                                                           0.6
+
+
+                     0.4                                                                           0.4                         Alg. 2 with ρk ≡ 0
+                                            Alg. 2 with ρk ≡ 0                                                                 Alg. 2 with oracle
+                                            Alg. 2 with oracle                                                                 Wagenmaker with oracle
+                     0.2                    Wagenmaker with oracle                                 0.2
+                                                                                                                                     i.i.d.   γ2
+                                                                                                                               u(t) ∼ N (0, nuu Inu )
+                                                   i.i.d.    2
+                                                            γu                                                                        1
+                                            u(t) ∼ N (0, nu Inu )                                                              ρk = 1+k
+                                            Optimal oracle excitation                                                                   1
+                                                                                                                               ρk = (1+k) 2
+                      0
+                           0   1       2            3        4          5                                0       1       2           3        4         5
+                                           Epoch                                                                             Epoch
+
+                               (a) Structured set S.                                                         (b) Randomly generated set S.
+
+Figure 1: Mean and σ2 -band of the likelihood of θ∗ given the data for different excitation strategies and settings.
+
+
+a setup where the set S is generated randomly. To be                        even though Alg. 2 does not necessarily plan with the
+precise, we consider the case where S consists of 20 ad-                    correct system initially, the obtained data is still infor-
+ditional systems, where the parameters are drawn from                       mative, and in particular significantly more informative
+a Gaussian around the true parameters (A∗ , B∗ ). The                       than data that is collected using isotropic Gaussian
+true system matrices (A∗ , B∗ ) and all other problem                       excitations. Capturing this effect mathematically and
+parameters are the same as in the previous section, to                      understanding how it depends on the structure of the
+single out the effect structure in S has on the results.                    set S is an interesting direction for future research.
+We again compare Alg. 2 with ρk ≡ 0 to 1) Alg. 2 with
+oracle knowledge (in each epoch (28) is solved using                        6                  CONCLUSION
+θ∗ ), 2) the optimization criterion proposed by Wagen-
+maker and Jamieson (2020) with oracle knowledge, and                        In this work, we analyze the problem of identifying
+         i.i.d.                                                             an unknown linear dynamical system from a finite hy-
+3) u(t) ∼ N (0, 12 Inu ). Further, we consider different                    pothesis class. We present sample complexity lower
+time-varying choices of the weighting parameter ρk ,                        bounds for isotropic Gaussian and arbitrary excitation,
+namely ρk = 1+k 1
+                   and ρk = (1+k)
+                                1
+                                  2 . The resulting mean
+                                                                            which can be used to determine the instance-specific
+and 2 -band of the likelihood of θ∗ given the data over
+      σ
+                                                                            benefit of experiment design. We introduce a tailored
+100 Monte Carlo simulations are displayed in Figure 1b.                     notion of PE, which gives rise to a modular framework
+Again, isotropic Gaussian excitations perform worse                         to establish sample complexity upper bounds for any
+than all excitation sequences generated by Alg. 2. No-                      excitation input that satisfies PE. Based on our find-
+tice, however, that compared to the previous setting,                       ings, we propose a CE-based algorithm for experiment
+the gap is significantly smaller. This is due to the fact                   design and derive matching sample complexity upper
+that the set S consists of randomly generated systems.                      bounds. Our analysis enables a quantitative assessment
+Hence, the set exhibits less structure, and uniform ex-                     of the benefits provided by input design algorithms and
+ploration is closer to optimal. This is in accordance                       identifies settings in which these benefits are limited,
+with our theoretical results and indicates that there ex-                   especially compared to the often considerable imple-
+ist non-trivial cases where experiment design provides                      mentation complexity and computational effort of the
+only a small benefit over isotropic random excitations.                     underlying optimization problems. Numerical studies
+The criterion presented in Wagenmaker and Jamieson                          showcase that the proposed algorithm is highly compet-
+(2020) performs similarly to random excitations and                         itive and achieves a performance close to the optimal
+worse than our approach for all considered choices of ρk .                  oracle excitation. We see extensions to systems with
+Interestingly, in all our numerical evaluations, Alg. 2                     partially observed states, where the decay rate of the
+with ρk ≡ 0 performs on par with the online oracle ap-                      Markov parameters impacts the optimal excitation,
+proach, even though it lacks the knowledge of the true                      and investigations of the case where the true system
+system and relies on CE. In particular, this choice out-                    does not lie in S as interesting extensions for future
+performed all other selections of ρk . This means that,                     research.
+     High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+Acknowledgments                                            Jedra, Y. and Proutiere, A. (2022). Finite-time identi-
+                                                             fication of linear systems: Fundamental limits and
+Nicolas Chatzikiriakos and Andrea Iannelli acknowl-          optimal algorithms. IEEE Transactions on Auto-
+edge the support by Deutsche Forschungsgemeinschaft          matic Control.
+(DFG, German Research Foundation) under Germany’s
+Excellence Strategy - EXC 2075 – 390740016 and by the      Johnson, J. and Omland, K. (2004). Model selection
+Stuttgart Center for Simulation Science (SimTech).           in ecology and evolution. Trends in Ecology & Evo-
+                                                             lution, 19(2):101–108.
+References                                                 Kiefer, J. (1974). General equivalence theory for opti-
+                                                             mum designs (approximate theory). The Annals of
+Abbasi-Yadkori, Y., P., D., and Szepesvári, C. (2011).
+                                                             Statistics, 2(5):849–879.
+ Improved algorithms for linear stochastic bandits. In
+ Advances in Neural Information Processing Systems,        Kiefer, J. and Wolfowitz, J. (1960). The equivalence
+ volume 24.                                                  of two extremum problems. Canadian Journal of
+Bombois, X., Gevers, M., Hildebrand, R., and Solari,         Mathematics, 12:363–366.
+  G. (2011). Optimal experiment design for open and        Lattimore, T. and Szepesvári, C. (2020). Bandit algo-
+  closed-loop system identification. Commun. in In-          rithms. Cambridge University Press.
+  formation and Systems, 11(3):197–224.
+                                                           Lee, B. D., Ziemann, I., Pappas, G. J., and Matni, N.
+Chatzikiriakos, N. and Iannelli, A. (2024). Sample           (2024). Active learning for control-oriented identifi-
+ complexity bounds for linear system identification          cation of nonlinear systems. In IEEE 63rd Conf. on
+ from a finite set. IEEE Control Systems Letters,            Decision and Control (CDC).
+ 8:2751–2756.
+                                                           Mania, H., Jordan, M. I., and Recht, B. (2022). Active
+Chatzikiriakos, N., Song, B., Rank, P., and Iannelli,       learning for nonlinear system identification with guar-
+ A. (2025). Hidden convexity in active learning: A          antees. J. of Machine Learning Research, 23(32):1–
+ convexified online input design for arx systems. In        30.
+ IEEE 64th Conf. on Decision and Control (CDC),
+ pages 63–68.                                              Miljković, D. (2011). Fault detection methods: A liter-
+                                                            ature survey. In 2011 Proceedings of the 34th inter-
+Chernoff, H. (1959). Sequential Design of Experiments.      national convention MIPRO, pages 750–755. IEEE.
+ The Annals of Mathematical Statistics, 30(3):755 –
+ 770.                                                      Muehlebach, M., He, Z., and Jordan, M. I. (2025). The
+                                                            sample complexity of online reinforcement learning:
+Dean, S., Mania, H., Matni, N., Recht, B., and Tu,          A multi-model perspective. arXiv:2501.15910.
+ S. (2020). On the sample complexity of the linear
+ quadratic regulator. Foundations of Computational         Rigollet, P. and Hütter, J.-C. (2023). High-dimensional
+ Mathematics, 20(4):633–679.                                 statistics. arXiv:2310.19244.
+Foster, D., Sarkar, T., and Rakhlin, A. (2020). Learning   Rojas, C. R., Welsh, J. S., Goodwin, G. C., and Feuer,
+  nonlinear dynamical systems from a single trajectory.     A. (2007). Robust optimal experiment design for
+  In Proceedings of the 2nd Conf. on Learning for            system identification. Automatica, 43(6):993–1008.
+  Dynamics and Control, volume 120, pages 851–861.         Sarkar, T. and Rakhlin, A. (2019). Near optimal finite
+  PMLR.                                                      time identification of arbitrary linear dynamical sys-
+Garivier, A., Ménard, P., and Stoltz, G. (2019). Explore     tems. In International Conf. on Machine Learning,
+ first, exploit next: The true shape of regret in ban-       pages 5610–5618. PMLR.
+ dit problems. Mathematics of Operations Research,         Sattar, Y. and Oymak, S. (2022). Non-asymptotic and
+ 44(2):377–399.                                              accurate learning of nonlinear dynamical systems.
+Gerencsér, L. and Hjalmarsson, H. (2005). Adaptive           Journal of Machine Learning Research, 23(140):1–
+ input design in system identification. In 44th IEEE         49.
+ Conf. on Decision and Control, pages 4988–4993.           Sattar, Y., Oymak, S., and Ozay, N. (2022). Finite
+Goodwin, G. and Payne, R. (1977). Dynamic System             sample identification of bilinear dynamical systems.
+ Identification: Experiment Design and Data Analysis.        In IEEE 61st Conf. on Decision and Control (CDC),
+ Mathematics in Science and Engineering. Academic            pages 6705–6711.
+ Press.                                                    Simchowitz, M., Mania, H., Tu, S., Jordan, M. I., and
+Jedra, Y. and Proutiere, A. (2019). Sample complexity        Recht, B. (2018). Learning without mixing: Towards
+  lower bounds for linear system identification. In          a sharp analysis of linear system identification. In
+  IEEE 58th Conf. on Decision and Control (CDC).             Conf. On Learning Theory, pages 439–473. PMLR.
+                          Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+Tsiamis, A. and Pappas, G. J. (2021). Linear systems           (d) A description of the computing infrastructure
+  can be hard to learn. In 60th IEEE Conf. on Decision             used. (e.g., type of GPUs, internal cluster, or
+  and Control (CDC). IEEE.                                         cloud provider). [Yes]
+Tsiamis, A., Ziemann, I., Matni, N., and Pappas, G. J.      4. If you are using existing assets (e.g., code, data,
+  (2023). Statistical learning theory for control: A           models) or curating/releasing new assets, check if
+  finite-sample perspective. IEEE Control Systems,             you include:
+  43(6):67–97.
+                                                               (a) Citations of the creator If your work uses
+Wagenmaker, A. and Jamieson, K. (2020). Active learn-
+                                                                   existing assets. [Yes]
+ ing for identification of linear dynamical systems. In
+ Conf. on Learning Theory, pages 3487–3582. PMLR.              (b) The license information of the assets, if appli-
+                                                                   cable. [Not Applicable]
+Wagenmaker, A. J., Simchowitz, M., and Jamieson, K.
+                                                               (c) New assets either in the supplemental material
+ (2021). Task-optimal exploration in linear dynamical
+                                                                   or as a URL, if applicable. [Not Applicable]
+ systems. In 38th International Conf. on Machine
+ Learning, pages 10641–10652. PMLR.                            (d) Information about consent from data
+                                                                   providers/curators. Not Applicable]
+Wainwright, M. J. (2019). High-dimensional statistics:
+                                                               (e) Discussion of sensible content if applicable,
+ A non-asymptotic viewpoint, volume 48. Cambridge
+                                                                   e.g., personally identifiable information or of-
+ university press.
+                                                                   fensive content. [Not Applicable]
+                                                            5. If you used crowdsourcing or conducted research
+Checklist                                                      with human subjects, check if you include:
+
+ 1. For all models and algorithms presented, check if          (a) The full text of instructions given to partici-
+    you include:                                                   pants and screenshots. [Not Applicable]
+                                                               (b) Descriptions of potential participant risks,
+     (a) A clear description of the mathematical set-
+                                                                   with links to Institutional Review Board (IRB)
+         ting, assumptions, algorithm, and/or model.
+                                                                   approvals if applicable. [Not Applicable]
+         [Yes]
+                                                               (c) The estimated hourly wage paid to partici-
+     (b) An analysis of the properties and complexity
+                                                                   pants and the total amount spent on partici-
+         (time, space, sample size) of any algorithm.
+                                                                   pant compensation. [Not Applicable]
+         [Yes]
+     (c) (Optional) Anonymized source code, with
+         specification of all dependencies, including
+         external libraries. [No, will be included in
+         final submission]
+ 2. For any theoretical claim, check if you include:
+     (a) Statements of the full set of assumptions of
+         all theoretical results. [Yes]
+     (b) Complete proofs of all theoretical results.
+         [Yes]
+     (c) Clear explanations of any assumptions. [Yes]
+ 3. For all figures and tables that present empirical
+    results, check if you include:
+     (a) The code, data, and instructions needed to re-
+         produce the main experimental results (either
+         in the supplemental material or as a URL).
+         [No, will be included in final submission]
+     (b) All the training details (e.g., data splits, hy-
+         perparameters, how they were chosen). [Yes]
+     (c) A clear definition of the specific measure or
+         statistics and error bars (e.g., with respect to
+         the random seed after running experiments
+         multiple times). [Yes]
+Contents
+
+1 INTRODUCTION                                                                                                          1
+
+2 PRELIMINARIES                                                                                                         2
+
+3 CAN ACTIVE LEARNING ENHANCE IDENTIFICATION?                                                                           3
+  3.1   Sample complexity lower bounds . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .          4
+  3.2   Sample complexity upper bounds . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .          5
+        3.2.1   Persistency of excitation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .     5
+        3.2.2   High probability identification with finite samples      . . . . . . . . . . . . . . . . . . . . . .    5
+
+4 SEQUENTIAL INPUT DESIGN ALGORITHM                                                                                     6
+
+5 NUMERICAL EXPERIMENTS                                                                                                 8
+
+6 CONCLUSION                                                                                                            9
+
+A Related Works                                                                                                        13
+
+B Proofs for sample complexity lower bounds                                                                            13
+  B.1 Proof of Theorem 3.1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       14
+  B.2 Proof of Corollary 3.2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       15
+
+C Existence of the optimal solution to (11)                                                                            15
+
+D Proving PE for different excitations                                                                                 16
+  D.1 Proof of Lemma 3.3 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         16
+  D.2 Proof of Lemma 3.4 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         16
+  D.3 Proof of Lemma 4.1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         16
+
+E Proofs for sample complexity upper bounds                                                                            17
+  E.1 Proof of Theorem 3.5 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .       18
+  E.2 Intermediate results used in the proof of Theorem 3.5 . . . . . . . . . . . . . . . . . . . . . . . .            19
+  E.3 Sample complexity Upper bounds for isotropic Gaussian and oracle excitations . . . . . . . . . .                 22
+  E.4 Sample complexity upper bound for Algorithm 2 . . . . . . . . . . . . . . . . . . . . . . . . . . .              23
+
+F Asymptotic optimality of Algorithm 2                                                                                 23
+  F.1 Intermediate Results for the Proof of Theorem F.1 . . . . . . . . . . . . . . . . . . . . . . . . . .            24
+
+G Auxiliary results                                                                                                    26
+
+H Numerical evaluation of Example 3.1                                                                                  28
+                           Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+A    Related Works
+
+Finite Sample System Identification Novel results in high-dimensional statistics (Abbasi-Yadkori et al.,
+2011; Wainwright, 2019) have sparked an increased interest in the finite sample analysis of system identification.
+Hereby, the sample complexity of identification is of particular importance and has been analyzed mostly for
+random excitations and for an infinite hypothesis class using the closed-form solution of the ordinary least squares
+estimator (OLS) estimator. Since the data collected from dynamical systems is highly correlated, the first work
+by Dean et al. (2020) only provided sample complexity upper bounds for the case where the data was collected
+from multiple trajectories. Subsequent works were able to overcome this restrictive assumption and provided
+sample complexity upper bounds for marginally stable (Simchowitz et al., 2018) and also unstable linear dynamical
+systems (Sarkar and Rakhlin, 2019) for trajectory data. Hereby, it has been shown that the OLS is statistically
+inconsistent when the data is collected from certain classes of unstable systems. Additional works extended
+these works to certain classes of nonlinear dynamical systems such as bilinear systems (Sattar et al., 2022)
+generalized linear systems (Foster et al., 2020; Sattar and Oymak, 2022). While sample complexity upper bounds
+are valuable since they establish identification error guarantees, sample complexity lower bounds are important to
+understand the hardness of the identification problem and to judge the tightness of the upper bounds. Building
+on information theoretic tools, Jedra and Proutiere (2022) provide sample complexity lower bounds that hold
+independently of the used algorithm. Tsiamis and Pappas (2021) used similar tools to understand when learning
+is hard with isotropic Gaussian excitations. All previous works consider the case where the hypothesis class is
+infinite. However, in many applications, there might exist some prior knowledge restricting the hypothesis class
+to be finite, i.e., there exists a finite set of systems the true system belongs to. This setup has been previously
+considered by Chatzikiriakos and Iannelli (2024); Muehlebach et al. (2025), who observed that the lack of stability
+of the true system does not influence learning negatively, as is the case for the infinite hypothesis class. While the
+previously mentioned works consider several system classes and setups, they all assume the data is collected using
+(sub-)Gaussian inputs, which might be suboptimal in many cases.
+Experiment Design: The design of optimal experiments has a long history in learning theory (Chernoff, 1959;
+Kiefer, 1974; Kiefer and Wolfowitz, 1960) where a large body of works exists concerning the question of how data
+should be sampled to obtain the most accurate estimate of an unknown quantity. One particular field of interest
+for experiment design is the identification of unknown dynamical systems, where, compared to the classical setup
+in learning theory, the data cannot be sampled arbitrarily but rather the unknown dynamical system governs the
+way the data can be collected (cf. Bombois et al. (2011); Goodwin and Payne (1977) for surveys on the topic).
+One key difficulty introduced by the dynamics of the unknown system is that the Fisher-information matrix
+naturally depends on the unknown system parameters. To tackle this problem, several algorithms have been
+proposed which can be broadly categorized into robust approaches that optimize for the worst-case using minmax
+objectives (cf. Rojas et al. (2007) and the references therein) and sequential approaches that rely on a running
+estimate Gerencsér and Hjalmarsson (2005). While classical works only consider the asymptotic case, recently
+several works have considered the problem of experiment design for the identification of an unknown dynamical
+system under a finite sample perspective. In particular, Wagenmaker and Jamieson (2020); Wagenmaker et al.
+(2021) consider LTI systems and provide finite sample guarantees by leveraging sequential algorithms. Further,
+Chatzikiriakos et al. (2025) provide an exact convex reformulation of the design criterion presented by Wagenmaker
+and Jamieson (2020), enabling the efficient application of the algorithm. The proposed algorithm optimizes over
+periodic excitation signals using the CE principle and augments the input with exploratory noise. Extending
+previous works Lee et al. (2024); Mania et al. (2022) consider certain classes of non-linear systems and provide
+finite sample guarantees for them. While optimality of the proposed experiment design algorithms is considered
+in the respective works, they do not analyze how large the benefit of experiment design is compared isotropic
+Gaussian excitations. Furthermore, the input space is restricted to periodic inputs, which, although shown to be
+sufficient by Wagenmaker and Jamieson (2020), is restrictive.
+
+
+B    Proofs for sample complexity lower bounds
+
+Before we proceed with presenting the proofs of the sample complexity lower bound results in Section 3.1 we
+first provide the following input-dependent sample complexity result, which serves as the starting point for the
+subsequent results and is akin to (Jedra and Proutiere, 2019, Theorem 2) which considers the case of an infinite
+hypothesis class instead of the finite hypothesis class considered in this work.
+      High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+Theorem B.1 (Input-dependent sample complexity lower bound). Consider the unknown dynamical system (1)
+and the hypothesis class S as defined in (2). Then any δ-correct algorithm satisfies
+                                                                 
+                                   T̄ −1                                        
+                                   X                                         1
+                               E                             2
+                                         ∥∆Ai x(t) + ∆Bi u(t)∥Σ−1 ≥ 2 log
+                                                                                                 (32)
+                                    t=0
+                                                                w           2.4δ
+
+                                           −1
+for any excitation input sequence {u(t)}T̄t=0 .
+
+Proof. Define the data as DT̄ := {x(0), u(0), . . . , u(T̄ − 1), x(T̄ )} and the probability of the observing DT̄ under
+system θi as Pθi (DT̄ ). Then,
+                            we define
+                                        the log-likelihood ratio of the first T̄ observations under θ∗ and some
+                                 (D )
+θi ∈ S \ {θ∗ } as LT̄ = log Pθθ∗ (D T̄ ) . Following the change of measurement argument presented by Jedra and
+                             P
+                               i   T̄
+Proutiere (2019), we use the generalized data processing inequality (Garivier et al., 2019, Lemma 1) to obtain the
+lower bound
+
+                                          E [LT̄ ] = KL(Pθ∗ (DT̄ )∥Pθi (DT̄ ))
+                                                   ≥ sup kl(Pθ∗ (E)∥Pθi (E)),
+                                                    E∈FT̄
+
+
+where kl(x∥y) is the KL-divergence of two Bernoulli distributions of means x and y, respectively. Since we analyze
+δ-correct algorithms we define the event E := {θ̂T̄ = θ∗ } which yields Pθ∗ (E) ≥ 1 − δ and Pθi (E) ≤ δ and hence
+                                                                                  
+                                                                 1−δ             1
+                            kl(Pθ∗ (E)∥Pθi (E)) ≥ (2δ − 1) log          ≥ log          .                      (33)
+                                                                  δ             2.4δ
+
+Further, we follow (Jedra and Proutiere, 2019, Section IV.A) to obtain
+                                                                                            
+                                    T̄ −1
+                                                         ∆A⊤
+                                                                                         
+                                1 X                                                 x(t)
+                                               ⊤      ⊤
+                                                                  Σ−1 ∆Ai
+                                                              i
+                                                                        
+                      E [LT̄ ] = E         x(t)   u(t)                           ∆Bi
+                                                          ∆Bi⊤ w
+                                                                                             
+                                2                                                      u(t)
+                                     t=0
+                                                                   
+                                    T̄ −1
+                                1 X
+                               = E        ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1  ,
+                                2    t=0
+                                                                 w
+
+
+
+
+which concludes the proof.
+
+B.1    Proof of Theorem 3.1
+
+The first statement of the theorem follows directly from the derivations in Section 2. To derive the optimal
+excitation input we leverage that by Theorem B.1 for any δ-correct algorithm it holds that
+                                                         
+                           T̄ −1                                        
+                            X                                        1
+                        E                            2
+                                 ∥∆Ai x(t) + ∆Bi u(t)∥Σ−1 ≥ 2 log
+                                                                          ∀i ∈ [1, N ],                 (34)
+                            t=0
+                                                        w           2.4δ
+
+where x(t) is generated by (1). Since (34) needs to hold for all i ∈ [1, N ] is follows immediately that it suffices to
+consider                                                            
+                                      T̄ −1                                             
+                                      X                                              1
+                            min E                               2
+                                            ∥∆Ai x(t) + ∆Bi u(t)∥Σ−1 ≥ 2 log
+                                                                                          .                       (35)
+                           i∈[1,N ]
+                                      s=0
+                                                                   w                2.4δ
+                                                                                   PT̄ −1
+Since we seek a result that holds for all possible input sequences that satisfy T̄1 t=0 u(t)⊤ u(t) ≤ γu2 we maximize
+the l.h.s. of (42) over all admissible input sequences. This yields
+                                             " t−1                          #               
+                                              X                                           1
+                            max      min E                              2
+                                                   ∥∆Ai x(t) + ∆Bi u(t)∥Σ−1 ≥ 2 log            .                (36)
+                        U ⊤ U ≤γu
+                                2 T i∈[1,N ]
+                                              s=0
+                                                                          w             2.4δ
+                             Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+Now, using Lemma G.1 with ρ = 0 and M = Σ−1
+                                          w we can equivalently rewrite the l.h.s. of (36) as
+                                                                                     
+                          max    min U ⊤ Wi (T̄ )U + tr Sw (T̄ )⊤ QiΣ−1 (T̄ )Sw (T̄ )                                    (37)
+                               U ⊤ U ≤γu
+                                       2 T̄ i∈[1,N ]                                         w
+
+
+
+and U ∗ is the corresponding optimizer. For the last result, consider that
+                                                                              
+                max        min U ⊤ Wi (T̄ )U + tr Sw (T̄ )⊤ QiΣ−1 (T̄ )Sw (T̄ )                                          (38)
+             U ⊤ U ≤γu
+                     2 T̄ i∈[1,N ]                             w
+                                                                                               
+                          ≤ max        min U ⊤ Wi (T̄ )U + max tr Sw (T̄ )⊤ QjΣ−1 (T̄ )Sw (T̄ )                          (39)
+                            U ⊤ U ≤γu
+                                    2 T̄ i∈[1,N ]                      j∈[1,N ]                  w
+
+                                                         N
+                                                                          !
+                                                         X                                                        
+                        =      max       min U      ⊤
+                                                               pi Wi (T̄ ) U + max tr Sw (T̄ )⊤ QjΣ−1 (T̄ )Sw (T̄ )      (40)
+                            U ⊤ U ≤γu
+                                    2 T p∈∆N                                      j∈[1,N ]                w
+                                                         i=1
+                                                         N
+                                                                          !
+                                                         X                                                        
+                        = min         max       U   ⊤
+                                                               pi Wi (T̄ ) U + max tr Sw (T̄ )⊤ QjΣ−1 (T̄ )Sw (T̄ ) .    (41)
+                            p∈∆N U ⊤ U ≤γu
+                                         2T                                       j∈[1,N ]                w
+                                                         i=1
+                                             P                    
+                                                    N
+Selecting U ∗ in the direction of vmax              i=1 pi Wi (T̄ )    yields the result.
+
+B.2    Proof of Corollary 3.2
+
+By Theorem B.1 for any δ-correct algorithm it holds that
+                                                        
+                         T̄ −1                                           
+                          X                                           1
+                      E       ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1  ≥ 2 log                               ∀i ∈ [1, N ],           (42)
+                          t=0
+                                                      w              2.4δ
+
+                                                                                                              γ2
+where x(t) is generated by (1). Applying Lemma G.1 with ρ = 1, M = Σ−1          w and σu = nu we obtain that for any
+                                                                                        2     u
+
+
+δ-correct algorithm
+
+                    γu2
+                                                                                     
+                                                                                1
+                        tr Wi (T̄ ) + tr Sw (T̄ )⊤ QiΣ−1 (T̄ )Sw (T̄ ) ≥ 2 log                                       (43)
+                                   
+                                                                                        ∀i ∈ [1, N ].
+                   nu                                  w                         2.4δ
+
+After noting that nu1T̄ tr Wi (T̄ ) = λmean (Wi (T̄ )) the result follows immediately after realizing that it suffices to
+                                   
+
+consider the minimum of the l.h.s. of (43).
+
+C     Existence of the optimal solution to (11)
+
+For clarity of exposition for each i ∈ [1, N ] we define
+
+                             Wi := RΣ i                    ⊤ i                     i
+                                        −1 (T̄ ) + Su (T̄ ) Q −1 (T̄ )Su (T̄ ) + 2N −1 (T̄ )Su (T̄ ),
+                                                             Σw                    Σw
+                                                                                                                         (44)
+                                       w                           
+                              ci := tr Sw (T̄ )⊤ QiΣ−1 (T̄ )Sw (T̄ ) ,                                                   (45)
+                                                           w
+
+
+where Wi ⪰ 0 and ci ≥ 0, for all i ∈ [1, N ]. To show that the optimal solution to (11) exits we consider the
+equivalent optimization problem
+
+                                         min        −ξ                                                                  (46a)
+                                          U,ξ
+
+                                         s.t.       U ⊤ U − γu2 T̄ ≤ 0                                                  (46b)
+                                                           ⊤
+                                                    ξ − U Wi U − ci ≤ 0              ∀i ∈ [1, N ],                      (46c)
+                                                    −ξ ≤0                                                               (46d)
+
+where ξ is a slack variable. Now we can leverage the following theorem due to Weierstrass.
+Theorem C.1. Consider the constrained optimization problem minx∈X f (x). If the objective function f is
+continuous and the feasible region X is closed and bounded, then there exists a global optimum.
+      High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+Clearly f (ξ, U ) = −ξ is continuous. Further, the set of feasible input sequences U is closed and bounded by (46b).
+The feasible region of ξ is defined by the constraints (46c). Clearly, for a given T̄ under (46b) ξ is upper bounded
+by a finite, non-negative value. Combining this with (46d) the feasible region of ξ is bounded and closed, from
+which we can conclude that the optimal solution to (46) and hence also of (11) exists.
+
+D     Proving PE for different excitations
+
+In this section we present all proofs related to PE in the same order the results are presented in the main part of
+the paper.
+
+D.1    Proof of Lemma 3.3
+
+Proof. Applying Lemma G.1 with ρ = 1 and M = Σ−1
+                                              x for any i ∈ [1, N ] yields
+                τ
+             1X h                         2
+                                              i    γu2                 1          ⊤ i
+                                                                                                     
+                   E ∥∆Ai x(t) + ∆Bi u(t)∥Σ−1   ≥      tr (W i (τ )) +   tr Sw (τ ) QΣw−1 (τ )Sw (τ )  .
+             τ t=0                          w
+                                                  nu τ                 τ
+
+Since we require a lower bound that hold uniformly over i ∈ [1, N ] we consider
+                           γu2                   1                                
+                   min          tr (Wi (τ )) + tr Sw (τ )⊤ QiΣ−1 (τ )Sw (τ )                                     (47)
+                 i∈[1,N ] nu τ                   τ                   w
+
+                                         2
+                                        γu                            1                    
+                          ≥ min             tr (Wi (τ )) + min tr Sw (τ )⊤ QjΣ−1 (τ )Sw (τ )                     (48)
+                              i∈[1,N ] nu τ                  j∈[1,N ] τ              w
+
+                                                  N
+                                                               !
+                                       γ2       X                              1                   
+                          = min u tr                 pi Wi (τ ) + min tr Sw (τ )⊤ QjΣ−1 (τ )Sw (τ )              (49)
+                              p∈∆N nu τ                               j∈[1,N ] τ       w
+                                                 i=1
+                                                 N
+                                                               !
+                                                X                                1                    
+                          = min λmean                pi Wi (τ ) γu2 + min tr Sw (τ )⊤ QjΣ−1 (τ )Sw (τ ) .        (50)
+                              p∈∆N                                      j∈[1,N ] τ       w
+                                                i=1
+
+Comparing terms with (18) yields the result.
+
+D.2    Proof of Lemma 3.4
+
+                                              w for any i ∈ [1, N ] yields
+Proof. Applying Lemma G.1 with ρ = 0 and M = Σ−1
+                    τ
+                    X −1    h                       i
+                                                  2
+                           E ∥∆Ai x(t) + ∆Bi u(t)∥M = U ⊤ Wi (τ )U + 2U ⊤ mi (x(0))
+                    t=0
+                                                                                                                 (51)
+                                                                                     ⊤
+                                                                                         QiM (τ )Sw (τ )
+                                                                                                           
+                                                          + ci (x(0)) + tr Sw (τ )
+
+for any U ∈ Rnu τ . Thus, defining c̄i = tr Sw (τ )⊤ QiM (τ )Sw (τ ) by our choice of the excitation input we obtain
+                                                                    
+
+                           max     min U ⊤ Wi (τ )U + 2U ⊤ mi (x0 ) + ci (x(0)) + c̄i                            (52)
+                      U ⊤ U ≤γu
+                              2 τ i∈[1,N ]
+
+
+                                                     ≥     max        min U ⊤ Wi (τ )U + c̄i                     (53)
+                                                         U ⊤ U ≤γu
+                                                                 2 τ i∈[1,N ]
+
+
+                                                     ≥     max        min U ⊤ Wi (τ )U + min c̄j ,               (54)
+                                                         U ⊤ U ≤γu
+                                                                 2 τ i∈[1,N ]               j∈[1,N ]
+
+where the first inequality holds since ci (x(0)) is non-negative by definition and U ⊤ mi (x0 ) is non-negative when
+U is selected to maximize the expression. Similar to the proof of Theorem 3.1, solving the optimization yields the
+result.
+
+D.3    Proof of Lemma 4.1
+
+This proof is carried out for the case k = 0 without loss of generality. To obtain the result we analyze the expected
+excitation of the optimal control input based on true system and the expected excitation of a suboptimal control
+                                      Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+input based on a faulty estimate separately. We start with
+               τ
+               X −1                                                                     τ
+                                                                                        X −1
+                      E[∥∆Ai x(t) + ∆Bi u∗k (t)∥2Σ−1 ] = P[θ̂0 = θ∗ ]                          E[∥∆Ai x(t) + ∆Bi u∗θ∗ (t)∥2Σ−1 ]
+                                                                   w                                                            w
+               t=0                                                                      t=0
+                                                                                                                                         (55)
+                                                                                             τ
+                                                                                             X −1
+                                                                           + P[θ̂0 ̸= θ∗ ]          E[∥∆Ai x(t) + ∆Bi u∗θ̄ (t)∥2Σ−1 ].
+                                                                                                                                 w
+                                                                                             t=0
+
+The first terms in (55) represents the excitation due to the optimal input sequence and hence after applying
+Lemma G.1 with ν = ρ0 and M = Σ−1    w we obtain
+
+              τ −1       h                                  i                          
+              X                                          2
+                     E           ∆Ai x(t) + ∆Bi u∗θ∗ (t) Σ−1 ≥ tr Sw (τ )⊤ QiΣ−1 Sw (τ )
+                                                                       w                            w
+              t=0                                                                                                                        (56)
+                                                                                                               ρ0 γu2
+                                                                             + (1 − ρ0 )(Uθ∗∗ )⊤ Wi (τ )Uθ∗∗ +        tr (Wi (τ )) .
+                                                                                                                nu
+To tackle the second term in (55) we follow the same steps to obtain
+               τ −1          h                               i                          
+               X                                          2
+                      E           ∆Ai x(t) + ∆Bi u∗θ̄ (t) Σ−1 ≥ tr Sw (τ )⊤ QiΣ−1 Sw (τ )
+                                                                       w                            w
+                t=0                                                                                                                      (57)
+                                                                                                               ρ0 γu2
+                                                                             + (1 − ρ0 )(Uθ̄∗ )⊤ Wi (τ )Uθ̄∗ +        tr (Wi (τ )) .
+                                                                                                                nu
+Plugging (56) and (57) into (55) and collecting terms we obtain
+               τ
+               X −1
+                      E[∥∆Ai x(t) + ∆Bi u∗k (t)∥2Σ−1 ]
+                                                                   w
+               t=1
+                                                            ρ γ2
+                                                               0 u
+                                                                                                                                         (58)
+                                 ≥ tr Sw (τ )⊤ QiΣ−1 Sw (τ ) +     tr (Wi (τ ))
+                                                  w            nu
+                                     + P[θ̂0 = θ∗ ](1 − ρ0 )(Uθ∗∗ )⊤ Wi (τ )Uθ∗∗ + P[θ̂0 ̸= θ∗ ](1 − ρ0 )(Uθ̄∗ )⊤ Wi (τ )Uθ̄∗ .
+
+The last term in (58) is non-negative. Hence, we obtain that
+              τ
+              X −1
+                     E[∥∆Ai x(t) + ∆Bi u∗k (t)∥2Σ−1 ]
+                                                               w
+              t=1                                                                                                                        (59)
+                                 
+                                           ⊤
+                                                                    ρ0 γu2
+                      ≥ tr Sw (τ )             QiΣ−1 Sw (τ )       +        tr (Wi (τ )) + (1 − p0 )(1 − ρ0 )(Uθ∗∗ )⊤ Wi (τ )Uθ∗∗ ,
+                                                  w                   nu
+
+where we used that P[θ̂0 = θ∗ ] ≥ 1 − p0 . Dividing by τ > 0 yields
+             τ −1
+           1X
+                  E[∥∆Ai x(t) + ∆Bi u∗k (t)∥2Σ−1 ]
+           τ t=1                              w
+
+
+               1                           ρ0 γu2                                   1                                                  (60)
+           ≥ tr Sw (τ )⊤ QiΣ−1 Sw (τ ) +            tr (Wi (τ )) + (1 − p0 )(1 − ρ0 ) (Uθ∗∗ )⊤ Wi (τ )Uθ∗∗
+              τ                w              τ nu                                    τ
+                       1                        ρ γ2                                       1
+                                                        0 u
+           ≥ min tr Sw (τ )⊤ QiΣ−1 Sw (τ ) +                tr (Wi (τ )) + (1 − p0 )(1 − ρ0 ) (Uθ∗∗ )⊤ Wi (τ )Uθ∗∗ .
+              i∈[1,N ] τ            w                 τ nu                                   τ
+
+Following similar steps as in the previous proofs yields the result.
+
+E    Proofs for sample complexity upper bounds
+
+This section contains the proofs related to the sample complexity upper bounds and related intermediate results.
+      High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+E.1     Proof of Theorem 3.5
+
+We provide the full version of Theorem 3.5 and its proof.
+Theorem E.1.h Consider    i the unknown system (1), set S as defined in (2). Then Algorithm 1 yields an estimate
+θ̂T satisfying P θ̂T ̸= θ∗ ≤ δ and with probability at least 1 − δ terminates at the latest for the first k satisfying
+
+                                        k                                                              
+                                        X                                           1                 N
+                                    τ         cuj (τ )γu2 + cw (τ ) ≥ 8       2a +          log               ,   (61)
+                                        j=1
+                                                                                   2η                 δ
+
+where
+                                                                          1
+                                            ητ ≤             
+                                                                   1
+                                                                          ⊤    1
+                                                                                                                 (62)
+                                                                             −1 2
+                                                   512λmax        Σ∆i (τ ) Σw Σ∆i (τ )
+                                                                   2
+
+
+
+        1
+and Σ∆
+     2
+       i
+         (τ ) is defined in (81).
+                                                                                                       h         i
+Proof. This proof consists of two parts. First we show that if the algorithm terminates it holds that P θ̂T ̸= θ∗ ≤ δ,
+i.e., we show the algorithm is δ-correct. Then derive the upper bound on the stopping time and hence on the
+sample complexity.
+Correctness: For the remainder of this proof we use Pθi and Eθi to denote probability and expectation of an
+event under the hypothesis that θ∗ = θi . To analyze correctness of the algorithm we analyze the likelihood-ratio
+
+                                                              exp − 12 εθi (t)
+                                                                              
+                                                  Pθi [Dt ]
+                                    Lθi ,θj (t) =           =                  .                            (63)
+                                                  Pθj [Dt ]   exp − 21 εθj (t)
+
+It can easily be shown that the likelihood-ratio is a martingale sequence (see, e.g., (Wainwright, 2019, Example
+2.18)). By the termination rule the algorithm terminates under the event
+                                                                                
+                                                              N
+                             E = ∃θ̂ : log(Lθ̂,θi (t)) > log      , ∀θi ∈ S \ {θ̂}                           (64)
+                                                              δ
+                                                                     
+                                                    N
+                               = ∃θ̂ : Lθ̂,θi (t) > , ∀θi ∈ S \ {θ̂} .                                       (65)
+                                                     δ
+
+Thus, θ̂ ̸= θ∗ requires Lθi ,θ0 (t) ≥ Nδ for at least one θi ̸= θ∗ and some t ∈ Z+ . Thus
+                                                            "N                              #
+                                        h          i         [                            N
+                                    P θ̂ ̸= θ∗ ≤ Pθ0              ∃t ∈ Z+ : Lθi ,θ0 (t) ≥     .                   (66)
+                                                              i=1
+                                                                                          δ
+
+Thus,
+                                                       "N                          #
+                             h           i              [                        N
+                           P θ̂ ̸= θ∗         ≤ Pθ0      ∃t ∈ Z+ : Lθi ,θ0 (t) ≥                                  (67)
+                                                     i=1
+                                                                                 δ
+                                                 N                                 X  N
+                                                X                                N         δ
+                                              ≤     Pθ0 ∃t ∈ Z+ : Lθi ,θ0 (t) ≥      ≤       = δ,                 (68)
+                                                i=1
+                                                                                 δ     i=1
+                                                                                           N
+
+where the second inequality uses a union bound, and the last inequality follows from (Lattimore and Szepesvári,
+2020, Theorem 3.9).
+Stopping Time: Since in each epoch, the input is PE with coefficients cuj (τ ) and cw (τ ) we can use Proposition E.2
+to show that under the choice of η the sequence
+                                                                                                   
+                                                        k−1 tj+1 −1 h
+                                                      1 X     X                                    i
+            Si (k) = exp −η εθi (tk ) − εθ∗ (tk ) −              E ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1 |Fj             (69)
+                                                      4 j=0 t=t                               w
+                                                                              j
+                               Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+with Si (0) = 1 is a super-martingale. Hence, again using the maximal inequality (Lattimore and Szepesvári, 2020,
+Theorem 3.9) we obtain                                          
+                                                              N      δ
+                                              P ∃k : Si (k) ≥      ≤                                         (70)
+                                                               δ     N
+Thus using union bound arguments we obtain
+                                "N                   #     N                    
+                                  [                N      X                  N
+                              P      ∃k : Si (k) ≥      ≤     P ∃k : Si (k) ≥     ≤δ                         (71)
+                                 i=1
+                                                   δ      i=1
+                                                                              δ
+
+Note that, given the definition of PE, Si (k) ≥ Nδ is implied by
+                                                                               k−1
+                                                        1          N         τ X
+                                 εθ∗ (tk ) − εθi (tk ) ≥ log               −      cu (τ )γu2 + cw (τ ).                   (72)
+                                                        η          δ         4 j=0 j
+
+Thus by (71) it holds with probability at least 1 − δ that
+                                                             k−1
+                                                  1     N    τ X
+                           εθ∗ (tk ) − εθi (tk ) ≤ log     −       cu (τ )γu2 + cw (τ ).                                  (73)
+                                                  η     δ    4 j=0 j
+
+Thus, as soon as
+                                                            k−1
+                                               1          N     X
+                                      8          + 2 log     ≤τ     cuj (τ )γu2 + cw (τ )                                 (74)
+                                              2η          δ     j=0
+
+we obtain
+                                                       1
+                                 log (Lθi ,θ∗ (kτ )) =    (εθ∗ (tk ) − εθi (tk ))                                         (75)
+                                                       2
+                                                                            k−1
+                                                        1          N       τ X
+                                                     ≤     log          −         cu (τ )γu2 + cw (τ )                    (76)
+                                                       2η          δ        8 j=0 j
+                                                                                         
+                                                        1          N           1              N
+                                                     ≤     log          −         + 2 log                                 (77)
+                                                       2η          δ          2η              δ
+                                                              
+                                                                N
+                                                     = 2 log                                                              (78)
+                                                                 δ
+Thus, when (74) is satisfied Algorithm 1 terminates. This happens at the latest when (61) is satisfied and yields
+θ̂ = θ∗ with probability at least 1 − δ.
+
+E.2      Intermediate results used in the proof of Theorem 3.5
+
+In the following, we present intermediate results which are used in the proof of Theorem 3.5.
+Proposition E.2. Consider the unknown system (1), and the set S as defined in (2). Let the data be collected, by
+                                                                                                         i.i.d.
+exciting the true system with u(t) = ud (t) + ur (t), where ud (t) is a deterministic sequence and ur (t) ∼ N (0, Σu ).
+Divide the data into K blocks of length τ > 0 and define tk = τ k, k ∈ [0, K]. Further, define the filtration Fk
+consisting of all random variables observed at the start of block k, i.e., Fk = {x(0), u(0), . . . , u(tk − 1), x(tk )}.
+Then the sequence
+                                                                                                     
+                                                        1     X−1 h
+                                                          X tj+1
+                                                          k−1                                        i
+              Si (k) = exp −η εθi (tk ) − εθ∗ (tk ) −              E ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1 |Fj             (79)
+                                                        4 j=0 t=t                              w
+                                                                             j
+
+
+with Si (0) = 1 is a supermartingale5 for any η > 0 satisfying
+                                                                       1
+                                          ητ ≤               
+                                                                   1
+                                                                          ⊤    1
+                                                                                                                         (80)
+                                                                             −1 2
+                                                   512λmax        Σ∆i (τ ) Σw Σ∆i (τ )
+                                                                   2
+
+
+
+   5
+       A supermartingale is a sequence X(0), X(1), . . . , of integrable random variables satisfying E [X(k + 1)|Fk ] ≤ X(k).
+       High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+with
+                                        −1
+                                      τ
+                                                                                                                          !
+                                      X
+              Σ∆i (τ ) := ∆Ai                Aτ∗ −s BΣu B ⊤ (Aτ −s )⊤ + Aτ∗ −s Σw (Aτ∗ −s )⊤                                  ∆A⊤            ⊤
+                                                                                                                                i + ∆Bi Σu ∆Bi .                (81)
+                                      s=0
+
+
+Proof. For the proof of this result, we overload notation and define
+                                                                    t1
+                                                                    X  −1
+                                       εθi (t0 , t1 ) :=                      ∥x(t + 1) − Ai x(t) − Bi u(t)∥2Σ−1 .                                              (82)
+                                                                                                                              w
+                                                                     t=t0
+
+To show Si (k) is a supermartingale we consider
+                                    "
+            E [Si (k + 1)|Fk ] =Si (k)E exp                          − η εθi (tk , tk+1 )                                                                       (83)
+
+                                                                                      tk+1 −1
+                                                                                                                                         ! !!               #
+                                                               1                        X           h                                   i
+                                          − εθ∗ (tk , tk+1 ) −                                  E       ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1                      Fk .
+                                                               4                       t=tk
+                                                                                                                               w
+
+
+
+Thus, to show the result requires showing that
+                  "                                                                                                                  #
+                                                                                   Ptk+1 −1
+                          −η εθi (tk ,tk+1 )−εθ∗ (tk ,tk+1 )− τ4                              E ∥∆Ai x(t)+∆Bi u(t)∥2 −1
+                                                                                                                                                                (84)
+                                                                                     t=tk
+                    E e                                                                                                       Σw
+                                                                                                                                     Fk ≤ 1.
+
+To this end, we define
+                                               ξθi (t) := ∥x(t + 1) − Ai x(t) − Bi u(t)∥2Σ−1 .                                                                  (85)
+                                                                                                                      w
+
+Note that
+                h                                                         i         Ptk+1 −1
+                                                                                                                 
+                    −η (εθi (tk ,tk+1 )−εθ∗ (tk ,tk+1 ))                           −η t=t     ξθi (t)−ξθ∗ (t)
+              E e                                                   Fk        =E e        k                   Fk                                                (86)
+                                                                                     tk+1 −1     h                          i τ1
+                                                                                       Y
+                                                                                ≤                E e−ητ (ξθi (t)−ξθ∗ (t)) Fk                                    (87)
+                                                                                       t=tk
+                                                                                     tk+1 −1                                                       τ1
+                                                                                       Y                    − η2 τ ∥∆Ai x(t)+∆Bi u(t)∥2 −1
+                                                                                ≤                E e                                  Σw       Fk           ,   (88)
+                                                                                       t=tk
+
+where the first inequality follows from Hölder’s inequality and the last inequality follows from Lemma E.3 given
+that η ≤ 14 . Note now that conditioned on Fk we have ∆Ai x(tk + t) + ∆Bi u(tk + t) ∼ N (µ∆i (t), Σ∆i (t)), where
+Σ∆i (t) is defined in (81) and µ∆i (t) depends on x(tk ), the input sequence ud (t), and the system matrices. Hence,
+conditioned on Fk , by Proposition E.4 we have
+                 1
+                    ∥∆Ai x(tk + t) + ∆Bi u(tk + t)∥2Σ−1
+                 2           h
+                                                         w
+                                                                         i                                         (89)
+                          − E ∥∆Ai x(tk + t) + ∆Bi u(tk + t)∥2Σ−1 ∼ subExp (ν(t)) , ∀t ∈ [0, τ − 1]
+                                                                     w
+                               1                 1
+                                                    
+with ν(t) = 16λmax (Σ∆i (t) 2 )⊤ Σ−1  w Σ∆i (t)
+                                                  2   . Taking ητ ≤ ν(τ  1
+                                                                           ) we can use the definition of subexponential
+random variables to obtain
+                              tk+1 −1                                        τ1
+                                Y          − η2 τ ∥∆Ai x(t)+∆Bi u(t)∥2 −1
+                                       E e                           Σ w   Fk                                       (90)
+                                    t=tk
+                                                                                                                      ! τ1
+                                              tk+1 −1
+                                                                                            
+                                                  Y                η2 2     2       − η2 τ E ∥∆Ai x(t)+∆Bi u(t)∥2 −1
+                                      ≤                        e    2 τ ν(t)    e                                      Σw
+                                                                                                                                                                (91)
+                                                  t=tk
+                                                                                                                ! 1
+                                                               Ptk+1 −1                                               τ
+                                                  − η2 τ                      E ∥∆Ai x(t)+∆Bi u(t)∥2 −1 −τ ην 2 (t)
+                                                                                                                                                                (92)
+                                                                   t=tk                                          Σw
+                                      =       e
+                                                                                                         
+                                                        Ptk+1 −1
+                                             − η2                      E ∥∆Ai x(t)+∆Bi u(t)∥2 −1 −τ ην 2 (t)
+                                                                                                                                                                (93)
+                                                           t=tk                                             Σw
+                                      =e                                                                                      .
+                                 Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+Imposing
+                                                                  1 h                           i
+                                                   τ ην 2 (t) ≤     E ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1                                       (94)
+                                                                  2                          w
+
+
+for t ∈ [tk , tk+1 − 1] and combining the above arguments results in
+                                                               tk+1 −1 h
+             h                                       i        η X                                    i
+            E e−η(εθi (tk ,tk+1 )−εθ∗ (tk ,tk+1 )) Fk ≤ exp(−         E ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1 |Fk ) ≤ 1,                          (95)
+                                                              4 t=t                            w
+                                                                                     k
+
+                                         h                             i
+where the last inequality follows since E ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1 |Fk > 0, ∀t ∈ [tk , tk+1 − 1]. Note finally that
+                                                                                             w
+
+                                  h                                i
+                                 E ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1 |Fk                                                                      (96)
+                                                           w
+
+                                 = E (∆Ai x(t) + ∆Bi u(t))⊤ Σ−1                                                                       (97)
+                                                                                            
+                                                                  w (∆Ai x(t) + ∆Bi u(t))|Fk
+
+                                 = tr Σ−1                                                  ⊤
+                                                                                                                                      (98)
+                                                                                              
+                                       w E (∆Ai x(t) + ∆Bi u(t))(∆Ai x(t) + ∆Bi u(t)) |Fk
+
+                                 = tr Σ−1                             ⊤
+                                                                                                                                      (99)
+                                                                        
+                                       w (Σ∆i (t) + µ∆i (t)µ∆i (t) )
+                                              1                1
+                                                                                      
+                                 = tr (Σ∆i (t) 2 )⊤ Σ−1                    ⊤ −1
+                                                     w Σ∆i (t) + µ∆i (t) Σw µ∆i (t)
+                                                                2                                                                    (100)
+                                                  1                1
+                                                                       ν(t)
+                                 ≥ λmax (Σ∆i (t) 2 )⊤ Σ−1
+                                                        w Σ ∆ i (t) 2   =    ,                                                       (101)
+                                                                          16
+hence condition (94) is implied by
+
+                                                              ν(t) ν(t)>0         1
+                                               τ ην 2 (t) ≤         ⇐⇒ τ ην(t) ≤    ∀t ∈ [0, τ ]                                     (102)
+                                                               32                32
+or since the ν(t) only grows as t increases by
+
+                                                     1                                   1
+                                          τη ≤             =                           ⊤             .                           (103)
+                                                   32ν(τ )                           1          1
+                                                                  512λmax        Σ∆i (τ ) Σ−1
+                                                                                     2
+                                                                                            w Σ 2
+                                                                                                ∆i (τ )
+
+
+
+Lemma E.3. Define
+                                                   ξθi (t) := ∥x(t + 1) − Ai x(t) − Bi u(t)∥2Σ−1                                     (104)
+                                                                                                  w
+
+
+and let Fk be a filtration containing all random variables up to time k. Then, if η ≤ 41 we have
+                                                                                    
+              h                                i            η                   2
+            E e     −η(ξθi (t)−ξθ∗ (t))
+                                          Fk       ≤ E exp − ∆Ai x(t) − ∆Bi u(t) −1 Fk                       ∀k = 1, 2, . . . , t.   (105)
+                                                            2                   Σw
+
+
+Proof. By the definition of ξθi (t) we have
+
+               ξθi (t) = ∥∆Ai x(t) − ∆Bi u(t) + w(t)∥2Σ−1                                                                            (106)
+                                                                        w
+
+                         = ∥∆Ai x(t) − ∆Bi u(t)∥2Σ−1 + 2w(t)⊤ Σ−1                           ⊤ −1
+                                                               w (Ai x(t) − ∆Bi u(t)) + w(t) Σw w(t)                                 (107)
+                                                                  w
+
+
+and hence
+                       ξθi (t) − ξθ∗ (t) = ∥∆Ai x(t) − ∆Bi u(t)∥2Σ−1 + 2w(t)⊤ Σ−1
+                                                                               w (Ai x(t) − ∆Bi u(t)).                               (108)
+                                                                                 w
+
+
+Conditioning on x(t), u(t) the randomness in ξθi (t) − ξθ∗ (t) is due to 2w(t)⊤ Σ−1
+                                                                                 w (Ai x(t) − ∆Bi u(t)). Realize that
+       − 1 i.i.d.
+w(t)⊤ Σw 2 ∼ N (0, Inx ). Recall that the definition of the moment generating function for a random variable
+w ∼ N (0, Inx ) is given by
+                                                                     
+                                                 h ⊤ i           1 ⊤
+                                     Mw (λ) = E e  w λ
+                                                         = exp     λ λ .                               (109)
+                                                                 2
+       High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+                                      −1 ⊤
+Using this definition with λ = 2ηΣw 2 (Ai x(t) − ∆Bi u(t)) we obtain
+             E [exp(−η(ξθi (t) − ξθ∗ (t)))|x(t), u(t)]
+                                                       h                                           i
+               = exp −η∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1 E exp −2ηw(t)⊤ Σ−1  w (Ai x(t) + ∆Bi u(t)) |x(t), u(t)
+                                                     w
+                                                                                
+               = exp −η∥∆Ai x(t) + ∆Bi u(t)∥Σ−1 + 2η 2 ∥∆Ai x(t) + ∆Bi u(t)∥2Σ−1
+                                                   2
+                                                     w                        w
+                                                          
+                                                   2
+               = exp −η∥∆Ai x(t) + ∆Bi u(t)∥Σ−1 (1 − 2η) .
+                                                 w
+
+
+ Taking η ≤ 41 the desired bound holds.
+Proposition E.4. Consider the      Gaussian vector z ∼ N (µz , Σz ) of dimension nz and a symmetric matrix
+                             random
+M ∈ Sn++
+       z
+         . Then 12 ∥z∥2M − E ∥z∥2M is sub-exponential6 with parameter ν, where
+                                                   ⊤          
+                                                      1      1
+                                       ν = 16λmax Σz2 M Σz2 .                                         (110a)
+
+
+                      −1 ⊤                                            −1 ⊤
+Proof. Define ζ = Σz 2       (z − µz ), yielding ∥z∥M = ∥ζ + Σz 2 µz ∥ 1 ⊤                  1   with ζ ∼ N (0, Inz ). Note that the
+                                                                                  Σz2   M Σz2 p
+f (ζ) = √12 ∥ζ + µz ∥M is Lipschitz continuous with Lipschitz constant L = λmax (M ). Thus, by (Wainwright,
+2019, Theorem 2.26)
+                                                                             1⊤
+                                                                      
+                                                                                        1
+                                      ∥ζ + µz ∥M ∼ subG λmax Σz2 M Σz2                          .                             (111)
+
+Applying (Rigollet and Hütter, 2023, Lemma 1.12) we obtain the result.
+
+E.3    Sample complexity Upper bounds for isotropic Gaussian and oracle excitations
+
+In the following, we present the full version of Corollary 3.6 along with its proof.
+                                                                                   i.i.d.           γ2
+Corollary E.5. Consider the same setup as in Theorem 3.5. If u(t) ∼ N (0, nuu Inu ) then Algorithm 1 yields an
+                        h        i
+estimate θ̂ satisfying P θ̂ ̸= θ∗ ≤ δ and with probability at least 1 − δ terminates no later than when k satisfies
+
+                                   N                                            
+                                  X                       1 
+                  k γu2 min λmean      pi Wi (τ ) + min tr Sw (τ )⊤ QiInx Sw (τ )                                             (112)
+                       p∈∆N                        i∈[1,N ] τ
+                                   i=1
+                                                                                       
+                                                                        2     1          N
+                                                                ≥8        +         log     .                                 (113)
+                                                                        τ    2ητ         δ
+
+Further, if the optimal oracle excitation input U ∗ defined in (21) is applied the estimate θ̂ satisfies P[θ̂ ̸= θ∗ ] ≤ δ,
+and with probability 1 − δ Algorithm 1 terminates no later than when k satisfies
+                                   N                                             
+                                  X                       1 
+                   k γu2 min λmax      pi Wi (τ ) + min tr Sw (τ )⊤ QiInx Sw (τ )                                             (114)
+                        p∈∆N                       i∈[1,N ] τ
+                                   i=1
+                                                                                        
+                                                                        2     1           N
+                                                                ≥8        +          log     .                                (115)
+                                                                        τ    2ητ          δ
+For both results we have
+                                                                  1
+                                      ητ ≤             
+                                                              1
+                                                                    ⊤     1
+                                                                                   ,                                         (116)
+                                             512λmax        Σ∆i (τ ) Σ−1
+                                                              2
+                                                                       w Σ 2
+                                                                           ∆i (τ )
+         1
+where Σ∆
+       2
+         i
+           (τ ) is defined in (81).
+
+Proof. The result follows directly by using Theorem E.1 with the PE coefficients derived in Lemmas 3.3 and 3.4.
+   6
+   A random variable X is said to be sub-exponential with parameter ν (denoted by X ∼ subG (ν)) if E[X] = 0 and its
+                                              s2 ν 2
+moment generating function satisfies E esX ≤ e 2 , ∀|s| ≤ ν1 .
+                                         
+                           Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+E.4     Sample complexity upper bound for Algorithm 2
+
+In the following, we present the full version of Theorem 4.2 along with its proof. Note that, the Theorem is
+presented in full generality, to provide theoretical insights. Depending on the update rule for ρk corollaries can be
+derived directly.
+Theorem E.6. Let Algorithm h      1ibe used with the excitation input derived by Algorithm 2. Then, the estimate θ̂
+of Algorithm 1 satisfies P θ̂ ̸= θ∗ ≤ δ and with probability at least 1 − δ terminates no later than when k satisfies
+                                   k                                                           
+                                   X                                  2    1                  N
+                                         cAlg
+                                          uj (τ ) + cw (τ ) ≥ 8         +           log               ,         (117)
+                                   j=1
+                                                                      τ   2ητ                 δ
+
+where
+                                                                  1
+                                     ητ ≤               
+                                                              1
+                                                                     ⊤    1
+                                                                                  ,                            (118)
+                                                                        −1 2
+                                              512λmax        Σ∆i (τ ) Σw Σ∆i (τ )
+                                                              2
+
+
+
+        1
+with Σ∆                                uj (τ ) and cw (τ ) as defined in (29).
+          (τ ) as defined in (81) and cAlg
+      2
+        i
+
+
+
+Proof. The result follows directly by using Theorem E.1 and the PE coefficients derived in Lemma 4.1.
+
+F     Asymptotic optimality of Algorithm 2
+The theorem below is the full version of Theorem 4.3.
+Theorem F.1. Consider Algorithm 1 where the excitation input is derived by Algorithm 2, with
+                                                           1
+                                   ητ ≤          
+                                                      1
+                                                              ⊤       1
+                                                                                                               (119)
+                                                                   −1 2
+                                         512λmax    Σ∆2
+                                                        i
+                                                          (τ )   Σ w Σ ∆i (τ )
+            1
+where Σ∆2
+          i
+            (τ ) is defined in (81). Let ρ0 = c0 ∈ (0, 1), limk→∞ ρk = c∞ ∈ [0, c0 ] and ρk−1 ≥ ρk ≥ (1 − ε)ρk−1 ,
+where                                                    ητ
+                                                  1 − e− 4 cw (τ ) (1 − ρ0 )
+                                                                  
+                                            ε<               ητ              .                                  (120)
+                                                       ρ0 e− 4 cw (τ )
+Then for any δ ∈ (0, 1) there exists a kδ , such that with probability at least 1 − δ Algorithm 1 terminates after at
+most kδ epochs with an estimate θ̂ that satisfies P[θ̂ ̸= θ∗ ] ≤ δ and
+                                             
+                                       1
+                                          + τ1 log Nδ
+                                                       
+                                   8 2ητ
+                               lim                       ≤ cw (τ ) + χγu2 (1 − c∞ )copt
+                                                                                    u (τ ),                     (121)
+                               δ→0          kδ
+where χ is a constant that can be chosen arbitrarily close to 1 as δ → 0.
+
+Proof. First note that by Propositions F.3 and F.4 we know that for any k0 > 0 there exists a χ(k0 ) > 0 such that
+                           ∀k ≥ k0 : (1 − ρk )(1 − pk )copt     rand
+                                                        u + ρk cu    ≥ χ(k0 )(1 − c∞ )copt
+                                                                                       u ,                      (122)
+i.e., the excitation provided by Algorithm 2 is χ(k0 )-optimal. Importantly, χ(k0 ) → 1 as k0 grows, hence we can
+push χ(k0 ) arbitrarily close to 1 by increasing k0 . Note that, correctness of Algorithm 1 follows immediately from
+the proof of Theorem 4.2. Whenever k ≥ k0 we can use (122) to bound the termination time of Algorithm 1 in
+(74) by
+                                                                                                    
+                                                 kX0 −1                k
+                     1            N                                      X
+                8      + 1 log         ≤ τ kcw +           cAlg     2
+                                                             uj (τ )γu +      χ(k0 )(1 − c∞ )uopt
+                                                                                               u γu
+                                                                                                    2
+                                                                                                               (123)
+                    2η             δ                  j=1                j=k0
+                                                                                                        
+                                                                                            0 −1
+                                                                                           kX
+                                       = τ kcw + γu2 (k − k0 )χ(k0 )(1 − c∞ )copt  u +         cAlg
+                                                                                                  uj (τ )
+                                                                                                             (124)
+                                                                                                          j=1
+
+Taking the limit δ → 0, we realize
+                                Pkthat δ → 0 requires k → ∞ since all quantities on the right-hand side besides k
+                                   0 −1 Alg
+are fixed. As k → ∞, the term j=1      cuj (τ ) is dominated by the rest of the inequality, yielding the result.
+      High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+F.1   Intermediate Results for the Proof of Theorem F.1
+
+Corollary F.2. Consider the unknown system (1), set S as defined in (2) and Algorithm 2, where the input
+applied in round k is PE with cuj (τ ) and cwj (τ ). Let η chosen to satisfy
+                                                                       1
+                                      ητ ≤                   
+                                                                   1
+                                                                          ⊤    1
+                                                                                                          (125)
+                                                                             −1 2
+                                              512λmax             Σ∆i (τ ) Σw Σ∆i (τ )
+                                                                   2
+
+
+
+        1
+where Σ∆
+       2
+         i
+           (τ ) is defined in (81). Then the estimate θ̂k drawn in Line 2 of Algorithm 2 satisfies
+                                                                                   
+                                                              k
+                                   h        i             ητ X
+                                 P θ̂k ̸= θi ≤ N exp −         cu (τ )γu2 + cw (τ ) .                    (126)
+                                                           4 j=1 j
+
+Proof. For the proof of this result, we overload notation and define
+                                                    t1
+                                                    X  −1
+                                εθi (t0 , t1 ) :=           ∥x(t + 1) − Ai x(t) − Bi u(t)∥2Σ−1 .           (127)
+                                                                                            w
+                                                    t=t0
+
+First note, that by similar arguments as in (Muehlebach et al., 2025, Lemma B.1) we have
+                                    h        i                               
+                                                    −η εθi (0,kτ )−εθ∗ (0,kτ )
+                                   P θ̂k = θi ≤ E e                              .                         (128)
+
+By using Proposition E.2 we obtain
+                                                                                                 
+                                                                         k
+                  h        i
+                                  −η εθi (0,kτ )−εθ∗ (0,kτ )            ητ X
+                 P θ̂k = θi ≤ E e                              ≤ exp −       cu (τ )γu2 + cw (τ ) .      (129)
+                                                                         4 j=1 j
+
+
+Taking a union bound for all i ∈ [1, N ] and solving for δ yields the result.
+
+
+
+Note that the result can also be used to derive a similar result for the estimation of the true system using the
+softmax maximum likelihood estimator (MLE), similar to the results in Muehlebach et al. (2025).
+Proposition F.3. Consider Algorithm 2 with ρ0 = c0 ∈ (0, 1) and limk→∞ ρk = c∞ ∈ [0, c0 ]. Let η be chosen to
+satisfy
+                                                      1
+                                ητ ≤          
+                                                   1
+                                                         ⊤       1
+                                                                                                       (130)
+                                                              −1 2
+                                     512λmax     Σ∆i (τ ) Σw Σ∆i (τ )
+                                                   2
+
+
+
+        1
+where Σ∆
+       2
+         i
+           (τ ) is defined in (81). Then
+                                                    lim cAlg            opt
+                                                         uk ≥ (1 − c∞ )cu .
+                                                    k→∞
+
+
+Proof. This proof is carried out by contradiction. Suppose there exists some c̃ ∈ [0, 1) such that
+                                      lim cAlg              opt           opt
+                                           uk = c̃(1 − c∞ )cu < (1 − c∞ )cu .                              (131)
+                                     k→∞
+
+plugging in the definition of cAlg
+                               uk we see this requires
+
+                                           lim (1 − pk ) = c̃ ⇔ lim pk = 1 − c̃                            (132)
+                                         k→∞                           k→∞
+
+Invoking Corollary F.2 we that
+                                                                                       
+                                                                           k
+                                                        ητ                X
+                                 pk ≤ N exp −               kcw (τ ) +     cAlg     2 
+                                                                             uj (τ )γu    .                (133)
+                                                         4              j=1
+                            Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+Hence, (132) requires
+                                                     k                                          
+                                                     X                      4           1 − c̃
+                                      lim kcw +            cAlg     2
+                                                            uj (τ )γu =       log                    .                          (134)
+                                     k→∞
+                                                     j=1
+                                                                           τη             N
+
+Since cw ≥ 0 we require cw = 0. This is unlikely but for the remainder, we consider this case to be true. In any
+case, we additionally require
+                                                  lim cAlg
+                                                       uk = 0                                              (135)
+                                                           k→∞
+
+since if this is not true, the sum in (134) does not converge as k → ∞. Going back to the definition of cAlg
+                                                                                                         uk we see
+that (134) can only be satisfied if the conditions
+
+  • limk→∞ ρk = 0
+  • limk→∞ (1 − ρk )(1 − pk ) = 0
+
+are both met. Clearly, if c∞ ̸= 0, the first condition is not met, yielding the result for all c∞ ∈ (0, c0 ]. For the
+case where c∞ = 0 the second condition requires that limk→∞ pk = 1. Going back to (133), we see that for this
+to happen, we require
+                                                     Xk
+                                                lim      cAlg 2
+                                                          uj γu = 0.                                            (136)
+                                                     k→∞
+                                                              j=1
+
+Since we selected ρ0 = c0 > 0 we obtain cAlg      rand
+                                         u0 ≥ c0 cu    > 0 which contradicts the condition. Hence, there cannot
+exist a c̃ ∈ [0, 1) for which
+                                       lim cAlg              opt           opt
+                                            uk = c̃(1 − c∞ )cu < (1 − c∞ )cu .                                                  (137)
+                                      k→∞
+which completes the proof.
+Proposition F.4. Consider Algorithm 2 with ρ0 = c0 ∈ (0, 1) and ρk−1 ≥ ρk ≥ (1 − ε)ρk−1 . Let η be chosen to
+satisfy
+                                                        1
+                                ητ ≤          
+                                                   1
+                                                           ⊤       1
+                                                                                                      (138)
+                                                                −1 2
+                                     512λmax     Σ∆2
+                                                     i
+                                                       (τ )   Σ w Σ ∆i (τ )
+                                                   ητ        
+         1                                      1−e− 4 cw (τ ) (1−ρ0 )
+where Σ∆i (τ ) is defined in (81). If ε <
+         2
+                                                         ητ              , then cAlg   Alg
+                                                                                 uk ≥ cuk−1 for all k ≥ 1.
+                                                   ρ0 e− 4 cw (τ )
+
+
+Proof. Plugging in the definitions of the PE coefficients, the statement of the theorem can be rewritten as
+
+                       (1 − ρk )(1 − pk )copt      rand
+                                          u + ρ k cu    > (1 − ρk−1 )(1 − pk−1 )copt       rand
+                                                                                 u + ρk−1 cu    .                               (139)
+
+Rearanging terms, we obtain
+                                                                   
+                  copt
+                   u     (1 − ρk )(1 − pk ) − (1 − ρk−1 )(1 − pk−1 )           > crand
+                                                                                  u    (ρk−1 − ρk )                             (140)
+                                                                            
+              ⇔ copt
+                   u     1 − ρk − pk + pk ρk − (1 − ρk−1 − pk−1 + pk−1 ρk−1 ) > crand
+                                                                                  u    (ρk−1 − ρk )                             (141)
+                ⇔ copt
+                   u (ρk−1 − ρk + pk−1 − pk + pk ρk − pk−1 ρk−1 )                                        > crand
+                                                                                                            u    (ρk−1 − ρk )   (142)
+
+Clearly, since ρk is a non-increasing sequence, (142) is satisfied whenever
+
+                                      pk−1 − pk + pk ρk − pk−1 ρk−1 > 0                                                         (143)
+                                                     Pk                         
+Note that, by Corollary F.2 we have pk = N exp − ητ4    j=1 cuj
+                                                                (τ )γ 2
+                                                                      u + cw (τ )  and hence
+                                                                ητ          2
+                                             pk = pk−1 e− 4 (cuk (τ )γu +cw (τ )) .                                             (144)
+
+Using this, and the fact that ρk ≥ ρk−1 (1 − ε) we have that (143) is implied by
+                              ητ        2                           ητ           2
+                                                                                                    
+                 pk−1 1 − e− 4 (cuk (τ )γu +cw (τ )) + ρk−1 (1 − ε)e− 4 (cuk (τ )γu +cw (τ )) − ρk−1 > 0,                       (145)
+      High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+                                                ητ          2                              ητ                2
+which can only be satisfied if 1−e− 4 (cuk (τ )γu +cw (τ )) +ρk−1 (1−ε)e− 4 (cuk (τ )γu +cw (τ )) −ρk−1 > 0. Using standard
+algebraic manipulations, we can rewrite this as
+                                ητ          2
+                                                                              ητ           2
+                          1 − e− 4 (cuk (τ )γu +cw (τ )) (1 − ρk−1 ) > ρk−1 εe− 4 (cuk (τ )γu +cw (τ )) .              (146)
+
+Solving this for ε we obtain                                                          
+                                                               ητ           2
+                                                         1 − e− 4 (cuk (τ )γu +cw (τ )) (1 − ρk−1 )
+                                                ε<                       ητ          2                       .                             (147)
+                                                                ρk−1 e− 4 (cuk (τ )γu +cw (τ ))
+Since we require an upper bound for all k ≥ 1, we use the (loose) lower bound to the right-hand side
+                              ητ          2
+                                                      
+                        1 − e− 4 (cuk (τ )γu +cw (τ )) (1 − ρk−1 )          ητ
+                                                                     1 − e− 4 cw (τ ) (1 − ρ0 )
+                                                                                     
+                                      ητ           2               >           ητ               ,                                          (148)
+                             ρk−1 e− 4 (cuk (τ )γu +cw (τ ))              ρ0 e− 4 cw (τ )
+                                   ητ        
+                                1−e− 4 cw (τ ) (1−ρ0 )
+to obtain that if ε <                    ητ               we have cAlg
+                                                                   uk > cuk−1 for all k ≥ 1.
+                                                                         Alg
+                                   ρ0 e− 4 cw (τ )
+
+
+Note that by Proposition F.4 as long as ρ0 ̸= 1 we can show that the sequence {cAlg     uk }k≥0 increases at every
+timestep. However, even if we initially collect some data using random excitations (i.e., we select ρ0 = 1), we can
+still guarantee that after a potential initial decay {cAlg
+                                                       uk }k≥1 increases at every timestep.
+
+
+G       Auxiliary results
+
+The following result is a consequence of the superposition principle in LTI systems and leverages that all random
+quantities are independent. It is a core ingredient in the proofs of the sample complexity lower and upper bounds.
+Lemma G.1. Consider the system (1) with x(0) ∈ Rnx . Let u(t) = (1 − ρ)ud (t) + ρup (t), with ρ ∈ [0, 1],
+        i.i.d.
+up (t) ∼ N (0, σu2 Inu ) and a deterministic control input ud (t). Then for any fixed matrix M ∈ Sn++
+                                                                                                    x
+                                                                                                      , any
+i ∈ [1, N ], and any τ ≥ 0 it holds that
+                 τ
+                 X      h                       i
+                                              2
+                       E ∥∆Ai x(t) + ∆Bi u(t)∥M = (1 − ρ)2 Ud⊤ Wi (τ )Ud + 2(1 − ρ)Ud⊤ mi (x0 ) + ci (x(0))
+                 t=0                                                                                                                       (149)
+                                                                                                          ⊤
+                                                                  + σu2 ρ2 tr (Wi (τ )) + tr                     QiM (τ )Sw (τ )
+                                                                                                                                   
+                                                                                                   Sw (τ )                             ,
+where
+                            Wi (τ ) := RMi
+                                           (τ ) + Su (τ )⊤ QiM (τ )Su (τ ) + NMi                  i
+                                                                                  (τ )Su (τ ) + (NM (τ )Su (τ ))⊤
+                        mi (x(0)) := Su (T )⊤ QiM (τ )Sw (τ )X(0) + NM      i
+                                                                                               
+                                                                              (τ )Sw (τ )X(0)
+                                        τ          t−1
+                                                               !  ⊤            t−1
+                                                                                             !
+                                       X          X                            X
+                                                         s                            s
+                         ci (x(0)) :=        ∆Ai       A∗ x(0)      M ∆Ai           A∗ x(0)
+                                          t=0            s=0                             s=0
+                                         h                              i
+                                   ⊤           −1
+                          X(0) :=            (Σw 2 x)⊤     0     ...   0 .
+
+Furthermore,
+
+  • If x(0) = 0 then it holds for all ρ ∈ [0, 1] that
+                            τ
+                            X  h                       i
+                                                     2
+                              E ∥∆Ai x(t) + ∆Bi u(t)∥M ≥ (1 − ρ)2 Ud⊤ Wi (τ )Ud + σu2 ρ2 tr (Wi (τ ))
+                             t=0                                                                                                           (150)
+                                                                                               ⊤
+                                                                                                   QiM (τ )Sw (τ )
+                                                                                                                      
+                                                                              + tr Sw (τ )
+
+  • If ρ = 1 then it holds for all x(0) ∈ Rnx that
+                          τ
+                          X  h                       i
+                                                   2
+                            E ∥∆Ai x(t) + ∆Bi u(t)∥M ≥ σu2 tr (Wi (τ )) + tr Sw (τ )⊤ QiM (τ )Sw (τ )                                      (151)
+                                                                                                      
+                          t=0
+                                Nicolas Chatzikiriakos, Kevin Jamieson, Andrea Iannelli
+
+
+Proof. By recursively plugging in the x(t) = A∗ x(t − 1) + Bu(t − 1) + w(t − 1) we obtain
+            ∆Ai x(t) + ∆Bi u(t) = ∆Ai x(t) + (1 − ρ)∆Bi ud (t) + ρ∆Bi up (t)                                                                           (152)
+                                                          t−1
+                                                                                                                 !
+                                                          X
+                                        = ∆Ai                   (1 − ρ)A∗s−t−1 B∗ ud (s) + As∗ x(0)                  + (1 − ρ)∆Bi ud (t)               (153)
+                                                          s=0
+                                            |                                                  {z                                                  }
+                                                                                          deterministic
+                                                            t−1
+                                                            X                                                             t−1
+                                                                                                                          X
+                                            + ρ∆Ai                A∗s−t−1 B∗ up (t) + ρ∆Bi up (t) + ∆Ai                         A∗s−t−1 w(t) .
+                                                            s=0                                                           s=0
+                                                |                              {z                          }     |                  {z             }
+                                                                      rand. vec., dep. on up                         rand. vec., dep. on w
+
+Using that all, random vectors are independent and zero mean, and thus, cross terms are zero, it follows by
+plugging in (153) that
+              τ
+              X
+                    E[∥∆Ai x(t) + ∆Bi u(t)∥2M ]
+              t=0
+                             τ      h                                              i
+                                                          ⊤
+                             X
+                         =         E (∆Ai x(t) + ∆Bi u(t)) M (∆Ai x(t) + ∆Bi u(t))
+                             t=0
+                             τ                              t−1
+                                                                                                           !                                   2
+                             X                              X
+                         =            ∆Ai       (1 − ρ)               As−t−1 B∗ ud (s) + As∗ x(0)              + (1 − ρ)∆Bi ud (t)
+                                                                       ∗                                                                               (154)
+                             t=0                            s=0                                                                                M
+                                                                                                                 2
+                                                                                                                    
+                                                                                    t−1
+                                                                                    X
+                                       + ρ2 E  ∆Bi up (t) + ∆Ai                          A∗s−t−1 B∗ up (s)           
+                                                                                    s=0                           M
+                                                                                     2
+                                                                                           !
+                                                            t−1
+                                                            X
+                                       + E  ∆Ai                      As−t−1
+                                                                       ∗     w(s)           .
+                                                            s=0                       M
+
+We carry on by rewriting the first term in (154)
+                  τ                           t−1
+                                                                                               !
+                  X                           X                                                                                     2
+                         ∆Ai        (1 − ρ)         As−t−1
+                                                     ∗     B∗ ud (s) + As∗ x(0)                    + (1 − ρ)∆Bi ud (t)
+                                                                                                                                    M
+                   t=0                        s=0
+                                                                      τ             t−1
+                                                                                                    !⊤                    t−1
+                                                                                                                                         !
+                                                                      X             X                                     X
+                             = (1 − ρ)2 Ud⊤ Wi (τ )Ud +                       ∆Ai         As∗ x(0)         M     ∆Ai            As∗ x(0)
+                                                                                                                                                       (155)
+                                                                      t=0           s=0                                   s=0
+                                                                      |                               {z                                   }
+                                                                                               :=ci (x(0))≥0
+
+                               + 2(1 − ρ)Ud⊤                      ⊤
+                                                                      QiM (τ )Sw (τ )X(0) + NM
+                                                                                             i
+                                                                                                                                
+                                                        Su (τ )                                (τ )Sw (τ )X(0) ,
+                                                    |                                     {z                                    }
+                                                                                    :=mi (x0 )
+                 h    1
+                                       i
+where X(0)⊤ = (Σ−   w
+                      2
+                        x)⊤
+                            0   . . . 0  . Let us first consider x(0) = 0. Then we can use the matrices defined
+in (6) and (8) and plug them into (155) to obtain
+            τ
+            X      h                       i
+                                         2
+                  E ∥∆Ai x(t) + ∆Bi u(t)∥M = (1 − ρ)2 Ud⊤ Wi (τ )Ud + 2(1 − ρ)Ud⊤ mi (x0 ) + ci (x(0))
+            t=0                                                                                       (156)
+                                                                       ⊤ 2      ⊤ i
+                                                                                                    
+                                             + ρ E [Up Wi (τ )Up ] + E W Sw (τ ) QM (τ )Sw (τ )W
+                                                        Pn
+Finally, we use E[x⊤ M x] = tr M E xx⊤ and tr (A) = j=1 λj (A), where λj (A) is the j-th eigenvalue of the
+                                       
+
+matrix A ∈ Rn×n to obtain
+             Xτ   h                        i
+                                        2
+                 E ∥∆Ai x(t) + ∆Bi u(t)∥M = (1 − ρ)2 Ud⊤ Wi (τ )Ud + 2(1 − ρ)Ud⊤ mi (x0 ) + ci (x(0))
+             t=0                                                                                      (157)
+                                                2 2                          ⊤ i
+                                                                                            
+                                             + σu ρ tr (Wi (τ )) + tr Sw (τ ) QM (τ )Sw (τ )
+     High Effort, Low Gain: Fundamental Limits of Active Learning for Linear Dynamical Systems
+
+
+which proves the first statement of the Lemma. The second statement follows by the fact that mi (0) = 0 and
+ci (0) = 0. The last statement follows, plugging in ρ = 1 and using ci (x(0)) ≥ 0, ∀x(0) ∈ Rnx .
+
+H    Numerical evaluation of Example 3.1
+
+In this section, we consider a variant of the setup considered in Example 3.1. To be precise, consider S̃ =
+{(Ã∗ , B̃∗ ), (Ã1 , B̃∗ )} with
+                                                                               
+                                     0 0.1 0  0  0    0                0 0 0 0 0
+                                    0 0   0  0  0    0              1 0 0 0 0
+                                                                               
+                                    0 0 0.9 0   0    0             0 1 0 0 0
+                              Ã∗ = 
+                                    0 0                  ,    B̃ ∗ = 0 0 1 0 0 ,
+                                                                                 
+                                          0 0.9 0    0                        
+                                    0 0   0  0 0.9 0                0 0 0 1 0
+                                     0 0   0  0  0 0.9                 0 0 0 0 1
+                                                       
+                                     0 0.2 0  0  0    0
+                                    0 0   0  0  0    0
+                                                       
+                                    0 0 0.9 0   0    0
+                              Ã1 = 
+                                                       ,     B̃1 = B̃∗ .
+                                    0 0   0 0.9 0    0
+                                    0 0   0  0 0.9 0 
+                                     0 0   0  0  0 0.9
+
+                                                                               i.i.d.
+Further, we fix γu = 1 and consider the process noise w(t) ∼ N (0, σw 2
+                                                                        I6 ), with σw = 0.1. Following the steps
+outlined in Example 3.1 we obtain λmax (W̃1 (t)) = 5λmean (W1 (t)). Since we initialize Algorithm 2 with equal
+weights for both systems we immediately obtain δ0 = 12 . Thus, by the results in Section 4 we expect CE to
+perform well. To highlight the effectiveness of Algorithm 2 we compare P[θ̂k = θ∗ ] for three different setups,
+where we select η = 0.1:
+
+  • Algorithm 2 with ρk ≡ 0, i.e., greedily using CE with the current estimate
+  • Algorithm 2 with ρk ≡ 1, i.e., isotropic Gaussian excitations
+
+  • Algorithm 2 with ρk ≡ 0 and oracle knowledge, i.e., computing the optimal excitation with θ∗
+
+We select τ = 10 and run 20 Monte Carlo simulations. The mean and σ-bands of the likelihood of θ∗ given the
+data are displayed in Figure 2. It is immediately apparent that oracle knowledge does not provide any advantage
+in this setup, since the current estimate θ̂k does not influence the solution of (28) due to the structure of the
+problem. Further, as expected, the experiment design algorithm significantly outperforms the random excitations
+by allocating all input energy to the first input.
+                                                1
+
+
+                                               0.9
+
+
+
+
+                            Likelihood of θ∗
+                                               0.8
+
+
+                                               0.7
+
+
+                                               0.6
+                                                                                             Alg. 2 with ρk ≡ 0
+                                                                                             Alg. 2 with oracle knowledge
+                                               0.5                                               i.i.d.        γ2
+                                                                                             u(t) ∼ N (0, nuu Inu )
+
+                                                     0   5   10   15    20              25                30        35      40
+                                                                       Epoch
+
+
+Figure 2: Mean and σ-band of the likelihood of θ∗ given the data for different data collection strategies for the
+motivating example.
+

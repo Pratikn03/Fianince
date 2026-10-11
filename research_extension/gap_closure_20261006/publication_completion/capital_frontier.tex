@@ -1,0 +1,100 @@
+\subsection{A Financially Specified Probe Account}
+\label{sec:capital_frontier}
+A probe changes inventory as well as price. We therefore specify actual cash and execution timing, rather than treating a fixed price exposure as its complete financial loss. Price has units of currency per asset quantity, and $\kappa$ has units of currency per squared quantity.
+
+\begin{lemma}[Positive price-response geometry and fair execution]
+\label{lem:positive_price_kernel}
+In the positive, stable, price-first cohort economy, the physical execution-to-price impulse response is a nonnegative mixture of decaying exponentials:
+\[
+h_j=\sum_\ell w_\ell\lambda_\ell^j,\qquad
+w_\ell\ge0,\quad \sum_\ell w_\ell=\kappa,\quad 0\le\lambda_\ell<1.
+\]
+It is completely monotone and nonincreasing. In particular its peak is direct impact $\kappa$, even when the full transition is non-normal in its original coordinates.
+
+In the declared price/memory coordinates, a fixed price-only operator $C=\lambda e_x^\top$ also has initial-state gain $\sup_{t\ge0}\|CJ^t\|_2=|\lambda|$. Thus full-state non-normal amplification cannot by itself establish a transient loss in this particular monetary price-only experiment.
+
+For a quote schedule refreshed after the uncontrolled state update, execution at the average price of a linear book gives cost relative to the constant fundamental mark
+\[
+\mathcal C(v)=\frac12v^\top T_hv,\qquad
+(T_h)_{ij}=h_{|i-j|}.
+\]
+The matrix is positive definite, so no nonzero signed roundtrip produces a deterministic gain under this fill/noise contract. Nonnegative execution fees add cost.
+\end{lemma}
+\begin{proof}
+Omit zero-weight cohorts, which do not affect price. For $a>0$, put $b_i=\kappa q_i$, $r_i=1-\eta_i$ and
+\[
+T=\operatorname{diag}(\sqrt a,\sqrt{b_1/\eta_1},\ldots),\qquad
+v=(\sqrt a,\sqrt{b_1\eta_1},\ldots)^\top.
+\]
+The transformed transition is the symmetric positive-definite matrix
+\[
+J'=TJT^{-1}=\operatorname{diag}(0,r_1,\ldots)+vv^\top.
+\]
+The input transforms to $TH=\kappa v$ and $J'e_x=\sqrt a\,v$. Consequently,
+\[
+h_j=(\kappa/a)e_x^\top(J')^{j+1}e_x.
+\]
+Spectral decomposition gives the claimed nonnegative weights, whose sum is $h_0=\kappa$. Schur stability puts the eigenvalues below one. The case $a=0$ follows by continuity from positive anchors, with the same uniformly stable rate family; the zero-feedback case is simply $h_j=\kappa a^j$. This also covers repeated rates after merging.
+
+The nonnegative transition has row sums at most one. Hence every price row of $J^t$ has $\ell_1$ norm at most one, and therefore $\ell_2$ norm at most one. Time zero attains one, proving the fixed price-only gain statement. Its initial-state geometry is specified; coordinate changes require transforming that set.
+
+After the uncontrolled update, the pre-probe displacement at step $j$ is $\sum_{i<j}h_{j-i}v_i$. Average linear-book execution adds $\kappa v_j/2$. Summing signed execution cost gives the displayed Toeplitz quadratic form. Each kernel $\lambda^{|i-j|}$ is a positive-definite AR(1) covariance matrix for $0\le\lambda<1$. Their nonnegative mixture with positive total weight is positive definite. For a roundtrip $\sum v_j=0$, the fundamental-price cash term cancels, so a positive execution cost excludes a gain.
+\end{proof}
+
+\begin{theorem}[Sharp robust quantity cap from cash and margin]
+\label{thm:cash_capital_frontier}
+Use that positive, stable, reset economy with constant fundamental price $P_*>0$ and no process noise. At step $t$, first update the uncontrolled baseline
+$z^0_{t+1}=Jz_t$, with price $P^0_{t+1}=P_*+e_x^\top z^0_{t+1}$.
+A designated dealer fills only controlled nonnegative probes $v_t\ge0$ on a linear quote schedule, at average price $P^0_{t+1}+\kappa v_t/2$. Other market flow is executed elsewhere. The final state is $z_{t+1}=z^0_{t+1}+Hv_t$ and the final mark is $P_{t+1}=P_*+x_{t+1}$. Initially inventory is zero and cash/equity is $B>0$. Each fill costs $cv_t$, $c\ge0$, with no other positions, fees or funding flows:
+\[
+I_{t+1}=I_t-v_t,\quad
+K_{t+1}=K_t+v_t(P^0_{t+1}+\kappa v_t/2)-cv_t,
+\quad E_t=K_t+I_tP_t.
+\]
+For fixed margin $\mu>0$, require $\mu|I_t|P_t\le E_t$. For the robust contract admitting every nonnegative probe sequence with $\sum_t v_t\le V$, the largest quantity allowance guaranteeing margin at every time is exactly
+\begin{equation}
+V_B=\frac{2B}{\beta+\sqrt{\beta^2+4(\mu+1/2)\kappa B}},
+\qquad\beta=c+\mu P_*.
+\label{eq:cash_quantity_cap}
+\end{equation}
+Equivalently, the necessary and sufficient robust condition is
+\begin{equation}
+(\mu+1/2)\kappa V^2+(c+\mu P_*)V\le B.
+\label{eq:cash_margin_budget}
+\end{equation}
+The cap holds across all positive cohort representations satisfying $S<1$, without resolving individual adaptation rates.
+
+For the known symmetric testing pair and the declared deterministic probes, suppose the statistical observer receives only noisy price-state observations and executed quantities, without exact execution-price, cash or equity records. Its best finite-horizon error within this robust quantity allowance is exactly $\Phi[-V_B\|d_T\|_2/(2\sigma)]$. Holding the other primitives fixed, achieving a fixed error $\alpha<1/2$ requires capital of order at least $\delta^{-4}$ under this observation/probing contract, and a single positive pulse attains that order. This capital order is distinct from the average-power horizon order and does not bound every tailored safe, hedged or adaptive experiment or richer financial disclosure.
+\end{theorem}
+\begin{proof}
+Let $U_t=\sum_{j<t}v_j$. Positive impulse responses give $0\le x_t\le\kappa U_t$ and $I_t=-U_t$. Summing actual cash and marking inventory gives
+\[
+B-E_t=U_tx_t-\sum_{j<t}v_jx^0_{j+1}
+-\frac\kappa2\sum_{j<t}v_j^2+cU_t.
+\]
+Write its quadratic terms as $v^\top A_tv$. The diagonal entry for probe $i$ is $h_{t-1-i}-\kappa/2$. For $i<j$, the off-diagonal entry is
+\[
+(A_t)_{ij}=\tfrac12\{h_{t-1-i}+h_{t-1-j}-h_{j-i}\}.
+\]
+Monotonicity and $t-1-i\ge j-i$ imply that every off-diagonal entry is at most $\kappa/2$; the diagonals satisfy the same bound. Therefore
+$B-E_t\le\kappa U_t^2/2+cU_t\le\kappa V^2/2+cV$.
+Position value is bounded by $U_t(P_*+x_t)\le V(P_*+\kappa V)$.
+Condition~\eqref{eq:cash_margin_budget} guarantees margin and positive equity/marks. During a nonnegative linear-book fill, the adverse mark and position value worsen monotonically, so the endpoint check also covers intermediate fills. Without a fill, monotone positive impulse decay improves the short probe-only account's mark.
+
+A single reset pulse gives $x_1=\kappa V$, $I_1=-V$ and $E_1=B-\kappa V^2/2-cV$, simultaneously attaining both adverse bounds. Any larger quantity allowance fails at that first response. Solving the quadratic in a form avoiding subtraction cancellation gives~\eqref{eq:cash_quantity_cap}.
+
+The first positive pulse also attains the statistical convolution-column bound. The quantity lower bound requires $V_B\ge c_\alpha\delta^{-2}$, so~\eqref{eq:cash_margin_budget} requires $B\ge(\mu+1/2)\kappa c_\alpha^2\delta^{-4}$. The third-observation pulse $A$ in~\eqref{eq:quantity_attainability}, funded with $B=(\mu+1/2)\kappa A^2+(c+\mu P_*)A$, meets margin and attains error $\alpha$, proving the matching order.
+\end{proof}
+
+Quadratic impact costs and execution timing are established microstructure issues \citep{almgren2000}; this paper proposes their connection to a particular memory-testing and robust margin contract. Even with initial inventory zero, the probe creates a quadratic adverse mark. A fixed initial price exposure would miss it. The refreshed average-fill convention is imposed, not an estimated competitive equilibrium or real fill calibration. The capital comparison assumes validity of the linear response over growing probes; fixed model-validity or position limits add a resolution floor. Uncertain impact, process shocks, other inventory, funding and collateral rules require an expanded account. Anonymous VAR estimates do not authenticate its physical $\kappa$.
+
+\begin{proposition}[Exact financial disclosure changes the experiment]
+\label{prop:equity_disclosure}
+In this noiseless-state account, exact disclosure of the third equity mark after a single positive reset pulse $A$ distinguishes the known symmetric pair with zero error for every $\delta>0$. The pulse can be any $0<A\le V_B$.
+\end{proposition}
+\begin{proof}
+The initial cash receipt is common to both alternatives, and the dealer subsequently holds inventory $-A$. At time three,
+\[E_{3,r}=B+\kappa A^2/2-cA-A^2h_{r,2}.\]
+The exact tap difference gives $E_{3,\delta}-E_{3,0}=A^2\kappa^2q\delta^2>0$. Exact equity disclosure therefore determines which known alternative generated the path. No Gaussian price-observation test is involved, and the admissible positive pulse can be arbitrarily small.
+\end{proof}
+Exact marked equity is extra information, not a free observation assumed in the price-only theorem. Real account marks, executions and fees have their own precision and model error. The counterexample prevents interpreting the capital order as a universal limit for an account owner who receives richer financial records.

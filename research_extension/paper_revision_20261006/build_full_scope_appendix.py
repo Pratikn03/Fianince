@@ -170,6 +170,16 @@ s+=event_module.build()
 
 
 
+regime_path=REV.parent/'gap_closure_20261006/regime_model/write_regime_appendix.py'
+regime_spec=importlib.util.spec_from_file_location('regime_appendix_builder',regime_path)
+regime_module=importlib.util.module_from_spec(regime_spec)
+regime_spec.loader.exec_module(regime_module)
+s+=regime_module.build()
+
+s+=(REV.parent/'gap_closure_20261006/economic_contracts/economic_review_body.tex').read_text()
+
+s+=(REV.parent/'gap_closure_20261006/input_gate/gate_review_body.tex').read_text()
+
 s+=r'\section{Recovering Evidence Across Workspaces}'+'\n'
 s+=r'''The search receipt indexes 14,804 text files and archive members, with 10,570 distinct content hashes. It includes related local release/repair folders, historical tar releases, a Zoom ZIP and Gemini/Antigravity scratch material. Texts larger than two megabytes, environments, credentials and Git objects were excluded from content matching. This is a bounded discovery search rather than a declaration that all possible backups have been read. Candidate text matches are reviewed semantically before they support a result.
 

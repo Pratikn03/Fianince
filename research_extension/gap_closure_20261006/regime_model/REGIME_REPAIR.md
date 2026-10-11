@@ -16,17 +16,16 @@ The new `switching_regression.py` uses log-domain forward/backward calculations,
 
 Independent checks: exhaustive enumeration of all 16 paths in a four-observation/two-state example matches likelihood, state posteriors and transition posteriors; segment resets exclude boundary transitions; simulated conditional-regression tests verify likelihood ascent, row-stochastic transitions and final likelihood consistency. Three tests pass. These verify computation, not market fit or scientific conclusions.
 
-## Empirical Out-of-Sample Study Completed
+## Empirical study and inference review — October 7, 2026
 
-The repaired EM estimator (`switching_regression.py` and `run_market_study.py`) was evaluated across 7 chronological out-of-sample expanding window test dates (2022-04-10, 2022-05-15, 2022-06-19, 2022-07-24, 2022-08-28, 2022-10-02, 2022-11-06) for BTC, ETH, and ADA across both state variables:
-1. 300-second EMA price deviation state ($x_b^{\text{EMA}} = p_b - m_b$)
-2. Raw 1-second price return state ($r_b = p_b - p_{b-1}$)
+The completed study uses ten-second states from the existing April 7–19, 2021 caches. Evaluation dates are April 13–19, 2021; the prior 2022 date list and one-second return label were incorrect.
 
-Across all 12 evaluated configurations (3 assets $\times$ 2 state definitions $\times$ 2 switching specifications):
-- Out-of-sample mean squared error difference 95% confidence intervals uniformly span zero (e.g., BTC EMA variance-only: $[-0.3167, 0.1076]$, full-switching: $[-0.0138, 0.0055]$).
-- Negative log-predictive score differences show moderate likelihood gains purely from modeling fat tails/volatility clustering, but zero directional or conditional predictive advantage.
-- The legacy 62.7-fold regime bifurcation claim and extreme significance ($p < 10^{-300}$) are definitively refuted and withdrawn.
+All 264 stored fits have their final likelihood independently recalculated. All 96 full-sample starts converge; 12 of 168 forecast starts and four selected forecasts reach their iteration limit. All cases are retained. BTC's lower variance binds at both fixed variance floors: full-switching EMA SD ratio changes from 1103.44 to112.22 and return ratio from1112.62 to113.14. ETH/ADA full-sample lower variances do not bind. These are constrained conditional fits, not identified crisis multipliers.
 
-Results are compiled into LaTeX Table 29 (`tab:regime_market_rebuilt`) in `regime_appendix.tex`, integrated into Section K of `full_scope_appendix.tex`, and audited by `check_lineage_receipt.py` (3,219 verified cells).
+All baseline MSE comparison intervals include zero. BTC/ETH switching density scores improve under exploratory seven-date references; ADA intervals include zero. Every full-switching versus variance-only comparison interval includes zero for both loss measures. This provides no clear forecast advantage for additional coefficient switching, and does not prove regime absence, equal forecasts or absence of adaptive trading. The old62.7 ratio remains unsupported; its exact historical origin is not proved by non-rejection.
 
-Method reference: Rabiner (1989), A Tutorial on Hidden Markov Models and Selected Applications in Speech Recognition, equations 37-40. https://doi.org/10.1109/5.18626; primary article copy https://web.mit.edu/6.435/www/Rabiner89.pdf. This is established likelihood machinery, not a new identification theorem.
+Six focused tests cover exhaustive hidden paths, segment resets, likelihood ascent/final parameter consistency, C/Python tail agreement, independent Gaussian predictive score and training-only scale. `market_verification.json` records fit-level numerical checks, source hashes and receipt contradictions. Provider, model adequacy, serially justified parameter inference and causal interpretation remain open.
+
+The revised standalone LaTeX supplement includes every fixed floor/specification case and all three forecast comparisons. The earlier29-table ledger applies to an earlier manuscript source and cannot certify the subsequently edited48-page manuscript.
+
+Method reference: Rabiner (1989), equations37–40, https://doi.org/10.1109/5.18626 (primary article: https://web.mit.edu/6.435/www/Rabiner89.pdf).

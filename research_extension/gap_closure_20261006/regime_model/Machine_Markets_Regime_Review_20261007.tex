@@ -1,0 +1,96 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,booktabs,longtable,hyperref}
+\hypersetup{colorlinks=true,urlcolor=blue}
+\setlength{\parskip}{5pt}
+\title{Machine Markets: Verified Regime-Analysis Supplement}
+\author{Research revision evidence}
+\date{October 7, 2026}
+\begin{document}
+\maketitle
+\noindent This supplement corrects the interpretation and provenance of the existing-sample switching study. It does not declare the full paper or its remaining scientific gates complete.
+
+\section{Repaired Switching Likelihood: Variance Floors and Chronological Forecasts}
+\label{sec:regime_repaired}
+The historical generator fits a scalar differenced-EMA regression, rather than a two-equation structural VAR. Its transition updates multiply marginal smoothed probabilities instead of using joint state-transition posteriors. It also imposes persistence bounds, floors emission densities, labels iteration counts as convergence, and forms a unit-dependent index by adding persistence to ten times a flow slope. These defects invalidate its asserted structural interpretation. They do not establish the source of every historical numerical discrepancy.
+
+The replacement uses log-domain forward/backward calculations and exact posterior transition counts. Regression segments restart at gaps and UTC dates; the EMA itself continues across contiguous UTC dates under the preserved measurement construction. Transition parameters are shared across segments, while latent-state probabilities restart. A fitted initial-state distribution and a declared variance floor are included. Independent exhaustive hidden-path enumeration checks the likelihood and both marginal and pair posteriors. The compiled two-state calculation matches the Python reference, including extreme tail emissions.
+
+The data are the existing April 7--19, 2021 recorder caches. BTC, ETH and ADA contribute 102,470, 102,771 and 102,898 transitions respectively under each measurement construction, split into 16, 14 and 13 regression segments. These are ten-second bins, including the raw-return sensitivity; they are not one-second return observations. The response is the next change in the 300-second EMA deviation, or the next ten-second raw return. Regressors are an intercept, the lagged price state and observed signed flow. This remains a conditional scalar regression and does not identify a participant's learning rule.
+
+A shared-coefficient variance-switching model is compared with a model whose coefficients and variances both switch. Full-sample fits use four initializations at each of two fixed variance floors, $10^{-6}$ and $10^{-4}$ in standardized target units. All 96 full-sample starts converge. The maximum training likelihood selects a start within each fixed specification; agreement across these starts is not a global optimality certificate.
+
+BTC's lower variance binds at both floors. Its full-switching residual-standard-deviation ratio is about 1,103 at $10^{-6}$ and 112 at $10^{-4}$ for EMA differences; the corresponding return ratios are about 1,113 and 113. The variance-only model shows similar sensitivity. Such ratios describe the constrained likelihood fit and cannot be presented as an identified crisis multiplier. ETH and ADA do not hit these floors in the reported full-sample fits.
+
+{\footnotesize
+\begin{longtable}{llllrrrr}
+\caption{All fixed full-sample specifications. Variance floors are in standardized target units. SD ratios are conditional fit summaries; BTC lower variances bind at the declared floors.}\label{tab:regime_floor_sensitivity}\\
+\toprule Asset & State & Floor & Model & SD ratio & Low variance & Conv./4 & LL spread\\\midrule\endfirsthead
+\toprule Asset & State & Floor & Model & SD ratio & Low variance & Conv./4 & LL spread\\\midrule\endhead
+\bottomrule\endfoot
+BTC & EMA & 1e-06 & Variance & 1108.152 & 1e-06 & 4 & 6.27e-07\\
+BTC & EMA & 1e-06 & Full & 1103.437 & 1e-06 & 4 & 2.15e-07\\
+BTC & EMA & 1e-04 & Variance & 112.706 & 0.0001 & 4 & 3.69e-06\\
+BTC & EMA & 1e-04 & Full & 112.221 & 0.0001 & 4 & 1.27e-05\\
+BTC & Return & 1e-06 & Variance & 1119.119 & 1e-06 & 4 & 1.2e-07\\
+BTC & Return & 1e-06 & Full & 1112.624 & 1e-06 & 4 & 4.07e-07\\
+BTC & Return & 1e-04 & Variance & 113.811 & 0.0001 & 4 & 4.57e-06\\
+BTC & Return & 1e-04 & Full & 113.144 & 0.0001 & 4 & 1.08e-05\\
+ETH & EMA & 1e-06 & Variance & 2.924 & 0.333235 & 4 & 0.000625\\
+ETH & EMA & 1e-06 & Full & 2.921 & 0.334267 & 4 & 0.000876\\
+ETH & EMA & 1e-04 & Variance & 2.924 & 0.333235 & 4 & 0.000625\\
+ETH & EMA & 1e-04 & Full & 2.921 & 0.334267 & 4 & 0.000876\\
+ETH & Return & 1e-06 & Variance & 2.931 & 0.341026 & 4 & 0.000509\\
+ETH & Return & 1e-06 & Full & 2.934 & 0.340049 & 4 & 0.000369\\
+ETH & Return & 1e-04 & Variance & 2.931 & 0.341026 & 4 & 0.000509\\
+ETH & Return & 1e-04 & Full & 2.934 & 0.340049 & 4 & 0.000369\\
+ADA & EMA & 1e-06 & Variance & 3.806 & 0.180555 & 4 & 0.000711\\
+ADA & EMA & 1e-06 & Full & 3.812 & 0.179544 & 4 & 0.00161\\
+ADA & EMA & 1e-04 & Variance & 3.806 & 0.180555 & 4 & 0.000711\\
+ADA & EMA & 1e-04 & Full & 3.812 & 0.179544 & 4 & 0.00161\\
+ADA & Return & 1e-06 & Variance & 3.777 & 0.188806 & 4 & 0.000445\\
+ADA & Return & 1e-06 & Full & 3.776 & 0.188626 & 4 & 0.00141\\
+ADA & Return & 1e-04 & Variance & 3.777 & 0.188806 & 4 & 0.000445\\
+ADA & Return & 1e-04 & Full & 3.776 & 0.188626 & 4 & 0.00141\\
+\end{longtable}
+}
+
+Chronological expanding-window forecasts train on six initial dates and evaluate April 13--19, 2021. Each test segment starts from the fitted initial-state distribution; predictions use only preceding outcomes, and scaling uses training data alone. Two starts are retained per model/fold at the primary floor. Of 168 forecast fit starts, 156 converge and 12 reach the iteration limit. Four of the 84 selected model/fold fits reach that limit; these cases remain in the ledger and comparisons rather than being relabeled as converged.
+
+The table reports mean absolute loss differences across seven evaluation dates. Positive differences favor the indicated switching model over single-regime OLS. The ``Full--variance'' rows compare full switching directly with variance-only switching. MSE differences have squared-basis-point units; negative-log-score differences are in nats per observation. These are not percentage improvements. Date-level Student intervals are exploratory references with seven consecutive dates, without justified serial independence or multiplicity coverage.
+
+{\footnotesize
+\clearpage\begin{longtable}{lllrlrl}
+\caption{Chronological forecast differences on seven dates. All MSE intervals and all full-versus-variance-only score intervals span zero. Some switching density-score intervals versus OLS exclude zero.}\label{tab:regime_market_rebuilt}\\
+\toprule Asset & State & Comparison & $\Delta$MSE & Date interval & $\Delta$NLS & Date interval\\\midrule\endfirsthead
+\toprule Asset & State & Comparison & $\Delta$MSE & Date interval & $\Delta$NLS & Date interval\\\midrule\endhead
+\bottomrule\endfoot
+BTC & EMA & Variance--OLS & -0.1046 & [-0.3167, 0.1076] & 0.6918 & [0.5718, 0.8117]\\
+BTC & EMA & Full--OLS & -0.0041 & [-0.0138, 0.0055] & 0.6966 & [0.5699, 0.8233]\\
+BTC & EMA & Full--variance & 0.1005 & [-0.1022, 0.3031] & 0.0048 & [-0.0049, 0.0145]\\
+BTC & Return & Variance--OLS & -0.1943 & [-0.5391, 0.1504] & 0.6901 & [0.5723, 0.8079]\\
+BTC & Return & Full--OLS & -0.0077 & [-0.0228, 0.0074] & 0.6975 & [0.5713, 0.8237]\\
+BTC & Return & Full--variance & 0.1866 & [-0.1432, 0.5164] & 0.0074 & [-0.0058, 0.0206]\\
+ETH & EMA & Variance--OLS & 0.0034 & [-0.0283, 0.0352] & 0.2241 & [0.0823, 0.3660]\\
+ETH & EMA & Full--OLS & 0.0013 & [-0.0011, 0.0038] & 0.2243 & [0.0814, 0.3672]\\
+ETH & EMA & Full--variance & -0.0021 & [-0.0340, 0.0298] & 0.0002 & [-0.0011, 0.0015]\\
+ETH & Return & Variance--OLS & -0.0204 & [-0.0787, 0.0380] & 0.2228 & [0.0844, 0.3613]\\
+ETH & Return & Full--OLS & 0.0004 & [-0.0044, 0.0051] & 0.2226 & [0.0840, 0.3611]\\
+ETH & Return & Full--variance & 0.0207 & [-0.0354, 0.0768] & -0.0003 & [-0.0015, 0.0010]\\
+ADA & EMA & Variance--OLS & -0.0306 & [-0.2935, 0.2323] & 0.4033 & [-0.0670, 0.8737]\\
+ADA & EMA & Full--OLS & -0.0378 & [-0.1023, 0.0266] & 0.4028 & [-0.0655, 0.8711]\\
+ADA & EMA & Full--variance & -0.0073 & [-0.3324, 0.3179] & -0.0006 & [-0.0044, 0.0033]\\
+ADA & Return & Variance--OLS & -0.0560 & [-0.1589, 0.0470] & 0.4026 & [-0.0661, 0.8713]\\
+ADA & Return & Full--OLS & 0.0073 & [-0.0259, 0.0404] & 0.4027 & [-0.0663, 0.8718]\\
+ADA & Return & Full--variance & 0.0632 & [-0.0680, 0.1945] & 0.0002 & [-0.0009, 0.0012]\\
+\end{longtable}
+}
+
+All MSE-difference intervals include zero. BTC and ETH switching density scores improve relative to the single-Gaussian benchmark under the exploratory date reference, while ADA intervals include zero. Every full-versus-variance-only interval includes zero for both losses. Thus additional coefficient switching has no clear forecast advantage over volatility switching in this small retrospective evaluation. This does not prove equal forecasts, absent regimes, or absent adaptive trading. A conditional-volatility explanation remains compatible with the density gains.
+
+The historical 62.7-fold structural claim remains unsupported by its generating procedure. The repaired ratios are materially sensitive to an explicit constraint, and this study does not authenticate that old literal or establish that all historical differences have one cause. Provider authentication, serially valid parameter uncertainty, model adequacy, and causal mechanism identification remain separate gates. Full parameters, likelihood histories, all starts and all forecast folds are retained in the digital results.
+
+\paragraph{Method reference.} The posterior transition update follows established hidden-Markov likelihood machinery; see Rabiner (1989), \emph{A Tutorial on Hidden Markov Models and Selected Applications in Speech Recognition}, equations 37--40, \href{https://doi.org/10.1109/5.18626}{doi:10.1109/5.18626}. Independent computation and source hashes are recorded in \texttt{market\_verification.json} and the delivery receipt.
+\end{document}

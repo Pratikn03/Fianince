@@ -1,0 +1,10 @@
+# Additional nearest-work comparison
+
+The manuscript now cites two relevant primary papers alongside the existing financial-execution, super-resolution and system-identification comparisons.
+
+- [Chatzikiriakos and Iannelli (2024), author manuscript](https://andreaian.github.io/pub/LCSS_24_FiniteSetBnds.pdf): finite candidate LTI systems, fully observed trajectory, Gaussian process noise and Gaussian inputs; MLE upper and information-theoretic lower sample-complexity bounds. Finite-model identification is established prior work.
+- [Chatzikiriakos, Jamieson and Iannelli (2026), AISTATS/PMLR](https://proceedings.mlr.press/v300/chatzikiriakos26a.html): Section 2 specifies full-state observations and Gaussian process noise. Section 3 and Theorem 3.1 analyze excitation-dependent lower bounds under bounded average input power; later results provide upper bounds and an active-learning algorithm. These are closer comparisons than general system-identification surveys. The primary PDF was retrieved and hashed; its acquisition receipt is in the Lean project's literature directory.
+
+The current paper instead studies a price-output experiment with no process noise, independent measurement noise, coalescing cohort rates, deterministic lifetime quantity and eventual-solvency capital. It also gives exact financial-disclosure and natural-excitation counterexamples. The differences specify the claimed contribution; they do not establish that the financial result is more than a useful corollary of existing identification and execution-cost theory. The exact Gaussian test and input-column optimization are established machinery. Importance must rest on the financial question, the sharp resource distinction and its defended observation/account contract.
+
+This comparison has been integrated into the revised PDF. It does not establish exhaustive priority or journal-level importance. A specialist should challenge an explicit reduction of the capital result to existing bounds before any strong novelty certification.
