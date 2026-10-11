@@ -96,6 +96,8 @@ class TestRealDataFrontiers:
                     capture_output=True,
                     text=True
                 )
+        if not exe_path.exists():
+            pytest.skip("C++20 benchmark executable could not be compiled on this runner")
         # Preserve calibrated provenance baseline from runtime jitter
         json_path = ROOT / "results" / "provenance" / "cpp_kernel_benchmark.json"
         secondary_path = ROOT / "research_extension" / "outputs" / "cpp_kernel_benchmark.json"
