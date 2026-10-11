@@ -46,17 +46,19 @@ This dossier provides complete independent reproducibility receipts, source code
 
 ```
 breakthrough_experiments/
-├── exp08_financial_identification_frontier.py   # Tri-region phase diagram & boundary
-├── exp09_active_probing_optimality.py           # 4 canonical probing architectures
-├── exp10_causal_multi_agent_intervention.py     # Multi-agent MARL policy-freeze test
-├── exp11_disclosure_hierarchy_frontier.py       # Disclosure regimes I_0 to I_3
-├── exp12_nonnormal_balance_sheet.py             # Non-normal pseudospectra & Kreiss K(J) >= 1.0
-├── exp13_observational_limits_binance.py        # Quasi-differenced structural regression
-├── generate_all_breakthrough_figures.py         # Matplotlib publication figure generator
-├── generate_breakthrough_tables.py              # Automated LaTeX table generator
-├── figures/                                     # Output PDFs & PNGs for Figures IA.1 to IA.5
-├── tables/                                      # Output LaTeX files for Tables IA.1 to IA.6
-└── *.json                                       # Raw deterministic result receipts
+├── exp2_unknown_mixture.py             # Closed-loop unknown mixture super-resolution
+├── exp3_adaptive_probing.py            # Held-out Neyman-Pearson probing likelihood ratio tests
+├── exp4_frontier_phase_diagram.py      # Tri-region phase diagram with displacement caps
+├── exp6_excitation_duality.py          # Passive observation Monte Carlo error distributions
+├── exp7_disclosure_value.py            # Financial disclosure frontier (I0 to I5) & lot sizes
+├── exp8_observable_bridge.py           # Shifted regressor & Cochrane-Orcutt quasi-differencing
+├── exp10_multi_agent_market.py         # Double-entry ledger & policy-freeze causal intervention
+├── exp12_nonnormal_balance_sheet.py    # Non-normal 50 bps stress test & Kreiss bound K(J) >= 1.0
+├── generate_all_breakthrough_figures.py # Matplotlib publication figure generator (Figs 1-5)
+├── generate_breakthrough_tables.py     # Automated LaTeX table generator (Tables 1-4)
+├── figures/                            # Output PDFs & PNGs for Figures IA.1 to IA.5
+├── tables/                             # Output LaTeX files for Tables IA.1 to IA.4
+└── *.json                              # Raw deterministic result receipts
 ```
 
 ---
@@ -80,19 +82,21 @@ breakthrough_experiments/
 # 5. Theorem-to-code bridge (36/36 environments verified on disk)
 /opt/anaconda3/envs/ag311/bin/python scripts/verify_theorem_code_bridge.py
 
-# 6. Full automated test suite (622 passing tests)
+# 6. Full automated test suite (including test_breakthrough_experiments.py)
 /opt/anaconda3/envs/ag311/bin/pytest tests/
 ```
 
 ### B. Re-run Breakthrough Experiments
 ```bash
 cd breakthrough_experiments
-/opt/anaconda3/envs/ag311/bin/python exp08_financial_identification_frontier.py
-/opt/anaconda3/envs/ag311/bin/python exp09_active_probing_optimality.py
-/opt/anaconda3/envs/ag311/bin/python exp10_causal_multi_agent_intervention.py
-/opt/anaconda3/envs/ag311/bin/python exp11_disclosure_hierarchy_frontier.py
+/opt/anaconda3/envs/ag311/bin/python exp2_unknown_mixture.py
+/opt/anaconda3/envs/ag311/bin/python exp3_adaptive_probing.py
+/opt/anaconda3/envs/ag311/bin/python exp4_frontier_phase_diagram.py
+/opt/anaconda3/envs/ag311/bin/python exp6_excitation_duality.py
+/opt/anaconda3/envs/ag311/bin/python exp7_disclosure_value.py
+/opt/anaconda3/envs/ag311/bin/python exp8_observable_bridge.py
+/opt/anaconda3/envs/ag311/bin/python exp10_multi_agent_market.py
 /opt/anaconda3/envs/ag311/bin/python exp12_nonnormal_balance_sheet.py
-/opt/anaconda3/envs/ag311/bin/python exp13_observational_limits_binance.py
 /opt/anaconda3/envs/ag311/bin/python generate_all_breakthrough_figures.py
 /opt/anaconda3/envs/ag311/bin/python generate_breakthrough_tables.py
 ```

@@ -53,10 +53,10 @@ def plot_fig1():
     ax.axvline(delta_min, color='crimson', lw=2.0, ls=':', label=rf'Physical Resolution Floor $\delta_{{\min}} = {delta_min:.3f}$')
     
     # Fill Regions
-    ax.fill_between(deltas, B_pulse, 1e6, where=[d >= delta_min for d in deltas], color='green', alpha=0.15, label='Regime 1: Feasible Identification')
+    ax.fill_between(deltas, B_pulse, 1e6, where=[d >= delta_min for d in deltas], color='green', alpha=0.15, label='Regime 1: Feasible Single-Pulse')
     ax.fill_between(deltas, B_seq, B_pulse, where=[d >= delta_min for d in deltas], color='orange', alpha=0.15, label='Regime 2: Costly / Sequential')
     ax.fill_between(deltas, 1.0, B_seq, color='red', alpha=0.15, label='Regime 3: Infeasible Identification')
-    ax.fill_between(deltas, B_seq, 1e6, where=[d < delta_min for d in deltas], color='red', alpha=0.15)
+    ax.fill_between(deltas, B_seq, 1e6, where=[d < delta_min for d in deltas], color='orange', alpha=0.15)
     
     ax.set_yscale('log')
     ax.set_xlim(0.01, 0.25)
@@ -123,10 +123,12 @@ def plot_fig2():
 # -------------------------------------------------------------
 def plot_fig3():
     with open("breakthrough_experiments/results_exp10_multi_agent.json") as f:
-        data = json.load(f)["conditions_summary"]
+        full = json.load(f)
+        data = full["conditions_summary"]
+        causal = full["causal_intervention"]
         
     conds = ["P0_Baseline", "P2_Frozen_Policy", "P2_Active_Learning", "P1_Persistent_Flow"]
-    labels = ["P0 Baseline\n(Noise Traders)", "P2 Frozen\n(Static Heuristic)", "P2 Active\n(Online Learning)", "P1 Persistent\n(TWAP Splitting)"]
+    labels = ["P0 Baseline\n(Noise Traders)", "P2 Frozen\n(Static Policy)", "P2 Active\n(Online Learning)", "P1 Persistent\n(TWAP Splitting)"]
     drawdowns = [data[c]["mean_dealer_drawdown"] for c in conds]
     errs = [data[c]["std_dealer_drawdown"] for c in conds]
     liq_rates = [data[c]["liquidation_rate"] * 100.0 for c in conds]
@@ -139,17 +141,19 @@ def plot_fig3():
     ax1.set_ylabel('Mean Dealer Drawdown (USDT)')
     ax1.set_title('Intervention Impact on Dealer Drawdown')
     ax1.grid(True, axis='y', ls='--', alpha=0.3)
+    ax1.set_ylim(0, max(drawdowns) * 1.35)
     
-    # Annotation on Active vs Frozen
-    ax1.annotate('Active vs Frozen Policy:\n+24.5 USDT (t = 0.61, n.s.)',
-                 xy=(1.5, 9500), xytext=(0.8, 18000),
-                 arrowprops=dict(facecolor='black', arrowstyle='->', lw=1.2),
-                 fontsize=9, bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="black", lw=1.0))
-                 
+    # Dynamic annotation
+    af_diff = causal["active_minus_frozen_drawdown_mean"]
+    af_t = causal["active_minus_frozen_t_stat"]
+    ax1.text(0.5, 0.88, f"Active vs Frozen Policy:\n+{af_diff:.2f} USDT (t = {af_t:.2f})",
+             transform=ax1.transAxes, ha='center', fontsize=9,
+             bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="black", lw=1.0))
+             
     # Right: Liquidation Rate
     bars2 = ax2.bar(labels, liq_rates, color=colors, alpha=0.85, edgecolor='black')
     ax2.set_ylabel('Dealer Liquidation Rate (%)')
-    ax2.set_title('Mechanical Liquidation Frequency (Binance MMR)')
+    ax2.set_title('Forced Liquidation Frequency (Binance MMR)')
     ax2.set_ylim(0, 100)
     ax2.grid(True, axis='y', ls='--', alpha=0.3)
     
@@ -201,7 +205,7 @@ def plot_fig4():
     ax1.grid(True, axis='y', ls='--', alpha=0.3)
     
     # Percentage reduction label
-    ax1.text(3, 3, '99.99% Capital\nCollapse', ha='center', fontsize=9, color='darkgreen', fontweight='bold',
+    ax1.text(3, 3, '99.98% Capital\nCollapse', ha='center', fontsize=9, color='darkgreen', fontweight='bold',
              bbox=dict(boxstyle="round,pad=0.2", fc="lightgreen", ec="darkgreen", lw=1))
              
     plt.tight_layout()
@@ -217,7 +221,7 @@ def plot_fig5():
     with open("breakthrough_experiments/results_exp12_nonnormal_balance_sheet.json") as f:
         data = json.load(f)
         
-    net_data = data["multi_asset_network_kreiss_inflation"]
+    net_data = data["multi_asset_network"]
     M_vals = [r["assets_M"] for r in net_data]
     kreiss = [r["kreiss_constant"] for r in net_data]
     rho_vals = [r["spectral_radius"] for r in net_data]
@@ -225,7 +229,7 @@ def plot_fig5():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4.5))
     
     # Left: Decoupling Bar Chart
-    labels = ['Price-Only Output\nC = [1, 0]', 'Balance Sheet Output\nC = [1, kappa/MMR]']
+    labels = ['Price-Only Output\nC = [1, 0]', 'Margin Operator\nC = [1, lambda/MMR]']
     gains = [1.0, 160.003]
     colors = ['steelblue', 'crimson']
     
@@ -238,7 +242,7 @@ def plot_fig5():
         ax1.text(bar.get_x() + bar.get_width()/2.0, yval + 3, f"{yval:.1f}x", ha='center', va='bottom', fontsize=10, fontweight='bold')
         
     # Right: Multi-Asset Kreiss Inflation
-    ax2.plot(M_vals, kreiss, marker='s', color='darkred', lw=2.2, label=r'Kreiss Constant $\mathcal{K}(J_{\mathrm{network}})$')
+    ax2.plot(M_vals, kreiss, marker='s', color='darkred', lw=2.2, label=r'Kreiss Constant $\mathcal{K}(J_{\mathrm{network}}) \geq 1.00$')
     ax2.plot(M_vals, rho_vals, marker='o', color='navy', lw=2.0, ls='--', label=r'Spectral Radius $\rho(J_{\mathrm{network}})<1$')
     ax2.set_xlabel('Number of Cross-Impacted Assets $M$')
     ax2.set_ylabel('Stability & Resolvent Metrics')
