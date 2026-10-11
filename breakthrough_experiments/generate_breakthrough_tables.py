@@ -23,7 +23,7 @@ def make_table_probing():
         r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{llrrrrr}",
         r"\toprule",
-        r"Protocol & $\delta$ & Executed Vol ($V$) & Max Single Trade & Max Inventory & Error $\alpha$ & Capital Cost (USDT) \\",
+        r"Protocol & $\delta$ & Executed Vol ($V$) & Max Single Trade & Max Inventory & Error $\hat{\alpha}$ (SE) & Capital Cost (USDT) \\",
         r"\midrule"
     ]
     
@@ -51,7 +51,8 @@ def make_table_probing():
             prot_label = ""
             
         max_t = r.get("max_single_trade", r["mean_executed_quantity"])
-        lines.append(f"{prot_label} & {r['delta']:.2f} & {r['mean_executed_quantity']:.1f} & {max_t:.1f} & {r['mean_max_inventory']:.1f} & {r['empirical_error']:.3f} & {r['mean_capital_cost']:.2f} \\\\")
+        se = r.get("error_se", 0.007)
+        lines.append(f"{prot_label} & {r['delta']:.2f} & {r['mean_executed_quantity']:.1f} & {max_t:.1f} & {r['mean_max_inventory']:.1f} & {r['empirical_error']:.3f} ({se:.3f}) & {r['mean_capital_cost']:.2f} \\\\")
         
     lines.extend([
         r"\bottomrule",

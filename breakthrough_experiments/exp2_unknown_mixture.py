@@ -61,12 +61,12 @@ def blind_transfer_function_inversion(noisy_h, max_K=6, kappa=0.8, a=0.5):
     # SVD
     U, S, Vh = linalg.svd(H0)
     
-    # Blind order selection using singular value ratio test
+    # Blind order selection using Gavish-Donoho optimal singular value thresholding
     # State dimension n = K + 1 (1 price state + K memory states)
     if S[0] > 1e-12:
-        rel_s = S / S[0]
-        # Count significant singular values above noise threshold
-        n_est = int(np.sum(rel_s > 0.005))
+        med_s = float(np.median(S))
+        thresh = max(S[0] * 0.0005, 2.80 * med_s)
+        n_est = int(np.sum(S > thresh))
         n_est = max(2, min(n_est, max_K + 1))
     else:
         n_est = 2
