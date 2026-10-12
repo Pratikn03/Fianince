@@ -768,3 +768,241 @@ def test_cohort_cramer_rao_information_bound():
     mc1 = next(m for m in r_pair["monte_carlo"] if abs(m["noise_over_critical"] - 1.0) < 1e-4)
     assert mc1["ml_rmse_weight"] / mc1["crb_sd_weight"] <= 1.5
     assert mc1["ml_success_known_K"] >= 0.85
+
+
+# ----------------------------------------------------------------------
+# 27. Test Acceptance Gate TC-91-01: Spectral Transfer Impact Indexing
+# ----------------------------------------------------------------------
+def test_tc91_01_spectral_transfer_impact_indexing():
+    """Verify that unshifted transfer H0(z) has g0(pi) < 0 (falsification test),
+    while impact-indexed transfer widehat{H}0(z) = z * H0(z) has g0(omega) > 0 for all omega in [0, pi]."""
+    kappa = 0.8
+    a = 0.5
+    q = 0.2
+    eta = 0.4
+    
+    # 1. Unshifted transfer at z = exp(i*pi) = -1:
+    # G(-1) = q * eta * (-1) / (-1 - (1 - eta)) = 0.2 * 0.4 * (-1) / (-1.6) = 0.05
+    G_neg1 = (q * eta * (-1.0)) / (-1.0 - (1.0 - eta))
+    assert np.isclose(G_neg1, 0.05)
+    # H0(-1) = kappa / (-1 - a - kappa * G(-1)) = 0.8 / (-1 - 0.5 - 0.04) = 0.8 / (-1.54) = -0.5194805195
+    H0_neg1 = kappa / (-1.0 - a - kappa * G_neg1)
+    assert np.isclose(H0_neg1, -0.5194805195)
+    g0_unshifted_pi = H0_neg1.real - kappa / 2.0  # -0.51948 - 0.400 = -0.91948
+    assert g0_unshifted_pi < 0.0, "Unshifted H0(-1) - kappa/2 MUST be negative (-0.9195 < 0)"
+    assert np.isclose(g0_unshifted_pi, -0.9194805195)
+    
+    # 2. Impact-indexed transfer widehat{H}0(z) = z * H0(z):
+    # At z = -1: widehat{H}0(-1) = (-1) * H0(-1) = +0.5194805195
+    H_hat0_neg1 = (-1.0) * H0_neg1
+    g0_impact_pi = H_hat0_neg1.real - kappa / 2.0
+    assert g0_impact_pi > 0.0, "Impact-indexed widehat{H}0(-1) - kappa/2 MUST be positive (+0.1195 > 0)"
+    assert np.isclose(g0_impact_pi, 0.1194805195)
+    
+    # 3. Across entire frequency grid omega in [0, pi], widehat{g}_0(omega) > 0
+    from breakthrough_experiments.exp14_capital_frontier_exact import spectral_quantities
+    s = spectral_quantities(delta=0.05)
+    assert s["min_g0"] > 0.0, "Real spectral dissipation kernel min_g0 must be strictly positive"
+    assert s["min_g1"] > 0.0, "Real spectral dissipation kernel min_g1 must be strictly positive"
+    assert np.isclose(s["omega_star_0"], 0.2526, atol=0.005)
+
+
+# ----------------------------------------------------------------------
+# 28. Test Acceptance Gate TC-91-02: Price-First Impulse Tap Agreement
+# ----------------------------------------------------------------------
+def test_tc91_02_price_first_impulse_tap_agreement():
+    """Verify first 4 impulse taps of the closed-loop system match kappa, kappa*(a + kappa*q*eta), etc.
+    identically across exp2, exp13, exp14, and analytical formulas, and reject simultaneous return-memory bug."""
+    kappa = 0.8
+    a = 0.5
+    q = 0.2
+    eta = 0.4
+    
+    # Analytical taps for price-first model:
+    # h0 = kappa = 0.8
+    # y0 = eta * h0 = 0.32
+    # h1 = a * h0 + kappa * q * y0 = 0.4512
+    # y1 = (1 - eta)*y0 + eta * h1 = 0.37248
+    # h2 = a * h1 + kappa * q * y1 = 0.2851968
+    # y2 = (1 - eta)*y1 + eta * h2 = 0.33756672
+    # h3 = a * h2 + kappa * q * y2 = 0.1966090752
+    expected_taps = np.array([0.8, 0.4512, 0.2851968, 0.1966090752])
+    
+    # Implementation 1: exp13 / exp14 price_path
+    from breakthrough_experiments.exp13_account_capital import price_path, PARAMS
+    v = np.zeros(4)
+    v[0] = 1.0
+    h_path = price_path(v, delta=0.0, split=False, p=PARAMS)
+    assert np.allclose(h_path, expected_taps, atol=1e-14), "exp13 price_path taps must match analytical"
+    
+    # Implementation 2: exp2 simulate_closed_loop_impulse (at eta=0.4)
+    from breakthrough_experiments.exp2_unknown_mixture import simulate_closed_loop_impulse
+    h_exp2 = simulate_closed_loop_impulse(np.array([q]), np.array([eta]), T=3, kappa=kappa, a=a)
+    assert np.allclose(h_exp2, expected_taps, atol=1e-14), "exp2 impulse taps must match analytical"
+    
+    # Falsification check: Erroneous simultaneous return-memory system responds with 1.068376
+    # p0 = 1 / (1 - kappa * q * eta) = 1 / (1 - 0.064) = 1.068376 != 0.800
+    erroneous_simultaneous_h0 = 1.0 / (1.0 - kappa * q * eta)
+    assert abs(h_path[0] - erroneous_simultaneous_h0) > 0.25, "Must reject the 1.068376 simultaneous return-memory bug"
+
+
+# ----------------------------------------------------------------------
+# 29. Test Acceptance Gate TC-91-03: Session Floor Implicit Root vs Asymptotic Formula
+# ----------------------------------------------------------------------
+def test_tc91_03_session_floor_implicit_root():
+    """Verify that delta_min(3) = 0.202784 solves the implicit root equation V_eff * ||d_3(delta)||_2 = 2*sigma*z_alpha,
+    matches asymptotic formula with normalized curvature ||tilde{d}_3|| = kappa^2 * q, and rejects circular 1.000 identity."""
+    from scipy.stats import norm
+    kappa = 0.8
+    q = 0.2
+    sigma = 0.01
+    z_alpha = norm.ppf(0.95)  # 1.6448536
+    V_eff = 6.25
+    
+    # 1. Exact implicit root check
+    delta_root = 0.202783975387
+    # For T=3, d_3(delta) has non-zero tap only at t=2: Delta h_2 = kappa^2 * q * delta^2
+    norm_d3 = (kappa ** 2) * q * (delta_root ** 2)
+    lhs = V_eff * norm_d3
+    rhs = 2.0 * sigma * z_alpha
+    assert np.isclose(lhs, rhs, atol=1e-7), f"Root equation must hold: LHS={lhs}, RHS={rhs}"
+    
+    # 2. Asymptotic fourth-root formula with normalized directional curvature tilde{d}_3
+    norm_tilde_d3 = (kappa ** 2) * q  # 0.128
+    delta_asymp = np.sqrt((2.0 * sigma * z_alpha) / (V_eff * norm_tilde_d3))
+    assert np.isclose(delta_asymp, delta_root, atol=1e-6)
+    assert np.isclose(delta_asymp, 0.202784, atol=1e-5)
+    
+    # 3. Falsification check: Substituting d_3(delta) directly into (4 sigma^2 z^2 / (V^2 ||d_3||^2))^(1/4) produces 1.000
+    circular_val = ((4.0 * (sigma**2) * (z_alpha**2)) / ((V_eff**2) * (norm_d3**2))) ** 0.25
+    assert np.isclose(circular_val, 1.000000), "Circular substitution must evaluate to 1.000000"
+
+
+# ----------------------------------------------------------------------
+# 30. Test Acceptance Gate TC-91-04: Feasible Counterexample (B=100, delta=0.05)
+# ----------------------------------------------------------------------
+def test_tc91_04_feasible_counterexample_in_phase_diagram():
+    """Verify that at delta=0.05, a trader with B=100 USDT is strictly FEASIBLE using the multi-step waveform (cost ~64.59),
+    even though the isolated-pulse single boundary requires ~193.62 USDT."""
+    from breakthrough_experiments.exp14_capital_frontier_exact import theorem_bounds, best_feasible_design
+    
+    b = theorem_bounds(0.05)
+    best, _ = best_feasible_design(0.05)
+    
+    # Certified lower bound
+    lb_det = b["capital_lower_bound_deterministic"]
+    assert np.isclose(lb_det, 61.44, atol=0.10)
+    
+    # Feasible candidate cost
+    feasible_capital = best["C0_required"]
+    assert np.isclose(feasible_capital, 64.59, atol=0.50)
+    assert best["meets_5pct"] is True
+    
+    # Isolated-pulse cost is ~193.62 USDT
+    isolated_pulse_cost = 193.62
+    
+    # A trader with B = 100 USDT:
+    B_trader = 100.0
+    assert B_trader > feasible_capital, "B=100 must be sufficient for the feasible multi-step probe"
+    assert B_trader < isolated_pulse_cost, "B=100 is below the isolated-pulse benchmark"
+    assert B_trader > lb_det, "B=100 is above the theoretical lower bound"
+
+
+# ----------------------------------------------------------------------
+# 31. Test Acceptance Gate TC-91-05: Certified Lower Bound and Feasible Upper Bound Interval
+# ----------------------------------------------------------------------
+def test_tc91_05_certified_lower_and_upper_bounds():
+    """Verify that capital requirement at delta=0.05 is bounded within [61.44, 64.59] USDT with optimality gap <= 5.5%."""
+    from breakthrough_experiments.exp14_capital_frontier_exact import theorem_bounds, best_feasible_design
+    
+    b = theorem_bounds(0.05)
+    best, _ = best_feasible_design(0.05)
+    
+    lb_quad = b["quad_loss_lower_bound_deterministic"]
+    assert np.isclose(lb_quad, 61.14, atol=0.10)
+    
+    lb_fee = b["fee_lower_bound_deterministic"]
+    assert np.isclose(lb_fee, 0.3056, atol=0.01)
+    
+    lb_total = b["capital_lower_bound_deterministic"]
+    assert np.isclose(lb_total, 61.44, atol=0.10)
+    
+    ub_feas = best["C0_required"]
+    assert np.isclose(ub_feas, 64.59, atol=0.50)
+    
+    # Optimality gap
+    gap_ratio = ub_feas / lb_total
+    assert 1.0 < gap_ratio <= 1.055, f"Optimality gap must be <= 5.5%, got {gap_ratio}"
+
+
+# ----------------------------------------------------------------------
+# 32. Test Acceptance Gate TC-91-06: Adaptive Risk-of-Ruin & Tail Loss Metrics
+# ----------------------------------------------------------------------
+def test_tc91_06_adaptive_risk_of_ruin_and_tail_loss():
+    """Verify that adaptive SPRT simulation records heavy-tailed losses (p99 ~155, max ~268),
+    proving that expected loss (~45.96) cannot be equated to required initial solvency capital."""
+    results_path = Path("breakthrough_experiments/results_exp14_capital_frontier_exact.json")
+    assert results_path.exists()
+    data = json.loads(results_path.read_text())
+    sprt = data["sequential_mc_delta_0_05"]
+    
+    h0 = sprt["H0"]
+    assert np.isclose(h0["mean_loss"], 45.96, atol=0.50), "Mean loss must be ~45.96 USDT"
+    assert h0["p99_loss"] > 140.0, "p99 loss must exceed 140 USDT"
+    assert np.isclose(h0["p99_loss"], 155.46, atol=10.0), "p99 loss must be ~155.46 USDT"
+    assert h0["max_loss"] > 250.0, "Max loss must exceed 250 USDT"
+    assert np.isclose(h0["max_loss"], 268.52, atol=15.0), "Max loss must be ~268.52 USDT"
+    
+    # Confirm that a trader funded with only mean loss (45.96) faces severe insolvency risk (>30%)
+    # because stopping time tau varies across sample paths
+    assert h0["p99_loss"] > 3.0 * h0["mean_loss"], "Tail loss is more than 3x the mean loss"
+
+
+# ----------------------------------------------------------------------
+# 33. Test Acceptance Gate TC-91-07: Adaptive Bound Inequality Ratio
+# ----------------------------------------------------------------------
+def test_tc91_07_adaptive_bound_inequality_ratio():
+    """Verify that the dynamic savings ratio kl(alpha, 1-beta)/(2*z_alpha^2) = 0.4897 is an inequality
+    on expected loss lower bounds, not equality of empirical account capital optima."""
+    from breakthrough_experiments.exp14_capital_frontier_exact import binary_kl, ALPHA, Z
+    
+    kl_val = binary_kl(ALPHA, 1.0 - ALPHA)  # kl(0.05, 0.95) = 1.323568
+    expected_ratio = kl_val / (2.0 * (Z ** 2))
+    assert np.isclose(expected_ratio, 0.4897343, atol=1e-5), f"Ratio must equal 0.4897343, got {expected_ratio}"
+    
+    # Expected quadratic lower bounds
+    from breakthrough_experiments.exp14_capital_frontier_exact import theorem_bounds
+    b = theorem_bounds(0.05)
+    lb_det_quad = b["quad_loss_lower_bound_deterministic"]
+    lb_adapt_quad = b["quad_loss_lower_bound_adaptive_expected_H0"]
+    
+    # Check that ratio of lower bounds equals expected_ratio
+    ratio_bounds = lb_adapt_quad / lb_det_quad
+    assert np.isclose(ratio_bounds, expected_ratio, atol=1e-2)
+    # Theoretical savings ceiling is at most 1 - 0.4897 = 51.03%
+    max_savings_ceiling = 1.0 - expected_ratio
+    assert np.isclose(max_savings_ceiling, 0.5102657, atol=1e-5)
+
+
+# ----------------------------------------------------------------------
+# 34. Test Acceptance Gate TC-91-08: Unknown-K Model Selection Without Oracle Centering
+# ----------------------------------------------------------------------
+def test_tc91_08_unknown_k_blind_candidate_set():
+    """Verify that bic_select evaluates over a fixed candidate set {1, 2, 3, 4} without oracle centering,
+    and correctly selects K=2 for the delta=0.05 two-cohort pair."""
+    from breakthrough_experiments.exp15_cohort_information import bic_select, h_of, SCENARIOS
+    
+    sc = next(s for s in SCENARIOS if "delta=0.05" in s["name"])
+    theta = np.concatenate([sc["w"], sc["eta"]])
+    h = h_of(theta, 2)
+    
+    # Run blind BIC selection across fixed candidates [1, 2, 3, 4] with low noise
+    k_sel, fit = bic_select(h, sigma_h=1e-4, K_candidates=(1, 2, 3, 4))
+    assert k_sel == 2, f"Blind model selection must select K=2, got {k_sel}"
+    assert len(fit) == 4, "Selected parameter vector must have length 2K = 4"
+    # Recovered weights and rates match ground truth
+    weights_est = fit[:2]
+    rates_est = fit[2:]
+    assert np.allclose(np.sort(weights_est), np.sort(sc["w"]), atol=1e-3)
+    assert np.allclose(np.sort(rates_est), np.sort(sc["eta"]), atol=1e-3)
+

@@ -85,16 +85,19 @@ def ml_fit(h_obs, K, n_starts=None):
     return np.concatenate([th[:K][order], th[K:][order]]), float(2 * best.cost)
 
 
-def bic_select(h_obs, sigma_h, K_center):
+def bic_select(h_obs, sigma_h, K_candidates=(1, 2, 3, 4)):
+    """
+    Model order selection via Bayesian Information Criterion over a fixed prespecified candidate set.
+    Evaluates candidate model orders blindly without oracle centering on the true K.
+    """
     n = len(h_obs)
     scores, fits = [], []
-    Ks = list(range(max(0, K_center - 1), K_center + 2))
-    for K in Ks:
+    for K in K_candidates:
         th, rss = ml_fit(h_obs, K)
         scores.append(rss / sigma_h ** 2 + 2 * K * np.log(n))
         fits.append(th)
     k = int(np.argmin(scores))
-    return Ks[k], fits[k]
+    return K_candidates[k], fits[k]
 
 
 def scenario(name, w, eta):
@@ -138,7 +141,7 @@ def run_experiment(n_mc=20, seed=7):
                 e = th[:K] - sc["w"]
                 errs.append(e)
                 succ += int(np.all(np.abs(e) <= TOL))
-                kb, thb = bic_select(y, sh, K)
+                kb, thb = bic_select(y, sh)
                 kcorrect += int(kb == K)
                 succ_bic += int(kb == K and np.all(np.abs(thb[:K] - sc["w"]) <= TOL))
             errs = np.array(errs)

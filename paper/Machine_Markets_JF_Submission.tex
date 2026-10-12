@@ -1278,7 +1278,7 @@ N_{\mathrm{pulses}}(T, \delta) = \left\lceil \frac{4\sigma^2 z_\alpha^2}{V_{\mat
 Cumulative transaction fees and execution costs scale strictly as $C^*_{\mathrm{seq}}(\delta) = \Theta(\delta^{-4})$ (for Class~II) and $\Theta(\delta^{-2})$ (for Class~I), expanding the required observation horizon to $\Theta(\delta^{-4})$ or $\Theta(\delta^{-2})$. Under the simplified benchmark cost model ($C_{\mathrm{bench}} = \frac{1}{2}\kappa V^2 + \phi P^* |V| = 15.875$ USDT/pulse at $V_{\mathrm{eff}} = 6.25$ BTC), required capital at $\delta = 0.05$ is $4{,}305.25$ USDT under the restricted single-tap design ($T=3$, $N=271$ pulses), but collapses to $193.62$ USDT under the capacity-saturating multi-observation transient design ($T=20$, $N=12$ pulses, $V=6.25$ BTC), or $182.02$ USDT under the exact volume-optimized design ($N=12$, $V^* = 6.057$ BTC), reaching $177.75$ USDT at horizon $T=100$ ($N=11$ pulses; $175.35$ USDT at $V^*=6.207$ BTC). Under the physically executable round-trip unwind model ($C_{\mathrm{exec}} = \kappa V^2 + 2\phi P^* |V| = 31.75$ USDT/pulse), required capital is $8{,}607.38$ USDT ($T=3$), $384.12$ USDT ($T=20$ capacity-saturating), and $360.77$ USDT ($T=20$ volume-optimized). \emph{These figures are costs within the isolated-pulse design class, not minimum capital requirements.} The per-pulse formula charges initial margin once ($3.13$ USDT) and does not track the ledger; twelve buys that are never unwound carry $75$ BTC of inventory and $37.5$ USDT of margin. Section~\ref{ia:account_capital} replaces the formula by an explicit account ledger and shows that a non-pulse probe reaches the same $5\%$ error with about $65$ USDT of account capital.
 \item \textbf{Isolated-Pulse Infeasible Region $\mathcal{R}_{\mathrm{pulse-infeas}}$:} Identification within the isolated-pulse design class is infeasible if:
 (a) The capital budget is insufficient to finance sequential impact and margin costs ($B < C^*_{\mathrm{seq}}(\delta)$); or
-(b) The cumulative inventory required to overcome observation noise exceeds the regulatory limit ($\min_t |I_t| > I_{\max}$); or
+(b) The cumulative inventory required to overcome observation noise exceeds the regulatory limit ($\max_{1 \le t \le N} |I_t| > I_{\max}$); or
 (c) The surveillance horizon is strictly bounded by a session deadline $T_{\mathrm{session}}$, in which case the finite-session resolution floor under cycle length $T_{\mathrm{cycle}}$ and normalized directional memory curvature vector $\tilde{d}_{T_{\mathrm{cycle}}} \equiv \lim_{\delta \to 0} \frac{d_{T_{\mathrm{cycle}}}(\delta)}{\delta^2}$ is:
 \begin{align}
 \delta_{\min}(T_{\mathrm{session}}) &= \left(\frac{4 \sigma^2 z_\alpha^2}{V_{\mathrm{eff}}^2 \|\tilde{d}_{T_{\mathrm{cycle}}}\|_2^2 \lfloor T_{\mathrm{session}} / T_{\mathrm{cycle}} \rfloor}\right)^{1/4} \nonumber \\
@@ -1318,12 +1318,14 @@ The constructed $65.05$ USDT sequence is a constructed feasible candidate soluti
 
 The exact minimum-capital lower bounds and the information-theoretic value of adaptivity are resolved by Theorems~\ref{thm:ia_exact_capital} and \ref{thm:ia_adaptive_capital} and Table~\ref{iatab:capital_frontier_exact} below.
 
-\begin{theorem}[Exact Minimum Execution Loss for Deterministic Identification Probes]
+\begin{theorem}[Spectral Dissipation Lower Bound and Feasible Identification Probes]
 \label{thm:ia_exact_capital}
-Consider the linear market microstructure with impact parameter $\kappa > 0$, anchor weight $a \in [0, 1)$, and symmetric adaptive cohorts separating by memory gap $\delta > 0$ under two hypotheses $H_0$ and $H_1$, with closed-loop transfer functions $H_0(z)$ and $H_1(z)$. Let $\Delta H(e^{i\omega}) = H_1(e^{i\omega}) - H_0(e^{i\omega})$, and define the real spectral dissipation kernel:
+Consider the linear market microstructure with impact parameter $\kappa > 0$, anchor weight $a \in [0, 1)$, and symmetric adaptive cohorts separating by memory gap $\delta > 0$ under two hypotheses $H_0$ and $H_1$, with closed-loop transfer functions $H_0(z)$ and $H_1(z)$. Let $\widehat{H}_i(z) \equiv z H_i(z) = \sum_{j=0}^\infty h_{i,j} z^{-j}$ (with $h_{i,0} = \kappa$) denote the impact-indexed closed-loop transfer function mapping input order flow to first-affected price displacements. Let $\Delta \widehat{H}(e^{i\omega}) \equiv \widehat{H}_1(e^{i\omega}) - \widehat{H}_0(e^{i\omega}) = e^{i\omega} (H_1(e^{i\omega}) - H_0(e^{i\omega}))$, satisfying $|\Delta \widehat{H}(e^{i\omega})| = |\Delta H(e^{i\omega})|$. Define the real spectral dissipation kernel:
 \begin{equation}
-g_i(\omega) \equiv \operatorname{Re} H_i(e^{i\omega}) - \frac{\kappa}{2} > 0 \qquad \forall \omega \in [-\pi, \pi].
+g_i(\omega) \equiv \operatorname{Re} \widehat{H}_i(e^{i\omega}) - \frac{\kappa}{2} > 0 \qquad \forall \omega \in [-\pi, \pi].
+\label{eq:ia_spectral_kernel}
 \end{equation}
+(Strict positivity $g_i(\omega) > 0$ holds because $h_{i,0} = \kappa$ and $h_{i,j} = \sum_\ell w_\ell \lambda_\ell^j$ with $w_\ell \ge 0, \lambda_\ell \in [0, 1)$ by Lemma~\ref{lem:positive_price_kernel}, ensuring $\operatorname{Re}\widehat{H}_i(e^{i\omega}) - \frac{\kappa}{2} = \frac{1}{2}\sum_\ell w_\ell \frac{1-\lambda_\ell^2}{1-2\lambda_\ell\cos\omega+\lambda_\ell^2} > 0$; in contrast, unshifted $H_0(z) = z^{-1}\widehat{H}_0(z)$ satisfies $\operatorname{Re} H_0(-1) - \frac{\kappa}{2} = -0.9195 < 0$ at $\omega = \pi$, failing positivity without impact indexing.)
 Then:
 \begin{enumerate}
 \item \textbf{Toeplitz Energy Identity:} For any finite-horizon flat round-trip probe $v \in \mathbb{R}^{L+1}$ ($\sum_{t=0}^L v_t = 0$), the fee-free trading loss under hypothesis $H_i$ is identical to the Toeplitz quadratic form:
@@ -1331,34 +1333,35 @@ Then:
 L_i(v) \equiv \sum_{t=0}^L v_t \left( p_t - \frac{\kappa}{2} v_t - P^* \right) = \frac{1}{2\pi} \int_{-\pi}^\pi g_i(\omega) \left| V(e^{i\omega}) \right|^2 d\omega,
 \end{equation}
 where $V(e^{i\omega}) = \sum_{t=0}^L v_t e^{-i\omega t}$.
-\item \textbf{Exact Deterministic Lower Bound:} Under iid Gaussian innovation noise with variance $\sigma^2$, the output price divergence satisfies:
+\item \textbf{Certified Deterministic Lower Bound:} Under iid Gaussian innovation noise with variance $\sigma^2$, the output price divergence satisfies:
 \begin{equation}
-\|dx\|_2^2 \equiv \|(H_1 - H_0) v\|_2^2 \le \left( \sup_{\omega \in [-\pi, \pi]} \frac{|\Delta H(e^{i\omega})|^2}{g_i(\omega)} \right) L_i(v).
+\|dx\|_2^2 \equiv \|(H_1 - H_0) v\|_2^2 \le \left( \sup_{\omega \in [-\pi, \pi]} \frac{|\Delta \widehat{H}(e^{i\omega})|^2}{g_i(\omega)} \right) L_i(v).
 \end{equation}
-Consequently, every deterministic round-trip probe guaranteeing worst-case classification error $\alpha \le 0.05$ under Neyman--Pearson testing ($\|dx\|_2 \ge 2\sigma z_{1-\alpha}$) requires capital expenditure bounded below by:
+Consequently, every deterministic round-trip probe guaranteeing worst-case classification error $\alpha \le 0.05$ under Neyman--Pearson testing ($\|dx\|_2 \ge 2\sigma z_{1-\alpha}$) requires execution loss bounded below by:
 \begin{equation}
-L_i(v) \ge 4 \sigma^2 z_{1-\alpha}^2 \inf_{\omega \in [-\pi, \pi]} \frac{g_i(\omega)}{|\Delta H(e^{i\omega})|^2} \equiv C^*_{\mathrm{det}}(\delta).
+L_i(v) \ge 4 \sigma^2 z_{1-\alpha}^2 \inf_{\omega \in [-\pi, \pi]} \frac{g_i(\omega)}{|\Delta \widehat{H}(e^{i\omega})|^2} \equiv C^*_{\mathrm{det,quad}}(\delta).
 \end{equation}
-At $\delta = 0.05$, $C^*_{\mathrm{det}}(0.05) = 61.44$ USDT (with minimizing angular frequency $\omega^* = 0.2526$ rad).
-\item \textbf{Finite-Sample Attainability:} Finite-horizon executable probes $v^{(L)}$ ($L=160$, accounting for $4$ bp taker fees and $0.5\%$ maintenance margin) achieve initial capital $C_0 = 64.59$ USDT, attaining the theoretical lower bound within a gap ratio of $1.051$ ($5.1\%$). Across all memory separations $\delta \in [0.02, 0.15]$, $\delta^4 \times C^*_{\mathrm{det}}(\delta) = (3.82 \pm 0.15) \times 10^{-4}$ is strictly constant.
+At $\delta = 0.05$, $C^*_{\mathrm{det,quad}}(0.05) = 61.14$ USDT (with minimizing angular frequency $\omega^* = 0.2526$ rad). Adding the minimal unavoidable taker fee under effective capacity $V_{\mathrm{eff}}$ ($\phi P^* \|v\|_2^2 / V_{\mathrm{eff}} \ge 0.3056$ USDT) establishes the certified necessary lower bound $C^*_{\mathrm{det,fee}}(0.05) \ge 61.44$ USDT.
+\item \textbf{Feasible Upper Bound and Bounded Gap:} A concrete 160-step executable trading sequence $v^{(L)}$ ($L=160$, respecting $|v_t| \le 6.25$ BTC, $D_{\max} \le 5.0$ USDT, $0.5\%$ maintenance margin, and $4$ bp taker fees) achieves target error $\le 0.05$ with initial capital $C_0 = 64.59$ USDT ($65.05$ USDT at $L=120$). This establishes an explicit feasible upper bound and bounds the unknown global optimum of the non-convex fee-paying problem within the narrow interval $C^*_{\mathrm{acc}}(0.05) \in [61.44, 64.59]$ USDT (optimality gap $\le 5.1\%$). Across evaluated memory separations $\delta \in [0.02, 0.15]$, the quadratic lower bound exhibits asymptotic scaling $\delta^4 \times C^*_{\mathrm{det,quad}}(\delta) = (3.82 \pm 0.15) \times 10^{-4}$.
 \end{enumerate}
 \end{theorem}
 
-\begin{theorem}[Bounded Value of Adaptive and Sequential Probing]
+\begin{theorem}[Information-Theoretic Lower Bound for Adaptive and Sequential Probing]
 \label{thm:ia_adaptive_capital}
 Let $(v_t)_{t=1}^\tau$ be any causal, non-anticipating sequential probing policy adapted to the price filtration $\mathcal{F}_{t-1}^p$, with stopping time $\tau$ almost surely finite under $H_0$ and $H_1$, satisfying terminal flatness $\sum_{t=1}^\tau v_t = 0$. Then:
 \begin{enumerate}
-\item \textbf{Information-Theoretic Expected Bound:} By Wald's identity and the data processing inequality for Kullback--Leibler divergence:
+\item \textbf{Information-Theoretic Expected Loss Lower Bound:} By Wald's identity and the data processing inequality for Kullback--Leibler divergence:
 \begin{equation}
-\mathbb{E}_0[L_0(v)] \ge 2 \sigma^2 \operatorname{kl}(\alpha, 1-\beta) \inf_{\omega \in [-\pi, \pi]} \frac{g_0(\omega)}{|\Delta H(e^{i\omega})|^2} \equiv \mathbb{E}_0[C^*_{\mathrm{adapt}}(\delta)],
+\mathbb{E}_0[L_0(v)] \ge 2 \sigma^2 \operatorname{kl}(\alpha, 1-\beta) \inf_{\omega \in [-\pi, \pi]} \frac{g_0(\omega)}{|\Delta \widehat{H}(e^{i\omega})|^2} \equiv \mathbb{E}_0[C^*_{\mathrm{adapt,quad}}(\delta)],
 \end{equation}
-where $\operatorname{kl}(\alpha, 1-\beta) = \alpha \log \frac{\alpha}{1-\beta} + (1-\alpha) \log \frac{1-\alpha}{\beta}$.
-\item \textbf{Strict Dynamic Savings Ceiling:} The maximum possible proportional reduction in expected capital achievable by any adaptive, sequential, or feedback policy relative to optimal deterministic probing is strictly bounded by:
+where $\operatorname{kl}(\alpha, 1-\beta) = \alpha \log \frac{\alpha}{1-\beta} + (1-\alpha) \log \frac{1-\alpha}{\beta}$. At $\delta = 0.05$, $\mathbb{E}_0[C^*_{\mathrm{adapt,quad}}] = 29.94$ USDT, and adding minimal fees yields necessary expected loss bound $\mathbb{E}_0[C^*_{\mathrm{adapt}}] \ge 30.09$ USDT.
+\item \textbf{Dynamic Information-Energy Savings Ceiling:} The ratio of information-energy thresholds imposes an upper bound on achievable reductions in expected quadratic loss:
 \begin{equation}
-\frac{\mathbb{E}_0[C^*_{\mathrm{adapt}}]}{C^*_{\mathrm{det}}} = \frac{\operatorname{kl}(\alpha, 1-\beta)}{2 z_{1-\alpha}^2} = \frac{\operatorname{kl}(0.05, 0.95)}{2 \times (1.6449)^2} \approx 0.4897,
+\frac{\inf_{\pi \in \Pi_{\mathrm{adapt}}} \mathbb{E}_0[L_0(v^\pi)]}{\inf_{v \in \mathcal{V}_{\mathrm{det}}} L_0(v)} \ge \frac{\operatorname{kl}(\alpha, 1-\beta)}{2 z_{1-\alpha}^2} = \frac{\operatorname{kl}(0.05, 0.95)}{2 \times (1.6449)^2} \approx 0.4897,
+\label{eq:ia_adaptive_inequality}
 \end{equation}
-establishing that dynamic adaptation can save at most $51.03\%$ of expected capital, and cannot alter the fundamental $\Theta(\delta^{-4})$ scaling.
-\item \textbf{Sequential SPRT Performance:} At $\delta = 0.05$, $\mathbb{E}_0[C^*_{\mathrm{adapt}}] = 30.09$ USDT. Across $N=20{,}000$ sequential SPRT Monte Carlo trials, empirical mean loss is $45.96$ USDT, achieving $35.0\%$ savings over the deterministic pulse benchmark ($70.66$ USDT) while strictly respecting the theoretical bounds ($30.09 \le 45.96 \le 61.44$ USDT).
+establishing that dynamic adaptation can reduce expected quadratic loss by at most $1 - 0.4897 = 51.03\%$, and cannot alter the fundamental $\Theta(\delta^{-4})$ scaling. Inequality \eqref{eq:ia_adaptive_inequality} bounds expected quadratic loss under the stated martingale stopping model; it does not assert equality of unknown empirical account capital minima, nor does it guarantee a $51.03\%$ saving in initial solvency capital.
+\item \textbf{Sequential SPRT Performance and Solvency Capital:} Across $N=20{,}000$ sequential SPRT Monte Carlo trials at $\delta = 0.05$, empirical mean loss is $45.96$ USDT under $H_0$ ($45.58$ USDT under $H_1$), strictly respecting the theoretical bounds ($30.09 \le 45.96 \le 61.44$ USDT). However, because stopping times $\tau$ vary across sample paths, realized losses exhibit significant tail risk: the 95th percentile loss is $112.30$ USDT, the 99th percentile loss is $155.46$ USDT, and the maximum simulated loss is $268.52$ USDT. Initial capital required for solvency at $99\%$ confidence is $B_{0.01} = 155.46$ USDT; funding an adaptive trader with only the mean loss ($B = 45.96$ USDT) results in a $38.2\%$ insolvency rate before the test terminates.
 \end{enumerate}
 \end{theorem}
 
@@ -1448,10 +1451,10 @@ Evaluating this estimator on synthetic markets gives exact recovery only for a s
 \item \textbf{Pure Dealer Edge Case ($K=0$):} In an economy with zero algorithmic learning, singular values truncate to order 0, identifying 0 transmission zeros and recovering strictly $0.0$ feedback weight.
 \item \textbf{Multi-Cohort Recovery ($K=2$, $\eta \in \{0.45, 0.25\}$):} In the noiseless regime with well-separated rates, the estimator recovers poles $[0.5500, 0.7500]$ and both weights without model-order knowledge. This is the only multi-cohort case that succeeds.
 \item \textbf{Per-Cohort Failure Under Noise or Close Rates:} Scoring each weight separately (tolerance $0.01$), rather than only their sum, shows that recovery fails outside that case. For $K=2$ at $\sigma=10^{-3}$ per-cohort recovery is $0/50$ for well-separated rates; for the $\delta=0.05$ pair $\eta\in\{0.35,0.45\}$ ($\Delta\eta=0.10$) it fails even without noise; for $K=3$ it fails even without noise. In the \texttt{exp2} grid ($K\in\{2,3,5\}$, $\sigma\in\{10^{-4},10^{-3},5\times10^{-3}\}$) the per-cohort recovery rate is at most $0.07$ in every cell, while the earlier sum-of-weights metric looked accurate. A unit probe of $6.25$ BTC against price noise $\sigma=0.01$ gives effective impulse-response noise of about $0.0016$, inside the failure regime.
-\item \textbf{Information-Theoretic Root Cause:} The failure of multi-cohort weight recovery is not an estimator bug, but an intrinsic information-theoretic ceiling established by Proposition~\ref{prop:ia_cohort_information} and Table~\ref{iatab:cohort_information}. For close rates ($\Delta\eta \le 0.10$), the Fisher information matrix condition number explodes as $\Theta((\Delta\eta)^{-6})$, requiring between $40{,}374$ and $2.6\times 10^6$ independent reset probes to resolve individual weights within $\pm 0.01$ accuracy. Consequently, multi-cohort weight recovery under realistic experimental sample sizes ($N \le 50$) is an information-theoretic impossibility rather than an algorithmic flaw. In the noiseless limit, Maximum Likelihood resolves the transmission zeros where the ERA estimator fails (max error $\le 4.2 \times 10^{-4}$), and at the critical noise level ML achieves the Cram\'er--Rao lower bound ($\text{RMSE}/\text{CRB} \approx 0.90$--$1.13$).
+\item \textbf{Information-Theoretic Root Cause:} The failure of multi-cohort weight recovery is governed by the Fisher information geometry established in Proposition~\ref{prop:ia_cohort_information} and Table~\ref{iatab:cohort_information}. For close rates ($\Delta\eta \le 0.10$), the Fisher information matrix condition number explodes as $\Theta((\Delta\eta)^{-6})$, requiring between $40{,}374$ and $2.6\times 10^6$ independent reset probes for any regular, asymptotically unbiased estimator to achieve standard error $\le 0.01 / 1.96$. This establishes $N^* = 40{,}374$ as a rigorous CRB-based local sample-size benchmark for unbiased estimation under the 121-period impulse observation contract; under ordinary surveillance budgets ($N \le 50$), regular unbiased estimators cannot resolve close individual cohort weights. In the noiseless limit, Maximum Likelihood resolves the transmission zeros where the ERA estimator fails (max error $\le 4.2 \times 10^{-4}$), and at the critical noise level ML achieves the Cram\'er--Rao lower bound ($\text{RMSE}/\text{CRB} \approx 0.90$--$1.13$).
 \end{itemize}
 
-\begin{proposition}[Cram\'er--Rao Information Limits of Multi-Cohort Weight Recovery]
+\begin{proposition}[Cram\'er--Rao Local Information Benchmark for Multi-Cohort Weight Recovery]
 \label{prop:ia_cohort_information}
 Let $\theta = (w_1, \dots, w_K, \eta_1, \dots, \eta_K)^\top \in \mathbb{R}^{2K}$ denote the structural weights and adaptation rates of a $K$-cohort adaptive feedback economy with closed-loop impulse response $h_t(\theta)$ ($t=0, \dots, T$). Suppose the econometrician observes $h_t$ with iid Gaussian estimation noise of standard deviation $\sigma_h = \sigma_p / (V_{\mathrm{probe}} \sqrt{N})$, generated by $N$ independent reset probes of size $V_{\mathrm{probe}}$ against innovation noise $\sigma_p$. Then:
 \begin{enumerate}

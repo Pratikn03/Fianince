@@ -138,19 +138,19 @@ REGISTRY = [
         "tests/test_breakthrough_experiments.py", "test_nonnormal_initial_excursion_not_100_percent"
     ),
     TheoremMapping(
-        "theorem", "Exact Minimum Execution Loss for Deterministic Identification Probes",
+        "theorem", "Spectral Dissipation Lower Bound and Feasible Identification Probes",
         r"Theorem IA.D.1",
         "CurrentProofs/SpectralCapital.lean", "capital_lower_bound_of_information_ratio",
         "tests/test_breakthrough_experiments.py", "test_exact_capital_frontier_spectral_bound"
     ),
     TheoremMapping(
-        "theorem", "Bounded Value of Adaptive and Sequential Probing",
+        "theorem", "Information-Theoretic Lower Bound for Adaptive and Sequential Probing",
         r"Theorem IA.D.2",
         "CurrentProofs/SpectralCapital.lean", "expected_loss_lower_bound_of_information_ratio",
         "tests/test_breakthrough_experiments.py", "test_exact_capital_frontier_spectral_bound"
     ),
     TheoremMapping(
-        "proposition", r"Cram\'er--Rao Information Limits of Multi-Cohort Weight Recovery",
+        "proposition", r"Cram\'er--Rao Local Information Benchmark for Multi-Cohort Weight Recovery",
         r"Proposition IA.D.3",
         "CurrentProofs/SpectralCapital.lean", "sq_sum_le_cap_mul_abs_sum",
         "tests/test_breakthrough_experiments.py", "test_cohort_cramer_rao_information_bound"
