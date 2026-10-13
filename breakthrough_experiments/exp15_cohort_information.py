@@ -29,21 +29,35 @@ import sys
 from pathlib import Path
 
 import numpy as np
-from scipy.optimize import least_squares
+from scipy.optimize import least_squares, nnls
+from scipy.signal import lfilter
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from breakthrough_experiments.exp2_unknown_mixture import (  # noqa: E402
-    blind_transfer_function_inversion, simulate_closed_loop_impulse,
+    blind_transfer_function_inversion,
 )
 
 T = 120
 TOL = 0.01
 SIGMA_P, V_PROBE = 0.01, 6.25
+_UNIT_IMPULSE = np.zeros(T + 1)
+_UNIT_IMPULSE[0] = 1.0
 
 
-def h_of(theta, K):
-    return simulate_closed_loop_impulse(np.asarray(theta[:K]), np.asarray(theta[K:]), T=T)
+def h_of(theta, K, kappa=0.8, a=0.5):
+    if K == 0:
+        return lfilter([kappa], [1.0, -a], _UNIT_IMPULSE)
+    w = np.asarray(theta[:K], float)
+    eta = np.asarray(theta[K:], float)
+    r = 1.0 - eta
+    D = np.poly(r)
+    num = kappa * D
+    den = np.convolve([1.0, -a], D)
+    for k in range(K):
+        Dk = np.poly(np.delete(r, k))
+        den[1:K + 1] -= kappa * w[k] * eta[k] * Dk
+    return lfilter(num, den, _UNIT_IMPULSE)
 
 
 def jacobian(theta, K, step=1e-6):
@@ -69,17 +83,8 @@ def probes_needed(theta, K, tol=TOL):
 
 def _warm_weights(h_obs, eta0, kappa=0.8, a=0.5):
     """Project implied feedback flow u_t = (x_t - a x_{t-1})/kappa onto cohort filter states y_{k,t-1}."""
-    from scipy.optimize import nnls
     K = len(eta0)
-    T_len = len(h_obs) - 1
-    Y = np.empty((T_len, K))
-    for k, ek in enumerate(eta0):
-        yk = ek * h_obs[0]
-        Y[0, k] = yk
-        one_m = 1.0 - ek
-        for t in range(1, T_len):
-            yk = one_m * yk + ek * h_obs[t]
-            Y[t, k] = yk
+    Y = np.column_stack([lfilter([ek], [1.0, -(1.0 - ek)], h_obs[:-1]) for ek in eta0])
     u = (h_obs[1:] - a * h_obs[:-1]) / kappa
     w0, _ = nnls(Y, u)
     return np.clip(w0, 0.0, 1.0)
@@ -87,7 +92,7 @@ def _warm_weights(h_obs, eta0, kappa=0.8, a=0.5):
 
 def ml_fit(h_obs, K, n_starts=None):
     if K == 0:
-        return np.array([]), float(np.sum((h_obs - simulate_closed_loop_impulse(np.array([]), np.array([]), T=T)) ** 2))
+        return np.array([]), float(np.sum((h_obs - h_of(np.array([]), 0)) ** 2))
     grid = np.linspace(0.1, 0.85, 6)
     starts = [np.array(c) for c in itertools.combinations(grid, K)]
     lb = np.concatenate([np.zeros(K), np.full(K, 0.01)])
@@ -104,7 +109,7 @@ def ml_fit(h_obs, K, n_starts=None):
         else:
             scored.append((c_flat, x_flat))
     scored.sort(key=lambda item: item[0])
-    candidates = [x for _, x in scored[:min(5, len(scored))]]
+    candidates = [x for _, x in scored[:min(3, len(scored))]]
     best = None
     for x0 in candidates:
         r = least_squares(lambda th: h_of(th, K) - h_obs, x0, bounds=(lb, ub), xtol=1e-8, ftol=1e-8,
@@ -116,7 +121,7 @@ def ml_fit(h_obs, K, n_starts=None):
     return np.concatenate([th[:K][order], th[K:][order]]), float(2 * best.cost)
 
 
-def bic_select(h_obs, sigma_h, K_candidates=(1, 2, 3, 4), precomputed=None):
+def bic_select(h_obs, sigma_h, K_candidates=(0, 1, 2, 3, 4), precomputed=None):
     """
     Model order selection via Bayesian Information Criterion over a fixed prespecified candidate set.
     Evaluates candidate model orders blindly without oracle centering on the true K.
@@ -149,7 +154,7 @@ SCENARIOS = [
 ]
 
 
-def run_experiment(n_mc=20, seed=7):
+def run_experiment(n_mc=100, seed=7):
     rng = np.random.default_rng(seed)
     rows = []
     for sc in SCENARIOS:
