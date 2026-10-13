@@ -62,9 +62,9 @@ def plot_fig1():
     ax.plot(deltas, C_star_det, label=r'Certified Deterministic Lower Bound $\underline{C}_{\mathrm{det}}(\delta)$ ($61.44$ at $\delta=0.05$)', color='crimson', lw=2.2)
     ax.plot(deltas, C_star_adapt, label=r'Adaptive Expected-Loss Lower Bound $\underline{C}_{\mathrm{adapt}}(\delta)$ ($30.09$ at $\delta=0.05$)', color='purple', lw=1.8, ls='-.')
     
-    # Feasible non-pulse candidate point from Theorem IA.D.1 / Exp 14
-    ax.scatter([0.05], [64.59], color='black', marker='*', s=160, zorder=6,
-               label='Constructed Feasible Candidate (64.59 USDT at L=160; 65.05 at L=120)')
+    # Feasible non-pulse candidate point from Theorem IA.D.1 / IA.D.4 / Exp 16
+    ax.scatter([0.05], [64.56], color='black', marker='*', s=160, zorder=6,
+               label='Constructed Feasible Candidate (64.56 USDT at L=240; 64.60 at L=160)')
     
     # Vertical lines for physical depth limits
     ax.axvline(delta_min_t20, color='darkgreen', lw=1.6, ls='--', label=rf'Single-Pulse Floor $\delta_{{\min}}(20) = {delta_min_t20:.4f}$')
@@ -271,10 +271,99 @@ def plot_fig5():
     plt.close()
     print("Figure 5 generated.")
 
+# -------------------------------------------------------------
+# Figure 6: Three Breakthrough Frontiers (Exp 16, Exp 17, Exp 18)
+# -------------------------------------------------------------
+def plot_fig6():
+    with open("breakthrough_experiments/results_exp16_nonconvex_duality.json") as f:
+        d16 = json.load(f)
+    with open("breakthrough_experiments/results_exp17_minimax_lecam_bound.json") as f:
+        d17 = json.load(f)
+    with open("breakthrough_experiments/results_exp18_crash_free_ai_guard.json") as f:
+        d18 = json.load(f)
+
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 4.6))
+
+    # Panel A: Finite-Horizon Rayleigh-Holder Duality & Feasible Convergence (Exp 16)
+    L_vals = [r["L"] for r in d16["horizon_sweep"]]
+    lb_rh = [r["lb_certified_FH_rayleigh_holder"] for r in d16["horizon_sweep"]]
+    doublet = [r["lb_spectral_doublet_benchmark"] for r in d16["horizon_sweep"]]
+    feas_c0 = [r["feasible_probe_C0"] for r in d16["horizon_sweep"]]
+    eig_c0 = [r["eigen_probe_C0"] for r in d16["horizon_sweep"]]
+
+    ax1.plot(L_vals, feas_c0, 'o-', color='darkblue', lw=2.2, label=r'Feasible $L_1$-Smoothed $C_0^{\mathrm{feas}}(L)$')
+    ax1.plot(L_vals, eig_c0, 's--', color='royalblue', lw=1.6, alpha=0.8, label=r'Eigen-Probe $C_0^{\mathrm{eig}}(L)$')
+    ax1.plot(L_vals, doublet, '^-.', color='darkorange', lw=1.8, label='Spectral Doublet Benchmark')
+    ax1.plot(L_vals, lb_rh, 'd-', color='crimson', lw=2.0, label='Certified Rayleigh\u2013H\u00f6lder LB $\\underline{C}_{\\mathrm{RH}}(L)$')
+    ax1.axhline(d16["lb_inf_total"], color='black', ls=':', lw=1.6, label=r'$\infty$-Horizon Certified LB ($61.44$ USDT)')
+    ax1.set_xlabel('Round-Trip Horizon $L$ (steps)')
+    ax1.set_ylabel('Capital $C_0$ (USDT)')
+    ax1.set_title('(A) Finite-Horizon Duality & Convergence')
+    ax1.set_ylim(60.5, 67.5)
+    ax1.grid(True, ls='--', alpha=0.3)
+    ax1.legend(loc='lower right', fontsize=7.5, frameon=True)
+
+    # Panel B: Global Le Cam Minimax Lower Bound vs Biased/Shrinkage Estimators (Exp 17)
+    bench = sorted(d17["estimator_benchmark_delta_eta_010"], key=lambda x: x["N"])
+    N_vals = [b["N"] for b in bench]
+    lecam_lb = [b["lecam_minimax_fail_prob_lb"] * 100.0 for b in bench]
+    ml_fail = [b["estimators"]["Unregularized_ML"]["worst_case_fail_prob"] * 100.0 for b in bench]
+    ridge_fail = [b["estimators"]["Ridge_Tikhonov_L2"]["worst_case_fail_prob"] * 100.0 for b in bench]
+    js_fail = [b["estimators"]["James_Stein_Shrinkage_035"]["worst_case_fail_prob"] * 100.0 for b in bench]
+    heavy_fail = [b["estimators"]["Heavy_Prior_Shrinkage_075"]["worst_case_fail_prob"] * 100.0 for b in bench]
+
+    ax2.plot(N_vals, ml_fail, 'o-', color='navy', lw=2.0, label='Unregularized ML')
+    ax2.plot(N_vals, js_fail, 's--', color='darkorange', lw=1.8, label='James\u2013Stein Shrinkage ($\\gamma=0.35$)')
+    ax2.plot(N_vals, ridge_fail, '^-', color='forestgreen', lw=1.8, label=r'Ridge / Tikhonov ($L_2$)')
+    ax2.plot(N_vals, heavy_fail, 'v:', color='purple', lw=1.8, label=r'Heavy Prior Shrinkage ($\gamma=0.75$)')
+    ax2.plot(N_vals, lecam_lb, 'd-', color='crimson', lw=2.4, label='Le Cam Minimax Lower Bound (Any Estimator)')
+    ax2.fill_between(N_vals, 0, lecam_lb, color='red', alpha=0.12, label='Minimax Infeasible Region')
+    ax2.set_xscale('log')
+    ax2.set_xlabel('Number of Probes $N$ (log scale)')
+    ax2.set_ylabel(r'Worst-Case Error $\mathbb{P}(\|\hat{w}-w\|_\infty \geq 0.01)$ (%)')
+    ax2.set_title(r'(B) Minimax Lower Bound vs Shrinkage ($\Delta\eta=0.10$)')
+    ax2.set_ylim(0, 105)
+    ax2.grid(True, which='both', ls='--', alpha=0.3)
+    ax2.legend(loc='upper right', fontsize=7.2, frameon=True)
+
+    # Panel C: Crash-Free Resolvent Guard vs Eigenvalue Guard Max Drawdown (Exp 18)
+    reg_labels = ['Regime I\nBenign', 'Regime II\nNon-Normal', 'Regime III\nSuper-Crit.', 'Regime IV\nBinance L2']
+    eig_dd = [r["architectures"]["Eigenvalue_Guard"]["worst_max_drawdown_usdt"] for r in d18["regimes"]]
+    halt_dd = [r["architectures"]["Static_Halt"]["worst_max_drawdown_usdt"] for r in d18["regimes"]]
+    kreiss_dd = [r["architectures"]["Resolvent_Guard_Kreiss"]["worst_max_drawdown_usdt"] for r in d18["regimes"]]
+
+    x = np.arange(len(reg_labels))
+    w = 0.26
+    ax3.bar(x - w, eig_dd, w, color='crimson', alpha=0.85, edgecolor='black', label=r'Eigenvalue Guard ($\rho \leq 0.90$)')
+    ax3.bar(x, halt_dd, w, color='darkorange', alpha=0.85, edgecolor='black', label='Reactive Circuit Breaker')
+    ax3.bar(x + w, kreiss_dd, w, color='forestgreen', alpha=0.90, edgecolor='black', label=r'Resolvent Guard ($\mathcal{G}_{\mathrm{Kreiss}}$)')
+    ax3.axhline(d18["venue_calibration"]["maintenance_margin_breach_budget_usdt"], color='black', ls='--', lw=1.8,
+                label=r'Liquidation Breach ($9{,}050$ USDT)')
+    ax3.set_xticks(x)
+    ax3.set_xticklabels(reg_labels)
+    ax3.set_ylabel('Worst-Case Max Drawdown (USDT)')
+    ax3.set_title(r'(C) Resolvent Guard Solvency ($0\%$ Liquidation)')
+    ax3.set_ylim(0, 13200)
+    ax3.grid(True, axis='y', ls='--', alpha=0.3)
+    ax3.legend(loc='upper left', fontsize=7.2, frameon=True)
+
+    plt.tight_layout()
+    plt.savefig(OUT_DIR / "fig6_crash_free_and_minimax_frontiers.pdf")
+    plt.savefig(OUT_DIR / "fig6_crash_free_and_minimax_frontiers.png", dpi=300)
+    plt.close()
+    print("Figure 6 generated.")
+
 if __name__ == "__main__":
+    import shutil
     plot_fig1()
     plot_fig2()
     plot_fig3()
     plot_fig4()
     plot_fig5()
-    print("All 5 breakthrough figures generated successfully.")
+    plot_fig6()
+    paper_fig_dir = Path("paper/figures")
+    if paper_fig_dir.exists():
+        for pdf_file in OUT_DIR.glob("fig*.pdf"):
+            shutil.copy2(pdf_file, paper_fig_dir / pdf_file.name)
+    print("All 6 breakthrough figures generated and synchronized with paper/figures/.")
+

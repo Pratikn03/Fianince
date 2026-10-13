@@ -494,15 +494,15 @@ def test_unknown_mixture_equivalence_and_noise_boundary():
 # 19. Test Formal Proof Kernel Verification & Zero Axioms (P10-T01 to P10-T02)
 # ----------------------------------------------------------------------
 def test_formal_proof_bridge_coverage():
-    """Verify that Lean formalization bridge matches 20 manuscript mathematical environments
-    and MANUSCRIPT_COVERAGE.md explicitly documents 265 kernel-checked declarations."""
+    """Verify that Lean formalization bridge matches 23 manuscript mathematical environments
+    and MANUSCRIPT_COVERAGE.md explicitly documents 268 kernel-checked declarations."""
     bridge_script = Path("scripts/verify_theorem_code_bridge.py")
     assert bridge_script.exists(), "Theorem-code bridge script must exist"
     
     cov_file = Path("research_extension/current_manuscript_lean_20261008/MANUSCRIPT_COVERAGE.md")
     assert cov_file.exists(), "Manuscript coverage markdown must exist"
     cov_text = cov_file.read_text()
-    assert "265" in cov_text, "Coverage file must document 265 declarations"
+    assert "268" in cov_text, "Coverage file must document 268 declarations"
     assert Path("paper/generated/claim_to_code_map.tex").exists()
 
 # ----------------------------------------------------------------------
@@ -1077,23 +1077,33 @@ def test_tc91_08_unknown_k_blind_candidate_set():
 # ----------------------------------------------------------------------
 def test_tc91_09_and_10_formal_proof_and_prose_integrity():
     """Verify that MANUSCRIPT_COVERAGE.md, claim_to_code_map.tex, and Machine_Markets_JF_Submission.tex
-    are synchronized with 265 Lean declarations and 20 environments, and contain no stale overclaims."""
+    are synchronized with 268 Lean declarations and 23 environments, and contain no stale overclaims."""
     tex_text = Path("paper/Machine_Markets_JF_Submission.tex").read_text()
     cov_text = Path("research_extension/current_manuscript_lean_20261008/MANUSCRIPT_COVERAGE.md").read_text()
     map_text = Path("paper/generated/claim_to_code_map.tex").read_text()
     
-    # Check 265 declarations and 20 statements in manuscript prose
-    assert "265 kernel-checked Lean~4 declarations" in tex_text
-    assert "Of the 20 statements in Table~\\ref{tab:claim_map}" in tex_text
-    assert "265" in cov_text
+    # Check 268 declarations and 23 statements in manuscript prose
+    assert "268 kernel-checked Lean~4 declarations" in tex_text
+    assert "Of the 23 statements in Table~\\ref{tab:claim_map}" in tex_text
+    assert "268" in cov_text
     
-    # Check that Theorem IA.D.1, Theorem IA.D.2, and Proposition IA.D.3 are mapped
-    for label in ["thm:ia_exact_capital", "thm:ia_adaptive_capital", "prop:ia_cohort_information"]:
+    # Check that Theorems IA.D.1-IA.D.6 and Proposition IA.D.3 are mapped
+    for label in [
+        "thm:ia_exact_capital",
+        "thm:ia_adaptive_capital",
+        "prop:ia_cohort_information",
+        "thm:ia_nonconvex_duality",
+        "thm:ia_minimax_lecam",
+        "thm:ia_crash_free_guard",
+    ]:
         assert label in tex_text
     for title in [
         "Spectral Dissipation Lower Bound and Feasible Identification Probes",
         "Information-Theoretic Lower Bound for Adaptive and Sequential Probing",
         "Cram\\'er--Rao Local Information Benchmark for Multi-Cohort Weight Recovery",
+        "Finite-Horizon Rayleigh--H\\\"older Duality and Multi-Horizon Capital Convergence",
+        "Global Non-Asymptotic Le Cam Two-Point Minimax Lower Bound for Arbitrary Biased and Shrinkage Estimators",
+        "Crash-Free Forward Invariance of the Real-Time Resolvent Solvency Guard",
     ]:
         assert title in tex_text
         assert title in cov_text
@@ -1105,5 +1115,123 @@ def test_tc91_09_and_10_formal_proof_and_prose_integrity():
     assert "strictly constant" not in tex_text
     assert "Minimax LQG" not in tex_text
     assert "Minimax LQG" not in Path("breakthrough_experiments/tables/table_probing_methods.tex").read_text()
+
+
+# ----------------------------------------------------------------------
+# 36. Test Theorem IA.D.4: Finite-Horizon Rayleigh-Holder Duality (Exp 16)
+# ----------------------------------------------------------------------
+def test_exp16_nonconvex_duality_and_multi_horizon_convergence():
+    """Verify Theorem IA.D.4 (exp16): finite-horizon Rayleigh-Holder dual bound closes the gap to 0.98%
+    at L=80 (64.74 vs 65.38 USDT) and multi-horizon feasible probe attains 64.56 USDT at L=240."""
+    from breakthrough_experiments.exp16_nonconvex_duality_closing import compute_finite_horizon_bounds_and_probe
+
+    res_path = Path("breakthrough_experiments/results_exp16_nonconvex_duality.json")
+    assert res_path.exists()
+    data = json.loads(res_path.read_text())
+    sweep = {r["L"]: r for r in data["horizon_sweep"]}
+
+    # 1. Check L=80 tight finite-horizon duality certificate (< 1.0% gap)
+    r80 = sweep[80]
+    assert np.isclose(r80["lb_certified_FH_rayleigh_holder"], 64.743, atol=0.05)
+    assert np.isclose(r80["feasible_probe_C0"], 65.378, atol=0.05)
+    assert r80["lb_certified_FH_rayleigh_holder"] <= r80["feasible_probe_C0"]
+    assert r80["gap_vs_FH_rayleigh_holder_pct"] < 1.0
+
+    # 2. Check L=240 interior minimum feasible account capital (64.56 USDT)
+    r240 = sweep[240]
+    assert np.isclose(r240["feasible_probe_C0"], 64.558, atol=0.05)
+    assert r240["meets_5pct"] is True
+    assert r240["gap_vs_inf_certified_pct"] < 5.10
+
+    # 3. Verify O(1/L) truncation premium decay and O(sqrt(L)) L1 fee growth
+    L_list = [80, 120, 160, 240, 320, 480]
+    trunc_prems = [sweep[L]["truncation_premium_quad"] for L in L_list]
+    eigen_fees = [sweep[L]["eigen_l1_fee"] for L in L_list]
+    assert all(trunc_prems[i] > trunc_prems[i + 1] for i in range(len(L_list) - 1)), "Quadratic truncation premium must decrease monotonically with L"
+    assert all(eigen_fees[i] < eigen_fees[i + 1] for i in range(len(L_list) - 1)), "Sinusoid L1 fee must increase monotonically with L"
+
+    # 4. Live model-equation verification at L=80
+    live_80 = compute_finite_horizon_bounds_and_probe(80, delta=0.05)
+    assert np.isclose(live_80["lb_certified_FH_rayleigh_holder"], r80["lb_certified_FH_rayleigh_holder"], atol=1e-6)
+
+
+# ----------------------------------------------------------------------
+# 37. Test Theorem IA.D.5: Global Non-Asymptotic Le Cam Minimax Bound (Exp 17)
+# ----------------------------------------------------------------------
+def test_exp17_minimax_lecam_two_point_bound():
+    """Verify Theorem IA.D.5 (exp17): exact moment-matched two-point pair has identical M0, M1, M2,
+    exact cubic gap 4*tau*p_minus*p_plus*(Delta_eta)^3, log-log slope ~ -6.0, and bounds all biased/shrinkage estimators."""
+    from breakthrough_experiments.exp17_minimax_lecam_bound import construct_exact_lecam_pair
+
+    res_path = Path("breakthrough_experiments/results_exp17_minimax_lecam_bound.json")
+    assert res_path.exists()
+    data = json.loads(res_path.read_text())
+
+    # 1. Verify log-log slopes match Theta((Delta_eta)^-6)
+    assert -6.20 <= data["loglog_slope_lecam_exact"] <= -5.90
+    assert -6.20 <= data["loglog_slope_lecam_analytic"] <= -5.90
+    assert -6.20 <= data["loglog_slope_crb"] <= -5.90
+
+    # 2. Live verification of the closed-form moment-matched pair at Delta_eta = 0.10, tau = 0.01
+    pair = construct_exact_lecam_pair(0.10, tau=0.01)
+    assert np.isclose(pair["exact_cohort_spacing_theta0"], 0.10, atol=1e-12)
+    assert np.isclose(pair["exact_cohort_spacing_theta1"], 0.10, atol=1e-12)
+    assert np.isclose(pair["exact_weight_separation_linf"], 0.02, atol=1e-12)
+    assert all(abs(d) < 1e-15 for d in pair["moment_diffs_m0_m1_m2"]), "First three moments M0, M1, M2 must match to machine precision"
+    assert np.isclose(pair["moment_diff_m3_exact"], pair["moment_diff_m3_formula"], atol=1e-15)
+    assert np.isclose(pair["moment_diff_m3_exact"], 9.9e-6, atol=1e-12)
+    assert np.isclose(pair["n_star_lecam_95pct_any_estimator"], 6172.17, atol=1.0)
+    assert np.isclose(pair["minimax_fail_prob_N50"], 0.44115, atol=1e-3)
+
+    # 3. Verify every tested estimator (ML, Ridge, James-Stein, Heavy Prior Shrinkage) obeys Le Cam bound
+    for cell in data["estimator_benchmark_delta_eta_010"]:
+        lb = cell["lecam_minimax_fail_prob_lb"]
+        for est_name, est_res in cell["estimators"].items():
+            assert est_res["obeys_lecam_bound"] is True, f"{est_name} at N={cell['N']} violated Le Cam bound"
+            assert est_res["worst_case_fail_prob"] >= lb - 0.02
+
+
+# ----------------------------------------------------------------------
+# 38. Test Theorem IA.D.6: Crash-Free Real-Time Resolvent Solvency Guard (Exp 18)
+# ----------------------------------------------------------------------
+def test_exp18_crash_free_resolvent_guard():
+    """Verify Theorem IA.D.6 (exp18): under explicit double-entry dealer cash/inventory/margin ledger,
+    Resolvent_Guard_Kreiss achieves 0.0% liquidation across all 4 regimes (including Non-Normal Herding
+    and Real Binance Jan 2023 L2 Replay), whereas Eigenvalue_Guard suffers 100% liquidation in non-normal regimes."""
+    from breakthrough_experiments.exp18_crash_free_ai_guard import simulate_double_entry_dealer_episode, B_MAINT_BUDGET
+
+    res_path = Path("breakthrough_experiments/results_exp18_crash_free_ai_guard.json")
+    assert res_path.exists()
+    data = json.loads(res_path.read_text())
+    regimes = {r["regime"]: r for r in data["regimes"]}
+
+    # 1. Check Resolvent_Guard_Kreiss achieves 0.0% liquidation and worst drawdown < 9,050 USDT in all 4 regimes
+    for reg_name, reg in regimes.items():
+        kr = reg["architectures"]["Resolvent_Guard_Kreiss"]
+        assert kr["liquidation_rate"] == 0.0, f"Resolvent Guard must have 0% liquidation in {reg_name}"
+        assert kr["worst_max_drawdown_usdt"] < B_MAINT_BUDGET, f"Resolvent Guard max drawdown must stay below {B_MAINT_BUDGET} in {reg_name}"
+        assert kr["quote_continuity_ratio"] == 1.0
+
+    # 2. Check Benign regime has 100% flow admission (zero false alarms)
+    assert regimes["Regime_I_Benign"]["architectures"]["Resolvent_Guard_Kreiss"]["mean_admission_gamma"] == 1.0
+
+    # 3. Check Non-Normal Herding (Regime II) and Binance Empirical Replay (Regime IV) falsify Eigenvalue_Guard
+    for non_normal_reg in ("Regime_II_NonNormal_Herding", "Regime_IV_Binance_Empirical_Replay"):
+        r_nn = regimes[non_normal_reg]
+        assert r_nn["unguarded_spectral_radius_rho"] < 0.85, "Non-normal regime must be spectrally stable (rho < 0.85)"
+        assert r_nn["unguarded_price_transient_gain_MC"] > 35.0, "Non-normal regime must have large transient gain (> 35)"
+        assert r_nn["architectures"]["Eigenvalue_Guard"]["liquidation_rate"] == 1.0, f"Eigenvalue Guard must fail (100% liquidation) in {non_normal_reg}"
+        assert r_nn["architectures"]["Static_Halt"]["liquidation_rate"] >= 0.35, f"Reactive circuit breaker must suffer liquidations in {non_normal_reg}"
+
+    # 4. Live single-episode simulation check from model equations
+    rng = np.random.default_rng(20261013)
+    shocks = np.abs(rng.standard_t(df=4.0, size=(50, 3))) * 0.22
+    ep_eig = simulate_double_entry_dealer_episode(shocks, "Regime_II_NonNormal_Herding", "Eigenvalue_Guard")
+    ep_kr = simulate_double_entry_dealer_episode(shocks, "Regime_II_NonNormal_Herding", "Resolvent_Guard_Kreiss")
+    assert ep_eig["liquidated"] is True
+    assert ep_kr["liquidated"] is False
+    assert ep_kr["max_drawdown_usdt"] < B_MAINT_BUDGET
+
+
 
 

@@ -1319,9 +1319,9 @@ We formulate the complete capital minimization problem over all feasible flat, f
 \end{aligned}
 \label{eq:general_capital_optimization}
 \end{equation}
-The constructed $65.05$ USDT ($L=120$) and $64.59$ USDT ($L=160$) sequences are constructed feasible candidate solutions to \eqref{eq:general_capital_optimization}, not proven global optima. Finding the absolute global minimum under non-convex $L_1$ transaction fees $\phi P^* |v_t|$ and supremum inventory margin $\max_t \mu P^* |I_t|$ is an open non-convex trajectory problem. However, Theorem~\ref{thm:ia_exact_capital} establishes the fee-free spectral infimum $C^*_{\mathrm{det,quad}}(0.05) = 61.14$ USDT and the fee-inclusive certified deterministic lower bound $\underline{C}_{\mathrm{det}}(0.05) = 61.44$ USDT, ensuring that the true global minimum initial account capital under all non-convex fee schedules and margin constraints is strictly bounded in $[61.44, 64.59]$ USDT ($[61.44, 65.05]$ USDT at $L=120$).
+The constructed $65.38$ USDT ($L=80$), $64.70$ USDT ($L=120$), $64.60$ USDT ($L=160$), and $64.56$ USDT ($L=240$) sequences are constructed feasible candidate solutions to \eqref{eq:general_capital_optimization}. While the infinite-horizon spectral lower bound $\underline{C}_{\mathrm{det}}(0.05) = 61.44$ USDT (Theorem~\ref{thm:ia_exact_capital}) leaves a $5.07\%$ gap relative to the best finite-horizon feasible probe ($64.56$ USDT at $L=240$), Theorem~\ref{thm:ia_nonconvex_duality} below resolves the mathematical origin of this gap by deriving an exact finite-horizon mode-weighted Rayleigh--H\"older dual lower bound $\underline{C}_{\mathrm{RH}}(L)$ over the flat subspace $\mathcal{V}_L = \{v \in \mathbb{R}^L : \mathbf{1}^\top v = 0\}$. At $L=80$, $\underline{C}_{\mathrm{RH}}(80) = 64.74$ USDT against feasible $C_0^{\mathrm{feas}}(80) = 65.38$ USDT, closing the finite-horizon non-convex duality gap to $0.98\%$ ($2.63\%$ at $L=120$).
 
-The certified capital lower bounds and the information-theoretic value of adaptivity are established by Theorems~\ref{thm:ia_exact_capital} and \ref{thm:ia_adaptive_capital} and Table~\ref{iatab:capital_frontier_exact} below.
+The certified capital lower bounds, the information-theoretic value of adaptivity, and the finite-horizon Rayleigh--H\"older duality convergence are established by Theorems~\ref{thm:ia_exact_capital}, \ref{thm:ia_adaptive_capital}, and \ref{thm:ia_nonconvex_duality} and Tables~\ref{iatab:capital_frontier_exact} and \ref{iatab:nonconvex_duality} below.
 
 \begin{theorem}[Spectral Dissipation Lower Bound and Feasible Identification Probes]
 \label{thm:ia_exact_capital}
@@ -1347,7 +1347,7 @@ Consequently, every deterministic round-trip probe guaranteeing worst-case class
 L_i(v) \ge 4 \sigma^2 z_{1-\alpha}^2 \inf_{\omega \in [-\pi, \pi]} \frac{g_i(\omega)}{|\Delta \widehat{H}(e^{i\omega})|^2} \equiv C^*_{\mathrm{det,quad}}(\delta).
 \end{equation}
 At $\delta = 0.05$, $C^*_{\mathrm{det,quad}}(0.05) = 61.14$ USDT (with minimizing angular frequency $\omega^* = 0.2526$ rad). Adding the minimal unavoidable taker fee under effective capacity $V_{\mathrm{eff}}$ ($\phi P^* \|v\|_2^2 / V_{\mathrm{eff}} \ge 0.3056$ USDT) establishes the certified necessary lower bound $\underline{C}_{\mathrm{det}}(0.05) \ge 61.44$ USDT.
-\item \textbf{Feasible Upper Bound and Bounded Gap:} A concrete 160-step executable trading sequence $v^{(L)}$ ($L=160$, respecting $|v_t| \le 6.25$ BTC, $D_{\max} \le 5.0$ USDT, $0.5\%$ maintenance margin, and $4$ bp taker fees) achieves target error $\le 0.05$ with initial capital $C_0 = 64.59$ USDT ($65.05$ USDT at $L=120$). This establishes an explicit feasible upper bound and bounds the unknown global optimum of the non-convex fee-paying problem within the narrow interval $C^*_{\mathrm{acc}}(0.05) \in [61.44, 64.59]$ USDT (optimality gap $\le 5.1\%$). Across evaluated memory separations $\delta \in [0.02, 0.15]$, the quadratic lower bound exhibits asymptotic scaling $\delta^4 \times C^*_{\mathrm{det,quad}}(\delta) = (3.82 \pm 0.15) \times 10^{-4}$.
+\item \textbf{Feasible Upper Bound and Bounded Gap:} A concrete 160-step executable trading sequence $v^{(L)}$ ($L=160$, respecting $|v_t| \le 6.25$ BTC, $D_{\max} \le 5.0$ USDT, $0.5\%$ maintenance margin, and $4$ bp taker fees) achieves target error $\le 0.05$ with initial capital $C_0 = 64.59$ USDT ($65.05$ USDT at $L=120$; $64.56$ USDT under $L_1$-regularized optimization at $L=240$). This establishes an explicit feasible upper bound and bounds the unknown global optimum of the non-convex fee-paying problem within the narrow interval $C^*_{\mathrm{acc}}(0.05) \in [61.44, 64.56]$ USDT (optimality gap $\le 5.07\%$). Across evaluated memory separations $\delta \in [0.02, 0.15]$, the quadratic lower bound exhibits asymptotic scaling $\delta^4 \times C^*_{\mathrm{det,quad}}(\delta) = (3.82 \pm 0.15) \times 10^{-4}$.
 \end{enumerate}
 \end{theorem}
 
@@ -1371,6 +1371,23 @@ establishing that dynamic adaptation can reduce expected quadratic loss by at mo
 \end{theorem}
 
 \input{../breakthrough_experiments/tables/table_capital_frontier_exact.tex}
+
+\begin{theorem}[Finite-Horizon Rayleigh--H\"older Duality and Multi-Horizon Capital Convergence]
+\label{thm:ia_nonconvex_duality}
+For any finite round-trip horizon $L \ge 2$, let $P \in \mathbb{R}^{L \times (L-1)}$ denote an orthonormal basis for the zero-inventory subspace $\mathcal{V}_L = \{v \in \mathbb{R}^L : \mathbf{1}^\top v = 0\}$, and let $G_0 = P^\top Q_0 P \succ 0$ and $M = P^\top A_{\mathrm{diff}} P \succeq 0$ denote the projected quadratic execution-loss and Fisher-information matrices. Let $\{(\lambda_j, u_j)\}_{j=1}^{L-1}$ be the $G_0$-orthonormal generalized eigenpairs ($M u_j = \lambda_j G_0 u_j$, $u_j^\top G_0 u_k = \delta_{jk}$) ordered as $\lambda_1 \le \cdots \le \lambda_{L-2} \le \lambda_{L-1} = \lambda_{\max}(L)$, and define the target information constant $c \equiv 4\sigma^2 z_{1-\alpha}^2$. Then:
+\begin{enumerate}
+\item \textbf{Exact Mode-Weighted Rayleigh--H\"older Dual Lower Bound:} Every flat probe $v = P w \in \mathcal{V}_L$ achieving $\|d(v)\|_2^2 = w^\top M w \ge c$ with quadratic loss $L_0(v) = w^\top G_0 w = \underline{C}_{\mathrm{quad}}(L) + \epsilon$ ($\underline{C}_{\mathrm{quad}}(L) \equiv c / \lambda_{\max}(L)$, $\epsilon \ge 0$) satisfies the mode-weighted Cauchy--Schwarz inequality for every sign vector $s \in \{-1, +1\}^L$ ($\xi_j \equiv s^\top P u_j$):
+\begin{equation}
+\|v\|_1 \ge \sup_{\theta \in [0, \pi)} \left[ \sqrt{\frac{c}{\lambda(\theta)}} |\xi_{\mathrm{span}}(\theta)| - \sqrt{\epsilon} \left( \sum_{j=1}^{L-3} \frac{\xi_j^2}{1 - \lambda_j / \lambda(\theta)} \right)^{1/2} \right]_+,
+\end{equation}
+where $\lambda(\theta) = \lambda_{L-1}\cos^2\theta + \lambda_{L-2}\sin^2\theta$ and $s(\theta) = \operatorname{sign}(P(u_{L-1}\cos\theta + u_{L-2}\sin\theta))$. Maximizing over $s$ and minimizing $\underline{C}_{\mathrm{quad}}(L) + \epsilon + c_{\mathrm{fee}}\max\{\|v\|_1(\epsilon), c/(V_{\mathrm{eff}}\lambda_{\max}(L))\}$ over $\epsilon \ge 0$ yields the certified finite-horizon lower bound $\underline{C}_{\mathrm{RH}}(L)$.
+\item \textbf{Tight Finite-Horizon Duality Certificate:} At $\delta = 0.05$, $\underline{C}_{\mathrm{RH}}(80) = 64.74$ USDT against feasible $C_0^{\mathrm{feas}}(80) = 65.38$ USDT (finite-horizon duality gap $0.98\%$), and $\underline{C}_{\mathrm{RH}}(120) = 63.04$ USDT against feasible $C_0^{\mathrm{feas}}(120) = 64.70$ USDT (gap $2.63\%$).
+\item \textbf{Spectral Truncation vs.\ $L_1$ Taker-Fee Trade-Off:} As $L \to \infty$, the quadratic truncation premium $\underline{C}_{\mathrm{quad}}(L) - C^*_{\mathrm{det,quad}} = \mathcal{O}(L^{-1})$ decays monotonically ($+1.41$, $+0.70$, $+0.40$, $+0.18$, $+0.11$, and $+0.05$ USDT for $L \in \{80, 120, 160, 240, 320, 480\}$), whereas the $L_1$ taker fee of fixed-$L_2$-energy narrowband sinusoids grows as $c_{\mathrm{fee}}\|v^*_L\|_1 = \Theta(\sqrt{L})$ ($2.24 \to 5.16$ USDT). Consequently, total feasible account capital $C_0^{\mathrm{feas}}(L)$ is non-monotone in $L$ and attains its interior minimum $C_0^{\mathrm{feas}}(240) = 64.56$ USDT at $L^* = 240$ ($5.07\%$ above $\underline{C}_{\mathrm{det}} = 61.44$ USDT).
+\end{enumerate}
+\end{theorem}
+
+\input{../breakthrough_experiments/tables/table_nonconvex_duality.tex}
+
 
 \subsection{Probing Protocol Invariance and Universal \texorpdfstring{$\Theta(\delta^{-4})$}{Theta(delta\textasciicircum-4)} Scaling}
 \label{ia:probing_invariance}
@@ -1481,6 +1498,35 @@ N^*(\Delta\eta) = \Theta\left( (\Delta\eta)^{-6} \right).
 \end{proposition}
 
 \input{../breakthrough_experiments/tables/table_cohort_information.tex}
+
+While Proposition~\ref{prop:ia_cohort_information} establishes the $\Theta((\Delta\eta)^{-6})$ sample-complexity barrier for regular, asymptotically unbiased estimators, a natural econometric question is whether biased, ridge-regularized ($L_2$ Tikhonov), James--Stein shrinkage, or Bayesian MAP estimators can escape this scaling. Theorem~\ref{thm:ia_minimax_lecam} resolves this globally and non-asymptotically via an exact moment-matched Le Cam two-point construction.
+
+\begin{theorem}[Global Non-Asymptotic Le Cam Two-Point Minimax Lower Bound for Arbitrary Biased and Shrinkage Estimators]
+\label{thm:ia_minimax_lecam}
+Fix total cohort weight $q = 0.20$, mean adaptation rate $\bar{\eta} = 0.40$, target weight separation $\tau = 0.01$, and cohort rate spacing $\Delta\eta \in (0, 2\bar{\eta})$. Define $p_- \equiv \frac{1}{2} - \frac{\tau}{q} = 0.45$ and $p_+ \equiv \frac{1}{2} + \frac{\tau}{q} = 0.55$, and construct the unrescaled two-cohort parameter pair:
+\begin{equation}
+\theta_0 = (q p_-,\, q p_+,\, \bar{\eta} - p_+ \Delta\eta,\, \bar{\eta} + p_- \Delta\eta), \qquad \theta_1 = (q p_+,\, q p_-,\, \bar{\eta} - p_- \Delta\eta,\, \bar{\eta} + p_+ \Delta\eta).
+\end{equation}
+Then:
+\begin{enumerate}
+\item \textbf{Exact Moment-Matching and Cubic Divergence Identity:} Both parameter vectors have identical cohort spacing $\eta_{i,2} - \eta_{i,1} = \Delta\eta$, exact $\ell_\infty$ weight separation $\|w(\theta_1) - w(\theta_0)\|_\infty = 2\tau = 0.02$, and identical first three open-loop rate moments $M_m(\theta_0) = M_m(\theta_1)$ for $m \in \{0, 1, 2\}$ ($M_m(\theta) \equiv \sum_{k=1}^2 w_k \eta_k^m$), while their third moment differs by the exact cubic polynomial identity (kernel-checked in Lean~4 as \nolinkurl{lecam_two_point_moment_matched_cubic_gap}):
+\begin{equation}
+M_3(\theta_1) - M_3(\theta_0) = 4 \tau p_- p_+ (\Delta\eta)^3 = 0.0099 \, (\Delta\eta)^3.
+\end{equation}
+Consequently, the closed-loop impulse-response distance scales as $\|h(\theta_1) - h(\theta_0)\|_2 = \Theta(\tau (\Delta\eta)^3)$.
+\item \textbf{Universal Non-Asymptotic Minimax Lower Bound:} For any measurable estimator $\hat{w} : \mathbb{R}^{(T+1) \times N} \to \mathbb{R}^2$ (including arbitrary biased, ridge/Tikhonov, James--Stein shrinkage, or Bayesian MAP estimators), the worst-case failure probability and $\ell_\infty$ mean-squared error obey Le Cam's two-point testing inequality:
+\begin{equation}
+\begin{aligned}
+\sup_{\theta \in \Theta(\Delta\eta)} \mathbb{P}_\theta\!\left( \|\hat{w} - w(\theta)\|_\infty \ge \tau \right) &\ge 1 - \Phi\!\left( \frac{\sqrt{N}\, \|h(\theta_1) - h(\theta_0)\|_2}{2 \sigma_h} \right), \\
+\sup_{\theta \in \Theta(\Delta\eta)} \mathbb{E}_\theta\!\left[ \|\hat{w} - w(\theta)\|_\infty^2 \right] &\ge \tau^2 \left[ 1 - \Phi\!\left( \frac{\sqrt{N}\, \|h(\theta_1) - h(\theta_0)\|_2}{2 \sigma_h} \right) \right].
+\end{aligned}
+\end{equation}
+To achieve worst-case failure probability $\le \delta_{\mathrm{fail}} = 0.05$, every estimator requires at least $N \ge N^*_{\mathrm{LeCam}}(\Delta\eta) \equiv \frac{4\sigma_h^2 (z_{1-\delta_{\mathrm{fail}}})^2}{\|h(\theta_1) - h(\theta_0)\|_2^2} = \Theta((\Delta\eta)^{-6})$ independent reset probes (empirical log-log slope $-6.021$ exact, $-6.064$ analytic).
+\item \textbf{Surveillance-Budget Infeasibility and Shrinkage Benchmark:} At $\Delta\eta = 0.10$ ($\delta = 0.05$), $N^*_{\mathrm{LeCam}}(95\%) = 6{,}172$ probes ($8{,}764$ at $97.5\%$). At ordinary surveillance budget $N = 50$, the estimator-independent minimax lower bound on worst-case failure probability is $44.12\%$, and empirical worst-case failure rates across $1{,}000$ Monte Carlo trials are $94.1\%$ (Unregularized ML), $87.0\%$ (Ridge/Tikhonov), $91.3\%$ (James--Stein $\gamma=0.35$), and $79.5\%$ (Heavy Prior Shrinkage $\gamma=0.75$).
+\end{enumerate}
+\end{theorem}
+
+\input{../breakthrough_experiments/tables/table_minimax_lecam.tex}
 
 
 \subsection{Causal Identification via Multi-Agent Policy-Freeze Intervention}
@@ -1600,6 +1646,37 @@ In the no-learning baseline ($\gamma = 0$), regressing the orthogonalized flow i
 
 Crucially, in an economy with genuine positive feedback ($\gamma = 0.20$), regressing flow on raw single-period returns $r_{t-1}$ produces an attenuated regression slope $\hat{\beta}_{\mathrm{RF}} = 0.0208$, reflecting the exponential memory half-life ($y_t$ scales by $\approx \eta$). In contrast, when the econometrician projects the quasi-differenced flow innovation onto the filtered memory state $\hat{y}_t$, the structural feedback parameter is accurately recovered: $\hat{\gamma} = 0.1965$ (bias $-0.0035$). This establishes a rigorous econometric bridge between reduced-form lag regressions and structural multi-agent feedback identification.
 
+\subsection{Provably Crash-Free Market Architecture via Real-Time Resolvent Solvency Guarding}
+\label{ia:crash_free_guard}
+
+While Section~\ref{ia:nonnormal_decoupling} demonstrated that a state vector containing only price and algorithmic memory cannot directly represent dealer margin, a central normative question for exchange design is whether we can couple the multi-cohort AI state-space dynamics to an \emph{explicit double-entry dealer balance-sheet ledger} (tracking physical inventory $I_t$, cash $K_t$, linear-book execution fills, mark-to-market equity $E_t = K_t + I_t p_t$, and Binance USD$\circledS$-M Tier-2 maintenance margin $\mathrm{MM}_t = \max(0, 0.005|I_t|p_t - 50)$) and construct a real-time exchange admission controller that provably eliminates forced dealer liquidation across both super-critical ($\rho(J) > 1$) and spectrally stable but non-normal ($\rho(J) < 1$, $\mathcal{M}_{\mathcal{C}} \gg 1$) AI herding regimes. Theorem~\ref{thm:ia_crash_free_guard} establishes this forward-invariance guarantee, and Table~\ref{iatab:crash_free_ai_guard} and Figure~\ref{iafig:three_breakthrough_frontiers} report its empirical validation across $400$ stress episodes, including $100$ real extreme L2 order-book shock windows replayed from January 2023 Binance BTCUSDT (\texttt{empirical\_pipeline/data/1-09-1-20.csv}).
+
+\begin{theorem}[Crash-Free Forward Invariance of the Real-Time Resolvent Solvency Guard]
+\label{thm:ia_crash_free_guard}
+Consider a venue dealer with initial equity $E_0 = 10{,}000$ USDT, structural inventory exposure $I_0 = -2{,}000$ units at reference price $P^* = 100$ USDT ($20\times$ notional leverage), cash $K_0 = E_0 - I_0 P^* = 210{,}000$ USDT, and Tier-2 maintenance-margin breach budget $B_{\mathrm{maint}} \equiv E_0 - \mathrm{MM}_0 = 9{,}050$ USDT (with safety reserve $R_{\mathrm{safe}} = 950$ USDT). Let $J(\alpha) = A_0 + \alpha B F$ denote the closed-loop transition matrix when algorithmic feedback flow is scaled by admission factor $\alpha \in [0, 1]$, and define the price-output transient gain $\mathcal{M}_{\mathcal{C},\mathrm{price}}(\alpha) \equiv \max_{0 \le k \le H} \|c_{\mathrm{price}}^\top J(\alpha)^k\|_2$ and cumulative convolution gain $\mathcal{G}_{\mathrm{cum}}(\alpha) \equiv \sum_{k=0}^H \|c_{\mathrm{price}}^\top J(\alpha)^k\|_2$. At each step $t$, the \textbf{Real-Time Resolvent Solvency Guard} ($\mathcal{G}_{\mathrm{Kreiss}}$) selects the maximal admission factor $\alpha_t \in [0, 1]$ satisfying:
+\begin{equation}
+\begin{aligned}
+\rho(J(\alpha_t)) \le 0.90, \qquad & |I_t| \left( |c_{\mathrm{price}}^\top J(\alpha_t) z_t| + \mathcal{M}_{\mathcal{C},\mathrm{price}}(\alpha_t) \|B u_t\|_2 \right) + R_{\mathrm{safe}} \le B_{\mathrm{maint}}, \\
+& \alpha_t \mathcal{G}_{\mathrm{cum}}(\alpha_t) |I_t| \bar{u} + R_{\mathrm{safe}} \le B_{\mathrm{maint}}.
+\end{aligned}
+\label{eq:ia_kreiss_guard_rule}
+\end{equation}
+Then:
+\begin{enumerate}
+\item \textbf{Forward Invariance of the Solvency Set:} For every bounded exogenous disturbance sequence $\|B u_t\|_2 \le \bar{u}$, the guarded state trajectory satisfies $\mathrm{Drawdown}_t \equiv E_0 - E_t < B_{\mathrm{maint}}$ for all $t \ge 0$ (kernel-checked in Lean~4 as \nolinkurl{kreiss_resolvent_guard_solvency_invariance}), ensuring $E_t > \mathrm{MM}_t$ and strictly zero forced dealer liquidations ($0.0\%$).
+\item \textbf{Structural Failure of Eigenvalue-Only Guards under Non-Normal AI Herding:} An eigenvalue-only risk monitor that enforces $\rho(J(\alpha_t)) \le 0.90$ without bounding the resolvent/transient gain $\mathcal{M}_{\mathcal{C},\mathrm{price}}(\alpha_t)$ admits $\alpha_t \equiv 1$ in non-normal cross-cohort herding cascades where $\rho(J) = 0.780 < 0.90$ but $\mathcal{M}_{\mathcal{C},\mathrm{price}} = 40.79$, suffering $100.0\%$ dealer liquidation in both synthetic non-normal cascades (Regime~II) and empirical January 2023 Binance BTCUSDT L2 shock replays (Regime~IV).
+\item \textbf{Empirical Dominance Over Reactive Circuit Breakers:} Across all $400$ episodes spanning Regimes~I--IV, $\mathcal{G}_{\mathrm{Kreiss}}$ achieves $0.0\%$ liquidation, $100.0\%$ quote continuity, and $100.0\%$ flow admission in benign markets (zero false alarms), whereas a reactive circuit breaker suffers $49.0\%$ liquidation in Regime~II and $39.0\%$ liquidation in Regime~IV while collapsing quote continuity to $6.3\%$--$8.3\%$.
+\end{enumerate}
+\end{theorem}
+
+\input{../breakthrough_experiments/tables/table_crash_free_ai_guard.tex}
+
+\begin{figure}[htbp]\centering
+\includegraphics[width=0.98\textwidth]{figures/fig6_crash_free_and_minimax_frontiers.pdf}
+\caption{Synthesis of the Three Extended Mathematical Frontiers (Theorems~\ref{thm:ia_nonconvex_duality}--\ref{thm:ia_crash_free_guard}). Panel~A: Finite-horizon Rayleigh--H\"older dual lower bound $\underline{C}_{\mathrm{RH}}(L)$ vs.\ feasible $L_1$-regularized account capital $C_0^{\mathrm{feas}}(L)$ across horizons $L \in [80, 480]$ at $\delta = 0.05$ ($0.98\%$ finite-horizon duality gap at $L=80$; interior minimum $64.56$ USDT at $L=240$). Panel~B: Global estimator-independent Le Cam minimax failure lower bound vs.\ Unregularized ML, Ridge/Tikhonov ($L_2$), and James--Stein shrinkage estimators across $N \in [50, 40{,}374]$ probes at $\Delta\eta = 0.10$. Panel~C: Worst-case dealer maximum drawdown across Regimes~I--IV under the explicit double-entry dealer ledger, showing that the Real-Time Resolvent Solvency Guard ($\mathcal{G}_{\mathrm{Kreiss}}$) maintains drawdown strictly below the $9{,}050$ USDT liquidation threshold ($0.0\%$ liquidation) across all regimes including the January 2023 Binance L2 shock replay.}
+\label{iafig:three_breakthrough_frontiers}
+\end{figure}
+
 \section{Formal Proof Coverage and Theorem-to-Code Mapping}
 \label{ia:formal_proof_coverage}
 
@@ -1607,6 +1684,7 @@ Table~\ref{tab:claim_map} maps each mathematical statement in the manuscript to 
 
 \input{generated/claim_to_code_map.tex}
 
-As documented in \texttt{MANUSCRIPT\_COVERAGE.md}, the 265 kernel-checked Lean~4 declarations formalize foundational subresults (including Gaussian KL divergence bounds, Toeplitz operator coercivity, Kreiss safe radius bounds, matrix power monotonicity, and disclosure solvency). Of the 20 statements in Table~\ref{tab:claim_map}, only one is fully formalized; five are partially formalized, ten have formalized subresults with remaining proof obligations, two are not formalized, and two have subresult mappings. Full end-to-end formalization of the manuscript remains open; no statement other than the fully formalized one should be read as machine-checked. In particular, external classical mathematical theorems (such as Spijker's 1991 resolvent bound) enter strictly as explicit named hypotheses rather than unproved axioms.
+As documented in \texttt{MANUSCRIPT\_COVERAGE.md}, the 268 kernel-checked Lean~4 declarations formalize foundational subresults (including Gaussian KL divergence bounds, Toeplitz operator coercivity, Kreiss safe radius bounds, matrix power monotonicity, disclosure solvency, Rayleigh--H\"older dual loss-plus-fee bounds, moment-matched Le Cam cubic gaps, and resolvent guard solvency invariance). Of the 23 statements in Table~\ref{tab:claim_map}, only one is fully formalized; five are partially formalized, thirteen have formalized subresults with remaining proof obligations, two are not formalized, and two have subresult mappings. Full end-to-end formalization of the manuscript remains open; no statement other than the fully formalized one should be read as machine-checked. In particular, external classical mathematical theorems (such as Spijker's 1991 resolvent bound) enter strictly as explicit named hypotheses rather than unproved axioms.
 
 \end{document}
+

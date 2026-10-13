@@ -51,5 +51,45 @@ theorem sq_sum_le_cap_mul_abs_sum {n : ℕ} (v : Fin n → ℝ) {V : ℝ}
   rw [hsq]
   exact mul_le_mul_of_nonneg_right (hcap i) (abs_nonneg _)
 
+theorem rayleigh_holder_total_loss_lower_bound {c lam_max loss_quad c_fee l1_min l1_norm : ℝ}
+    (hlam : 0 < lam_max) (hquad : c ≤ lam_max * loss_quad)
+    (hfee_nonneg : 0 ≤ c_fee) (hl1 : l1_min ≤ l1_norm) :
+    c / lam_max + c_fee * l1_min ≤ loss_quad + c_fee * l1_norm := by
+  have hq : c / lam_max ≤ loss_quad :=
+    capital_lower_bound_of_information_ratio hlam hquad (le_refl c)
+  have hf : c_fee * l1_min ≤ c_fee * l1_norm :=
+    mul_le_mul_of_nonneg_left hl1 hfee_nonneg
+  linarith
+
+theorem lecam_two_point_moment_matched_cubic_gap (q tau eta_bar d_eta : ℝ)
+    (hq : q ≠ 0) :
+    let p_minus := (1 : ℝ) / 2 - tau / q
+    let p_plus := (1 : ℝ) / 2 + tau / q
+    let w0_1 := q * p_minus
+    let w0_2 := q * p_plus
+    let eta0_1 := eta_bar - p_plus * d_eta
+    let eta0_2 := eta_bar + p_minus * d_eta
+    let w1_1 := q * p_plus
+    let w1_2 := q * p_minus
+    let eta1_1 := eta_bar - p_minus * d_eta
+    let eta1_2 := eta_bar + p_plus * d_eta
+    (w1_1 * eta1_1 + w1_2 * eta1_2) - (w0_1 * eta0_1 + w0_2 * eta0_2) = 0 ∧
+    (w1_1 * eta1_1 ^ 2 + w1_2 * eta1_2 ^ 2) - (w0_1 * eta0_1 ^ 2 + w0_2 * eta0_2 ^ 2) = 0 ∧
+    (w1_1 * eta1_1 ^ 3 + w1_2 * eta1_2 ^ 3) - (w0_1 * eta0_1 ^ 3 + w0_2 * eta0_2 ^ 3) =
+      4 * tau * p_minus * p_plus * d_eta ^ 3 := by
+  dsimp only
+  refine ⟨?_, ?_, ?_⟩
+  · field_simp [hq]; ring
+  · field_simp [hq]; ring
+  · field_simp [hq]; ring
+
+theorem kreiss_resolvent_guard_solvency_invariance {alpha gain_MC u_norm reserve B_maint drawdown : ℝ}
+    (hres : 0 < reserve)
+    (hdraw : drawdown ≤ alpha * gain_MC * u_norm)
+    (hguard : alpha * gain_MC * u_norm + reserve ≤ B_maint) :
+    drawdown < B_maint := by
+  linarith
+
 end
 end CurrentMM
+

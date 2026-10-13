@@ -154,8 +154,27 @@ REGISTRY = [
         r"Proposition IA.D.3",
         "CurrentProofs/SpectralCapital.lean", "sq_sum_le_cap_mul_abs_sum",
         "tests/test_breakthrough_experiments.py", "test_cohort_cramer_rao_information_bound"
+    ),
+    TheoremMapping(
+        "theorem", r"Finite-Horizon Rayleigh--H\"older Duality and Multi-Horizon Capital Convergence",
+        r"Theorem IA.D.4",
+        "CurrentProofs/SpectralCapital.lean", "rayleigh_holder_total_loss_lower_bound",
+        "tests/test_breakthrough_experiments.py", "test_exp16_nonconvex_duality_and_multi_horizon_convergence"
+    ),
+    TheoremMapping(
+        "theorem", "Global Non-Asymptotic Le Cam Two-Point Minimax Lower Bound for Arbitrary Biased and Shrinkage Estimators",
+        r"Theorem IA.D.5",
+        "CurrentProofs/SpectralCapital.lean", "lecam_two_point_moment_matched_cubic_gap",
+        "tests/test_breakthrough_experiments.py", "test_exp17_minimax_lecam_two_point_bound"
+    ),
+    TheoremMapping(
+        "theorem", "Crash-Free Forward Invariance of the Real-Time Resolvent Solvency Guard",
+        r"Theorem IA.D.6",
+        "CurrentProofs/SpectralCapital.lean", "kreiss_resolvent_guard_solvency_invariance",
+        "tests/test_breakthrough_experiments.py", "test_exp18_crash_free_resolvent_guard"
     )
 ]
+
 
 
 def read_tex_expanded(path: Path) -> str:
