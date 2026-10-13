@@ -149,8 +149,11 @@ def run_experiment(delta=0.05):
         evaluate(pulse_train([1, -1] * 5, 20, V), delta, "5 buy/sell round trips, every leg informative"),
         evaluate(pulse_train([1, -1] * 12, 20, V), delta, "12 buys each unwound after 20 steps (24 legs)"),
     ]
-    v_opt, min_eig = executable_optimal(delta)
-    designs.append(evaluate(v_opt, delta, "executable-cost optimal deterministic probe (L=120)"))
+    v_opt_120, min_eig = executable_optimal(delta, L=120)
+    designs.append(evaluate(v_opt_120, delta, "executable-cost optimal deterministic probe (L=120)"))
+    designs.append(evaluate(v_opt_120, delta, "generalized-eigenvector candidate probe (L=120)"))
+    v_opt_160, _ = executable_optimal(delta, L=160)
+    designs.append(evaluate(v_opt_160, delta, "generalized-eigenvector candidate probe (L=160)"))
     out = dict(
         delta=delta,
         parameters=p,

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""
-Experiment 14: Exact Minimum Capital for Identification Probes and the Value of Adaptivity.
+r"""
+Experiment 14: Certified Capital Lower Bounds for Identification Probes and the Value of Adaptivity.
 
 Closes the open gate left by exp13 (the pulse class is not optimal; Theorem 2.9's constant is
 not tight) with two results that hold for the SAME price-first economy and ledger as exp13.
@@ -8,26 +8,27 @@ not tight) with two results that hold for the SAME price-first economy and ledge
 Model (exp13): price x = H_i * v (causal LTI, impulse response h^i, h_0 = kappa), fills at
 P + pre_t + kappa v_t / 2, observations y_t = x_t + eps_t, eps_t iid N(0, sigma^2).
 
-Identity (verified numerically below). For every finitely supported trade sequence v that ends
+Identity (verified numerically below). Let \hat{H}_i(e^{iw}) = sum_{k>=0} h^i_k e^{-iwk} = e^{iw} H_i(e^{iw})
+be the impact-indexed transfer function. For every finitely supported trade sequence v that ends
 flat (sum v = 0) the fee-free ledger loss under hypothesis i is the Toeplitz quadratic form
     L_i(v) = sum_{s<t} h^i_{t-s} v_t v_s + (kappa/2) sum_t v_t^2
-           = (1/2pi) int g_i(w) |V(w)|^2 dw,      g_i(w) = Re H_i(e^{iw}) - kappa/2.
-Information over ANY observation window is at most (1/2pi) int |dH(w)|^2 |V(w)|^2 dw.
+           = (1/2pi) int g_i(w) |V(w)|^2 dw,      g_i(w) = Re \hat{H}_i(e^{iw}) - kappa/2.
+Information over ANY observation window is at most (1/2pi) int |d\hat{H}(w)|^2 |V(w)|^2 dw.
 
-Theorem A (deterministic probes). If g_i > 0 (no round-trip arbitrage), every eventually-flat
-deterministic probe reaching symmetric error alpha has
-    L_i(v) >= 4 sigma^2 z_{1-alpha}^2 * inf_w g_i(w) / |dH(w)|^2 =: C_i^*,
-and C_i^* is the infimum (approached by windowed sinusoids at the minimising frequency).
+Theorem A (certified deterministic lower bound). If g_i > 0 (no round-trip arbitrage), every
+eventually-flat deterministic probe reaching symmetric error alpha has
+    L_i(v) >= 4 sigma^2 z_{1-alpha}^2 * inf_w g_i(w) / |d\hat{H}(w)|^2 =: C_i^*,
+where C_i^* is the fee-free spectral infimum (approached by windowed sinusoids at the minimising frequency).
 
-Theorem B (adaptive / sequential probes). For any non-anticipating, possibly randomised policy
-with a stopping time and errors alpha (under H0) and beta (under H1), closing flat,
-    E_0[L_0(v)] >= 2 sigma^2 kl(alpha, 1-beta) * inf_w g_0(w)/|dH(w)|^2,
-so adaptivity can reduce expected quadratic loss by at most the factor kl(alpha,1-beta)/(2 z^2)
-(0.4898 at alpha=beta=0.05). Proof: chain rule for KL with adapted inputs, Parseval path by
+Theorem B (certified adaptive expected-loss lower bound). For any non-anticipating, possibly randomised
+policy with a stopping time and errors alpha (under H0) and beta (under H1), closing flat,
+    E_0[L_0(v)] >= 2 sigma^2 kl(alpha, 1-beta) * inf_w g_0(w)/|d\hat{H}(w)|^2,
+so adaptivity can reduce the expected quadratic loss lower bound by at most the factor kl(alpha,1-beta)/(2 z^2)
+(0.4897 at alpha=beta=0.05). Proof: chain rule for KL with adapted inputs, Parseval path by
 path, and the data-processing inequality for the decision event.
 
 Fees: with per-trade cap |v_t| <= V_eff, ||v||_1 >= ||v||_2^2 / V_eff and
-||v||_2^2 >= KL-energy / sup|dH|^2, giving an additive fee lower bound.
+||v||_2^2 >= KL-energy / sup|d\hat{H}|^2, giving an additive fee lower bound.
 """
 import json
 import sys
@@ -213,10 +214,12 @@ def sequential_probe_mc(delta=0.05, n_blocks_max=40, block_frac=0.1, L=40, tail=
     x0, x1 = price_path(v, delta, False, p), price_path(v, delta, True, p)
     dx = x1 - x0
     ends = np.arange(1, n_blocks_max + 1) * B
-    loss0 = np.array([-simulate_account(np.concatenate([v[:e], np.zeros(200)]), delta, False, p)["final_pnl"]
-                      for e in ends])
-    loss1 = np.array([-simulate_account(np.concatenate([v[:e], np.zeros(200)]), delta, True, p)["final_pnl"]
-                      for e in ends])
+    acct0 = [simulate_account(np.concatenate([v[:e], np.zeros(200)]), delta, False, p) for e in ends]
+    acct1 = [simulate_account(np.concatenate([v[:e], np.zeros(200)]), delta, True, p) for e in ends]
+    loss0 = np.array([-a["final_pnl"] for a in acct0])
+    loss1 = np.array([-a["final_pnl"] for a in acct1])
+    c0_0 = np.array([a["C0"] for a in acct0])
+    c0_1 = np.array([a["C0"] for a in acct1])
     loss0_q = np.array([-simulate_account(np.concatenate([v[:e], np.zeros(200)]), delta, False, p,
                                           fees=False)["final_pnl"] for e in ends])
     energy = np.cumsum(dx ** 2)[ends - 1]               # ||dx||^2 observed up to each block end
@@ -239,9 +242,20 @@ def sequential_probe_mc(delta=0.05, n_blocks_max=40, block_frac=0.1, L=40, tail=
             decide1[c0:c0 + m] = llr[np.arange(m), first] >= 0
         k = nstop - 1
         L_use = loss0 if name == "H0" else loss1
+        C0_use = c0_0 if name == "H0" else c0_1
+        mean_l = float(L_use[k].mean())
         out[name] = dict(error=float(decide1.mean() if name == "H0" else 1 - decide1.mean()),
-                         mean_blocks=float(nstop.mean()), mean_loss=float(L_use[k].mean()),
-                         p99_loss=float(np.quantile(L_use[k], 0.99)), max_loss=float(L_use[k].max()),
+                         mean_blocks=float(nstop.mean()),
+                         mean_loss=mean_l,
+                         p95_loss=float(np.quantile(L_use[k], 0.95)),
+                         p99_loss=float(np.quantile(L_use[k], 0.99)),
+                         max_loss=float(L_use[k].max()),
+                         mean_C0_required=float(C0_use[k].mean()),
+                         p95_C0_required=float(np.quantile(C0_use[k], 0.95)),
+                         p99_C0_required=float(np.quantile(C0_use[k], 0.99)),
+                         max_C0_required=float(C0_use[k].max()),
+                         ruin_prob_at_mean_loss=float((C0_use[k] > mean_l).mean()),
+                         loss_exceeds_mean_prob=float((L_use[k] > mean_l).mean()),
                          mean_info_energy=float(energy[k].mean()),
                          mean_quad_loss_H0=float(loss0_q[k].mean()) if name == "H0" else None)
     a_hat, b_hat = out["H0"]["error"], out["H1"]["error"]

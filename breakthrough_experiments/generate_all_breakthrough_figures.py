@@ -56,15 +56,15 @@ def plot_fig1():
     fig, ax = plt.subplots(figsize=(8.5, 6))
     
     # Plot boundaries
-    ax.plot(deltas, B_pulse_t20, label=r'Single-Pulse Boundary ($T=20$)', color='darkblue', lw=2.0)
-    ax.plot(deltas, B_seq_t20, label=r'Isolated-Pulse Boundary ($T=20$, $|v|\leq 6.25$)', color='darkorange', lw=2.0)
+    ax.plot(deltas, B_pulse_t20, label=r'Single-Pulse Upper Bound ($T=20$)', color='darkblue', lw=2.0)
+    ax.plot(deltas, B_seq_t20, label=r'Isolated-Pulse Upper Bound ($T=20$, $|v|\leq 6.25$)', color='darkorange', lw=2.0)
     ax.plot(deltas, B_seq_t3, label=r'Isolated-Pulse Baseline ($T=3$)', color='gray', lw=1.6, ls=':')
-    ax.plot(deltas, C_star_det, label=r'Proved Deterministic Lower Bound $C^*_{\mathrm{det}}(\delta)$ ($61.44$ at $\delta=0.05$)', color='crimson', lw=2.2)
-    ax.plot(deltas, C_star_adapt, label=r'Proved Adaptive Lower Bound $\mathbb{E}[C^*_{\mathrm{adapt}}](\delta)$ ($30.09$ at $\delta=0.05$)', color='purple', lw=1.8, ls='-.')
+    ax.plot(deltas, C_star_det, label=r'Certified Deterministic Lower Bound $\underline{C}_{\mathrm{det}}(\delta)$ ($61.44$ at $\delta=0.05$)', color='crimson', lw=2.2)
+    ax.plot(deltas, C_star_adapt, label=r'Adaptive Expected-Loss Lower Bound $\underline{C}_{\mathrm{adapt}}(\delta)$ ($30.09$ at $\delta=0.05$)', color='purple', lw=1.8, ls='-.')
     
-    # Feasible non-pulse candidate point from Theorem IA.D.1 / Exp 13
-    ax.scatter([0.05], [65.05], color='black', marker='*', s=160, zorder=6,
-               label='Constructed Feasible Non-Pulse Candidate (65.05 USDT, 5.0% error)')
+    # Feasible non-pulse candidate point from Theorem IA.D.1 / Exp 14
+    ax.scatter([0.05], [64.59], color='black', marker='*', s=160, zorder=6,
+               label='Constructed Feasible Candidate (64.59 USDT at L=160; 65.05 at L=120)')
     
     # Vertical lines for physical depth limits
     ax.axvline(delta_min_t20, color='darkgreen', lw=1.6, ls='--', label=rf'Single-Pulse Floor $\delta_{{\min}}(20) = {delta_min_t20:.4f}$')
@@ -73,8 +73,8 @@ def plot_fig1():
     # Fill Regions
     ax.fill_between(deltas, B_pulse_t20, 1e6, where=[d >= delta_min_t20 for d in deltas], color='green', alpha=0.10, label='Regime 1: Feasible Single-Pulse ($T=20$)')
     ax.fill_between(deltas, B_seq_t20, 1e6, where=[d < delta_min_t20 for d in deltas], color='orange', alpha=0.10, label='Regime 2: Feasible Sequential Isolated-Pulse')
-    ax.fill_between(deltas, C_star_det, B_seq_t20, color='gold', alpha=0.10, label=r'Regime 3: Infeasible via Isolated Pulses ($T\leq 20$)')
-    ax.fill_between(deltas, 1.0, C_star_adapt, color='red', alpha=0.12, label='Regime 4: Proved Infeasible (All Adaptive & Determ.)')
+    ax.fill_between(deltas, C_star_det, B_seq_t20, color='gold', alpha=0.10, label=r'Regime 3: Not Feasible with Tested Isolated Pulses ($T\leq 20$)')
+    ax.fill_between(deltas, 1.0, C_star_det, color='red', alpha=0.12, label=r'Regime 4: Below Certified Deterministic Lower Bound $\underline{C}_{\mathrm{det}}(\delta)$')
     
     ax.set_yscale('log')
     ax.set_xlim(0.01, 0.25)

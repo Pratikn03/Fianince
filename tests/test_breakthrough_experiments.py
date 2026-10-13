@@ -494,16 +494,16 @@ def test_unknown_mixture_equivalence_and_noise_boundary():
 # 19. Test Formal Proof Kernel Verification & Zero Axioms (P10-T01 to P10-T02)
 # ----------------------------------------------------------------------
 def test_formal_proof_bridge_coverage():
-    """Verify that Lean formalization bridge matches 17 manuscript mathematical environments
-    and MANUSCRIPT_COVERAGE.md explicitly documents coverage."""
+    """Verify that Lean formalization bridge matches 20 manuscript mathematical environments
+    and MANUSCRIPT_COVERAGE.md explicitly documents 265 kernel-checked declarations."""
     bridge_script = Path("scripts/verify_theorem_code_bridge.py")
     assert bridge_script.exists(), "Theorem-code bridge script must exist"
     
     cov_file = Path("research_extension/current_manuscript_lean_20261008/MANUSCRIPT_COVERAGE.md")
     assert cov_file.exists(), "Manuscript coverage markdown must exist"
     cov_text = cov_file.read_text()
-    assert "262" in cov_text or "declarations" in cov_text, "Coverage file must document declaration count"
-    assert "claim_to_code_map.tex" in cov_text or Path("paper/generated/claim_to_code_map.tex").exists()
+    assert "265" in cov_text, "Coverage file must document 265 declarations"
+    assert Path("paper/generated/claim_to_code_map.tex").exists()
 
 # ----------------------------------------------------------------------
 # 20. Test Claim Traceability & Artifact Synchronization (P1-T01 to P1-T05)
@@ -764,10 +764,13 @@ def test_cohort_cramer_rao_information_bound():
     # 3. Maximum likelihood resolves noiseless weights with error < 5e-3 even when ERA fails
     assert r_pair["ml_noiseless_max_weight_error"] < 5e-3
     
-    # 4. At critical noise f=1.0, ML achieves CRB efficiency
+    # 4. At critical noise f=1.0, ML achieves CRB efficiency with low bias and valid 95% CI coverage
     mc1 = next(m for m in r_pair["monte_carlo"] if abs(m["noise_over_critical"] - 1.0) < 1e-4)
     assert mc1["ml_rmse_weight"] / mc1["crb_sd_weight"] <= 1.5
     assert mc1["ml_success_known_K"] >= 0.85
+    assert mc1["ml_max_bias_weight"] < 5e-3
+    assert mc1["ml_ci95_coverage"] >= 0.80
+    assert mc1["bic_K_correct"] >= 0.90
 
 
 # ----------------------------------------------------------------------
@@ -812,7 +815,8 @@ def test_tc91_01_spectral_transfer_impact_indexing():
 # ----------------------------------------------------------------------
 def test_tc91_02_price_first_impulse_tap_agreement():
     """Verify first 4 impulse taps of the closed-loop system match kappa, kappa*(a + kappa*q*eta), etc.
-    identically across exp2, exp13, exp14, and analytical formulas, and reject simultaneous return-memory bug."""
+    identically across exp2, exp13, exp14, exp15, and rational transfer H(z), and reject simultaneous return-memory bug."""
+    from scipy.signal import lfilter
     kappa = 0.8
     a = 0.5
     q = 0.2
@@ -828,17 +832,35 @@ def test_tc91_02_price_first_impulse_tap_agreement():
     # h3 = a * h2 + kappa * q * y2 = 0.1966090752
     expected_taps = np.array([0.8, 0.4512, 0.2851968, 0.1966090752])
     
-    # Implementation 1: exp13 / exp14 price_path
+    # Implementation 1: exp13 price_path
     from breakthrough_experiments.exp13_account_capital import price_path, PARAMS
     v = np.zeros(4)
     v[0] = 1.0
     h_path = price_path(v, delta=0.0, split=False, p=PARAMS)
     assert np.allclose(h_path, expected_taps, atol=1e-14), "exp13 price_path taps must match analytical"
     
-    # Implementation 2: exp2 simulate_closed_loop_impulse (at eta=0.4)
+    # Implementation 2: exp14 impulse
+    from breakthrough_experiments.exp14_capital_frontier_exact import impulse
+    h_exp14 = impulse(delta=0.0, split=False, p=PARAMS, T=4)
+    assert np.allclose(h_exp14, expected_taps, atol=1e-14), "exp14 impulse taps must match analytical"
+    
+    # Implementation 3: exp2 simulate_closed_loop_impulse (at eta=0.4)
     from breakthrough_experiments.exp2_unknown_mixture import simulate_closed_loop_impulse
     h_exp2 = simulate_closed_loop_impulse(np.array([q]), np.array([eta]), T=3, kappa=kappa, a=a)
     assert np.allclose(h_exp2, expected_taps, atol=1e-14), "exp2 impulse taps must match analytical"
+    
+    # Implementation 4: exp15 h_of (at eta=0.4)
+    from breakthrough_experiments.exp15_cohort_information import h_of
+    h_exp15 = h_of(np.array([q, eta]), K=1)[:4]
+    assert np.allclose(h_exp15, expected_taps, atol=1e-14), "exp15 h_of taps must match analytical"
+    
+    # Implementation 5: Manuscript rational transfer function \widehat{H}(z) = z H(z) = \frac{\kappa z (z - (1-\eta))}{(z-a)(z-(1-\eta)) - \kappa q \eta z}
+    # In z^{-1}: num = [kappa, -kappa*(1-eta)], den = [1, -(a + (1-eta) + kappa*q*eta), a*(1-eta)]
+    r = 1.0 - eta
+    num = np.array([kappa, -kappa * r, 0.0])
+    den = np.array([1.0, -(a + r + kappa * q * eta), a * r])
+    h_rational = lfilter(num, den, v)
+    assert np.allclose(h_rational, expected_taps, atol=1e-14), "Rational transfer H(z) taps must match analytical"
     
     # Falsification check: Erroneous simultaneous return-memory system responds with 1.068376
     # p0 = 1 / (1 - kappa * q * eta) = 1 / (1 - 0.064) = 1.068376 != 0.800
@@ -939,7 +961,8 @@ def test_tc91_05_certified_lower_and_upper_bounds():
 # 32. Test Acceptance Gate TC-91-06: Adaptive Risk-of-Ruin & Tail Loss Metrics
 # ----------------------------------------------------------------------
 def test_tc91_06_adaptive_risk_of_ruin_and_tail_loss():
-    """Verify that adaptive SPRT simulation records heavy-tailed losses (p99 ~155, max ~268),
+    """Verify that adaptive SPRT simulation records heavy-tailed losses (p95 ~106, p99 ~155, max ~268)
+    and pathwise required account capital C0 (p99 ~156, ruin prob ~37.7% at mean loss),
     proving that expected loss (~45.96) cannot be equated to required initial solvency capital."""
     results_path = Path("breakthrough_experiments/results_exp14_capital_frontier_exact.json")
     assert results_path.exists()
@@ -948,10 +971,14 @@ def test_tc91_06_adaptive_risk_of_ruin_and_tail_loss():
     
     h0 = sprt["H0"]
     assert np.isclose(h0["mean_loss"], 45.96, atol=0.50), "Mean loss must be ~45.96 USDT"
+    assert np.isclose(h0["p95_loss"], 105.99, atol=5.0), "p95 loss must be ~105.99 USDT"
     assert h0["p99_loss"] > 140.0, "p99 loss must exceed 140 USDT"
     assert np.isclose(h0["p99_loss"], 155.46, atol=10.0), "p99 loss must be ~155.46 USDT"
     assert h0["max_loss"] > 250.0, "Max loss must exceed 250 USDT"
     assert np.isclose(h0["max_loss"], 268.52, atol=15.0), "Max loss must be ~268.52 USDT"
+    assert np.isclose(h0["p95_C0_required"], 106.53, atol=5.0), "p95 C0 required must be ~106.53 USDT"
+    assert np.isclose(h0["p99_C0_required"], 155.99, atol=10.0), "p99 C0 required must be ~155.99 USDT"
+    assert np.isclose(h0["ruin_prob_at_mean_loss"], 0.3773, atol=0.03), "Ruin prob at mean loss must be ~37.7%"
     
     # Confirm that a trader funded with only mean loss (45.96) faces severe insolvency risk (>30%)
     # because stopping time tau varies across sample paths
@@ -990,7 +1017,11 @@ def test_tc91_07_adaptive_bound_inequality_ratio():
 def test_tc91_08_unknown_k_blind_candidate_set():
     """Verify that bic_select evaluates over a fixed candidate set {1, 2, 3, 4} without oracle centering,
     and correctly selects K=2 for the delta=0.05 two-cohort pair."""
+    import inspect
     from breakthrough_experiments.exp15_cohort_information import bic_select, h_of, SCENARIOS
+    
+    sig = inspect.signature(bic_select)
+    assert "K_center" not in sig.parameters, "bic_select must NOT accept an oracle K_center parameter"
     
     sc = next(s for s in SCENARIOS if "delta=0.05" in s["name"])
     theta = np.concatenate([sc["w"], sc["eta"]])
@@ -1005,4 +1036,40 @@ def test_tc91_08_unknown_k_blind_candidate_set():
     rates_est = fit[2:]
     assert np.allclose(np.sort(weights_est), np.sort(sc["w"]), atol=1e-3)
     assert np.allclose(np.sort(rates_est), np.sort(sc["eta"]), atol=1e-3)
+
+
+# ----------------------------------------------------------------------
+# 35. Test Acceptance Gate TC-91-09 & TC-91-10: Formal Proof & Prose Integrity
+# ----------------------------------------------------------------------
+def test_tc91_09_and_10_formal_proof_and_prose_integrity():
+    """Verify that MANUSCRIPT_COVERAGE.md, claim_to_code_map.tex, and Machine_Markets_JF_Submission.tex
+    are synchronized with 265 Lean declarations and 20 environments, and contain no stale overclaims."""
+    tex_text = Path("paper/Machine_Markets_JF_Submission.tex").read_text()
+    cov_text = Path("research_extension/current_manuscript_lean_20261008/MANUSCRIPT_COVERAGE.md").read_text()
+    map_text = Path("paper/generated/claim_to_code_map.tex").read_text()
+    
+    # Check 265 declarations and 20 statements in manuscript prose
+    assert "265 kernel-checked Lean~4 declarations" in tex_text
+    assert "Of the 20 statements in Table~\\ref{tab:claim_map}" in tex_text
+    assert "265" in cov_text
+    
+    # Check that Theorem IA.D.1, Theorem IA.D.2, and Proposition IA.D.3 are mapped
+    for label in ["thm:ia_exact_capital", "thm:ia_adaptive_capital", "prop:ia_cohort_information"]:
+        assert label in tex_text
+    for title in [
+        "Spectral Dissipation Lower Bound and Feasible Identification Probes",
+        "Information-Theoretic Lower Bound for Adaptive and Sequential Probing",
+        "Cram\\'er--Rao Local Information Benchmark for Multi-Cohort Weight Recovery",
+    ]:
+        assert title in tex_text
+        assert title in cov_text
+        assert title in map_text
+        
+    # Check that stale overclaims are absent from manuscript and tables
+    assert "112.30" not in tex_text
+    assert "38.2\\%" not in tex_text
+    assert "strictly constant" not in tex_text
+    assert "Minimax LQG" not in tex_text
+    assert "Minimax LQG" not in Path("breakthrough_experiments/tables/table_probing_methods.tex").read_text()
+
 
