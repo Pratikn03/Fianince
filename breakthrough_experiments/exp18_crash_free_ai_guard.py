@@ -276,49 +276,47 @@ def select_non_anticipative_alpha(
     will_hedge: bool,
     charge_hedge_costs: bool,
     shock_gated_venue: bool,
-    u_bar_step: float = 0.0,
-    u_bar_cum: float = 0.215,
+    u_bar_step: float = 0.05,
+    u_bar_cum: float = 0.135,
     rho_max_guard: float = 0.90,
+    safety_reserve: float = SAFETY_RESERVE,
 ) -> tuple[tuple, bool]:
     """Selects the admission control alpha_t using ONLY the pre-shock state
-    (z_t, I_t, p_t, E_t, MM_t) and declared uncertainty envelopes (u_bar_step, u_bar_cum).
-    Does NOT inspect the unrealized future innovation shocks[t] (F05, TC-G3).
+    (z_t, I_t, p_t, E_t, MM_t) and declared uncertainty envelopes (u_bar_step, u_bar_cum)
+    by calling evaluate_guard_inequalities_ia39 directly on every candidate in table.
+    Never accepts any candidate that fails Equation IA.39, and never inspects the unrealized
+    future innovation shocks[t] (F03, F04, F05, TC-G1..G3).
     """
-    rem_buffer = (eq_curr - mm_curr) - SAFETY_RESERVE
     z_norm = float(np.linalg.norm(z))
-    unit_h_cost = (0.02 + 0.0004 * max(p_curr, P_STAR)) if charge_hedge_costs else 0.0
-
     feasible_candidates = []
     for row in table:
         g_val, rho_val, mc_val, cg_val, J_cand, C_cand = row
         if rho_val > rho_max_guard:
             continue
-        hedge_qty = (-0.06 * (1.0 - g_val) * inv) if (will_hedge and g_val < 0.99) else 0.0
-        inv_after = inv + hedge_qty
-        est_h_cost = abs(hedge_qty) * unit_h_cost
-        s_alpha = (0.15 + 0.85 * g_val) if shock_gated_venue else 1.0
-        # Include the (1 + MAINT_RATE) = 1.005 Tier-2 maintenance-margin factor and strictly positive s(alpha)*G_cum(alpha)
-        pred_step_excursion = mc_val * z_norm * 0.45 + s_alpha * u_bar_step
-        pred_cum_excursion = mc_val * z_norm * 0.45 + (s_alpha * cg_val - s_alpha) * u_bar_cum
-        pred_excursion = max(pred_step_excursion, pred_cum_excursion)
-        pred_equity_and_mm_loss = abs(inv_after) * (1.0 + MAINT_RATE) * pred_excursion + est_h_cost
-        if pred_equity_and_mm_loss <= max(rem_buffer, 0.0):
+        ia39 = evaluate_guard_inequalities_ia39(
+            alpha=g_val,
+            mc_val=mc_val,
+            cg_val=cg_val,
+            z_norm=z_norm,
+            inv_curr=inv,
+            p_curr=p_curr,
+            eq_curr=eq_curr,
+            mm_curr=mm_curr,
+            u_bar_step=u_bar_step,
+            u_bar_cum=u_bar_cum,
+            will_hedge=will_hedge,
+            charge_hedge_costs=charge_hedge_costs,
+            shock_gated_venue=shock_gated_venue,
+            safety_reserve=safety_reserve,
+            maint_rate=MAINT_RATE,
+        )
+        if ia39["pass_both_ia39"]:
             feasible_candidates.append(row)
 
     if feasible_candidates:
         return feasible_candidates[-1], False
 
-    # Check if even alpha = 0 violates the current residual buffer
-    _, _, mc0, cg0, J0, C0 = table[0]
-    s0 = 0.15 if shock_gated_venue else 1.0
-    inc_move_0 = max(
-        0.0,
-        -float(np.sign(inv)) * (float(C0 @ (J0 @ z)) - float(z[0])) + s0 * u_bar_step,
-    )
-    exact_step_loss_0 = abs(inv) * (1.0 + MAINT_RATE) * inc_move_0
-    if exact_step_loss_0 > max(eq_curr - mm_curr - SAFETY_RESERVE, 0.0):
-        return table[0], True
-    return table[2], False
+    return table[0], True
 
 
 def simulate_double_entry_dealer_episode(
@@ -335,9 +333,9 @@ def simulate_double_entry_dealer_episode(
       - Published Binance USD(S)-M Tier-2 Maintenance Margin:
         MM_t = max(0, 0.005 * |I_t| * p_t - 50)
       - Liquidation occurs iff E_t <= MM_t.
-      - Non-anticipatively selects alpha_t before shocks[t] is realized, and records
-        NO_SAFE_ACTION whenever no candidate alpha in [0, 1] satisfies the solvency guard
-        inequality or when an out-of-domain shock exceeds the single-step admissible shock limit.
+      - Strictly non-anticipatively selects alpha_t via select_non_anticipative_alpha
+        (calling evaluate_guard_inequalities_ia39 on pre-shock state only) BEFORE
+        shocks[t] is ever read, with zero post-shock action override.
     """
     T_steps = shocks.shape[0]
     z = np.zeros(3, dtype=float)
@@ -365,7 +363,6 @@ def simulate_double_entry_dealer_episode(
     for t in range(T_steps):
         eq_curr = cash + inv * p_curr
         mm_curr = max(0.0, MAINT_RATE * abs(inv) * p_curr - MAINT_AMOUNT)
-        u_adm_safe, u_adm_liq = compute_single_step_admissible_shock_bound(eq_curr, mm_curr, inv)
 
         if architecture == "Unguarded":
             g_star, _, _, _, J_t, C_t = table[-1]
@@ -404,14 +401,11 @@ def simulate_double_entry_dealer_episode(
                 will_hedge=will_hedge,
                 charge_hedge_costs=charge_hedge_costs,
                 shock_gated_venue=shock_gated_venue,
-                u_bar_step=0.0,
-                u_bar_cum=0.215,
+                u_bar_step=0.05,
+                u_bar_cum=0.135,
                 rho_max_guard=0.90,
             )
-            # Check if an out-of-domain incoming shock exceeds the admissible shock threshold u_adm_liq
-            signed_adverse_shock = max(0.0, -float(np.sign(inv)) * float(shocks[t, 0]))
-            if pre_infeasible or signed_adverse_shock > u_adm_liq:
-                chosen = table[0]
+            if pre_infeasible:
                 infeasible_steps += 1
                 no_safe_action_triggered = True
             g_star, _, _, _, J_t, C_t = chosen
@@ -476,6 +470,8 @@ def simulate_double_entry_dealer_episode(
 
         if eq_next <= mm_next:
             liquidated = True
+            no_safe_action_triggered = True
+            infeasible_steps += 1
 
     mean_gamma = float(np.mean(gammas))
     elig_pct = 100.0 * float(np.mean([1.0 if (not halted and g >= 0.05) else 0.0 for g in gammas]))

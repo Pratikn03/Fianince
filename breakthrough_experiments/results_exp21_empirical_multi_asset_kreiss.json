@@ -1,6 +1,6 @@
 {
   "experiment": "exp21_empirical_multi_asset_kreiss_network",
-  "methodology_classification": "Strictly separates (1) Observed 10s Full-Day Reduced-Form OLS Operator J_hat_16^OLS (rho=0.7717, commutator=0.3452, M_{C_8}=1.0000, zero transient amplification due to full-day equal-variance averaging), (2) Empirically Estimated 1-Second Signed Crash-Burst OLS Operator J_hat_{16,burst}^OLS (estimated directly by unconstrained ridge OLS on the 100 1s crash windows with zero synthetic matrix constants: rho=0.8467 < 1, commutator=521.97, M_{C_8}=29.38), (3) Constructed Synthetic Upper-Triangular Stress Operator J_hat_16^stress(alpha) (rho=0.7663, commutator=28.2672, M_{C_8}=131.92), and (4) Direct Physical Signed 8-Asset Price/Flow Replay.",
+  "methodology_classification": "Strictly separates (1) Observed 10s Full-Day Reduced-Form OLS Operator J_hat_16^OLS (rho=0.7717, commutator=0.3452, M_{C_8}=1.0000, zero transient amplification due to full-day equal-variance averaging), (2) Empirically Estimated 1-Second Signed Crash-Burst OLS Operator J_hat_{16,burst}^OLS (pooled: rho=0.8467 < 1, commutator=521.97, M_{C_8}=29.38) and Strictly Causal Out-of-Sample Pre-Window Burst OLS J_hat_{16,w}^{OLS,causal} (t < s only, zero lookahead: mean rho=0.8520, mean M_{C_8}=26.62), (3) Constructed Synthetic Upper-Triangular Stress Operator J_hat_16^stress(alpha) (rho=0.7663, commutator=28.2672, M_{C_8}=131.92), and (4) 100% Raw Historical 8-Asset Spot Price & Endogenous Order-Flow Inventory Replay (zero synthetic price impact) plus Static-Inventory Direct Physical Replay.",
   "total_synchronized_1s_bars": 691200,
   "crisis_date": "2022-11-08",
   "jacobian_16x16_metrics": {
@@ -17,6 +17,11 @@
     "burst_ols_1s_frobenius_nonnormality": 521.9655756531033,
     "burst_ols_1s_price_output_gain_MC": 29.384454731882517,
     "burst_ols_1s_cumulative_gain": 339.2664094594281,
+    "causal_oos_burst_ols_1s_strictly_pre_window": true,
+    "causal_oos_burst_ols_1s_mean_spectral_radius": 0.8519522086430621,
+    "causal_oos_burst_ols_1s_mean_frobenius_nonnormality": 576.6668621313567,
+    "causal_oos_burst_ols_1s_mean_price_output_gain_MC": 26.617391830570053,
+    "causal_oos_burst_ols_1s_mean_cumulative_gain": 310.4355792553057,
     "stress_jacobian_construction": "diag(clip(diag(J_ols),0.55,0.78)) + 3.2*gamma*U_norm + 2.75*gamma*(E_{4+i,12+i}+E_{i,4+i})",
     "stress_jacobian_spectral_radius": 0.7663365864652346,
     "stress_jacobian_frobenius_nonnormality": 28.26721870078062,
@@ -315,6 +320,44 @@
       "two_sided_quote_availability_pct": 100.0
     }
   },
+  "causal_oos_burst_ols_operator_replay_100_episodes": {
+    "Unguarded": {
+      "liquidation_rate_pct": 100.0,
+      "mean_max_drawdown_usdt": 79862.4263614633,
+      "p99_max_drawdown_usdt": 80000.0,
+      "mean_min_equity_usdt": 137.57363853670657,
+      "admitted_depth_share_pct": 100.0,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    },
+    "Eigenvalue_Guard": {
+      "liquidation_rate_pct": 100.0,
+      "mean_max_drawdown_usdt": 79862.4263614633,
+      "p99_max_drawdown_usdt": 80000.0,
+      "mean_min_equity_usdt": 137.57363853670657,
+      "admitted_depth_share_pct": 100.0,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    },
+    "Static_Halt": {
+      "liquidation_rate_pct": 20.0,
+      "mean_max_drawdown_usdt": 49721.17310246718,
+      "p99_max_drawdown_usdt": 80000.0,
+      "mean_min_equity_usdt": 30278.82689753281,
+      "admitted_depth_share_pct": 7.56,
+      "model_admission_eligibility_pct": 0.0,
+      "two_sided_quote_availability_pct": 0.0
+    },
+    "Resolvent_Guard_Kreiss": {
+      "liquidation_rate_pct": 0.0,
+      "mean_max_drawdown_usdt": 15431.711078441102,
+      "p99_max_drawdown_usdt": 22063.357165053832,
+      "mean_min_equity_usdt": 64568.288921558895,
+      "admitted_depth_share_pct": 30.206999999999997,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    }
+  },
   "physical_signed_8asset_replay_100_episodes": {
     "Unguarded": {
       "liquidation_rate_pct": 1.0,
@@ -345,6 +388,40 @@
       "mean_max_drawdown_usdt": 11922.847266506951,
       "mean_min_equity_usdt": 68077.15273349304,
       "admitted_depth_share_pct": 99.48075371650008,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    }
+  },
+  "endogenous_inventory_raw_8asset_replay_100_episodes": {
+    "Unguarded": {
+      "liquidation_rate_pct": 36.0,
+      "mean_max_drawdown_usdt": 26239.1605200325,
+      "mean_min_equity_usdt": 53760.83947996749,
+      "admitted_depth_share_pct": 100.0,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    },
+    "Eigenvalue_Guard": {
+      "liquidation_rate_pct": 36.0,
+      "mean_max_drawdown_usdt": 26239.1605200325,
+      "mean_min_equity_usdt": 53760.83947996749,
+      "admitted_depth_share_pct": 100.0,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    },
+    "Static_Halt": {
+      "liquidation_rate_pct": 36.0,
+      "mean_max_drawdown_usdt": 25807.216215655088,
+      "mean_min_equity_usdt": 54192.78378434492,
+      "admitted_depth_share_pct": 91.94,
+      "model_admission_eligibility_pct": 72.0,
+      "two_sided_quote_availability_pct": 72.0
+    },
+    "Resolvent_Guard_Kreiss": {
+      "liquidation_rate_pct": 0.0,
+      "mean_max_drawdown_usdt": 6860.540172771455,
+      "mean_min_equity_usdt": 73139.45982722854,
+      "admitted_depth_share_pct": 68.00961887592834,
       "model_admission_eligibility_pct": 100.0,
       "two_sided_quote_availability_pct": 100.0
     }

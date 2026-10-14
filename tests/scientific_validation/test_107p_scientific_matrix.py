@@ -376,10 +376,25 @@ def test_mm17_113p_audit_tc_g_c_e_v_gates():
 
     # 3. Empirical & econometric sensitivity (TC-E1..E6: F08, F10, F11)
     tc_e = receipt["TC_E1_to_E6_empirical_and_econometric_sensitivity"]
-    assert tc_e["TC_E1_exp19_stress_vs_direct_vs_burst_ols"]["empirical_burst_ols_MC"] > 20.0
-    assert tc_e["TC_E1_exp19_stress_vs_direct_vs_burst_ols"]["empirical_burst_ols_kreiss_liq_pct"] == 0.0
-    assert tc_e["TC_E2_exp21_ols_vs_burst_ols_vs_stress_vs_direct"]["empirical_1s_burst_ols_MC"] > 25.0
-    assert tc_e["TC_E2_exp21_ols_vs_burst_ols_vs_stress_vs_direct"]["empirical_1s_burst_ols_kreiss_liq_pct"] == 0.0
+    e1 = tc_e["TC_E1_exp19_stress_vs_direct_vs_burst_ols"]
+    assert e1["empirical_burst_ols_MC"] > 20.0
+    assert e1["empirical_burst_ols_kreiss_liq_pct"] == 0.0
+    assert e1["causal_oos_burst_ols_mean_MC"] > 14.0
+    assert e1["causal_oos_burst_ols_unguarded_liq_pct"] == 100.0
+    assert e1["causal_oos_burst_ols_kreiss_liq_pct"] == 0.0
+    assert e1["endogenous_raw_historical_unguarded_liq_pct"] == 22.0
+    assert e1["endogenous_raw_historical_eigenvalue_liq_pct"] == 22.0
+    assert e1["endogenous_raw_historical_kreiss_liq_pct"] == 0.0
+
+    e2 = tc_e["TC_E2_exp21_ols_vs_burst_ols_vs_stress_vs_direct"]
+    assert e2["empirical_1s_burst_ols_MC"] > 25.0
+    assert e2["empirical_1s_burst_ols_kreiss_liq_pct"] == 0.0
+    assert e2["causal_oos_1s_burst_ols_mean_MC"] > 25.0
+    assert e2["causal_oos_1s_burst_ols_unguarded_liq_pct"] == 100.0
+    assert e2["causal_oos_1s_burst_ols_kreiss_liq_pct"] == 0.0
+    assert e2["endogenous_raw_8asset_unguarded_liq_pct"] == 36.0
+    assert e2["endogenous_raw_8asset_eigenvalue_liq_pct"] == 36.0
+    assert e2["endogenous_raw_8asset_kreiss_liq_pct"] == 0.0
     assert tc_e["TC_E4_two_cohort_vs_three_cohort_specification"]["relative_kappa_diff_pct"] < 0.05
     assert tc_e["TC_E4_two_cohort_vs_three_cohort_specification"]["bic_favors_2cohort"] is True
     assert all(r["positive_impact_preserved"] for r in tc_e["TC_E5_order_splitting_parent_child_aggregation"])

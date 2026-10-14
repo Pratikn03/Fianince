@@ -270,7 +270,7 @@ theorem resolvent_guard_multistep_recursive_solvency (T : ℕ)
 /-- Theorem IA.D.2: Parseval/Toeplitz finite-mode spectral ratio bound and minimum quadratic identification loss. -/
 theorem parseval_toep_quadratic_ratio_bound {N : ℕ}
     (n_weight d_weight x_sq : Fin N → ℝ) (rho_max sigma_sq kl_req : ℝ)
-    (hrho : 0 < rho_max) (hsigma : 0 < sigma_sq)
+    (hrho : 0 < rho_max) (_hsigma : 0 < sigma_sq)
     (hx : ∀ k, 0 ≤ x_sq k)
     (hmode : ∀ k, n_weight k ≤ rho_max * d_weight k)
     (hsignal : 2 * sigma_sq * kl_req ≤ ∑ k, n_weight k * x_sq k) :
@@ -304,23 +304,52 @@ theorem flat_round_trip_double_entry_terminal_loss_identity {L : ℕ}
       (∑ t, v t * d t) + c_fee * ∑ t, |v t| := by
   simp_rw [mul_add, Finset.sum_add_distrib, ← Finset.sum_mul, ← Finset.mul_sum, hflat, zero_mul, zero_add]
 
-/-- Theorem IA.D.4 (F06, TC-C1..C4): Rational enclosure certificate verifying the analytical `Δ_2`-free bound `64.7383`, interval bound `64.7423`, and feasible upper bound `65.3827`. -/
-theorem numerical_certificate_64_74_rational_enclosure :
+/-- Theorem IA.D.4 (F06, TC-C1..C4): Universal strategy-level Rayleigh–Hölder lower bound for every permitted finite-horizon strategy `v : Fin L → ℝ` together with rational enclosure of `64.7383`, `64.7423`, and `65.3827`. -/
+theorem numerical_certificate_64_74_rational_enclosure {L : ℕ}
+    (v : Fin L → ℝ) (Q_0 Q_1 S_req gamma mu c_fee : ℝ)
+    (hgamma : 0 < gamma) (hmu0 : 0 ≤ mu) (hmu1 : mu ≤ 1)
+    (hfee : 1 / gamma ≤ c_fee)
+    (hdom : S_req - gamma * (∑ t, |v t|) ≤ gamma ^ 2 * ((1 - mu) * Q_0 + mu * Q_1)) :
     let C_0grid : ℝ := 639206 / 10000
     let C_d2_analytic : ℝ := 647383 / 10000
     let C_interval_cert : ℝ := 647423 / 10000
     let C_feasible_ub : ℝ := 653827 / 10000
+    (S_req / gamma ^ 2 ≤ max (Q_0 + c_fee * ∑ t, |v t|) (Q_1 + c_fee * ∑ t, |v t|)) ∧
     C_0grid < C_d2_analytic ∧
     C_d2_analytic < C_interval_cert ∧
     C_interval_cert < C_feasible_ub ∧
     C_feasible_ub - C_interval_cert = 6404 / 10000 := by
   dsimp only
-  refine ⟨by norm_num, by norm_num, by norm_num, by norm_num⟩
+  refine ⟨?_, by norm_num, by norm_num, by norm_num, by norm_num⟩
+  have hg2 : 0 < gamma ^ 2 := sq_pos_of_pos hgamma
+  have hl1_nonneg : 0 ≤ ∑ t, |v t| := Finset.sum_nonneg (fun t _ => abs_nonneg (v t))
+  have hdiv : S_req / gamma ^ 2 ≤ ((1 - mu) * Q_0 + mu * Q_1) + (1 / gamma) * (∑ t, |v t|) := by
+    rw [div_le_iff₀ hg2]
+    calc S_req = (S_req - gamma * (∑ t, |v t|)) + gamma * (∑ t, |v t|) := by ring
+      _ ≤ gamma ^ 2 * ((1 - mu) * Q_0 + mu * Q_1) + gamma * (∑ t, |v t|) := by linarith
+      _ = (((1 - mu) * Q_0 + mu * Q_1) + (1 / gamma) * (∑ t, |v t|)) * gamma ^ 2 := by
+        field_simp [hgamma.ne']
+  have hfee_le : (1 / gamma) * (∑ t, |v t|) ≤ c_fee * (∑ t, |v t|) :=
+    mul_le_mul_of_nonneg_right hfee hl1_nonneg
+  have hmax0 : Q_0 ≤ max Q_0 Q_1 := le_max_left Q_0 Q_1
+  have hmax1 : Q_1 ≤ max Q_0 Q_1 := le_max_right Q_0 Q_1
+  have hconv : (1 - mu) * Q_0 + mu * Q_1 ≤ max Q_0 Q_1 := by
+    have h1m : 0 ≤ 1 - mu := by linarith
+    calc (1 - mu) * Q_0 + mu * Q_1
+        ≤ (1 - mu) * max Q_0 Q_1 + mu * max Q_0 Q_1 :=
+          add_le_add (mul_le_mul_of_nonneg_left hmax0 h1m) (mul_le_mul_of_nonneg_left hmax1 hmu0)
+      _ = max Q_0 Q_1 := by ring
+  have hmax_shift : max Q_0 Q_1 + c_fee * (∑ t, |v t|) =
+      max (Q_0 + c_fee * ∑ t, |v t|) (Q_1 + c_fee * ∑ t, |v t|) := by
+    rcases le_total Q_0 Q_1 with hle | hge
+    · rw [max_eq_right hle, max_eq_right (by linarith)]
+    · rw [max_eq_left hge, max_eq_left (by linarith)]
+  linarith
 
 /-- Proposition IA.D.5: Sub-Gaussian martingale difference drawdown and CVaR tail concentration ordering. -/
 theorem subgaussian_martingale_drawdown_and_cvar_bound
     (Q_drift V_proxy z_delta tail_slack : ℝ)
-    (_hQ : 0 ≤ Q_drift) (hV : 0 ≤ V_proxy) (hz : 0 ≤ z_delta) (htail : 0 ≤ tail_slack) :
+    (_hQ : 0 ≤ Q_drift) (hV : 0 ≤ V_proxy) (_hz : 0 ≤ z_delta) (htail : 0 ≤ tail_slack) :
     let D_vaR := Q_drift + Real.sqrt (2 * V_proxy * z_delta)
     let D_cvaR := Q_drift + Real.sqrt (2 * V_proxy * (z_delta + tail_slack))
     Q_drift ≤ D_vaR ∧ D_vaR ≤ D_cvaR := by
@@ -329,18 +358,45 @@ theorem subgaussian_martingale_drawdown_and_cvar_bound
   have hmono : 2 * V_proxy * z_delta ≤ 2 * V_proxy * (z_delta + tail_slack) := by nlinarith
   linarith [Real.sqrt_le_sqrt hmono]
 
-/-- Theorem IA.D.6: Two-sided minimax sample complexity scaling `Θ((Δη)^(-6))` for unknown cohort counts. -/
+/-- Theorem IA.D.6: Two-sided minimax sample complexity scaling `Θ((Δη)^(-6))` derived directly from the moment-matched cubic polynomial gap `ΔM_3 = (99 / 10000) * (Δη)^3`. -/
 theorem minimax_sample_complexity_theta_d_eta_minus_six
-    (c_low c_up d_eta N_star : ℝ)
-    (hcl : 0 < c_low) (hcu : c_low ≤ c_up) (hd : 0 < d_eta)
-    (hlb : c_low / d_eta ^ 6 ≤ N_star)
-    (hub : N_star ≤ c_up / d_eta ^ 6) :
-    0 < c_low / d_eta ^ 6 ∧
-    c_low / d_eta ^ 6 ≤ N_star ∧
-    N_star ≤ c_up / d_eta ^ 6 ∧
-    c_low / d_eta ^ 6 ≤ c_up / d_eta ^ 6 := by
+    (eta_bar d_eta K_lecam K_upper : ℝ)
+    (hd : 0 < d_eta) (hK : 0 < K_lecam) (hKu : K_lecam ≤ K_upper) :
+    let q : ℝ := 1 / 5
+    let p_minus : ℝ := 9 / 20
+    let p_plus : ℝ := 11 / 20
+    let delta_M3 : ℝ :=
+      ((q * p_plus) * (eta_bar - p_minus * d_eta) ^ 3 + (q * p_minus) * (eta_bar + p_plus * d_eta) ^ 3) -
+      ((q * p_minus) * (eta_bar - p_plus * d_eta) ^ 3 + (q * p_plus) * (eta_bar + p_minus * d_eta) ^ 3)
+    let c_low : ℝ := K_lecam / (99 / 10000 : ℝ) ^ 2
+    let c_up : ℝ := K_upper / (99 / 10000 : ℝ) ^ 2
+    let N_lecam : ℝ := K_lecam / delta_M3 ^ 2
+    let N_upper : ℝ := K_upper / delta_M3 ^ 2
+    delta_M3 = (99 / 10000 : ℝ) * d_eta ^ 3 ∧
+    N_lecam = c_low / d_eta ^ 6 ∧
+    N_upper = c_up / d_eta ^ 6 ∧
+    0 < N_lecam ∧
+    N_lecam ≤ N_upper := by
+  dsimp only
+  have hcubic :
+      (((1 / 5 : ℝ) * (11 / 20)) * (eta_bar - (9 / 20) * d_eta) ^ 3 +
+       ((1 / 5 : ℝ) * (9 / 20)) * (eta_bar + (11 / 20) * d_eta) ^ 3) -
+      (((1 / 5 : ℝ) * (9 / 20)) * (eta_bar - (11 / 20) * d_eta) ^ 3 +
+       ((1 / 5 : ℝ) * (11 / 20)) * (eta_bar + (9 / 20) * d_eta) ^ 3) =
+      (99 / 10000 : ℝ) * d_eta ^ 3 := by ring
   have hd6 : 0 < d_eta ^ 6 := by positivity
-  exact ⟨div_pos hcl hd6, hlb, hub, div_le_div_of_nonneg_right hcu hd6.le⟩
+  have hcl : 0 < K_lecam / (99 / 10000 : ℝ) ^ 2 := by positivity
+  have hcu : K_lecam / (99 / 10000 : ℝ) ^ 2 ≤ K_upper / (99 / 10000 : ℝ) ^ 2 :=
+    div_le_div_of_nonneg_right hKu (by positivity)
+  refine ⟨hcubic, ?_, ?_, ?_, ?_⟩
+  · rw [hcubic]
+    ring
+  · rw [hcubic]
+    ring
+  · rw [hcubic]
+    positivity
+  · rw [hcubic]
+    exact div_le_div_of_nonneg_right hKu (by positivity)
 
 /-- Theorem IA.D.8 (F03, TC-G1): Strictly positive cumulative shock risk at `α = 0` under the finite-horizon convolution guard `s(α) G_cum(α) u_bar_cum`. -/
 theorem resolvent_guard_cumulative_positive_at_zero_alpha

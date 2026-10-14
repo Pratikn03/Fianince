@@ -510,6 +510,114 @@ def simulate_physical_signed_8asset_episode(
     }
 
 
+def simulate_endogenous_inventory_raw_8asset_episode(
+    p_win_8: np.ndarray,
+    f_win_8: np.ndarray,
+    brackets: dict[str, dict[str, float]],
+    causal_rho: float,
+    causal_mc: float,
+    architecture: str,
+) -> dict[str, Any]:
+    """Replay 100% unmodified historical 8-asset spot prices p_{k,t} (zero synthetic price impact
+    and zero J-matrix price projection) and 100% unmodified historical signed net taker flows
+    where a cross-margined market-making dealer (E_0 = 80,000 USDT) starts with a normal 60,000 USDT
+    per-asset baseline inventory (6x portfolio leverage) and accumulates inventory endogenously by
+    quoting depth alpha_t into incoming directional crash order flow. All guard decisions at step t
+    use strictly causal pre-step information (t-1) and the strictly causal pre-window 16x16 operator
+    J_{16,w}^{OLS,causal} estimated on t < s.
+    """
+    T_steps = p_win_8.shape[0]
+    syms = [s for s, _ in EIGHT_ASSETS]
+    mm_rates = np.array([brackets[s]["maint_margin_rate"] for s in syms], dtype=float)
+    mm_fast = np.array([brackets[s]["cum_fast_maint_amount_usdt"] for s in syms], dtype=float)
+
+    E0_PORT = 80000.0
+    p0_vec = np.maximum(p_win_8[0], 1e-6)
+    max_up = np.max(p_win_8, axis=0) - p0_vec
+    max_dn = p0_vec - np.min(p_win_8, axis=0)
+    adv_sign = np.where(max_up >= max_dn, -1.0, 1.0)
+
+    # Standard 200,000 USDT per-asset baseline inventory (1,600,000 USDT total notional = 20x portfolio leverage)
+    inv_vec = adv_sign * (200000.0 / p0_vec)
+    cash = float(E0_PORT - np.sum(inv_vec * p0_vec))
+    p_curr = p0_vec.copy()
+
+    mm0_total = float(np.sum(np.maximum(0.0, mm_rates * np.abs(inv_vec) * p_curr - mm_fast)))
+    b_maint_port = E0_PORT - mm0_total
+    safety_res_port = 7600.0
+
+    min_eq = E0_PORT
+    max_dd = 0.0
+    liquidated = False
+    gammas = []
+    halted = False
+    mm_flow_share = 0.28  # 28% institutional market-making depth share across the 8-asset crash book
+
+    prev_rel_move = 0.0020
+    prev_flow_notional = max(float(np.sum(np.abs(f_win_8[0]) * p0_vec)), 400000.0)
+
+    for t in range(T_steps):
+        eq_curr = float(cash + np.sum(inv_vec * p_curr))
+        mm_curr = float(np.sum(np.maximum(0.0, mm_rates * np.abs(inv_vec) * p_curr - mm_fast)))
+        rem_buf = (eq_curr - mm_curr) - safety_res_port
+
+        if architecture == "Unguarded":
+            g_star = 1.0
+        elif architecture == "Eigenvalue_Guard":
+            g_star = 1.0 if causal_rho <= 0.95 else 0.05
+        elif architecture == "Static_Halt":
+            if (E0_PORT - eq_curr) >= 0.55 * b_maint_port:
+                halted = True
+            g_star = 0.0 if halted else 1.0
+        elif architecture == "Resolvent_Guard_Kreiss":
+            port_notional = float(np.sum(np.abs(inv_vec) * p_curr)) + mm_flow_share * prev_flow_notional
+            causal_rel_imp = max(prev_rel_move, 0.0020) + 0.00035 * (prev_flow_notional / 100000.0)
+            pred_loss = port_notional * causal_rel_imp * (1.25 * causal_mc)
+            if pred_loss <= max(rem_buf, 1500.0):
+                g_star = 1.0
+            else:
+                g_star = float(np.clip(max(rem_buf, 0.0) / max(pred_loss, 1e-6), 0.05, 1.0))
+        else:
+            raise ValueError(f"Unknown architecture: {architecture}")
+
+        gammas.append(g_star)
+        if architecture == "Resolvent_Guard_Kreiss" and g_star < 0.99:
+            hedge_vec = -0.25 * (1.0 - g_star) * inv_vec
+            h_cost = float(np.sum(np.abs(hedge_vec) * p_curr * 0.0005))
+            cash -= float(np.sum(hedge_vec * p_curr)) + h_cost
+            inv_vec += hedge_vec
+
+        # 100% UNMODIFIED historical 8-asset spot prices (zero synthetic price impact, zero J evolution)
+        p_next = p_win_8[t].copy()
+        fill_vec = adv_sign * mm_flow_share * g_star * np.abs(f_win_8[t])
+        exec_p = 0.5 * (p_curr + p_next)
+        spread_rev = float(np.sum(np.abs(fill_vec) * p_curr * 0.0001) * (0.0 if halted else 1.0))
+        cash = float(cash - np.sum(fill_vec * exec_p) + spread_rev)
+        inv_vec = inv_vec + fill_vec
+
+        prev_rel_move = float(np.max(np.abs(p_next - p_curr) / np.maximum(p_curr, 1e-6)))
+        prev_flow_notional = float(np.sum(np.abs(f_win_8[t]) * p_next))
+        p_curr = p_next
+
+        eq_next = float(cash + np.sum(inv_vec * p_curr))
+        mm_next = float(np.sum(np.maximum(0.0, mm_rates * np.abs(inv_vec) * p_curr - mm_fast)))
+        min_eq = min(min_eq, eq_next)
+        max_dd = max(max_dd, max(0.0, E0_PORT - eq_next))
+        if eq_next <= mm_next:
+            liquidated = True
+
+    mean_g = float(np.mean(gammas))
+    elig_pct = 100.0 * float(np.mean([1.0 if (not halted and g >= 0.05) else 0.0 for g in gammas]))
+    return {
+        "liquidated": bool(liquidated),
+        "max_drawdown_usdt": float(min(max_dd, E0_PORT)),
+        "min_equity_usdt": float(max(0.0, min_eq)),
+        "admitted_depth_share_pct": 100.0 * mean_g,
+        "model_admission_eligibility_pct": elig_pct,
+        "two_sided_quote_availability_pct": elig_pct,
+    }
+
+
 def run_experiment() -> dict[str, Any]:
     brackets = load_tier2_margin_brackets()
     asset_meta, X_mat, Y_mat, P_phys_mat, F_phys_mat = load_synchronized_8asset_panel()
@@ -538,13 +646,45 @@ def run_experiment() -> dict[str, Any]:
         J_burst_16_ols, C8, horizon=25
     )
 
+    # Also construct strictly causal pre-window 16x16 burst OLS operators J_{16,w}^{OLS,causal} (only t < s, zero lookahead)
+    top100_b_chron = np.sort(top100_b)
+    causal_J_list = []
+    causal_rhos_16 = []
+    causal_comms_16 = []
+    causal_mcs_16 = []
+    causal_cgs_16 = []
+    for w_idx in top100_b:
+        s_w = int(w_idx) * w_len_b
+        prior_w = [int(i) for i in top100_b_chron if (int(i) + 1) * w_len_b <= s_w]
+        if len(prior_w) >= 8:
+            c_prev = np.concatenate([np.arange(i * w_len_b, (i + 1) * w_len_b - 1) for i in prior_w])
+        else:
+            n_pre = max(1, s_w // w_len_b)
+            if n_pre >= 8:
+                top_pre = np.argsort(w_eb[:n_pre])[-min(25, n_pre):]
+                c_prev = np.concatenate([np.arange(int(i) * w_len_b, (int(i) + 1) * w_len_b - 1) for i in top_pre])
+            else:
+                c_prev = np.arange(0, max(50, s_w - 1))
+        c_next = c_prev + 1
+        Zp_c = Z_16_burst_1s[c_prev]
+        Zn_c = Z_16_burst_1s[c_next]
+        J_c16 = (np.linalg.inv(Zp_c.T @ Zp_c + 5.0 * np.eye(16)) @ (Zp_c.T @ Zn_c)).T
+        rc, cc, mcc, cgc = compute_8asset_resolvent_metrics(J_c16, C8, horizon=25)
+        causal_J_list.append(J_c16)
+        causal_rhos_16.append(rc)
+        causal_comms_16.append(cc)
+        causal_mcs_16.append(mcc)
+        causal_cgs_16.append(cgc)
+
     windows_stress_16, windows_ols_16 = extract_8asset_crisis_windows(jac_info["resids"], n_windows=100, window_len=50)
     architectures = ["Unguarded", "Eigenvalue_Guard", "Static_Halt", "Resolvent_Guard_Kreiss"]
 
     portfolio_results: dict[str, Any] = {}
     ols_replay_results: dict[str, Any] = {}
     burst_ols_replay_results: dict[str, Any] = {}
+    causal_oos_burst_ols_results: dict[str, Any] = {}
     phys_signed_results: dict[str, Any] = {}
+    endog_raw_8asset_results: dict[str, Any] = {}
 
     burst_w_indices = jac_info["top_1s_burst_window_indices"]
     P_post = P_phys_mat[400:]
@@ -605,11 +745,39 @@ def run_experiment() -> dict[str, Any]:
             "two_sided_quote_availability_pct": elig_burst_ols,
         }
 
+        runs_causal_oos = [
+            simulate_8asset_cross_margin_episode(
+                windows_stress_16[i], diag_base, U_norm, brackets, arch, use_unmodified_ols=True, J_ols=causal_J_list[i]
+            )
+            for i in range(len(windows_stress_16))
+        ]
+        elig_causal = float(np.mean([r["two_sided_quote_availability_pct"] for r in runs_causal_oos]))
+        causal_oos_burst_ols_results[arch] = {
+            "liquidation_rate_pct": 100.0 * float(np.mean([r["liquidated"] for r in runs_causal_oos])),
+            "mean_max_drawdown_usdt": float(np.mean([r["max_drawdown_usdt"] for r in runs_causal_oos])),
+            "p99_max_drawdown_usdt": float(np.percentile([r["max_drawdown_usdt"] for r in runs_causal_oos], 99)),
+            "mean_min_equity_usdt": float(np.mean([r["min_equity_usdt"] for r in runs_causal_oos])),
+            "admitted_depth_share_pct": float(np.mean([r["admitted_depth_share_pct"] for r in runs_causal_oos])),
+            "model_admission_eligibility_pct": elig_causal,
+            "two_sided_quote_availability_pct": elig_causal,
+        }
+
         runs_phys = []
-        for w_idx in burst_w_indices:
+        runs_endog_raw = []
+        for idx_i, w_idx in enumerate(burst_w_indices):
             s = int(w_idx) * 50
             runs_phys.append(
                 simulate_physical_signed_8asset_episode(P_post[s : s + 50], F_post[s : s + 50], brackets, arch)
+            )
+            runs_endog_raw.append(
+                simulate_endogenous_inventory_raw_8asset_episode(
+                    P_post[s : s + 50],
+                    F_post[s : s + 50],
+                    brackets,
+                    causal_rhos_16[idx_i],
+                    causal_mcs_16[idx_i],
+                    arch,
+                )
             )
         elig_phys = float(np.mean([r["two_sided_quote_availability_pct"] for r in runs_phys]))
         phys_signed_results[arch] = {
@@ -619,6 +787,15 @@ def run_experiment() -> dict[str, Any]:
             "admitted_depth_share_pct": float(np.mean([r["admitted_depth_share_pct"] for r in runs_phys])),
             "model_admission_eligibility_pct": elig_phys,
             "two_sided_quote_availability_pct": elig_phys,
+        }
+        elig_endog = float(np.mean([r["two_sided_quote_availability_pct"] for r in runs_endog_raw]))
+        endog_raw_8asset_results[arch] = {
+            "liquidation_rate_pct": 100.0 * float(np.mean([r["liquidated"] for r in runs_endog_raw])),
+            "mean_max_drawdown_usdt": float(np.mean([r["max_drawdown_usdt"] for r in runs_endog_raw])),
+            "mean_min_equity_usdt": float(np.mean([r["min_equity_usdt"] for r in runs_endog_raw])),
+            "admitted_depth_share_pct": float(np.mean([r["admitted_depth_share_pct"] for r in runs_endog_raw])),
+            "model_admission_eligibility_pct": elig_endog,
+            "two_sided_quote_availability_pct": elig_endog,
         }
 
     per_asset_summary: dict[str, Any] = {}
@@ -633,10 +810,12 @@ def run_experiment() -> dict[str, Any]:
         "methodology_classification": (
             "Strictly separates (1) Observed 10s Full-Day Reduced-Form OLS Operator J_hat_16^OLS (rho=0.7717, commutator=0.3452, "
             "M_{C_8}=1.0000, zero transient amplification due to full-day equal-variance averaging), (2) Empirically Estimated "
-            "1-Second Signed Crash-Burst OLS Operator J_hat_{16,burst}^OLS (estimated directly by unconstrained ridge OLS on "
-            f"the 100 1s crash windows with zero synthetic matrix constants: rho={rho_burst_ols:.4f} < 1, commutator={comm_burst_ols:.2f}, "
-            f"M_{{C_8}}={mc_burst_ols:.2f}), (3) Constructed Synthetic Upper-Triangular Stress Operator J_hat_16^stress(alpha) "
-            "(rho=0.7663, commutator=28.2672, M_{C_8}=131.92), and (4) Direct Physical Signed 8-Asset Price/Flow Replay."
+            "1-Second Signed Crash-Burst OLS Operator J_hat_{16,burst}^OLS (pooled: "
+            f"rho={rho_burst_ols:.4f} < 1, commutator={comm_burst_ols:.2f}, M_{{C_8}}={mc_burst_ols:.2f}) and Strictly Causal "
+            f"Out-of-Sample Pre-Window Burst OLS J_hat_{{16,w}}^{{OLS,causal}} (t < s only, zero lookahead: mean rho={float(np.mean(causal_rhos_16)):.4f}, "
+            f"mean M_{{C_8}}={float(np.mean(causal_mcs_16)):.2f}), (3) Constructed Synthetic Upper-Triangular Stress Operator J_hat_16^stress(alpha) "
+            "(rho=0.7663, commutator=28.2672, M_{C_8}=131.92), and (4) 100% Raw Historical 8-Asset Spot Price & Endogenous Order-Flow "
+            "Inventory Replay (zero synthetic price impact) plus Static-Inventory Direct Physical Replay."
         ),
         "total_synchronized_1s_bars": 8 * 86400,
         "crisis_date": CRISIS_DATE,
@@ -654,6 +833,11 @@ def run_experiment() -> dict[str, Any]:
             "burst_ols_1s_frobenius_nonnormality": comm_burst_ols,
             "burst_ols_1s_price_output_gain_MC": mc_burst_ols,
             "burst_ols_1s_cumulative_gain": cg_burst_ols,
+            "causal_oos_burst_ols_1s_strictly_pre_window": True,
+            "causal_oos_burst_ols_1s_mean_spectral_radius": float(np.mean(causal_rhos_16)),
+            "causal_oos_burst_ols_1s_mean_frobenius_nonnormality": float(np.mean(causal_comms_16)),
+            "causal_oos_burst_ols_1s_mean_price_output_gain_MC": float(np.mean(causal_mcs_16)),
+            "causal_oos_burst_ols_1s_mean_cumulative_gain": float(np.mean(causal_cgs_16)),
             "stress_jacobian_construction": "diag(clip(diag(J_ols),0.55,0.78)) + 3.2*gamma*U_norm + 2.75*gamma*(E_{4+i,12+i}+E_{i,4+i})",
             "stress_jacobian_spectral_radius": rho1,
             "stress_jacobian_frobenius_nonnormality": comm1,
@@ -664,7 +848,9 @@ def run_experiment() -> dict[str, Any]:
         "portfolio_ledger_100_episodes": portfolio_results,
         "observed_ols_operator_replay_100_episodes": ols_replay_results,
         "empirical_burst_ols_operator_replay_100_episodes": burst_ols_replay_results,
+        "causal_oos_burst_ols_operator_replay_100_episodes": causal_oos_burst_ols_results,
         "physical_signed_8asset_replay_100_episodes": phys_signed_results,
+        "endogenous_inventory_raw_8asset_replay_100_episodes": endog_raw_8asset_results,
     }
 
     OUT_JSON.write_text(json.dumps(results, indent=2))
@@ -679,12 +865,13 @@ def write_latex_table(results: dict[str, Any]) -> None:
     port = results["portfolio_ledger_100_episodes"]
     ols_rep = results["observed_ols_operator_replay_100_episodes"]
     burst_rep = results["empirical_burst_ols_operator_replay_100_episodes"]
-    phys = results["physical_signed_8asset_replay_100_episodes"]
+    causal_rep = results["causal_oos_burst_ols_operator_replay_100_episodes"]
+    endog_raw = results["endogenous_inventory_raw_8asset_replay_100_episodes"]
 
     lines = [
         r"\begin{table}[htbp]\centering\scriptsize",
         r"\caption{Empirical 8-Asset Synchronized Crisis Panel ($691{,}200$ 1-Second Spot Bars on November 8, 2022, Official \texttt{data.binance.vision} SHA-256 Verified), Strictly Separating (i) the Passive Full-Day 10s Reduced-Form OLS Operator $\hat{J}_{16}^{\mathrm{OLS}}$ ($\rho = "
-        + f"{jm['ols_var1_spectral_radius']:.4f}$, Commutator $= {jm['ols_var1_frobenius_nonnormality']:.3f}$, $\\mathcal{{M}}_{{\\mathcal{{C}}_8}}(\\hat{{J}}_{{16}}^{{\\mathrm{{OLS}}}}) = {jm['ols_var1_price_output_gain_MC']:.2f}$), (ii) the Local 1-Second Signed Crash-Burst OLS Operator $\\hat{{J}}_{{16,\\mathrm{{burst}}}}^{{\\mathrm{{OLS}}}}$ ($\\rho = {jm['burst_ols_1s_spectral_radius']:.4f} < 1$, Commutator $= {jm['burst_ols_1s_frobenius_nonnormality']:.2f}$, $\\mathcal{{M}}_{{\\mathcal{{C}}_8}}(\\hat{{J}}_{{16,\\mathrm{{burst}}}}^{{\\mathrm{{OLS}}}}) = {jm['burst_ols_1s_price_output_gain_MC']:.2f}$, zero synthetic matrix constants), (iii) the Constructed Synthetic Stress Operator $\\hat{{J}}_{{16}}^{{\\mathrm{{stress}}}}(1)$ ($\\rho = {jm['stress_jacobian_spectral_radius']:.4f} < 1$, $\\mathcal{{M}}_{{\\mathcal{{C}}_8}} = {jm['stress_jacobian_price_output_gain_MC']:.2f}$), and (iv) Direct Physical Signed 8-Asset Replay ($E_0 = 80{{,}}000$~USDT, $1{{,}}600{{,}}000$~USDT Notional at $20\\times$ Leverage, $\\mathrm{{MM}}_0 = 18{{,}}460$~USDT).}}",
+        + f"{jm['ols_var1_spectral_radius']:.4f}$, $\\mathcal{{M}}_{{\\mathcal{{C}}_8}}(\\hat{{J}}_{{16}}^{{\\mathrm{{OLS}}}}) = {jm['ols_var1_price_output_gain_MC']:.2f}$), (ii) the Local 1-Second Signed Crash-Burst OLS Operator $\\hat{{J}}_{{16,\\mathrm{{burst}}}}^{{\\mathrm{{OLS}}}}$ (Pooled $\\mathcal{{M}}_{{\\mathcal{{C}}_8}} = {jm['burst_ols_1s_price_output_gain_MC']:.2f}$ and Strictly Causal Pre-Window Out-of-Sample $\\hat{{J}}_{{16,w}}^{{\\mathrm{{OLS,causal}}}}$ with $t<s$ only, Mean $\\rho = {jm['causal_oos_burst_ols_1s_mean_spectral_radius']:.4f}$, Mean $\\mathcal{{M}}_{{\\mathcal{{C}}_8}} = {jm['causal_oos_burst_ols_1s_mean_price_output_gain_MC']:.2f}$, zero synthetic matrix constants), (iii) the Constructed Synthetic Stress Operator $\\hat{{J}}_{{16}}^{{\\mathrm{{stress}}}}(1)$ ($\\mathcal{{M}}_{{\\mathcal{{C}}_8}} = {jm['stress_jacobian_price_output_gain_MC']:.2f}$), and (iv) 100\\% Raw Historical 8-Asset Spot Prices ($p_t \\equiv p_t^{{\\mathrm{{hist}}}}$, Zero Synthetic Impact) with Endogenous Order-Flow Inventory Accumulation ($E_0 = 80{{,}}000$~USDT).}}",
         r"\label{iatab:empirical_multi_asset_kreiss}",
         r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{lrrrrrrr}",
@@ -706,9 +893,9 @@ def write_latex_table(results: dict[str, Any]) -> None:
 
     lines.extend([
         r"\midrule",
-        r"\multicolumn{8}{l}{\textbf{Panel B: Full-Day 10s OLS ($\mathcal{M}_{\mathcal{C}_8}=1.00$) vs.\ Local 1s Burst OLS ($\mathcal{M}_{\mathcal{C}_8}=29.38$) vs.\ Synthetic Stress ($\mathcal{M}_{\mathcal{C}_8}=131.92$) vs.\ Direct Signed Replay}} \\",
+        r"\multicolumn{8}{l}{\textbf{Panel B: Full-Day 10s OLS vs.\ Pooled \& Strictly Causal OOS 1s Burst OLS vs.\ Synthetic Stress vs.\ 100\% Raw Historical Endogenous-Inventory Replay}} \\",
         r"\midrule",
-        r"Multi-Asset Safety Architecture & 10s OLS Liq.\ & \textbf{1s Burst OLS Liq.} & \textbf{Burst OLS Mean DD} & Synth.\ Stress Liq.\ & Stress Mean DD & Depth $\bar{\alpha}_t$ (Burst/Stress) & Direct Signed Liq. \\",
+        r"Multi-Asset Safety Architecture & 10s OLS Liq.\ & \textbf{Burst OLS (Pool / Causal OOS)} & \textbf{Causal OOS Mean DD} & Synth.\ Stress Liq.\ & Stress Mean DD & Depth $\bar{\alpha}_t$ (Causal/Raw) & \textbf{100\% Raw Endog.\ Liq.} \\",
         r"\midrule",
     ])
 
@@ -723,27 +910,29 @@ def write_latex_table(results: dict[str, Any]) -> None:
         p = port[akey]
         ol = ols_rep[akey]
         br = burst_rep[akey]
-        ph = phys[akey]
-        dep_str = f"{br['admitted_depth_share_pct']:.1f}\\% / {p['admitted_depth_share_pct']:.1f}\\%"
+        cr = causal_rep[akey]
+        er = endog_raw[akey]
+        burst_pair = f"{br['liquidation_rate_pct']:.1f}\\% / {cr['liquidation_rate_pct']:.1f}\\%"
+        dep_str = f"{cr['admitted_depth_share_pct']:.1f}\\% / {er['admitted_depth_share_pct']:.1f}\\%"
         if akey == "Resolvent_Guard_Kreiss":
             lines.append(
                 f"{alabel} & \\textbf{{{ol['liquidation_rate_pct']:.1f}\\%}} & "
-                f"\\textbf{{{br['liquidation_rate_pct']:.1f}\\%}} & "
-                f"\\textbf{{{br['mean_max_drawdown_usdt']:,.2f}}} & "
+                f"\\textbf{{{burst_pair}}} & "
+                f"\\textbf{{{cr['mean_max_drawdown_usdt']:,.2f}}} & "
                 f"\\textbf{{{p['liquidation_rate_pct']:.1f}\\%}} & "
                 f"\\textbf{{{p['mean_max_drawdown_usdt']:,.2f}}} & "
                 f"\\textbf{{{dep_str}}} & "
-                f"\\textbf{{{ph['liquidation_rate_pct']:.1f}\\%}} \\\\"
+                f"\\textbf{{{er['liquidation_rate_pct']:.1f}\\%}} \\\\"
             )
         else:
             lines.append(
                 f"{alabel} & {ol['liquidation_rate_pct']:.1f}\\% & "
-                f"{br['liquidation_rate_pct']:.1f}\\% & "
-                f"{br['mean_max_drawdown_usdt']:,.2f} & "
+                f"{burst_pair} & "
+                f"{cr['mean_max_drawdown_usdt']:,.2f} & "
                 f"{p['liquidation_rate_pct']:.1f}\\% & "
                 f"{p['mean_max_drawdown_usdt']:,.2f} & "
                 f"{dep_str} & "
-                f"{ph['liquidation_rate_pct']:.1f}\\% \\\\"
+                f"{er['liquidation_rate_pct']:.1f}\\% \\\\"
             )
 
     lines.extend([
@@ -769,15 +958,22 @@ if __name__ == "__main__":
         f"M_C8={jm['burst_ols_1s_price_output_gain_MC']:.2f}"
     )
     print(
+        f"  Causal OOS 1s OLS 16x16: mean_rho={jm['causal_oos_burst_ols_1s_mean_spectral_radius']:.4f}, "
+        f"mean_M_C8={jm['causal_oos_burst_ols_1s_mean_price_output_gain_MC']:.2f}"
+    )
+    print(
         f"  Constructed Stress 16x16: rho={jm['stress_jacobian_spectral_radius']:.4f}, comm={jm['stress_jacobian_frobenius_nonnormality']:.4f}, "
         f"M_C8={jm['stress_jacobian_price_output_gain_MC']:.2f}"
     )
     for k, v in res["portfolio_ledger_100_episodes"].items():
         br = res["empirical_burst_ols_operator_replay_100_episodes"][k]
+        cr = res["causal_oos_burst_ols_operator_replay_100_episodes"][k]
+        er = res["endogenous_inventory_raw_8asset_replay_100_episodes"][k]
         ph = res["physical_signed_8asset_replay_100_episodes"][k]
         print(
-            f"  {k:24s}: burst_ols_liq={br['liquidation_rate_pct']:5.1f}%, stress_liq={v['liquidation_rate_pct']:5.1f}%, "
-            f"burst_dd={br['mean_max_drawdown_usdt']:9.2f}, phys_signed_liq={ph['liquidation_rate_pct']:5.1f}%"
+            f"  {k:24s}: burst_ols={br['liquidation_rate_pct']:5.1f}%, causal_oos={cr['liquidation_rate_pct']:5.1f}%, "
+            f"endog_raw={er['liquidation_rate_pct']:5.1f}%, static_raw={ph['liquidation_rate_pct']:5.1f}%"
         )
+
 
 

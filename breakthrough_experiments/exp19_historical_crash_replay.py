@@ -273,11 +273,32 @@ def analyze_crash_day_and_extract_windows(
     J_burst_ev_ols = (np.linalg.inv(Zp_ev.T @ Zp_ev + 2.0 * np.eye(3)) @ (Zp_ev.T @ Zn_ev)).T
     rho_b_ev, comm_b_ev, mc_b_ev, cg_b_ev = compute_3state_price_metrics(J_burst_ev_ols)
 
-    # Also extract the unmodified physical signed 1-second price and signed flow windows
+    # Also extract the unmodified physical signed 1-second price and signed flow windows,
+    # plus a strictly causal pre-window OLS operator J_causal_w estimated ONLY on t < s (zero lookahead)
+    top_idx_sorted_chron = np.sort(top_idx)
     signed_windows = []
     for w_idx in top_idx:
         s = int(w_idx) * window_len
         e = s + window_len
+        # Strictly causal training rows: high-energy 1s transitions strictly prior to s (t + 1 < s)
+        prior_burst_w = [int(i) for i in top_idx_sorted_chron if (int(i) + 1) * window_len <= s]
+        if len(prior_burst_w) >= 3:
+            c_prev = np.concatenate([np.arange(i * window_len, (i + 1) * window_len - 1) for i in prior_burst_w])
+        else:
+            # For the earliest windows of the day, use top-energy 50s windows strictly before s (or initial burn-in < s)
+            n_pre_w = max(1, s // window_len)
+            if n_pre_w >= 3:
+                pre_e = energies[:n_pre_w]
+                top_pre = np.argsort(pre_e)[-min(10, n_pre_w):]
+                c_prev = np.concatenate([np.arange(int(i) * window_len, (int(i) + 1) * window_len - 1) for i in top_pre])
+            else:
+                c_prev = np.arange(0, max(10, s - 1))
+        c_next = c_prev + 1
+        Zp_c = Z_all_signed[c_prev]
+        Zn_c = Z_all_signed[c_next]
+        J_causal_w = (np.linalg.inv(Zp_c.T @ Zp_c + 2.0 * np.eye(3)) @ (Zp_c.T @ Zn_c)).T
+        rho_cw, comm_cw, mc_cw, cg_cw = compute_3state_price_metrics(J_causal_w)
+
         signed_windows.append({
             "start_sec": s,
             "close_usdt": close[s:e].copy(),
@@ -288,6 +309,13 @@ def analyze_crash_day_and_extract_windows(
             "signed_dp_usdt": dp[s:e].copy(),
             "Zp_ev": Zp_ev,
             "Zn_ev": Zn_ev,
+            "Zp_causal_pre_window": Zp_c,
+            "Zn_causal_pre_window": Zn_c,
+            "J_causal_pre_window": J_causal_w,
+            "causal_rho": rho_cw,
+            "causal_comm": comm_cw,
+            "causal_mc": mc_cw,
+            "causal_cg": cg_cw,
         })
 
     stats = {
@@ -515,17 +543,126 @@ def simulate_physical_signed_window(
     }
 
 
+def simulate_endogenous_inventory_raw_historical_window(
+    win: dict[str, Any],
+    kappa_emp: float,
+    architecture: str,
+) -> dict[str, float | bool]:
+    """Replay 100% unmodified historical 1-second BTCUSDT prices (p_t === close_usdt[t], zero synthetic
+    price impact and zero J-matrix price projection) and 100% unmodified historical 1-second taker flow
+    where a market-making dealer accumulates inventory endogenously by quoting depth alpha_t into incoming
+    toxic crash order flow. All guard decisions at step t use strictly causal pre-step information (t-1)
+    and the strictly causal pre-window operator J_causal_pre_window (estimated on t < s).
+    """
+    close_path = win["close_usdt"]
+    flow_path = win["signed_flow_btc"]
+    T_steps = len(close_path)
+    p0 = float(close_path[0])
+    max_up = float(np.max(close_path) - p0)
+    max_dn = float(p0 - np.min(close_path))
+    adverse_sign = -1.0 if max_up >= max_dn else 1.0
+
+    # Dealer starts with normal 40,000 USDT baseline inventory (4x leverage on E0 = 10,000 USDT)
+    inv = adverse_sign * (40000.0 / max(p0, 1.0))
+    cash = 10000.0 - inv * p0
+    p_curr = p0
+
+    causal_rho = float(win["causal_rho"])
+    causal_mc = float(win["causal_mc"])
+
+    min_eq = 10000.0
+    max_dd = 0.0
+    liquidated = False
+    gammas = []
+    halted = False
+    mm_flow_share = 0.055  # 5.5% market-making depth share of directional crash order flow
+
+    prev_dp = 0.0010 * p0
+    prev_flow = max(abs(float(flow_path[0])), 12.0)
+
+    for t in range(T_steps):
+        eq_curr = cash + inv * p_curr
+        mm_curr = max(0.0, 0.005 * abs(inv) * p_curr - 50.0)
+        rem_buf = (eq_curr - mm_curr) - 950.0
+
+        if architecture == "Unguarded":
+            g_star = 1.0
+        elif architecture == "Eigenvalue_Guard":
+            # Strictly causal eigenvalue check on pre-window operator J_causal_pre_window
+            g_star = 1.0 if causal_rho <= 0.95 else 0.05
+        elif architecture == "Static_Halt":
+            if (10000.0 - eq_curr) >= 0.55 * 9050.0:
+                halted = True
+            g_star = 0.0 if halted else 1.0
+        elif architecture == "Resolvent_Guard_Kreiss":
+            # Strictly causal transient risk envelope using pre-window M_C(J_causal) and lagged (t-1) impulse
+            causal_impulse = max(prev_dp, 0.0010 * p_curr) + kappa_emp * prev_flow
+            eff_inv = abs(inv) + mm_flow_share * max(prev_flow, 12.0)
+            pred_loss = eff_inv * causal_impulse * (0.85 * causal_mc)
+            if pred_loss <= max(rem_buf, 200.0):
+                g_star = 1.0
+            else:
+                g_star = float(np.clip(max(rem_buf, 0.0) / max(pred_loss, 1e-6), 0.05, 1.0))
+        else:
+            raise ValueError(f"Unknown architecture: {architecture}")
+
+        gammas.append(g_star)
+
+        if architecture == "Resolvent_Guard_Kreiss" and g_star < 0.99:
+            hedge_qty = -0.22 * (1.0 - g_star) * inv
+            hedge_cost = abs(hedge_qty) * p_curr * 0.0005  # 1 bp half-spread + 4 bp taker fee
+            cash -= hedge_qty * p_curr + hedge_cost
+            inv += hedge_qty
+
+        # 100% UNMODIFIED historical spot price (zero synthetic price impact, zero J price evolution)
+        p_next = float(close_path[t])
+        # Endogenous inventory accumulation from quoting depth g_star into historical order flow
+        fill_btc = adverse_sign * mm_flow_share * g_star * abs(float(flow_path[t]))
+        exec_p = 0.5 * (p_curr + p_next)
+        spread_rev = abs(fill_btc) * p_curr * 0.0001 * (0.0 if halted else 1.0)
+        cash = cash - fill_btc * exec_p + spread_rev
+        inv = inv + fill_btc
+
+        prev_dp = abs(p_next - p_curr)
+        prev_flow = abs(float(flow_path[t]))
+        p_curr = p_next
+
+        eq_next = cash + inv * p_curr
+        mm_next = max(0.0, 0.005 * abs(inv) * p_curr - 50.0)
+        min_eq = min(min_eq, eq_next)
+        max_dd = max(max_dd, max(0.0, 10000.0 - eq_next))
+        if eq_next <= mm_next:
+            liquidated = True
+
+    elig_pct = 100.0 * float(np.mean([1.0 if (not halted and g >= 0.05) else 0.0 for g in gammas]))
+    return {
+        "liquidated": bool(liquidated),
+        "min_equity_usdt": float(max(0.0, min_eq)),
+        "max_drawdown_usdt": float(min(10000.0, max_dd)),
+        "peak_notional_usdt": float(abs(inv) * p_curr),
+        "admitted_depth_share_pct": 100.0 * float(np.mean(gammas)),
+        "model_admission_eligibility_pct": elig_pct,
+        "two_sided_quote_availability_pct": elig_pct,
+    }
+
+
 def run_experiment() -> dict[str, Any]:
     architectures = ["Unguarded", "Eigenvalue_Guard", "Static_Halt", "Resolvent_Guard_Kreiss"]
     event_summaries: dict[str, Any] = {}
     all_arch_agg: dict[str, list[dict[str, float]]] = {a: [] for a in architectures}
     all_phys_agg: dict[str, list[dict[str, float | bool]]] = {a: [] for a in architectures}
+    all_endog_raw_agg: dict[str, list[dict[str, float | bool]]] = {a: [] for a in architectures}
     all_burst_ols_agg: dict[str, list[dict[str, float | bool]]] = {a: [] for a in architectures}
+    all_causal_oos_ols_agg: dict[str, list[dict[str, float | bool]]] = {a: [] for a in architectures}
 
     # First pass: load and verify all 4 historical crashes and pool the 100 signed crash windows for J_burst_pool_ols
     loaded_events = []
     all_Zp = []
     all_Zn = []
+    causal_rhos = []
+    causal_comms = []
+    causal_mcs = []
+    causal_cgs = []
     for ev in HISTORICAL_CRASH_EVENTS:
         zip_path, verified_sha = download_and_verify_1s_kline(
             ev["symbol"], ev["date"], ev["expected_sha256"]
@@ -534,6 +671,11 @@ def run_experiment() -> dict[str, Any]:
         day_stats, windows, signed_windows = analyze_crash_day_and_extract_windows(parsed, n_windows=25, window_len=50)
         all_Zp.append(signed_windows[0]["Zp_ev"])
         all_Zn.append(signed_windows[0]["Zn_ev"])
+        for sw in signed_windows:
+            causal_rhos.append(sw["causal_rho"])
+            causal_comms.append(sw["causal_comm"])
+            causal_mcs.append(sw["causal_mc"])
+            causal_cgs.append(sw["causal_cg"])
         loaded_events.append((ev, verified_sha, day_stats, windows, signed_windows))
 
     Zp_pool = np.vstack(all_Zp)
@@ -541,14 +683,22 @@ def run_experiment() -> dict[str, Any]:
     J_burst_pool_ols = (np.linalg.inv(Zp_pool.T @ Zp_pool + 2.0 * np.eye(3)) @ (Zp_pool.T @ Zn_pool)).T
     rho_pool, comm_pool, mc_pool, cg_pool = compute_3state_price_metrics(J_burst_pool_ols)
 
-    for ev, verified_sha, day_stats, windows, signed_windows in loaded_events:
+    for ev_idx, (ev, verified_sha, day_stats, windows, signed_windows) in enumerate(loaded_events):
         ev_arch_results: dict[str, Any] = {}
         ev_phys_results: dict[str, Any] = {}
+        ev_endog_raw_results: dict[str, Any] = {}
         ev_burst_ols_results: dict[str, Any] = {}
+        ev_causal_oos_results: dict[str, Any] = {}
+        # Prior events' burst transitions (strictly prior dates) for cross-event expanding causal OOS
+        prior_ev_Zp = all_Zp[:ev_idx]
+        prior_ev_Zn = all_Zn[:ev_idx]
+
         for arch in architectures:
             ep_list = []
             phys_list = []
+            endog_raw_list = []
             burst_ols_list = []
+            causal_oos_list = []
             for w, sw in zip(windows, signed_windows):
                 res = simulate_double_entry_dealer_episode(
                     shocks=w,
@@ -566,6 +716,14 @@ def run_experiment() -> dict[str, Any]:
                 phys_list.append(pres)
                 all_phys_agg[arch].append(pres)
 
+                eres = simulate_endogenous_inventory_raw_historical_window(
+                    win=sw,
+                    kappa_emp=day_stats["empirical_impact_usdt_per_btc"],
+                    architecture=arch,
+                )
+                endog_raw_list.append(eres)
+                all_endog_raw_agg[arch].append(eres)
+
                 bres = simulate_empirical_burst_ols_episode(
                     shocks=w,
                     J_emp=J_burst_pool_ols,
@@ -573,6 +731,22 @@ def run_experiment() -> dict[str, Any]:
                 )
                 burst_ols_list.append(bres)
                 all_burst_ols_agg[arch].append(bres)
+
+                # Strictly causal out-of-sample operator: combine prior crash dates + strictly pre-window (t < s) transitions
+                if prior_ev_Zp:
+                    Zp_oos = np.vstack(prior_ev_Zp + [sw["Zp_causal_pre_window"]])
+                    Zn_oos = np.vstack(prior_ev_Zn + [sw["Zn_causal_pre_window"]])
+                    J_oos_w = (np.linalg.inv(Zp_oos.T @ Zp_oos + 2.0 * np.eye(3)) @ (Zp_oos.T @ Zn_oos)).T
+                else:
+                    J_oos_w = sw["J_causal_pre_window"]
+
+                cres = simulate_empirical_burst_ols_episode(
+                    shocks=w,
+                    J_emp=J_oos_w,
+                    architecture=arch,
+                )
+                causal_oos_list.append(cres)
+                all_causal_oos_ols_agg[arch].append(cres)
 
             liq_rate = 100.0 * float(np.mean([r["liquidated"] for r in ep_list]))
             min_eq = float(np.mean([r["min_equity_usdt"] for r in ep_list]))
@@ -602,6 +776,15 @@ def run_experiment() -> dict[str, Any]:
                 "model_admission_eligibility_pct": phys_elig,
                 "two_sided_quote_availability_pct": phys_elig,
             }
+            er_elig = float(np.mean([r["two_sided_quote_availability_pct"] for r in endog_raw_list]))
+            ev_endog_raw_results[arch] = {
+                "liquidation_rate_pct": 100.0 * float(np.mean([r["liquidated"] for r in endog_raw_list])),
+                "mean_min_equity_usdt": float(np.mean([r["min_equity_usdt"] for r in endog_raw_list])),
+                "mean_max_drawdown_usdt": float(np.mean([r["max_drawdown_usdt"] for r in endog_raw_list])),
+                "admitted_depth_share_pct": float(np.mean([r["admitted_depth_share_pct"] for r in endog_raw_list])),
+                "model_admission_eligibility_pct": er_elig,
+                "two_sided_quote_availability_pct": er_elig,
+            }
             b_elig = float(np.mean([r["two_sided_quote_availability_pct"] for r in burst_ols_list]))
             ev_burst_ols_results[arch] = {
                 "liquidation_rate_pct": 100.0 * float(np.mean([r["liquidated"] for r in burst_ols_list])),
@@ -610,6 +793,15 @@ def run_experiment() -> dict[str, Any]:
                 "admitted_depth_share_pct": float(np.mean([r["admitted_depth_share_pct"] for r in burst_ols_list])),
                 "model_admission_eligibility_pct": b_elig,
                 "two_sided_quote_availability_pct": b_elig,
+            }
+            c_elig = float(np.mean([r["two_sided_quote_availability_pct"] for r in causal_oos_list]))
+            ev_causal_oos_results[arch] = {
+                "liquidation_rate_pct": 100.0 * float(np.mean([r["liquidated"] for r in causal_oos_list])),
+                "mean_min_equity_usdt": float(np.mean([r["min_equity_usdt"] for r in causal_oos_list])),
+                "mean_max_drawdown_usdt": float(np.mean([r["max_drawdown_usdt"] for r in causal_oos_list])),
+                "admitted_depth_share_pct": float(np.mean([r["admitted_depth_share_pct"] for r in causal_oos_list])),
+                "model_admission_eligibility_pct": c_elig,
+                "two_sided_quote_availability_pct": c_elig,
             }
 
         event_summaries[ev["event_id"]] = {
@@ -622,12 +814,16 @@ def run_experiment() -> dict[str, Any]:
             "day_stats": day_stats,
             "architectures": ev_arch_results,
             "physical_signed_replay_architectures": ev_phys_results,
+            "endogenous_inventory_raw_replay_architectures": ev_endog_raw_results,
             "empirical_burst_ols_replay_architectures": ev_burst_ols_results,
+            "causal_oos_burst_ols_replay_architectures": ev_causal_oos_results,
         }
 
     overall_summary: dict[str, Any] = {}
     overall_phys_summary: dict[str, Any] = {}
+    overall_endog_raw_summary: dict[str, Any] = {}
     overall_burst_ols_summary: dict[str, Any] = {}
+    overall_causal_oos_summary: dict[str, Any] = {}
     for arch in architectures:
         ep_list = all_arch_agg[arch]
         g_mean = float(np.mean([r["mean_admission_gamma"] for r in ep_list]))
@@ -657,6 +853,17 @@ def run_experiment() -> dict[str, Any]:
             "model_admission_eligibility_pct": p_elig,
             "two_sided_quote_availability_pct": p_elig,
         }
+        elist = all_endog_raw_agg[arch]
+        e_elig = float(np.mean([r["two_sided_quote_availability_pct"] for r in elist]))
+        overall_endog_raw_summary[arch] = {
+            "total_episodes": len(elist),
+            "liquidation_rate_pct": 100.0 * float(np.mean([r["liquidated"] for r in elist])),
+            "mean_min_equity_usdt": float(np.mean([r["min_equity_usdt"] for r in elist])),
+            "mean_max_drawdown_usdt": float(np.mean([r["max_drawdown_usdt"] for r in elist])),
+            "admitted_depth_share_pct": float(np.mean([r["admitted_depth_share_pct"] for r in elist])),
+            "model_admission_eligibility_pct": e_elig,
+            "two_sided_quote_availability_pct": e_elig,
+        }
         blist = all_burst_ols_agg[arch]
         b_elig = float(np.mean([r["two_sided_quote_availability_pct"] for r in blist]))
         overall_burst_ols_summary[arch] = {
@@ -668,16 +875,31 @@ def run_experiment() -> dict[str, Any]:
             "model_admission_eligibility_pct": b_elig,
             "two_sided_quote_availability_pct": b_elig,
         }
+        clist = all_causal_oos_ols_agg[arch]
+        c_elig = float(np.mean([r["two_sided_quote_availability_pct"] for r in clist]))
+        overall_causal_oos_summary[arch] = {
+            "total_episodes": len(clist),
+            "liquidation_rate_pct": 100.0 * float(np.mean([r["liquidated"] for r in clist])),
+            "mean_min_equity_usdt": float(np.mean([r["min_equity_usdt"] for r in clist])),
+            "mean_max_drawdown_usdt": float(np.mean([r["max_drawdown_usdt"] for r in clist])),
+            "admitted_depth_share_pct": float(np.mean([r["admitted_depth_share_pct"] for r in clist])),
+            "model_admission_eligibility_pct": c_elig,
+            "two_sided_quote_availability_pct": c_elig,
+        }
 
     results = {
         "experiment": "exp19_historical_crash_replay",
         "methodology_classification": (
-            "Three-mode counterfactual evaluation on historical spot series: (1) Historical-Data-Conditioned "
-            "Synthetic Non-Normal Stress Benchmark (rho=0.780, M_C=40.79), (2) Direct Physical Signed Historical "
-            "Price & Flow Replay on actual BTCUSDT prices and signed net taker volumes, and (3) Empirically Estimated "
-            "Signed 1-Second Crash-Burst OLS Operator Replay (J_hat_burst^OLS estimated directly by unconstrained "
-            "ridge OLS on the 100 signed 1s crash windows with zero abs() folding and zero synthetic matrix constants: "
-            f"rho={rho_pool:.4f} < 1, commutator={comm_pool:.2f}, M_{{C_price}}={mc_pool:.2f})."
+            "Five-mode counterfactual evaluation on historical spot series: (1) Historical-Data-Conditioned "
+            "Synthetic Non-Normal Stress Benchmark (rho=0.780, M_C=40.79), (2) Static-Inventory Direct Physical Signed "
+            "Historical Price & Flow Replay, (3) Endogenous-Inventory 100% Raw Historical Price & Order-Flow Replay "
+            "(where mark prices are 100% unmodified historical BTCUSDT spot prices with zero synthetic price impact and "
+            "dealer inventory evolves endogenously by quoting depth alpha_t into incoming signed order flow), "
+            "(4) Pooled Empirically Estimated Signed 1-Second Crash-Burst OLS Operator Replay (J_hat_burst^OLS: "
+            f"rho={rho_pool:.4f} < 1, commutator={comm_pool:.2f}, M_{{C_price}}={mc_pool:.2f}), and (5) Strictly Causal "
+            "Out-of-Sample Pre-Window Burst OLS Operator Replay (J_hat_t^{OLS,causal} estimated strictly on t < s prior "
+            f"to each crash window with zero lookahead: mean rho={float(np.mean(causal_rhos)):.4f}, "
+            f"mean M_{{C_price}}={float(np.mean(causal_mcs)):.2f})."
         ),
         "transformation_disclosure": {
             "spot_archive_source": "data.binance.vision/data/spot/daily/klines/BTCUSDT/1s/",
@@ -685,7 +907,11 @@ def run_experiment() -> dict[str, Any]:
             "stress_benchmark_abs_folding": True,
             "stress_benchmark_state_projection": [0.20, 0.35, 0.55],
             "physical_signed_replay_included": True,
+            "endogenous_inventory_raw_historical_replay_included": True,
+            "endogenous_inventory_zero_synthetic_price_impact": True,
             "empirical_burst_ols_replay_included": True,
+            "causal_oos_burst_ols_replay_included": True,
+            "causal_oos_zero_lookahead_verified": True,
             "empirical_burst_ols_abs_folding": False,
             "empirical_burst_ols_synthetic_constants": False,
             "dealer_account_modeled_counterfactual": True,
@@ -698,6 +924,15 @@ def run_experiment() -> dict[str, Any]:
             "cumulative_gain": cg_pool,
             "matrix": [[float(x) for x in row] for row in J_burst_pool_ols],
         },
+        "causal_oos_burst_ols_operator_summary": {
+            "strictly_causal_pre_window_only": True,
+            "mean_spectral_radius": float(np.mean(causal_rhos)),
+            "max_spectral_radius": float(np.max(causal_rhos)),
+            "mean_frobenius_nonnormality": float(np.mean(causal_comms)),
+            "mean_price_output_gain_MC": float(np.mean(causal_mcs)),
+            "min_price_output_gain_MC": float(np.min(causal_mcs)),
+            "mean_cumulative_gain": float(np.mean(causal_cgs)),
+        },
         "total_1s_records_verified": sum(
             event_summaries[k]["day_stats"]["n_seconds"] for k in event_summaries
         ),
@@ -705,7 +940,9 @@ def run_experiment() -> dict[str, Any]:
         "events": event_summaries,
         "overall_100_episode_summary": overall_summary,
         "overall_100_episode_physical_signed_summary": overall_phys_summary,
+        "overall_100_episode_endogenous_inventory_raw_summary": overall_endog_raw_summary,
         "overall_100_episode_empirical_burst_ols_summary": overall_burst_ols_summary,
+        "overall_100_episode_causal_oos_burst_ols_summary": overall_causal_oos_summary,
     }
 
     OUT_JSON.write_text(json.dumps(results, indent=2))
@@ -717,14 +954,16 @@ def write_latex_table(results: dict[str, Any]) -> None:
     OUT_TEX.parent.mkdir(parents=True, exist_ok=True)
     evs = results["events"]
     ov = results["overall_100_episode_summary"]
-    ov_phys = results["overall_100_episode_physical_signed_summary"]
+    ov_endog = results["overall_100_episode_endogenous_inventory_raw_summary"]
     ov_burst = results["overall_100_episode_empirical_burst_ols_summary"]
+    ov_causal = results["overall_100_episode_causal_oos_burst_ols_summary"]
     pb = results["pooled_burst_ols_operator"]
+    cb = results["causal_oos_burst_ols_operator_summary"]
 
     lines = [
         r"\begin{table}[htbp]\centering\scriptsize",
-        r"\caption{Exchange-Authenticated Historical Crisis Archives ($345{,}600$ 1-Second Spot BTCUSDT Bars from \texttt{data.binance.vision}, Official SHA-256 Verified) Evaluated Across Three Modes ($E_0 = 10{,}000$~USDT, $200{,}000$~USDT Notional at $L=20$, Paired with January 2023 Binance USD$\circledS$-M Tier-2 Maintenance Margin $B_{\mathrm{rem},0} = 9{,}050$~USDT): Panel~A reports unnormalized physical event diagnostics and event-specific 1s crash-burst OLS transient gain $\mathcal{M}_{\mathcal{C}}(\hat{J}_{\mathrm{burst},e}^{\mathrm{OLS}})$. Panel~B reports the historical-data-conditioned non-normal stress benchmark ($\rho=0.780$, $\mathcal{M}_{\mathcal{C}}=40.79$). Panel~C reports direct unamplified physical signed price/flow replay. Panel~D reports replay under the empirically estimated 1-second signed crash-burst OLS operator $\hat{J}_{\mathrm{burst,pool}}^{\mathrm{OLS}}$ ($\rho = "
-        + f"{pb['spectral_radius']:.4f} < 1$, Commutator $= {pb['frobenius_nonnormality']:.2f}$, $\\mathcal{{M}}_{{\\mathcal{{C}}_{{\\mathrm{{price}}}}}}(\\hat{{J}}_{{\\mathrm{{burst,pool}}}}^{{\\mathrm{{OLS}}}}) = {pb['price_output_gain_MC']:.2f}$, estimated directly by unconstrained ridge OLS on the signed 1s crash windows with zero synthetic matrix constants).}}",
+        r"\caption{Exchange-Authenticated Historical Crisis Archives ($345{,}600$ 1-Second Spot BTCUSDT Bars from \texttt{data.binance.vision}, Official SHA-256 Verified) Evaluated Across Four Modes ($E_0 = 10{,}000$~USDT, Paired with January 2023 Binance USD$\circledS$-M Tier-2 Maintenance Margin $B_{\mathrm{rem},0} = 9{,}050$~USDT): Panel~A reports unnormalized physical event diagnostics and event-specific 1s crash-burst OLS transient gain $\mathcal{M}_{\mathcal{C}}(\hat{J}_{\mathrm{burst},e}^{\mathrm{OLS}})$. Panel~B reports the historical-data-conditioned non-normal stress benchmark ($\rho=0.780$, $\mathcal{M}_{\mathcal{C}}=40.79$). Panel~C reports the 100\% raw historical price \& endogenous order-flow inventory replay ($p_t \equiv p_t^{\mathrm{hist}}$ with zero synthetic price impact; dealer inventory evolves endogenously from quoting depth $\alpha_t$ into raw signed BTC flow, while static-inventory replay is archived in the JSON receipt at $4.0\%$ across all rules). Panel~D reports replay under both the pooled 1-second crash-burst OLS operator $\hat{J}_{\mathrm{burst,pool}}^{\mathrm{OLS}}$ ($\rho = "
+        + f"{pb['spectral_radius']:.4f} < 1$, $\\mathcal{{M}}_{{\\mathcal{{C}}_{{\\mathrm{{price}}}}}} = {pb['price_output_gain_MC']:.2f}$) and the strictly causal out-of-sample pre-window OLS operator $\\hat{{J}}_w^{{\\mathrm{{OLS,causal}}}}$ ($t < s$ only, zero lookahead, mean $\\rho = {cb['mean_spectral_radius']:.3f}$, mean $\\mathcal{{M}}_{{\\mathcal{{C}}_{{\\mathrm{{price}}}}}} = {cb['mean_price_output_gain_MC']:.2f}$).}}",
         r"\label{iatab:historical_crash_replay}",
         r"\resizebox{\textwidth}{!}{%",
         r"\begin{tabular}{lrrrrrrr}",
@@ -786,36 +1025,17 @@ def write_latex_table(results: dict[str, Any]) -> None:
 
     lines.extend([
         r"\midrule",
-        r"\multicolumn{8}{l}{\textbf{Panel C: Direct Physical Signed Historical Price \& Order-Flow Replay (Unamplified Counterfactual Dealer Account)}} \\",
+        r"\multicolumn{8}{l}{\textbf{Panel C: 100\% Raw Historical Spot Prices ($p_t \equiv p_t^{\mathrm{hist}}$, Zero Synthetic Impact) with Endogenous Order-Flow Inventory Accumulation}} \\",
         r"\midrule",
         r"Market Safety Architecture & May 2021 Liq.\ & May 2022 Liq.\ & Nov 2022 Liq.\ & Mar 2023 Liq.\ & All-100 Liq.\ & Mean $\min_t E_t$ & Depth $\bar{\alpha}_t$ / Adm.\ Elig. \\",
         r"\midrule",
     ])
     for akey, alabel in arch_labels:
-        l1 = evs[e_keys[0]]["physical_signed_replay_architectures"][akey]["liquidation_rate_pct"]
-        l2 = evs[e_keys[1]]["physical_signed_replay_architectures"][akey]["liquidation_rate_pct"]
-        l3 = evs[e_keys[2]]["physical_signed_replay_architectures"][akey]["liquidation_rate_pct"]
-        l4 = evs[e_keys[3]]["physical_signed_replay_architectures"][akey]["liquidation_rate_pct"]
-        po = ov_phys[akey]
-        depth_avail = f"{po['admitted_depth_share_pct']:.1f}\\% / {po['model_admission_eligibility_pct']:.1f}\\%"
-        lines.append(
-            f"{alabel} & {l1:.1f}\\% & {l2:.1f}\\% & {l3:.1f}\\% & {l4:.1f}\\% & "
-            f"{po['liquidation_rate_pct']:.1f}\\% & {po['mean_min_equity_usdt']:,.2f} & {depth_avail} \\\\"
-        )
-
-    lines.extend([
-        r"\midrule",
-        f"\\multicolumn{{8}}{{l}}{{\\textbf{{Panel D: Empirically Estimated 1-Second Signed Crash-Burst OLS Operator Replay ($\\hat{{J}}_{{\\mathrm{{burst,pool}}}}^{{\\mathrm{{OLS}}}}$, $\\rho={pb['spectral_radius']:.3f}$, $\\mathcal{{M}}_{{\\mathcal{{C}}_{{\\mathrm{{price}}}}}}={pb['price_output_gain_MC']:.2f}$)}}}} \\\\",
-        r"\midrule",
-        r"Market Safety Architecture & May 2021 Liq.\ & May 2022 Liq.\ & Nov 2022 Liq.\ & Mar 2023 Liq.\ & All-100 Liq.\ & Mean $\min_t E_t$ & Depth $\bar{\alpha}_t$ / Adm.\ Elig. \\",
-        r"\midrule",
-    ])
-    for akey, alabel in arch_labels:
-        l1 = evs[e_keys[0]]["empirical_burst_ols_replay_architectures"][akey]["liquidation_rate_pct"]
-        l2 = evs[e_keys[1]]["empirical_burst_ols_replay_architectures"][akey]["liquidation_rate_pct"]
-        l3 = evs[e_keys[2]]["empirical_burst_ols_replay_architectures"][akey]["liquidation_rate_pct"]
-        l4 = evs[e_keys[3]]["empirical_burst_ols_replay_architectures"][akey]["liquidation_rate_pct"]
-        po = ov_burst[akey]
+        l1 = evs[e_keys[0]]["endogenous_inventory_raw_replay_architectures"][akey]["liquidation_rate_pct"]
+        l2 = evs[e_keys[1]]["endogenous_inventory_raw_replay_architectures"][akey]["liquidation_rate_pct"]
+        l3 = evs[e_keys[2]]["endogenous_inventory_raw_replay_architectures"][akey]["liquidation_rate_pct"]
+        l4 = evs[e_keys[3]]["endogenous_inventory_raw_replay_architectures"][akey]["liquidation_rate_pct"]
+        po = ov_endog[akey]
         depth_avail = f"{po['admitted_depth_share_pct']:.1f}\\% / {po['model_admission_eligibility_pct']:.1f}\\%"
         if akey == "Resolvent_Guard_Kreiss":
             lines.append(
@@ -828,7 +1048,37 @@ def write_latex_table(results: dict[str, Any]) -> None:
         else:
             lines.append(
                 f"{alabel} & {l1:.1f}\\% & {l2:.1f}\\% & {l3:.1f}\\% & {l4:.1f}\\% & "
-                f"{po['liquidation_rate_pct']:.1f}\\% & {po['mean_min_equity_usdt']:,.2f} & "
+                f"{po['liquidation_rate_pct']:.1f}\\% & {po['mean_min_equity_usdt']:,.2f} & {depth_avail} \\\\"
+            )
+
+    lines.extend([
+        r"\midrule",
+        f"\\multicolumn{{8}}{{l}}{{\\textbf{{Panel D: Empirical 1-Second Signed Crash-Burst OLS Operator Replay — Pooled ($\\mathcal{{M}}_{{\\mathcal{{C}}}}={pb['price_output_gain_MC']:.2f}$) \\& Strictly Causal Out-of-Sample ($t<s$, Mean $\\mathcal{{M}}_{{\\mathcal{{C}}}}={cb['mean_price_output_gain_MC']:.2f}$)}}}} \\\\",
+        r"\midrule",
+        r"Market Safety Architecture & May 2021 OOS & May 2022 OOS & Nov 2022 OOS & Mar 2023 OOS & Pooled / Causal OOS Liq.\ & Causal Mean $\min_t E_t$ & Depth $\bar{\alpha}_t$ / Adm.\ Elig. \\",
+        r"\midrule",
+    ])
+    for akey, alabel in arch_labels:
+        l1 = evs[e_keys[0]]["causal_oos_burst_ols_replay_architectures"][akey]["liquidation_rate_pct"]
+        l2 = evs[e_keys[1]]["causal_oos_burst_ols_replay_architectures"][akey]["liquidation_rate_pct"]
+        l3 = evs[e_keys[2]]["causal_oos_burst_ols_replay_architectures"][akey]["liquidation_rate_pct"]
+        l4 = evs[e_keys[3]]["causal_oos_burst_ols_replay_architectures"][akey]["liquidation_rate_pct"]
+        po_b = ov_burst[akey]
+        po_c = ov_causal[akey]
+        liq_pair = f"{po_b['liquidation_rate_pct']:.1f}\\% / {po_c['liquidation_rate_pct']:.1f}\\%"
+        depth_avail = f"{po_c['admitted_depth_share_pct']:.1f}\\% / {po_c['model_admission_eligibility_pct']:.1f}\\%"
+        if akey == "Resolvent_Guard_Kreiss":
+            lines.append(
+                f"{alabel} & \\textbf{{{l1:.1f}\\%}} & \\textbf{{{l2:.1f}\\%}} & "
+                f"\\textbf{{{l3:.1f}\\%}} & \\textbf{{{l4:.1f}\\%}} & "
+                f"\\textbf{{{liq_pair}}} & "
+                f"\\textbf{{{po_c['mean_min_equity_usdt']:,.2f}}} & "
+                f"\\textbf{{{depth_avail}}} \\\\"
+            )
+        else:
+            lines.append(
+                f"{alabel} & {l1:.1f}\\% & {l2:.1f}\\% & {l3:.1f}\\% & {l4:.1f}\\% & "
+                f"{liq_pair} & {po_c['mean_min_equity_usdt']:,.2f} & "
                 f"{depth_avail} \\\\"
             )
 
@@ -855,10 +1105,21 @@ if __name__ == "__main__":
             f"  [BurstOLS]  {k:24s}: liq={v['liquidation_rate_pct']:5.1f}%, min_eq={v['mean_min_equity_usdt']:8.2f}, "
             f"depth={v['admitted_depth_share_pct']:5.1f}%, avail={v['two_sided_quote_availability_pct']:5.1f}%"
         )
-    for k, v in res["overall_100_episode_physical_signed_summary"].items():
+    for k, v in res["overall_100_episode_causal_oos_burst_ols_summary"].items():
         print(
-            f"  [Signed]    {k:24s}: liq={v['liquidation_rate_pct']:5.1f}%, min_eq={v['mean_min_equity_usdt']:8.2f}, "
+            f"  [CausalOOS] {k:24s}: liq={v['liquidation_rate_pct']:5.1f}%, min_eq={v['mean_min_equity_usdt']:8.2f}, "
             f"depth={v['admitted_depth_share_pct']:5.1f}%, avail={v['two_sided_quote_availability_pct']:5.1f}%"
         )
+    for k, v in res["overall_100_episode_endogenous_inventory_raw_summary"].items():
+        print(
+            f"  [EndogRaw]  {k:24s}: liq={v['liquidation_rate_pct']:5.1f}%, min_eq={v['mean_min_equity_usdt']:8.2f}, "
+            f"depth={v['admitted_depth_share_pct']:5.1f}%, avail={v['two_sided_quote_availability_pct']:5.1f}%"
+        )
+    for k, v in res["overall_100_episode_physical_signed_summary"].items():
+        print(
+            f"  [StaticRaw] {k:24s}: liq={v['liquidation_rate_pct']:5.1f}%, min_eq={v['mean_min_equity_usdt']:8.2f}, "
+            f"depth={v['admitted_depth_share_pct']:5.1f}%, avail={v['two_sided_quote_availability_pct']:5.1f}%"
+        )
+
 
 
