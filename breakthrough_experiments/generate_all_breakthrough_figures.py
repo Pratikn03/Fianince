@@ -353,6 +353,94 @@ def plot_fig6():
     plt.close()
     print("Figure 6 generated.")
 
+
+def plot_fig7():
+    r19 = json.loads(Path("breakthrough_experiments/results_exp19_historical_crash_replay.json").read_text())
+    r20 = json.loads(Path("breakthrough_experiments/results_exp20_exact_l2_book_walking.json").read_text())
+    r21 = json.loads(Path("breakthrough_experiments/results_exp21_empirical_multi_asset_kreiss.json").read_text())
+
+    fig, axes = plt.subplots(1, 3, figsize=(16.5, 4.8))
+
+    # Panel A: Historical Crash Replay across 4 Systemic Crisis Events (exp19)
+    ax = axes[0]
+    ev_keys = [
+        "Crash_I_May2021_FlashCrash",
+        "Crash_II_May2022_TerraLuna",
+        "Crash_III_Nov2022_FTXRun",
+        "Crash_IV_Mar2023_SVBDepeg",
+    ]
+    ev_labels = ["May 2021\nFlash Crash", "May 2022\nTerra/LUNA", "Nov 2022\nFTX Run", "Mar 2023\nSVB/USDC"]
+    x = np.arange(len(ev_keys))
+    width = 0.20
+
+    liq_ug = [r19["events"][k]["architectures"]["Unguarded"]["liquidation_rate_pct"] for k in ev_keys]
+    liq_eg = [r19["events"][k]["architectures"]["Eigenvalue_Guard"]["liquidation_rate_pct"] for k in ev_keys]
+    liq_sh = [r19["events"][k]["architectures"]["Static_Halt"]["liquidation_rate_pct"] for k in ev_keys]
+    liq_kr = [r19["events"][k]["architectures"]["Resolvent_Guard_Kreiss"]["liquidation_rate_pct"] for k in ev_keys]
+
+    ax.bar(x - 1.5 * width, liq_ug, width, label=r"Unguarded ($\gamma_t=1$)", color="#d62728", alpha=0.85)
+    ax.bar(x - 0.5 * width, liq_eg, width, label=r"Eigenvalue Guard ($\rho \leq 0.95$)", color="#ff7f0e", alpha=0.85)
+    ax.bar(x + 0.5 * width, liq_sh, width, label=r"Static Halt ($\mathcal{G}_{\mathrm{halt}}$)", color="#7f7f7f", alpha=0.85)
+    ax.bar(x + 1.5 * width, liq_kr, width, label=r"Resolvent Guard ($\mathcal{G}_{\mathrm{Kreiss}}$)", color="#2ca02c", alpha=0.95)
+    for xi in x:
+        ax.text(xi + 1.5 * width, 2.5, "0%", ha="center", va="bottom", fontsize=8, fontweight="bold", color="#1b611b")
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(ev_labels, fontsize=8.5)
+    ax.set_ylabel("Dealer Liquidation Rate (%)", fontsize=10)
+    ax.set_ylim(0, 115)
+    ax.set_title("(A) 4 Historical Crashes (345,600 1s Bars)", fontsize=10.5, fontweight="bold")
+    ax.legend(loc="upper right", fontsize=7.5, framealpha=0.9)
+    ax.grid(axis="y", linestyle=":", alpha=0.5)
+
+    # Panel B: Exact 10-Level L2 Book-Walking Slippage vs Static Linear Approximation (exp20)
+    ax = axes[1]
+    sp = r20["book_microstructure_stats"]["sweep_profile"]
+    q_keys = ["1_BTC", "5_BTC", "10_BTC", "20_BTC", "50_BTC"]
+    q_vals = [sp[k]["order_size_btc"] for k in q_keys]
+    static_sl = [sp[k]["static_linear_mid_approx_usdt"] for k in q_keys]
+    med_sl = [sp[k]["median_buy_slippage_usdt"] for k in q_keys]
+    p90_sl = [sp[k]["p90_buy_slippage_usdt"] for k in q_keys]
+    p99_sl = [sp[k]["p99_buy_slippage_usdt"] for k in q_keys]
+
+    ax.plot(q_vals, static_sl, "k--", marker="s", lw=1.8, label="Static Mid-Slope Approx.")
+    ax.plot(q_vals, med_sl, color="#1f77b4", marker="o", lw=2.0, label="Exact L2 Median Slippage")
+    ax.plot(q_vals, p90_sl, color="#ff7f0e", marker="^", lw=2.2, label="Exact L2 90th Pct Slippage")
+    ax.plot(q_vals, p99_sl, color="#d62728", marker="D", lw=2.2, label="Exact L2 99th Pct Slippage")
+    ax.set_xlabel(r"Sweep Order Size $|q|$ (BTC)", fontsize=10)
+    ax.set_ylabel(r"Slippage $|\bar{p}_{\mathrm{exec},t}(q) - m_t|$ (USDT/BTC)", fontsize=10)
+    ax.set_title("(B) Exact 10-Level L2 Book Walking (Jan 2023)", fontsize=10.5, fontweight="bold")
+    ax.legend(loc="upper left", fontsize=8, framealpha=0.9)
+    ax.grid(True, linestyle=":", alpha=0.5)
+
+    # Panel C: 8-Asset Cross-Margined Portfolio Drawdowns vs Maintenance Threshold (exp21)
+    ax = axes[2]
+    port = r21["portfolio_ledger_100_episodes"]
+    archs = ["Unguarded", "Eigenvalue_Guard", "Static_Halt", "Resolvent_Guard_Kreiss"]
+    alabels = ["Unguarded\n(100% Liq.)", "Eigenvalue\n(100% Liq.)", "Static Halt\n(20% Liq.)", "Resolvent Guard\n(0.0% Liq.)"]
+    mean_dds = [port[a]["mean_max_drawdown_usdt"] / 1000.0 for a in archs]
+    p99_dds = [port[a]["p99_max_drawdown_usdt"] / 1000.0 for a in archs]
+    x3 = np.arange(len(archs))
+    w3 = 0.34
+
+    ax.bar(x3 - 0.5 * w3, mean_dds, w3, label="Mean Max Drawdown", color=["#d62728", "#ff7f0e", "#7f7f7f", "#2ca02c"], alpha=0.85)
+    ax.bar(x3 + 0.5 * w3, p99_dds, w3, label="99th Pct Drawdown", color=["#8c1919", "#b85900", "#4d4d4d", "#186218"], alpha=0.9)
+    ax.axhline(61.49, color="red", linestyle="--", lw=1.8, label=r"Liquidation Boundary ($B_{\mathrm{maint}} = 61.49$k)")
+    ax.set_xticks(x3)
+    ax.set_xticklabels(alabels, fontsize=8.5)
+    ax.set_ylabel("Portfolio Drawdown ($10^3$ USDT)", fontsize=10)
+    ax.set_ylim(0, 90)
+    ax.set_title(r"(C) 8-Asset Cross-Margin Ledger ($E_0 = 80$k USDT)", fontsize=10.5, fontweight="bold")
+    ax.legend(loc="upper right", fontsize=7.5, framealpha=0.9)
+    ax.grid(axis="y", linestyle=":", alpha=0.5)
+
+    plt.tight_layout()
+    plt.savefig(OUT_DIR / "fig7_empirical_crisis_l2_and_8asset_network.pdf")
+    plt.savefig(OUT_DIR / "fig7_empirical_crisis_l2_and_8asset_network.png", dpi=300)
+    plt.close()
+    print("Figure 7 generated.")
+
+
 if __name__ == "__main__":
     import shutil
     plot_fig1()
@@ -361,9 +449,11 @@ if __name__ == "__main__":
     plot_fig4()
     plot_fig5()
     plot_fig6()
+    plot_fig7()
     paper_fig_dir = Path("paper/figures")
     if paper_fig_dir.exists():
         for pdf_file in OUT_DIR.glob("fig*.pdf"):
             shutil.copy2(pdf_file, paper_fig_dir / pdf_file.name)
-    print("All 6 breakthrough figures generated and synchronized with paper/figures/.")
+    print("All 7 breakthrough figures generated and synchronized with paper/figures/.")
+
 

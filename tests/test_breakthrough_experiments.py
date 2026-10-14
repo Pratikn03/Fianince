@@ -1233,5 +1233,195 @@ def test_exp18_crash_free_resolvent_guard():
     assert ep_kr["max_drawdown_usdt"] < B_MAINT_BUDGET
 
 
+# ----------------------------------------------------------------------
+# 39. Test Empirical Upgrade 1: Historical Crisis 1-Second Replay (Exp 19)
+# ----------------------------------------------------------------------
+def test_exp19_historical_crash_replay():
+    """Verify exp19: 345,600 SHA-256 verified 1-second bars across 4 major historical crashes
+    (May 2021, LUNA May 2022, FTX Nov 2022, SVB Mar 2023) show 0.0% liquidation for Resolvent_Guard_Kreiss
+    vs 100.0% for Unguarded and Eigenvalue_Guard and 30.0% for Static_Halt."""
+    from breakthrough_experiments.exp19_historical_crash_replay import (
+        analyze_crash_day_and_extract_windows,
+        simulate_double_entry_dealer_episode,
+    )
+
+    res_path = Path("breakthrough_experiments/results_exp19_historical_crash_replay.json")
+    assert res_path.exists()
+    data = json.loads(res_path.read_text())
+
+    assert data["total_1s_records_verified"] == 345600
+    assert data["total_crash_episodes"] == 100
+    assert len(data["events"]) == 4
+
+    # Verify SHA-256 checksums matched official data.binance.vision .CHECKSUM for all 4 events
+    for ev_id, ev in data["events"].items():
+        assert ev["sha256_matches_official_checksum"] is True, f"SHA-256 checksum failed for {ev_id}"
+        assert ev["day_stats"]["n_seconds"] == 86400
+        kr = ev["architectures"]["Resolvent_Guard_Kreiss"]
+        assert kr["liquidation_rate_pct"] == 0.0
+        assert kr["mean_min_equity_usdt"] > 5000.0
+        assert kr["quote_uptime_pct"] == 100.0
+        assert ev["architectures"]["Unguarded"]["liquidation_rate_pct"] == 100.0
+        assert ev["architectures"]["Eigenvalue_Guard"]["liquidation_rate_pct"] == 100.0
+
+    pooled = data["overall_100_episode_summary"]
+    assert pooled["Resolvent_Guard_Kreiss"]["liquidation_rate_pct"] == 0.0
+    assert pooled["Resolvent_Guard_Kreiss"]["worst_min_equity_usdt"] > 4500.0
+    assert pooled["Unguarded"]["liquidation_rate_pct"] == 100.0
+    assert pooled["Eigenvalue_Guard"]["liquidation_rate_pct"] == 100.0
+    assert np.isclose(pooled["Static_Halt"]["liquidation_rate_pct"], 30.0, atol=5.0)
+
+    # Live crisis window extraction and replay check on synthetic 1s crash day
+    rng = np.random.default_rng(20261019)
+    n_sec = 2000
+    synth_close = 30000.0 + np.cumsum(rng.normal(0.0, 15.0, size=n_sec))
+    synth_data = {
+        "open": synth_close,
+        "high": synth_close + 10.0,
+        "low": synth_close - 10.0,
+        "close": synth_close,
+        "volume": np.abs(rng.normal(10.0, 5.0, size=n_sec)),
+        "trades": np.full(n_sec, 100, dtype=np.int64),
+        "signed_flow": rng.normal(0.0, 8.0, size=n_sec),
+    }
+    stats, windows = analyze_crash_day_and_extract_windows(synth_data, n_windows=5, window_len=50)
+    assert stats["n_seconds"] == n_sec
+    assert windows.shape == (5, 50, 3)
+    ep_eig = simulate_double_entry_dealer_episode(windows[-1], "Regime_IV_Binance_Empirical_Replay", "Eigenvalue_Guard")
+    ep_kr = simulate_double_entry_dealer_episode(windows[-1], "Regime_IV_Binance_Empirical_Replay", "Resolvent_Guard_Kreiss")
+    assert ep_eig["liquidated"] is True
+    assert ep_kr["liquidated"] is False
+
+
+# ----------------------------------------------------------------------
+# 40. Test Empirical Upgrade 2: Exact 10-Level Time-Varying L2 Book Walking (Exp 20)
+# ----------------------------------------------------------------------
+def test_exp20_exact_l2_book_walking():
+    """Verify exp20: exact 10-level L2 book walking captures 2.75x-3.51x larger p90 slippage than
+    static midpoint-slope approximations, and L2-Depth-Aware Resolvent Guard achieves 0.0% liquidation."""
+    from breakthrough_experiments.exp20_exact_l2_book_walking import (
+        walk_l2_book,
+        simulate_dealer_l2_book_walking,
+        B_MAINT_BUDGET,
+    )
+
+    res_path = Path("breakthrough_experiments/results_exp20_exact_l2_book_walking.json")
+    assert res_path.exists()
+    data = json.loads(res_path.read_text())
+
+    # 1. Verify p90 L2 book-walking slippage exceeds static linear approximation by > 2.5x across all order sizes
+    sweep = data["book_microstructure_stats"]["sweep_profile"]
+    for _, row in sweep.items():
+        assert row["empirical_to_static_p90_ratio"] > 2.50
+        assert row["p90_buy_slippage_usdt"] > row["static_linear_mid_approx_usdt"]
+
+    # 2. Verify L2-Depth-Aware Resolvent Guard achieves 0.0% liquidation and < 4,000 USDT p99 drawdown
+    archs = data["dealer_ledger_comparison"]
+    kr_l2 = archs["Resolvent_Guard_Kreiss"]["exact_10level_l2_book_walking"]
+    kr_blind = archs["Resolvent_Guard_DepthBlind"]["exact_10level_l2_book_walking"]
+    assert kr_l2["liquidation_rate_pct"] == 0.0
+    assert kr_l2["p99_max_drawdown_usdt"] < 4000.0
+    assert kr_l2["quote_uptime_pct"] == 100.0
+    assert archs["Unguarded"]["exact_10level_l2_book_walking"]["liquidation_rate_pct"] == 100.0
+    assert archs["Eigenvalue_Guard"]["exact_10level_l2_book_walking"]["liquidation_rate_pct"] == 100.0
+    assert kr_blind["p99_max_drawdown_usdt"] > kr_l2["p99_max_drawdown_usdt"]
+
+    # 3. Live verification of walk_l2_book piecewise-linear convexity on a 10-level book
+    mid = 20000.0
+    ask_p = np.array([20000.05 + 0.15 * i for i in range(10)], dtype=float)
+    ask_v = np.array([0.8] * 10, dtype=float)  # 8 BTC total across 10 levels
+    bid_p = np.array([19999.95 - 0.15 * i for i in range(10)], dtype=float)
+    bid_v = np.array([0.8] * 10, dtype=float)
+    snap = {
+        "mid": mid,
+        "spread": 0.10,
+        "bid_p": bid_p,
+        "bid_v": bid_v,
+        "ask_p": ask_p,
+        "ask_v": ask_v,
+        "depth_bid_10": 8.0,
+        "depth_ask_10": 8.0,
+        "slope_bid_10": float((mid - bid_p[9]) / 8.0),
+        "slope_ask_10": float((ask_p[9] - mid) / 8.0),
+        "slope_mean_10": float((ask_p[9] - mid) / 8.0),
+    }
+    w1 = walk_l2_book(0.5, snap)
+    w10 = walk_l2_book(12.0, snap)
+    assert w1["levels_consumed"] == 1.0
+    assert w10["levels_consumed"] == 10.0
+    assert w10["slippage_usdt_per_unit"] > 5.0 * w1["slippage_usdt_per_unit"]
+
+    # 4. Live simulation check on a 50-step thin 10-level book window
+    T = 50
+    l2_win = [snap for _ in range(T)]
+    rng = np.random.default_rng(20261020)
+    shocks = np.abs(rng.standard_t(df=4.0, size=(T, 3))) * 0.25
+    ep_l2 = simulate_dealer_l2_book_walking(shocks, l2_win, "Resolvent_Guard_Kreiss", use_exact_l2_walking=True)
+    assert ep_l2["liquidated"] is False
+    assert ep_l2["max_drawdown_usdt"] < B_MAINT_BUDGET
+
+
+# ----------------------------------------------------------------------
+# 41. Test Empirical Upgrade 3: 8-Asset Synchronized Crisis Panel & Cross-Margin Guard (Exp 21)
+# ----------------------------------------------------------------------
+def test_exp21_empirical_multi_asset_kreiss_network():
+    """Verify exp21: 691,200 SHA-256 verified 1-second bars across all 8 study assets on Nov 8, 2022
+    yield rho(J_16) = 0.7663 < 1 with M_C8(J_16) = 131.92, and Multi-Asset Resolvent Guard achieves
+    0.0% cross-margin portfolio liquidation vs 100.0% for Unguarded and Eigenvalue_Guard."""
+    from breakthrough_experiments.exp21_empirical_multi_asset_kreiss_network import (
+        load_tier2_margin_brackets,
+        build_8asset_jacobian,
+        compute_8asset_resolvent_metrics,
+        simulate_8asset_cross_margin_episode,
+    )
+
+    res_path = Path("breakthrough_experiments/results_exp21_empirical_multi_asset_kreiss.json")
+    assert res_path.exists()
+    data = json.loads(res_path.read_text())
+
+    assert data["total_synchronized_1s_bars"] == 691200
+    assert len(data["assets"]) == 8
+    assert all(a["sha256_matches_official"] is True for a in data["assets"].values())
+
+    net = data["jacobian_16x16_metrics"]
+    assert net["stress_jacobian_spectral_radius"] < 0.85
+    assert net["stress_jacobian_price_output_gain_MC"] > 100.0
+
+    archs = data["portfolio_ledger_100_episodes"]
+    kr8 = archs["Resolvent_Guard_Kreiss"]
+    b_maint_port = 80000.0 - kr8["initial_total_maint_margin_usdt"]
+    assert kr8["liquidation_rate_pct"] == 0.0
+    assert kr8["p99_max_drawdown_usdt"] < b_maint_port
+    assert kr8["quote_uptime_pct"] == 100.0
+    assert archs["Unguarded"]["liquidation_rate_pct"] == 100.0
+    assert archs["Eigenvalue_Guard"]["liquidation_rate_pct"] == 100.0
+
+    # Live check of authentic Binance Tier-2 brackets and 16x16 operator construction
+    brackets = load_tier2_margin_brackets()
+    assert len(brackets) == 8
+
+    diag_base = np.linspace(0.60, 0.76, 16)
+    U_norm = np.triu(np.ones((16, 16)), k=1)
+    U_norm = U_norm / np.linalg.norm(U_norm, ord="fro")
+    J_16, C_8 = build_8asset_jacobian(1.0, diag_base, U_norm)
+    assert J_16.shape == (16, 16)
+    assert C_8.shape == (8, 16)
+    rho_16, _, mc_8, _ = compute_8asset_resolvent_metrics(J_16, C_8, horizon=20)
+    assert rho_16 < 0.80
+    assert mc_8 > 50.0
+
+    rng = np.random.default_rng(20261021)
+    shocks_16 = np.abs(rng.standard_t(df=4.0, size=(50, 16))) * 0.18
+    shocks_16[:, :4] *= 0.25
+    shocks_16[:, 4:12] *= 0.45
+    shocks_16[:, 12:] *= 0.75
+    ep_eig = simulate_8asset_cross_margin_episode(shocks_16, diag_base, U_norm, brackets, "Eigenvalue_Guard")
+    ep_kr8 = simulate_8asset_cross_margin_episode(shocks_16, diag_base, U_norm, brackets, "Resolvent_Guard_Kreiss")
+    assert ep_eig["liquidated"] is True
+    assert ep_kr8["liquidated"] is False
+    assert ep_kr8["max_drawdown_usdt"] < b_maint_port
+
+
+
 
 
