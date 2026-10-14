@@ -463,7 +463,7 @@ def write_latex_table(results: dict[str, Any]) -> None:
 
     lines.extend([
         r"\midrule",
-        r"\multicolumn{8}{l}{\textbf{Panel B: 8-Asset Cross-Margined Portfolio Ledger Across 100 Synchronized Crisis Windows ($E_0 = 80{,}000$~USDT, $\mathrm{MM}_0 = 18{,}510$~USDT)}} \\",
+        r"\multicolumn{8}{l}{\textbf{Panel B: 8-Asset Cross-Margined Portfolio Ledger Across 100 Synchronized Crisis Windows ($E_0 = 80{,}000$~USDT, $\mathrm{MM}_0 = 18{,}460$~USDT)}} \\",
         r"\midrule",
         r"Multi-Asset Safety Architecture & Portfolio Liq.\ Rate & Mean Max DD (USDT) & 99th Pct DD (USDT) & Mean $\min_t E_t$ (USDT) & Mean $\gamma_t^*$ & Quote Uptime & Solvency Certified? \\",
         r"\midrule",
