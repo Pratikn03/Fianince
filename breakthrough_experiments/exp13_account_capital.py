@@ -88,7 +88,7 @@ def evaluate(v, delta, label, p=PARAMS):
     a1 = simulate_account(v, delta, True, p)
     D = kl(v, delta, p)
     return dict(design=label, C0_required=max(a0["C0"], a1["C0"]), C0_H0=a0["C0"], C0_H1=a1["C0"],
-                final_pnl_H0=a0["final_pnl"], end_inventory=a0["end_inventory"],
+                final_pnl_H0=a0["final_pnl"], final_pnl_H1=a1["final_pnl"], end_inventory=a0["end_inventory"],
                 peak_margin=max(a0["peak_margin"], a1["peak_margin"]), peak_inventory=a0["peak_inventory"],
                 n_trades=a0["n_trades"], gross_quantity=a0["gross_quantity"],
                 max_abs_trade=float(np.max(np.abs(v))),

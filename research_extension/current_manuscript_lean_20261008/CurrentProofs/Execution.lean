@@ -86,5 +86,27 @@ theorem solvent_trader_energy_bound (B cost fees energy spectralFloor : ℝ)
   apply (le_div_iff₀ hm).2
   nlinarith
 
+/-- Theorem 2.9: Full No-Free-Identification bridge from binary KL requirement and spectral coercivity to minimum execution loss. -/
+theorem no_free_identification_kl_to_execution_loss_bridge
+    (loss_exec energy c_coer sigma_sq kl_req kl_obs dH_sup_sq : ℝ)
+    (hcoer_pos : 0 < c_coer) (hsigma : 0 < sigma_sq) (hdH : 0 < dH_sup_sq)
+    (hcoer : c_coer / 2 * energy ≤ loss_exec)
+    (hdpi : kl_req ≤ kl_obs)
+    (hkl_ub : kl_obs ≤ dH_sup_sq * energy / (2 * sigma_sq)) :
+    c_coer * sigma_sq * kl_req / dH_sup_sq ≤ loss_exec := by
+  have h1 : kl_req ≤ dH_sup_sq * energy / (2 * sigma_sq) := le_trans hdpi hkl_ub
+  have h2sig : 0 < 2 * sigma_sq := by positivity
+  have h2 : 2 * sigma_sq * kl_req ≤ energy * dH_sup_sq := by
+    have h := (le_div_iff₀ h2sig).mp h1
+    linarith
+  have h3 : 2 * sigma_sq * kl_req / dH_sup_sq ≤ energy := (div_le_iff₀ hdH).mpr h2
+  have h4 : (c_coer / 2) * (2 * sigma_sq * kl_req / dH_sup_sq) ≤ (c_coer / 2) * energy :=
+    mul_le_mul_of_nonneg_left h3 (by positivity)
+  have h5 : (c_coer / 2) * (2 * sigma_sq * kl_req / dH_sup_sq) =
+      c_coer * sigma_sq * kl_req / dH_sup_sq := by
+    field_simp [ne_of_gt hdH]
+  linarith
+
 end
 end CurrentMM
+

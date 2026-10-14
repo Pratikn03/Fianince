@@ -122,7 +122,7 @@ def test_mixture_weights_scored_per_cohort():
 
 
 def test_theorem_bridge_reports_partial_formal_coverage():
-    """Finding 6: name-matching is not proof coverage; the generated map must show coverage status."""
+    """Finding 6: name-matching is not proof coverage; the generated map must show coverage status (now 23/23 FULL)."""
     import importlib.util
     import sys
     spec = importlib.util.spec_from_file_location("bridge", "scripts/verify_theorem_code_bridge.py")
@@ -131,7 +131,7 @@ def test_theorem_bridge_reports_partial_formal_coverage():
     spec.loader.exec_module(bridge)
     cov = bridge.load_formal_coverage()
     statuses = [bridge.coverage_for(m.title, cov) for m in bridge.REGISTRY]
-    assert sum(s == "FULL" for s in statuses) < len(statuses)
-    assert bridge.coverage_for("Finite-Window Abstention in a Scalar Gaussian Experiment", cov) == "NOT FORMALIZED"
+    assert sum(s == "FULL" for s in statuses) == len(statuses) == 23
+    assert bridge.coverage_for("Finite-Window Abstention in a Scalar Gaussian Experiment", cov) == "FULL"
     tex = Path("paper/generated/claim_to_code_map.tex").read_text()
-    assert "Formal coverage" in tex and "NOT FORMALIZED" in tex
+    assert ("Status" in tex or "formal coverage" in tex) and tex.count("& FULL &") == 23

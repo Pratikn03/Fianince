@@ -206,5 +206,42 @@ theorem cross_impact_exact_radius_contraction {d : ℕ} {ο : Type*} [Fintype ο
   exact ⟨output_norm_mono hC hJ hJJ, (peak_gain_mono hC hJ hJJ hbdd).2,
     exact_radius_contraction hC hCne hJ hJJ B hB hbdd⟩
 
+/-- Partial real-radius Neumann resolvent `R_N(r, A) = ∑_{t < N} r^{-(t+1)} A^t`. -/
+def neumannPartialResolvent (N : ℕ) (r : ℝ) (A : Matrix ι ι ℝ) : Matrix ι ι ℝ :=
+  ∑ t ∈ Finset.range N, (r ^ (t + 1))⁻¹ • (A ^ t)
+
+/-- Proposition 2.16: Entrywise nonnegativity and monotonicity of the real-radius Neumann resolvent series. -/
+theorem neumann_partial_entry_mono {A A' : Matrix ι ι ℝ} (hA : EntryNonneg A) (hAA : EntryLE A A')
+    (N : ℕ) (r : ℝ) (hr : 0 < r) :
+    EntryNonneg (neumannPartialResolvent N r A) ∧
+      EntryLE (neumannPartialResolvent N r A) (neumannPartialResolvent N r A') := by
+  refine ⟨fun i j => ?_, fun i j => ?_⟩
+  · simp only [neumannPartialResolvent, Matrix.sum_apply, Matrix.smul_apply, smul_eq_mul]
+    exact Finset.sum_nonneg fun t _ =>
+      mul_nonneg (inv_nonneg.mpr (pow_nonneg hr.le _)) ((entry_pow_mono hA hAA t).1 i j)
+  · simp only [neumannPartialResolvent, Matrix.sum_apply, Matrix.smul_apply, smul_eq_mul]
+    exact Finset.sum_le_sum fun t _ =>
+      mul_le_mul_of_nonneg_left ((entry_pow_mono hA hAA t).2 i j)
+        (inv_nonneg.mpr (pow_nonneg hr.le _))
+
+/-- Proposition 2.16: Euclidean operator-norm monotonicity of the real-radius Neumann resolvent and Kreiss weight `(r - 1) ‖R_N(r, A)‖₂`. -/
+theorem neumann_partial_opNorm_mono {A A' : Matrix ι ι ℝ} (hA : EntryNonneg A) (hAA : EntryLE A A')
+    (N : ℕ) (r : ℝ) (hr1 : 1 < r) :
+    ‖neumannPartialResolvent N r A‖ ≤ ‖neumannPartialResolvent N r A'‖ ∧
+      (r - 1) * ‖neumannPartialResolvent N r A‖ ≤ (r - 1) * ‖neumannPartialResolvent N r A'‖ := by
+  have hr : 0 < r := by linarith
+  obtain ⟨h1, h2⟩ := neumann_partial_entry_mono hA hAA N r hr
+  have hnorm := l2_opNorm_mono_of_entry h1 h2
+  exact ⟨hnorm, mul_le_mul_of_nonneg_left hnorm (by linarith)⟩
+
+/-- Proposition 2.16: Conservative safe radius contraction `B / (c_dim * K_multi) ≤ B / (c_dim * K_diag)` when `0 < K_diag ≤ K_multi`. -/
+theorem cross_impact_conservative_radius_contraction
+    (B c_dim K_diag K_multi : ℝ) (hB : 0 < B) (hc : 0 < c_dim)
+    (hKd : 0 < K_diag) (hK : K_diag ≤ K_multi) :
+    B / (c_dim * K_multi) ≤ B / (c_dim * K_diag) := by
+  apply div_le_div_of_nonneg_left hB.le (mul_pos hc hKd)
+  exact mul_le_mul_of_nonneg_left hK hc.le
+
 end
 end CurrentMM
+

@@ -68,5 +68,30 @@ theorem robust_quote_dominates_baseline {Θ : Type*} (models : Set Θ) (cost : �
     cost baseline ≤ sSup (cost '' models) :=
   le_csSup hbounded ⟨baseline, hbase, rfl⟩
 
+/-- Proposition 2.11: Ambiguity premium `Δ = sup_θ c_θ - c_{θ_0}` is nonnegative and strictly positive iff the supremum exceeds baseline cost. -/
+theorem robust_premium_nonneg_and_pos_iff {Θ : Type*} (models : Set Θ) (cost : Θ → ℝ)
+    (hbounded : BddAbove (cost '' models)) (baseline : Θ) (hbase : baseline ∈ models) :
+    0 ≤ sSup (cost '' models) - cost baseline ∧
+      (0 < sSup (cost '' models) - cost baseline ↔ cost baseline < sSup (cost '' models)) := by
+  have hle := robust_quote_dominates_baseline models cost hbounded baseline hbase
+  exact ⟨sub_nonneg.mpr hle, sub_pos⟩
+
+/-- Proposition 3.1: Under a zero-mean martingale price innovation `∫ Δp dμ = 0`, the expected next-step EMA deviation equals `(1 - α) (p - m)`. -/
+theorem ema_filtered_martingale_expectation {Ω : Type*} [MeasurableSpace Ω]
+    (μ : Measure Ω) [IsProbabilityMeasure μ] (alpha price oldAnchor : ℝ)
+    (increment : Ω → ℝ) (hint : Integrable increment μ) (hmart : ∫ ω, increment ω ∂μ = 0) :
+    (∫ ω, ((price + increment ω) -
+      ((1 - alpha) * oldAnchor + alpha * (price + increment ω))) ∂μ) =
+      (1 - alpha) * (price - oldAnchor) := by
+  have hpoint : (fun ω => (price + increment ω) -
+      ((1 - alpha) * oldAnchor + alpha * (price + increment ω))) =
+      (fun ω => (1 - alpha) * (price - oldAnchor) + (1 - alpha) * increment ω) := by
+    funext ω
+    ring
+  rw [hpoint, integral_add (integrable_const _) (hint.const_mul (1 - alpha)),
+    integral_const, integral_const_mul, hmart]
+  simp [probReal_univ]
+
 end
 end CurrentMM
+

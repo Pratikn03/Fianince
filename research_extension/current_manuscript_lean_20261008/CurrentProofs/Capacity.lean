@@ -77,5 +77,44 @@ theorem capacity_weakly_increases_with_budget (lower upper edge holding b0 b1 m 
   exact min_le_min (min_le_min_left upper (div_le_div_of_nonneg_right hb (le_of_lt hm)))
     (le_refl _)
 
+/-- Lemma 2.13: One-cohort characteristic polynomial Jury quantities and Schur stability equivalence. -/
+theorem one_cohort_jury_stability_iff (kappa phi q eta : ℝ)
+    (hkappa : 0 < kappa) (hphi : 0 < phi) (heta0 : 0 < eta) (heta1 : eta < 1) :
+    let a := 1 - kappa * phi
+    let tr := a + (1 - eta) + eta * kappa * q
+    let det := a * (1 - eta)
+    (1 - tr + det = kappa * eta * (phi - q) ∧
+      1 + tr + det = 4 - 2 * eta - kappa * ((2 - eta) * phi - eta * q) ∧
+      1 - det = eta + (1 - eta) * kappa * phi) ∧
+    ((0 < 1 - tr + det ∧ 0 < 1 + tr + det ∧ 0 < 1 - det) ↔
+      (q < phi ∧ kappa * ((2 - eta) * phi - eta * q) < 4 - 2 * eta)) := by
+  dsimp only
+  have h1 : 1 - (1 - kappa * phi + (1 - eta) + eta * kappa * q) + (1 - kappa * phi) * (1 - eta) =
+      kappa * eta * (phi - q) := by ring
+  have h2 : 1 + (1 - kappa * phi + (1 - eta) + eta * kappa * q) + (1 - kappa * phi) * (1 - eta) =
+      4 - 2 * eta - kappa * ((2 - eta) * phi - eta * q) := by ring
+  have h3 : 1 - (1 - kappa * phi) * (1 - eta) = eta + (1 - eta) * kappa * phi := by ring
+  refine ⟨⟨h1, h2, h3⟩, ?_⟩
+  rw [h1, h2, h3]
+  have hke : 0 < kappa * eta := mul_pos hkappa heta0
+  have hdet_pos : 0 < eta + (1 - eta) * kappa * phi := by
+    have : 0 < (1 - eta) * kappa * phi := mul_pos (mul_pos (by linarith) hkappa) hphi
+    linarith
+  constructor
+  · rintro ⟨hj1, hj2, _⟩
+    have hqp : 0 < phi - q := (mul_pos_iff_of_pos_left hke).mp hj1
+    exact ⟨by linarith, by linarith⟩
+  · rintro ⟨hq, hk⟩
+    exact ⟨mul_pos hke (by linarith), by linarith, hdet_pos⟩
+
+/-- Lemma 2.13: Exact two-matrix counterexample showing higher impact `κ` can reduce peak Euclidean magnification. -/
+theorem capacity_impact_transient_counterexample :
+    ((9 : ℝ) / 10) ^ 2 + ((81 : ℝ) / 100) ^ 2 = 14661 / 10000 ∧
+    (1 : ℝ) < ((9 : ℝ) / 10) ^ 2 + ((81 : ℝ) / 100) ^ 2 ∧
+    ((1 : ℝ) / 10) ^ 2 + ((19 : ℝ) / 100) ^ 2 = 461 / 10000 ∧
+    ((1 : ℝ) / 10) ^ 2 + ((19 : ℝ) / 100) ^ 2 < 1 := by
+  refine ⟨by norm_num, by norm_num, by norm_num, by norm_num⟩
+
 end
 end CurrentMM
+

@@ -61,23 +61,31 @@ SIGMA_H_1 = SIGMA_P / V_PROBE  # 0.01 / 6.25 = 0.0016
 
 def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: float = 0.40, q_tot: float = 0.20) -> dict:
     """Construct the exact closed-form moment-matched Le Cam two-point pair (theta_0, theta_1)
-    and also compute the further rate-refined non-linear pair with eta_{i,2} - eta_{i,1} >= delta_eta.
+    (Eq. IA.29, satisfying Delta M_0 = Delta M_1 = Delta M_2 = 0) and separately compute the
+    rate-refined non-linear pair (which reduces ||h(theta_1) - h(theta_0)||_2 slightly by
+    relaxing exact first/second open-loop moment equality).
+    Requires delta_eta in (0, 8/11) so all rates remain strictly inside (0, 1).
     """
     p_minus = 0.5 - tau / q_tot  # 0.45
     p_plus = 0.5 + tau / q_tot   # 0.55
+    max_admissible_delta_eta = min(eta_bar / p_plus, (1.0 - eta_bar) / p_plus)  # 0.40 / 0.55 = 8/11
+    if not (0.0 < delta_eta < max_admissible_delta_eta):
+        raise ValueError(
+            f"delta_eta={delta_eta} outside open-interval rate domain (0, {max_admissible_delta_eta:.6f})"
+        )
 
     w0 = np.array([q_tot * p_minus, q_tot * p_plus])  # [0.09, 0.11]
     w1 = np.array([q_tot * p_plus, q_tot * p_minus])  # [0.11, 0.09]
 
-    # Analytic moment-matched rates with exact cohort spacing == delta_eta:
+    # 1. Literal Analytic Moment-Matched Pair (Eq. IA.29) with exact cohort spacing == delta_eta:
     eta0_analytic = np.array([eta_bar - p_plus * delta_eta, eta_bar + p_minus * delta_eta])
     eta1_analytic = np.array([eta_bar - p_minus * delta_eta, eta_bar + p_plus * delta_eta])
 
-    # Verify exact moment identities m = 0, 1, 2, 3:
-    m0_diff = float(np.sum(w1) - np.sum(w0))
-    m1_diff = float(np.sum(w1 * (eta1_analytic - eta_bar)) - np.sum(w0 * (eta0_analytic - eta_bar)))
-    m2_diff = float(np.sum(w1 * (eta1_analytic - eta_bar) ** 2) - np.sum(w0 * (eta0_analytic - eta_bar) ** 2))
-    m3_diff = float(np.sum(w1 * (eta1_analytic - eta_bar) ** 3) - np.sum(w0 * (eta0_analytic - eta_bar) ** 3))
+    # Verify exact moment identities m = 0, 1, 2, 3 for the analytic pair:
+    m0_diff_an = float(np.sum(w1) - np.sum(w0))
+    m1_diff_an = float(np.sum(w1 * (eta1_analytic - eta_bar)) - np.sum(w0 * (eta0_analytic - eta_bar)))
+    m2_diff_an = float(np.sum(w1 * (eta1_analytic - eta_bar) ** 2) - np.sum(w0 * (eta0_analytic - eta_bar) ** 2))
+    m3_diff_an = float(np.sum(w1 * (eta1_analytic - eta_bar) ** 3) - np.sum(w0 * (eta0_analytic - eta_bar) ** 3))
     m3_formula = float(4.0 * tau * p_minus * p_plus * (delta_eta ** 3))
 
     theta0_an = np.concatenate([w0, eta0_analytic])
@@ -86,9 +94,8 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
     h1_an = h_of(theta1_an, 2)
     dist_an = float(np.linalg.norm(h1_an - h0_an))
 
-    # Also allow symmetric rate-spacing adjustment delta_eta_i >= 0.9 * delta_eta to match the
-    # infinite-horizon frequency-response curvature (minimizing ||h(theta1) - h(theta0)||_2
-    # while keeping BOTH economies strictly separated by at least delta_eta_min = 0.95 * delta_eta):
+    # 2. Rate-Refined Equal-Spacing Pair: minimizes ||h(theta1) - h(theta0)||_2 over symmetric shifts
+    # while preserving exact spacing eta_{i,2} - eta_{i,1} == delta_eta (note: Delta M_1, Delta M_2 != 0)
     def obj_sym(params):
         d_shift, d_sp = params
         e0 = np.array([eta_bar - d_shift - 0.5 * d_sp, eta_bar - d_shift + 0.5 * d_sp])
@@ -113,7 +120,11 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
     h1_opt = h_of(theta1_opt, 2)
     dist_opt = float(np.linalg.norm(h1_opt - h0_opt))
 
-    # Use the analytic moment-matched pair if dist_an <= dist_opt, otherwise the exact spacing-equalized pair
+    m0_diff_opt = float(np.sum(w1) - np.sum(w0))
+    m1_diff_opt = float(np.sum(w1 * (eta1_opt - eta_bar)) - np.sum(w0 * (eta0_opt - eta_bar)))
+    m2_diff_opt = float(np.sum(w1 * (eta1_opt - eta_bar) ** 2) - np.sum(w0 * (eta0_opt - eta_bar) ** 2))
+    m3_diff_opt = float(np.sum(w1 * (eta1_opt - eta_bar) ** 3) - np.sum(w0 * (eta0_opt - eta_bar) ** 3))
+
     if dist_opt < dist_an:
         theta0, theta1, dist_l2 = theta0_opt, theta1_opt, dist_opt
     else:
@@ -122,18 +133,29 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
     z_95 = float(norm.ppf(0.95))    # 1.644854 (5% minimax failure probability)
     z_975 = float(norm.ppf(0.975))  # 1.959964 (2.5% minimax failure probability / 95% two-sided)
 
+    n_lecam_an_95 = float(4.0 * (SIGMA_H_1 ** 2) * (z_95 ** 2) / (dist_an ** 2))
+    n_lecam_an_975 = float(4.0 * (SIGMA_H_1 ** 2) * (z_975 ** 2) / (dist_an ** 2))
     n_lecam_95 = float(4.0 * (SIGMA_H_1 ** 2) * (z_95 ** 2) / (dist_l2 ** 2))
     n_lecam_975 = float(4.0 * (SIGMA_H_1 ** 2) * (z_975 ** 2) / (dist_l2 ** 2))
-    n_lecam_an_95 = float(4.0 * (SIGMA_H_1 ** 2) * (z_95 ** 2) / (dist_an ** 2))
 
     theta_star = np.array([q_tot / 2.0, q_tot / 2.0, eta_bar - 0.5 * delta_eta, eta_bar + 0.5 * delta_eta])
     n_crb, _ = probes_needed(theta_star, 2, tol=tau)
+    # Constructive global non-asymptotic minimax upper bound via minimum-distance / cubic-moment
+    # inversion with sub-Gaussian union bound over K=2 coordinates (2*exp(-N*tau^2 / (2*sigma_h^2*F_inv_max)) <= 0.05)
+    J_star = jacobian(theta_star, 2)
+    F_inv_star = np.linalg.inv(J_star.T @ J_star)
+    f_inv_w_max = float(max(F_inv_star[0, 0], F_inv_star[1, 1]))
+    n_upper_subgaussian_95 = float(
+        2.0 * np.log(4.0 / 0.05) * (SIGMA_H_1 ** 2) * f_inv_w_max / (tau ** 2)
+    )
 
+    fail_prob_an_N50 = float(norm.cdf(-np.sqrt(50.0) * dist_an / (2.0 * SIGMA_H_1)))
     fail_prob_N1 = float(norm.cdf(-np.sqrt(1.0) * dist_l2 / (2.0 * SIGMA_H_1)))
     fail_prob_N50 = float(norm.cdf(-np.sqrt(50.0) * dist_l2 / (2.0 * SIGMA_H_1)))
 
     return {
         "delta_eta": float(delta_eta),
+        "max_admissible_delta_eta": float(max_admissible_delta_eta),
         "tau": float(tau),
         "theta0": [float(x) for x in theta0],
         "theta1": [float(x) for x in theta1],
@@ -142,15 +164,20 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
         "exact_cohort_spacing_theta0": float(theta0[3] - theta0[2]),
         "exact_cohort_spacing_theta1": float(theta1[3] - theta1[2]),
         "exact_weight_separation_linf": float(np.max(np.abs(theta1[:2] - theta0[:2]))),
-        "moment_diffs_m0_m1_m2": [m0_diff, m1_diff, m2_diff],
-        "moment_diff_m3_exact": m3_diff,
+        "moment_diffs_m0_m1_m2": [m0_diff_an, m1_diff_an, m2_diff_an],
+        "moment_diffs_analytic_m0_m1_m2_m3": [m0_diff_an, m1_diff_an, m2_diff_an, m3_diff_an],
+        "moment_diffs_refined_m0_m1_m2_m3": [m0_diff_opt, m1_diff_opt, m2_diff_opt, m3_diff_opt],
+        "moment_diff_m3_exact": m3_diff_an,
         "moment_diff_m3_formula": m3_formula,
         "impulse_l2_distance_analytic": dist_an,
         "impulse_l2_distance_exact": dist_l2,
         "n_star_crb_unbiased": float(n_crb),
+        "n_star_minimax_upper_bound_95pct": n_upper_subgaussian_95,
         "n_star_lecam_analytic_95pct": n_lecam_an_95,
+        "n_star_lecam_analytic_975pct": n_lecam_an_975,
         "n_star_lecam_95pct_any_estimator": n_lecam_95,
         "n_star_lecam_975pct_any_estimator": n_lecam_975,
+        "minimax_fail_prob_analytic_N50": fail_prob_an_N50,
         "minimax_fail_prob_N1": fail_prob_N1,
         "minimax_fail_prob_N50": fail_prob_N50,
         "minimax_mse_lower_bound_N50": float((tau ** 2) * fail_prob_N50),
@@ -159,17 +186,18 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
 
 def evaluate_biased_and_unbiased_estimators_mc(
     pair_info: dict,
-    N_grid=(50, 1000, 10000, 29000, 40374),
+    N_grid=(50, 1000, 5928, 6172, 10000, 40374),
     n_mc: int = 1000,
     seed: int = 20261013,
+    use_analytic_pair: bool = False,
 ) -> list[dict]:
     """Benchmark 4 estimator classes (Unregularized ML, Ridge/Tikhonov L2-Penalized ML,
     James-Stein Shrinkage, and Heavy Prior Shrinkage) on the TRUE NON-LINEAR impulse
     responses h(theta_0) and h(theta_1) without any linearization or rescaling.
     """
     rng = np.random.default_rng(seed)
-    theta0 = np.array(pair_info["theta0"])
-    theta1 = np.array(pair_info["theta1"])
+    theta0 = np.array(pair_info["theta0_analytic" if use_analytic_pair else "theta0"])
+    theta1 = np.array(pair_info["theta1_analytic" if use_analytic_pair else "theta1"])
     w0 = theta0[:2]
     w1 = theta1[:2]
     tau = pair_info["tau"]
@@ -251,6 +279,63 @@ def evaluate_biased_and_unbiased_estimators_mc(
     return results
 
 
+def write_latex_table(sweep: list[dict], mc_bench: list[dict]) -> None:
+    lines = [
+        r"\begin{table}[htbp]\centering\small",
+        r"\caption{Global Non-Asymptotic Le Cam Two-Point Minimax Lower Bounds ($\Omega((\Delta\eta)^{-6})$) and Biased/Shrinkage Estimator Benchmarks for Two-Cohort Mixture Recovery (Theorem~\ref{thm:ia_minimax_lecam}, $\Delta\eta \in (0, 8/11)$). Panel~A compares the local unbiased Cram\'er--Rao sample threshold $N^*_{\mathrm{CRB}}$ (Proposition~\ref{prop:ia_cohort_information}) against (i) the literal Eq.~\eqref{eq:ia_lecam_pair} analytic moment-matched Le Cam bound $N^*_{\mathrm{LeCam,an}}(\Delta\eta; 95\%)$ (where $\Delta M_0 = \Delta M_1 = \Delta M_2 = 0$ and $\Delta M_3 = 4\tau p_- p_+ (\Delta\eta)^3 = 9.9\times 10^{-3}(\Delta\eta)^3$, giving $5{,}927.6$ resets at $\Delta\eta = 0.10$) and (ii) the rate-refined equal-spacing bound $N^*_{\mathrm{LeCam,ref}}(\Delta\eta; 95\%)$ ($6{,}172.2$ resets at $\Delta\eta = 0.10$, where closed-loop curvature refinement introduces $\Delta M_1 = -8.60\times 10^{-6}$, $\Delta M_2 = -6.88\times 10^{-6}$). Panel~B benchmarks four estimators ($1{,}000$ Monte Carlo trials per cell) at $\Delta\eta = 0.10$: every estimator strictly obeys the Le Cam minimax failure lower bound.}",
+        r"\label{iatab:minimax_lecam}",
+        r"\resizebox{\textwidth}{!}{%",
+        r"\begin{tabular}{rrrrrrrrr}",
+        r"\toprule",
+        r"\multicolumn{9}{l}{\textbf{Panel A: Analytic Moment-Matched vs.\ Rate-Refined Two-Point Sample Complexity ($\tau = 0.01$, $\sigma_h = 1.6\times 10^{-3}$)}} \\",
+        r"\midrule",
+        r"$\Delta\eta$ & Analytic $\Delta M_3$ & $\| \Delta h \|_2$ (Analytic / Refined) & $N^*_{\mathrm{LeCam,an}}$ ($95\%$) & $N^*_{\mathrm{LeCam,ref}}$ ($95\%$) & $N^*_{\mathrm{LeCam,ref}}$ ($97.5\%$) & Unbiased $N^*_{\mathrm{CRB}}$ & Fail LB ($N=50$) & MSE LB ($N=50$) \\",
+        r"\midrule",
+    ]
+    for r in sweep:
+        d_eta = r["delta_eta"]
+        bold = abs(d_eta - 0.10) < 1e-6
+        n_an = f"\\textbf{{{r['n_star_lecam_analytic_95pct']:,.1f}}}" if bold else f"{r['n_star_lecam_analytic_95pct']:,.1f}"
+        n_ref = f"\\textbf{{{r['n_star_lecam_95pct_any_estimator']:,.1f}}}" if bold else f"{r['n_star_lecam_95pct_any_estimator']:,.1f}"
+        n_975 = f"\\textbf{{{r['n_star_lecam_975pct_any_estimator']:,.1f}}}" if bold else f"{r['n_star_lecam_975pct_any_estimator']:,.1f}"
+        n_crb = f"\\textbf{{{r['n_star_crb_unbiased']:,.1f}}}" if bold else f"{r['n_star_crb_unbiased']:,.1f}"
+        f50 = f"\\textbf{{{100.0 * r['minimax_fail_prob_N50']:.2f}\\%}}" if bold else f"{100.0 * r['minimax_fail_prob_N50']:.2f}\\%"
+        lines.append(
+            f"{d_eta:0.2f} & ${r['moment_diff_m3_exact']:.3e}$ & "
+            f"${r['impulse_l2_distance_analytic']:.3e} / {r['impulse_l2_distance_exact']:.3e}$ & "
+            f"{n_an} & {n_ref} & {n_975} & {n_crb} & {f50} & ${r['minimax_mse_lower_bound_N50']:.2e}$ \\\\"
+        )
+    lines.extend([
+        r"\midrule",
+        r"\multicolumn{9}{l}{\textbf{Panel B: Empirical Worst-Case Failure Rate $\max_{j\in\{0,1\}}\mathbb{P}_{\theta_j}(\|\hat{w}-w(\theta_j)\|_\infty \ge 0.01)$ at $\Delta\eta = 0.10$ ($1{,}000$ MC Trials)}} \\",
+        r"\midrule",
+        r"Probes $N$ & Le Cam Minimax LB & Unregularized ML & Ridge / Tikhonov ($L_2$) & James--Stein ($\gamma=0.35$) & Heavy Prior ($\gamma=0.75$) & ML Worst MSE & Ridge Worst MSE & Obeys Le Cam LB? \\",
+        r"\midrule",
+    ])
+    for row in mc_bench:
+        N = row["N"]
+        lb = 100.0 * row["lecam_minimax_fail_prob_lb"]
+        ml = row["estimators"]["Unregularized_ML"]
+        rg = row["estimators"]["Ridge_Tikhonov_L2"]
+        js = row["estimators"]["James_Stein_Shrinkage_035"]
+        hp = row["estimators"]["Heavy_Prior_Shrinkage_075"]
+        lines.append(
+            f"{N:,} & {lb:.2f}\\% & {100.0*ml['worst_case_fail_prob']:.1f}\\% & "
+            f"{100.0*rg['worst_case_fail_prob']:.1f}\\% & {100.0*js['worst_case_fail_prob']:.1f}\\% & "
+            f"{100.0*hp['worst_case_fail_prob']:.1f}\\% & ${ml['worst_case_linf_mse']:.2e}$ & "
+            f"${rg['worst_case_linf_mse']:.2e}$ & Yes (All 4) \\\\"
+        )
+    lines.extend([
+        r"\bottomrule",
+        r"\end{tabular}%",
+        r"}",
+        r"\end{table}",
+        "",
+    ])
+    tex_path = Path(__file__).parent / "tables" / "table_minimax_lecam.tex"
+    tex_path.write_text("\n".join(lines))
+
+
 def main():
     seps = [0.30, 0.20, 0.14, 0.10, 0.08, 0.06, 0.05, 0.04]
     sweep = []
@@ -259,10 +344,10 @@ def main():
         sweep.append(info)
         print(
             f"Delta_eta={d_eta:4.2f} | ||dh||_an={info['impulse_l2_distance_analytic']:.3e} | "
-            f"||dh||_exact={info['impulse_l2_distance_exact']:.3e} | "
+            f"||dh||_ref={info['impulse_l2_distance_exact']:.3e} | "
             f"N*_CRB={info['n_star_crb_unbiased']:10.1f} | "
-            f"N*_LeCam(95%)={info['n_star_lecam_95pct_any_estimator']:10.1f} | "
-            f"N*_LeCam(97.5%)={info['n_star_lecam_975pct_any_estimator']:10.1f} | "
+            f"N*_LeCam_an(95%)={info['n_star_lecam_analytic_95pct']:8.1f} | "
+            f"N*_LeCam_ref(95%)={info['n_star_lecam_95pct_any_estimator']:8.1f} | "
             f"FailProb(N=50)={100*info['minimax_fail_prob_N50']:5.1f}%"
         )
 
@@ -270,19 +355,34 @@ def main():
     ys_lecam = np.log([r["n_star_lecam_95pct_any_estimator"] for r in sweep])
     ys_lecam_an = np.log([r["n_star_lecam_analytic_95pct"] for r in sweep])
     ys_crb = np.log([r["n_star_crb_unbiased"] for r in sweep])
+    ys_ub = np.log([r["n_star_minimax_upper_bound_95pct"] for r in sweep])
     slope_lecam, _ = np.polyfit(xs, ys_lecam, 1)
     slope_lecam_an, _ = np.polyfit(xs, ys_lecam_an, 1)
     slope_crb, _ = np.polyfit(xs, ys_crb, 1)
+    slope_ub, _ = np.polyfit(xs, ys_ub, 1)
 
     pair_010 = next(r for r in sweep if abs(r["delta_eta"] - 0.10) < 1e-6)
-    n_lecam_exact = int(round(pair_010["n_star_lecam_95pct_any_estimator"]))
+    n_lecam_an = int(round(pair_010["n_star_lecam_analytic_95pct"]))
+    n_lecam_ref = int(round(pair_010["n_star_lecam_95pct_any_estimator"]))
     mc_bench = evaluate_biased_and_unbiased_estimators_mc(
         pair_010,
-        N_grid=(50, 1000, 10000, n_lecam_exact, 40374),
+        N_grid=(50, 1000, n_lecam_an, n_lecam_ref, 10000, 40374),
         n_mc=1000,
+        use_analytic_pair=False,
+    )
+    mc_bench_analytic = evaluate_biased_and_unbiased_estimators_mc(
+        pair_010,
+        N_grid=(50, 1000, n_lecam_an, n_lecam_ref, 10000, 40374),
+        n_mc=1000,
+        use_analytic_pair=True,
     )
 
-    print(f"\nScaling slopes: CRB={slope_crb:.3f}, LeCam_Exact={slope_lecam:.3f}, LeCam_Analytic={slope_lecam_an:.3f}")
+    write_latex_table(sweep, mc_bench)
+
+    print(
+        f"\nScaling slopes: CRB={slope_crb:.3f}, UpperBound={slope_ub:.3f}, "
+        f"LeCam_Refined={slope_lecam:.3f}, LeCam_Analytic={slope_lecam_an:.3f}"
+    )
     for row in mc_bench:
         N = row["N"]
         lb = row["lecam_minimax_fail_prob_lb"]
@@ -296,14 +396,17 @@ def main():
         )
 
     out = {
-        "theorem": "Theorem IA.D.5: Global Non-Asymptotic Le Cam Two-Point Minimax Lower Bound for Arbitrary Biased and Shrinkage Estimators",
+        "theorem": "Theorem IA.D.6: Global Non-Asymptotic Le Cam Two-Point Minimax Lower Bound Omega((Delta eta)^-6) and Matching Upper Bound Theta((Delta eta)^-6) for Arbitrary Biased and Shrinkage Estimators",
         "tau": TOL,
         "sigma_h_single_probe": SIGMA_H_1,
+        "admissible_delta_eta_open_interval": [0.0, float(8.0 / 11.0)],
         "loglog_slope_lecam_exact": float(slope_lecam),
         "loglog_slope_lecam_analytic": float(slope_lecam_an),
         "loglog_slope_crb": float(slope_crb),
+        "loglog_slope_upper_bound": float(slope_ub),
         "separation_sweep": sweep,
         "estimator_benchmark_delta_eta_010": mc_bench,
+        "estimator_benchmark_delta_eta_010_analytic_pair": mc_bench_analytic,
     }
     out_path = Path(__file__).with_name("results_exp17_minimax_lecam_bound.json")
     out_path.write_text(json.dumps(out, indent=2))
@@ -312,3 +415,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

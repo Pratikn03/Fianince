@@ -199,5 +199,34 @@ theorem symmetric_price_transfer_difference_uniform_bound
       field_simp [ne_of_gt heps, ne_of_gt hD]
       <;> ring
 
+/-- Theorem 2.3: Parseval spectral transfer energy inequality over finite Fourier/frequency modes. -/
+theorem parseval_transfer_energy_bound {N : ℕ} (w dH_sq U_sq : Fin N → ℝ) (M_sq E_u : ℝ)
+    (hw : ∀ k, 0 ≤ w k) (hU : ∀ k, 0 ≤ U_sq k) (hM : 0 ≤ M_sq)
+    (hdH : ∀ k, dH_sq k ≤ M_sq)
+    (hE : ∑ k, w k * U_sq k ≤ E_u) :
+    ∑ k, w k * dH_sq k * U_sq k ≤ M_sq * E_u := by
+  have h1 : ∑ k, w k * dH_sq k * U_sq k ≤ ∑ k, M_sq * (w k * U_sq k) := by
+    apply Finset.sum_le_sum
+    intro k _
+    have hwk : 0 ≤ w k * U_sq k := mul_nonneg (hw k) (hU k)
+    have h := mul_le_mul_of_nonneg_right (hdH k) hwk
+    linarith
+  rw [← Finset.mul_sum] at h1
+  exact le_trans h1 (mul_le_mul_of_nonneg_left hE hM)
+
+/-- Theorem 2.3: Two-cohort active identification sample complexity lower bound scaling as `(Δη)^(-4)`. -/
+theorem two_cohort_active_identification_sample_bound
+    (N_samples sigma_sq kl_req V M_delta d_eta : ℝ)
+    (hsigma : 0 < sigma_sq) (hV : 0 < V) (hM : 0 < M_delta) (hd : 0 < d_eta)
+    (hkl_bound : kl_req ≤ N_samples * V ^ 2 * (M_delta * d_eta ^ 2) ^ 2 / (2 * sigma_sq)) :
+    2 * sigma_sq * kl_req / (V ^ 2 * M_delta ^ 2 * d_eta ^ 4) ≤ N_samples := by
+  have hden : 0 < V ^ 2 * M_delta ^ 2 * d_eta ^ 4 := by positivity
+  rw [div_le_iff₀ hden]
+  have h2sig : 0 < 2 * sigma_sq := by positivity
+  have hkl2 := (le_div_iff₀ h2sig).mp hkl_bound
+  linarith [show N_samples * V ^ 2 * (M_delta * d_eta ^ 2) ^ 2 =
+    N_samples * (V ^ 2 * M_delta ^ 2 * d_eta ^ 4) by ring]
+
 end
 end CurrentMM
+

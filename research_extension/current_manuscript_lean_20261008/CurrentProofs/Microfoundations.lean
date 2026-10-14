@@ -95,5 +95,43 @@ theorem allocation_triangle_requires_efficient_baseline (V0 b cost delta : ℝ) 
   rw [allocation_loss_formula V0 b cost cost delta hb]
   ring
 
+/-- Proposition 2.1: Exact affine inverse demand `P = vHat - lam * q` from quadratic buyer surplus maximization. -/
+theorem ces_price_impact_inverse_demand (vHat lam p q : ℝ) (hlam : 0 < lam) :
+    let qStar := (vHat - p) / lam
+    (vHat - lam * qStar = p) ∧
+    ((vHat * q - lam * q ^ 2 / 2) - p * q ≤
+      (vHat * qStar - lam * qStar ^ 2 / 2) - p * qStar) := by
+  dsimp only
+  have hne : lam ≠ 0 := ne_of_gt hlam
+  refine ⟨by field_simp [hne]; ring, ?_⟩
+  have hdiff : ((vHat * ((vHat - p) / lam) - lam * ((vHat - p) / lam) ^ 2 / 2) -
+        p * ((vHat - p) / lam)) -
+        ((vHat * q - lam * q ^ 2 / 2) - p * q) =
+      lam * (q - (vHat - p) / lam) ^ 2 / 2 := by
+    field_simp [hne]
+    ring
+  have hnonneg : 0 ≤ lam * (q - (vHat - p) / lam) ^ 2 / 2 := by positivity
+  linarith
+
+/-- Proposition 2.1: Risk-averse CARA dealer optimal inventory supply and market-clearing linear impact `P_t = m_t + kappa * (q_t + u_t)`. -/
+theorem cara_market_clearing_linear_impact (m_t p_t kappa q_S q_t u_t : ℝ) (hkappa : 0 < kappa) :
+    let q_S_star := (p_t - m_t) / kappa
+    (q_S * (p_t - m_t) - kappa * q_S ^ 2 / 2 ≤
+      q_S_star * (p_t - m_t) - kappa * q_S_star ^ 2 / 2) ∧
+    (q_S_star = q_t + u_t ↔ p_t = m_t + kappa * (q_t + u_t)) := by
+  dsimp only
+  have hne : kappa ≠ 0 := ne_of_gt hkappa
+  refine ⟨?_, ?_⟩
+  · have hid : (p_t - m_t) / kappa * (p_t - m_t) - kappa * ((p_t - m_t) / kappa) ^ 2 / 2 -
+        (q_S * (p_t - m_t) - kappa * q_S ^ 2 / 2) =
+        kappa * (q_S - (p_t - m_t) / kappa) ^ 2 / 2 := by
+      field_simp [hne]
+      ring
+    have hpos : 0 ≤ kappa * (q_S - (p_t - m_t) / kappa) ^ 2 / 2 := by positivity
+    linarith
+  · rw [div_eq_iff hne]
+    constructor <;> intro h <;> linarith
+
 end
 end CurrentMM
+

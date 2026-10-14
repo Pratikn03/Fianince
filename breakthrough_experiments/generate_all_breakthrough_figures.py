@@ -284,24 +284,26 @@ def plot_fig6():
 
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 4.6))
 
-    # Panel A: Finite-Horizon Rayleigh-Holder Duality & Feasible Convergence (Exp 16)
+    # Panel A: Finite-Horizon Rayleigh-Holder Duality & Monotone vs Unpadded Convergence (Exp 16)
     L_vals = [r["L"] for r in d16["horizon_sweep"]]
     lb_rh = [r["lb_certified_FH_rayleigh_holder"] for r in d16["horizon_sweep"]]
     doublet = [r["lb_spectral_doublet_benchmark"] for r in d16["horizon_sweep"]]
     feas_c0 = [r["feasible_probe_C0"] for r in d16["horizon_sweep"]]
+    unpad_c0 = [r["unpadded_full_support_C0"] for r in d16["horizon_sweep"]]
     eig_c0 = [r["eigen_probe_C0"] for r in d16["horizon_sweep"]]
 
-    ax1.plot(L_vals, feas_c0, 'o-', color='darkblue', lw=2.2, label=r'Feasible $L_1$-Smoothed $C_0^{\mathrm{feas}}(L)$')
-    ax1.plot(L_vals, eig_c0, 's--', color='royalblue', lw=1.6, alpha=0.8, label=r'Eigen-Probe $C_0^{\mathrm{eig}}(L)$')
-    ax1.plot(L_vals, doublet, '^-.', color='darkorange', lw=1.8, label='Spectral Doublet Benchmark')
-    ax1.plot(L_vals, lb_rh, 'd-', color='crimson', lw=2.0, label='Certified Rayleigh\u2013H\u00f6lder LB $\\underline{C}_{\\mathrm{RH}}(L)$')
+    ax1.plot(L_vals, feas_c0, 'o-', color='darkblue', lw=2.2, label=r'Monotone Best Feasible $\overline{C}_0^{\mathrm{feas}}(\leq L)$ ($64.56$)')
+    ax1.plot(L_vals, unpad_c0, 'x:', color='teal', lw=1.8, label=r'Unpadded Full-Support $C_0^{\mathrm{unpad}}(L)$')
+    ax1.plot(L_vals, eig_c0, 's--', color='royalblue', lw=1.5, alpha=0.75, label=r'Eigen-Probe $C_0^{\mathrm{eig}}(L)$')
+    ax1.plot(L_vals, doublet, '^-.', color='darkorange', lw=1.7, label='Spectral Doublet Benchmark')
+    ax1.plot(L_vals, lb_rh, 'd-', color='crimson', lw=2.0, label='Interval-Certified RH LB $\\underline{C}_{\\mathrm{RH,cert}}(L)$')
     ax1.axhline(d16["lb_inf_total"], color='black', ls=':', lw=1.6, label=r'$\infty$-Horizon Certified LB ($61.44$ USDT)')
-    ax1.set_xlabel('Round-Trip Horizon $L$ (steps)')
-    ax1.set_ylabel('Capital $C_0$ (USDT)')
-    ax1.set_title('(A) Finite-Horizon Duality & Convergence')
+    ax1.set_xlabel('Permitted Active Horizon $L$ (steps)')
+    ax1.set_ylabel('Account Capital $C_0$ (USDT)')
+    ax1.set_title('(A) Interval-Certified Duality & Monotone UB')
     ax1.set_ylim(60.5, 67.5)
     ax1.grid(True, ls='--', alpha=0.3)
-    ax1.legend(loc='lower right', fontsize=7.5, frameon=True)
+    ax1.legend(loc='lower right', fontsize=6.8, frameon=True)
 
     # Panel B: Global Le Cam Minimax Lower Bound vs Biased/Shrinkage Estimators (Exp 17)
     bench = sorted(d17["estimator_benchmark_delta_eta_010"], key=lambda x: x["N"])
@@ -316,17 +318,17 @@ def plot_fig6():
     ax2.plot(N_vals, js_fail, 's--', color='darkorange', lw=1.8, label='James\u2013Stein Shrinkage ($\\gamma=0.35$)')
     ax2.plot(N_vals, ridge_fail, '^-', color='forestgreen', lw=1.8, label=r'Ridge / Tikhonov ($L_2$)')
     ax2.plot(N_vals, heavy_fail, 'v:', color='purple', lw=1.8, label=r'Heavy Prior Shrinkage ($\gamma=0.75$)')
-    ax2.plot(N_vals, lecam_lb, 'd-', color='crimson', lw=2.4, label='Le Cam Minimax Lower Bound (Any Estimator)')
+    ax2.plot(N_vals, lecam_lb, 'd-', color='crimson', lw=2.4, label=r'Le Cam $\Omega((\Delta\eta)^{-6})$ Minimax LB')
     ax2.fill_between(N_vals, 0, lecam_lb, color='red', alpha=0.12, label='Minimax Infeasible Region')
     ax2.set_xscale('log')
     ax2.set_xlabel('Number of Probes $N$ (log scale)')
     ax2.set_ylabel(r'Worst-Case Error $\mathbb{P}(\|\hat{w}-w\|_\infty \geq 0.01)$ (%)')
-    ax2.set_title(r'(B) Minimax Lower Bound vs Shrinkage ($\Delta\eta=0.10$)')
+    ax2.set_title(r'(B) Le Cam Minimax LB vs Shrinkage ($\Delta\eta=0.10$)')
     ax2.set_ylim(0, 105)
     ax2.grid(True, which='both', ls='--', alpha=0.3)
-    ax2.legend(loc='upper right', fontsize=7.2, frameon=True)
+    ax2.legend(loc='upper right', fontsize=7.0, frameon=True)
 
-    # Panel C: Crash-Free Resolvent Guard vs Eigenvalue Guard Max Drawdown (Exp 18)
+    # Panel C: Conditional Bounded-Shock Resolvent Guard vs Eigenvalue Guard Max Drawdown (Exp 18)
     reg_labels = ['Regime I\nBenign', 'Regime II\nNon-Normal', 'Regime III\nSuper-Crit.', 'Regime IV\nBinance L2']
     eig_dd = [r["architectures"]["Eigenvalue_Guard"]["worst_max_drawdown_usdt"] for r in d18["regimes"]]
     halt_dd = [r["architectures"]["Static_Halt"]["worst_max_drawdown_usdt"] for r in d18["regimes"]]
@@ -334,18 +336,18 @@ def plot_fig6():
 
     x = np.arange(len(reg_labels))
     w = 0.26
-    ax3.bar(x - w, eig_dd, w, color='crimson', alpha=0.85, edgecolor='black', label=r'Eigenvalue Guard ($\rho \leq 0.90$)')
-    ax3.bar(x, halt_dd, w, color='darkorange', alpha=0.85, edgecolor='black', label='Reactive Circuit Breaker')
+    ax3.bar(x - w, eig_dd, w, color='crimson', alpha=0.85, edgecolor='black', label=r'Eigenvalue Guard ($\rho \leq 0.95$)')
+    ax3.bar(x, halt_dd, w, color='darkorange', alpha=0.85, edgecolor='black', label='Static Drawdown Halt')
     ax3.bar(x + w, kreiss_dd, w, color='forestgreen', alpha=0.90, edgecolor='black', label=r'Resolvent Guard ($\mathcal{G}_{\mathrm{Kreiss}}$)')
     ax3.axhline(d18["venue_calibration"]["maintenance_margin_breach_budget_usdt"], color='black', ls='--', lw=1.8,
                 label=r'Liquidation Breach ($9{,}050$ USDT)')
     ax3.set_xticks(x)
     ax3.set_xticklabels(reg_labels)
     ax3.set_ylabel('Worst-Case Max Drawdown (USDT)')
-    ax3.set_title(r'(C) Resolvent Guard Solvency ($0\%$ Liquidation)')
+    ax3.set_title(r'(C) Bounded-Shock Solvency ($\bar{u}_{\mathrm{adm}}=4.03$)')
     ax3.set_ylim(0, 13200)
     ax3.grid(True, axis='y', ls='--', alpha=0.3)
-    ax3.legend(loc='upper left', fontsize=7.2, frameon=True)
+    ax3.legend(loc='upper left', fontsize=7.0, frameon=True)
 
     plt.tight_layout()
     plt.savefig(OUT_DIR / "fig6_crash_free_and_minimax_frontiers.pdf")
@@ -361,7 +363,7 @@ def plot_fig7():
 
     fig, axes = plt.subplots(1, 3, figsize=(16.5, 4.8))
 
-    # Panel A: Historical Crash Replay across 4 Systemic Crisis Events (exp19)
+    # Panel A: Historical-Data-Conditioned Crisis Stress Benchmark across 4 Events (exp19)
     ax = axes[0]
     ev_keys = [
         "Crash_I_May2021_FlashCrash",
@@ -378,7 +380,7 @@ def plot_fig7():
     liq_sh = [r19["events"][k]["architectures"]["Static_Halt"]["liquidation_rate_pct"] for k in ev_keys]
     liq_kr = [r19["events"][k]["architectures"]["Resolvent_Guard_Kreiss"]["liquidation_rate_pct"] for k in ev_keys]
 
-    ax.bar(x - 1.5 * width, liq_ug, width, label=r"Unguarded ($\gamma_t=1$)", color="#d62728", alpha=0.85)
+    ax.bar(x - 1.5 * width, liq_ug, width, label=r"Unguarded ($\alpha_t=1$)", color="#d62728", alpha=0.85)
     ax.bar(x - 0.5 * width, liq_eg, width, label=r"Eigenvalue Guard ($\rho \leq 0.95$)", color="#ff7f0e", alpha=0.85)
     ax.bar(x + 0.5 * width, liq_sh, width, label=r"Static Halt ($\mathcal{G}_{\mathrm{halt}}$)", color="#7f7f7f", alpha=0.85)
     ax.bar(x + 1.5 * width, liq_kr, width, label=r"Resolvent Guard ($\mathcal{G}_{\mathrm{Kreiss}}$)", color="#2ca02c", alpha=0.95)
@@ -387,9 +389,9 @@ def plot_fig7():
 
     ax.set_xticks(x)
     ax.set_xticklabels(ev_labels, fontsize=8.5)
-    ax.set_ylabel("Dealer Liquidation Rate (%)", fontsize=10)
+    ax.set_ylabel("Stress Benchmark Liquidation Rate (%)", fontsize=10)
     ax.set_ylim(0, 115)
-    ax.set_title("(A) 4 Historical Crashes (345,600 1s Bars)", fontsize=10.5, fontweight="bold")
+    ax.set_title("(A) Historical-Conditioned Stress (4 Crashes)", fontsize=10.2, fontweight="bold")
     ax.legend(loc="upper right", fontsize=7.5, framealpha=0.9)
     ax.grid(axis="y", linestyle=":", alpha=0.5)
 
@@ -409,11 +411,11 @@ def plot_fig7():
     ax.plot(q_vals, p99_sl, color="#d62728", marker="D", lw=2.2, label="Exact L2 99th Pct Slippage")
     ax.set_xlabel(r"Sweep Order Size $|q|$ (BTC)", fontsize=10)
     ax.set_ylabel(r"Slippage $|\bar{p}_{\mathrm{exec},t}(q) - m_t|$ (USDT/BTC)", fontsize=10)
-    ax.set_title("(B) Exact 10-Level L2 Book Walking (Jan 2023)", fontsize=10.5, fontweight="bold")
+    ax.set_title("(B) Exact 10-Level L2 Book Walking (Jan 2023)", fontsize=10.2, fontweight="bold")
     ax.legend(loc="upper left", fontsize=8, framealpha=0.9)
     ax.grid(True, linestyle=":", alpha=0.5)
 
-    # Panel C: 8-Asset Cross-Margined Portfolio Drawdowns vs Maintenance Threshold (exp21)
+    # Panel C: 8-Asset Cross-Margined Stress Operator Drawdowns vs Maintenance Threshold (exp21)
     ax = axes[2]
     port = r21["portfolio_ledger_100_episodes"]
     archs = ["Unguarded", "Eigenvalue_Guard", "Static_Halt", "Resolvent_Guard_Kreiss"]
@@ -425,12 +427,12 @@ def plot_fig7():
 
     ax.bar(x3 - 0.5 * w3, mean_dds, w3, label="Mean Max Drawdown", color=["#d62728", "#ff7f0e", "#7f7f7f", "#2ca02c"], alpha=0.85)
     ax.bar(x3 + 0.5 * w3, p99_dds, w3, label="99th Pct Drawdown", color=["#8c1919", "#b85900", "#4d4d4d", "#186218"], alpha=0.9)
-    ax.axhline(61.49, color="red", linestyle="--", lw=1.8, label=r"Liquidation Boundary ($B_{\mathrm{maint}} = 61.49$k)")
+    ax.axhline(61.54, color="red", linestyle="--", lw=1.8, label=r"Liquidation Boundary ($B_{\mathrm{maint}} = 61.54$k)")
     ax.set_xticks(x3)
     ax.set_xticklabels(alabels, fontsize=8.5)
     ax.set_ylabel("Portfolio Drawdown ($10^3$ USDT)", fontsize=10)
     ax.set_ylim(0, 90)
-    ax.set_title(r"(C) 8-Asset Cross-Margin Ledger ($E_0 = 80$k USDT)", fontsize=10.5, fontweight="bold")
+    ax.set_title(r"(C) 8-Asset Stress Operator $\hat{J}_{16}^{\mathrm{stress}}$ ($E_0 = 80$k)", fontsize=10.2, fontweight="bold")
     ax.legend(loc="upper right", fontsize=7.5, framealpha=0.9)
     ax.grid(axis="y", linestyle=":", alpha=0.5)
 

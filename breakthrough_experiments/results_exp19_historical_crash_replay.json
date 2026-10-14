@@ -1,6 +1,45 @@
 {
   "experiment": "exp19_historical_crash_replay",
-  "description": "Exchange-authenticated 1-second replay across four major historical cryptocurrency market crashes (May 19, 2021 Flash Crash; May 9, 2022 Terra/LUNA; Nov 8, 2022 FTX; Mar 11, 2023 SVB/USDC Depeg; 345,600 1s records total, 100 extreme crash episodes).",
+  "methodology_classification": "Three-mode counterfactual evaluation on historical spot series: (1) Historical-Data-Conditioned Synthetic Non-Normal Stress Benchmark (rho=0.780, M_C=40.79), (2) Direct Physical Signed Historical Price & Flow Replay on actual BTCUSDT prices and signed net taker volumes, and (3) Empirically Estimated Signed 1-Second Crash-Burst OLS Operator Replay (J_hat_burst^OLS estimated directly by unconstrained ridge OLS on the 100 signed 1s crash windows with zero abs() folding and zero synthetic matrix constants: rho=0.8228 < 1, commutator=446.70, M_{C_price}=22.87).",
+  "transformation_disclosure": {
+    "spot_archive_source": "data.binance.vision/data/spot/daily/klines/BTCUSDT/1s/",
+    "margin_schedule_paired": "Binance USD(S)-M Futures Tier-2 (Jan 2023, rate=0.5%, fast_amt=50 USDT)",
+    "stress_benchmark_abs_folding": true,
+    "stress_benchmark_state_projection": [
+      0.2,
+      0.35,
+      0.55
+    ],
+    "physical_signed_replay_included": true,
+    "empirical_burst_ols_replay_included": true,
+    "empirical_burst_ols_abs_folding": false,
+    "empirical_burst_ols_synthetic_constants": false,
+    "dealer_account_modeled_counterfactual": true
+  },
+  "pooled_burst_ols_operator": {
+    "n_1s_burst_transitions": 4900,
+    "spectral_radius": 0.8227571888659583,
+    "frobenius_nonnormality": 446.70170788385224,
+    "price_output_gain_MC": 22.87381475741974,
+    "cumulative_gain": 176.63823604184563,
+    "matrix": [
+      [
+        0.4771689769302902,
+        -0.7982042536906127,
+        17.7528395943147
+      ],
+      [
+        -0.0003079167000422285,
+        0.8077248338204702,
+        0.0999358590523755
+      ],
+      [
+        -0.0001016253511112391,
+        0.0020571862269444675,
+        0.8145156829933473
+      ]
+    ]
+  },
   "total_1s_records_verified": 345600,
   "total_crash_episodes": 100,
   "events": {
@@ -21,9 +60,32 @@
         "total_btc_volume": 354347.24316099996,
         "total_trades": 6331062,
         "max_1s_signed_flow_btc": 236.718892,
+        "p999_1s_return_bps": 83.91147575175907,
+        "physical_event_shock_amplitude": 0.48,
         "empirical_impact_usdt_per_btc": 1.1777591027456515,
         "var1_spectral_radius": 0.990122530022054,
-        "var1_feedback_product_Q": 7.370667363329543e-06
+        "var1_feedback_product_Q": 7.370667363329543e-06,
+        "burst_ols_3x3_spectral_radius": 0.8146728491899679,
+        "burst_ols_3x3_frobenius_nonnormality": 878.5981972127996,
+        "burst_ols_3x3_price_output_gain_MC": 34.53766291869104,
+        "burst_ols_3x3_cumulative_gain": 333.38488278074175,
+        "burst_ols_3x3_matrix": [
+          [
+            0.41837468097538444,
+            13.054904282269208,
+            21.230753030946428
+          ],
+          [
+            -7.549477390764308e-06,
+            0.6116110910525623,
+            0.23077135290129688
+          ],
+          [
+            -3.020553077981783e-05,
+            -0.05856445015169415,
+            0.8837766711657999
+          ]
+        ]
       },
       "architectures": {
         "Unguarded": {
@@ -32,6 +94,10 @@
           "p05_min_equity_usdt": 0.0,
           "mean_max_drawdown_usdt": 10000.0,
           "quote_uptime_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 100.0,
+          "throttled_flow_share_pct": 0.0,
           "mean_admission_gamma": 1.0
         },
         "Eigenvalue_Guard": {
@@ -40,23 +106,103 @@
           "p05_min_equity_usdt": 0.0,
           "mean_max_drawdown_usdt": 10000.0,
           "quote_uptime_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 100.0,
+          "throttled_flow_share_pct": 0.0,
           "mean_admission_gamma": 1.0
         },
         "Static_Halt": {
-          "liquidation_rate_pct": 32.0,
-          "mean_min_equity_usdt": 2332.083469426993,
+          "liquidation_rate_pct": 44.0,
+          "mean_min_equity_usdt": 1865.1805566080066,
           "p05_min_equity_usdt": 0.0,
-          "mean_max_drawdown_usdt": 7667.916530573008,
-          "quote_uptime_pct": 7.84,
-          "mean_admission_gamma": 0.0784
+          "mean_max_drawdown_usdt": 8134.819443391993,
+          "quote_uptime_pct": 0.0,
+          "model_admission_eligibility_pct": 0.0,
+          "two_sided_quote_availability_pct": 0.0,
+          "admitted_depth_share_pct": 7.359999999999999,
+          "throttled_flow_share_pct": 92.64,
+          "mean_admission_gamma": 0.0736
         },
         "Resolvent_Guard_Kreiss": {
           "liquidation_rate_pct": 0.0,
-          "mean_min_equity_usdt": 6266.988333819189,
-          "p05_min_equity_usdt": 5156.589970154986,
-          "mean_max_drawdown_usdt": 3733.0116661808106,
+          "mean_min_equity_usdt": 5781.22874773878,
+          "p05_min_equity_usdt": 4522.2890774930165,
+          "mean_max_drawdown_usdt": 4218.771252261218,
           "quote_uptime_pct": 100.0,
-          "mean_admission_gamma": 0.34686
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 32.94800000000001,
+          "throttled_flow_share_pct": 67.052,
+          "mean_admission_gamma": 0.32948000000000005
+        }
+      },
+      "physical_signed_replay_architectures": {
+        "Unguarded": {
+          "liquidation_rate_pct": 16.0,
+          "mean_min_equity_usdt": 4899.38453946218,
+          "mean_max_drawdown_usdt": 5100.61546053782,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Eigenvalue_Guard": {
+          "liquidation_rate_pct": 16.0,
+          "mean_min_equity_usdt": 4899.38453946218,
+          "mean_max_drawdown_usdt": 5100.61546053782,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Static_Halt": {
+          "liquidation_rate_pct": 16.0,
+          "mean_min_equity_usdt": 4899.135325008374,
+          "mean_max_drawdown_usdt": 5100.864674991626,
+          "admitted_depth_share_pct": 89.04,
+          "model_admission_eligibility_pct": 68.0,
+          "two_sided_quote_availability_pct": 68.0
+        },
+        "Resolvent_Guard_Kreiss": {
+          "liquidation_rate_pct": 16.0,
+          "mean_min_equity_usdt": 5001.474351653844,
+          "mean_max_drawdown_usdt": 4998.525648346156,
+          "admitted_depth_share_pct": 97.87334977681238,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        }
+      },
+      "empirical_burst_ols_replay_architectures": {
+        "Unguarded": {
+          "liquidation_rate_pct": 100.0,
+          "mean_min_equity_usdt": 0.0,
+          "mean_max_drawdown_usdt": 10000.0,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Eigenvalue_Guard": {
+          "liquidation_rate_pct": 100.0,
+          "mean_min_equity_usdt": 0.0,
+          "mean_max_drawdown_usdt": 10000.0,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Static_Halt": {
+          "liquidation_rate_pct": 52.0,
+          "mean_min_equity_usdt": 1562.56425508913,
+          "mean_max_drawdown_usdt": 8437.43574491087,
+          "admitted_depth_share_pct": 5.12,
+          "model_admission_eligibility_pct": 0.0,
+          "two_sided_quote_availability_pct": 0.0
+        },
+        "Resolvent_Guard_Kreiss": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 5893.8297209882585,
+          "mean_max_drawdown_usdt": 4106.170279011741,
+          "admitted_depth_share_pct": 21.55,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
         }
       }
     },
@@ -77,9 +223,32 @@
         "total_btc_volume": 191876.92642800004,
         "total_trades": 2564538,
         "max_1s_signed_flow_btc": 395.01159999999993,
+        "p999_1s_return_bps": 15.220210269998205,
+        "physical_event_shock_amplitude": 0.34741276358266093,
         "empirical_impact_usdt_per_btc": 0.4349559767713764,
         "var1_spectral_radius": 0.990655768819102,
-        "var1_feedback_product_Q": -8.995051517135516e-06
+        "var1_feedback_product_Q": -8.995051517135516e-06,
+        "burst_ols_3x3_spectral_radius": 0.9001101845684146,
+        "burst_ols_3x3_frobenius_nonnormality": 3.273718971200004,
+        "burst_ols_3x3_price_output_gain_MC": 2.3721517784330217,
+        "burst_ols_3x3_cumulative_gain": 48.617931540336485,
+        "burst_ols_3x3_matrix": [
+          [
+            0.7767773057412983,
+            1.270036032732925,
+            -0.8309330458818037
+          ],
+          [
+            -0.0023985666954337115,
+            0.7668574901915707,
+            0.3469421494106076
+          ],
+          [
+            -0.0011124810384289428,
+            0.029231690767828358,
+            0.8517519280736793
+          ]
+        ]
       },
       "architectures": {
         "Unguarded": {
@@ -88,6 +257,10 @@
           "p05_min_equity_usdt": 0.0,
           "mean_max_drawdown_usdt": 10000.0,
           "quote_uptime_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 100.0,
+          "throttled_flow_share_pct": 0.0,
           "mean_admission_gamma": 1.0
         },
         "Eigenvalue_Guard": {
@@ -96,23 +269,103 @@
           "p05_min_equity_usdt": 0.0,
           "mean_max_drawdown_usdt": 10000.0,
           "quote_uptime_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 100.0,
+          "throttled_flow_share_pct": 0.0,
           "mean_admission_gamma": 1.0
         },
         "Static_Halt": {
-          "liquidation_rate_pct": 20.0,
-          "mean_min_equity_usdt": 2728.513319694018,
+          "liquidation_rate_pct": 36.0,
+          "mean_min_equity_usdt": 2340.195615665655,
           "p05_min_equity_usdt": 0.0,
-          "mean_max_drawdown_usdt": 7271.486680305982,
-          "quote_uptime_pct": 9.440000000000001,
-          "mean_admission_gamma": 0.09440000000000001
+          "mean_max_drawdown_usdt": 7659.804384334345,
+          "quote_uptime_pct": 0.0,
+          "model_admission_eligibility_pct": 0.0,
+          "two_sided_quote_availability_pct": 0.0,
+          "admitted_depth_share_pct": 7.920000000000001,
+          "throttled_flow_share_pct": 92.08,
+          "mean_admission_gamma": 0.0792
         },
         "Resolvent_Guard_Kreiss": {
           "liquidation_rate_pct": 0.0,
-          "mean_min_equity_usdt": 6241.001272327251,
-          "p05_min_equity_usdt": 5579.005907802694,
-          "mean_max_drawdown_usdt": 3758.9987276727484,
+          "mean_min_equity_usdt": 6329.09419669418,
+          "p05_min_equity_usdt": 5946.252409215446,
+          "mean_max_drawdown_usdt": 3670.9058033058186,
           "quote_uptime_pct": 100.0,
-          "mean_admission_gamma": 0.34558000000000005
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 34.32800000000001,
+          "throttled_flow_share_pct": 65.672,
+          "mean_admission_gamma": 0.3432800000000001
+        }
+      },
+      "physical_signed_replay_architectures": {
+        "Unguarded": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 8800.741485687802,
+          "mean_max_drawdown_usdt": 1199.2585143121978,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Eigenvalue_Guard": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 8800.741485687802,
+          "mean_max_drawdown_usdt": 1199.2585143121978,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Static_Halt": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 8800.741485687802,
+          "mean_max_drawdown_usdt": 1199.2585143121978,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Resolvent_Guard_Kreiss": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 8800.741485687802,
+          "mean_max_drawdown_usdt": 1199.2585143121978,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        }
+      },
+      "empirical_burst_ols_replay_architectures": {
+        "Unguarded": {
+          "liquidation_rate_pct": 100.0,
+          "mean_min_equity_usdt": 0.0,
+          "mean_max_drawdown_usdt": 10000.0,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Eigenvalue_Guard": {
+          "liquidation_rate_pct": 100.0,
+          "mean_min_equity_usdt": 0.0,
+          "mean_max_drawdown_usdt": 10000.0,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Static_Halt": {
+          "liquidation_rate_pct": 44.0,
+          "mean_min_equity_usdt": 1920.6928862572076,
+          "mean_max_drawdown_usdt": 8079.307113742792,
+          "admitted_depth_share_pct": 5.92,
+          "model_admission_eligibility_pct": 0.0,
+          "two_sided_quote_availability_pct": 0.0
+        },
+        "Resolvent_Guard_Kreiss": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 6274.615004929081,
+          "mean_max_drawdown_usdt": 3725.38499507092,
+          "admitted_depth_share_pct": 23.27,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
         }
       }
     },
@@ -133,9 +386,32 @@
         "total_btc_volume": 760705.362783,
         "total_trades": 14530601,
         "max_1s_signed_flow_btc": 964.08934,
+        "p999_1s_return_bps": 25.616966367526206,
+        "physical_event_shock_amplitude": 0.3951316196617743,
         "empirical_impact_usdt_per_btc": 0.24506181897128274,
         "var1_spectral_radius": 0.9857555345870667,
-        "var1_feedback_product_Q": -6.6627074209354445e-06
+        "var1_feedback_product_Q": -6.6627074209354445e-06,
+        "burst_ols_3x3_spectral_radius": 0.8203389267043278,
+        "burst_ols_3x3_frobenius_nonnormality": 167.91402122806085,
+        "burst_ols_3x3_price_output_gain_MC": 16.6671010629849,
+        "burst_ols_3x3_cumulative_gain": 139.14456073247297,
+        "burst_ols_3x3_matrix": [
+          [
+            0.6667859360699786,
+            -0.43177834946182336,
+            10.886274967397755
+          ],
+          [
+            -0.0011274371383753474,
+            0.814411498072752,
+            0.1794494366656343
+          ],
+          [
+            0.0001175722892833952,
+            0.0015881886050824888,
+            0.7666115546897856
+          ]
+        ]
       },
       "architectures": {
         "Unguarded": {
@@ -144,6 +420,10 @@
           "p05_min_equity_usdt": 0.0,
           "mean_max_drawdown_usdt": 10000.0,
           "quote_uptime_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 100.0,
+          "throttled_flow_share_pct": 0.0,
           "mean_admission_gamma": 1.0
         },
         "Eigenvalue_Guard": {
@@ -152,23 +432,103 @@
           "p05_min_equity_usdt": 0.0,
           "mean_max_drawdown_usdt": 10000.0,
           "quote_uptime_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 100.0,
+          "throttled_flow_share_pct": 0.0,
           "mean_admission_gamma": 1.0
         },
         "Static_Halt": {
-          "liquidation_rate_pct": 36.0,
-          "mean_min_equity_usdt": 1879.9838685168093,
+          "liquidation_rate_pct": 32.0,
+          "mean_min_equity_usdt": 2189.540711580713,
           "p05_min_equity_usdt": 0.0,
-          "mean_max_drawdown_usdt": 8120.01613148319,
-          "quote_uptime_pct": 7.76,
-          "mean_admission_gamma": 0.0776
+          "mean_max_drawdown_usdt": 7810.459288419287,
+          "quote_uptime_pct": 0.0,
+          "model_admission_eligibility_pct": 0.0,
+          "two_sided_quote_availability_pct": 0.0,
+          "admitted_depth_share_pct": 7.520000000000001,
+          "throttled_flow_share_pct": 92.47999999999999,
+          "mean_admission_gamma": 0.07520000000000002
         },
         "Resolvent_Guard_Kreiss": {
           "liquidation_rate_pct": 0.0,
-          "mean_min_equity_usdt": 6331.694558182033,
-          "p05_min_equity_usdt": 5477.521489406528,
-          "mean_max_drawdown_usdt": 3668.3054418179668,
+          "mean_min_equity_usdt": 6174.622150394618,
+          "p05_min_equity_usdt": 5323.929407178152,
+          "mean_max_drawdown_usdt": 3825.377849605382,
           "quote_uptime_pct": 100.0,
-          "mean_admission_gamma": 0.34418000000000004
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 33.78,
+          "throttled_flow_share_pct": 66.22,
+          "mean_admission_gamma": 0.3378
+        }
+      },
+      "physical_signed_replay_architectures": {
+        "Unguarded": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 7704.969741771808,
+          "mean_max_drawdown_usdt": 2295.030258228192,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Eigenvalue_Guard": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 7704.969741771808,
+          "mean_max_drawdown_usdt": 2295.030258228192,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Static_Halt": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 7703.935460967418,
+          "mean_max_drawdown_usdt": 2296.064539032582,
+          "admitted_depth_share_pct": 99.04,
+          "model_admission_eligibility_pct": 96.0,
+          "two_sided_quote_availability_pct": 96.0
+        },
+        "Resolvent_Guard_Kreiss": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 7705.158900210473,
+          "mean_max_drawdown_usdt": 2294.8410997895267,
+          "admitted_depth_share_pct": 99.91817117457829,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        }
+      },
+      "empirical_burst_ols_replay_architectures": {
+        "Unguarded": {
+          "liquidation_rate_pct": 100.0,
+          "mean_min_equity_usdt": 0.0,
+          "mean_max_drawdown_usdt": 10000.0,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Eigenvalue_Guard": {
+          "liquidation_rate_pct": 100.0,
+          "mean_min_equity_usdt": 0.0,
+          "mean_max_drawdown_usdt": 10000.0,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Static_Halt": {
+          "liquidation_rate_pct": 52.0,
+          "mean_min_equity_usdt": 1591.1799142551702,
+          "mean_max_drawdown_usdt": 8408.82008574483,
+          "admitted_depth_share_pct": 5.44,
+          "model_admission_eligibility_pct": 0.0,
+          "two_sided_quote_availability_pct": 0.0
+        },
+        "Resolvent_Guard_Kreiss": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 6203.403993626673,
+          "mean_max_drawdown_usdt": 3796.5960063733273,
+          "admitted_depth_share_pct": 22.664,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
         }
       }
     },
@@ -189,9 +549,32 @@
         "total_btc_volume": 427831.82133,
         "total_trades": 10412300,
         "max_1s_signed_flow_btc": 328.30647000000005,
+        "p999_1s_return_bps": 7.836607547232886,
+        "physical_event_shock_amplitude": 0.2904039218245223,
         "empirical_impact_usdt_per_btc": 0.248286659709085,
         "var1_spectral_radius": 0.9811860750037427,
-        "var1_feedback_product_Q": -2.3833170369626602e-06
+        "var1_feedback_product_Q": -2.3833170369626602e-06,
+        "burst_ols_3x3_spectral_radius": 0.769069640325543,
+        "burst_ols_3x3_frobenius_nonnormality": 8.686861474218366,
+        "burst_ols_3x3_price_output_gain_MC": 3.546766856677323,
+        "burst_ols_3x3_cumulative_gain": 28.73509434785006,
+        "burst_ols_3x3_matrix": [
+          [
+            0.7608060307566373,
+            0.2597000080255431,
+            -2.4624505699040244
+          ],
+          [
+            -0.0029504607662459033,
+            0.7184043635124981,
+            -0.007409370181121211
+          ],
+          [
+            -0.0016343817967205668,
+            -0.002388936037596227,
+            0.6088541627816927
+          ]
+        ]
       },
       "architectures": {
         "Unguarded": {
@@ -200,6 +583,10 @@
           "p05_min_equity_usdt": 0.0,
           "mean_max_drawdown_usdt": 10000.0,
           "quote_uptime_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 100.0,
+          "throttled_flow_share_pct": 0.0,
           "mean_admission_gamma": 1.0
         },
         "Eigenvalue_Guard": {
@@ -208,23 +595,103 @@
           "p05_min_equity_usdt": 0.0,
           "mean_max_drawdown_usdt": 10000.0,
           "quote_uptime_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 100.0,
+          "throttled_flow_share_pct": 0.0,
           "mean_admission_gamma": 1.0
         },
         "Static_Halt": {
-          "liquidation_rate_pct": 32.0,
-          "mean_min_equity_usdt": 2414.800590879483,
+          "liquidation_rate_pct": 28.000000000000004,
+          "mean_min_equity_usdt": 2526.3776073796653,
           "p05_min_equity_usdt": 0.0,
-          "mean_max_drawdown_usdt": 7585.199409120517,
-          "quote_uptime_pct": 7.76,
-          "mean_admission_gamma": 0.0776
+          "mean_max_drawdown_usdt": 7473.622392620335,
+          "quote_uptime_pct": 0.0,
+          "model_admission_eligibility_pct": 0.0,
+          "two_sided_quote_availability_pct": 0.0,
+          "admitted_depth_share_pct": 8.16,
+          "throttled_flow_share_pct": 91.84,
+          "mean_admission_gamma": 0.0816
         },
         "Resolvent_Guard_Kreiss": {
           "liquidation_rate_pct": 0.0,
-          "mean_min_equity_usdt": 6384.981356866486,
-          "p05_min_equity_usdt": 5625.506847826277,
-          "mean_max_drawdown_usdt": 3615.0186431335155,
+          "mean_min_equity_usdt": 6702.6572323246255,
+          "p05_min_equity_usdt": 5947.91749760651,
+          "mean_max_drawdown_usdt": 3297.342767675374,
           "quote_uptime_pct": 100.0,
-          "mean_admission_gamma": 0.34472
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0,
+          "admitted_depth_share_pct": 35.46600000000001,
+          "throttled_flow_share_pct": 64.53399999999999,
+          "mean_admission_gamma": 0.3546600000000001
+        }
+      },
+      "physical_signed_replay_architectures": {
+        "Unguarded": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 9404.89899707986,
+          "mean_max_drawdown_usdt": 595.1010029201408,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Eigenvalue_Guard": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 9404.89899707986,
+          "mean_max_drawdown_usdt": 595.1010029201408,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Static_Halt": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 9404.89899707986,
+          "mean_max_drawdown_usdt": 595.1010029201408,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Resolvent_Guard_Kreiss": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 9404.89899707986,
+          "mean_max_drawdown_usdt": 595.1010029201408,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        }
+      },
+      "empirical_burst_ols_replay_architectures": {
+        "Unguarded": {
+          "liquidation_rate_pct": 100.0,
+          "mean_min_equity_usdt": 0.0,
+          "mean_max_drawdown_usdt": 10000.0,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Eigenvalue_Guard": {
+          "liquidation_rate_pct": 100.0,
+          "mean_min_equity_usdt": 0.0,
+          "mean_max_drawdown_usdt": 10000.0,
+          "admitted_depth_share_pct": 100.0,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
+        },
+        "Static_Halt": {
+          "liquidation_rate_pct": 32.0,
+          "mean_min_equity_usdt": 2186.479057755767,
+          "mean_max_drawdown_usdt": 7813.520942244233,
+          "admitted_depth_share_pct": 6.24,
+          "model_admission_eligibility_pct": 0.0,
+          "two_sided_quote_availability_pct": 0.0
+        },
+        "Resolvent_Guard_Kreiss": {
+          "liquidation_rate_pct": 0.0,
+          "mean_min_equity_usdt": 6637.29657592096,
+          "mean_max_drawdown_usdt": 3362.7034240790404,
+          "admitted_depth_share_pct": 25.218000000000004,
+          "model_admission_eligibility_pct": 100.0,
+          "two_sided_quote_availability_pct": 100.0
         }
       }
     }
@@ -238,6 +705,10 @@
       "worst_min_equity_usdt": 0.0,
       "mean_max_drawdown_usdt": 10000.0,
       "quote_uptime_pct": 100.0,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0,
+      "admitted_depth_share_pct": 100.0,
+      "throttled_flow_share_pct": 0.0,
       "mean_admission_gamma": 1.0
     },
     "Eigenvalue_Guard": {
@@ -248,27 +719,115 @@
       "worst_min_equity_usdt": 0.0,
       "mean_max_drawdown_usdt": 10000.0,
       "quote_uptime_pct": 100.0,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0,
+      "admitted_depth_share_pct": 100.0,
+      "throttled_flow_share_pct": 0.0,
       "mean_admission_gamma": 1.0
     },
     "Static_Halt": {
       "total_episodes": 100,
-      "liquidation_rate_pct": 30.0,
-      "mean_min_equity_usdt": 2338.845312129326,
+      "liquidation_rate_pct": 35.0,
+      "mean_min_equity_usdt": 2230.3236228085098,
       "p05_min_equity_usdt": 0.0,
       "worst_min_equity_usdt": 0.0,
-      "mean_max_drawdown_usdt": 7661.154687870673,
-      "quote_uptime_pct": 8.2,
-      "mean_admission_gamma": 0.08199999999999999
+      "mean_max_drawdown_usdt": 7769.67637719149,
+      "quote_uptime_pct": 0.0,
+      "model_admission_eligibility_pct": 0.0,
+      "two_sided_quote_availability_pct": 0.0,
+      "admitted_depth_share_pct": 7.739999999999998,
+      "throttled_flow_share_pct": 92.25999999999999,
+      "mean_admission_gamma": 0.07739999999999998
     },
     "Resolvent_Guard_Kreiss": {
       "total_episodes": 100,
       "liquidation_rate_pct": 0.0,
-      "mean_min_equity_usdt": 6306.16638029874,
-      "p05_min_equity_usdt": 5450.2972530714,
-      "worst_min_equity_usdt": 4842.761713021093,
-      "mean_max_drawdown_usdt": 3693.83361970126,
+      "mean_min_equity_usdt": 6246.900581788052,
+      "p05_min_equity_usdt": 5263.393040110162,
+      "worst_min_equity_usdt": 4210.695659579043,
+      "mean_max_drawdown_usdt": 3753.0994182119484,
       "quote_uptime_pct": 100.0,
-      "mean_admission_gamma": 0.34533500000000006
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0,
+      "admitted_depth_share_pct": 34.1305,
+      "throttled_flow_share_pct": 65.8695,
+      "mean_admission_gamma": 0.34130499999999997
+    }
+  },
+  "overall_100_episode_physical_signed_summary": {
+    "Unguarded": {
+      "total_episodes": 100,
+      "liquidation_rate_pct": 4.0,
+      "mean_min_equity_usdt": 7702.498691000414,
+      "mean_max_drawdown_usdt": 2297.5013089995878,
+      "admitted_depth_share_pct": 100.0,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    },
+    "Eigenvalue_Guard": {
+      "total_episodes": 100,
+      "liquidation_rate_pct": 4.0,
+      "mean_min_equity_usdt": 7702.498691000414,
+      "mean_max_drawdown_usdt": 2297.5013089995878,
+      "admitted_depth_share_pct": 100.0,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    },
+    "Static_Halt": {
+      "total_episodes": 100,
+      "liquidation_rate_pct": 4.0,
+      "mean_min_equity_usdt": 7702.177817185864,
+      "mean_max_drawdown_usdt": 2297.822182814137,
+      "admitted_depth_share_pct": 97.02,
+      "model_admission_eligibility_pct": 91.0,
+      "two_sided_quote_availability_pct": 91.0
+    },
+    "Resolvent_Guard_Kreiss": {
+      "total_episodes": 100,
+      "liquidation_rate_pct": 4.0,
+      "mean_min_equity_usdt": 7728.068433657995,
+      "mean_max_drawdown_usdt": 2271.931566342005,
+      "admitted_depth_share_pct": 99.44788023784766,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    }
+  },
+  "overall_100_episode_empirical_burst_ols_summary": {
+    "Unguarded": {
+      "total_episodes": 100,
+      "liquidation_rate_pct": 100.0,
+      "mean_min_equity_usdt": 0.0,
+      "mean_max_drawdown_usdt": 10000.0,
+      "admitted_depth_share_pct": 100.0,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    },
+    "Eigenvalue_Guard": {
+      "total_episodes": 100,
+      "liquidation_rate_pct": 100.0,
+      "mean_min_equity_usdt": 0.0,
+      "mean_max_drawdown_usdt": 10000.0,
+      "admitted_depth_share_pct": 100.0,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
+    },
+    "Static_Halt": {
+      "total_episodes": 100,
+      "liquidation_rate_pct": 45.0,
+      "mean_min_equity_usdt": 1815.2290283393188,
+      "mean_max_drawdown_usdt": 8184.770971660682,
+      "admitted_depth_share_pct": 5.68,
+      "model_admission_eligibility_pct": 0.0,
+      "two_sided_quote_availability_pct": 0.0
+    },
+    "Resolvent_Guard_Kreiss": {
+      "total_episodes": 100,
+      "liquidation_rate_pct": 0.0,
+      "mean_min_equity_usdt": 6252.286323866243,
+      "mean_max_drawdown_usdt": 3747.713676133758,
+      "admitted_depth_share_pct": 23.175499999999992,
+      "model_admission_eligibility_pct": 100.0,
+      "two_sided_quote_availability_pct": 100.0
     }
   }
 }

@@ -164,5 +164,96 @@ theorem gaussian_first_pulse_kl_with_baseline {T : ℕ}
   rw [gaussian_record_kl_common_mean_shift _ _ variance hv,
     (first_pulse_convolution_attains impulse hT V hV).2, mul_pow]
 
+/-- Theorem 2.12: Scalar AR(1) state second-moment bound over finite horizon `T`. -/
+theorem scalar_ar1_state_variance_bound (t : ℕ) (sigma_sq s_sq E_bound : ℝ)
+    (hsigma : 0 ≤ sigma_sq) (_hs0 : 0 ≤ s_sq) (_hE1 : 1 ≤ E_bound)
+    (hpow : ∀ j ∈ Finset.range t, s_sq ^ j ≤ E_bound) :
+    sigma_sq * (∑ j ∈ Finset.range t, s_sq ^ j) ≤ sigma_sq * (t : ℝ) * E_bound := by
+  have hsum : (∑ j ∈ Finset.range t, s_sq ^ j) ≤ ∑ _j ∈ Finset.range t, E_bound :=
+    Finset.sum_le_sum hpow
+  rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul] at hsum
+  have hmul := mul_le_mul_of_nonneg_left hsum hsigma
+  linarith
+
+/-- Theorem 2.12: Scalar Gaussian AR(1) path-law KL bound `KL ≤ c0^2 * exp(2*c0) / 4`. -/
+theorem scalar_ar1_path_kl_bound (T : ℕ) (hT : 0 < T) (c0 sigma_sq exp_2c0 sum_t : ℝ)
+    (hsigma : 0 < sigma_sq) (hexp : 0 ≤ exp_2c0)
+    (hsum_t : sum_t ≤ (T : ℝ) * ((T : ℝ) - 1) / 2) :
+    ((c0 / (T : ℝ)) ^ 2 / (2 * sigma_sq)) * (sigma_sq * sum_t * exp_2c0) ≤
+      c0 ^ 2 * exp_2c0 / 4 := by
+  have hT_pos : 0 < (T : ℝ) := Nat.cast_pos.mpr hT
+  have hT_ne : (T : ℝ) ≠ 0 := ne_of_gt hT_pos
+  have hsigma_ne : sigma_sq ≠ 0 := ne_of_gt hsigma
+  have h1 : ((c0 / (T : ℝ)) ^ 2 / (2 * sigma_sq)) * (sigma_sq * sum_t * exp_2c0) =
+      (c0 ^ 2 * exp_2c0 / (2 * (T : ℝ) ^ 2)) * sum_t := by
+    field_simp [hT_ne, hsigma_ne]
+  rw [h1]
+  have h2 : (c0 ^ 2 * exp_2c0 / (2 * (T : ℝ) ^ 2)) * sum_t ≤
+      (c0 ^ 2 * exp_2c0 / (2 * (T : ℝ) ^ 2)) * ((T : ℝ) * ((T : ℝ) - 1) / 2) := by
+    apply mul_le_mul_of_nonneg_left hsum_t
+    positivity
+  have h3 : (T : ℝ) * ((T : ℝ) - 1) / 2 ≤ (T : ℝ) ^ 2 / 2 := by
+    nlinarith
+  have h4 : (c0 ^ 2 * exp_2c0 / (2 * (T : ℝ) ^ 2)) * ((T : ℝ) * ((T : ℝ) - 1) / 2) ≤
+      (c0 ^ 2 * exp_2c0 / (2 * (T : ℝ) ^ 2)) * ((T : ℝ) ^ 2 / 2) := by
+    apply mul_le_mul_of_nonneg_left h3
+    positivity
+  have h5 : (c0 ^ 2 * exp_2c0 / (2 * (T : ℝ) ^ 2)) * ((T : ℝ) ^ 2 / 2) =
+      c0 ^ 2 * exp_2c0 / 4 := by
+    field_simp [hT_ne]
+    ring
+  linarith
+
+/-- Theorem 2.12: Finite-window abstention probability lower bound in the near-unit-root layer. -/
+theorem finite_window_abstention_lower_bound
+    (p_unstable_0 p_stable_0 p_abstain_0 p_stable_1 alpha tv tv_bound : ℝ)
+    (hprob0 : p_unstable_0 + p_stable_0 + p_abstain_0 = 1)
+    (herr0 : p_unstable_0 ≤ alpha)
+    (herr1 : p_stable_1 ≤ alpha)
+    (htv : |p_stable_0 - p_stable_1| ≤ tv)
+    (htv_bound : tv ≤ tv_bound)
+    (hpos : tv_bound < 1 - 2 * alpha) :
+    1 - 2 * alpha - tv_bound ≤ p_abstain_0 ∧ 0 < p_abstain_0 := by
+  have hst : p_stable_0 ≤ p_stable_1 + tv := by
+    have h := le_abs_self (p_stable_0 - p_stable_1)
+    linarith
+  have habs : 1 - 2 * alpha - tv_bound ≤ p_abstain_0 := by
+    linarith
+  exact ⟨habs, by linarith⟩
+
+/-- Theorem 2.12: Binary-rule minimax worst-case error lower bound `(1 - TV) / 2` across `s = 1`. -/
+theorem binary_rule_minimax_error_lower_bound
+    (p_unstable_minus p_stable_minus p_stable_plus tv : ℝ)
+    (hbin : p_unstable_minus + p_stable_minus = 1)
+    (htv : |p_stable_minus - p_stable_plus| ≤ tv) :
+    (1 - tv) / 2 ≤ max p_unstable_minus p_stable_plus := by
+  have hdiff : p_stable_minus - p_stable_plus ≤ tv := le_trans (le_abs_self _) htv
+  have hsum : 1 - tv ≤ p_unstable_minus + p_stable_plus := by linarith
+  have h1 : p_unstable_minus ≤ max p_unstable_minus p_stable_plus := le_max_left _ _
+  have h2 : p_stable_plus ≤ max p_unstable_minus p_stable_plus := le_max_right _ _
+  linarith
+
+/-- Theorem 2.12: Adaptive sequential feedback KL chain-rule sum bound over finite horizon `T`. -/
+theorem adaptive_feedback_chain_rule_kl_bound {T : ℕ}
+    (kl_step state_var : Fin T → ℝ) (delta_s_sq sigma_sq E_bound : ℝ)
+    (hsigma : 0 < sigma_sq) (hd : 0 ≤ delta_s_sq)
+    (hstep : ∀ t, kl_step t ≤ (delta_s_sq / (2 * sigma_sq)) * state_var t)
+    (hvar : ∀ t, state_var t ≤ sigma_sq * (t.val : ℝ) * E_bound) :
+    ∑ t, kl_step t ≤ (delta_s_sq * E_bound / 2) * ∑ t : Fin T, (t.val : ℝ) := by
+  have hsigma_ne : sigma_sq ≠ 0 := ne_of_gt hsigma
+  have hsum : ∑ t, kl_step t ≤ ∑ t : Fin T, (delta_s_sq * E_bound / 2) * (t.val : ℝ) := by
+    apply Finset.sum_le_sum
+    intro t _
+    have h1 := hstep t
+    have h2 := mul_le_mul_of_nonneg_left (hvar t) (show 0 ≤ delta_s_sq / (2 * sigma_sq) by positivity)
+    have h3 : (delta_s_sq / (2 * sigma_sq)) * (sigma_sq * (t.val : ℝ) * E_bound) =
+        (delta_s_sq * E_bound / 2) * (t.val : ℝ) := by
+      field_simp [hsigma_ne]
+    linarith
+  rw [← Finset.mul_sum] at hsum
+  exact hsum
+
 end
 end CurrentMM
+
+

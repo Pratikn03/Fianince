@@ -68,5 +68,24 @@ theorem gaussian_equal_variance_kl (mean0 mean1 : ℝ) (variance : ℝ≥0)
   congr 1
   ring
 
+/-- Theorem 2.5: Active probing necessity lower bound `V^2 ≥ 2 * sigma_sq * kl_req / signal_norm_sq` and zero-KL impossibility at `V = 0`. -/
+theorem active_probing_kl_necessity_lower_bound
+    (V sigma_sq kl_req kl_obs signal_norm_sq : ℝ)
+    (hsigma : 0 < sigma_sq) (hsig : 0 < signal_norm_sq)
+    (hdpi : kl_req ≤ kl_obs)
+    (hkl_ub : kl_obs ≤ V ^ 2 * signal_norm_sq / (2 * sigma_sq)) :
+    2 * sigma_sq * kl_req / signal_norm_sq ≤ V ^ 2 ∧
+    (0 < kl_req → V ≠ 0) := by
+  have h1 : kl_req ≤ V ^ 2 * signal_norm_sq / (2 * sigma_sq) := le_trans hdpi hkl_ub
+  have h2sig : 0 < 2 * sigma_sq := by positivity
+  have h2 : 2 * sigma_sq * kl_req ≤ V ^ 2 * signal_norm_sq := by
+    have h := (le_div_iff₀ h2sig).mp h1
+    linarith
+  refine ⟨(div_le_iff₀ hsig).mpr h2, ?_⟩
+  intro hpos hV0
+  subst hV0
+  nlinarith
+
 end
 end CurrentMM
+

@@ -446,7 +446,7 @@ def write_latex_table(results: dict[str, Any]) -> None:
     comp = results["dealer_ledger_comparison"]
 
     lines = [
-        r"\begin{table}[htbp]\centering\scriptsize",
+        r"\begin{table}[htbp]\centering\footnotesize",
         r"\caption{Exact 10-Level Time-Varying L2 Limit-Order-Book Execution vs.\ Static Linear Impact Approximation on Authenticated January 2023 Binance BTCUSDT Perpetual Snapshots (\texttt{1-09-1-20.csv}). Panel~A reports the empirical 10-level piecewise-linear sweep slippage $|\bar{p}_{\mathrm{exec},t}(q) - m_t|$ (in USDT per BTC) and average book levels consumed across order sizes $|q| \in \{1, 5, 10, 20, 50\}$~BTC. Panel~B compares the event-sourced double-entry dealer ledger across $100$ extreme L2 shock windows under static linear fills versus exact 10-level time-varying L2 book-walking fills.}",
         r"\label{iatab:exact_l2_book_walking}",
         r"\resizebox{\textwidth}{!}{%",
@@ -472,7 +472,7 @@ def write_latex_table(results: dict[str, Any]) -> None:
         r"\midrule",
         r"\multicolumn{8}{l}{\textbf{Panel B: Double-Entry Dealer Ledger Under Static Linear Fills vs.\ Exact 10-Level Time-Varying L2 Book Walking ($100$ Shock Windows)}} \\",
         r"\midrule",
-        r"Architecture & Static Liq.\ & Exact L2 Liq.\ & Static Mean DD & Exact L2 Mean DD & Exact L2 $p99$ DD & Mean L2 Levels Walked & Quote Uptime \\",
+        r"Architecture & Static Liq.\ & Exact L2 Liq.\ & Static Mean DD & Exact L2 Mean DD & Exact L2 $p99$ DD & Mean L2 Levels Walked & Model Adm.\ Elig.\ \\",
         r"\midrule",
     ])
 

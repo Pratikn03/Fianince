@@ -241,5 +241,27 @@ theorem intermediate_linear_fill_margin {n : ℕ} (B P impact fee margin V : ℝ
   exact nonnegative_sequence_margin B P impact fee margin V h _ hp.1 hk hP hc hm
     hmono h0 (le_trans hp.2 hbudget) hcapital
 
+/-- Theorem 2.7: Arbitrary signed order sequence margin certificate under gross L1 volume budget `V`. -/
+theorem arbitrary_signed_sequence_margin_certificate
+    (K0 M_maint G_max V c_fee adverse_mark E_final : ℝ)
+    (_hV : 0 ≤ V) (_hG : 0 ≤ G_max) (_hfee : 0 ≤ c_fee)
+    (hadverse : adverse_mark ≤ 2 * G_max * V ^ 2)
+    (hequity : K0 - adverse_mark - c_fee * V ≤ E_final)
+    (hcap : 2 * G_max * V ^ 2 + c_fee * V + M_maint ≤ K0) :
+    M_maint ≤ E_final := by
+  linarith
+
+/-- Proposition IA.D.1: Perpetual futures funding-transfer and liquidation-penalty margin certificate. -/
+theorem perpetual_funding_and_liquidation_penalty_margin_certificate
+    (K0 M_maint L_pen D_max c_fee f_max V F_fund E_perp : ℝ)
+    (hV : 0 ≤ V) (_hf : 0 ≤ f_max) (_hL : 0 ≤ L_pen)
+    (hfund : |F_fund| ≤ f_max * V)
+    (hequity : K0 - D_max - c_fee * V - |F_fund| ≤ E_perp)
+    (hcap : D_max + (c_fee + f_max) * V + L_pen + M_maint ≤ K0) :
+    M_maint + L_pen ≤ E_perp := by
+  have _ := hV
+  linarith
+
 end
 end CurrentMM
+

@@ -1,34 +1,51 @@
-\begin{table}[htbp]\centering\small
-\caption{Provably Crash-Free Market Architecture via Real-Time Resolvent Solvency Guarding ($\mathcal{G}_{\mathrm{Kreiss}}$, Theorem~\ref{thm:ia_crash_free_guard}) under an Explicit Double-Entry Dealer Ledger and Empirical January 2023 Binance BTCUSDT Stress Replay ($100$ episodes per regime, $E_0 = 10{,}000$ USDT, $I_0 = -2{,}000$ units, $L=20$, Tier-2 maintenance margin $\text{MM}_t = \max(0, 0.005|I_t|p_t - 50)$, breach budget $B_{\mathrm{maint}} = 9{,}050$ USDT). In Regime~II (Non-Normal AI Herding Trap, $\rho(J) = 0.780 < 1$, price transient gain $\mathcal{M}_{\mathcal{C},\mathrm{price}} = 40.79$) and Regime~IV (Empirical Binance BTCUSDT L2 Shock Replay from \texttt{1-09-1-20.csv}, $\rho(J) = 0.780$, $\mathcal{M}_{\mathcal{C},\mathrm{price}} = 40.79$), the Eigenvalue-Only Guard ($\rho \le 0.90$) fails to detect non-normal transient amplification and suffers $100.0\%$ dealer liquidation, while the reactive Circuit Breaker suffers $49.0\%$ and $39.0\%$ liquidation. Across all $400$ episodes in all four regimes, the Real-Time Resolvent Solvency Guard ($\mathcal{G}_{\mathrm{Kreiss}}$) achieves $0.0\%$ liquidation, $100.0\%$ quote continuity, and $100.0\%$ admission in benign markets.}
+\begin{table}[htbp]\centering\footnotesize
+\caption{Conditional Bounded-Shock Forward Solvency and Channel Ablation of the Real-Time Resolvent Guard ($\mathcal{G}_{\mathrm{Kreiss}}$, Theorem~\ref{thm:ia_crash_free_guard}) Across $400$ Stress Episodes ($E_0 = 10{,}000$~USDT, $I_0 = -2{,}000$~units, $L=20$, Initial Buffer $B_{\mathrm{rem},0} = 9{,}050$~USDT, Worst-Case Ball Threshold $\bar{u}_{\mathrm{adm,safe}} = 4.03$~USDT). Panel~A compares the four architectures across Regimes~I--IV, separating Model Admission Eligibility ($\alpha_t \ge 0.05$, model non-halt status rather than observed executable quoting) from Admitted Depth ($\bar{\alpha}_t$) and Throttled Share ($1-\bar{\alpha}_t$). Panel~B reports the 6-configuration matched-physics ablation in Regimes~II and~IV.}
 \label{iatab:crash_free_ai_guard}
+\setlength{\tabcolsep}{4pt}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{llrrrrrrr}
 \toprule
-Regime ($\rho(J)$, $\mathcal{M}_{\mathcal{C},\mathrm{price}}$) & Architecture & Liq.\ Rate (\%) & Mean MaxDD (USDT) & $p99$ MaxDD (USDT) & Worst MaxDD (USDT) & Worst Min Equity (USDT) & Admitted Flow $\bar{\gamma}$ & Quote Continuity \\
+\multicolumn{9}{l}{\textbf{Panel A: 400-Episode Solvency, Drawdown, and Admitted Depth Across Four Regimes}} \\
 \midrule
-\multirow{4}{*}{\shortstack[l]{Regime I: Benign Normal\\($\rho = 0.823$, $\mathcal{M}_{\mathcal{C}} = 1.00$)}}
- & Unguarded Venue & 0.0\% & 723.2 & 1{,}116.8 & 1{,}133.6 & 8{,}866.4 & 100.0\% & 100.0\% \\
- & Eigenvalue Guard ($\rho \le 0.90$) & 0.0\% & 723.2 & 1{,}116.8 & 1{,}133.6 & 8{,}866.4 & 100.0\% & 100.0\% \\
- & Reactive Circuit Breaker & 0.0\% & 723.2 & 1{,}116.8 & 1{,}133.6 & 8{,}866.4 & 100.0\% & 100.0\% \\
- & \textbf{Resolvent Guard ($\mathcal{G}_{\mathrm{Kreiss}}$)} & \textbf{0.0\%} & \textbf{723.2} & \textbf{1{,}116.8} & \textbf{1{,}133.6} & \textbf{8{,}866.4} & \textbf{100.0\%} & \textbf{100.0\%} \\
+Regime ($\rho$, $\mathcal{M}_{\mathcal{C}}$) & Architecture & Liq.\ & Mean DD & $p99$ DD & Max DD & Depth $\bar{\alpha}_t$ & Throttled & Adm.\ Elig. \\
 \midrule
-\multirow{4}{*}{\shortstack[l]{Regime II: Non-Normal Herding\\($\rho = 0.780 < 1$, $\mathcal{M}_{\mathcal{C}} = 40.79$)}}
- & Unguarded Venue & 100.0\% & 10{,}000.0 & 10{,}000.0 & 10{,}000.0 & 0.0 & 100.0\% & 100.0\% \\
- & Eigenvalue Guard ($\rho \le 0.90$) & 100.0\% & 10{,}000.0 & 10{,}000.0 & 10{,}000.0 & 0.0 & 100.0\% & 100.0\% \\
- & Reactive Circuit Breaker & 49.0\% & 8{,}459.5 & 10{,}000.0 & 10{,}000.0 & 0.0 & 6.3\% & 6.3\% \\
- & \textbf{Resolvent Guard ($\mathcal{G}_{\mathrm{Kreiss}}$)} & \textbf{0.0\%} & \textbf{4{,}192.0} & \textbf{4{,}615.9} & \textbf{4{,}712.8} & \textbf{5{,}287.2} & \textbf{31.8\%} & \textbf{100.0\%} \\
+I. Benign ($0.82, 1.0$) & Unguarded ($\alpha_t=1$) & 0.0\% & 723.2 & 1,116.8 & 1,133.6 & 100.0\% & 0.0\% & 100.0\% \\
+ & Eigenvalue ($\rho \le 0.90$) & 0.0\% & 723.2 & 1,116.8 & 1,133.6 & 100.0\% & 0.0\% & 100.0\% \\
+ & Static Halt ($\mathcal{G}_{\mathrm{halt}}$) & 0.0\% & 723.2 & 1,116.8 & 1,133.6 & 100.0\% & 0.0\% & 100.0\% \\
+ & \textbf{Resolvent ($\mathcal{G}_{\mathrm{Kreiss}}$)} & \textbf{0.0\%} & 723.2 & 1,116.8 & 1,133.6 & 100.0\% & 0.0\% & 100.0\% \\
 \midrule
-\multirow{4}{*}{\shortstack[l]{Regime III: Super-Critical Cascade\\($\rho = 1.133 > 1$, $\mathcal{M}_{\mathcal{C}} = 12.67$)}}
- & Unguarded Venue & 100.0\% & 10{,}000.0 & 10{,}000.0 & 10{,}000.0 & 0.0 & 100.0\% & 100.0\% \\
- & Eigenvalue Guard ($\rho \le 0.90$) & 0.0\% & 7{,}123.0 & 8{,}653.6 & 8{,}685.3 & 1{,}314.7 & 50.0\% & 100.0\% \\
- & Reactive Circuit Breaker & 0.0\% & 5{,}569.1 & 6{,}658.0 & 6{,}846.0 & 3{,}154.0 & 16.0\% & 16.0\% \\
- & \textbf{Resolvent Guard ($\mathcal{G}_{\mathrm{Kreiss}}$)} & \textbf{0.0\%} & \textbf{3{,}102.1} & \textbf{3{,}617.3} & \textbf{3{,}698.5} & \textbf{6{,}301.5} & \textbf{52.5\%} & \textbf{100.0\%} \\
+II. Non-Normal ($0.78, 40.8$) & Unguarded ($\alpha_t=1$) & 100.0\% & 10,000.0 & 10,000.0 & 10,000.0 & 100.0\% & 0.0\% & 100.0\% \\
+ & Eigenvalue ($\rho \le 0.90$) & 100.0\% & 10,000.0 & 10,000.0 & 10,000.0 & 100.0\% & 0.0\% & 100.0\% \\
+ & Static Halt ($\mathcal{G}_{\mathrm{halt}}$) & 49.0\% & 8,459.5 & 10,000.0 & 10,000.0 & 6.3\% & 93.7\% & 0.0\% \\
+ & \textbf{Resolvent ($\mathcal{G}_{\mathrm{Kreiss}}$)} & \textbf{0.0\%} & 5,215.4 & 5,610.0 & 5,694.0 & 34.1\% & 65.9\% & 100.0\% \\
 \midrule
-\multirow{4}{*}{\shortstack[l]{Regime IV: Binance Empirical L2 Replay\\(\texttt{1-09-1-20.csv}, $\rho = 0.780$, $\mathcal{M}_{\mathcal{C}} = 40.79$)}}
- & Unguarded Venue & 100.0\% & 10{,}000.0 & 10{,}000.0 & 10{,}000.0 & 0.0 & 100.0\% & 100.0\% \\
- & Eigenvalue Guard ($\rho \le 0.90$) & 100.0\% & 10{,}000.0 & 10{,}000.0 & 10{,}000.0 & 0.0 & 100.0\% & 100.0\% \\
- & Reactive Circuit Breaker & 39.0\% & 7{,}900.3 & 10{,}000.0 & 10{,}000.0 & 0.0 & 8.3\% & 8.3\% \\
- & \textbf{Resolvent Guard ($\mathcal{G}_{\mathrm{Kreiss}}$)} & \textbf{0.0\%} & \textbf{3{,}654.0} & \textbf{5{,}218.9} & \textbf{5{,}743.3} & \textbf{4{,}256.7} & \textbf{34.3\%} & \textbf{100.0\%} \\
+III. Super-Crit. ($1.13, 12.7$) & Unguarded ($\alpha_t=1$) & 100.0\% & 10,000.0 & 10,000.0 & 10,000.0 & 100.0\% & 0.0\% & 100.0\% \\
+ & Eigenvalue ($\rho \le 0.90$) & 0.0\% & 4,205.5 & 5,226.7 & 5,293.0 & 37.5\% & 62.5\% & 100.0\% \\
+ & Static Halt ($\mathcal{G}_{\mathrm{halt}}$) & 0.0\% & 5,569.1 & 6,658.0 & 6,846.0 & 16.0\% & 84.0\% & 0.0\% \\
+ & \textbf{Resolvent ($\mathcal{G}_{\mathrm{Kreiss}}$)} & \textbf{0.0\%} & 1,352.4 & 1,626.0 & 1,654.3 & 37.5\% & 62.5\% & 100.0\% \\
+\midrule
+IV. Binance L2 ($0.78, 40.8$) & Unguarded ($\alpha_t=1$) & 100.0\% & 10,000.0 & 10,000.0 & 10,000.0 & 100.0\% & 0.0\% & 100.0\% \\
+ & Eigenvalue ($\rho \le 0.90$) & 100.0\% & 10,000.0 & 10,000.0 & 10,000.0 & 100.0\% & 0.0\% & 100.0\% \\
+ & Static Halt ($\mathcal{G}_{\mathrm{halt}}$) & 39.0\% & 7,900.3 & 10,000.0 & 10,000.0 & 8.3\% & 91.7\% & 0.0\% \\
+ & \textbf{Resolvent ($\mathcal{G}_{\mathrm{Kreiss}}$)} & \textbf{0.0\%} & 4,710.9 & 6,225.8 & 6,639.4 & 37.3\% & 62.7\% & 100.0\% \\
+\midrule
+\multicolumn{9}{l}{\textbf{Panel B: Matched-Shock \& Costly-Hedge Channel Ablation (Regimes II \& IV)}} \\
+\midrule
+Regime & Channel Configuration & Liq.\ & Mean DD & $p99$ DD & Max DD & Depth $\bar{\alpha}_t$ & Hedge Cost & Status \\
+\midrule
+II. Non-Normal & 1. Hedge Only + $J(1)$ (Unatten.\ $w_t$) & 100.0\% & 10,000.0 & 10,000.0 & 10,000.0 & 100.0\% & 166.7 & \texttt{FEASIBLE} \\
+ & 2. Shock Gate Only + $J(1)$ (No Hedge) & 100.0\% & 10,000.0 & 10,000.0 & 10,000.0 & 100.0\% & 0.0 & \texttt{FEASIBLE} \\
+ & 3. Pure Operator $J(\alpha_t)$ (Unatten.\ $w_t$) & 0.0\% & 4,689.6 & 5,330.2 & 5,372.9 & 14.0\% & 0.0 & \texttt{FEASIBLE} \\
+ & 4. $J(\alpha_t)$ + Costly Hedge (Unatten.\ $w_t$) & 0.0\% & 6,314.4 & 6,702.9 & 6,836.2 & 24.4\% & 115.2 & \texttt{FEASIBLE} \\
+ & 5. $J(\alpha_t)$ + Shock Gate (No Hedge) & 0.0\% & 3,825.1 & 4,235.9 & 4,251.1 & 25.9\% & 0.0 & \texttt{FEASIBLE} \\
+ & \textbf{6. Full $\mathcal{G}_{\mathrm{Kreiss}}$ (Spread+Fee Hedge)} & 0.0\% & 5,225.2 & 5,587.5 & 5,656.3 & 34.1\% & 107.5 & \texttt{FEASIBLE} \\
+\midrule
+IV. Binance L2 & 1. Hedge Only + $J(1)$ (Unatten.\ $w_t$) & 100.0\% & 10,000.0 & 10,000.0 & 10,000.0 & 100.0\% & 151.3 & \texttt{FEASIBLE} \\
+ & 2. Shock Gate Only + $J(1)$ (No Hedge) & 100.0\% & 10,000.0 & 10,000.0 & 10,000.0 & 100.0\% & 0.0 & \texttt{FEASIBLE} \\
+ & 3. Pure Operator $J(\alpha_t)$ (Unatten.\ $w_t$) & 0.0\% & 3,870.0 & 4,735.9 & 6,687.0 & 18.5\% & 0.0 & \texttt{FEASIBLE} \\
+ & 4. $J(\alpha_t)$ + Costly Hedge (Unatten.\ $w_t$) & 0.0\% & 5,484.8 & 6,976.3 & 7,453.9 & 29.0\% & 109.4 & \texttt{FEASIBLE} \\
+ & 5. $J(\alpha_t)$ + Shock Gate (No Hedge) & 0.0\% & 3,762.8 & 4,812.8 & 5,062.7 & 28.6\% & 0.0 & \texttt{FEASIBLE} \\
+ & \textbf{6. Full $\mathcal{G}_{\mathrm{Kreiss}}$ (Spread+Fee Hedge)} & 0.0\% & 4,710.9 & 6,225.8 & 6,639.4 & 37.3\% & 104.2 & \texttt{FEASIBLE} \\
 \bottomrule
 \end{tabular}%
 }
