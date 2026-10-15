@@ -358,6 +358,27 @@ theorem subgaussian_martingale_drawdown_and_cvar_bound
   have hmono : 2 * V_proxy * z_delta ≤ 2 * V_proxy * (z_delta + tail_slack) := by nlinarith
   linarith [Real.sqrt_le_sqrt hmono]
 
+/-- Proposition IA.D.5 (S19, Cramér–Rao Local Information Benchmark): When the two-cohort directional Jacobian norm scales cubically as `c_J * (Δη)^3 ≤ J_norm ≤ C_J * (Δη)^3`, the inverse Fisher information / Cramér–Rao variance bound `V_CRB = σ_h^2 / J_norm^2` satisfies `σ_h^2 / (C_J^2 * (Δη)^6) ≤ V_CRB ≤ σ_h^2 / (c_J^2 * (Δη)^6)`. -/
+theorem cramer_rao_two_cohort_inverse_sixth_scaling
+    (sigma_h c_J C_J d_eta J_norm : ℝ)
+    (hsig : 0 < sigma_h) (hcJ : 0 < c_J) (hd : 0 < d_eta)
+    (hJ_lo : c_J * d_eta ^ 3 ≤ J_norm) (hJ_hi : J_norm ≤ C_J * d_eta ^ 3) :
+    let V_crb : ℝ := sigma_h ^ 2 / J_norm ^ 2
+    sigma_h ^ 2 / (C_J ^ 2 * d_eta ^ 6) ≤ V_crb ∧
+    V_crb ≤ sigma_h ^ 2 / (c_J ^ 2 * d_eta ^ 6) := by
+  dsimp only
+  have h_lo_pos : 0 < c_J * d_eta ^ 3 := by positivity
+  have hJ_pos : 0 < J_norm := lt_of_lt_of_le h_lo_pos hJ_lo
+  have hC_pos : 0 < C_J * d_eta ^ 3 := lt_of_lt_of_le hJ_pos hJ_hi
+  have hsq_lo : (c_J * d_eta ^ 3) ^ 2 ≤ J_norm ^ 2 := by nlinarith
+  have hsq_hi : J_norm ^ 2 ≤ (C_J * d_eta ^ 3) ^ 2 := by nlinarith
+  have h_id_lo : (c_J * d_eta ^ 3) ^ 2 = c_J ^ 2 * d_eta ^ 6 := by ring
+  have h_id_hi : (C_J * d_eta ^ 3) ^ 2 = C_J ^ 2 * d_eta ^ 6 := by ring
+  rw [← h_id_lo, ← h_id_hi]
+  refine ⟨?_, ?_⟩
+  · exact div_le_div_of_nonneg_left (by positivity) (by positivity) hsq_hi
+  · exact div_le_div_of_nonneg_left (by positivity) (by positivity) hsq_lo
+
 /-- Theorem IA.D.6: Two-sided minimax sample complexity scaling `Θ((Δη)^(-6))` derived directly from the moment-matched cubic polynomial gap `ΔM_3 = (99 / 10000) * (Δη)^3`. -/
 theorem minimax_sample_complexity_theta_d_eta_minus_six
     (eta_bar d_eta K_lecam K_upper : ℝ)
@@ -440,20 +461,29 @@ theorem non_anticipative_guard_action_invariance {State : Type*}
   dsimp only
   exact ⟨fun _ => rfl, rfl⟩
 
-/-- Theorem IA.D.8 (P0-4): Exact domination of the one-step resolvent guard by the cumulative convolution guard when `M_C(α) ≤ G_cum(α)` and `u_bar_step ≤ u_bar_cum`, plus post-hedge passive maker fill maintenance-margin preservation when `half_spread ≥ μ * p_mid`. -/
+/-- Theorem IA.D.8 (P0-4): Exact domination of the one-step resolvent guard by the cumulative convolution guard with post-fill inventory `abs_I_post_fill = abs_I_next + fill_qty` and positive net fill maintenance-margin surcharge `C_fill = (mu * p_mid - half_spread) * fill_qty ≥ 0` under the model calibration `half_spread ≤ mu * p_mid` (specifically `(5/1000) * 100 - 2/100 = 48/100 > 0`). -/
 theorem resolvent_guard_post_hedge_and_fill_margin_accounting
     (abs_I_next mu state_transient mc_val G_cum s_alpha u_bar_step u_bar_cum C_hedge R_safe B_rem
      fill_qty half_spread p_mid : ℝ)
     (hI : 0 ≤ abs_I_next) (hmu : 0 ≤ mu) (hs : 0 ≤ s_alpha)
     (hmc : 0 ≤ mc_val) (hdom_g : mc_val ≤ G_cum)
     (hu_step : 0 ≤ u_bar_step) (hdom_u : u_bar_step ≤ u_bar_cum)
-    (hfill : 0 ≤ fill_qty) (hspread : mu * p_mid ≤ half_spread)
-    (hguard_cum : abs_I_next * (1 + mu) * (state_transient + s_alpha * G_cum * u_bar_cum) +
-      C_hedge + R_safe ≤ B_rem) :
-    abs_I_next * (1 + mu) * (state_transient + mc_val * s_alpha * u_bar_step) +
-      C_hedge + R_safe ≤ B_rem ∧
-    mu * p_mid * fill_qty ≤ half_spread * fill_qty := by
+    (hfill : 0 ≤ fill_qty) (hspread : half_spread ≤ mu * p_mid)
+    (hguard_cum : (abs_I_next + fill_qty) * (1 + mu) * (state_transient + s_alpha * G_cum * u_bar_cum) +
+      C_hedge + (mu * p_mid - half_spread) * fill_qty + R_safe ≤ B_rem) :
+    let abs_I_post_fill : ℝ := abs_I_next + fill_qty
+    let C_fill : ℝ := (mu * p_mid - half_spread) * fill_qty
+    0 ≤ C_fill ∧
+    ((5 / 1000 : ℝ) * 100 - 2 / 100 = 48 / 100) ∧
+    abs_I_post_fill * (1 + mu) * (state_transient + mc_val * s_alpha * u_bar_step) +
+      C_hedge + C_fill + R_safe ≤ B_rem ∧
+    R_safe ≤ B_rem - (abs_I_post_fill * (1 + mu) * (state_transient + mc_val * s_alpha * u_bar_step) +
+      C_hedge + C_fill) := by
+  dsimp only
+  have hI_post : 0 ≤ abs_I_next + fill_qty := by linarith
   have h1 : 0 ≤ 1 + mu := by linarith
+  have hC_fill : 0 ≤ (mu * p_mid - half_spread) * fill_qty :=
+    mul_nonneg (by linarith) hfill
   have hprod1 : mc_val * u_bar_step ≤ G_cum * u_bar_cum :=
     mul_le_mul hdom_g hdom_u hu_step (le_trans hmc hdom_g)
   have hprod2 : mc_val * s_alpha * u_bar_step ≤ s_alpha * G_cum * u_bar_cum := by
@@ -463,21 +493,49 @@ theorem resolvent_guard_post_hedge_and_fill_margin_accounting
     exact mul_le_mul_of_nonneg_left hprod1 hs
   have h2 : state_transient + mc_val * s_alpha * u_bar_step ≤
       state_transient + s_alpha * G_cum * u_bar_cum := by linarith
-  have h3 : abs_I_next * (1 + mu) * (state_transient + mc_val * s_alpha * u_bar_step) ≤
-      abs_I_next * (1 + mu) * (state_transient + s_alpha * G_cum * u_bar_cum) :=
-    mul_le_mul_of_nonneg_left h2 (mul_nonneg hI h1)
-  refine ⟨by linarith, mul_le_mul_of_nonneg_right hspread hfill⟩
+  have h3 : (abs_I_next + fill_qty) * (1 + mu) * (state_transient + mc_val * s_alpha * u_bar_step) ≤
+      (abs_I_next + fill_qty) * (1 + mu) * (state_transient + s_alpha * G_cum * u_bar_cum) :=
+    mul_le_mul_of_nonneg_left h2 (mul_nonneg hI_post h1)
+  refine ⟨hC_fill, by norm_num, by linarith, by linarith⟩
 
-/-- Theorem IA.D.6 (P0-3): Observation-to-moment Toeplitz deconvolution error transfer and parameter-blind 4-moment Prony–Hankel uniform upper bound. -/
+/-- Theorem IA.D.6 (P0-3): Exact 2×2 Prony–Hankel determinant identity `g_1 * g_3 - g_2^2 = w_1 * w_2 * η_1 * η_2 * (η_2 - η_1)^2`, uniform separation lower bound `w_min^2 * η_min^2 * (Δη)^2 ≤ g_1 * g_3 - g_2^2` on the separated parameter class, and conditional deconvolution error bound. -/
 theorem prony_blind_four_moment_uniform_upper_bound
-    (eps_h op_norm eps_M p_minus p_plus d_eta w_err_bound : ℝ)
-    (hop : 0 ≤ op_norm) (h_deconv : eps_M ≤ op_norm * eps_h)
+    (w_1 w_2 eta_1 eta_2 w_min eta_min eps_h op_norm eps_M p_minus p_plus d_eta w_err_bound : ℝ)
+    (hw1 : w_min ≤ w_1) (hw2 : w_min ≤ w_2) (hw_min : 0 < w_min)
+    (heta1 : eta_min ≤ eta_1) (heta2 : eta_min ≤ eta_2) (heta_min : 0 < eta_min)
+    (hsep : eta_2 - eta_1 = d_eta)
+    (_hop : 0 ≤ op_norm) (h_deconv : eps_M ≤ op_norm * eps_h)
     (hp_m : 0 < p_minus) (hp_p : 0 < p_plus) (hd : 0 < d_eta)
     (hw : w_err_bound = eps_M / (2 * p_minus * p_plus * d_eta ^ 3)) :
+    let g_1 : ℝ := w_1 * eta_1 + w_2 * eta_2
+    let g_2 : ℝ := w_1 * eta_1 * (1 - eta_1) + w_2 * eta_2 * (1 - eta_2)
+    let g_3 : ℝ := w_1 * eta_1 * (1 - eta_1) ^ 2 + w_2 * eta_2 * (1 - eta_2) ^ 2
+    let det_H0 : ℝ := g_1 * g_3 - g_2 ^ 2
+    det_H0 = w_1 * w_2 * eta_1 * eta_2 * d_eta ^ 2 ∧
+    w_min ^ 2 * eta_min ^ 2 * d_eta ^ 2 ≤ det_H0 ∧
+    0 < det_H0 ∧
     w_err_bound ≤ (op_norm * eps_h) / (2 * p_minus * p_plus * d_eta ^ 3) := by
-  rw [hw]
-  have hden : 0 ≤ 2 * p_minus * p_plus * d_eta ^ 3 := by positivity
-  exact div_le_div_of_nonneg_right h_deconv hden
+  dsimp only
+  have hdet_id :
+      (w_1 * eta_1 + w_2 * eta_2) * (w_1 * eta_1 * (1 - eta_1) ^ 2 + w_2 * eta_2 * (1 - eta_2) ^ 2) -
+      (w_1 * eta_1 * (1 - eta_1) + w_2 * eta_2 * (1 - eta_2)) ^ 2 =
+      w_1 * w_2 * eta_1 * eta_2 * (eta_2 - eta_1) ^ 2 := by ring
+  rw [hsep] at hdet_id
+  have hw_prod : w_min ^ 2 ≤ w_1 * w_2 := by nlinarith
+  have heta_prod : eta_min ^ 2 ≤ eta_1 * eta_2 := by nlinarith
+  have hw_eta_lb : w_min ^ 2 * eta_min ^ 2 ≤ w_1 * w_2 * eta_1 * eta_2 := by
+    have h_assoc : w_1 * w_2 * eta_1 * eta_2 = (w_1 * w_2) * (eta_1 * eta_2) := by ring
+    rw [h_assoc]
+    exact mul_le_mul hw_prod heta_prod (by positivity) (by nlinarith)
+  have hdet_lb : w_min ^ 2 * eta_min ^ 2 * d_eta ^ 2 ≤ w_1 * w_2 * eta_1 * eta_2 * d_eta ^ 2 :=
+    mul_le_mul_of_nonneg_right hw_eta_lb (by positivity)
+  have hdet_pos : 0 < w_min ^ 2 * eta_min ^ 2 * d_eta ^ 2 := by positivity
+  refine ⟨hdet_id, ?_, ?_, ?_⟩
+  · linarith
+  · linarith
+  · rw [hw]
+    have hden : 0 ≤ 2 * p_minus * p_plus * d_eta ^ 3 := by positivity
+    exact div_le_div_of_nonneg_right h_deconv hden
 
 end
 end CurrentMM

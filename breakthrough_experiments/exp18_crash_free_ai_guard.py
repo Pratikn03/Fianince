@@ -237,21 +237,26 @@ def evaluate_guard_inequalities_ia39(
     unit_h_cost = (0.02 + 0.0004 * max(p_curr, P_STAR)) if charge_hedge_costs else 0.0
     c_hedge = abs(hedge_qty) * unit_h_cost
     s_alpha = (0.15 + 0.85 * alpha) if shock_gated_venue else 1.0
-
     b_rem = eq_curr - mm_curr
-    one_step_shock_term = abs(inv_after) * (1.0 + maint_rate) * (mc_val * s_alpha * u_bar_step)
-    cum_shock_term = abs(inv_after) * (1.0 + maint_rate) * (s_alpha * cg_val * u_bar_cum)
-    transient_state_term = abs(inv_after) * (1.0 + maint_rate) * (mc_val * z_norm)
 
-    # Worst-case subsequent trade-fill inventory & maintenance-margin increment accounting (P0-4)
-    max_fill_qty = 12.0 * s_alpha * u_bar_step
+    # Worst-case subsequent trade-fill inventory & maintenance-margin increment accounting (P0-4):
+    # Active quoting at admission level alpha in [0, 1] admits passive fill volume up to
+    # Delta I_fill,max(alpha) = 12 * alpha * s(alpha) * u_bar_step, with net base-price maintenance-margin
+    # minus maker half-spread surcharge C_fill(alpha) = max(0, mu * p_t - half_spread) * Delta I_fill,max(alpha).
+    # At alpha = 0 (protective halt), Delta I_fill,max(0) = 0 and C_fill(0) = 0.
+    max_fill_qty = 12.0 * alpha * s_alpha * u_bar_step
     post_fill_inv_bound = abs(inv_after) + max_fill_qty
+    c_fill = max_fill_qty * max(0.0, maint_rate * p_curr - 0.02)
     post_fill_mm_increment_bound = maint_rate * max_fill_qty * (p_curr + mc_val * z_norm + mc_val * s_alpha * u_bar_step)
     maker_spread_offset = 0.02 * max_fill_qty
 
-    lhs_step_safe = transient_state_term + one_step_shock_term + c_hedge + safety_reserve
-    lhs_cum_safe = transient_state_term + cum_shock_term + c_hedge + safety_reserve
-    lhs_step_liq = transient_state_term + one_step_shock_term + c_hedge
+    one_step_shock_term = post_fill_inv_bound * (1.0 + maint_rate) * (mc_val * s_alpha * u_bar_step)
+    cum_shock_term = post_fill_inv_bound * (1.0 + maint_rate) * (s_alpha * cg_val * u_bar_cum)
+    transient_state_term = post_fill_inv_bound * (1.0 + maint_rate) * (mc_val * z_norm)
+
+    lhs_step_safe = transient_state_term + one_step_shock_term + c_hedge + c_fill + safety_reserve
+    lhs_cum_safe = transient_state_term + cum_shock_term + c_hedge + c_fill + safety_reserve
+    lhs_step_liq = transient_state_term + one_step_shock_term + c_hedge + c_fill
 
     return {
         "alpha": float(alpha),
@@ -259,7 +264,9 @@ def evaluate_guard_inequalities_ia39(
         "M_C_price_alpha": float(mc_val),
         "G_cum_alpha": float(cg_val),
         "inv_after_hedge": float(inv_after),
+        "max_fill_qty_units": float(max_fill_qty),
         "post_fill_inv_bound_units": float(post_fill_inv_bound),
+        "c_fill_net_margin_usdt": float(c_fill),
         "post_fill_mm_increment_bound_usdt": float(post_fill_mm_increment_bound),
         "maker_spread_offset_usdt": float(maker_spread_offset),
         "c_hedge_usdt": float(c_hedge),
@@ -338,6 +345,8 @@ def simulate_double_entry_dealer_episode(
     unattenuated_shocks: bool = False,
     charge_hedge_costs: bool = True,
     eigenvalue_rho_threshold: float = 0.90,
+    z0: np.ndarray | None = None,
+    eq0: float | None = None,
 ) -> dict:
     """Run an explicit event-sourced double-entry dealer ledger across T_steps:
       - Cash K_t, Inventory I_t, Price p_t = P* + x_t
@@ -348,20 +357,26 @@ def simulate_double_entry_dealer_episode(
       - Strictly non-anticipatively selects alpha_t via select_non_anticipative_alpha
         (calling evaluate_guard_inequalities_ia39 on pre-shock state only) BEFORE
         shocks[t] is ever read, with zero post-shock action override.
+      - When pre_infeasible is True (all 41 candidates fail Equation IA.39), transitions
+        immediately to an explicit NO_SAFE_ACTION protective halt state (alpha_t = 0,
+        halted = True, passive maker fill intake suspended).
     """
     T_steps = shocks.shape[0]
-    z = np.zeros(3, dtype=float)
-    cash = CASH0_USDT
+    z = np.zeros(3, dtype=float) if z0 is None else np.array(z0, dtype=float).copy()
     inv = I0_UNITS
     p_curr = P_STAR
+    init_eq = E0_USDT if eq0 is None else float(eq0)
+    cash = init_eq - inv * p_curr
 
-    min_equity = E0_USDT
+    min_equity = init_eq
     max_drawdown = 0.0
     liquidated = False
     gammas = []
     quotes_active = 0
     infeasible_steps = 0
     no_safe_action_triggered = False
+    protective_halt_engaged = False
+    last_flow_absorbed = 0.0
     total_hedge_cost_usdt = 0.0
 
     gamma_grid = np.linspace(0.0, 1.0, 41)
@@ -372,9 +387,11 @@ def simulate_double_entry_dealer_episode(
         table.append((float(g), rho_g, mc_g, cg_g, Jg, Cg))
 
     halted = False
+    step_elig_flags = []
     for t in range(T_steps):
         eq_curr = cash + inv * p_curr
         mm_curr = max(0.0, MAINT_RATE * abs(inv) * p_curr - MAINT_AMOUNT)
+        step_infeasible_halt = False
 
         if architecture == "Unguarded":
             g_star, _, _, _, J_t, C_t = table[-1]
@@ -385,7 +402,7 @@ def simulate_double_entry_dealer_episode(
             g_star, _, _, _, J_t, C_t = feasible_rho[-1]
 
         elif architecture == "Static_Halt":
-            if (E0_USDT - eq_curr) >= 0.55 * B_MAINT_BUDGET:
+            if (init_eq - eq_curr) >= 0.55 * B_MAINT_BUDGET:
                 halted = True
             if halted:
                 g_star, _, _, _, J_t, C_t = table[0]
@@ -420,6 +437,8 @@ def simulate_double_entry_dealer_episode(
             if pre_infeasible:
                 infeasible_steps += 1
                 no_safe_action_triggered = True
+                protective_halt_engaged = True
+                step_infeasible_halt = True
             g_star, _, _, _, J_t, C_t = chosen
 
         elif architecture in ("Ablation_Hedge_Only_Unthrottled_J", "Ablation_Shock_Gate_Only_Unthrottled_J"):
@@ -427,8 +446,10 @@ def simulate_double_entry_dealer_episode(
         else:
             raise ValueError(f"Unknown architecture: {architecture}")
 
+        step_halted = halted or step_infeasible_halt
         gammas.append(g_star)
-        if (not halted) and (g_star >= 0.05 or (architecture == "Resolvent_Guard_Kreiss" and not no_safe_action_triggered)):
+        step_elig_flags.append(1.0 if (not step_halted and g_star >= 0.05) else 0.0)
+        if (not step_halted) and (g_star >= 0.05 or (architecture == "Resolvent_Guard_Kreiss" and not no_safe_action_triggered)):
             quotes_active += 1
 
         # Inventory hedging channel (with explicit half-spread + 4 bp taker fee when charge_hedge_costs=True)
@@ -463,10 +484,15 @@ def simulate_double_entry_dealer_episode(
         x_next = float(C_t @ z_next)
         p_next = P_STAR + x_next
 
-        # Order flow absorbed by dealer during step t (earning maker half-spread 0.02 USDT/unit)
-        flow_absorbed = -12.0 * shock_scale * float(shocks[t, 0])
+        # Order flow absorbed by dealer during step t (earning maker half-spread 0.02 USDT/unit).
+        # Under NO_SAFE_ACTION protective halt (step_infeasible_halt), passive maker fill intake is suspended (flow_absorbed = 0).
+        if step_infeasible_halt:
+            flow_absorbed = 0.0
+        else:
+            flow_absorbed = -12.0 * shock_scale * float(shocks[t, 0])
+        last_flow_absorbed = float(flow_absorbed)
         exec_price = 0.5 * (p_curr + p_next)
-        maker_spread_rev = 0.02 * abs(flow_absorbed) * (1.0 if not halted else 0.0)
+        maker_spread_rev = 0.02 * abs(flow_absorbed) * (1.0 if not step_halted else 0.0)
         cash = cash - flow_absorbed * exec_price + maker_spread_rev
         inv = inv + flow_absorbed
 
@@ -476,7 +502,7 @@ def simulate_double_entry_dealer_episode(
         # Mark-to-market equity and maintenance margin check at end of step t
         eq_next = cash + inv * p_curr
         mm_next = max(0.0, MAINT_RATE * abs(inv) * p_curr - MAINT_AMOUNT)
-        dd_next = max(0.0, E0_USDT - eq_next)
+        dd_next = max(0.0, init_eq - eq_next)
         min_equity = min(min_equity, eq_next)
         max_drawdown = max(max_drawdown, dd_next)
 
@@ -486,12 +512,14 @@ def simulate_double_entry_dealer_episode(
             infeasible_steps += 1
 
     mean_gamma = float(np.mean(gammas))
-    elig_pct = 100.0 * float(np.mean([1.0 if (not halted and g >= 0.05) else 0.0 for g in gammas]))
+    elig_pct = 100.0 * float(np.mean(step_elig_flags))
     return {
         "liquidated": bool(liquidated),
         "status": "NO_SAFE_ACTION" if no_safe_action_triggered else "FEASIBLE",
+        "protective_halt_engaged": bool(protective_halt_engaged),
+        "last_flow_absorbed_units": float(last_flow_absorbed),
         "infeasible_steps": int(infeasible_steps),
-        "max_drawdown_usdt": float(min(max_drawdown, E0_USDT)),
+        "max_drawdown_usdt": float(min(max_drawdown, init_eq)),
         "min_equity_usdt": float(max(0.0, min_equity)),
         "raw_min_equity_usdt": float(min_equity),
         "terminal_inventory_units": float(inv),
@@ -648,12 +676,19 @@ def evaluate_out_of_domain_counterexample() -> dict:
         will_hedge=False, charge_hedge_costs=False, shock_gated_venue=False,
         u_bar_step=8100.0 / 2010.0, u_bar_cum=0.0,
     )
-    # 3. Every candidate fails (infeasible pre-shock state -> explicit NO_SAFE_ACTION)
+    # 3. Every candidate fails (infeasible pre-shock state -> explicit NO_SAFE_ACTION protective halt)
     cat3_chosen, cat3_infeasible = select_non_anticipative_alpha(
         table=table_g3, z=np.array([0.50, 0.50, 0.50]), inv=I0_UNITS, p_curr=P_STAR,
         eq_curr=1500.0, mm_curr=950.0,
         will_hedge=True, charge_hedge_costs=True, shock_gated_venue=True,
         u_bar_step=0.05, u_bar_cum=0.135,
+    )
+    cat3_ep = simulate_double_entry_dealer_episode(
+        np.array([[0.04, 0.0, 0.0]], dtype=float),
+        "Regime_II_NonNormal_Herding",
+        "Resolvent_Guard_Kreiss",
+        z0=np.array([0.50, 0.50, 0.50], dtype=float),
+        eq0=1500.0,
     )
 
     return {
@@ -710,6 +745,9 @@ def evaluate_out_of_domain_counterexample() -> dict:
                 "selected_alpha": float(cat3_chosen[0]),
                 "pre_infeasible": bool(cat3_infeasible),
                 "status": "NO_SAFE_ACTION" if cat3_infeasible else "FEASIBLE",
+                "protective_halt_engaged": bool(cat3_ep["protective_halt_engaged"]),
+                "passive_fill_absorbed_units": float(cat3_ep["last_flow_absorbed_units"]),
+                "quote_continuity_ratio": float(cat3_ep["quote_continuity_ratio"]),
             },
             "category_4_out_of_domain_shock": {
                 "status": ep_up_10["status"],

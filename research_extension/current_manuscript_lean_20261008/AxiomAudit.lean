@@ -268,6 +268,7 @@ run_cmd do
   `CurrentMM.flat_round_trip_double_entry_terminal_loss_identity,
   `CurrentMM.numerical_certificate_64_74_rational_enclosure,
   `CurrentMM.subgaussian_martingale_drawdown_and_cvar_bound,
+  `CurrentMM.cramer_rao_two_cohort_inverse_sixth_scaling,
   `CurrentMM.minimax_sample_complexity_theta_d_eta_minus_six,
   `CurrentMM.resolvent_guard_cumulative_positive_at_zero_alpha,
   `CurrentMM.resolvent_guard_maintenance_margin_tier2_consistency,

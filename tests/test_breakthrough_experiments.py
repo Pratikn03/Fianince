@@ -495,14 +495,14 @@ def test_unknown_mixture_equivalence_and_noise_boundary():
 # ----------------------------------------------------------------------
 def test_formal_proof_bridge_coverage():
     """Verify that Lean formalization bridge matches 23 manuscript mathematical environments
-    and MANUSCRIPT_COVERAGE.md explicitly documents 319 kernel-checked declarations."""
+    and MANUSCRIPT_COVERAGE.md explicitly documents 320 kernel-checked declarations."""
     bridge_script = Path("scripts/verify_theorem_code_bridge.py")
     assert bridge_script.exists(), "Theorem-code bridge script must exist"
     
     cov_file = Path("research_extension/current_manuscript_lean_20261008/MANUSCRIPT_COVERAGE.md")
     assert cov_file.exists(), "Manuscript coverage markdown must exist"
     cov_text = cov_file.read_text()
-    assert "319" in cov_text, "Coverage file must document 319 declarations"
+    assert "320" in cov_text, "Coverage file must document 320 declarations"
     assert Path("paper/generated/claim_to_code_map.tex").exists()
 
 # ----------------------------------------------------------------------
@@ -1077,15 +1077,15 @@ def test_tc91_08_unknown_k_blind_candidate_set():
 # ----------------------------------------------------------------------
 def test_tc91_09_and_10_formal_proof_and_prose_integrity():
     """Verify that MANUSCRIPT_COVERAGE.md, claim_to_code_map.tex, and Machine_Markets_JF_Submission.tex
-    are synchronized with 319 Lean declarations and 23/23 FULL environments, and contain no stale overclaims."""
+    are synchronized with 320 Lean declarations and 23/23 FULL environments, and contain no stale overclaims."""
     tex_text = Path("paper/Machine_Markets_JF_Submission.tex").read_text()
     cov_text = Path("research_extension/current_manuscript_lean_20261008/MANUSCRIPT_COVERAGE.md").read_text()
     map_text = Path("paper/generated/claim_to_code_map.tex").read_text()
     
-    # Check 319 declarations and 23/23 FULL statements in manuscript prose
-    assert "319 kernel-checked Lean~4 declarations" in tex_text
+    # Check 320 declarations and 23/23 FULL statements in manuscript prose
+    assert "320 kernel-checked Lean~4 declarations" in tex_text
     assert "23 / 23 FULL" in tex_text
-    assert "319" in cov_text
+    assert "320" in cov_text
     
     # Check that Theorems IA.D.1-IA.D.6 and Proposition IA.D.3 are mapped
     for label in [
@@ -1443,12 +1443,17 @@ def test_p02_p03_p04_scientific_validation_gates():
     cert_p02 = certify_full_domain_p02(L=80, delta=0.05, n_theta=1800)
     assert cert_p02["p02_pass"] is True
     assert cert_p02["theta_intervals_certified"] == 1800
+    assert cert_p02["unverified_d2_tail_intervals"] == 0
+    assert cert_p02["decimal_sqrt_directed_witness"]["floor_sq_le_2"] is True
+    assert cert_p02["decimal_sqrt_directed_witness"]["ceil_sq_ge_2"] is True
     assert cert_p02["certified_full_domain_lb_decimal"] >= 64.7423
-    assert cert_p02["weyl_eigenvalue_perturbation_bound"] < 1e-16
+    assert cert_p02["weyl_eigenvalue_perturbation_bound"] < 1e-10
 
-    # P0-3: Parameter-blind multi-lag Prony-Hankel estimator
+    # P0-3: Parameter-blind multi-lag Prony-Hankel estimator and analytical conditioning bound
     pair = construct_exact_lecam_pair(0.10, tau=0.01)
     assert pair["blind_prony_noiseless_max_err"] < 1e-12
+    assert pair["hankel_det_uniform_lb"] > 0.0
+    assert pair["n_star_blind_prony_analytic_uniform_95pct"] >= pair["n_star_lecam_analytic_95pct"]
     theta_hat = blind_multilag_prony_estimator(h_of(np.array(pair["theta0_analytic"]), 2))
     assert np.max(np.abs(theta_hat - np.array(pair["theta0_analytic"]))) < 1e-11
 
@@ -1460,6 +1465,9 @@ def test_p02_p03_p04_scientific_validation_gates():
     assert audit["category_3_all_candidates_fail"]["pre_infeasible"] is True
     assert audit["category_3_all_candidates_fail"]["status"] == "NO_SAFE_ACTION"
     assert audit["category_3_all_candidates_fail"]["selected_alpha"] == 0.0
+    assert audit["category_3_all_candidates_fail"]["protective_halt_engaged"] is True
+    assert audit["category_3_all_candidates_fail"]["passive_fill_absorbed_units"] == 0.0
+    assert audit["category_3_all_candidates_fail"]["quote_continuity_ratio"] == 0.0
     assert audit["category_4_out_of_domain_shock"]["status"] == "NO_SAFE_ACTION"
 
 

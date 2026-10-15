@@ -95,6 +95,42 @@ def blind_multilag_prony_estimator(h_obs: np.ndarray, L_lags: int = 20, kappa: f
     return np.concatenate([w_hat, eta_hat])
 
 
+def analytical_prony_hankel_conditioning_bound(
+    delta_eta: float,
+    tau: float = TOL,
+    q_tot: float = 0.20,
+    w_min: float = 0.09,
+    eta_min: float = 0.05,
+    r_max: float = 0.95,
+    kappa: float = 0.8,
+    a: float = 0.5,
+) -> dict:
+    """Analytical uniform conditioning and sample-complexity bound on the separated
+    non-degenerate parameter sub-class Theta_sep(Delta_eta) = {w_k >= w_min, eta_k in [eta_min, 1-eta_min],
+    |eta_2 - eta_1| >= Delta_eta} (Gate P0-3):
+      - Exact 2x2 Hankel determinant: det(H_0) = g_1 g_3 - g_2^2 = w_1 w_2 eta_1 eta_2 (Delta_eta)^2
+        >= w_min^2 eta_min^2 (Delta_eta)^2.
+      - Toeplitz deconvolution operator norm bound: C_deconv = ((1 + |a|) / kappa) * exp(q_tot / (1 - r_max)).
+      - Uniform cubic moment-to-weight Lipschitz constant: L_unif(Delta_eta) = C_deconv / (2 * p_- * p_+ * (Delta_eta)^3).
+      - Resulting uniform sample-complexity upper bound on Theta_sep(Delta_eta):
+        N*_unif(Delta_eta) = 2 * ln(4 / 0.05) * sigma_h(1)^2 * L_unif(Delta_eta)^2 / tau^2 = C_unif * (Delta_eta)^-6.
+    """
+    p_minus = 0.5 - tau / q_tot
+    p_plus = 0.5 + tau / q_tot
+    hankel_det_lb = float((w_min ** 2) * (eta_min ** 2) * (delta_eta ** 2))
+    c_deconv = float(((1.0 + abs(a)) / kappa) * np.exp(q_tot / (1.0 - r_max)))
+    lip_unif = float(c_deconv / (2.0 * p_minus * p_plus * (delta_eta ** 3)))
+    n_upper_analytic_unif_95 = float(
+        2.0 * np.log(4.0 / 0.05) * (SIGMA_H_1 ** 2) * (lip_unif ** 2) / (tau ** 2)
+    )
+    return {
+        "hankel_det_uniform_lb": hankel_det_lb,
+        "toeplitz_deconv_op_norm_ub": c_deconv,
+        "uniform_lipschitz_constant_ub": lip_unif,
+        "n_star_blind_prony_analytic_uniform_95pct": n_upper_analytic_unif_95,
+    }
+
+
 def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: float = 0.40, q_tot: float = 0.20) -> dict:
     """Construct the exact closed-form moment-matched Le Cam two-point pair (theta_0, theta_1)
     (Eq. IA.29, satisfying Delta M_0 = Delta M_1 = Delta M_2 = 0) and separately compute the
@@ -202,6 +238,7 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
     n_upper_blind_prony_95 = float(
         2.0 * np.log(4.0 / 0.05) * (SIGMA_H_1 ** 2) * prony_max_row_norm_sq / (tau ** 2)
     )
+    cond_unif = analytical_prony_hankel_conditioning_bound(delta_eta, tau=tau, q_tot=q_tot)
 
     fail_prob_an_N50 = float(norm.cdf(-np.sqrt(50.0) * dist_an / (2.0 * SIGMA_H_1)))
     fail_prob_N1 = float(norm.cdf(-np.sqrt(1.0) * dist_l2 / (2.0 * SIGMA_H_1)))
@@ -228,6 +265,10 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
         "n_star_crb_unbiased": float(n_crb),
         "n_star_minimax_upper_bound_95pct": n_upper_subgaussian_95,
         "n_star_blind_prony_upper_bound_95pct": n_upper_blind_prony_95,
+        "n_star_blind_prony_analytic_uniform_95pct": cond_unif["n_star_blind_prony_analytic_uniform_95pct"],
+        "hankel_det_uniform_lb": cond_unif["hankel_det_uniform_lb"],
+        "toeplitz_deconv_op_norm_ub": cond_unif["toeplitz_deconv_op_norm_ub"],
+        "uniform_lipschitz_constant_ub": cond_unif["uniform_lipschitz_constant_ub"],
         "blind_prony_noiseless_max_err": prony_noiseless_err,
         "blind_prony_jacobian_row_norm": float(np.sqrt(prony_max_row_norm_sq)),
         "n_star_lecam_analytic_95pct": n_lecam_an_95,
@@ -414,11 +455,13 @@ def main():
     ys_crb = np.log([r["n_star_crb_unbiased"] for r in sweep])
     ys_ub = np.log([r["n_star_minimax_upper_bound_95pct"] for r in sweep])
     ys_prony = np.log([r["n_star_blind_prony_upper_bound_95pct"] for r in sweep])
+    ys_prony_unif = np.log([r["n_star_blind_prony_analytic_uniform_95pct"] for r in sweep])
     slope_lecam, _ = np.polyfit(xs, ys_lecam, 1)
     slope_lecam_an, _ = np.polyfit(xs, ys_lecam_an, 1)
     slope_crb, _ = np.polyfit(xs, ys_crb, 1)
     slope_ub, _ = np.polyfit(xs, ys_ub, 1)
     slope_prony, _ = np.polyfit(xs, ys_prony, 1)
+    slope_prony_unif, _ = np.polyfit(xs, ys_prony_unif, 1)
 
     pair_010 = next(r for r in sweep if abs(r["delta_eta"] - 0.10) < 1e-6)
     n_lecam_an = int(round(pair_010["n_star_lecam_analytic_95pct"]))
@@ -460,7 +503,8 @@ def main():
 
     print(
         f"\nScaling slopes: CRB={slope_crb:.3f}, UpperBound={slope_ub:.3f}, "
-        f"BlindPronyUB={slope_prony:.3f}, LeCam_Refined={slope_lecam:.3f}, LeCam_Analytic={slope_lecam_an:.3f}"
+        f"BlindPronyUB={slope_prony:.3f}, BlindPronyAnalyticUnif={slope_prony_unif:.6f}, "
+        f"LeCam_Refined={slope_lecam:.3f}, LeCam_Analytic={slope_lecam_an:.3f}"
     )
     for row in mc_bench:
         N = row["N"]
@@ -484,6 +528,7 @@ def main():
         "loglog_slope_crb": float(slope_crb),
         "loglog_slope_upper_bound": float(slope_ub),
         "loglog_slope_blind_prony_upper_bound": float(slope_prony),
+        "loglog_slope_blind_prony_analytic_uniform": float(slope_prony_unif),
         "p03_blind_prony_mc_verification": p03_blind_prony_mc,
         "separation_sweep": sweep,
         "estimator_benchmark_delta_eta_010": mc_bench,

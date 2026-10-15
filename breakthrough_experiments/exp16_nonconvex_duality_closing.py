@@ -261,6 +261,7 @@ def compute_rayleigh_holder_bound(
     certified_min_safe = float(certified_min - ieee754_safety_margin)
 
     # TC-C1 & TC-C2: 50-digit Decimal outward-rounded interval verification & stationary point check on worst_box_info
+    from scripts.independent_checks.verify_p02_full_domain_certificate import decimal_sqrt_ceil, decimal_sqrt_floor
     with localcontext() as ctx:
         ctx.prec = 50
         ctx.rounding = ROUND_FLOOR
@@ -273,12 +274,12 @@ def compute_rayleigh_holder_bound(
         d_W_hi = Decimal(str(worst_box_info["W_perp_max"]))
         d_gamma_hi = Decimal(str(worst_box_info["gamma_max"]))
         d_gb_hi = d_gamma_hi * d_b_k_hi
-        d_sqrt_b_hi = d_b_k_hi.sqrt()
+        d_sqrt_b_hi = decimal_sqrt_ceil(d_b_k_hi, prec=50)
         d_sub_hi = d_W_hi * d_sqrt_b_hi
 
         ctx.rounding = ROUND_FLOOR
         d_rad_arg_lo = max(Decimal("0"), Decimal("1") - d_gb_hi)
-        d_rad_lo = d_rad_arg_lo.sqrt()
+        d_rad_lo = decimal_sqrt_floor(d_rad_arg_lo, prec=50)
         d_pos_lo = d_L0_lo + d_a_k_lo + d_F_lo * d_rad_lo
         d_box_outward_lb = d_pos_lo - d_sub_hi
 
@@ -368,10 +369,11 @@ def compute_rayleigh_holder_bound(
             W_perp_max_w = float(np.sqrt(np.sum((g_tilde[:-2] ** 2) / (1.0 - (vals[:-2] + weyl_eps) / lam_min_w))))
             gamma_max_w = float((lam_3_hi * lam_min_w) / ((lam_2_lo - lam_3_hi) * c_req))
             d2_max_w = max(1e-9, ub_ref - L0_min_w)
-            u_top = min(d2_max_w, 0.99 / max(1e-12, gamma_max_w))
+            assert gamma_max_w * d2_max_w < 0.99
+            u_top = d2_max_w
             u_mid = min(0.09, 0.5 * u_top)
 
-            # 1-slab outward-rounded Decimal bound on [0, u_top]
+            # 1-slab and 2-slab outward-rounded Decimal bounds on [0, d2_max_w]
             for u_a, u_b, is_1slab in [(0.0, u_top, True), (0.0, u_mid, False), (u_mid, u_top, False)]:
                 if u_b <= u_a + 1e-12:
                     continue
@@ -387,11 +389,13 @@ def compute_rayleigh_holder_bound(
                 d_gua_hi = d_g * d_ua
                 d_gub_hi = d_g * d_ub
                 ctx.rounding = ROUND_FLOOR
-                d_fa_lo = (Decimal("1") - d_gua_hi).sqrt()
-                d_fb_lo = (Decimal("1") - d_gub_hi).sqrt()
+                d_fa_lo = decimal_sqrt_floor(Decimal("1") - d_gua_hi, prec=40)
+                d_fb_lo = decimal_sqrt_floor(Decimal("1") - d_gub_hi, prec=40)
+                ctx.rounding = ROUND_FLOOR
                 d_alpha_lo = (d_fa_lo - d_fb_lo) / d_du
                 ctx.rounding = ROUND_CEILING
-                d_alpha_hi = ((Decimal("1") - (d_g * d_ua)).sqrt() - d_fb_lo) / d_du
+                d_fa_hi = decimal_sqrt_ceil(Decimal("1") - (d_g * d_ua), prec=40)
+                d_alpha_hi = (d_fa_hi - d_fb_lo) / d_du
                 d_F_alpha_hi = d_F * d_alpha_hi
                 d_W2_hi = d_W * d_W
                 ctx.rounding = ROUND_FLOOR
@@ -423,6 +427,7 @@ def compute_rayleigh_holder_bound(
             "generalized_gram_defect_fro": G_gram_err,
             "verified_theta_intervals": int(verified_theta_intervals),
             "total_theta_intervals": int(n_theta),
+            "unverified_d2_tail_intervals": 0,
             "full_domain_1slab_outward_decimal_lb": float(full_domain_1slab_dec_lb),
             "full_domain_2slab_outward_decimal_lb": float(full_domain_2slab_dec_lb),
             "full_domain_2slab_outward_decimal_str": str(full_domain_2slab_dec_lb),

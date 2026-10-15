@@ -8,12 +8,15 @@ Writes scripts/independent_checks/independent_oracle_receipt.json.
 from __future__ import annotations
 
 import json
+import sys
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, localcontext
 from pathlib import Path
 
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 
 def run_ce01_two_trade_toeplitz() -> dict:
@@ -132,6 +135,7 @@ def run_tc_c1_to_c5() -> dict:
     audit80 = r80["interval_certificate_audit"]
     wb80 = audit80["worst_box_certificate"]
 
+    from scripts.independent_checks.verify_p02_full_domain_certificate import decimal_sqrt_ceil, decimal_sqrt_floor
     with localcontext() as ctx:
         ctx.prec = 50
         ctx.rounding = ROUND_FLOOR
@@ -144,10 +148,10 @@ def run_tc_c1_to_c5() -> dict:
         d_W_hi = Decimal(str(wb80["W_perp_max"]))
         d_gamma_hi = Decimal(str(wb80["gamma_max"]))
         d_gb_hi = d_gamma_hi * d_b_k_hi
-        d_sub_hi = d_W_hi * d_b_k_hi.sqrt()
+        d_sub_hi = d_W_hi * decimal_sqrt_ceil(d_b_k_hi, prec=50)
 
         ctx.rounding = ROUND_FLOOR
-        d_rad_lo = max(Decimal("0"), Decimal("1") - d_gb_hi).sqrt()
+        d_rad_lo = decimal_sqrt_floor(max(Decimal("0"), Decimal("1") - d_gb_hi), prec=50)
         d_outward_lb = d_L0_lo + d_a_k_lo + d_F_lo * d_rad_lo - d_sub_hi
 
     monotone_seq = [r["feasible_probe_C0"] for r in res16["horizon_sweep"]]
