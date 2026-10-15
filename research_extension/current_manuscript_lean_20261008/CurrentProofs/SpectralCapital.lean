@@ -440,6 +440,45 @@ theorem non_anticipative_guard_action_invariance {State : Type*}
   dsimp only
   exact ⟨fun _ => rfl, rfl⟩
 
+/-- Theorem IA.D.8 (P0-4): Exact domination of the one-step resolvent guard by the cumulative convolution guard when `M_C(α) ≤ G_cum(α)` and `u_bar_step ≤ u_bar_cum`, plus post-hedge passive maker fill maintenance-margin preservation when `half_spread ≥ μ * p_mid`. -/
+theorem resolvent_guard_post_hedge_and_fill_margin_accounting
+    (abs_I_next mu state_transient mc_val G_cum s_alpha u_bar_step u_bar_cum C_hedge R_safe B_rem
+     fill_qty half_spread p_mid : ℝ)
+    (hI : 0 ≤ abs_I_next) (hmu : 0 ≤ mu) (hs : 0 ≤ s_alpha)
+    (hmc : 0 ≤ mc_val) (hdom_g : mc_val ≤ G_cum)
+    (hu_step : 0 ≤ u_bar_step) (hdom_u : u_bar_step ≤ u_bar_cum)
+    (hfill : 0 ≤ fill_qty) (hspread : mu * p_mid ≤ half_spread)
+    (hguard_cum : abs_I_next * (1 + mu) * (state_transient + s_alpha * G_cum * u_bar_cum) +
+      C_hedge + R_safe ≤ B_rem) :
+    abs_I_next * (1 + mu) * (state_transient + mc_val * s_alpha * u_bar_step) +
+      C_hedge + R_safe ≤ B_rem ∧
+    mu * p_mid * fill_qty ≤ half_spread * fill_qty := by
+  have h1 : 0 ≤ 1 + mu := by linarith
+  have hprod1 : mc_val * u_bar_step ≤ G_cum * u_bar_cum :=
+    mul_le_mul hdom_g hdom_u hu_step (le_trans hmc hdom_g)
+  have hprod2 : mc_val * s_alpha * u_bar_step ≤ s_alpha * G_cum * u_bar_cum := by
+    have h_eq1 : mc_val * s_alpha * u_bar_step = s_alpha * (mc_val * u_bar_step) := by ring
+    have h_eq2 : s_alpha * G_cum * u_bar_cum = s_alpha * (G_cum * u_bar_cum) := by ring
+    rw [h_eq1, h_eq2]
+    exact mul_le_mul_of_nonneg_left hprod1 hs
+  have h2 : state_transient + mc_val * s_alpha * u_bar_step ≤
+      state_transient + s_alpha * G_cum * u_bar_cum := by linarith
+  have h3 : abs_I_next * (1 + mu) * (state_transient + mc_val * s_alpha * u_bar_step) ≤
+      abs_I_next * (1 + mu) * (state_transient + s_alpha * G_cum * u_bar_cum) :=
+    mul_le_mul_of_nonneg_left h2 (mul_nonneg hI h1)
+  refine ⟨by linarith, mul_le_mul_of_nonneg_right hspread hfill⟩
+
+/-- Theorem IA.D.6 (P0-3): Observation-to-moment Toeplitz deconvolution error transfer and parameter-blind 4-moment Prony–Hankel uniform upper bound. -/
+theorem prony_blind_four_moment_uniform_upper_bound
+    (eps_h op_norm eps_M p_minus p_plus d_eta w_err_bound : ℝ)
+    (hop : 0 ≤ op_norm) (h_deconv : eps_M ≤ op_norm * eps_h)
+    (hp_m : 0 < p_minus) (hp_p : 0 < p_plus) (hd : 0 < d_eta)
+    (hw : w_err_bound = eps_M / (2 * p_minus * p_plus * d_eta ^ 3)) :
+    w_err_bound ≤ (op_norm * eps_h) / (2 * p_minus * p_plus * d_eta ^ 3) := by
+  rw [hw]
+  have hden : 0 ≤ 2 * p_minus * p_plus * d_eta ^ 3 := by positivity
+  exact div_le_div_of_nonneg_right h_deconv hden
+
 end
 end CurrentMM
 

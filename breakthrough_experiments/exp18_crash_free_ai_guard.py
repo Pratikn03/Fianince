@@ -222,14 +222,15 @@ def evaluate_guard_inequalities_ia39(
 ) -> dict:
     """Evaluate both inequalities of Equation IA.39 (eq:ia_kreiss_guard_rule):
       1. One-step norm-ball bound (including post-hedge inventory and Tier-2 maintenance-margin factor 1 + mu = 1.005):
-         |I_{t+1}(alpha)| * (1 + mu) * (M_{C_price}(J(alpha)) * ||z_t||_2 + s(alpha) * u_bar_step)
+         |I_{t+1}(alpha)| * (1 + mu) * (M_{C_price}(J(alpha)) * ||z_t||_2 + M_{C_price}(J(alpha)) * s(alpha) * u_bar_step)
            + C_hedge(alpha) + R_safe <= E_t - MM_t
       2. Cumulative finite-horizon convolution bound (F03/TC-G1 and F04/TC-G2):
          |I_{t+1}(alpha)| * (1 + mu) * (M_{C_price}(J(alpha)) * ||z_t||_2 + s(alpha) * G_cum(alpha) * u_bar_cum)
            + C_hedge(alpha) + R_safe <= E_t - MM_t
          where s(alpha) = 0.15 + 0.85 * alpha (shock-gated venue) or s(alpha) = 1.0 (pure operator).
-         Crucially, at alpha = 0, s(0) > 0 and G_cum(0) >= 1.0, so the cumulative shock risk term
-         |I_{t+1}(0)| * (1 + mu) * s(0) * G_cum(0) * u_bar_cum is STRICTLY POSITIVE (> 0).
+         Crucially, at alpha = 0, s(0) > 0, M_{C_price}(J(0)) = 1.0, and G_cum(0) >= 1.0, so the cumulative shock risk term
+         |I_{t+1}(0)| * (1 + mu) * s(0) * G_cum(0) * u_bar_cum is STRICTLY POSITIVE (> 0), and since M_{C_price}(J(alpha)) <= G_cum(alpha),
+         whenever u_bar_step <= u_bar_cum the cumulative inequality strictly dominates the one-step inequality.
     """
     hedge_qty = (-0.06 * (1.0 - alpha) * inv_curr) if (will_hedge and alpha < 0.99) else 0.0
     inv_after = inv_curr + hedge_qty
@@ -238,9 +239,15 @@ def evaluate_guard_inequalities_ia39(
     s_alpha = (0.15 + 0.85 * alpha) if shock_gated_venue else 1.0
 
     b_rem = eq_curr - mm_curr
-    one_step_shock_term = abs(inv_after) * (1.0 + maint_rate) * (s_alpha * u_bar_step)
+    one_step_shock_term = abs(inv_after) * (1.0 + maint_rate) * (mc_val * s_alpha * u_bar_step)
     cum_shock_term = abs(inv_after) * (1.0 + maint_rate) * (s_alpha * cg_val * u_bar_cum)
     transient_state_term = abs(inv_after) * (1.0 + maint_rate) * (mc_val * z_norm)
+
+    # Worst-case subsequent trade-fill inventory & maintenance-margin increment accounting (P0-4)
+    max_fill_qty = 12.0 * s_alpha * u_bar_step
+    post_fill_inv_bound = abs(inv_after) + max_fill_qty
+    post_fill_mm_increment_bound = maint_rate * max_fill_qty * (p_curr + mc_val * z_norm + mc_val * s_alpha * u_bar_step)
+    maker_spread_offset = 0.02 * max_fill_qty
 
     lhs_step_safe = transient_state_term + one_step_shock_term + c_hedge + safety_reserve
     lhs_cum_safe = transient_state_term + cum_shock_term + c_hedge + safety_reserve
@@ -249,12 +256,17 @@ def evaluate_guard_inequalities_ia39(
     return {
         "alpha": float(alpha),
         "s_alpha": float(s_alpha),
+        "M_C_price_alpha": float(mc_val),
         "G_cum_alpha": float(cg_val),
         "inv_after_hedge": float(inv_after),
+        "post_fill_inv_bound_units": float(post_fill_inv_bound),
+        "post_fill_mm_increment_bound_usdt": float(post_fill_mm_increment_bound),
+        "maker_spread_offset_usdt": float(maker_spread_offset),
         "c_hedge_usdt": float(c_hedge),
         "transient_state_term_usdt": float(transient_state_term),
         "one_step_shock_term_usdt": float(one_step_shock_term),
         "cum_shock_term_usdt": float(cum_shock_term),
+        "one_step_dominated_by_cum": bool(one_step_shock_term <= cum_shock_term + 1e-12),
         "lhs_step_safe_usdt": float(lhs_step_safe),
         "lhs_cum_safe_usdt": float(lhs_cum_safe),
         "lhs_step_liq_usdt": float(lhs_step_liq),
@@ -621,6 +633,29 @@ def evaluate_out_of_domain_counterexample() -> dict:
         will_hedge=True, charge_hedge_costs=True, shock_gated_venue=True,
     )
 
+    # P0-4 Four-Category State Audit:
+    # 1. Ordinary feasible state
+    cat1_chosen, cat1_infeasible = select_non_anticipative_alpha(
+        table=table_g3, z=np.zeros(3), inv=I0_UNITS, p_curr=P_STAR,
+        eq_curr=E0_USDT, mm_curr=950.0,
+        will_hedge=True, charge_hedge_costs=True, shock_gated_venue=True,
+        u_bar_step=0.05, u_bar_cum=0.135,
+    )
+    # 2. Exact margin boundary state (u_bar_step = 270/67, u_bar_cum = 0, pure operator)
+    cat2_chosen, cat2_infeasible = select_non_anticipative_alpha(
+        table=table_g3, z=np.zeros(3), inv=I0_UNITS, p_curr=P_STAR,
+        eq_curr=E0_USDT, mm_curr=950.0,
+        will_hedge=False, charge_hedge_costs=False, shock_gated_venue=False,
+        u_bar_step=8100.0 / 2010.0, u_bar_cum=0.0,
+    )
+    # 3. Every candidate fails (infeasible pre-shock state -> explicit NO_SAFE_ACTION)
+    cat3_chosen, cat3_infeasible = select_non_anticipative_alpha(
+        table=table_g3, z=np.array([0.50, 0.50, 0.50]), inv=I0_UNITS, p_curr=P_STAR,
+        eq_curr=1500.0, mm_curr=950.0,
+        will_hedge=True, charge_hedge_costs=True, shock_gated_venue=True,
+        u_bar_step=0.05, u_bar_cum=0.135,
+    )
+
     return {
         "u_adm_safe_single_step_usdt": u_adm_safe,
         "u_adm_liquidation_single_step_usdt": u_adm_liq,
@@ -659,6 +694,27 @@ def evaluate_out_of_domain_counterexample() -> dict:
             "alpha_selected_for_u1": float(chosen_u1[0]),
             "alpha_selected_for_u2": float(chosen_u2[0]),
             "non_anticipative_invariant": bool(abs(chosen_u1[0] - chosen_u2[0]) < 1e-15),
+        },
+        "p04_four_category_state_audit": {
+            "category_1_ordinary_feasible": {
+                "selected_alpha": float(cat1_chosen[0]),
+                "pre_infeasible": bool(cat1_infeasible),
+                "status": "NO_SAFE_ACTION" if cat1_infeasible else "FEASIBLE",
+            },
+            "category_2_exact_margin_boundary": {
+                "selected_alpha": float(cat2_chosen[0]),
+                "pre_infeasible": bool(cat2_infeasible),
+                "status": "NO_SAFE_ACTION" if cat2_infeasible else "FEASIBLE",
+            },
+            "category_3_all_candidates_fail": {
+                "selected_alpha": float(cat3_chosen[0]),
+                "pre_infeasible": bool(cat3_infeasible),
+                "status": "NO_SAFE_ACTION" if cat3_infeasible else "FEASIBLE",
+            },
+            "category_4_out_of_domain_shock": {
+                "status": ep_up_10["status"],
+                "liquidated": ep_up_10["liquidated"],
+            },
         },
     }
 

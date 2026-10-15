@@ -272,6 +272,8 @@ run_cmd do
   `CurrentMM.resolvent_guard_cumulative_positive_at_zero_alpha,
   `CurrentMM.resolvent_guard_maintenance_margin_tier2_consistency,
   `CurrentMM.non_anticipative_guard_action_invariance,
+  `CurrentMM.resolvent_guard_post_hedge_and_fill_margin_accounting,
+  `CurrentMM.prony_blind_four_moment_uniform_upper_bound,
   `CurrentMM.diagonal_minus_rank_one_posDef,
   `CurrentMM.actual_spectral_matrix_positive,
   `CurrentMM.actual_spectral_matrix_gap,

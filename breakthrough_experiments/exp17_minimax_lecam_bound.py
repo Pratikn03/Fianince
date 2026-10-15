@@ -59,6 +59,42 @@ from breakthrough_experiments.exp15_cohort_information import (
 SIGMA_H_1 = SIGMA_P / V_PROBE  # 0.01 / 6.25 = 0.0016
 
 
+def blind_multilag_prony_estimator(h_obs: np.ndarray, L_lags: int = 20, kappa: float = 0.8, a: float = 0.5) -> np.ndarray:
+    """Parameter-blind multi-lag Prony–Hankel 4-parameter estimator (Gate P0-3):
+    Recovers (w_1, w_2, eta_1, eta_2) directly from the observed impulse response h_obs
+    WITHOUT knowing eta_bar, Delta_eta, q_tot, or p_+- in advance:
+      1. Deconvolves the closed-loop equation u_t = (h_t - a h_{t-1})/kappa = sum_{j=1}^t g_j h_{t-j}
+         by forward triangular Toeplitz substitution to obtain the open-loop kernel g_1..g_{L_lags},
+         where g_l = sum_{k=1}^2 w_k eta_k (1 - eta_k)^{l-1}.
+      2. Solves the overdetermined Hankel linear system H [c_0, c_1]^T = -g_{3..L_lags} for the
+         characteristic polynomial r^2 + c_1 r + c_0 = 0, whose roots r_1 > r_2 yield
+         hat{eta}_k = 1 - hat{r}_k.
+      3. Solves the Vandermonde least-squares system V(hat{r}) tilde{w} = g for tilde{w}_k = w_k eta_k
+         and sets hat{w}_k = tilde{w}_k / hat{eta}_k.
+    """
+    u = (h_obs[1 : L_lags + 1] - a * h_obs[:L_lags]) / kappa
+    h0 = float(h_obs[0]) if abs(h_obs[0]) > 1e-9 else 1e-9
+    g = np.zeros(L_lags, dtype=float)
+    for idx in range(L_lags):
+        prev_sum = float(np.dot(h_obs[1 : idx + 1][::-1], g[:idx])) if idx > 0 else 0.0
+        g[idx] = (u[idx] - prev_sum) / h0
+    H = np.column_stack([g[: L_lags - 2], g[1 : L_lags - 1]])
+    rhs = -g[2:L_lags]
+    c0, c1 = np.linalg.lstsq(H, rhs, rcond=None)[0]
+    disc = max(0.0, float(c1 * c1 - 4.0 * c0))
+    r1 = float(np.clip(0.5 * (-c1 + np.sqrt(disc)), 1e-4, 1.0 - 1e-4))
+    r2 = float(np.clip(0.5 * (-c1 - np.sqrt(disc)), 1e-4, 1.0 - 1e-4))
+    if abs(r1 - r2) < 1e-7:
+        r1 = min(1.0 - 1e-4, r1 + 1e-5)
+        r2 = max(1e-4, r2 - 1e-5)
+    eta_hat = np.array([1.0 - r1, 1.0 - r2], dtype=float)
+    powers = np.arange(L_lags, dtype=float)
+    V = np.column_stack([r1 ** powers, r2 ** powers])
+    w_tilde = np.linalg.lstsq(V, g, rcond=None)[0]
+    w_hat = w_tilde / eta_hat
+    return np.concatenate([w_hat, eta_hat])
+
+
 def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: float = 0.40, q_tot: float = 0.20) -> dict:
     """Construct the exact closed-form moment-matched Le Cam two-point pair (theta_0, theta_1)
     (Eq. IA.29, satisfying Delta M_0 = Delta M_1 = Delta M_2 = 0) and separately compute the
@@ -149,6 +185,24 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
         2.0 * np.log(4.0 / 0.05) * (SIGMA_H_1 ** 2) * f_inv_w_max / (tau ** 2)
     )
 
+    # Parameter-blind multi-lag Prony-Hankel estimator (Gate P0-3): zero knowledge of eta_bar, Delta_eta, q_tot
+    prony_rec_0 = blind_multilag_prony_estimator(h0_an, L_lags=20)
+    prony_rec_1 = blind_multilag_prony_estimator(h1_an, L_lags=20)
+    prony_noiseless_err = float(max(np.max(np.abs(prony_rec_0 - theta0_an)), np.max(np.abs(prony_rec_1 - theta1_an))))
+    G_prony = np.zeros((2, 21), dtype=float)
+    eps_p = 1e-8
+    for j_lag in range(21):
+        ej = np.zeros_like(h0_an)
+        ej[j_lag] = eps_p
+        G_prony[:, j_lag] = (
+            blind_multilag_prony_estimator(h0_an + ej, L_lags=20)[:2]
+            - blind_multilag_prony_estimator(h0_an - ej, L_lags=20)[:2]
+        ) / (2.0 * eps_p)
+    prony_max_row_norm_sq = float(np.max(np.sum(G_prony ** 2, axis=1)))
+    n_upper_blind_prony_95 = float(
+        2.0 * np.log(4.0 / 0.05) * (SIGMA_H_1 ** 2) * prony_max_row_norm_sq / (tau ** 2)
+    )
+
     fail_prob_an_N50 = float(norm.cdf(-np.sqrt(50.0) * dist_an / (2.0 * SIGMA_H_1)))
     fail_prob_N1 = float(norm.cdf(-np.sqrt(1.0) * dist_l2 / (2.0 * SIGMA_H_1)))
     fail_prob_N50 = float(norm.cdf(-np.sqrt(50.0) * dist_l2 / (2.0 * SIGMA_H_1)))
@@ -173,6 +227,9 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
         "impulse_l2_distance_exact": dist_l2,
         "n_star_crb_unbiased": float(n_crb),
         "n_star_minimax_upper_bound_95pct": n_upper_subgaussian_95,
+        "n_star_blind_prony_upper_bound_95pct": n_upper_blind_prony_95,
+        "blind_prony_noiseless_max_err": prony_noiseless_err,
+        "blind_prony_jacobian_row_norm": float(np.sqrt(prony_max_row_norm_sq)),
         "n_star_lecam_analytic_95pct": n_lecam_an_95,
         "n_star_lecam_analytic_975pct": n_lecam_an_975,
         "n_star_lecam_95pct_any_estimator": n_lecam_95,
@@ -356,10 +413,12 @@ def main():
     ys_lecam_an = np.log([r["n_star_lecam_analytic_95pct"] for r in sweep])
     ys_crb = np.log([r["n_star_crb_unbiased"] for r in sweep])
     ys_ub = np.log([r["n_star_minimax_upper_bound_95pct"] for r in sweep])
+    ys_prony = np.log([r["n_star_blind_prony_upper_bound_95pct"] for r in sweep])
     slope_lecam, _ = np.polyfit(xs, ys_lecam, 1)
     slope_lecam_an, _ = np.polyfit(xs, ys_lecam_an, 1)
     slope_crb, _ = np.polyfit(xs, ys_crb, 1)
     slope_ub, _ = np.polyfit(xs, ys_ub, 1)
+    slope_prony, _ = np.polyfit(xs, ys_prony, 1)
 
     pair_010 = next(r for r in sweep if abs(r["delta_eta"] - 0.10) < 1e-6)
     n_lecam_an = int(round(pair_010["n_star_lecam_analytic_95pct"]))
@@ -377,11 +436,31 @@ def main():
         use_analytic_pair=True,
     )
 
+    # P0-3 Monte Carlo verification of parameter-blind multi-lag Prony-Hankel estimator
+    rng_p03 = np.random.default_rng(20261014)
+    pair_030 = next(r for r in sweep if abs(r["delta_eta"] - 0.30) < 1e-6)
+    th0_030 = np.array(pair_030["theta0_analytic"])
+    h0_030 = h_of(th0_030, 2)
+    n_prony_030 = int(np.ceil(pair_030["n_star_blind_prony_upper_bound_95pct"]))
+    sigma_n_030 = SIGMA_H_1 / np.sqrt(float(n_prony_030))
+    prony_errs = []
+    for _ in range(400):
+        h_noisy = h0_030 + rng_p03.normal(0.0, sigma_n_030, size=len(h0_030))
+        th_hat = blind_multilag_prony_estimator(h_noisy, L_lags=20)
+        prony_errs.append(float(np.max(np.abs(th_hat[:2] - th0_030[:2]))))
+    p03_blind_prony_mc = {
+        "delta_eta": 0.30,
+        "N_tested": n_prony_030,
+        "empirical_fail_prob": float(np.mean(np.array(prony_errs) >= TOL)),
+        "median_linf_weight_error": float(np.median(prony_errs)),
+        "passes_5pct_target": bool(float(np.mean(np.array(prony_errs) >= TOL)) <= 0.05),
+    }
+
     write_latex_table(sweep, mc_bench)
 
     print(
         f"\nScaling slopes: CRB={slope_crb:.3f}, UpperBound={slope_ub:.3f}, "
-        f"LeCam_Refined={slope_lecam:.3f}, LeCam_Analytic={slope_lecam_an:.3f}"
+        f"BlindPronyUB={slope_prony:.3f}, LeCam_Refined={slope_lecam:.3f}, LeCam_Analytic={slope_lecam_an:.3f}"
     )
     for row in mc_bench:
         N = row["N"]
@@ -404,6 +483,8 @@ def main():
         "loglog_slope_lecam_analytic": float(slope_lecam_an),
         "loglog_slope_crb": float(slope_crb),
         "loglog_slope_upper_bound": float(slope_ub),
+        "loglog_slope_blind_prony_upper_bound": float(slope_prony),
+        "p03_blind_prony_mc_verification": p03_blind_prony_mc,
         "separation_sweep": sweep,
         "estimator_benchmark_delta_eta_010": mc_bench,
         "estimator_benchmark_delta_eta_010_analytic_pair": mc_bench_analytic,

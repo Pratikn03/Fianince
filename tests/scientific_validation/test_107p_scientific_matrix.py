@@ -402,7 +402,7 @@ def test_mm17_113p_audit_tc_g_c_e_v_gates():
 
     # 4. Lean 4 & manuscript consistency (TC-V1..V4: F12)
     tc_v = receipt["TC_V1_to_V4_lean_and_manuscript_consistency"]
-    assert tc_v["TC_V1_named_theorems_count"] == 317
+    assert tc_v["TC_V1_named_theorems_count"] == 319
     assert tc_v["TC_V2_full_manuscript_statements"] == 23
     assert tc_v["TC_V3_zero_sorry_and_zero_unapproved_axioms"] is True
     assert tc_v["TC_V4_table_ia15_compact_s01_to_s23"] is True
