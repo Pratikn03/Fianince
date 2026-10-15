@@ -1457,10 +1457,13 @@ def test_p02_p03_p04_scientific_validation_gates():
     theta_hat = blind_multilag_prony_estimator(h_of(np.array(pair["theta0_analytic"]), 2))
     assert np.max(np.abs(theta_hat - np.array(pair["theta0_analytic"]))) < 1e-11
 
-    # P0-4: 4-category state audit and NO_SAFE_ACTION protective fallback
+    # P0-4: 4-category state audit, exact 1:1 passive fill agreement, and NO_SAFE_ACTION protective fallback
     ood = evaluate_out_of_domain_counterexample()
     audit = ood["p04_four_category_state_audit"]
     assert audit["category_1_ordinary_feasible"]["status"] == "FEASIBLE"
+    assert audit["category_1_ordinary_feasible"]["fill_bound_satisfied_exact"] is True
+    assert np.isclose(audit["category_1_ordinary_feasible"]["alpha_035_witness_guard_fill_units"], 0.093975, atol=1e-12)
+    assert np.isclose(audit["category_1_ordinary_feasible"]["alpha_035_witness_simulator_fill_units"], 0.093975, atol=1e-12)
     assert audit["category_2_exact_margin_boundary"]["status"] == "FEASIBLE"
     assert audit["category_3_all_candidates_fail"]["pre_infeasible"] is True
     assert audit["category_3_all_candidates_fail"]["status"] == "NO_SAFE_ACTION"
@@ -1469,6 +1472,14 @@ def test_p02_p03_p04_scientific_validation_gates():
     assert audit["category_3_all_candidates_fail"]["passive_fill_absorbed_units"] == 0.0
     assert audit["category_3_all_candidates_fail"]["quote_continuity_ratio"] == 0.0
     assert audit["category_4_out_of_domain_shock"]["status"] == "NO_SAFE_ACTION"
+
+    # P0-1: Verify exact S17-S23 theorem ID synchronization in claim_to_code_map.tex
+    claim_map_tex = Path("paper/generated/claim_to_code_map.tex").read_text()
+    assert r"\texttt{S17}: Spectral Dissipation Lower Bound" in claim_map_tex
+    assert r"\texttt{S19}: Cram\'er--Rao Local Information Benchmark" in claim_map_tex
+    assert "cramer_rao_two_cohort_inverse_sixth_scaling" in claim_map_tex
+    assert r"\texttt{S22}: Coordinate-Weighted Output Sensitivity" in claim_map_tex
+    assert "coordinate_weighted_output_cone_contraction" in claim_map_tex
 
 
 

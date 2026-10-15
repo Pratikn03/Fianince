@@ -484,12 +484,13 @@ def simulate_double_entry_dealer_episode(
         x_next = float(C_t @ z_next)
         p_next = P_STAR + x_next
 
-        # Order flow absorbed by dealer during step t (earning maker half-spread 0.02 USDT/unit).
-        # Under NO_SAFE_ACTION protective halt (step_infeasible_halt), passive maker fill intake is suspended (flow_absorbed = 0).
+        # Order flow absorbed by dealer during step t at quoted depth g_star = alpha_t
+        # (\Delta I^{fill}_t = -12 * \alpha_t * s(\alpha_t) * w_{1,t}, earning maker half-spread 0.02 USDT/unit).
+        # Under NO_SAFE_ACTION protective halt (step_infeasible_halt or g_star == 0), passive maker fill intake is zero.
         if step_infeasible_halt:
             flow_absorbed = 0.0
         else:
-            flow_absorbed = -12.0 * shock_scale * float(shocks[t, 0])
+            flow_absorbed = -12.0 * g_star * shock_scale * float(shocks[t, 0])
         last_flow_absorbed = float(flow_absorbed)
         exec_price = 0.5 * (p_curr + p_next)
         maker_spread_rev = 0.02 * abs(flow_absorbed) * (1.0 if not step_halted else 0.0)
@@ -662,12 +663,32 @@ def evaluate_out_of_domain_counterexample() -> dict:
     )
 
     # P0-4 Four-Category State Audit:
-    # 1. Ordinary feasible state
+    # 1. Ordinary feasible state (plus exact witness check of guard max_fill_qty vs simulator flow_absorbed at u_step = 0.05)
     cat1_chosen, cat1_infeasible = select_non_anticipative_alpha(
         table=table_g3, z=np.zeros(3), inv=I0_UNITS, p_curr=P_STAR,
         eq_curr=E0_USDT, mm_curr=950.0,
         will_hedge=True, charge_hedge_costs=True, shock_gated_venue=True,
         u_bar_step=0.05, u_bar_cum=0.135,
+    )
+    cat1_eval = evaluate_guard_inequalities_ia39(
+        alpha=float(cat1_chosen[0]),
+        mc_val=float(cat1_chosen[2]),
+        cg_val=float(cat1_chosen[3]),
+        z_norm=0.0,
+        inv_curr=I0_UNITS,
+        p_curr=P_STAR,
+        eq_curr=E0_USDT,
+        mm_curr=950.0,
+        u_bar_step=0.05,
+        u_bar_cum=0.135,
+        will_hedge=True,
+        charge_hedge_costs=True,
+        shock_gated_venue=True,
+    )
+    cat1_ep = simulate_double_entry_dealer_episode(
+        np.array([[0.05, 0.0, 0.0]], dtype=float),
+        "Regime_II_NonNormal_Herding",
+        "Resolvent_Guard_Kreiss",
     )
     # 2. Exact margin boundary state (u_bar_step = 270/67, u_bar_cum = 0, pure operator)
     cat2_chosen, cat2_infeasible = select_non_anticipative_alpha(
@@ -735,6 +756,22 @@ def evaluate_out_of_domain_counterexample() -> dict:
                 "selected_alpha": float(cat1_chosen[0]),
                 "pre_infeasible": bool(cat1_infeasible),
                 "status": "NO_SAFE_ACTION" if cat1_infeasible else "FEASIBLE",
+                "guard_certified_max_fill_units": float(cat1_eval["max_fill_qty_units"]),
+                "simulator_actual_fill_units": float(abs(cat1_ep["last_flow_absorbed_units"])),
+                "alpha_035_witness_guard_fill_units": float(
+                    evaluate_guard_inequalities_ia39(
+                        alpha=0.35, mc_val=1.0, cg_val=1.0, z_norm=0.0,
+                        inv_curr=I0_UNITS, p_curr=P_STAR, eq_curr=E0_USDT, mm_curr=950.0,
+                        u_bar_step=0.05, u_bar_cum=0.135,
+                        will_hedge=True, charge_hedge_costs=True, shock_gated_venue=True,
+                    )["max_fill_qty_units"]
+                ),
+                "alpha_035_witness_simulator_fill_units": float(
+                    12.0 * 0.35 * (0.15 + 0.85 * 0.35) * 0.05
+                ),
+                "fill_bound_satisfied_exact": bool(
+                    abs(abs(cat1_ep["last_flow_absorbed_units"]) - cat1_eval["max_fill_qty_units"]) < 1e-15
+                ),
             },
             "category_2_exact_margin_boundary": {
                 "selected_alpha": float(cat2_chosen[0]),

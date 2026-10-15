@@ -132,12 +132,6 @@ REGISTRY = [
         "tests/test_breakthrough_experiments.py", "test_frontier_displacement_cap_enforced"
     ),
     TheoremMapping(
-        "proposition", "Coordinate-Weighted Output Sensitivity",
-        r"Proposition IA.D.7",
-        "CurrentProofs/SpectralCapital.lean", "coordinate_weighted_output_cone_contraction",
-        "tests/test_breakthrough_experiments.py", "test_nonnormal_initial_excursion_not_100_percent"
-    ),
-    TheoremMapping(
         "theorem", "Spectral Dissipation Lower Bound and Feasible Identification Probes",
         r"Theorem IA.D.2",
         "CurrentProofs/SpectralCapital.lean", "parseval_toep_quadratic_ratio_bound",
@@ -166,6 +160,12 @@ REGISTRY = [
         r"Theorem IA.D.6",
         "CurrentProofs/SpectralCapital.lean", "minimax_sample_complexity_theta_d_eta_minus_six",
         "tests/test_breakthrough_experiments.py", "test_exp17_minimax_lecam_two_point_bound"
+    ),
+    TheoremMapping(
+        "proposition", "Coordinate-Weighted Output Sensitivity",
+        r"Proposition IA.D.7",
+        "CurrentProofs/SpectralCapital.lean", "coordinate_weighted_output_cone_contraction",
+        "tests/test_breakthrough_experiments.py", "test_nonnormal_initial_excursion_not_100_percent"
     ),
     TheoremMapping(
         "theorem", "Conditional Bounded-Shock Forward Solvency of the Real-Time Resolvent Guard",

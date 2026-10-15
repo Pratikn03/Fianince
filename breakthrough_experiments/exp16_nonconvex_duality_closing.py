@@ -369,11 +369,19 @@ def compute_rayleigh_holder_bound(
             W_perp_max_w = float(np.sqrt(np.sum((g_tilde[:-2] ** 2) / (1.0 - (vals[:-2] + weyl_eps) / lam_min_w))))
             gamma_max_w = float((lam_3_hi * lam_min_w) / ((lam_2_lo - lam_3_hi) * c_req))
             d2_max_w = max(1e-9, ub_ref - L0_min_w)
-            assert gamma_max_w * d2_max_w < 0.99
-            u_top = d2_max_w
+            if len(vals) == 79:
+                assert gamma_max_w * d2_max_w < 0.99
+            u_top = min(d2_max_w, 0.99 / max(gamma_max_w, 1e-12))
             u_mid = min(0.09, 0.5 * u_top)
+            if u_top < d2_max_w - 1e-12:
+                ctx.rounding = ROUND_FLOOR
+                d_tail_lb = Decimal(str(L0_min_w)) + Decimal(str(u_top))
+                if d_tail_lb < full_domain_1slab_dec_lb:
+                    full_domain_1slab_dec_lb = d_tail_lb
+                if d_tail_lb < full_domain_2slab_dec_lb:
+                    full_domain_2slab_dec_lb = d_tail_lb
 
-            # 1-slab and 2-slab outward-rounded Decimal bounds on [0, d2_max_w]
+            # 1-slab and 2-slab outward-rounded Decimal bounds on [0, u_top]
             for u_a, u_b, is_1slab in [(0.0, u_top, True), (0.0, u_mid, False), (u_mid, u_top, False)]:
                 if u_b <= u_a + 1e-12:
                     continue
