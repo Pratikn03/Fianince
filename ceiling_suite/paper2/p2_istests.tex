@@ -1,10 +1,11 @@
+\FloatBarrier
 \section{Tests of the information-safety results}\label{sec:istests}
 
-The theorems of Sections~\ref{sec:infosafety}--\ref{sec:disclosure} concern declared contracts. This section reports two kinds of tests: simulations in which the true economy is known, so that coverage, attainment and optimality can be checked directly; and two pre-registered tests on market data that no earlier part of this paper used.
+The theorems of Sections~\ref{sec:infosafety}--\ref{sec:disclosure} concern declared contracts. This section reports two kinds of tests: simulations in which the true economy is known, so that coverage, attainment and optimality can be checked directly; pre-registered tests on market data that no earlier part of this paper used, on new days, new symbols and a new venue; and post-hoc checks on data already opened.
 
 \subsection{Simulation tests with a known truth}\label{sec:simtests}
 
-\begin{table}[t]\centering\footnotesize
+\begin{table}[!tbp]\centering\footnotesize
 \begin{threeparttable}
 \caption{Simulation tests of the information-safety results}\label{tab:simtests}
 \setlength{\tabcolsep}{3pt}
@@ -21,25 +22,147 @@ T06 & Is the closed-form guard globally optimal? & 500 economies: equal to brute
 T07 & What does disclosure add? & Table~\ref{tab:discsim}\\
 T08 & Does the guard depend on the channel? & Momentum learners, fixed-rule traders, depth and slow dealer reversion calibrated to $S=5$: identical guard capacity ($0.20$); one-period margins differ ($-0.34$ to $-0.20$)\\
 T09 & What breaks the certificate? & Coverage at nominal 95\%: as assumed $100\%$; delayed feedback $100\%$; contrarian cohorts $100\%$; depth channel $92.8\%$; memory longer than declared $86.3\%$; feedback 20\% stronger after certification $34.7\%$\\
+T10 & Are the window endpoints proved? & Certified by Lemma~\ref{lem:certnum} for every window; outside the 60-digit endpoints by at most $1.5\times10^{-8}$ relative\\
+T11 & What if the tap noise is correlated? & (O1) certificate covers 74--76\% (exact value $75.1\%$); $t$-certificate 94--95\%; Hotelling 100\%; dependent experiments 82--85\%\\
 T12 & Should rebates use certified bounds? & No: a 10\% overstatement of $S$ costs $2.4$--$2.8\%$ of first-best welfare, a 50\% overstatement $70$--$80\%$\\
+T13 & What if admission changes the dynamics? & Safe sets $[0,0.035]\cup[0.386,1]$ (closed form) and $[0,0.053]\cup[0.178,1]$ (book, certified); no certified level unsafe in 433 sampled economies\\
+T14 & Does sequential probing keep its error level? & No wrong decision in 7{,}000 runs; 3.7 to 107 probes against 130 for a fixed design\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item All tests are deterministic given their seeds and run without data (\texttt{research\_extension/information\_safety/run\_all.py} $\to$ \texttt{IS\_results.json}, about three minutes). Kind: recomputed. \end{tablenotes}
+\begin{tablenotes}\footnotesize\item All tests are deterministic given their seeds and run without data (\texttt{research\_extension/information\_safety/run\_all.py} $\to$ \texttt{results/T*.json}, about six minutes). Further checks: the joint per-period and total-budget worst case equals its linear-programming value in 300 random cases (T05b), and the balance-sheet step keeps the reserve in all 17{,}551 sampled states that satisfy the guard inequality (T12b). Kind: recomputed. \end{tablenotes}
 \end{threeparttable}
 \end{table}
 
-The simulations confirm what the theorems claim and locate what they do not (Table~\ref{tab:simtests}). The certificate is valid where its contract holds, including with delayed feedback and contrarian cohorts, and conservative when the declared memory is long. It fails in two ways that matter for practice: when memory is longer than declared, which is the case Theorem~\ref{thm:window}(iii) warns about, and when feedback strengthens after certification, in which case a stale certificate covers the new risk only a third of the time. A guard must therefore be re-certified as conditions change; it cannot be set once.
+The simulations confirm what the theorems claim and locate what they do not (Table~\ref{tab:simtests}). The certificate is valid where its contract holds, including with delayed feedback and contrarian cohorts, and conservative when the declared memory is long. It fails in two ways that matter for practice: when memory is longer than declared, which is the case Theorem~\ref{thm:window}(iii) warns about, and when feedback strengthens after certification, in which case a stale certificate covers the new risk only a third of the time. A guard must therefore be re-certified as conditions change; it cannot be set once. The remaining tests check the extensions: the window endpoints are proved rather than computed (T10), certificates that do not assume independent taps keep their level when the taps are correlated while the (O1) certificate does not (T11), non-monotone admission is certified by branch and bound (T13), and sequential probing keeps its error level (T14).
 
 \subsection{Pre-registered test on untouched days (Part 15)}\label{sec:p15}
 We registered a test (Part 15) before downloading any day used in it: the 12th to 15th of each month on Binance, days no earlier part used on Binance. It has two primaries, with Holm's correction across them. First, the forecasting model of Table~\ref{tab:z9}, frozen at its 2023--2024 training estimates, is applied to the 15th of each month from January 2025 to September 2026. Second, an uncertainty-aware guard throttles a position by $\min(1,k_s/(U_{\rm cert}S^{\rm up}_{60}))$, where $S^{\rm up}_{60}$ is the 90th percentile of the summed response over 100 block-bootstrap refits of the operator certified from the three preceding days; it is compared with a static limit at matched activity, and secondarily with the point-estimate guard, a depth throttle, a spectral-radius throttle and a volatility cap. The bootstrap bound is a diagnostic for observational data, not the finite-sample certificate of Theorem~\ref{thm:certcost}.
 
-\begin{center}
-\fbox{\parbox{0.9\textwidth}{\textbf{[Results pending: Part 15 is running.]} This subsection will report the frozen-model $\Delta R^2$ with its 97.5\% interval and Clark--West statistic; the guard's log difference in tail loss per unit of position against the static limit with its 97.5\% interval; the secondary comparisons; activity retained, share of hours throttled and breach rates for each rule; and the outcome of each primary under Holm's correction, pass or fail.}}
-\end{center}
+\begin{table}[!tbp]\centering\small
+\begin{threeparttable}
+\caption{Pre-registered test on untouched days (Part 15), 2025--2026}\label{tab:p15}
+\footnotesize\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lccc}
+\toprule
+\multicolumn{4}{l}{\emph{A. Frozen forecasting model (primary 1)}}\\
+ & $\Delta R^2$ (pts) [CI] & Clark--West $t$ & $\Delta$AUC [95\% CI]\\
+\midrule
+$\hat C_3$ (primary, 97.5\%) & $+4.20$ [$+1.55$, $+8.23$] & 9.94 & $+0.007$ [$+0.001$, $+0.011$]\\
+$S_{60}$ (secondary, 95\%) & $+3.26$ [$+1.82$, $+5.34$] & 11.55 & \\
+\midrule
+\multicolumn{4}{l}{\emph{B. Guards at matched activity}}\\
+Rule & TLR & Activity & Robust guard vs.\ rule [95\% CI]\\
+\midrule
+Static limit & 377 & 1.00 & $-0.084$ [$-0.161$, $-0.017$] (primary 2)\\
+Uncertainty-aware guard & 347 & 0.91 & ---\\
+Point-estimate guard & 346 & 0.92 & $+0.003$ [$-0.005$, $+0.013$]\\
+Depth throttle & 469 & 0.59 & $-0.302$ [$-0.446$, $-0.146$]\\
+Spectral-radius throttle & 401 & 0.82 & $-0.146$ [$-0.240$, $-0.065$]\\
+Volatility cap & 339 & 0.86 & $+0.023$ [$-0.022$, $+0.082$]\\
+Volatility cap $\times$ guard & 335 & 0.80 & vs.\ cap: $-0.012$ [$-0.037$, $+0.013$]\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item 20 thin symbols; evaluation days the 15th of each month; frozen model trained on 16{,}860 Part 9 symbol-hours, tested on 6{,}714 hours on 20 dates; frozen baseline out-of-sample $R^2=0.058$; training coefficient $+71.3$. Guards: 6{,}732 test hours; TLR = ES95 of loss per unit of average position (positions normalized to training mean 1); the last column of panel B reports $\log{\rm TLR}$(robust guard) minus $\log{\rm TLR}$(rule), so negative values favour the robust guard. Primary 2 uses the 97.5\% interval $[-0.173,-0.011]$, one-sided $p=0.0025$. Both primaries pass under Holm's correction. Median $S^{\rm up}_{60}/S_{60}=1.25$. Specification SHA-256 \texttt{69849c96d70f\ldots}; test opened once. Kind: real data (Part 15).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Both primaries pass (Table~\ref{tab:p15}). The forecasting model, frozen at its 2023--2024 estimates and applied to days never used before, finds that $\hat C_3$ adds $4.2$ points of out-of-sample $R^2$ to the volatility and impact baseline (97.5\% interval $[1.6,8.2]$, Clark--West $t=9.9$) and improves tail classification; the summed response $S_{60}$ adds $3.3$ points. The gain is larger than in Table~\ref{tab:z9} partly because the frozen baseline explains less on these days ($5.8\%$ of the variance against $18.6\%$): frozen coefficients transfer imperfectly, and the dynamic statistic picks up part of what the baseline loses. As a one-sided throttle on a static limit, the uncertainty-aware guard lowers tail loss per unit of position by 8\% (log difference $-0.084$, 97.5\% interval $[-0.173,-0.011]$, that is, a reduction of 1\% to 16\%) while retaining 91\% of activity, replicating on untouched days the post-hoc finding of Section~\ref{sec:certguard}. It does much better than throttling on depth (26\% lower tail loss) or on the spectral radius (14\% lower), the two controls a supervisor would reach for first.
+
+Two secondary results limit the claim. The bootstrap upper bound does no better than the point estimate ($+0.3\%$, interval $[-0.5\%,+1.3\%]$): on these data the upper bound is about 1.25 times the point estimate in most hours and ranks hours almost identically, so accounting for estimation uncertainty changes which hours are throttled very little. And, as in Section~\ref{sec:certguard}, a volatility cap does at least as well as the guard, and adding the guard to it does not help significantly ($-1.2\%$, interval $[-3.7\%,+1.3\%]$). Used as the theorem uses it, the guard is a better throttle than depth or spectral rules and a real improvement over a static limit; it is not a substitute for volatility information.
 
 \subsection{Pre-registered test on untouched symbols (Part 16)}\label{sec:p16}
 A third registered test (Part 16) uses Binance perpetuals that no earlier part used, thirty drawn by a seeded rule before any analysis and kept if their training depth is below the thin threshold of Part 5. It has three primaries, with Holm's correction across them: the forecasting specification of Table~\ref{tab:z9} on the new thin symbols; the same beyond the baseline \emph{plus VPIN}, which turns the post-hoc comparison of Section~\ref{sec:z9} into a confirmatory one; and the guard of Section~\ref{sec:p15} against a static limit.
 
-\begin{center}
-\fbox{\parbox{0.9\textwidth}{\textbf{[Results pending: Part 16 is running.]} This subsection will report the symbols that entered, the three primary statistics with their intervals and Holm-adjusted $p$-values, VPIN's own gain, and the guard comparisons.}}
-\end{center}
+\begin{table}[!tbp]\centering\small
+\begin{threeparttable}
+\caption{Pre-registered test on untouched symbols (Part 16), 2025--2026}\label{tab:p16}
+\footnotesize\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lccc}
+\toprule
+\multicolumn{4}{l}{\emph{A. Forecasting beyond the volatility baseline (5 new thin symbols)}}\\
+ & $\Delta R^2$ (pts) [95\% CI] & Clark--West $t$ & $\Delta$AUC [95\% CI]\\
+\midrule
+$\hat C_3$ (primary 1) & $+0.73$ [$+0.38$, $+1.43$] & 5.70 & $+0.004$ [$+0.001$, $+0.007$]\\
+$\hat C_3$, VPIN in baseline (primary 2) & $+0.56$ [$+0.27$, $+1.16$] & 5.38 & $+0.003$ [$+0.001$, $+0.006$]\\
+VPIN (secondary) & $+0.28$ [$+0.14$, $+0.53$] & 4.39 & $+0.002$ [$+0.001$, $+0.003$]\\
+$S_{60}$ (secondary) & $+0.42$ [$+0.20$, $+0.85$] & 4.43 & $+0.001$ [$-0.000$, $+0.003$]\\
+\midrule
+\multicolumn{4}{l}{\emph{B. Guards at matched activity}}\\
+Rule & TLR & Activity & Robust guard vs.\ rule [95\% CI]\\
+\midrule
+Static limit & 466 & 1.00 & $-0.256$ [$-0.497$, $-0.021$] (prim.\ 3)\\
+Uncertainty-aware guard & 360 & 0.91 & ---\\
+Point-estimate guard & 371 & 0.91 & $-0.028$ [$-0.076$, $+0.009$]\\
+Volatility cap & 367 & 0.85 & not tested\\
+Volatility cap $\times$ guard & 342 & 0.78 & vs.\ cap: $-0.072$ [$-0.180$, $+0.005$]\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Thirty perpetuals drawn by a seeded rule (seed 20261031) from the 48 listed Binance perpetuals not used in Parts 4--15; five had training depth within 1\% below \$0.39M and entered: BAT, BEL, COTI, CTSI and LQTY. Forecasting: Part 9 specification re-estimated on these symbols' training days (10th and 24th of each month, 2023--2024; 4{,}215 symbol-hours) and tested on the 6th and 20th of each month, January 2025 to September 2026 (3{,}597 hours on 40 dates); baseline out-of-sample $R^2=0.317$. VPIN: six-hour window, 50 equal-volume buckets, winsorized at training 1\%/99\% (median $0.24$). Guards: Part 15 definitions; 1{,}080 training and 1{,}782 test symbol-hours on the 15th of each month; last column of panel B is $\log{\rm TLR}$(robust guard) minus $\log{\rm TLR}$(rule). Holm-adjusted $p$ across the three primaries: $2\times10^{-8}$, $7\times10^{-8}$ and $0.004$; all three pass. Secondary Holm-adjusted $p$: VPIN and $S_{60}$ $<0.0001$; robust vs.\ point guard $0.11$; cap $\times$ guard vs.\ cap $0.07$. Specification SHA-256 \texttt{0523e47626da\ldots}; test opened once. Kind: real data (Part 16).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+All three primaries pass (Table~\ref{tab:p16}), but on a small set. The seeded draw of thirty new perpetuals produced only five with thin books, because the thinnest listed symbols had already been used in Parts 4--15; the rule required no minimum, so the test went ahead with five. On these symbols, re-estimating the Part 9 specification on their own training days, $\hat C_3$ adds $0.73$ points of out-of-sample $R^2$ to the volatility and impact baseline (95\% interval $[0.38,1.43]$, Clark--West $t=5.7$) and improves tail classification. That is about a quarter of the Part 9 gain on the original thin symbols, on a baseline that already explains $31.7\%$ of the variance rather than $18.6\%$.
+
+The second primary makes the post-hoc VPIN comparison of Section~\ref{sec:z9} confirmatory: with VPIN added to the baseline, $\hat C_3$ still adds $0.56$ points ($[0.27,1.16]$). VPIN has content of its own ($+0.28$ points) but leaves most of $\hat C_3$'s gain in place, as in the post-hoc comparison. The summed response $S_{60}$ adds $0.42$ points.
+
+The third primary replicates the guard of Section~\ref{sec:p15} on new symbols. Against a static limit, the uncertainty-aware guard lowers tail loss per unit of position by 23\% (log difference $-0.256$, interval $[-0.497,-0.021]$, a reduction of 2\% to 39\%) while retaining 91\% of activity. The interval is wide: the guard sample is five symbols on about twenty evaluation days, and its one-sided bootstrap $p$ of $0.004$ (8 of 2{,}000 draws) passes Holm's correction within Part 16 but not a Bonferroni correction across all tested primaries of the program (Section~\ref{sec:threats}). The secondary comparisons agree with Part 15. The bootstrap upper bound again does not significantly improve on the point estimate ($-2.8\%$ in log points, interval including zero). Adding the guard to a volatility cap lowers tail loss by a further 7\%, a larger effect than in Part 15 but not significant after correction (Holm $p=0.07$). We do not report the guard against the volatility cap alone, which the registration did not include; the point estimates are close (360 against 367).
+
+\subsection{Pre-registered test on a new venue (Part 17)}\label{sec:p17}
+Every venue so far was Binance, Bybit or the US consolidated tape. Part 17 registers a test on Coinbase Exchange spot, a US-regulated venue that no earlier part used, from public trade data: thin USD pairs drawn by a seeded rule from those with median daily dollar volume of \$0.5--5 million in June 2024, the depth-free statistic $\hat C_3^{\rm flow}$ of Parts 7 and 14, and the Part 9 volatility and impact baseline, on the 6th and 20th of each month from January 2025 to September 2026. Its second primary is a falsification test. Order splitting makes signed flow persistent, and a statistic built from persistent flow could forecast through persistence alone. The placebo recomputes $\hat C_3^{\rm flow}$ after shifting the flow series by 180 minutes inside its own six-hour window, which keeps the flow's distribution and persistence and breaks its minute-by-minute alignment with prices, the alignment the model says carries the risk. The real statistic must beat the placebo. The two primaries are tested in a fixed sequence, the placebo comparison only if the first passes, because beating a placebo is informative only when the real statistic has content.
+
+The test fails (Table~\ref{tab:p17}). Of the twenty pairs drawn, six traded in at least 60\% of minutes on enough days to enter (ARB, FLR, ICP, QNT, VET and XLM); thin pairs on this venue trade too sparsely for the rest. On these six, $\hat C_3^{\rm flow}$ adds $-0.09$ points of $R^2$ to the baseline (95\% interval $[-0.41,0.16]$, Clark--West $t=-0.58$), so the first primary fails and, under the registered fixed sequence, the placebo comparison is not tested; descriptively the real statistic and the placebo do equally badly (difference $+0.01$ points, $[-0.33,0.30]$). Nothing else forecasts either: $S_{60}$, VPIN and the statistic in the mid-size control pairs all add nothing. Coinbase joins Bybit with trades alone as a venue where the thin-book result is absent. Both are venues where the statistic must be computed from trades without depth, but so is the US test, which passed; the result is venue-specific, and we do not know which feature of a venue it depends on.
+
+\begin{table}[!tbp]\centering\small
+\begin{threeparttable}
+\caption{Pre-registered test on a new venue (Part 17): Coinbase spot, 2025--2026}\label{tab:p17}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccc}
+\toprule
+ & $\Delta R^2$ (pts) [95\% CI] & Clark--West $t$ & $\Delta$AUC [95\% CI]\\
+\midrule
+$\hat C_3^{\rm flow}$, thin (primary 1) & $-0.09$ [$-0.41$, $+0.16$] & $-0.58$ & $+0.000$ [$-0.000$, $+0.001$]\\
+Real minus placebo (primary 2, not tested) & $+0.01$ [$-0.33$, $+0.30$] & --- & ---\\
+Placebo alone & $-0.11$ [$-0.19$, $-0.03$] & $-2.62$ & \\
+$S_{60}$ & $-0.03$ [$-0.08$, $+0.02$] & $-1.66$ & \\
+VPIN & $-0.00$ [$-0.01$, $+0.00$] & $-1.81$ & \\
+$\hat C_3^{\rm flow}$ beyond baseline + VPIN & $-0.10$ [$-0.42$, $+0.15$] & --- & \\
+$\hat C_3^{\rm flow}$, mid-size control (3 pairs) & $+0.02$ [$-0.20$, $+0.23$] & $0.69$ & \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Twenty thin USD pairs (median June 2024 daily dollar volume \$0.5--5 million) and four mid-size pairs (\$15--50 million) drawn with a fixed seed before any trade was downloaded; a pair entered with at least 15 valid training and 25 valid test days, a day being valid if at least 60\% of its minutes had a trade. Six thin and three mid-size pairs entered. Training: 10th and 24th of each month of 2024 (2{,}340 thin-pair hours); test: 6th and 20th, January 2025 to September 2026 (3{,}690 hours on 42 dates); baseline out-of-sample $R^2=0.310$. Placebo: flow shifted by 180 minutes inside its six-hour window. Fixed-sequence testing: primary 2 is tested only if primary 1 passes. Secondary Holm-adjusted $p$-values all equal $1$. Specification SHA-256 \texttt{3233c52b0a39\ldots}; test opened once. Kind: real data (Part 17).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Post-hoc checks on opened data (Part 18)}\label{sec:p18}
+Two further checks use samples that earlier tests opened, so they are post hoc; their analysis plan was hashed before they were computed. The first applies the same placebo to the Binance samples of Parts 9 and 16. The second adds three controls to the guard comparisons of Parts 15 and 16: a certified peak-response guard (the quantity Lemma~\ref{thm:guard} says is unsafe for repeated trading), a participation cap that limits the position to a share of the last six hours' volume, and a margin-style rule that scales the position by an exchange-style scanning range, the 99th percentile of one-hour moves over the three certification days. A cap on inventory alone is the static limit once activity is matched.
+
+Both checks support the paper's reading, with one exception (Table~\ref{tab:p18}). The placebo carries no information on Binance: on the Part 9 sample it adds $-0.02$ points of $R^2$ while the real statistic adds $2.73$ on the same rows, a difference of $2.74$ points (95\% interval $[1.32,4.82]$), and on the Part 16 sample the difference is $0.79$ points ($[0.42,1.60]$). Real and placebo statistics are uncorrelated (Spearman $-0.004$ and $0.025$). The forecasting content in thin Binance books therefore comes from the minute-by-minute alignment of flow and prices, not from the persistence of order flow. Against the new controls, on the Part 15 sample the uncertainty-aware guard has 3\% lower tail loss per unit of position than the certified peak-response guard and the margin-style rule (both significant after Holm's correction) and far lower than the participation cap; it is not better than the six-hour peak guard ($+3.6\%$, interval including zero). On the five symbols of Part 16 it beats only the participation cap. These are post-hoc comparisons on opened data, so they qualify the guard's ranking rather than test it.
+
+\begin{table}[!tbp]\centering\small
+\begin{threeparttable}
+\caption{Post-hoc checks on opened data (Part 18)}\label{tab:p18}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcc}
+\toprule
+\multicolumn{3}{l}{\emph{A. Order-splitting placebo, $\Delta R^2$ beyond the Part 9 baseline (pts) [95\% CI]}}\\
+ & Part 9 sample (20 thin) & Part 16 sample (5 thin)\\
+\midrule
+Real $\hat C_3$ & $+2.73$ [$+1.32$, $+4.78$] & $+0.73$ [$+0.37$, $+1.48$]\\
+Placebo & $-0.02$ [$-0.05$, $+0.00$] & $-0.07$ [$-0.15$, $-0.03$]\\
+Real minus placebo & $+2.74$ [$+1.32$, $+4.82$] & $+0.79$ [$+0.42$, $+1.60$]\\
+\midrule
+\multicolumn{3}{l}{\emph{B. $\log{\rm TLR}$(uncertainty-aware guard) minus $\log{\rm TLR}$(rule) [95\% CI]}}\\
+ & Part 15 sample (20 thin) & Part 16 sample (5 thin)\\
+\midrule
+Certified peak-response guard & $-0.034$ [$-0.062$, $-0.007$] & $-0.004$ [$-0.031$, $+0.022$]\\
+Six-hour peak-response guard & $+0.036$ [$-0.015$, $+0.100$] & $-0.028$ [$-0.116$, $+0.060$]\\
+Participation cap & $-0.695$ [$-0.865$, $-0.534$] & $-0.880$ [$-1.233$, $-0.530$]\\
+Margin-style rule & $-0.033$ [$-0.060$, $-0.008$] & $-0.018$ [$-0.057$, $+0.034$]\\
+Static limit (reproduces Parts 15, 16) & $-0.084$ [$-0.166$, $-0.022$] & $-0.256$ [$-0.491$, $-0.021$]\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Post hoc: every sample was opened by an earlier test; the analysis plan was hashed before computing (\texttt{P18\_posthoc\_plan.json}). Panel A: the placebo recomputes $\hat C_3$ with the flow series shifted by 180 minutes inside its six-hour window; real and placebo are evaluated on the same rows and bootstrap draws, so the Part 9 real gain ($2.73$) differs slightly from Table~\ref{tab:z9} ($2.79$). Recomputed $\hat C_3$ and certified operators match the stored values in every row. Panel B: positions normalized to training mean 1 per symbol and rule; participation cap: position proportional to the previous six hours' dollar volume; margin-style rule: position inversely proportional to the 99th percentile of one-hour moves over the three certification days. Holm-adjusted $p$ (Part 15): certified peak $0.006$, margin $0.005$, participation $<0.001$, six-hour peak $0.91$. The static-limit row reproduces the published TLRs (377 and 347; 466 and 360). Kind: real data (post hoc, Part 18).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\FloatBarrier

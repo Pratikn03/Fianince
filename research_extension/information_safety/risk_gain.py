@@ -1,56 +1,40 @@
-"""Cumulative convolution gain vs peak gain and exhaustive sign enumeration (T05)."""
-from __future__ import annotations
-import itertools
+"""Risk gains of a fixed linear market (blueprint D1; Paper 2, corrected quantity gate and Theorem thm:guard).
+
+For z_{t+1} = J z_t + H v_t, y_t = C z_t and independent scalar shocks |v_j| <= V, the worst price excursion at horizon t is
+    sup |C J^t z_0 + sum_{j<t} C J^{t-1-j} H v_j| = |C J^t z_0| + V sum_{k<t} |C J^k H|        (attained by aligned signs).
+With a total budget sum |v_j| <= W it is |C J^t z_0| + W max_k |C J^k H|; with both, see adversarial_paths.support_joint.
+The peak gain max_k |C J^k H| is the right allowance only for a single shock, not for repeated per-period trading.
+"""
 import numpy as np
 
 
-def cumulative_convolution_gain(impulse_g: np.ndarray, horizon_H: int | None = None) -> float:
-    """Return G_{cum,H} = sum_{k=0}^{H-1} |g_k|."""
-    g = impulse_g if horizon_H is None else impulse_g[:horizon_H]
-    return float(np.sum(np.abs(g)))
+def impulse_coeffs(C, J, H, T):
+    C, J, H = np.asarray(C, float), np.asarray(J, float), np.asarray(H, float)
+    g, P = [], np.eye(len(J))
+    for _ in range(T):
+        g.append(float(C @ P @ H)); P = J @ P
+    return np.array(g)
 
 
-def single_shock_peak_gain(impulse_g: np.ndarray, horizon_H: int | None = None) -> float:
-    """Return G_{single,H} = max_{k < H} |g_k|."""
-    g = impulse_g if horizon_H is None else impulse_g[:horizon_H]
-    return float(np.max(np.abs(g))) if len(g) > 0 else 0.0
+def worst_excursion_per_period(C, J, H, z0, V, t):
+    drift = abs(float(np.asarray(C) @ np.linalg.matrix_power(np.asarray(J, float), t) @ np.asarray(z0, float)))
+    return drift + V * np.abs(impulse_coeffs(C, J, H, t)).sum()
 
 
-def exhaustive_worst_case_disturbance(impulse_g: np.ndarray, v_bound: float = 1.0) -> tuple[float, np.ndarray]:
-    """Enumerate all 2^H sign combinations u_k in {-v_bound, +v_bound} for H <= 12 to verify exact attainment."""
-    H = len(impulse_g)
-    if H > 12:
-        raise ValueError("Exhaustive enumeration restricted to H <= 12")
-    best_val = -1.0
-    best_u = np.zeros(H, dtype=float)
-    for signs in itertools.product((-1.0, 1.0), repeat=H):
-        u = v_bound * np.array(signs, dtype=float)
-        # Convolution at final step H-1: sum_{k=0}^{H-1} g_k * u_{H-1-k}
-        val = abs(float(np.dot(impulse_g, u[::-1])))
-        if val > best_val:
-            best_val = val
-            best_u = u
-    return best_val, best_u
+def worst_excursion_total_budget(C, J, H, z0, W, t):
+    drift = abs(float(np.asarray(C) @ np.linalg.matrix_power(np.asarray(J, float), t) @ np.asarray(z0, float)))
+    g = impulse_coeffs(C, J, H, t)
+    return drift + W * (np.abs(g).max() if len(g) else 0.0)
 
 
-def repeated_vs_peak_gate_counterexample(
-    impulse_g: np.ndarray, budget_B: float = 1.0, drift_b: float = 0.0, c_exec: float = 0.0
-) -> dict:
-    """Demonstrate that admitting v*_single = (B - |b|) / G_single under repeated trades breaches budget B."""
-    g_cum = cumulative_convolution_gain(impulse_g)
-    g_single = single_shock_peak_gain(impulse_g)
-    avail = max(0.0, budget_B - abs(drift_b))
-    v_repeated = avail / (g_cum + c_exec)
-    v_single = avail / (g_single + c_exec)
-    realized_loss_under_peak_gate = abs(drift_b) + v_single * (g_cum + c_exec)
-    return {
-        "G_cum": g_cum,
-        "G_single": g_single,
-        "v_star_repeated": v_repeated,
-        "v_star_single": v_single,
-        "budget_B": budget_B,
-        "realized_loss_under_peak_gate": realized_loss_under_peak_gate,
-        "breach_ratio": realized_loss_under_peak_gate / budget_B if budget_B > 0 else float("inf"),
-        "repeated_gate_is_safe": (abs(drift_b) + v_repeated * (g_cum + c_exec)) <= budget_B + 1e-12,
-        "peak_gate_breaches": realized_loss_under_peak_gate > budget_B + 1e-12,
-    }
+def worst_over_horizons(C, J, H, z0, V, T):
+    """Maximum over t <= T of the per-time support functions (the worst time is part of the adversary's choice)."""
+    return max(worst_excursion_per_period(C, J, H, z0, V, t) for t in range(1, T + 1))
+
+
+def peak_gain(C, J, H, T):
+    return float(np.abs(impulse_coeffs(C, J, H, T)).max())
+
+
+def summed_gain(C, J, H, T):
+    return float(np.abs(impulse_coeffs(C, J, H, T)).sum())

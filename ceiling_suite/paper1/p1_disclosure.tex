@@ -36,10 +36,18 @@ Table~\ref{tab:contracts} shows that disclosure is not one thing. Timestamps wit
 The cleanest form of useful disclosure is flow tagged by participant class.
 
 \begin{proposition}[Tagged flow removes the barrier]\label{prop:tagged}
-If the observer receives each cohort's flow $u_{i,t}=q_iy_{i,t}$ with measurement noise, the merged weights are estimated at rate $T^{-1/2}$ with a constant that does not depend on the rate spacing.
+Let the price be driven by i.i.d.\ innovations of variance $\sigma_\xi^2$ in a positive, stable economy, with stationary autocovariances $\gamma_x(s)=\sum_\ell c_\ell\lambda_\ell^{|s|}$ ($c_\ell\ge0$, $0\le\lambda_\ell<1$ the closed-loop modes). Suppose the observer receives prices and each cohort's flow $\tilde u_{i,t}=u_{i,t}+\varepsilon_{i,t}$, $u_{i,t}=q_iy_{i,t}$, with i.i.d.\ measurement noise of variance $\sigma_f^2$ independent of prices. Then $\tilde u_{i,t}=r_i\tilde u_{i,t-1}+w_ix_t+e_{i,t}$ with $e_{i,t}=\varepsilon_{i,t}-r_i\varepsilon_{i,t-1}$, and the just-identified IV estimator of $\beta_i=(r_i,w_i)$ with instruments $Z_t=(x_{t-1},x_t)^\top$ satisfies $\sqrt T(\hat\beta_i-\beta_i)\to N(0,V_i)$,
+\begin{equation}\label{eq:ivvar}
+V_i=\Sigma_i^{-1}\Omega_i\Sigma_i^{-\top},\qquad \Sigma_i=\begin{pmatrix}w_iA_0&\gamma_x(1)\\ w_iA_1&\gamma_x(0)\end{pmatrix},\qquad \Omega_i=\sigma_f^2\bigl[(1+r_i^2)\Gamma_0-r_i(\Gamma_1+\Gamma_1^\top)\bigr],
+\end{equation}
+where $A_m=\sum_{s\ge0}r_i^s\gamma_x(s+m)$, $\Gamma_0=\begin{psmallmatrix}\gamma_x(0)&\gamma_x(1)\\ \gamma_x(1)&\gamma_x(0)\end{psmallmatrix}$ and $\Gamma_1=\E[Z_tZ_{t-1}^\top]$. The Jacobian determinant is
+\begin{equation}\label{eq:ivdet}
+\det\Sigma_i=w_i\sum_{\ell,m}c_\ell c_m\frac{1-\lambda_\ell\lambda_m}{1-r_i\lambda_m}\;>\;0 .
+\end{equation}
+$V_i$ depends only on cohort $i$'s own $(w_i,r_i)$, $\sigma_f^2$ and the price autocovariances, which are bounded and nondegenerate uniformly on a uniformly stable family whatever the rate spacing; so the merged weights are estimated at rate $T^{-1/2}$ with a constant that does not depend on $|r_i-r_j|$.
 \end{proposition}
 
-Each tagged flow follows $u_{i,t}=r_iu_{i,t-1}+w_ix_t$, a regression whose information about $w_i$ does not involve the other cohorts' rates. In simulation ($T=5{,}000$, 60 replications) the root-mean-square error of the recovered weights is flat in $\Delta\eta$ (fitted slope $0.011$, error between $5.8\times10^{-4}$ and $6.6\times10^{-4}$). This is the formal content of a disclosure regime such as a consolidated audit trail: tagging flow by participant class turns a polynomial barrier into an ordinary estimation problem.
+Each tagged flow follows $u_{i,t}=r_iu_{i,t-1}+w_ix_t$, a regression whose information about $w_i$ does not involve the other cohorts' rates; the closed form \eqref{eq:ivdet} matches the simulated Jacobian ($0.1330$ against $0.1322$ in a two-cohort economy with $4\times10^5$ periods; \texttt{hardening/p1\_checks.py}). In simulation ($T=5{,}000$, 60 replications) the root-mean-square error of the recovered weights is flat in $\Delta\eta$ (fitted slope $0.011$, error between $5.8\times10^{-4}$ and $6.6\times10^{-4}$). This is the formal content of a disclosure regime such as a consolidated audit trail: tagging flow by participant class turns a polynomial barrier into an ordinary estimation problem.
 
 \subsection{How much disclosure is worth}\label{sec:discvalue}
 

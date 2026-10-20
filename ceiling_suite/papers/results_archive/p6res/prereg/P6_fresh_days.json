@@ -1,0 +1,103 @@
+{
+  "A_primary": {
+    "candidate": "C3_hat (winsorized at train 1%/99%)",
+    "outcome": "MAE_60",
+    "question": "Third replication: in thin books, does C3_hat predict next-hour MAE beyond volatility, flow, depth, OI AND four price-impact controls?",
+    "sample": "thin (20 symbols)",
+    "success": "Clark-West one-sided p < 0.025 AND 97.5% date-block bootstrap CI of dR2 above 0"
+  },
+  "B_primary": {
+    "loss": "L = q * MAE_60",
+    "other_rules": "guard_summed: R = U6 * S60 (the theorem's bound with U6 = 95th pct of |normalized flow| in [t-360,t)); guard_peak: R = U6 * max_k |h_k|; static: R = 1",
+    "question": "Does the amplification multiple of Paper 2's guard improve a volatility-scaled position limit, i.e. lower tail loss per unit of average position?",
+    "rule_reference": "vol: R = rv_360 (std of 1-minute log-price changes in [t-360,t))",
+    "rule_test": "amp_vol: R = rv_360 * GM^theta, GM = S60/|h_0| (summed |impulse response| over 60 minutes divided by impact; unit-free), theta chosen from {0, 0.25, 0.5, 0.75, 1} by minimum TRAINING TLR (theta = 0 is the plain volatility limit, so a useless GM makes the test fail)",
+    "sizing": "q = c_s / R, R winsorized at pooled training 1%/99%, c_s sets the training mean of q to 1 per symbol and rule; hours where any rule's R is missing are dropped for all rules",
+    "statistic": "TLR = ES95(L) / mean(q) on test, pooled over thin symbols",
+    "success": "log TLR_amp_vol - log TLR_vol < 0 with the 97.5% date-block bootstrap CI below 0"
+  },
+  "C_primary": {
+    "per_symbol": "price-only: 5-min flow on 12 lagged 5-min returns, kernel fitted by two exponentials; tagged: n_c,t = r_c n_c,t-1 + w_c ret_t for 3 classes; 200 day-bootstrap draws",
+    "question": "Paper 1: from prices and flow alone the memory RATES are not identified but the merged response IS; class-tagged positions identify the rates.",
+    "sample": "all 30 symbols, fresh test days with metrics data (>= 15 days)",
+    "success": "at least 80% of evaluable symbols pass",
+    "symbol_passes_if": "(i) mean price-only rate CI width / mean tagged rate CI width > 10, AND (ii) price-only rate CI width > 0.25, AND (iii) 95% CI of the merged response M0 = sum k_m excludes 0"
+  },
+  "controls": [
+    "rv_60",
+    "rv_360",
+    "abs_ret_60",
+    "flow_imb_60",
+    "log_vol_60",
+    "log_depth1",
+    "imbalance",
+    "oi_chg_60",
+    "kappa_hat",
+    "kappa_sq",
+    "kyle_lam",
+    "amihud_60",
+    "symbol fixed effects"
+  ],
+  "data": "Binance USD-M futures; training = cached 10th/24th of each month 2023-2024 (as Parts 4-5); test = FRESH days, the 3rd and 17th of each month, 2025-01-01 to 2026-09-30, never downloaded before; validation V1-V5 unchanged",
+  "inference": "Clark-West (Newey-West 6 lags); 2,000 date-block bootstrap draws (all symbols on a date together)",
+  "multiplicity": "Paper 2 has two primary hypotheses (A, B): each is tested at alpha = 0.025 with 97.5% bootstrap CIs (Bonferroni). Paper 1 has one primary (C) at alpha = 0.05. Secondary tests are Holm-adjusted within each paper.",
+  "previous_hashes": {
+    "part4": "5910b6b4d90aad457f03eb01d27cb0141933ff1d70dd93d85a98663f73e36020",
+    "part5": "6aa8e2c03d7979402769f0b3cab22d4709da5ade93b709cf05f9e675c0a063fa"
+  },
+  "runs": "the test cell Z6 is run once; every run is counted in prereg/test_set_unlocks_p6.json",
+  "secondary_paper1": [
+    "thin+mid: MAE | tagged position features n_top_pos, d_top_pos_60, n_all, d_all_60 (value of disclosure)",
+    "share of symbols whose top-position vs all-accounts memory-rate CI excludes 0"
+  ],
+  "secondary_paper2": [
+    "thin: MAE | term_momentum",
+    "thin: MAE | term_reversion",
+    "thin: MAE | term_depth",
+    "thin: MAE | gain_multiple (unit-free)",
+    "thin: MAE | log_halflife (unit-free)",
+    "mid: MAE | C3_hat (predicted: no effect)",
+    "thin: MAE | C3_flow (C3 re-estimated without depth: kappa^2 eta q - (1-a) kappa; validates Part 7)",
+    "guard_summed vs vol",
+    "guard_peak vs vol",
+    "static vs vol",
+    "guard_summed vs guard_peak"
+  ],
+  "symbols": {
+    "mid": [
+      "DASHUSDT",
+      "IMXUSDT",
+      "IOTAUSDT",
+      "NEOUSDT",
+      "ONEUSDT",
+      "ROSEUSDT",
+      "STGUSDT",
+      "VETUSDT",
+      "XMRUSDT",
+      "ZRXUSDT"
+    ],
+    "thin": [
+      "ACHUSDT",
+      "ALICEUSDT",
+      "API3USDT",
+      "ARPAUSDT",
+      "CELRUSDT",
+      "CHRUSDT",
+      "CVXUSDT",
+      "GTCUSDT",
+      "HOTUSDT",
+      "ICXUSDT",
+      "IOSTUSDT",
+      "IOTXUSDT",
+      "LITUSDT",
+      "OGNUSDT",
+      "QNTUSDT",
+      "RLCUSDT",
+      "SPELLUSDT",
+      "TUSDT",
+      "WOOUSDT",
+      "ZENUSDT"
+    ]
+  },
+  "unit": "symbol-hour blocks, hours 6-23 UTC; features from minutes [t-360, t); outcome from (t, t+60]"
+}

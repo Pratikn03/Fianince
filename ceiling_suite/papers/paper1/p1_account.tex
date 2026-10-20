@@ -1,6 +1,6 @@
 \section{Account-level capital}\label{sec:account}
 
-Theorem~\ref{thm:capital} gives the order but not the constant. This section computes what a trader actually needs under a calibrated linear-impact environment, then converts it to Bitcoin dollars.
+Lemma~\ref{thm:capital} gives the order but not the constant. This section computes what a trader actually needs under a calibrated linear-impact environment, then converts it to Bitcoin dollars.
 
 \subsection{Observation design and the tri-region partition}
 
@@ -45,12 +45,12 @@ Design & $C_0$ & Error & End inv. & Peak margin & Max $|v_t|$ & Trades\\
 6 buy/sell round trips & 189.45 & 0.0308 & 0.00 & 3.28 & 6.25 & 12\\
 5 buy/sell round trips & 157.89 & 0.0442 & 0.00 & 3.28 & 6.25 & 10\\
 12 buys, each unwound after 20 steps & 378.82 & 0.0040 & 0.00 & 3.28 & 6.25 & 24\\
-Generalized-eigenvector probe ($L=120$) & 65.06 & 0.0500 & 0.00 & 2.74 & 1.24 & 121\\
-Generalized-eigenvector probe ($L=160$) & 64.86 & 0.0500 & 0.00 & 2.17 & 1.09 & 161\\
-Fee-refined probe ($L=240$) & 64.48 & 0.0500 & 0.00 & --- & 1.30 & 241\\
+Generalized-eigenvector probe ($L=120$) & 65.06 & 0.0500 & 0.00 & 2.74 & 1.24 & 120\\
+Generalized-eigenvector probe ($L=160$) & 64.86 & 0.0500 & 0.00 & 2.17 & 1.09 & 160\\
+Fee-refined probe ($L=240$) & 64.48 & 0.0500 & 0.00 & --- & 1.30 & 240\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item The pulse designs place a pulse every 40 steps and close it 20 steps later; the fee-refined probe is re-optimized by sequential quadratic programming over $L=240$. The certified lower bound of Theorem~\ref{thm:spectral} is 61.41; the explicit constant of Theorem~\ref{thm:capital} is $4.9\times10^{-4}$.\end{tablenotes}
+\begin{tablenotes}\footnotesize\item The pulse designs place a pulse every 40 steps and close it 20 steps later; the fee-refined probe is re-optimized by sequential quadratic programming over $L=240$. The certified lower bound of Theorem~\ref{thm:spectral} is 61.41; the explicit constant of Lemma~\ref{thm:capital} is $4.9\times10^{-4}$.\end{tablenotes}
 \end{threeparttable}
 \end{table}
 
@@ -74,6 +74,11 @@ g_i(\omega)=\mathrm{Re}\,\hat H_i(e^{i\omega})-\kappa/2>0\qquad\forall\omega\in[
 L_i(v)\;\ge\;4\sigma^2z_{1-\alpha}^2\inf_\omega\frac{g_i(\omega)}{|\Delta\hat H(e^{i\omega})|^2}\;\equiv\;C^*_{\rm det,quad}(\delta).
 \end{equation}
 \item \emph{Bracket.} At $\delta=0.05$, $C^*_{\rm det,quad}=61.14$ at $\omega^*=0.2526$; adding the unavoidable fee $\phi P_*\cdot2\sigma z/\sup_\omega|\Delta\hat H|$ gives the certified bound $C_{\rm det}\ge61.41$. A feasible 240-step sequence attains 64.48, so the fee-paying optimum lies in $[61.41,64.48]$.
+\item \emph{Process noise.} Let the price also receive the innovations $w_t\sim N(0,\sigma_w^2)$ of \eqref{eq:price}, independent of observation noise $\nu_t\sim N(0,\sigma_\nu^2)$, so that from the reset state the observer sees $\tilde x_t=(h_i*v)_t+\kappa^{-1}(h_i*w)_t+\nu_t$, $t<T$. For the known pair of Theorem~\ref{thm:quantity}, put $\sigma_{\rm eff}^2=\sigma_\nu^2+\sigma_w^2/4$, $\bar M=1/(1-S)$ and $C_w=2\sigma_w^4\bar M^2K_*^2(\sigma_\nu^2+\sigma_w^2\bar M^2)/(\kappa^2\sigma_\nu^2\sigma_{\rm eff}^4)$. Every deterministic round trip whose test has errors $\alpha$ and $\beta$ under the two hypotheses satisfies
+\begin{equation}\label{eq:Cnoise}
+L_i(v)\;\ge\;2\sigma_{\rm eff}^2\bigl[{\rm kl}(\alpha,1-\beta)-C_wT\delta^4\bigr]_+\inf_\omega\frac{g_i(\omega)}{|\Delta\hat H(e^{i\omega})|^2},
+\end{equation}
+with ${\rm kl}$ as in Theorem~\ref{thm:adaptive}. In-loop noise therefore leaves the $\delta^{-4}$ capital order intact for every horizon $T\le{\rm kl}(\alpha,1-\beta)/(2C_w\delta^4)$; at horizons of order $\delta^{-4}$ and longer, the noise itself separates the pair without a probe (Theorem~\ref{prop:passive}).
 \end{enumerate}
 \end{theorem}
 
@@ -115,30 +120,42 @@ $\delta$ & $\omega^*$ & $C^*_{\rm det,quad}$ & $\delta^4C^*_{\rm det,quad}$ & Ce
 \end{table}
 
 \begin{theorem}[Finite-horizon Rayleigh--H\"older duality]\label{thm:rh}
-For horizon $L\ge2$, let $E$ be the zero-sum first-difference basis spanning flat probes, $Q_i=\tfrac12T_{h_i}$ (so that $L_i(v)=v^\top Q_iv$) and $A_{\rm diff}=(H_1-H_0)^\top(H_1-H_0)$, and let $G_i=E^\top Q_iE\succ0$ and $M=E^\top A_{\rm diff}E\succeq0$ be the reduced execution-loss and information matrices, with $G_i$-orthonormal generalized eigenpairs $0\le\lambda_1\le\cdots\le\lambda_L$, $c_{\rm req}=4\sigma^2z_{1-\alpha}^2$ and $c_{\rm fee}=\phi P_*$. Every feasible flat probe decomposes into its top-two spectral component and an orthogonal residual, and
-\begin{equation}\label{eq:rh}
-L_i(v)+c_{\rm fee}\|v\|_1\;\ge\;\frac{c_{\rm req}}{\lambda_L}+\max\Bigl(0,\,F_{\rm dom}-\frac{W_\perp}{4(1-\gamma F_{\rm dom})}\Bigr)\;\equiv\;C_{\rm RH}(L),
+For a horizon of $L\ge4$ trading periods, let $E\in\R^{L\times(L-1)}$ be the first-difference basis of flat probes ($\sum_tv_t=0$), $Q_i=\tfrac12T_{h_i}$ (so that $L_i(v)=v^\top Q_iv$), $A_{\rm diff}=(H_1-H_0)^\top(H_1-H_0)$, and let $G_i=E^\top Q_iE\succ0$ and $M=E^\top A_{\rm diff}E\succeq0$ be the reduced execution-loss and information matrices, with $G_i$-orthonormal generalized eigenvectors $e_j$ and eigenvalues $0\le\lambda_1\le\cdots\le\lambda_{L-3}<\lambda_{L-2}\le\lambda_{L-1}$; put $c_{\rm req}=4\sigma^2z_{1-\alpha}^2$ and $c_{\rm fee}=\phi P_*$. For $\theta\in[0,\pi)$ let $d(\theta)=\cos\theta\,e_{L-2}+\sin\theta\,e_{L-1}$, $\lambda(\theta)=\lambda_{L-2}\cos^2\theta+\lambda_{L-1}\sin^2\theta$, $s_\theta={\rm sign}(Ed(\theta))$, and
+\begin{equation}\label{eq:rhdefs}
+\begin{gathered}
+F_{\rm dom}(\theta)=c_{\rm fee}\sqrt{\frac{c_{\rm req}}{\lambda(\theta)}}\,\|Ed(\theta)\|_1,\qquad W_\perp(\theta)=c_{\rm fee}^2\sum_{j\le L-3}\frac{(s_\theta^\top Ee_j)^2}{1-\lambda_j/\lambda(\theta)},\\
+\gamma(\theta)=\frac{\lambda(\theta)\,\lambda_{L-3}}{(\lambda(\theta)-\lambda_{L-3})\,c_{\rm req}} .
+\end{gathered}
 \end{equation}
-where $F_{\rm dom}$, $W_\perp$ and $\gamma$ are explicit functions of the top-two eigenpairs and the residual spectrum (Appendix~\ref{app:proofs}). \end{theorem}
+Then every flat probe meeting the separation constraint of \eqref{eq:capprob} satisfies
+\begin{equation}\label{eq:rh}
+L_i(v)+c_{\rm fee}\|v\|_1\;\ge\;\min_{\theta}\Bigl\{\frac{c_{\rm req}}{\lambda(\theta)}+\Psi(\theta)\Bigr\}\;\equiv\;C_{\rm RH}(L)\;\ge\;\frac{c_{\rm req}}{\lambda_{L-1}},
+\end{equation}
+\[
+\Psi(\theta)=\min_{x\ge0}\Bigl\{x^2+\Bigl[F_{\rm dom}(\theta)\bigl(1-\gamma(\theta)x^2\bigr)_+-\sqrt{W_\perp(\theta)}\,x\Bigr]_+\Bigr\}\;\ge0 ,
+\]
+a piecewise-quadratic minimization in closed form; when $\gamma F_{\rm dom}<1$ and the minimizer has $\gamma x^2\le1$, $\Psi=\max\bigl(0,F_{\rm dom}-W_\perp/(4(1-\gamma F_{\rm dom}))\bigr)$.
+\end{theorem}
 
-The bound is computable for any horizon. Table~\ref{tab:rh} reports its quadratic part, which decays toward the infinite-horizon value 61.14 at rate $O(L^{-1})$, and the best feasible fee-paying probe we find at each horizon; the gap between them is about 5\% from $L=160$ on. The fee of unpadded full-support eigenvectors grows as $\Theta(\sqrt L)$, which is why zero-padded or $L_1$-localized probes are needed at long horizons.
+The bound is computable for any horizon. Table~\ref{tab:rh} reports its quadratic part $c_{\rm req}/\lambda_{L-1}$, which decays toward the infinite-horizon value 61.14 at rate $O(L^{-1})$, the full bound $C_{\rm RH}(L)$, and the best feasible fee-paying probe we find at each horizon. At $L=80$ the full bound is $64.72$ against a best probe of $64.76$ on the same loss-plus-fee objective, so the dual is essentially tight at short horizons; at longer horizons the fee term of the dual weakens and the bracket widens to about 5\%. The fee of unpadded full-support eigenvectors grows as $\Theta(\sqrt L)$, which is why zero-padded or $L_1$-localized probes are needed at long horizons.
 
 \begin{table}[t]\centering\small
 \begin{threeparttable}
 \caption{Finite-horizon capital at $\delta=0.05$ (par units)}\label{tab:rh}
-\begin{tabular}{lccc}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccc}
 \toprule
-Horizon $L$ & Lower bound $C_{\rm quad}(L)$ & Best feasible probe & Gap to $C_{\rm det}=61.41$\\
+Horizon $L$ & Quadratic part $c_{\rm req}/\lambda_{L-1}$ & Full bound $C_{\rm RH}(L)$ & Best feasible probe & Gap to $C_{\rm det}=61.41$\\
 \midrule
-80 & 62.55 & 65.02 & 5.9\%\\
-120 & 61.84 & 64.59 & 5.2\%\\
-160 & 61.54 & 64.50 & 5.0\%\\
-240 & 61.32 & 64.48 & 5.0\%\\
-320 & 61.25 & $\le64.48$ & $\le5.0\%$\\
-480 & 61.19 & $\le64.48$ & $\le5.0\%$\\
+80 & 62.55 & 64.72 & 65.02 & 5.9\%\\
+120 & 61.84 & 63.39 & 64.59 & 5.2\%\\
+160 & 61.54 & 62.46 & 64.50 & 5.0\%\\
+240 & 61.32 & 61.76 & 64.48 & 5.0\%\\
+320 & 61.25 & --- & $\le64.48$ & $\le5.0\%$\\
+480 & 61.19 & --- & $\le64.48$ & $\le5.0\%$\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item Quadratic bound $c_{\rm req}/\lambda_L$ from the generalized eigenproblem of Theorem~\ref{thm:rh} on flat probes (equivalently $c_{\rm req}/(2\lambda'_L)$ with $\lambda'$ computed against $T_{h_0}$ rather than $\tfrac12T_{h_0}$); it converges to the infinite-horizon value 61.14. Feasible probes: top generalized eigenvector refined by sequential quadratic programming on the full ledger; at $L=320$ and $480$ the $L=240$ probe padded with zeros is feasible at the same cost, so the best feasible value can only be lower. \end{tablenotes}
+\begin{tablenotes}\footnotesize\item Quadratic bound $c_{\rm req}/\lambda_L$ from the generalized eigenproblem of Theorem~\ref{thm:rh} on flat probes (equivalently $c_{\rm req}/(2\lambda'_L)$ with $\lambda'$ computed against $T_{h_0}$ rather than $\tfrac12T_{h_0}$); it converges to the infinite-horizon value 61.14. The full bound minimizes \eqref{eq:rh} over 3{,}600 values of $\theta$ (\texttt{hardening/rh\_bound.py}); at $L=80$ and $120$ a direct numerical minimization of loss plus fee under the separation constraint gives $64.76$ and $64.43$, above the bound. Feasible probes: top generalized eigenvector refined by sequential quadratic programming on the full ledger; at $L=320$ and $480$ the $L=240$ probe padded with zeros is feasible at the same cost, so the best feasible value can only be lower. \end{tablenotes}
 \end{threeparttable}
 \end{table}
 

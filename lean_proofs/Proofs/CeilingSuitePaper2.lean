@@ -352,4 +352,45 @@ theorem p2_thm_disclosure :
     alpha_pub = 6 / 11 ∧ alpha_aud = 2 / 3 ∧ alpha_pub < alpha_aud := by
   decide +kernel
 
+/-! ## October 20 additions (Sections 5.3, 5.4, 6.6 and Internet Appendix): exact rational cores.
+The Mathlib versions in `research_extension/current_manuscript_lean_20261008/CurrentProofs/InfoSafetyExtensions.lean`
+state the results over `ℝ`; see `COVERAGE.md` for which parts are fully formalized. -/
+
+/-- `lem:certnum` (`p2_infosafety.tex`): weak duality for a two-atom merged measure and a linear polynomial,
+`c₀ k₀ + c₁ k₁ = w₁ p(x₁) + w₂ p(x₂)`, so a polynomial above `f` bounds `Φ = ∑ w f(x)` by `∑ c k`. -/
+theorem p2_lem_certnum (w1 w2 x1 x2 c0 c1 : Rat) :
+    let k0 := w1 + w2
+    let k1 := w1 * x1 + w2 * x2
+    c0 * k0 + c1 * k1 = w1 * (c0 + c1 * x1) + w2 * (c0 + c1 * x2) := by
+  dsimp
+  grind
+
+/-- `prop:hotelling` (`p2_infosafety.tex`): with three taps of AR(1) correlation `φ`, the sum of the correlation matrix is
+`3 + 4φ + 2φ²`, which exceeds the `3` that the (O1) certificate assumes by `4φ + 2φ²`. -/
+theorem p2_prop_hotelling (phi : Rat) :
+    (1 + phi + phi * phi) + (phi + 1 + phi) + (phi * phi + phi + 1) - 3 = 4 * phi + 2 * (phi * phi) := by
+  grind
+
+/-- `prop:venue` (`p2_guard.tex`): convexity identity of `D(α) = (1 + δα)(1 - a₀ + ρα) - κ₀Φα`:
+`t D(x) + (1-t) D(y) - D(tx + (1-t)y) = δρ t(1-t)(x-y)²`; and the example's margins at the worst corner
+(`κ₀ = 1.02, a₀ = 0.60, Φ = 2.4, δ = 2.9, ρ = 0.58`, `L/B = 0.37`) at `α = 0, 1/5, 1`. -/
+theorem p2_prop_venue (k0 a0 Phi d r x y t : Rat) :
+    (t * ((1 + d * x) * (1 - a0 + r * x) - k0 * Phi * x) + (1 - t) * ((1 + d * y) * (1 - a0 + r * y) - k0 * Phi * y)
+      - ((1 + d * (t * x + (1 - t) * y)) * (1 - a0 + r * (t * x + (1 - t) * y)) - k0 * Phi * (t * x + (1 - t) * y))
+      = (d * r) * (t * (1 - t)) * ((x - y) * (x - y))) ∧
+    (((1 : Rat) + 29/10 * 0) * (1 - 3/5 + 29/50 * 0) - 51/50 * (12/5) * 0 - 51/50 * (37/100) = 113 / 5000) ∧
+    (((1 : Rat) + 29/10 * (1/5)) * (1 - 3/5 + 29/50 * (1/5)) - 51/50 * (12/5) * (1/5) - 51/50 * (37/100) = -1293 / 25000) ∧
+    (((1 : Rat) + 29/10 * 1) * (1 - 3/5 + 29/50 * 1) - 51/50 * (12/5) * 1 - 51/50 * (37/100) = 4983 / 5000) := by
+  refine ⟨by grind, by grind, by grind, by grind⟩
+
+/-- `thm:venuebb` (`p2_guard.tex`): the tail identity behind the enclosure,
+`(1 - λ) · ∑_{k<3} λᵏ = 1 - λ³`, used to bound `∑_{t ≥ T} |h_t|` by `‖J^T s₀‖ ∑_{j<T} ‖J^j‖ / (1 - ‖J^T‖)`. -/
+theorem p2_thm_venuebb (lam : Rat) : (1 - lam) * (1 + lam + lam * lam) = 1 - lam * lam * lam := by
+  grind
+
+/-- `prop:probe` (appendix): the boundary identity of the normal-mixture test,
+`D² - A (L + 2G) = A (D²/A - L - 2G)` for `A ≠ 0`. -/
+theorem p2_prop_probe (D A L G : Rat) (hA : A ≠ 0) : D * D - A * (L + 2 * G) = A * (D * D / A - L - 2 * G) := by
+  grind
+
 end MachineMarkets

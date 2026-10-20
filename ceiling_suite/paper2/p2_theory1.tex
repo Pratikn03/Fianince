@@ -5,7 +5,7 @@ Time is discrete with bars of length $\Delta$. Let $p_t$ be the price, $p^*_t=p^
 \begin{equation}\label{eq:price}
 x_{t+1}=ax_t+\kappa u_t+w_{t+1},\qquad a=1-\kappa\varphi_f\in[0,1).
 \end{equation}
-Algorithmic cohorts trade $u_t=\sum_iq_iy_{i,t}$ with exponential memory $y_{i,t+1}=(1-\eta_i)y_{i,t}+\eta_ix_{t+1}$, a reduced form that arises from steady-state Kalman filtering and regularized online gradient descent \citep{niroula2026}. Stacking $z_t=(x_t,y_{1,t},\ldots,y_{K,t})^\top$ gives $z_{t+1}=Jz_t+bw_{t+1}$ with
+Algorithmic cohorts trade $u_t=\sum_iq_iy_{i,t}$ with exponential memory $y_{i,t+1}=(1-\eta_i)y_{i,t}+\eta_ix_{t+1}$, a reduced form that arises from steady-state Kalman filtering and regularized online gradient descent \citep{niroula2026}. Stacking $z_t=(x_t,y_{1,t},\ldots,y_{K,t})^\top$ gives $z_{t+1}=Jz_t+bw_{t+1}$, where $b=(1,\eta_1,\ldots,\eta_K)^\top$ because cohorts update on the same period's price (a unit of flow enters through $\kappa b$), and
 \begin{equation}\label{eq:J}
 J=\begin{pmatrix} a & \kappa q_1 & \cdots & \kappa q_K\\ \eta_1 a & 1-\eta_1+\eta_1\kappa q_1 & \cdots & \eta_1\kappa q_K\\ \vdots & & \ddots & \vdots\\ \eta_K a & \eta_K\kappa q_1 & \cdots & 1-\eta_K+\eta_K\kappa q_K\end{pmatrix}.
 \end{equation}
@@ -27,7 +27,7 @@ The condition $q<\varphi_f$ is the familiar statement that momentum demand must 
 The companion paper shows that prices identify only the merged rate--weight measure $M=\sum_iq_i\eta_i\delta_{1-\eta_i}$ of the cohorts. A pre-trade control must therefore depend on the market only through objects that are the same for every cohort representation of $M$.
 
 \begin{proposition}[Input--output invariance]\label{prop:invariance}
-Two populations with the same merged measure generate the same transfer function $H(z)=\kappa/[z-a-\kappa G(z)]$ and the same impulse coefficients $g_k=c_{\rm price}^\top J^kb$ for every $k\ge0$. Under any invertible change of state coordinates $z\mapsto Tz$, the Euclidean gain $\|CT^{-1}(TJT^{-1})^k\|_2$ depends on $T$, whereas the price path
+Two populations with the same merged measure generate the same transfer function $H(z)=\sum_kg_kz^{-k}=\kappa z/[z-a-\kappa G(z)]$, $G(z)=\sum_iq_i\eta_iz/(z-1+\eta_i)$, and the same impulse coefficients $g_k=\kappa\,c_{\rm price}^\top J^kb$ for every $k\ge0$. Under any invertible change of state coordinates $z\mapsto Tz$, the Euclidean gain $\|CT^{-1}(TJT^{-1})^k\|_2$ depends on $T$, whereas the price path
 \[
 \Delta p_{t+k}=\sum_{j\ge1}g_{k-1+j}u_{t-j}+\sum_{m=0}^{k-1}g_{k-1-m}u_{t+m}
 \]
@@ -91,9 +91,7 @@ $\theta$ & $\rho(J_\theta)$ & $M_C$ (price row) & $\sup_t\|J_\theta^t\|$ & $\mat
 
 The theorem concerns a specified initial-state ball and output norm. Changing state coordinates changes the disturbance set, so latent-state units cannot be read as monetary losses; this is why Section~\ref{sec:guard} works with input--output gains instead.
 
-\begin{proposition}[Spectral blindness; companion paper]\label{prop:blind}
-For any eigenvalues $0<\lambda_2<\lambda_1<1$, one-step price variance and sufficiently large stationary price variance, there are two-state markets sharing all three quantities whose worst-case transient gain is arbitrarily large.
-\end{proposition}
+\paragraph{Spectral blindness.} The companion paper shows more: for any eigenvalues $0<\lambda_2<\lambda_1<1$, one-step price variance and sufficiently large stationary price variance, there are two-state markets sharing all three quantities whose worst-case transient gain is arbitrarily large \citep[spectral-blindness theorem]{niroula2026}, so neither eigenvalue nor volatility monitors bound transient loss.
 
 At $\lambda=(0.8,0.7)$ with one-step variance 1 and stationary variance 5, the gain is $1.77$, $5.10$, $16.95$, $50.85$ and $169.50$ as the off-diagonal coupling rises from 1 to 100. Figure~\ref{fig:pseudo} shows the geometry for a constructed matrix with spectral radius $0.5$: its pseudospectra cross the unit circle, and the price-row gain grows with the coupling before decaying.
 
@@ -102,11 +100,9 @@ At $\lambda=(0.8,0.7)$ with one-step variance 1 and stationary variance 5, the g
 \caption{Left: $\varepsilon$-pseudospectra of $J=\begin{psmallmatrix}0.5&5\\0&0.4\end{psmallmatrix}$; the eigenvalues (dots) are well inside the unit circle (dotted), but the $\varepsilon=10^{-1}$ contour reaches beyond it. Right: price-row gain $\|e_1^\top J^k\|$ for couplings 1, 5 and 20.}\label{fig:pseudo}
 \end{figure}
 
-\begin{lemma}[No amplification without depth; companion paper]\label{lem:cm}
-In the cohort economy \eqref{eq:J} with nonnegative weights and $\rho(J)<1$, the price impulse response is a nonnegative mixture of decaying exponentials with total weight $\kappa$. It is completely monotone and peaks at the direct impact.
-\end{lemma}
+\paragraph{No amplification without depth.} In the cohort economy \eqref{eq:J} with nonnegative weights and $\rho(J)<1$, the price impulse response is a nonnegative mixture of decaying exponentials with total weight $\kappa$; it is completely monotone and peaks at the direct impact \citep[positive-geometry lemma]{niroula2026}.
 
-Lemma~\ref{lem:cm} is a negative result with a positive use. The cohort matrix \eqref{eq:J} is non-normal, yet its price output never amplifies. Non-normality is necessary for price amplification but not sufficient, and adaptive momentum feedback alone does not supply it. Section~\ref{sec:t6} shows that depth depletion does.
+This is a negative result with a positive use. The cohort matrix \eqref{eq:J} is non-normal, yet its price output never amplifies. Non-normality is necessary for price amplification but not sufficient, and adaptive momentum feedback alone does not supply it. Section~\ref{sec:t6} shows that depth depletion does.
 
 \subsection{Multi-asset coupling}
 

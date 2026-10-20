@@ -1,7 +1,7 @@
 """Build journal-format versions from the working sources (run after every edit of the sources)."""
 import re, subprocess, os, shutil
-_BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-P1, P2, OUT = os.path.join(_BASE, "paper1"), os.path.join(_BASE, "paper2"), os.path.dirname(os.path.abspath(__file__))
+_H = os.path.dirname(os.path.abspath(__file__))
+P1, P2, OUT = os.path.join(_H, "..", "paper1"), os.path.join(_H, "..", "paper2"), _H
 def build(tex, name):
     open(os.path.join(OUT, name + ".tex"), "w").write(tex)
     for _ in range(3):
@@ -24,7 +24,7 @@ front = rd(f"{P2}/p2_front.tex")
 front = front.replace("\\usepackage[margin=1in]{geometry}", "\\usepackage[left=1in,right=1in,top=1.5in,bottom=1.5in]{geometry}")
 front = front.replace("\\doublespacing", "\\onehalfspacing")
 a = front.index("\\begin{abstract}"); b = front.index("\\end{abstract}")
-JF_ABS = ("\\begin{abstract}\n\\noindent " + 'Eigenvalues and volatility do not bound the losses a market produces before it settles. We show that cumulative transient risk in a book equals long-run impact divided by reversion net of momentum, that a pre-trade guard on this summed response is the largest safe admission rule for bounded shocks, and that certifying it is cheaper than identifying the traders: experiments certify it at the parametric rate, and the resulting guard is minimax-optimal in lost capacity. The statistic forecasts adverse excursions beyond volatility in pre-registered tests in thin Binance books and, more weakly, thin US stocks; it is negligible on Bybit.' + "\n")
+JF_ABS = ("\\begin{abstract}\n\\noindent " + 'Eigenvalues and volatility do not bound the losses a market produces before settling. We show that cumulative transient risk equals long-run impact divided by reversion net of momentum, that a pre-trade guard on this summed response is the largest safe admission rule for bounded shocks, and that certifying it is cheaper than identifying the traders: experiments certify it at the parametric rate, and the guard is minimax-optimal in lost capacity. In pre-registered tests the statistic forecasts adverse excursions beyond volatility in thin Binance books, including untouched days and symbols, more weakly in thin US stocks, not on Bybit or Coinbase.' + "\n")
 front = front[:a] + JF_ABS + front[b:]
 front = front.replace("\\newpage\n\\setcounter{page}{1}\n\\tableofcontents\n\\newpage", "\\newpage\n\\setcounter{page}{1}")
 app = rd(f"{P2}/p2_appendix.tex")
@@ -32,7 +32,7 @@ i_ia = app.index("\\section{Additional material}\\label{app:ia}")
 app_main, app_ia = app[:i_ia], app[i_ia:]
 app_ia = app_ia.replace("\\end{document}", "")
 IA_HEAD = ("\\clearpage\n\\setcounter{page}{1}\\renewcommand{\\thepage}{IA-\\arabic{page}}\n"
-           "\\begin{center}{\\Large Internet Appendix for ``From Human Markets to Machine Markets''}\\end{center}\n\\label{app:iastart}\n")
+           "\\setcounter{section}{0}\\renewcommand{\\thesection}{IA.\\arabic{section}}\n" + "\\begin{center}{\\Large Internet Appendix for ``From Human Markets to Machine Markets''}\\end{center}\n\\label{app:iastart}\n")
 body = "".join(rd(f"{P2}/{f}") for f in P2_BODY)
 ia_extra = ""
 MOVES = [
@@ -94,6 +94,62 @@ body = body[:_k0] + body[_k1:]
 body = body.replace("Table~\\ref{tab:kreiss} illustrates the theorem", "Internet Appendix Table~\\ref{tab:kreiss} illustrates the theorem")
 mv("\\subsection{A second venue: Bybit}\\label{sec:bybit}", "\\paragraph{Bybit with order-book depth.}", "Bybit with trades only",
    "\\subsection{A second venue: Bybit}\\label{sec:bybit}\nA registered test on Bybit USDT perpetuals of the same coins, with trades only, fails without ambiguity ($\\hat C_3^{\\rm flow}$ adds $-0.000$ points of $R^2$, interval $[-0.001,0.001]$). A post-hoc check rules out bid--ask bounce and points to sparse trading: 11\\% of Bybit minutes have no trade, against 0.1\\% on Binance (Internet Appendix).\n\n")
+mv("\\subsection{A certified guard}\\label{sec:certguard}", "\\subsection{October 10, 2025}", "A certified guard",
+   "\\subsection{A certified guard}\\label{sec:certguard}\nA second registered backtest certifies the operator once a day from the previous three days (SHA-256 \\texttt{b9a56af48c93\\ldots}). Scaling a volatility limit by the certified gain multiple lowers tail loss per unit of position by 2.4\\% (interval $[-5.1\\%,-0.04\\%]$), a narrow pass; limits built on the certified response alone are far worse than volatility. Used as a one-sided throttle, as Lemma~\\ref{thm:guard} uses it, the certified guard lowers tail loss on a static limit by 13\\% after the fact (Part 13), a result Part 15 confirms on untouched days (Section~\\ref{sec:p15}); on a volatility limit it adds nothing (Internet Appendix, Table~\\ref{tab:certguard}).\n\n")
+mv("\\subsection{Balance-sheet solvency}", "\\section{The value of disclosure for safe trading}", "Balance-sheet solvency",
+   "\\subsection{Balance-sheet solvency}\nThe Internet Appendix embeds the guard in a dealer's balance sheet with maintenance margin, hedging cost, worst-case passive fills and a safety reserve (Theorem~\\ref{thm:forward}), and states when an eigenvalue rule admits a level that this solvency certificate does not cover (Proposition~\\ref{prop:dominance}) and when re-optimizing learners reinforce the guard (Proposition~\\ref{prop:lucas}).\n\n")
+# map of results (unreferenced full-page float) to the Internet Appendix
+_mp0 = front.index("\\begin{table}[p]\\centering\\footnotesize\n\\begin{threeparttable}\n\\caption{Map of results}")
+_mp1 = front.index("\\end{table}", _mp0) + len("\\end{table}")
+ia_extra = "\\section{Map of results}\n" + front[_mp0:_mp1] + "\n" + ia_extra
+front = front[:_mp0] + front[_mp1:]
+body = body.replace("\\FloatBarrier\n\\section{Tests of the information-safety results}", "\\section{Tests of the information-safety results}", 1)
+mv("\\subsection{When admission changes the dynamics}\\label{sec:venue}", "\\subsection{A calibrated illustration}", "When admission changes the dynamics",
+   "\\subsection{When admission changes the dynamics}\\label{sec:venue}\nTheorem~\\ref{thm:robustguard} relies on risk rising with the admission level. When admitting a class also deepens the book and speeds reversion, low admission can bring mostly feedback and high admission mostly liquidity; the safe levels can then be two intervals, such as $[0,0.035]\\cup[0.386,1]$, and a rule that certifies the largest safe level and admits everything below it admits unsafe levels (Internet Appendix, Proposition~\\ref{prop:venue}). Without a closed form, interval branch and bound with outward rounding certifies the whole safe set: every level it classifies safe is safe for every economy in the certified box, every level it classifies unsafe is unsafe for one of them, and the largest safe level is bracketed (Internet Appendix, Theorem~\\ref{thm:venuebb}; test T13).\n\n")
+mv("\\paragraph{Unknown noise covariance.}", "\\section{An identification-free pre-trade guard}", "Certification with unknown noise covariance",
+   "\\paragraph{Unknown noise covariance.} If the noise in the taps of one experiment is correlated, the certificate of Theorem~\\ref{thm:certcost}(i) can undercover (75\\% at nominal 95\\% with autocorrelation $0.8$), while a $t$-certificate on the summed taps and a Hotelling region remain exact for any covariance; dependence across experiments breaks both (Internet Appendix, Proposition~\\ref{prop:hotelling}; test T11). Experiments can also be run sequentially with an anytime-valid certificate (Internet Appendix, Proposition~\\ref{prop:probe}).\n\n")
+_s0 = body.index("\\begin{table}[!tbp]\\centering\\footnotesize\n\\begin{threeparttable}\n\\caption{Simulation tests of the information-safety results}")
+_s1 = body.index("\\end{table}", _s0) + len("\\end{table}")
+ia_extra += "\\section{Simulation tests of the information-safety results}\n" + body[_s0:_s1] + "\n"
+body = body[:_s0] + body[_s1:]
+body = body.replace("(Table~\\ref{tab:simtests})", "(Internet Appendix, Table~\\ref{tab:simtests})")
+mv("\\subsection{Post-hoc checks on opened data (Part 18)}\\label{sec:p18}", "\\FloatBarrier", "Post-hoc checks on opened data (Part 18)",
+   "\\subsection{Post-hoc checks on opened data (Part 18)}\\label{sec:p18}\nPost-hoc checks on samples already opened, an order-splitting placebo on the Binance samples of Parts 9 and 16 and three more guard controls (a certified peak-response guard, a participation cap and a margin-style rule) on Parts 15 and 16, are reported in the Internet Appendix.\n\n")
+_f0 = body.index("\\begin{figure}[p]\\centering\n\\includegraphics[height=0.62\\textheight]{figs/fig_forest.pdf}") if "height=0.62" in body else body.index("\\begin{figure}[p]\\centering\n\\includegraphics[width=0.78\\textwidth]{figs/fig_forest.pdf}")
+_f1 = body.index("\\end{figure}", _f0) + len("\\end{figure}")
+ia_extra += "\\section{Every out-of-sample forecasting evaluation}\n" + body[_f0:_f1].replace("height=0.62\\textheight", "height=0.85\\textheight") + "\n"
+body = body[:_f0] + body[_f1:]
+body = body.replace("Figure~\\ref{fig:forest}", "Internet Appendix Figure~\\ref{fig:forest}")
+app_main = app_main.replace("\\begin{thebibliography}{99}\\setlength{\\itemsep}{2pt}\\small", "\\begin{thebibliography}{99}\\setlength{\\itemsep}{0pt}\\small")
+_q0 = body.index("\\begin{table}[!tbp]\\centering\\small\n\\begin{threeparttable}\n\\caption{Pre-registered test on a new venue (Part 17)")
+_q1 = body.index("\\end{table}", _q0) + len("\\end{table}")
+ia_extra += "\\section{Pre-registered test on a new venue (Part 17)}\n" + body[_q0:_q1] + "\n"
+body = body[:_q0] + body[_q1:]
+body = body.replace("The test fails (Table~\\ref{tab:p17}).", "The test fails (Internet Appendix, Table~\\ref{tab:p17}).")
+body = body.replace("\\FloatBarrier\n", "")
+_c0 = body.index("The endpoints in these examples are computed, not proved, in floating point.")
+_c1 = body.index("The interval endpoints quoted in this paper are therefore results, not approximations.", _c0) + len("The interval endpoints quoted in this paper are therefore results, not approximations.")
+ia_extra += "\\section{Certified window endpoints}\n" + body[_c0:_c1] + "\n"
+body = body[:_c0] + "The interval endpoints quoted here are proved, not only computed: weak-duality polynomials verified in outward-rounded interval arithmetic enclose them to within $1.5\\times10^{-8}$ (Internet Appendix, Lemma~\\ref{lem:certnum}; test T10)." + body[_c1:]
+# hardening additions (Oct 2026): long proofs and remarks of the main text to the Internet Appendix
+def mvblk(start, end_marker, ia_title, pointer, include_end=True):
+    global body, ia_extra
+    i0 = body.index(start); i1 = body.index(end_marker, i0) + (len(end_marker) if include_end else 0)
+    ia_extra += "\\section{" + ia_title + "}\n" + body[i0:i1] + "\n"
+    body = body[:i0] + pointer + body[i1:]
+_pk = body.index("\\begin{proof}", body.index("\\label{thm:peak}"))
+mvblk(body[_pk:_pk + 40], "\\end{proof}", "Proof of Theorem~\\ref{thm:peak}", "The proof is in the Internet Appendix.\n")
+mvblk("The spectral reason is visible in the first example.", "until lag 60.", "Why the one-period condition fails: a negative residue",
+      "The reason is spectral: depth depletion can put a negative residue on an intermediate mode, so the response first dips and then rises (Internet Appendix).")
+mvblk("\\begin{remark}[Shorter windows cost more experiments]", "\\end{remark}", "Shorter windows cost more experiments", "")
+_pe = body.index("\\begin{proof}", body.index("\\label{prop:equil}"))
+mvblk(body[_pe:_pe + 40], "\\end{proof}", "Proof of Proposition~\\ref{prop:equil}", "The proof is in the Internet Appendix.\n")
+mvblk("Part (v) quantifies this.", "(Table~\\ref{tab:discsim}).", "Noisy proxies: simulation of Theorem~\\ref{thm:disclosure}(v)",
+      "The Internet Appendix quantifies part (v): intersecting the two certificates admits nearly as much as the better one at every memory rate (test T15).")
+mvblk("\\begin{figure}[t]\\centering\n\\includegraphics[width=0.6\\textwidth]{figs/fig_t6.pdf}", "\\end{figure}", "Illustrative impulse responses of the book model", "")
+body = body.replace("Figure~\\ref{fig:t6} illustrates the four cases.", "Internet Appendix Figure~\\ref{fig:t6} illustrates the four cases.")
+mvblk("\\begin{remark}[Counterexamples to an exact one-period condition]", "\\end{remark}", "Counterexamples to an exact one-period condition",
+      "Two explicit counterexamples, one with all channels reinforcing and $C_3=-0.00024$ but a peak of $1.092\\kappa$ at lag 60, are in the Internet Appendix (Remark~\\ref{rem:counter}). ")
 # proofs and notation to the Internet Appendix
 _p0 = app_main.index("\\section{Proofs}\\label{app:proofs}")
 ia_extra = app_main[_p0:] + ia_extra

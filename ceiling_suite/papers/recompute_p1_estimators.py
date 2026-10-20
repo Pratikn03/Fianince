@@ -41,7 +41,7 @@ def starts_for(K, rng, n=6):
 import sys
 RUN1 = "--part1" in sys.argv or "--all" in sys.argv
 RUN2 = "--part2" in sys.argv or "--all" in sys.argv
-out = json.load(open("/home/claude/papers/recomputed/R_P1_estimators.json")) if __import__("os").path.exists("/home/claude/papers/recomputed/R_P1_estimators.json") else {}
+out = json.load(open(__import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "recomputed") + "/R_P1_estimators.json")) if __import__("os").path.exists(__import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "recomputed") + "/R_P1_estimators.json") else {}
 rng = np.random.default_rng(20261020)
 # (1) ML at the critical noise level
 cases = {"K1_eta0.30": ([0.2], [0.30]), "K2_d0.30": ([0.1, 0.1], [0.25, 0.55]), "K2_d0.20": ([0.1, 0.1], [0.30, 0.50]),
@@ -90,6 +90,6 @@ if RUN2: out["lecam_estimators"] = {"N": N, "trials_per_hypothesis": T, "sigma_h
     "definitions": {"ML": "least squares over (w, eta), 4 starts", "ridge": "MAP with prior sd 0.05 (w), 0.10 (eta) around the symmetric centre",
                     "positive_part_shrinkage": "ML weights shrunk toward their mean, factor (1 - CRB var / spread)_+",
                     "heavy_prior": "MAP with prior sd 0.005 (w), 0.02 (eta)"}}
-OUTF = "/home/claude/papers/recomputed/R_P1_estimators_crb.json" if (RUN1 and not RUN2) else "/home/claude/papers/recomputed/R_P1_estimators.json"
+OUTF = __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "recomputed") + "/R_P1_estimators_crb.json" if (RUN1 and not RUN2) else __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "recomputed") + "/R_P1_estimators.json"
 if RUN1 and not RUN2: out = {"crb_ml": out["crb_ml"]}
 json.dump(out, open(OUTF, "w"), indent=1)

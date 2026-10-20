@@ -1,6 +1,6 @@
 """Forest plot of every thin-book out-of-sample evaluation (Parts 4 and 5). Reads result JSONs only."""
 import json, sys, matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-X, R, Y, K, Z, U, W, V, A, R8, out = sys.argv[1:12]
+X, R, Y, K, Z, U, W, V, A, R8, P15, P16, P17, P18, out = sys.argv[1:16]
 x6 = json.load(open(f"{X}/X6_xsec_test_G2.json"))["metrics"]
 xr = json.load(open(f"{R}/X6r_robustness_posthoc.json"))["metrics"]["checks"]
 y6 = json.load(open(f"{Y}/Y6_replication_G2.json"))["metrics"]
@@ -12,6 +12,10 @@ byb = json.load(open(f"{W}/W6_bybit_test.json"))["metrics"]["primary"]
 v6 = json.load(open(f"{V}/V6_bybit_ob_test.json"))["metrics"]
 a5 = json.load(open(f"{A}/A5_us_equity_test.json"))["metrics"]
 r8 = json.load(open(R8))["metrics"]
+p15 = json.load(open(P15))["metrics"]
+p16 = json.load(open(P16))["metrics"]
+p17 = json.load(open(P17))["metrics"]
+p18 = json.load(open(P18))["metrics"]["results"]
 rows = [("Part 4, pre-registered", None),
         ("Thin, $\\hat C_3$ (primary)", x6["primary"]),
         ("Mid, $\\hat C_3$", x6["secondary"]["mid: MAE_60 | C3_hat"]),
@@ -57,8 +61,25 @@ rows = [("Part 4, pre-registered", None),
         ("Summed response $S_{60}$", a5["secondary"]["thin: MAE | S60"]),
         ("Reversion term", a5["secondary"]["thin: MAE | term_reversion"]),
         ("Momentum term", a5["secondary"]["thin: MAE | term_momentum"]),
-        ("Mid control, $\\hat C_3$ without depth", a5["secondary"]["mid: MAE | C3_flow"])]
-fig, ax = plt.subplots(figsize=(6.6, 12.6)); yy = len(rows)
+        ("Mid control, $\\hat C_3$ without depth", a5["secondary"]["mid: MAE | C3_flow"]),
+        ("Part 15, pre-registered (untouched days, frozen model)", None),
+        ("Thin, $\\hat C_3$ (primary)", p15["primary_1_forecast"]),
+        ("Summed response $S_{60}$", p15["secondary_S60"]),
+        ("Part 16, pre-registered (untouched symbols)", None),
+        ("Thin, $\\hat C_3$ (primary 1)", p16["P1"]),
+        ("$\\hat C_3$ beyond baseline + VPIN (primary 2)", p16["P2"]),
+        ("VPIN beyond the Part 9 baseline", p16["vpin"]),
+        ("Summed response $S_{60}$", p16["S60"]),
+        ("Part 17, pre-registered (new venue: Coinbase)", None),
+        ("Thin, $\\hat C_3$ without depth (primary)", p17["thin_eval"]["cands"]["real"]),
+        ("Order-splitting placebo", p17["thin_eval"]["cands"]["placebo"]),
+        ("VPIN", p17["thin_eval"]["cands"]["vpin"]),
+        ("Mid control, $\\hat C_3$ without depth", p17["mid_eval"]["cands"]["real"]),
+        ("Part 18, post hoc (order-splitting placebo, Binance)", None),
+        ("Part 9 sample, real $\\hat C_3$", p18["part9_thin"]["eval"]["cands"]["real"]),
+        ("Part 9 sample, placebo", p18["part9_thin"]["eval"]["cands"]["placebo"]),
+        ("Part 16 sample, placebo", p18["part16_thin"]["eval"]["cands"]["placebo"])]
+fig, ax = plt.subplots(figsize=(6.6, 16.0)); yy = len(rows)
 labels, ticks = [], []
 for name, v in rows:
     yy -= 1; ticks.append(yy)

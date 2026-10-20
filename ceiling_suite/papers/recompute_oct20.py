@@ -86,4 +86,4 @@ for M in (1, 2, 5, 10, 15):
               "nonnegative": bool((Jp >= -1e-15).all())}
 out["C_network"] = {"params": {"a": a, "kappa": kap, "eta": eta, "q": qw, "cross_impact": c}, "by_M": res}
 print("C", json.dumps(res, indent=0))
-json.dump(out, open("/home/claude/papers/recomputed/R_oct20_reruns.json", "w"), indent=1)
+json.dump(out, open(__import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "recomputed", "R_oct20_reruns.json"), "w"), indent=1)

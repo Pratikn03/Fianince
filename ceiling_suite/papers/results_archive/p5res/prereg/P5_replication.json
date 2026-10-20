@@ -1,0 +1,31 @@
+{
+  "controls": [
+    "rv_60",
+    "rv_360",
+    "abs_ret_60",
+    "flow_imb_60",
+    "log_vol_60",
+    "log_depth1",
+    "imbalance",
+    "oi_chg_60",
+    "symbol fixed effects"
+  ],
+  "inference": "Clark-West (Newey-West 6 lags); bootstrap 2,000 resampling dates for \u0394R\u00b2, \u0394AUC",
+  "model": "OLS with symbol fixed effects; tail = outcome above train 90th percentile",
+  "part4_hash": "5910b6b4d90aad457f03eb01d27cb0141933ff1d70dd93d85a98663f73e36020",
+  "primary": "group=thin, outcome=MAE_60, candidate=C3_hat winsorized at train 1%/99% (identical to Part 4 X6)",
+  "question": "Does the Part 4 thin-book result replicate on Binance USD-M symbols never used before?",
+  "secondary": [
+    "thin: MAE_60 | A_ratio (unit-free)",
+    "thin: MAE_60 | term_momentum",
+    "thin: MAE_60 | term_depth",
+    "thin: MAE_60 | term_reversion",
+    "not_thin: MAE_60 | C3_hat"
+  ],
+  "success": "primary: Clark-West one-sided p < 0.05 AND bootstrap 95% CI of \u0394R\u00b2 excludes 0; secondary Holm-adjusted",
+  "symbols": "drawn in cell Y2 (seeded) from thin-volume candidates not used in Part 4",
+  "test": "dates >= 2025-01-01",
+  "thin_rule": "median training depth within 1% of mid < 0.39 $M (Part 4 thin/mid boundary)",
+  "train": "dates <= 2024-12-31",
+  "unit": "symbol-hour blocks, hours 6-23 UTC; features [t-360, t); outcome (t, t+60]"
+}

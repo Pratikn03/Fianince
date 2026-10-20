@@ -104,6 +104,8 @@ class TestAgenticGuardCore:
         assert dec_passive.is_allowed is True
         assert dec_passive.effective_qty <= 1.0  # Reduced to 25%
 
+    @pytest.mark.skipif(bool(os.environ.get("CI")) and not os.environ.get("RUN_LATENCY_BENCH"),
+                        reason="wall-clock latency benchmark; shared CI runners are too noisy (set RUN_LATENCY_BENCH=1)")
     def test_sub_100_microsecond_latency_sla(self):
         guard = AgenticGuard(equity=10_000_000.0)
         current_mid = 17180.0

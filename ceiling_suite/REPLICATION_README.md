@@ -26,8 +26,10 @@ intermediate files there (`data_xsec/`, `data_bybit/`, `data_bybit_ob/`, `data_c
 | 12 | `Part12_CertifiedGuard.ipynb` | 2 | Certified-guard backtest, economic size, Oct 10 2025 event (`E1`, `Q4`–`Q7`) | `P12_certified_guard` (`b9a56af4`) | Parts 4, 9 (`X3`, `Y3`, `blocks_p9_30sym.parquet`) |
 | 13 | `Part13_PostHoc_Robustness.ipynb` | 1, 2 | Post-hoc checks: throttle guard, terciles, Bybit bars, IV estimate, fixed-grid depletion, CFTC basis signature, VPIN, Cochrane–Orcutt (`R1`–`R8`) | none (post hoc) | Parts 4, 7, 9, 11, 12 |
 | 14 | `Part14_US_Equities.ipynb` | 2 | Thin US stocks, consolidated trades via Alpaca (`A1`–`A5`) | `P14_us_equities` (`f5800a69`) | — (needs a free Alpaca key) |
-| 15 | `Part15_InfoSafety_Untouched.ipynb` | 2 | Frozen Part 9 model and uncertainty-aware guard on untouched Binance days, the 12th-15th of each month (`W4`-`W6`) | `P15_info_safety` (hash printed by W3) | Parts 4, 5, 9 (`X3`, `Y3`, `U2_build`, `blocks_p9_30sym.parquet`) |
-| 16 | `Part16_Untouched_Symbols.ipynb` | 2 | Thirty never-used Binance perpetuals: forecasting, beyond-VPIN and guard primaries (`X2`, `X4`-`X6`) | `P16_untouched_symbols` (hash printed by X3) | Parts 4, 5 (`X1`, `X3`, `Y1`, `Y3`) |
+| 15 | `Part15_InfoSafety_Untouched.ipynb` | 2 | Frozen Part 9 model and uncertainty-aware guard on untouched Binance days, the 12th-15th of each month (`W4`-`W6`) | `P15_info_safety` (`69849c96`) | Parts 4, 5, 9 (`X3`, `Y3`, `U2_build`, `blocks_p9_30sym.parquet`) |
+| 16 | `Part16_Untouched_Symbols.ipynb` | 2 | Thirty never-used Binance perpetuals: forecasting, beyond-VPIN and guard primaries (`X2`, `X4`-`X6`) | `P16_untouched_symbols` (`0523e476`) | Parts 4, 5 (`X1`, `X3`, `Y1`, `Y3`) |
+| 17 | `Part17_NewVenue_Coinbase.ipynb` | 2 | New venue (Coinbase spot, public trades) and order-splitting placebo; fixed-sequence primaries (`C2`, `C4`-`C6`) | `P17_new_venue` (`3233c52b`) | — (no account or key) |
+| 18 | `Part18_PostHoc_Placebo_Baselines.ipynb` | 2 | Post hoc: placebo on Parts 9 and 16; peak-guard, participation and margin-style controls on Parts 15 and 16 (`R3`, `R4`) | `P18_posthoc_plan` (analysis plan, post hoc) | Parts 9, 15, 16 (block files and minute cache) |
 
 There is no notebook numbered 3.
 
@@ -48,8 +50,10 @@ Hashes and unlock counts are reported in each paper's table notes.
 | `papers/recompute_theory.py`, `recompute_extra.py`, `recompute_crb.py`, `recompute_p1_capital.py`, `recompute_p1_protocols.py`, `recompute_p1_sprt.py` | 1 | Capital constants, protocols, CRB table, SPRT |
 | `papers/recompute_p1_estimators.py` | 1 | ML at the critical noise level (Table `tab:crb`); four-estimator check (Table `tab:lecam`) |
 | `papers/recompute_oct20.py` | 1, 2 | Cohort-split invariance; symmetric multi-asset network; re-optimization check (Prop. `prop:lucas`) |
-| `papers/research_extension/information_safety/run_all.py` (+ `tests/`) | 2 | Information-safety theorems: witness, two-world bound, Markov-Krein window bounds, certificate coverage, exact worst cases, optimal guard, disclosure, mechanisms, misspecification, rebate (tests T01-T09, T12) -> `results/IS_results.json` |
+| `papers/research_extension/information_safety/run_all.py` (+ `tests/`, 28 unit tests) | 2 | Information-safety results T01-T15: witness, two-world bound, Markov-Krein window bounds and their certified (interval-arithmetic) endpoints, certificate coverage including unknown noise covariance, exact worst cases and LP support, optimal guard, venue mode with interval branch and bound, disclosure and the noisy-proxy intersection (T15), mechanisms, misspecification, rebate, balance-sheet step, anytime-valid probing → `results/T*.json` |
+| `papers/hardening/*.py` | 2 | October 2026 theorem hardening: explicit Rayleigh--Hölder bound (full-bound column of the finite-horizon capital table, Paper 1), process-noise, passive all-K, IV determinant and minimal-dimension checks (Paper 1); residues, confluent peak lag and window-versus-tail certificate (Paper 2) → `R_*.json`; see `hardening/README.md` |
 | `papers/recompute_audit.py` | 1, 2 | Proof audit (Oct 2026): symbolic and numerical checks of Prop. shape (peak bracket), Remark counterexamples, Props. sum and equil (Paper 2); Thm. quantity K* bound, Thm. twocohort moments, Thm. blind example (Paper 1) → `R_audit_oct2026.json` |
+| `papers/verify_paper_numbers.py` | 2 | Gate-8 audit: recomputes every row of the ledger of pre-registered tests and the Part 16 numbers from the result JSON files and compares them with the LaTeX source |
 | `papers/recompute_dollar.py` | 2 | Liquidation probabilities and dollar losses from `E1_economic_size` (Part 12) → `R_P2_dollar_translation.json` |
 | `papers/calib_guard.py`, `papers/kreiss_table.py`, `papers/make_figs*.py`, `scripts_p45/make_fig_forest.py` | 2 | Calibrated guard illustration, Kreiss table, figures |
 
@@ -66,3 +70,12 @@ are written to `results/*_manifest_sha256.csv`.
 ## 4. Determinism
 Every notebook fixes its random seed (`SEED` in cell 0). Bootstrap draws, symbol draws and simulations are therefore
 reproducible given the same downloaded files.
+
+## 4. Clean-environment reproduction
+`reproduce_clean.sh` (in the replication zip) rebuilds everything that does not need market data from scratch: it unpacks the
+package into an empty folder, creates a fresh Python virtual environment from `requirements_lock.txt`, runs the 28 unit
+tests and all information-safety tests, checks that every result equals the archived one, recompiles both papers and both
+journal versions from the LaTeX sources, and recomputes every row of Paper 2's ledger of pre-registered tests from the
+archived real-data result files (`results_archive/`). The real-data results themselves are reproduced by re-running the
+notebooks, which download the public data again (many hours in total).
+

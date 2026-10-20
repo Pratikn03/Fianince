@@ -1,0 +1,28 @@
+{
+  "candidate": "C3_hat winsorized at train 1%/99%",
+  "controls": [
+    "rv_60",
+    "rv_360",
+    "abs_ret_60",
+    "flow_imb_60",
+    "log_vol_60",
+    "log_depth1",
+    "imbalance",
+    "oi_chg_60"
+  ],
+  "data": "Binance USD-M BTCUSDT daily klines(1m), bookDepth, metrics; validation rules V1-V5 of cell D2",
+  "inference": "Clark-West (Newey-West 6 lags, blocks in time order); day-block bootstrap 2,000 for \u0394R\u00b2, \u0394AUC",
+  "model": "OLS; tail = outcome above train 90th percentile; score = fitted value",
+  "multiple_testing": "secondary outcomes/candidate reported with Holm-adjusted p-values",
+  "primary_outcome": "MAE_60 (bp)",
+  "question": "Does the T6 amplification statistic C3_hat, estimated from the previous 6 hours of futures depth, flow and price, predict the next hour's maximum adverse excursion beyond controls?",
+  "secondary_candidate": "peak_ratio_hat (same winsorizing)",
+  "secondary_outcomes": [
+    "OI_drop_60",
+    "depth_collapse_60"
+  ],
+  "success": "primary: Clark-West one-sided p < 0.05 AND bootstrap 95% CI of \u0394R\u00b2 excludes 0",
+  "test": "days >= 2025-01-01",
+  "train": "days <= 2024-12-31",
+  "unit": "hourly blocks, hours 6-23 UTC; features from minutes [t-360, t); outcomes from (t, t+60]"
+}

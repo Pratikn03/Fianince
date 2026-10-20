@@ -109,3 +109,34 @@ Verified without change: all other results, including the summed-response closed
 - New Remark (hard directions carry no risk): the two-point pair has identical summed response; links to Paper 2's certification theory. Policy paragraph updated; companion paper cited.
 ### New notebooks
 - Part 15 (untouched days, frozen model + uncertainty-aware guard), Part 16 (untouched symbols: forecasting, beyond-VPIN confirmatory, guard). Both pre-registered; results pending.
+
+## October 20, 2026 (Part 15 results)
+- Part 15 (SHA-256 69849c96..., opened once): BOTH primaries PASS under Holm. P1 frozen Part 9 model on untouched days (15th of each month, 2025-01..2026-09; 20 symbols, 6,714 test hours): dR2 +4.20 pts [1.55, 8.23] (97.5%), CW t 9.94, AUC 0.763 -> 0.770; frozen baseline R2 only 0.058 on these days. S60 +3.26 [1.82, 5.34]. P2 uncertainty-aware guard vs static at matched activity: log TLR -0.084 [-0.173, -0.011] (97.5%), p = 0.0025; 91% activity retained, 26% of hours throttled. Secondary: beats depth throttle (-0.30) and spectral throttle (-0.15); no better than point-estimate guard (+0.003, n.s.); not better than volatility cap (+0.023, n.s.); adding it to a volatility cap -0.012 [-0.037, +0.013], n.s.
+- Paper 2: Part 15 subsection and Table tab:p15 replace the placeholder; abstract, introduction, map, ledger (13 primaries, 9 pass, 4 fail), multiple testing (Bonferroni over 13, threshold 0.0038, both Part 15 primaries survive), sequential design and forest figure updated. JF: certified-guard and balance-sheet detail moved to the Internet Appendix; main text 59 pages.
+
+## Part 16 results (Oct 20)
+- Part 16 (SHA-256 0523e476..., opened once): ALL THREE primaries PASS under Holm across the three. Seeded draw of 30 never-used perpetuals; only 5 thin (BAT, BEL, COTI, CTSI, LQTY).
+  - P1: C3_hat beyond the Part 9 baseline +0.73 pts [0.38, 1.43], CW t 5.70 (baseline R2 0.317; about a quarter of the Part 9 gain).
+  - P2: beyond baseline + VPIN +0.56 pts [0.27, 1.16], CW t 5.38. Makes the post-hoc R8 VPIN comparison confirmatory. VPIN alone +0.28; S60 +0.42.
+  - P3: robust guard vs static log TLR -0.256 [-0.497, -0.021] (about 23% lower tail loss), p 0.004, 91% activity. Passes Holm within Part 16 but NOT Bonferroni across all 16 primaries (threshold 0.0031).
+  - Secondary: robust vs point guard -0.028 n.s.; cap x guard vs cap -0.072 (Holm p 0.07, n.s.).
+- Paper 2: Part 16 table and text replace the placeholder; abstract, intro, map, ledger (16 primaries, 12 pass, 4 fail), multiple testing, dependence paragraph, conclusion and forest figure updated; reproducibility row has the hash.
+- Correction made at the same time: Part 15 percentages were log differences quoted as percent. Now 8% (not 8.4%), interval 1% to 16%; depth throttle 26% (not 30%); spectral throttle 14% (not 15%).
+- JF version: map of results moved to the Internet Appendix; main text 60 pages; JF abstract 100 words, mentions untouched days and symbols.
+
+
+## Blueprint gaps closed (Oct 20, later)
+- D7 venue mode: Proposition prop:venue (closed form; safe set can be [0,a1] U [a2,1]; worst economy is one corner; "certify the max and admit everything below" admits unsafe levels) and Theorem thm:venuebb (interval branch and bound with outward rounding: sound in exact arithmetic, brackets the largest safe and ramp-reachable levels, halts when nothing is safe, complete as tolerance -> 0). Test T13: closed form agrees with a 2,001-point grid over 332 economies; book model certified safe set [0,0.053] U [0.178,1] at budget 6.5, zero violations against 433 sampled economies.
+- D8/E05: Lemma lem:certnum (weak-duality polynomials verified in interval arithmetic). The window endpoints quoted in the paper are now proved; certified endpoints are outside the 60-digit ones by at most 1.5e-8 relative (test T10).
+- D8: Proposition prop:hotelling (t-certificate and Hotelling region exact for any tap covariance; the O1 certificate covers 75.1% exactly with tap autocorrelation 0.8; dependent experiments 82-85%) (test T11).
+- D10: Proposition prop:probe in the Internet Appendix (anytime-valid sequential certificate; 3.7-107 probes vs 130 fixed; no wrong decision in 7,000 runs) (test T14).
+- E04: joint per-period + total-budget support function equals LP in 300 cases (T05b); balance-sheet step keeps the reserve in all 17,551 sampled states satisfying the guard (T12b).
+- G: code restructured to the blueprint layout (12 modules + interval.py + adaptive_probing.py; 10 test files, 23 tests); every result file records code hash, library versions, seed, status, runtime; T01-T09 and T12 results identical key by key to before the restructuring; no absolute paths. MERGE_NOTES.md maps the GitHub repo's package to this one.
+- Gate 8: reproduce_clean.sh (fresh venv, tests, all results compared key by key, both papers and journal versions recompiled and text-compared to the delivered PDFs, ledger numbers recomputed from archived JSONs by verify_paper_numbers.py: 20/20 match).
+- E10/E13: Part 17 notebook (Coinbase spot, pre-registered, order-splitting placebo, fixed-sequence primaries). E07/E13 post hoc: Part 18 notebook (placebo on Binance Parts 9/16; peak, participation and margin-style guard controls on Parts 15/16). Placeholders sec:p17 and sec:p18 in Paper 2.
+- JF version: venue mode, unknown-covariance material, simulation table, forest figure and Part 18 moved to the Internet Appendix (IA sections now numbered IA.n); references spacing tightened; main text 60 pages.
+
+## Parts 17 and 18 results (Oct 20, evening)
+- Part 17 (Coinbase spot, pre-registered, SHA-256 3233c52b..., opened once): FAILS. Only 6 of 20 thin pairs traded often enough to enter (ARB, FLR, ICP, QNT, VET, XLM). C3_flow adds -0.09 pts [-0.41, +0.16], CW t -0.58; the placebo primary is not tested (fixed sequence); S60, VPIN and the mid-size control also add nothing. Ledger: 18 registered primaries, 17 tested, 12 pass, 5 fail; Bonferroni over 17 = 0.0029 (Part 15 guard 0.0025 survives; Part 16 guard 0.004 does not).
+- Part 18 (post hoc, plan hashed): order-splitting placebo adds nothing on Binance (Part 9 sample: real 2.73 vs placebo -0.02, difference 2.74 [1.32, 4.82]; Part 16 sample: 0.79 [0.42, 1.60]). Guard vs new controls: Part 15 sample beats certified peak (-3.4%) and margin-style rule (-3.3%) after Holm, and the participation cap; not better than the six-hour peak guard (+3.6%, n.s.). Part 16 sample: beats only the participation cap. Static/robust TLRs and recomputed C3 reproduce the published values exactly.
+- Paper 2: sections 12.4 and 12.5 filled (Tables tab:p17, tab:p18), abstract, intro, map, ledger, multiple testing, conclusion and forest figure updated; JF abstract still 100 words ("not on Bybit or Coinbase"); JF main text 60 pages (Part 17 table and the certified-endpoint lemma moved to the IA).

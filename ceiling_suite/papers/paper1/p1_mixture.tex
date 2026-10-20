@@ -57,7 +57,11 @@ Hence $\|h(\theta_1)-h(\theta_0)\|_2=\Theta(\tau(\Delta\eta)^3)$.
 \begin{equation}\label{eq:lecam2}
 \sup_\theta P_\theta(\|\hat w-w(\theta)\|_\infty\ge\tau)\;\ge\;1-\Phi\!\Bigl(\frac{\sqrt N\|h(\theta_1)-h(\theta_0)\|_2}{2\sigma_h}\Bigr),
 \end{equation}
-so failure probability at most $0.05$ requires $N\ge4\sigma_h^2z_{0.95}^2/\|h(\theta_1)-h(\theta_0)\|_2^2=\Omega((\Delta\eta)^{-6})$.
+so failure probability at most $0.05$ requires $N\ge4\sigma_h^2z_{0.95}^2/\|h(\theta_1)-h(\theta_0)\|_2^2=\Omega((\Delta\eta)^{-6})$. The same bound holds without any labelling convention for the permutation-invariant loss
+\[
+d_\infty(\hat\theta,\theta)=\min_{\pi\in S_2}\max_{k}\bigl(|\hat w_{\pi(k)}-w_k|+|\hat\eta_{\pi(k)}-\eta_k|\bigr)
+\]
+in place of $\|\hat w-w(\theta)\|_\infty$, whenever $\Delta\eta\ge2\tau q/(q+2\tau)$, because then $d_\infty(\theta_0,\theta_1)=\min\{2\tau(1+\Delta\eta/q),\,(1+2\tau/q)\Delta\eta\}\ge2\tau$.
 \item Conversely, on the known-midpoint family a linear estimator that projects the averaged impulse response on the normalized third-moment direction and inverts \eqref{eq:dM3} has error at most $|\hat M_3-M_3|/(2p_-p_+(\Delta\eta)^3)$, giving $N=O(\tau^{-2}(\Delta\eta)^{-6}\log(1/\delta_{\rm fail}))$. On the separated class with weights and rates bounded away from the boundary, Toeplitz deconvolution followed by a Prony--Hankel root step has Hankel determinant $g_1g_3-g_2^2=w_1w_2\eta_1\eta_2r_1r_2(\Delta\eta)^2>0$ for the deconvolved kernel $g_m=\sum_iw_i\eta_ir_i^m$, and perturbation analysis gives the same order.
 \end{enumerate}
 \end{theorem}
@@ -98,6 +102,7 @@ Fix $K\ge2$, a center $r_c\in(0,1)$ and total merged weight $W>0$. There exist t
 \[
 N\;\ge\;c\,\sigma^2(\Delta\eta)^{-(4K-2)} .
 \]
+The same requirement holds for the permutation-invariant loss $W_1(\hat M,M)$ between estimated and true merged measures at accuracy $c_KW\Delta\eta$, where $2c_K>0$ is the Wasserstein distance between the two normalized quadrature rules, so no relabelling of atoms escapes it.
 \end{theorem}
 
 The construction uses the $K$-point Gauss and Gauss--Radau rules of the same weight function: both are positive, have $K$ atoms and integrate polynomials of degree $2K-2$ exactly. For $K=2$ it reproduces the order of Theorem~\ref{thm:twocohort}. Table~\ref{tab:radau} lists the two rules: their low moments agree to machine precision and their moment of order $2K-1$ differs by $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$. The shrinking gap explains why constants deteriorate with $K$ on top of the exponent.
@@ -247,10 +252,11 @@ Suppose the price is observed passively as the stationary output $x_t=H_\theta(L
 \begin{enumerate}[label=(\roman*)]
 \item For a single cohort at $\bar\eta$ against the symmetric pair at $\bar\eta\pm\delta$ with the same total weight, $D=\Theta(\delta^4)$.
 \item For the moment-matched two-cohort economies of Theorem~\ref{thm:twocohort}, $D=\Theta(\tau^2(\Delta\eta)^6)$.
+\item For every $K\ge2$, for the $K$-cohort Gauss and Gauss--Radau economies of Theorem~\ref{thm:kcohort}, $D=\Theta((\Delta\eta)^{4K-2})$.
 \end{enumerate}
-Hence any test based on $T$ passive observations with worst-case error at most $\alpha<1/4$ needs $T=\Omega(\delta^{-4})$ and $T=\Omega(\tau^{-2}(\Delta\eta)^{-6})$ respectively, and the likelihood-ratio test attains these orders as $T\to\infty$.
+Hence any test based on $T$ passive observations with worst-case error at most $\alpha<1/4$ needs $T=\Omega(\delta^{-4})$, $T=\Omega(\tau^{-2}(\Delta\eta)^{-6})$ and $T=\Omega((\Delta\eta)^{-(4K-2)})$ respectively, and the likelihood-ratio test attains these orders as $T\to\infty$: passive data cost the same polynomial order as active probing for every number of cohorts.
 \end{theorem}
 
-The proof (Appendix~\ref{app:proofs}) combines the Whittle form of the divergence rate with the resolvent identity $H_1-H_0=H_1H_0(G_1-G_0)$: the two spectra differ by the leading unmatched moment, of order $\delta^2$ for the pair and $\tau(\Delta\eta)^3$ for the moment-matched economies, and the divergence rate is the square of that difference. Numerically, the fitted slopes of the required sample length are $-4.21$ and $-5.93$, against the theoretical $-4$ and $-6$.
+The proof (Appendix~\ref{app:proofs}) combines the Whittle form of the divergence rate with the resolvent identity $H_1-H_0=H_1H_0(G_1-G_0)$: the two spectra differ by the leading unmatched moment, of order $\delta^2$ for the pair and $\tau(\Delta\eta)^3$ for the moment-matched economies, and the divergence rate is the square of that difference. Numerically, the fitted slopes of the required sample length are $-4.21$ and $-5.93$, against the theoretical $-4$ and $-6$; for part (iii) the fitted slopes of the Whittle divergence rate in $\Delta\eta$ are $5.91$, $9.98$ and $14.05$ for $K=2,3,4$, against $6$, $10$ and $14$ (\texttt{hardening/p1\_checks.py}).
 
 Passive surveillance is possible in principle but costs the same polynomial order as active probing. Proposition~\ref{prop:passive0} is the exact finite-sample version for the known pair.

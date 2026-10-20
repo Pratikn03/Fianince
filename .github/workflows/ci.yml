@@ -56,6 +56,40 @@ jobs:
           cd ..
           python ceiling_suite/verify_ceiling_suite_lean_proofs.py
 
+      - name: Upload regenerated audit files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lean-audit
+          path: |
+            research_extension/current_manuscript_lean_20261008/checked_theorem_types.json
+            research_extension/current_manuscript_lean_20261008/axiom_audit.jsonl
+            research_extension/current_manuscript_lean_20261008/named_declarations.json
+            research_extension/current_manuscript_lean_20261008/formal_verification_receipt.json
+            research_extension/current_manuscript_lean_20261008/AxiomAudit.lean
+            ceiling_suite/CEILING_SUITE_LEAN_PROOF_MANIFEST.json
+            ceiling_suite/CEILING_SUITE_LEAN_PROOF_REPORT.md
+
+  paper-suite:
+    name: Paper Suite Clean Reproduction (tests, results, LaTeX, ledger)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install TeX Live and Poppler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended \
+            texlive-latex-extra texlive-fonts-recommended lmodern poppler-utils
+
+      - name: End-to-end clean reproduction (Lean is checked in its own job)
+        run: SKIP_LEAN=1 sh reproduce_paper_suite.sh
+
   test-matrix:
     name: Pytest Suite (${{ matrix.os }}, Python ${{ matrix.python-version }})
     needs: [lint]

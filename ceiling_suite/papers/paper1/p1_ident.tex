@@ -9,7 +9,7 @@ Let $\kappa>0$ and $a\in[0,1)$ be known. Use zero initial states and a common pr
 \begin{equation}\label{eq:merged}
 \sum_{i:\eta_i^A=\eta} q_i^A\eta \;=\; \sum_{j:\eta_j^B=\eta} q_j^B\eta\qquad\forall\eta\in(0,1).
 \end{equation}
-The minimal realization has dimension $1+|\mathrm{supp}(M)|$, counting distinct rates with nonzero merged weight after signed cancellation. A cohort with $\eta=1$ merges into the anchor $a$ without adding a pole.
+For $a>0$ the minimal realization has dimension $1+|\mathrm{supp}(M)|$, counting distinct rates with nonzero merged weight after signed cancellation; for $a=0$ the price carries no state of its own and the dimension is $|\mathrm{supp}(M)|$. A cohort with $\eta=1$ merges into the anchor $a$ without adding a pole.
 \item \emph{Separation complexity under average power.} Consider testing a single cohort with rate $\bar\eta$ against two cohorts with rates $\bar\eta\pm\delta$ and the same total weight, on a compact family that is uniformly Schur stable with rates bounded away from $0$ and $1$. Observe $\tilde x_t=x_t+\nu_t$ with $\nu_t\sim N(0,\sigma_\nu^2)$ and use deterministic probes with $\frac1T\sum_{t<T}v_t^2\le P$. Any test with worst-case error at most $\alpha\in(0,1/4)$ needs
 \begin{equation}\label{eq:Tpower}
 T\;\ge\;\frac{4\sigma_\nu^2(1-2\alpha)^2}{K^2P\,\delta^4}=\Omega(\delta^{-4}),
@@ -119,7 +119,7 @@ Exact marked equity is extra information, not a free observation assumed by the 
 
 \subsection{Capital paid by the probe trader}
 
-\begin{theorem}[Matching capital order for funded deterministic probes]\label{thm:capital}
+\begin{lemma}[Time-domain Toeplitz coercivity: capital order for funded probes]\label{thm:capital}
 Use the same economy and execution law. The statistical observer receives only noisy prices and executed quantities. The probe trader starts with cash $B>0$ and zero inventory; a finite signed sequence $v$ changes inventory by $+v_t$ and cash by $K_{t+1}=K_t-v_t(P^0_{t+1}+\kappa v_t/2)-c|v_t|$, after which trading stops and the trader must remain solvent as the price returns to $P_*$. Put
 \[
 r=1-\epsilon(1-S)<1,\qquad m=\kappa\frac{1-r}{1+r}>0,\qquad K_*=\frac{2\kappa^2q}{\epsilon^3(1-S)^2}.
@@ -129,30 +129,16 @@ Every solvent strategy satisfies $\KL(P_0^v\|P_\delta^v)\le K_*^2B\delta^4/(\sig
 B\;\ge\;\frac{2\sigma^2m(1-2\alpha)^2}{K_*^2\delta^4},
 \end{equation}
 without a quantity cap and at any horizon. Conversely, for any margin fraction $0<\mu\le1$, the pulse $A$ in \eqref{eq:pulse} achieves error $\alpha$ and remains margin-solvent at every later mark with capital $B_A=\tfrac{\kappa}{2}A^2+(c+\mu P_*)A$. Necessary and sufficient capital orders are $\delta^{-4}$.
-\end{theorem}
+\end{lemma}
 
-Theorem~\ref{thm:capital} is an order statement: an elementary time-domain coercivity argument for Toeplitz forms that establishes the $\delta^{-4}$ rate before the exact frequency-domain optimization of Section~\ref{sec:account}. Its explicit lower constant is correspondingly loose: at the calibrated parameters it evaluates to $4.9\times10^{-4}$ par units at $\delta=0.05$ with $\epsilon=0.35$, five orders of magnitude below any design we can execute. Section~\ref{sec:account} computes the constant that matters.
+Lemma~\ref{thm:capital} is an order statement: an elementary time-domain coercivity argument for Toeplitz forms that establishes the $\delta^{-4}$ rate before the exact frequency-domain optimization of Section~\ref{sec:account}. Its explicit lower constant is correspondingly loose: at the calibrated parameters it evaluates to $4.9\times10^{-4}$ par units at $\delta=0.05$ with $\epsilon=0.35$, five orders of magnitude below any design we can execute, and because $m/K_*^2\propto\epsilon^7(1-S)^5$ it collapses near the boundary of the family. We therefore state it as a lemma; Section~\ref{sec:account} computes the constant that matters, within 5\% of a feasible design at every separation.
 
 \subsection{A worked example: two Kalman desks}\label{sec:worked}
 
-To make the orders concrete, consider two desks that track the same trend with Kalman filters (Proposition~\ref{prop:kalman}) and differ only in their signal-to-noise ratios: $\sigma_\zeta^2/\sigma_\nu^2=0.09$ and $0.16$. Their gains are $\eta_1=0.2584$ and $\eta_2=0.3279$, so $\bar\eta=0.2931$ and $\delta=0.0348$. With equal weights, the economy is observationally the split pair of Theorem~\ref{thm:quantity} around $\bar\eta$, and the response difference first appears at lag two, $d_2=-\kappa^2q\delta^2=-1.55\times10^{-4}$ (verified).
+To make the orders concrete, consider two desks that track the same trend with Kalman filters (Lemma~\ref{lem:micro}(i)) and differ only in their signal-to-noise ratios: $\sigma_\zeta^2/\sigma_\nu^2=0.09$ and $0.16$. Their gains are $\eta_1=0.2584$ and $\eta_2=0.3279$, so $\bar\eta=0.2931$ and $\delta=0.0348$. With equal weights, the economy is observationally the split pair of Theorem~\ref{thm:quantity} around $\bar\eta$, and the response difference first appears at lag two, $d_2=-\kappa^2q\delta^2=-1.55\times10^{-4}$ (verified).
 
 A supervisor who wants to tell this market from a single desk with gain $\bar\eta$ at 5\% error using a single pulse and the third observation needs $A=2\sigma\Phi^{-1}(0.95)/(\kappa^2q\delta^2)=212$ units of executed quantity, and, under a 0.5\% margin and 4 basis points of fees, single-pulse capital of $18{,}166$ par units. The pulse is very inefficient: by the $\delta^{-4}$ scaling of Theorem~\ref{thm:spectral}, the optimal flat probe needs about $61.41\times(0.05/0.0348)^4\approx262$ par units. Converting with the measured Roll noise (factor $(0.40/0.01)^2$), the optimal probe costs roughly $4\times10^5$ USDT and the naive pulse about $3\times10^7$ USDT. Two desks whose signal-to-noise ratios differ by almost a factor of two are therefore expensive, but not impossible, to tell apart by probing; three or more desks are much harder (Theorem~\ref{thm:kcohort}).
 
 \subsection{Natural excitation and the cost of ambiguity}
 
-\begin{proposition}[Passive distinction with zero controlled quantity]\label{prop:passive0}
-Keep the known pair, but add independent uniform innovations $w_t\in[-b,b]$ of variance $s_w^2=b^2/3$ at each price update, observe $\tilde x_t=x_t+\nu_t$ with $\nu_t\sim N(0,\sigma^2)$, use independent three-step reset blocks and no probes, with $P_*>3b$. Let $b_1=a+\kappa q\eta$, $b_{2,0}=b_1^2+\kappa q\eta(1-\eta)$ and $b_{2,\delta}=b_{2,0}-\kappa q\delta^2$. In each block the covariance of the first and third observations differs by $\Delta=\kappa qs_w^2\delta^2$. With
-\[
-R=\max_{r\in\{0,\delta\}}\Bigl\{(s_w^2+\sigma^2)\bigl[s_w^2(1+b_1^2+b_{2,r}^2)+\sigma^2\bigr]+s_w^4b_{2,r}^2\Bigr\},
-\]
-the midpoint test of the average product has worst-case error at most $\alpha$ whenever $n\ge4R/(\alpha\Delta^2)$ blocks are observed: zero controlled quantity and order $\delta^{-4}$ blocks.
-\end{proposition}
-
-The Chebyshev bound is conservative but the order is real. With $b=0.03$, observation s.d.\ $0.01$ and $\delta=0.10$, the bound asks for $3.9\times10^7$ blocks at $\alpha=0.1$; in simulation the midpoint test still errs 32--38\% of the time with $2\times10^5$ blocks. Independent resets and known innovation laws are extra conditions. The proposition does not show that anonymous public records identify participants; it shows that passive excitation can accumulate memory information while the probe account stays untouched.
-
-\begin{proposition}[Conditional quote and allocation cost of ambiguity]\label{prop:ambiguity}
-Consider a one-unit ticket with adverse mark $Z_\theta\sim N(\mu_\theta,\sigma_\theta^2)$ and a CARA dealer with risk aversion $\gamma>0$. Let $c_\theta=\mu_\theta+\gamma\sigma_\theta^2/2\ge0$ with $\sup_\theta c_\theta<\infty$. Under competition with zero robust certainty equivalent, the informed quote is $s_1=c_{\theta_0}$ and the ambiguous quote $s_2=\sup_\theta c_\theta$, so $\Delta=s_2-s_1\ge0$, strictly when the worst relevant cost exceeds $c_{\theta_0}$. Under inverse demand $v(V)=(V_0-V)/b$ and marginal cost $c$, raising an interior quote from $s_0$ to $s_0+\Delta$ lowers surplus by $W_{\rm loss}=b(s_0-c)\Delta+\tfrac b2\Delta^2$.
-\end{proposition}
-
-Cohort non-identification alone does not establish that the worst relevant cost exceeds $c_{\theta_0}$; the set of relevant costs is an additional primitive. Treating a risk charge as a social cost requires a defended welfare criterion.
+Natural price innovations can also separate the pair with zero controlled quantity: an exact finite-sample test on independent three-step blocks needs order $\delta^{-4}$ blocks (Internet Appendix, Proposition~\ref{prop:passive0}), the same order as the passive Whittle bound of Section~\ref{sec:mixtures}. Non-identification also has a price on the quote side: when the relevant set of economies includes costlier ones, a robust dealer widens its quote, which the companion paper analyses \citep{niroula2026b}; cohort non-identification alone does not establish that the worst relevant cost exceeds the informed one.

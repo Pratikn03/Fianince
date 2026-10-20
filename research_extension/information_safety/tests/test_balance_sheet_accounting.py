@@ -1,11 +1,9 @@
-"""Blueprint Section G test: test_balance_sheet_accounting.py (D7, E05)."""
-from research_extension.information_safety.tests.test_balance_sheet import test_balance_sheet_solvency_contract
+"""Theorem thm:forward: the guard inequality keeps the buffer above the reserve for every move within the envelope."""
+from economic_ledger import run_balance_sheet, buffer, admissible_shock_alpha0
 
 
-def test_balance_sheet_accounting():
-    test_balance_sheet_solvency_contract()
-
-
-if __name__ == "__main__":
-    test_balance_sheet_accounting()
-    print("[PASS] test_balance_sheet_accounting.py")
+def test_scenario_numbers():
+    r = run_balance_sheet(cases=2000)
+    sc = r["scenario"]
+    assert abs(sc["admissible_shock"] - 8100 / 2010) < 1e-12 and sc["reserve_violated_at_4.05"] and sc["reserve_kept_at_4.02"]
+    assert r["violations"] == 0

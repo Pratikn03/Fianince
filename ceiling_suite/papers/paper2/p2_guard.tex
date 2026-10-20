@@ -5,24 +5,24 @@ Observable dynamics are $z_{j+1}=Jz_j+Hv_j$ with loss output $l_t=Cz_t$, where $
 \begin{equation}\label{eq:gate}
 V^*=\min_{t:\,g^*_t+c_{\rm exec}>0}\frac{B-L_{\rm other}-|b_t|}{g^*_t+c_{\rm exec}},\qquad\bar R=V^*/\tau
 \end{equation}
-over a window of $\tau$ seconds. If instead each period's quantity is bounded, $|v_j|\le V$, the worst case is $V\sum_{m<t}|g_m|$ (attained by $v_{t-1-m}=V\,{\rm sign}(g_m)$) and execution costs at most $c_{\rm exec}Vt$, so the peak gain in \eqref{eq:gate} must be replaced by the summed gain $\sum_{m<t}|g_m|$ and $c_{\rm exec}$ by $c_{\rm exec}t$. Pairing a per-period bound with the peak gain understates the worst case, which is the failure Theorem~\ref{thm:guard} formalizes. Either gate needs only impulse coefficients and the current drift.
+over a window of $\tau$ seconds. If instead each period's quantity is bounded, $|v_j|\le V$, the worst case is $V\sum_{m<t}|g_m|$ (attained by $v_{t-1-m}=V\,{\rm sign}(g_m)$) and execution costs at most $c_{\rm exec}Vt$, so the peak gain in \eqref{eq:gate} must be replaced by the summed gain $\sum_{m<t}|g_m|$ and $c_{\rm exec}$ by $c_{\rm exec}t$. Pairing a per-period bound with the peak gain understates the worst case, which is the failure Lemma~\ref{thm:guard} formalizes. Either gate needs only impulse coefficients and the current drift.
 
 \subsection{Maximality}
 A dealer with inventory $I$ chooses an admission level $\alpha\in[0,1]$ (the fraction of incoming algorithmic flow it accepts, or the depth it quotes). The closed-loop operator is $J(\alpha)=J_0+\alpha B_F$ with price impulse response $g_k(\alpha)$. Shocks satisfy $|u_t|\le\bar u$. Over horizon $H$ the price change is $\sum_{k<H}g_k(\alpha)u_{t-k}$, and the dealer has a loss budget $\mathcal B$. The contract is: inventory $I(\alpha)$ is held fixed over the horizon, each period's shock is bounded by $\bar u$, and loss is the mark-to-market loss at any date in the horizon; because the partial sums $\sum_{k<h}|g_k|$ increase in $h$, the worst date is the last. Margin, hedging and fills are added in Theorem~\ref{thm:forward}.
 
-\begin{theorem}[Summed-gain guard is maximal]\label{thm:guard}
+\begin{lemma}[Summed-gain guard is maximal]\label{thm:guard}
 The worst-case loss over horizon $H$ is
 \[
 L_{\max}(\alpha)=|I(\alpha)|\,\bar u\sum_{k<H}|g_k(\alpha)|.
 \]
 Hence the guard ``admit $\alpha$ iff $L_{\max}(\alpha)\le\mathcal B$'' is necessary and sufficient for bounded-shock solvency: it admits every safe $\alpha$ and no unsafe one. Replacing $\sum_k|g_k|$ by $\max_k|g_k|$ can admit unsafe levels; replacing it by $H\max_k|g_k|$ is safe but conservative.
-\end{theorem}
+\end{lemma}
 
 \begin{proof}
 By H\"older's inequality $|\sum_kg_ku_{t-k}|\le\bar u\sum_k|g_k|$, with equality for $u_{t-k}=\bar u\,{\rm sign}(g_k)$, which is admissible. Multiplying by $|I(\alpha)|$ gives $L_{\max}$, so the admission set equals the safe set. Since $\max_k|g_k|\le\sum_k|g_k|\le H\max_k|g_k|$, the peak guard under-states loss and the $H$-scaled guard over-states it.
 \end{proof}
 
-The worst-case identity in Theorem~\ref{thm:guard} is not new as mathematics: the induced $\ell_\infty$ gain of a linear convolution operator is the $\ell_1$ norm of its kernel, the fact on which $\ell_1$-optimal control of persistent bounded disturbances is built \citep{vidyasagar1986,dahleh1987,dahleh1995}. We use it rather than claim it. The finance content lies elsewhere: the dealer's admission level changes the operator itself, so the guard is a rule over an action set rather than a controller design; the bound is carried through margin, hedging and fill accounting (Theorem~\ref{thm:forward}); its single input is invariant to how the unobserved traders are split into cohorts and is identified from prices (Propositions~\ref{prop:invariance} and~\ref{prop:bridge}); the peak-response and eigenvalue rules it is compared with are the ones closest to current supervisory practice; and the same statistic prices the corrective rebate in equilibrium (Proposition~\ref{prop:equil}).
+The worst-case identity in Lemma~\ref{thm:guard} is not new as mathematics: the induced $\ell_\infty$ gain of a linear convolution operator is the $\ell_1$ norm of its kernel, the fact on which $\ell_1$-optimal control of persistent bounded disturbances is built \citep{vidyasagar1986,dahleh1987,dahleh1995}. We use it rather than claim it. The finance content lies elsewhere: the dealer's admission level changes the operator itself, so the guard is a rule over an action set rather than a controller design; the bound is carried through margin, hedging and fill accounting (Theorem~\ref{thm:forward}); its single input is invariant to how the unobserved traders are split into cohorts and is identified from prices (Proposition~\ref{prop:invariance} and Theorem~\ref{thm:certcost}); the peak-response and eigenvalue rules it is compared with are the ones closest to current supervisory practice; and the same statistic prices the corrective rebate in equilibrium (Proposition~\ref{prop:equil}).
 
 Numerically, the guard coincides with a brute-force adversary's maximal safe $\alpha$ in 200 of 200 random states. The peak-gain guard admitted an unsafe level in 2,000 of 2,000 states, the $H$-scaled guard was conservative in all 2,000, and $L_{\max}$ was non-decreasing in $\alpha$ in all 2,000, so the admission set was an interval in these examples.
 
@@ -56,15 +56,11 @@ Let $P_k=(J+E)^k$. Expanding, $P_k=J^k+\sum_{j<k}J^{k-1-j}EP_j$. With $m_k=\|P_k
 
 Theorem~\ref{thm:robust} is deterministic: it holds whenever $\|E\|\le\epsilon$. A statistical guarantee follows only through a confidence set for the operator, and then holds with that set's coverage probability, not with certainty. The bound held in all 30,000 random perturbations of 100 non-normal operators, with median tightness $0.50$ (realized gain over bound; maximum $0.57$). In a simulated window estimator of the kind used in Section~\ref{sec:spot} (600 transitions), a residual-bootstrap 95\% ball for the operator covered the true $J$ in $94.7\%$ of 300 replications, with median radius $0.086$; but $\epsilon S<1$ held in only $8\%$ of windows. The certificate is valid but often unavailable at realistic sample sizes; longer windows or pooled estimates are needed to use it in practice.
 
-\begin{proposition}[No identification needed; numerical]\label{prop:bridge}
-In a two-cohort economy with rates $0.7\pm\Delta$, the relative error of the estimated summed gain is flat in $\Delta$ (log--log slope $-0.15$), while the error of the cohort weights grows as $\Delta^{-3.07}$.
-\end{proposition}
-
-The guard needs the summed gain, which is cheap to estimate and invariant to cohort splitting (Proposition~\ref{prop:invariance}); it does not need the algorithms' identities, which are expensive \citep{niroula2026}.
+The guard needs the summed gain, which is invariant to cohort splitting (Proposition~\ref{prop:invariance}) and certified at the parametric rate whatever the spacing of the memories (Theorem~\ref{thm:certcost}); it does not need the algorithms' identities, which are expensive \citep{niroula2026}. In a two-cohort economy with rates $0.7\pm\Delta$, the relative error of the estimated summed gain is flat in $\Delta$ (log--log slope $-0.15$), while the error of the cohort weights grows as $\Delta^{-3.07}$.
 
 
 \subsection{An uncertainty-aware guard}\label{sec:robustguard}
-The guard of Theorem~\ref{thm:guard} assumes the operator is known. With data, the relevant question is which admission levels are safe for every economy the data allow. We answer it for a venue gate (Mode B below) in the positive cohort economy, where admitting a fraction $\alpha$ of the algorithmic flow scales every cohort's weight, $M\mapsto\alpha M$, so that $S(\alpha)=\kappa/(1-a-\kappa\alpha\Phi)$.
+The guard of Lemma~\ref{thm:guard} assumes the operator is known. With data, the relevant question is which admission levels are safe for every economy the data allow. We answer it for a venue gate (Mode B below) in the positive cohort economy, where admitting a fraction $\alpha$ of the algorithmic flow scales every cohort's weight, $M\mapsto\alpha M$, so that $S(\alpha)=\kappa/(1-a-\kappa\alpha\Phi)$.
 
 \begin{lemma}[Soundness of compatible-set guards]\label{lem:sound}
 If a data-dependent set $\mathcal C(D)$ contains the true economy with probability at least $1-\gamma$, then every action whose worst-case loss is within budget for all economies in $\mathcal C(D)$ is within budget for the true economy with probability at least $1-\gamma$, including an action selected from the data. If no action qualifies, the guard certifies nothing: it halts new admission and flags the state, because existing inventory can be unsafe even with no new trading.
@@ -82,6 +78,33 @@ Let position $I$, shock bound $\bar u$ and budget $\mathcal B$ be given, and let
 \end{theorem}
 
 Monotonicity of $S(\alpha)$ in $\alpha$ and $\Phi$ gives (i)--(iv); (v) combines the certificate's excess with Proposition~\ref{prop:twoworld} applied to two economies whose capacities differ by order $\sigma/\sqrt N$ (Appendix~\ref{app:proofs}). In 500 random economies the closed form matched a brute-force search over 1{,}001 admission levels, computed from the state matrices rather than from \eqref{eq:SPhi}, in every case; every safe set was an interval; and the 28 infeasible states were flagged (test T06). Across 18 designs the certificate covered the true summed response at least at its nominal level (minimum 93.6\% at nominal 90\%), with a median excess of 3--15\% when the memory bound is $0.6$ or $0.9$ and about 230\% when it is $0.97$, where the tail term dominates (test T04).
+
+\subsection{When admission changes the dynamics}\label{sec:venue}
+Theorem~\ref{thm:robustguard} rests on one property: risk rises with the admission level, so the safe levels form an interval $[0,\alpha^*]$ and certifying $\alpha^*$ certifies every level below it. A venue that admits a class of participants can also change the book. Suppose admitting a fraction $\alpha$ adds feedback $\alpha\Phi$, deepens the book so that impact falls to $\kappa_0/(1+\delta\alpha)$, and speeds reversion to $1-a_0+\rho\alpha$, with $\theta=(\kappa_0,a_0,\Phi,\delta,\rho)$ in a certified box $\Theta$. Then $S(\alpha)=\kappa_0/D(\alpha)$ with $D(\alpha)=(1+\delta\alpha)(1-a_0+\rho\alpha)-\kappa_0\Phi\alpha$.
+
+\begin{proposition}[Venue mode]\label{prop:venue}
+\begin{enumerate}[label=(\roman*)]
+\item For each economy the safe levels $\{\alpha\in[0,1]:|I|\bar uS(\alpha)\le\mathcal B\}$ are $[0,1]$ minus at most one open interval; they can be $[0,\alpha_1]\cup[\alpha_2,1]$ with $0<\alpha_1<\alpha_2<1$.
+\item For $\alpha\ge0$ the worst economy of $\Theta$ is the same corner, $(\kappa_0^+,a_0^+,\Phi^+,\delta^-,\rho^-)$, for every $\alpha$, so the robust safe set is the safe set of that corner, with endpoints at the roots of a quadratic.
+\item A rule that certifies the largest safe level and admits every level below it admits unsafe levels whenever the robust safe set is not an interval. Levels in $[\alpha_2,1]$ can be used safely only by moving to them directly, not by raising admission step by step.
+\end{enumerate}
+\end{proposition}
+
+In the box $\kappa_0\in[0.98,1.02]$, $a_0\in[0.58,0.60]$, $\Phi\in[2.3,2.4]$, $\delta\in[2.9,3.1]$, $\rho\in[0.58,0.62]$ with $|I|\bar u/\mathcal B=0.37$, the robust safe set is $[0,0.035]\cup[0.386,1]$, in agreement with a 2{,}001-point grid over 332 economies of the box (test T13). Low admission brings mostly feedback and high admission mostly liquidity, so risk first rises and then falls.
+
+Without a closed form, as in the three-state book of Section~\ref{sec:t6}, the robust safe set must be computed. Let the impact $\kappa(\alpha)$, the feedback $q(\alpha)$ and the refill rate $r(\alpha)$ of the book depend on admission, with the uncertain parameters in a box $\Theta$, and let $S(\alpha,\theta)$ be the summed absolute price response.
+
+\begin{theorem}[Certified admission without monotonicity]\label{thm:venuebb}
+Enclose $S$ over a box of levels and parameters by its first $T$ terms in interval arithmetic with outward rounding plus the tail bound $\|J^Ts_0\|_\infty\sum_{j<T}\|J^j\|_\infty/(1-\|J^T\|_\infty)$ (infinite when $\|J^T\|_\infty\ge1$ cannot be excluded). Classify a subinterval of levels as safe if the enclosure over it and every part of a partition of $\Theta$ is within budget, as unsafe if the lower enclosure at some economy of $\Theta$ exceeds the budget, and otherwise split it, down to a tolerance. Then:
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Soundness.} Every level classified safe is safe for every economy in $\Theta$, and every level classified unsafe is unsafe for some economy in $\Theta$, in exact arithmetic.
+\item \emph{Existence and bracketing.} The robust safe set is closed, so the largest safe level exists if any level is safe, and so does the largest level reachable by raising admission from zero through safe levels if zero is safe. The first lies between the largest certified-safe level and the largest level not certified unsafe; the second between the end of the certified-safe interval that starts at zero and the first level certified unsafe.
+\item \emph{No false certificate.} If every level is classified unsafe, the guard halts admission and flags the state.
+\item \emph{Completeness.} If $\sup_\Theta\rho(J)<1$, then as the tolerance and the partition of $\Theta$ shrink and $T$ grows, every level at which the robust risk differs from the budget is eventually classified.
+\end{enumerate}
+\end{theorem}
+
+The method is interval branch and bound \citep{hansen2004}; the theorem's content is that its output is a certificate for the risk contract, including for admission rules whose risk is not monotone. In a book with depletion and refill where admission raises feedback linearly and liquidity quadratically (test T13), the certified safe set at a budget of $6.5$ is $[0,0.053]\cup[0.178,1]$, with $[0.059,0.168]$ certified unsafe and $0.016$ left undecided; no certified-safe level was unsafe for any of 433 sampled economies on a 1{,}001-point grid. The shortcut that certifies $\alpha=1$ and admits everything below it would admit the whole unsafe band.
 
 \subsection{A calibrated illustration}\label{sec:calib}
 
@@ -109,7 +132,7 @@ Depleting book ($\varepsilon=0.02$) & $+0.042$ & 1.14 (17) & 15.85 & 63.69 & 14.
 \end{threeparttable}
 \end{table}
 
-The result is striking even though BTCUSDT does not amplify. Because price impact is persistent ($\hat a\approx0.97$ per minute), the summed gain over 15 minutes is about 13 times the peak. A guard calibrated to the peak would admit inventory about 13 times larger than is safe against a sustained adversarial flow of the declared size. Amplification makes this worse (the depleting book peaks 17 minutes after the shock), but persistence alone already makes peak-based limits unsafe. This is the practical content of Theorem~\ref{thm:guard} for this market.
+The result is striking even though BTCUSDT does not amplify. Because price impact is persistent ($\hat a\approx0.97$ per minute), the summed gain over 15 minutes is about 13 times the peak. A guard calibrated to the peak would admit inventory about 13 times larger than is safe against a sustained adversarial flow of the declared size. Amplification makes this worse (the depleting book peaks 17 minutes after the shock), but persistence alone already makes peak-based limits unsafe. This is the practical content of Lemma~\ref{thm:guard} for this market.
 
 \subsection{Two deployment modes}
 
@@ -137,7 +160,7 @@ where $s(\alpha)$ scales admitted shocks. Then for every disturbance path within
 \[
 \bar u_{{\rm adm},t}=\frac{B_{{\rm rem},t}-R_{\rm safe}-|I_t|(1+\mu)\|z_t\|_2}{|I_t|(1+\mu)} .
 \]
-The condition is sufficient over the whole disturbance ball. It is also necessary when the current state contributes no drift ($z_t=0$), because the shock term is then attained by adversarially signed disturbances; with $z_t\neq0$ the drift term $M_C\|z_t\|_2$ is an upper bound and the condition may be conservative. The admissible shock at $\alpha=0$ assumes, as in the cohort economy (Lemma~\ref{lem:cm}), that the price-row gain without admitted flow is $M_C(0)=1$.
+The condition is sufficient over the whole disturbance ball. It is also necessary when the current state contributes no drift ($z_t=0$), because the shock term is then attained by adversarially signed disturbances; with $z_t\neq0$ the drift term $M_C\|z_t\|_2$ is an upper bound and the condition may be conservative. The admissible shock at $\alpha=0$ assumes, as in the cohort economy (\citealp{niroula2026}, positive-geometry lemma), that the price-row gain without admitted flow is $M_C(0)=1$.
 \end{theorem}
 
 Two features matter. The guard accounts for the inventory the dealer will hold after hedging and after worst-case fills, not only current inventory, and it never claims safety on an infeasible state: if no $\alpha$ satisfies \eqref{eq:guardineq}, it halts new fills and flags the state, because pre-existing inventory can still breach margin on a large adverse jump. In a constructed scenario ($E_0=10{,}000$, $I_0=-2{,}000$ at $P^*=100$, Tier-2 margin with $\mu=0.005$, buffer $9{,}050$ and reserve $950$), the admissible shock at $z_0=0$ is $8{,}100/2{,}010=4.03$ per unit, and an adversarial move of $4.05$ violates the reserve.
@@ -149,10 +172,14 @@ M_C(\alpha_\rho)\;>\;\frac{B_{{\rm rem},t}-R_{\rm safe}-C_{{\rm hedge},t}(\alpha
 \]
 \end{proposition}
 
-The certificate is a bound, so failing it means that solvency cannot be guaranteed, not that a breach must occur. The eigenvalue rule fails it exactly when the transient gain at its admitted level exceeds the loss the balance sheet can absorb, which Proposition~\ref{prop:blind} shows can happen at any spectral threshold.
+The certificate is a bound, so failing it means that solvency cannot be guaranteed, not that a breach must occur. The eigenvalue rule fails it exactly when the transient gain at its admitted level exceeds the loss the balance sheet can absorb, which the companion paper's spectral-blindness theorem shows can happen at any spectral threshold.
 
 \begin{proposition}[Strategic re-optimization reinforces the guard]\label{prop:lucas}
-Suppose cohorts re-optimize their steady-state Kalman gains when the venue throttles admission, and throttling scales the variance of execution-driven innovations as $\sigma_\zeta^2(\alpha)=\alpha^2\sigma_{\zeta,0}^2$ while measurement noise $\sigma_\nu^2>0$ is unchanged. Then the optimal gain $\eta^*(\alpha)$ is strictly increasing in $\alpha$, so throttling lowers every cohort's adaptation rate. If the transient gain is non-decreasing in the adaptation rates, then $M_C(J(\alpha,\eta^*(\alpha)))\le M_C(J(\alpha,\eta^*(1)))$: re-optimization does not undo the guard.
+Suppose cohorts re-optimize their steady-state Kalman gains when the venue throttles admission, and throttling scales the variance of execution-driven innovations as $\sigma_\zeta^2(\alpha)=\alpha^2\sigma_{\zeta,0}^2$ while measurement noise $\sigma_\nu^2>0$ is unchanged.
+\begin{enumerate}[label=(\roman*)]
+\item The optimal gain $\eta^*(\alpha)$ is strictly increasing in $\alpha$, so throttling lowers every cohort's adaptation rate. If the transient gain is non-decreasing in the adaptation rates, then $M_C(J(\alpha,\eta^*(\alpha)))\le M_C(J(\alpha,\eta^*(1)))$: re-optimization does not undo the guard.
+\item In the positive cohort economy ($q_i\ge0$, $a+\kappa\sum_iq_i<1$) the monotonicity holds without condition: every finite-horizon summed response $S_H=\sum_{t<H}h_t$ is non-decreasing in each adaptation rate, strictly for $H\ge2$ when $q_i>0$, while $S_\infty=\kappa/(1-a-\kappa\sum_iq_i)$ does not depend on the rates. Hence $S_H(J(\alpha,\eta^*(\alpha)))\le S_H(J(\alpha,\eta^*(1)))$ at every horizon.
+\end{enumerate}
 \end{proposition}
 
-The first statement is a property of the Riccati root; the second is conditional on monotonicity of the gain in $\eta$, which we check numerically. Across 3{,}000 stable draws of the three-state book with momentum (adaptation rates on a grid from 0.05 to 0.95), the peak response is non-decreasing in $\eta$ in 98.8\% of draws and in 99.9\% of those with trend-following cohorts ($q>0$); the summed absolute response is non-decreasing in 93\% of draws with $q>0$ but decreasing when cohorts are contrarian ($q<0$). For trend-following cohorts, the case the filtering microfoundation produces, re-optimization therefore reinforces the guard in almost every case we drew; the signed sum $S$ of Proposition~\ref{prop:sum} does not depend on $\eta$ at all (\texttt{recompute\_oct20.py}). A manipulator who instead increases order size to offset throttling enlarges the shock envelope and drives $\alpha$ toward zero.
+Part (i) is a property of the Riccati root. Part (ii) is a renewal argument: the response is the renewal density of a defective inter-arrival law whose cumulative distribution $a+\kappa\sum_iq_i[1-(1-\eta_i)^j]$ rises with every rate at fixed total mass, so faster adaptation moves feedback earlier without changing its total (Appendix~\ref{app:proofs}). In 3{,}000 random positive economies no finite-horizon sum fell when a rate rose (\texttt{hardening}). For the three-state book with momentum the condition in (i) remains an assumption, which we check numerically. Across 3{,}000 stable draws of the three-state book with momentum (adaptation rates on a grid from 0.05 to 0.95), the peak response is non-decreasing in $\eta$ in 98.8\% of draws and in 99.9\% of those with trend-following cohorts ($q>0$); the summed absolute response is non-decreasing in 93\% of draws with $q>0$ but decreasing when cohorts are contrarian ($q<0$). For trend-following cohorts, the case the filtering microfoundation produces, re-optimization therefore reinforces the guard in almost every case we drew; the signed sum $S$ of Theorem~\ref{thm:sum} does not depend on $\eta$ at all (\texttt{recompute\_oct20.py}). A manipulator who instead increases order size to offset throttling enlarges the shock envelope and drives $\alpha$ toward zero.

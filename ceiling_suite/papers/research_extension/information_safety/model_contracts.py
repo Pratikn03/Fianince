@@ -71,3 +71,19 @@ def closed_loop_matrix(a, kappa, q, eta):
     J = np.zeros((K + 1, K + 1)); J[0, 0] = a; J[0, 1:] = kappa * q
     J[1:, 0] = eta * a; J[1:, 1:] = np.diag(1 - eta) + np.outer(eta, kappa * q)
     return J
+
+
+# ------------------------------------------------------------------------------------------------ declared contracts (D0)
+CONTRACTS = {
+    "observation": {
+        "I0/O1": "controlled reset experiments: N independent impulse responses with i.i.d. Gaussian tap noise, known sd",
+        "I0/O1'": "controlled reset experiments with Gaussian noise of unknown covariance across taps (t and Hotelling certificates)",
+        "I0/exact": "an exact window h_0..h_n (Theorem thm:window)",
+        "I1": "audited or class-tagged trading and reset data (Theorem thm:disclosure)",
+        "I2": "observational public order books: only bootstrap diagnostics; no finite-sample guarantee is claimed"},
+    "risk": "inventory I fixed over the horizon, per-period shock bound ubar (or a total budget, or both), mark-to-market loss "
+            "|I| ubar sum_t |h_t|; budget B; deterministic worst case over the declared shock set, not a probability of ruin",
+    "statistical_claims": {"certificate": "finite-sample coverage under O1/O1'", "window": "exact (no noise)",
+                           "bootstrap_guard": "diagnostic, real-data", "probing": "time-uniform coverage under sub-Gaussian probes"},
+    "not_identified": "aggregate price responses do not identify whether traders are humans, fixed rules or learning algorithms",
+}

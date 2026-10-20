@@ -6,7 +6,7 @@ PYTHON ?= python3
 PYTEST ?= pytest
 LAKE ?= lake
 
-.PHONY: all help setup test test-fast lean bridge provenance benchmark data paper reproduce docker-build docker-run clean
+.PHONY: all help setup test test-fast lean bridge provenance benchmark data paper reproduce paper-suite docker-build docker-run clean
 
 all: reproduce
 
@@ -16,6 +16,7 @@ help:
 	@echo "================================================================================"
 	@echo "Available Targets:"
 	@echo "  make reproduce      One-click end-to-end master reproduction and audit"
+	@echo "  make paper-suite    Clean end-to-end reproduction of the Oct 2026 papers (tests, results, LaTeX, ledger, Lean)"
 	@echo "  make test           Run complete pytest suite (548 tests)"
 	@echo "  make test-fast      Fast verification of theorem bridge and tests"
 	@echo "  make lean           Compile and audit all 170 Lean 4 formal proofs (0 sorry)"
@@ -75,3 +76,6 @@ clean:
 	find . -type f -name "*.pyc" -delete
 	find . -type d -name ".pytest_cache" -exec rm -rf {} +
 	rm -rf paper/*.aux paper/*.log paper/*.out paper/*.bbl paper/*.blg paper/*.toc paper/*.fls paper/*.fdb_latexmk
+
+paper-suite:
+	sh reproduce_paper_suite.sh

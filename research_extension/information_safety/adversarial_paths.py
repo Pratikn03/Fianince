@@ -1,63 +1,53 @@
-"""Adversarial shock paths and model misspecification stress tests (T05, T09)."""
-from __future__ import annotations
+"""Exact worst-case loss by exhaustive sign enumeration and by linear programming (corrected quantity gate; test T05,
+blueprint D1, E04). Per-period shock bound |v_j| <= V: worst case = V * sum |g_k| (all sign paths). Total budget
+sum |v_j| <= V: worst case = V * max |g_k| (a vertex of the l1 ball)."""
+import itertools
 import numpy as np
+from scipy.optimize import linprog
 
 
-def construct_adversarial_shock_path(impulse_g: np.ndarray, u_bar: float = 1.0) -> np.ndarray:
-    """Return the shock sequence u_{0:H-1} in [-u_bar, u_bar] that maximizes |sum_{k=0}^{H-1} g_k u_{H-1-k}|."""
-    signs = np.where(impulse_g >= 0.0, 1.0, -1.0)
-    return u_bar * signs[::-1]
+def run_sign_enumeration():
+    rng = np.random.default_rng(5); t5 = {"per_period_sum_exact": 0, "total_budget_peak_exact": 0, "peak_under_per_period_violations": 0, "cases": 0}
+    for trial in range(200):
+        n = 3; J = rng.normal(0, 0.5, (n, n)); J /= max(1.0, max(abs(np.linalg.eigvals(J))) / 0.95)
+        Hv = rng.normal(0, 1, n); C = rng.normal(0, 1, n)
+        for Tn in range(1, 11):
+            g = np.array([C @ np.linalg.matrix_power(J, m) @ Hv for m in range(Tn)])
+            worst = max(abs(np.dot(g[::-1], np.array(s))) for s in itertools.product([-1, 1], repeat=Tn))
+            t5["per_period_sum_exact"] += abs(worst - np.abs(g).sum()) < 1e-9
+            vert = max(abs(g))                                   # l1 ball: maximum at a vertex
+            t5["total_budget_peak_exact"] += abs(vert - np.max(np.abs(g))) < 1e-12
+            t5["peak_under_per_period_violations"] += worst > np.max(np.abs(g)) + 1e-12
+            t5["cases"] += 1
+    t5["pass"] = t5["per_period_sum_exact"] == t5["cases"]
+    return t5
 
 
-def run_misspecification_stress_T09() -> dict:
-    """Evaluate guard behavior under 4 misspecification regimes (T09):
-    1. Signed (contrarian + momentum) feedback where peak != sum
-    2. Time-varying depth depletion spike mid-episode
-    3. Delayed feedback execution (lag D=2)
-    4. Nonstationary drift in reversion rate m_t
-    """
-    H = 20
-    # 1. Signed oscillatory impulse response
-    k = np.arange(H)
-    g_signed = (0.85 ** k) * np.cos(0.7 * k)
-    u_adv = construct_adversarial_shock_path(g_signed, u_bar=1.0)
-    realized_signed = abs(float(np.dot(g_signed, u_adv[::-1])))
-    certified_signed = float(np.sum(np.abs(g_signed)))
-    signed_sum_naive = abs(float(np.sum(g_signed)))
 
-    # 2. Time-varying depth spike (20% jump in kappa_t mid-window vs robust envelope)
-    g_nominal = 0.8 ** k
-    g_perturbed = g_nominal * np.where(k >= 5, 1.18, 1.0)
-    robust_bound_20pct = float(np.sum(np.abs(g_nominal)) * 1.20)
-    realized_perturbed = float(np.sum(np.abs(g_perturbed)))
+def support_joint(g, V, W):
+    """Worst case of |sum_k g_k v_k| over |v_k| <= V and sum |v_k| <= W: fill the largest |g_k| first (closed form)."""
+    a = np.sort(np.abs(np.asarray(g, float)))[::-1]
+    full = int(min(len(a), np.floor(W / V))) if V > 0 else 0
+    val = V * a[:full].sum()
+    if full < len(a):
+        val += (W - full * V) * a[full]
+    return float(val)
 
-    # 3. Delayed feedback (lag D=2 increases transient peak before damping)
-    g_delayed = np.concatenate([[1.0, 0.4], 0.35 * (0.88 ** np.arange(H - 2))])
-    certified_delayed = float(np.sum(np.abs(g_delayed)))
 
-    # 4. Nonstationary reversion drift (a_t drifting from 0.40 to 0.52)
-    a_drift_max = 0.52
-    q_tot = 0.08
-    certified_drift_gain = 1.0 / (1.0 - a_drift_max - q_tot)
-    nominal_gain = 1.0 / (1.0 - 0.40 - q_tot)
+def support_lp(g, V, W):
+    """The same worst case by linear programming (v = v+ - v-, maximize g'v; the problem is symmetric in sign)."""
+    g = np.asarray(g, float); H = len(g)
+    c = -np.r_[g, -g]                                       # maximize g'(v+ - v-)
+    A = np.ones((1, 2 * H)); b = [W]
+    res = linprog(c, A_ub=A, b_ub=b, bounds=[(0, V)] * (2 * H), method="highs")
+    return float(-res.fun)
 
-    return {
-        "signed_feedback": {
-            "l1_certified_gain": certified_signed,
-            "realized_adversarial_loss": realized_signed,
-            "naive_signed_sum": signed_sum_naive,
-            "naive_signed_sum_breaches": realized_signed > signed_sum_naive + 1e-9,
-            "l1_guard_holds": realized_signed <= certified_signed + 1e-12,
-        },
-        "depth_spike": {
-            "nominal_gain": float(np.sum(g_nominal)),
-            "realized_perturbed_gain": realized_perturbed,
-            "robust_20pct_envelope_gain": robust_bound_20pct,
-            "robust_guard_holds": realized_perturbed <= robust_bound_20pct + 1e-12,
-        },
-        "delayed_feedback_l1_gain": certified_delayed,
-        "nonstationary_reversion_drift": {
-            "nominal_gain": nominal_gain,
-            "drift_adjusted_gain": certified_drift_gain,
-        },
-    }
+
+def run_lp_support(seed=51, cases=300):
+    """E04 for larger horizons: closed-form joint support versus LP; per-period-only and budget-only limits."""
+    rng = np.random.default_rng(seed); worst = 0.0; n = 0
+    for _ in range(cases):
+        H = int(rng.integers(5, 60)); g = rng.normal(0, 1, H) * 0.9 ** np.arange(H); V = rng.uniform(0.1, 1); W = rng.uniform(0.1, 1) * H * V
+        worst = max(worst, abs(support_joint(g, V, W) - support_lp(g, V, W))); n += 1
+        assert abs(support_joint(g, V, 1e9) - V * np.abs(g).sum()) < 1e-9 and abs(support_joint(g, 1e9, W) - W * np.abs(g).max()) < 1e-9
+    return {"cases": n, "max_abs_gap_closed_form_vs_LP": worst, "pass": worst < 1e-7}

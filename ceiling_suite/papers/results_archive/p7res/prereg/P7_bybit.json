@@ -1,0 +1,52 @@
+{
+  "controls": [
+    "rv_60",
+    "rv_360",
+    "abs_ret_60",
+    "flow_imb_60",
+    "log_vol_60",
+    "kappa_hat",
+    "kappa_sq",
+    "kyle_lam",
+    "amihud_60",
+    "symbol fixed effects"
+  ],
+  "data": "Bybit public trade archive (public.bybit.com/trading), never used before. Minute bars: last trade price, signed taker notional, notional volume. Day kept if >= 80% of minutes have trades.",
+  "inference": "Clark-West (Newey-West 6 lags); 2,000 date-block bootstrap draws; secondary Holm-adjusted",
+  "primary": {
+    "candidate": "C3_flow (winsorized at train 1%/99%)",
+    "outcome": "MAE_60",
+    "sample": "all symbols above",
+    "success": "Clark-West one-sided p < 0.05 AND 95% date-block bootstrap CI of dR2 above 0"
+  },
+  "question": "Second venue: does the depth-free amplification statistic forecast next-hour adverse excursions on Bybit USDT perpetuals of the Binance thin-set coins?",
+  "runs": "W6 is run once; every run is counted in prereg/test_set_unlocks_p7.json",
+  "secondary": [
+    "MAE | term_momentum",
+    "MAE | term_reversion",
+    "position-sizing backtest, same definitions as Part 6 B: amp_vol (R = rv_360 * GM^theta, GM = S60/|h_0| from the depth-free impulse response, theta chosen on Bybit training data) vs vol",
+    "guard_summed vs vol",
+    "guard_peak vs vol",
+    "static vs vol"
+  ],
+  "statistic": "C3_flow = kappa^2 eta q - (1-a) kappa from dp = kappa u - (1-a) x and u_t = (1-eta) u_t-1 + eta q x_t-1 (T6 without depth)",
+  "symbols": [
+    "ACHUSDT",
+    "ALICEUSDT",
+    "API3USDT",
+    "ARPAUSDT",
+    "CHRUSDT",
+    "CVXUSDT",
+    "ICXUSDT",
+    "IOSTUSDT",
+    "IOTXUSDT",
+    "LITUSDT",
+    "OGNUSDT",
+    "TUSDT",
+    "WOOUSDT",
+    "ZENUSDT"
+  ],
+  "test": "3rd, 10th, 17th, 24th of each month, 2025-01-01 to 2026-09-30",
+  "train": "10th and 24th of each month, 2023-2024",
+  "unit": "symbol-hour blocks, hours 6-23 UTC; features [t-360, t); outcome (t, t+60]"
+}

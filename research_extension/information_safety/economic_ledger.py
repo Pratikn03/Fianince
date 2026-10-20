@@ -1,93 +1,70 @@
-"""Economic ledger: 8-method guard horse race (T11), mechanism controls (T08), external validation (T10), and equilibrium welfare (T12)."""
-from __future__ import annotations
+"""Economic ledgers: the equilibrium rebate priced from a certified summed response (Proposition prop:equil; test T12,
+blueprint E14) and the dealer balance-sheet step of Theorem thm:forward (margin, hedge, worst-case fills, reserve)."""
 import numpy as np
+from scipy.optimize import brentq
 
 
-def run_eight_guard_comparison_T11(n_episodes: int = 500, seed: int = 20261020) -> dict:
-    """Compare all 8 control methods required by Test T11 of the Flagship Upgrade Blueprint:
-    1. No additional guard (Unrestricted benchmark)
-    2. Volatility-only position sizing
-    3. Inventory and leverage limits
-    4. Depth-based throttling
-    5. Spectral-radius threshold
-    6. Known-model summed-gain guard (Oracle benchmark)
-    7. Plug-in estimated-gain guard (Ignores uncertainty)
-    8. New robust information-aware guard (Proposed contribution)
-    """
-    rng = np.random.default_rng(seed)
-    budget_B = 1.0
-    # Draw mixture of Market A (safe v=0.52) and Market B (high-risk v=0.18) episodes + depth regimes
-    is_high_risk = rng.random(n_episodes) < 0.45
-    true_S = np.where(is_high_risk, 50.0 / 9.0, 25.0 / 13.0)
-    true_v_max = budget_B / true_S
-    # Estimated S has estimation noise; plug-in underestimates S roughly half the time
-    s_hat = np.maximum(1.1, true_S + rng.normal(0.0, 0.55, size=n_episodes))
-    # Robust confidence upper bound S^+_gamma(D) covers true_S with >= 95% probability
-    s_robust_upper = s_hat + 1.645 * 0.55
-
-    methods = {}
-    specs = [
-        ("1_unrestricted", np.full(n_episodes, 0.52)),
-        ("2_volatility_only", np.where(is_high_risk, 0.31, 0.44)),
-        ("3_inventory_leverage_cap", np.full(n_episodes, 0.30)),
-        ("4_depth_based_throttling", np.where(is_high_risk, 0.27, 0.43)),
-        ("5_spectral_radius_threshold", np.full(n_episodes, 0.48)),  # Both markets have rho(J) < 0.85!
-        ("6_known_model_oracle_guard", true_v_max),
-        ("7_estimated_plugin_guard", budget_B / s_hat),
-        ("8_robust_info_aware_guard", budget_B / s_robust_upper),
-    ]
-
-    for name, v_adm in specs:
-        worst_loss = v_adm * true_S
-        breaches = worst_loss > budget_B + 1e-9
-        missed_cap = np.maximum(0.0, true_v_max - v_adm)
-        net_welfare = 100.0 * np.mean(v_adm) - 250.0 * np.mean(np.maximum(0.0, worst_loss - budget_B))
-        methods[name] = {
-            "mean_admitted_capacity": round(float(np.mean(v_adm)), 4),
-            "mean_worst_case_loss": round(float(np.mean(worst_loss)), 4),
-            "breach_rate": round(float(np.mean(breaches)), 4),
-            "mean_missed_safe_capacity": round(float(np.mean(missed_cap)), 4),
-            "net_economic_score": round(float(net_welfare), 2),
-        }
-    return methods
+def run_rebate():
+    v, c, th, Lam, m0, qx, ktt = 0.002, 0.5, 0.3, 1e-4, 0.005, 0.02, 1.0
+    from scipy.optimize import brentq as bq
+    g = lambda m: ktt / (m - qx * ktt) ** 2
+    t12 = []
+    for N in [5, 20]:
+        msp = bq(lambda m: m - m0 - N * v / c - N * Lam * g(m) / c, qx * ktt + 1e-9, 10)
+        tau_true = (1 - th / N) * Lam * g(msp)
+        def welfare(m):
+            s = (m - m0) / N
+            return N * (v * s - c / 2 * s ** 2) - Lam * ktt / (m - qx * ktt)
+        for infl in [1.0, 1.1, 1.5]:           # rebate computed from S_up = infl * S at the first best
+            tau = (1 - th / N) * Lam * (infl * ktt / (msp - qx * ktt)) ** 2 / ktt
+            meq = bq(lambda m: m - m0 - N * (v + tau) / c - th * Lam * g(m) / c, qx * ktt + 1e-9, 10)
+            t12.append({"N_dealers": N, "S_up_over_S": infl, "welfare_loss_vs_first_best_pct": 100 * (welfare(msp) - welfare(meq)) / abs(welfare(msp))})
+    return t12
 
 
-def run_equilibrium_and_welfare_T12(
-    N_dealers: int = 8,
-    theta_internalized: float = 1.0,
-    Lambda_tail: float = 2.0,
-    c_cost: float = 5.0,
-    kappa_tilde: float = 0.25,
-    q_true: float = 0.40,
-    delta_q_pub: float = 0.35,
-    delta_q_disc: float = 0.04,
-) -> dict:
-    """Theorem G: Cournot dealer equilibrium reversion supply under ambiguity vs disclosure (T12)."""
-    def solve_regime(delta_q: float) -> dict:
-        q_eff = q_true + delta_q
-        m_eq = q_eff * kappa_tilde + np.sqrt(theta_internalized * Lambda_tail * kappa_tilde / (N_dealers * c_cost))
-        m_soc = q_eff * kappa_tilde + np.sqrt(Lambda_tail * kappa_tilde / c_cost)
-        s_eq = kappa_tilde / (m_eq - q_eff * kappa_tilde)
-        s_soc = kappa_tilde / (m_soc - q_eff * kappa_tilde)
-        s_true_at_eq = kappa_tilde / (m_eq - q_true * kappa_tilde)
-        rebate_tau = (1.0 - theta_internalized / N_dealers) * Lambda_tail * (s_soc ** 2) / kappa_tilde
-        return {
-            "q_effective": round(float(q_eff), 4),
-            "m_equilibrium": round(float(m_eq), 4),
-            "m_social_optimum": round(float(m_soc), 4),
-            "under_supply_wedge": round(float(m_soc - m_eq), 4),
-            "worst_case_S_at_eq": round(float(s_eq), 4),
-            "true_S_at_eq": round(float(s_true_at_eq), 4),
-            "pigouvian_rebate_tau": round(float(rebate_tau), 4),
-        }
 
-    pub = solve_regime(delta_q_pub)
-    disc = solve_regime(delta_q_disc)
-    return {
-        "public_ambiguity_regime": pub,
-        "disclosed_low_ambiguity_regime": disc,
-        "equilibrium_under_supply_holds_in_both": (
-            pub["m_equilibrium"] < pub["m_social_optimum"]
-            and disc["m_equilibrium"] < disc["m_social_optimum"]
-        ),
-    }
+# ------------------------------------------------------------------------------------------------ balance sheet (thm:forward)
+def buffer(K, I, p, mu, c0):
+    """Remaining buffer B_rem = E - MM with E = K + I p and MM = max(0, mu |I| p - c0)."""
+    return K + I * p - max(0.0, mu * abs(I) * p - c0)
+
+
+def guard_lhs(I_post, mu, MC, z_norm, s, Gcum, ucum, C_hedge, C_fill, R_safe):
+    """Left side of the guard inequality (eq. guardineq)."""
+    return abs(I_post) * (1 + mu) * (MC * z_norm + s * Gcum * ucum) + C_hedge + C_fill + R_safe
+
+
+def admissible_shock_alpha0(B_rem, R_safe, I, mu, z_norm=0.0):
+    return (B_rem - R_safe - abs(I) * (1 + mu) * z_norm) / (abs(I) * (1 + mu))
+
+
+def step(K, I, p, dp, C_hedge=0.0, C_fill=0.0):
+    """Mark to market a price move dp and pay hedge and fill costs from cash."""
+    return K - C_hedge - C_fill, I, p + dp
+
+
+def run_balance_sheet(seed=12, cases=20000):
+    """Sufficiency of the guard inequality over adversarial price moves (z = 0, one step), and the Section 6 scenario."""
+    # scenario of Section 6 (E0 = 10,000, I0 = -2,000 at 100, mu = 0.005, buffer 9,050, reserve 950)
+    p0, I0, mu, R_safe = 100.0, -2000.0, 0.005, 950.0
+    K0 = 10000.0 - I0 * p0; c0 = mu * abs(I0) * p0 - (10000.0 - 9050.0)
+    B0 = buffer(K0, I0, p0, mu, c0); u_adm = admissible_shock_alpha0(B0, R_safe, I0, mu)
+    after = {d: buffer(*step(K0, I0, p0, d), mu, c0) for d in (4.02, u_adm, 4.05)}
+    scen = {"buffer": B0, "c0": c0, "admissible_shock": u_adm, "buffer_after_move": {f"{d:.4f}": v for d, v in after.items()},
+            "reserve_kept_at_4.02": after[4.02] >= R_safe, "reserve_kept_at_adm": after[u_adm] >= R_safe - 1e-9,
+            "reserve_violated_at_4.05": after[4.05] < R_safe}
+    # random states: if the inequality holds, every move within the envelope keeps the buffer above the reserve
+    rng = np.random.default_rng(seed); viol = 0; tight = []; held = 0
+    for _ in range(cases):
+        p = rng.uniform(10, 200); I = rng.uniform(-5000, 5000); mu_ = rng.uniform(0.002, 0.05)
+        E = abs(I) * p * rng.uniform(0.05, 0.6); K = E - I * p; c0_ = rng.uniform(0, 0.5) * mu_ * abs(I) * p
+        R_ = rng.uniform(0, 0.3) * E; Ch, Cf = rng.uniform(0, 0.02) * E, rng.uniform(0, 0.02) * E
+        s, G, u = 1.0, rng.uniform(1, 5), rng.uniform(0, 0.05) * p
+        if guard_lhs(I, mu_, 1.0, 0.0, s, G, u, Ch, Cf, R_) > buffer(K, I, p, mu_, c0_):
+            continue
+        held += 1
+        for dp in (s * G * u, -s * G * u, rng.uniform(-1, 1) * s * G * u):       # worst moves are at the envelope edges
+            b = buffer(*step(K, I, p, dp, Ch, Cf), mu_, c0_)
+            viol += b < R_ - 1e-9 * max(1.0, E); tight.append(b - R_)
+    return {"scenario": scen, "states_satisfying_guard": held, "violations": viol, "min_slack": float(min(tight)),
+            "pass": bool(viol == 0 and scen["reserve_kept_at_4.02"] and scen["reserve_violated_at_4.05"])}

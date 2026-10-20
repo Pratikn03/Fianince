@@ -1,7 +1,7 @@
 import json, numpy as np, matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-R1="/home/claude/realres/results/"; R2="/home/claude/depthres/results/"
+import os as _os; _A=_os.environ.get("RESULTS_ARCHIVE", _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "results_archive")); R1=_os.path.join(_A, "realres", "results") + "/"; R2=_os.path.join(_A, "depthres", "results") + "/"
 m=lambda p: json.load(open(p))["metrics"]
 plt.rcParams.update({"font.size":9,"font.family":"serif","axes.spines.top":False,"axes.spines.right":False,
                      "figure.dpi":150,"savefig.bbox":"tight"})

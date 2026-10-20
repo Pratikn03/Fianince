@@ -1,23 +1,18 @@
-"""Blueprint Section G test: test_adversarial_attainment.py (D1, E04)."""
+"""The worst-case bound is attained by an admissible path (sign path or l1-ball vertex) and the peak understates it."""
+import itertools
 import numpy as np
-from research_extension.information_safety.adversarial_paths import (
-    construct_adversarial_shock_path,
-    run_misspecification_stress_T09,
-)
-from research_extension.information_safety.risk_gain import cumulative_convolution_gain
 
 
-def test_adversarial_attainment():
-    g = np.array([1.0, -0.35, 0.22, -0.15, 0.08, -0.04])
-    u_adv = construct_adversarial_shock_path(g, u_bar=1.5)
-    realized = abs(float(np.dot(g, u_adv[::-1])))
-    bound = 1.5 * cumulative_convolution_gain(g)
-    assert abs(realized - bound) < 1e-12
-    stress = run_misspecification_stress_T09()
-    assert stress["signed_feedback"]["l1_guard_holds"] is True
-    assert stress["signed_feedback"]["naive_signed_sum_breaches"] is True
-
-
-if __name__ == "__main__":
-    test_adversarial_attainment()
-    print("[PASS] test_adversarial_attainment.py")
+def test_attained_and_peak_understates():
+    rng = np.random.default_rng(5); understated = 0; n = 0
+    for _ in range(60):
+        J = rng.normal(0, .5, (3, 3)); J /= max(1.0, max(abs(np.linalg.eigvals(J))) / .95)
+        Hv, C = rng.normal(0, 1, 3), rng.normal(0, 1, 3)
+        for T in range(1, 9):
+            g = np.array([C @ np.linalg.matrix_power(J, m) @ Hv for m in range(T)])
+            sgn = np.sign(g[::-1]); sgn[sgn == 0] = 1
+            assert abs(abs(np.dot(g[::-1], sgn)) - np.abs(g).sum()) < 1e-9          # attaining sign path
+            e = np.zeros(T); e[np.argmax(np.abs(g[::-1]))] = 1
+            assert abs(abs(np.dot(g[::-1], e)) - np.abs(g).max()) < 1e-12           # attaining vertex of the l1 ball
+            understated += np.abs(g).sum() > np.abs(g).max() + 1e-12; n += 1
+    assert understated > 0.8 * n
