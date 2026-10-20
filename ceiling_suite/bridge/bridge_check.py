@@ -125,10 +125,19 @@ def part_b():
     return {"sigma": SIGMA, "rows": rows, "loglog_slope_norm_dh": float(slope), "implied_N_exponent": float(-2 * slope)}
 
 
+def wilson(p_hat, n, z=1.959964):
+    """Wilson score interval for a binomial proportion."""
+    centre = (p_hat + z * z / (2 * n)) / (1 + z * z / n)
+    half = z * math.sqrt(p_hat * (1 - p_hat) / n + z * z / (4 * n * n)) / (1 + z * z / n)
+    return [centre - half, centre + half]
+
+
 # --------------------------------------------------------------------------------------------------------------
 # C. Monte Carlo under (O1): the certificate does not depend on delta, the cohort test does
 # --------------------------------------------------------------------------------------------------------------
 def part_c(n_exp=2000, reps=4000, horizon_t=80, gamma=0.05, seed=20261020):
+    """Monte Carlo under (O1). Averaging N independent N(h, sigma^2) responses gives N(h, sigma^2/N) per tap exactly,
+    so the average is sampled directly. Coverage and accuracy are reported with Wilson 95% intervals."""
     rng = np.random.default_rng(seed)
     rbar, sbar = 0.7, 0.5  # memory bound and a + kappa*Phi <= sbar for every economy below (0.4 + 0.08 = 0.48)
     lam = 1 - (1 - rbar) * (1 - sbar)
@@ -153,13 +162,18 @@ def part_c(n_exp=2000, reps=4000, horizon_t=80, gamma=0.05, seed=20261020):
             stat = (hbar - mid) @ w  # likelihood-ratio statistic for known means
             correct.append(np.mean((stat > 0) == (truth == 1)))
         d_prime = math.sqrt(n_exp) * float(np.linalg.norm(w)) / SIGMA
+        trials = 2 * reps  # both economies, reps replications each
+        cov_mean, acc_mean = float(np.mean(cover)), float(np.mean(correct))
         rows.append(
             {
                 "delta": d,
-                "certificate_coverage": float(np.mean(cover)),
+                "certificate_coverage": cov_mean,
+                "certificate_coverage_ci95": wilson(cov_mean, trials),
                 "certificate_mean_excess": float(np.mean(excess)),
-                "cohort_test_accuracy_mc": float(np.mean(correct)),
+                "cohort_test_accuracy_mc": acc_mean,
+                "cohort_test_accuracy_ci95": wilson(acc_mean, trials),
                 "cohort_test_accuracy_theory": float(norm.cdf(d_prime / 2)),
+                "trials_per_row": trials,
             }
         )
     return {

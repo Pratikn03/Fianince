@@ -45,14 +45,20 @@ def test_b_identification_cost_scales_as_delta_to_the_minus_four():
 def test_c_certificate_is_delta_free_and_cohort_test_is_not():
     c = bc.part_c()
     rows = c["rows"]
-    assert all(r["certificate_coverage"] >= 0.93 for r in rows)  # nominal 0.95; two-sided Monte Carlo error ~0.005
+    assert c["reps"] == 4000 and all(r["trials_per_row"] == 8000 for r in rows)
+    for r in rows:
+        lo, hi = r["certificate_coverage_ci95"]
+        assert lo >= 0.93 and hi >= 0.95  # nominal 0.95; the tail term makes the certificate slightly conservative
+        assert lo <= r["certificate_coverage"] <= hi
     excess = [r["certificate_mean_excess"] for r in rows]
     assert max(excess) - min(excess) < 5e-4
     assert max(excess) < 0.004
-    assert rows[0]["cohort_test_accuracy_mc"] < 0.62  # delta = 0.02: the oracle test is close to a coin flip
-    assert rows[-1]["cohort_test_accuracy_mc"] > 0.99
+    assert rows[0]["cohort_test_accuracy_ci95"][1] < 0.60  # delta = 0.02: the Bayes two-point test is near a coin flip
+    assert rows[-1]["cohort_test_accuracy_ci95"][0] > 0.99
     for r in rows:
         assert abs(r["cohort_test_accuracy_mc"] - r["cohort_test_accuracy_theory"]) < 0.03
+        lo, hi = r["cohort_test_accuracy_ci95"]
+        assert lo - 0.005 <= r["cohort_test_accuracy_theory"] <= hi + 0.005
 
 
 def test_d_window_closed_forms_and_unbounded_family():

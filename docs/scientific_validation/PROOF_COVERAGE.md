@@ -1,3 +1,5 @@
+> **Superseded (2026-10-20).** This file is a 2026-10-15 snapshot (324 declarations). The current, authoritative record is [`COVERAGE.md`](../../COVERAGE.md) (443 declarations, per-environment `full`/`conditional`/`arithmetic` tags).
+
 # Machine Markets: formal proof coverage and dependency boundaries
 
 S21 includes kernel-checked algebraic subresults, a known-family inversion bound, and local Prony conditioning evidence. The Vandermonde coefficients use the true eta_1 and eta_2; their perturbation bound is not an error bound for estimated poles. A uniform finite-sample guarantee for the fully parameter-blind nonlinear estimator remains unproved. S13 retains the explicit general-dimensional hSpijker hypothesis. S20 uses an external 1,800-interval Decimal certificate; its full numerical sweep is not checked by the Lean kernel.
