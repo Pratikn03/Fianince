@@ -43,3 +43,7 @@ Tests in `tests/` follow the blueprint names: `test_witness_exact`, `test_convol
   order-book data, for which Paper 2 reports only bootstrap diagnostics (Parts 15–16).
 * The restructuring of October 20, 2026 moved code between files without changing any result: `results/IS_results.json` is
   identical, key by key, for T01–T09 and T12.
+
+**Platform tolerance.** `compare_results.py` requires agreement to 1e-9 except for two results that depend on the platform's
+floating-point library far below anything the paper quotes: the floating-point Markov–Krein windows of ThmB (compared at
+1e-6) and the adaptive box count of T10 (within 0.1%; the certified endpoints are verified in interval arithmetic on any platform).
