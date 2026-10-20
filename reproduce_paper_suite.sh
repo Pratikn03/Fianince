@@ -1,7 +1,7 @@
 #!/bin/sh
 # End-to-end clean reproduction of the October 2026 paper suite (Paper 1 and Paper 2), from this repository.
 #   1. copies ceiling_suite/papers to a fresh temporary folder and creates a fresh Python virtual environment;
-#   2. runs the 23 unit tests and every data-free result (T01-T14) and checks each equals the committed result;
+#   2. runs the 28 unit tests and every data-free result (T01-T15) and checks each equals the committed result;
 #   3. recompiles both papers and both journal versions from the LaTeX sources and compares them with the committed PDFs;
 #   4. recomputes every row of Paper 2's ledger of pre-registered tests from the archived real-data result files;
 #   5. checks that research_extension/information_safety is the same code as the copy inside ceiling_suite/papers;
