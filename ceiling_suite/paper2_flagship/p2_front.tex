@@ -1,0 +1,129 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,threeparttable,graphicx,setspace,enumitem,longtable,array}
+\usepackage{xcolor}
+\usepackage{etoolbox}
+\AtBeginEnvironment{tabular}{\footnotesize}
+\usepackage[authoryear,round]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{fancyhdr}
+\doublespacing
+\emergencystretch=2em
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Niroula, Alkhushayni, Chen, Bhavsar, and Niroula}
+\fancyhead[R]{\small From Human Markets to Machine Markets}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\headheight}{14pt}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\lab}[1]{\textsc{[#1]}}
+\newcommand{\R}{\mathbb{R}}
+
+\title{From Human Markets to Machine Markets:\\
+Transient Amplification, an Exact Depth Condition,\\ and a Maximal Pre-Trade Guard}
+\author{Pratik Niroula\thanks{Department of Computer Information Science, Minnesota State University, Mankato. \texttt{pratik.niroula@mnsu.edu}.}
+\and Suboh Alkhushayni\thanks{Department of Computer Information Science, Minnesota State University, Mankato. \texttt{suboh.alkhushayni@mnsu.edu}.}
+\and Yuhao Chen\thanks{Department of Accounting and Finance, Minnesota State University, Mankato. \texttt{yuhao.chen@mnsu.edu}.}
+\and Mansi Bhavsar\thanks{Department of Computer Information Science, Minnesota State University, Mankato. \texttt{mansi.bhavsar@mnsu.edu}.}
+\and Prashant Niroula\thanks{Faculty of Management, Tribhuvan University, Kirtipur, Nepal. \texttt{prashantniroula20@gmail.com}.}}
+\date{Revised preprint, October 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent Eigenvalues and volatility do not bound the losses a stable market can produce before it settles. We show that cumulative transient risk in a limit order book has a closed form, long-run impact divided by reversion net of momentum, $S=\tilde\kappa/(m-q\tilde\kappa)$; that a book overshoots exactly when depletion outweighs impact-weighted reversion; that a pre-trade guard on the summed response is the largest safe admission rule and is identified without identifying the traders; and that in equilibrium dealers under-supply reversion, with a corrective rebate that depends only on $S$. Measured on a fixed price grid, order flow depletes the side of the book it hits; the opposite finding from re-centred depth bands is an artefact of the recentring. In thin books, six-hour estimates of $S$ forecast the next hour's adverse excursion out of sample in four pre-registered tests, beyond a full volatility-forecasting baseline (about 26 basis points between the top and bottom quintiles at a given volatility forecast). In thin US stocks it passes a fifth such test with a smaller gain; on Bybit, with order-book depth, it is about one eightieth as large; and as a position limit a certified estimate improves on a volatility limit only modestly (2.4\% lower tail loss).
+\end{abstract}
+
+\noindent\textbf{Keywords:} transient amplification, non-normal dynamics, limit order book, market resilience, liquidity externality, pre-trade risk control, pre-registration, replication.\\
+\textbf{JEL:} G01, G10, G14, G18, C32, C58.
+
+\paragraph{Reproducibility.} Every number in the paper is produced by a script or notebook cell that writes a result file from public data or from a closed form; Appendix~\ref{app:repro} maps each table, figure and number to its source. Pre-registered specifications, their SHA-256 hashes and test-set unlock counters are in the replication package. Every simulation number was re-run for this version.
+
+\newpage
+\setcounter{page}{1}
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+On October 10, 2025, crypto derivatives markets liquidated an estimated \$19 billion of leveraged positions in a single day, the largest such event on record \citep{shares2025}; on May 6, 2010, US equity prices fell and recovered by several percent within minutes \citep{kirilenko2017}. In both episodes the losses that mattered were transient: positions were closed out on the path, before prices settled. This paper is about that path risk in markets where algorithms trade with each other.
+
+Algorithmic markets are closed-loop systems: trading moves prices, prices move algorithms, and algorithms trade. A common shortcut equates the stability of such a system with its eigenvalues lying inside the unit circle. That is the wrong object for a leveraged intermediary, whose survival depends on the path of losses before the system settles. A market can be spectrally stable and still push a dealer through its maintenance margin within seconds.
+
+This paper asks two questions. When does a limit order book amplify a flow shock, so that prices keep moving after the shock has passed? And how can a dealer or a venue control transient loss without identifying who is trading, which the companion paper \citep{niroula2026} shows is expensive or impossible from public data? We give exact answers in a linear book model and then confront them with data, reporting the results as they came out.
+
+\paragraph{1. Spectral stability does not bound transient loss.} The exact safe shock radius of a stable linear market is the loss budget divided by its peak transient gain, and that gain can be arbitrarily large at any fixed spectral radius (Theorem~\ref{thm:radius}). Markets with identical eigenvalues, one-step volatility and stationary price variance can have arbitrarily large worst-case transient gain (Proposition~\ref{prop:blind}). Supervision through eigenvalues or volatility alone is therefore insufficient in principle.
+
+\paragraph{2. When a book amplifies.} We distinguish peak overshoot, a response that rises above its direct impact, from cumulative amplification, a summed response far above it. When order flow depletes one side of the book and the book refills at rate $r$, the price response overshoots its direct impact if and only if $\varphi\varepsilon>(1-a)\kappa$ (Theorem~\ref{thm:t6}). With momentum traders the one-period margin $C_3=\varphi\varepsilon+\kappa^2\eta q-(1-a)\kappa$ is sufficient (Proposition~\ref{prop:t6m}) but no one-period condition is exact (Remark~\ref{rem:counter}); momentum alone cannot make a stable book overshoot (Theorem~\ref{thm:nomom}), and an explicit condition rules overshoot out (Theorem~\ref{thm:noover}). Cumulative risk has a closed form, $S=\tilde\kappa/(m-q\tilde\kappa)$: long-run impact divided by reversion net of momentum (Proposition~\ref{prop:sum}). It needs no depletion, and it is the form our evidence supports: crypto books show no peak overshoot, but thin books revert slowly, so their summed response is large.
+
+\paragraph{3. The maximal safe guard.} For bounded shocks, worst-case loss over a horizon is inventory times the shock bound times the summed absolute impulse response, the classical $\ell_1$ gain of control theory. A pre-trade guard on this summed gain is necessary and sufficient for solvency, so it admits the largest safe set of actions (Theorem~\ref{thm:guard}). A guard on the peak response, the quantity closest to the eigenvalue intuition, admits unsafe actions. A Gr\"onwall bound carries the guard to an estimated operator (Theorem~\ref{thm:robust}), a contraction-block certificate makes it computable on a finite horizon (Lemma~\ref{lem:tail}), and its inputs are identified from prices without identifying the algorithms (Propositions~\ref{prop:invariance} and~\ref{prop:bridge}). We embed the guard in a dealer's balance sheet with margin, hedging and fill accounting (Theorem~\ref{thm:forward}) and show that strategic re-optimization by filtering algorithms reinforces it (Proposition~\ref{prop:lucas}).
+
+\paragraph{4. Who controls the risk.} Reversion is a public good. In equilibrium dealers under-provide it, momentum traders over-provide feedback, fewer dealers mean more transient risk, and the rebate that restores the first best is $(1-\theta/N)\Lambda S^2/\tilde\kappa$, a function of the guard's own statistic (Proposition~\ref{prop:equil}).
+
+\paragraph{5. Evidence.} On Binance BTCUSDT futures the amplification statistic is negative on 93.5\% of days, depth does not carry an overshoot, and the statistic fails a pre-registered forecasting test (Section~\ref{sec:depth}); unit-free spot amplification is indistinguishable from one (Section~\ref{sec:spot}). Across 30 perpetuals, Binance's depth bands, which are re-centred on the current mid, show taker flow replenishing the side it hits; on a fixed price grid in Bybit's full order books, the same flow depletes it, so the replenishment finding is an artefact of the band construction (Section~\ref{sec:fixedgrid}). The amplifying regime is more frequent in thin books (Section~\ref{sec:thin}). There, six-hour estimates of the amplification margin forecast the size of the next hour's adverse excursion out of sample in four pre-registered tests: on the original ten symbols ($+1.2$ points of $R^2$), on ten new symbols ($+0.85$), on fresh days with price-impact controls ($+1.6$), and on further fresh days beyond a full volatility-forecasting baseline ($+2.8$, with better tail classification). The summed response $S$, the guard's own statistic, carries the same information ($+2.1$ points beyond the volatility baseline), unit-free versions work, and the content comes mostly from impact-weighted reversion, as Proposition~\ref{prop:sum} implies. Within a volatility quintile, hours in the top quintile of the statistic have next-hour excursions about 26 basis points larger than hours in the bottom quintile, enough to roughly double the hourly liquidation probability of a $20\times$ position. The effect is much weaker in mid-depth books and absent in BTCUSDT. On Bybit it fails with trade data alone; with order-book depth it meets a pre-registered criterion, but the gain is about one eightieth of Binance's (Table~\ref{tab:bybitob}). In a regulated market, 23 thin US stocks with consolidated trades, the depth-free statistic passes a fifth pre-registered forecasting test ($+0.50$ points of $R^2$ beyond the same volatility baseline), again through impact-weighted reversion; unlike on Binance, mid-size stocks show a gain too (Table~\ref{tab:us}). As a position limit, a six-hour estimate of the response adds nothing to volatility, but once the operator is certified from the previous three days, scaling a volatility limit by the gain multiple lowers tail loss per unit of position by 2.4\% in a fifth pre-registered test, a narrow pass; limits built on the estimated response alone remain worse than volatility (Section~\ref{sec:certguard}).
+
+\paragraph{What we do not claim.} We do not claim that crypto books amplify shocks through depth: flow depletes the side it hits on a fixed price grid, but we observe no peak overshoot, and the depth term carries no forecasting content. The thin-book forecasting result is reduced-form, and its size depends on the venue: largest in thin Binance books, about a fifth as large in thin US stocks, and negligible on Bybit; it improves tail classification only against the full volatility baseline. We do not claim that the guard replaces volatility in practical position sizing: its theorems are statements about worst-case loss under a certified operator, an estimated six-hour response adds nothing to volatility, and a three-day certified estimate improves a volatility limit only modestly (2.4\%, a narrow pass) while the guard alone does worse. The October 10, 2025 episode is reported descriptively and supports no inference (Section~\ref{sec:oct10}). One test cell of the first thin-book test was executed twice with unchanged code and specification (Section~\ref{sec:x6}). The equilibrium is a stylized model; thinner books do carry more cumulative risk per dollar of flow, as it predicts, but through larger impact rather than through the weaker reversion it names.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Map of results}\label{tab:map}
+\begin{tabular}{p{0.34\textwidth}p{0.38\textwidth}p{0.16\textwidth}}
+\toprule
+Question & Answer & Where\\
+\midrule
+Does $\rho(J)<1$ bound transient loss? & No; safe radius $B/M_C$ can vanish at fixed $\rho$ & Thm~\ref{thm:radius}, Prop~\ref{prop:blind}\\
+Can volatility monitors help? & No; fixed variance, unbounded gain & Prop~\ref{prop:blind}\\
+When does a book amplify? & Iff $\varphi\varepsilon>(1-a)\kappa$; with momentum $C_3>0$ suffices, no exact one-period rule & Thm~\ref{thm:t6}, Prop~\ref{prop:t6m}, Rem~\ref{rem:counter}\\
+Can momentum alone amplify? & Not in a stable book & Thm~\ref{thm:nomom}\\
+How large is cumulative risk? & $S=\tilde\kappa/(m-q\tilde\kappa)$ & Prop~\ref{prop:sum}\\
+Which guard is safe and largest? & Summed absolute gain; peak gain is unsafe & Thm~\ref{thm:guard}\\
+Robust to estimation error? & Yes, $M/(1-\epsilon S)$ & Thm~\ref{thm:robust}\\
+Needs identification of algorithms? & No; inputs are invariant to cohort splits & Props~\ref{prop:invariance}, \ref{prop:bridge}\\
+Do learners undo the guard? & No; gains fall when admission falls, and the peak response rises with gains in 99.9\% of trend-following draws & Prop~\ref{prop:lucas}\\
+Is reversion efficiently supplied? & No; under-provided, and the fix is priced by $S$ & Prop~\ref{prop:equil}\\
+Is BTCUSDT on the amplifying side? & No: $\hat C_3<0$ on 93.5\% of days & Table~\ref{tab:d3}\\
+Does depth carry an overshoot? & No; all overshoots negative & Figure~\ref{fig:med}\\
+Does $\hat C_3$ forecast tail risk in BTCUSDT? & No (pre-registered) & Table~\ref{tab:d8}\\
+Is spot amplification above one? & No; unit-free gain $\approx1.0000$ & Section~\ref{sec:spot}\\
+Does flow deplete thin books? & Yes on a fixed price grid; the apparent replenishment is a band-recentring artefact & Tables~\ref{tab:x8}, \ref{tab:fixedgrid}\\
+Does $\hat C_3$ forecast tail size in thin books? & Yes, in four pre-registered tests on Binance & Tables~\ref{tab:x6}, \ref{tab:y6}, \ref{tab:z6}, \ref{tab:z9}\\
+Is it just volatility? & No: $+2.8$ pts beyond HAR, EWMA and hour effects; $S$ itself $+2.1$ & Table~\ref{tab:z9}\\
+Is it tick size, impact or scale? & No; survives controls, unit-free versions work & Tables~\ref{tab:x6r}, \ref{tab:y8}, \ref{tab:z6}, \ref{tab:z9}\\
+Does it hold on a second venue? & Bybit: absent with trades; with depth, significant but negligible & Section~\ref{sec:bybit}, Table~\ref{tab:bybitob}\\
+In a regulated market? & Thin US stocks: yes, $+0.50$ pts (pre-registered); mid-size stocks too & Table~\ref{tab:us}\\
+Does the estimated response size positions better? & Six-hour: no; certified three-day: $-2.4\%$ tail loss, narrow pass; alone: worse & Tables~\ref{tab:backtest}, \ref{tab:certguard}\\
+How large is the effect? & top vs bottom quintile $\approx26$ bp at fixed volatility & Section~\ref{sec:threats}\\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+
+\subsection{Related literature}
+
+\paragraph{Closest work.} Three strands are closest. Models of transient impact and resilience \citep{obizhaeva2013,bouchaud2004,bouchaud2018} take the decay of impact as given; we derive when depletion, refill and momentum make a book overshoot, give cumulative impact in closed form, and ask who supplies the reversion that bounds it. Models of liquidity spirals \citep{brunnermeier2009,shleifer1992} explain how funding constraints amplify shocks; our amplification is a property of book dynamics and does not need funding constraints, and our guard is the pre-trade control that bounds the resulting loss. \citet{sornette2023} show that non-normal interactions create transient bubbles; we give a necessary and sufficient pre-trade control for such transients and test the conditions for them in order-book data.
+
+\paragraph{Market microstructure and resilience.} Transient impact and resilience follow \citet{obizhaeva2013}, \citet{bouchaud2004} and \citet{bouchaud2018}; optimal execution with impact is in \citet{almgren2001} and \citet{cartea2015}. Depth imbalance as a short-horizon price predictor is documented by \citet{cont2014}. \citet{biais2005} survey the field; price impact as a measure of information and illiquidity goes back to \citet{kyle1985} and \citet{amihud2002}. Inventory-based dealer models go back to \citet{ho1981}, and \citet{avellaneda2008} give the standard high-frequency market-making model. Empirically, resiliency, the speed at which a book refills after a liquidity shock, is measured by \citet{biais1995}, \citet{degryse2005} and \citet{large2007}, who estimates it with a self-exciting point process for order events; \citet{foucault2005} show that it is set by the mix of patient and impatient traders and the tick size. Our reversion term $m$ is the reduced-form counterpart of resiliency, and $S=\tilde\kappa/(m-q\tilde\kappa)$ shows how it combines with impact and momentum: a book that is resilient in this sense can still carry a large cumulative response when momentum feedback absorbs most of its reversion. Our book model is a minimal two-state version of resilience dynamics, chosen so that the amplification condition is exact.
+
+\paragraph{Feedback, fire sales and automated markets.} Liquidity spirals and fire sales are in \citet{shleifer1992} and \citet{brunnermeier2009}; automated-market crashes in \citet{kirilenko2017}; and the market-design case for discrete auctions in \citet{budish2015}. \citet{menkveld2013} documents high-frequency market makers as the new intermediaries, and algorithmic trading has been found to improve liquidity and price discovery in normal times \citep{hendershott2011,brogaard2014}; our question is what happens on the path after a shock. \citet{sornette2023} show that non-normal interactions can generate transient bubbles in unleveraged systems. We add an exact condition for when a book amplifies, a control that does not need the identity of the traders, and evidence on whether the condition holds in a large market.
+
+\paragraph{Early warning and liquidity crashes.} The best-known early-warning metric for flow-driven crashes is VPIN \citep{easley2012}, whose forecasting content beyond volume and volatility is disputed \citep{andersen2014}. Equilibrium models explain crashes through endogenous liquidity withdrawal \citep{huang2009} and illiquidity contagion across assets \citep{cespa2014}. Our statistic differs in kind: it is a structural quantity, the summed response of the book to a unit of flow, with a closed form and a control-theoretic meaning, and we evaluate it out of sample against a full volatility-forecasting baseline. In a post-hoc head-to-head check on the 20-symbol thin-book panel (\texttt{R8\_vpin.json}), 50-bucket VPIN over the preceding six hours is negatively correlated with $\hat C_3$ (Spearman $\rho=-0.352$) and adds $1.24$ percentage points of out-of-sample $R^2$ beyond the baseline, while $\hat C_3$ adds $2.03$ percentage points ($95\%$ interval $[1.01,3.42]$, Clark--West $t=12.14$) on top of the baseline plus VPIN, retaining $73\%$ of its unconditional $R^2$ gain ($2.79$ points). Crypto markets are studied as a laboratory for microstructure and arbitrage by \citet{makarov2020}.
+
+\paragraph{Non-normal dynamics and robust control.} Transient growth of stable non-normal systems and the Kreiss matrix theorem are classical \citep{trefethen2005,kreiss1962}; the sharp $en$ constant is due to \citet{spijker1991}. Standard $H_\infty$ control bounds frequency-domain gain under known coordinates. The time-domain worst case under bounded disturbances, the $\ell_1$ norm of the impulse response, is the object of $\ell_1$-optimal control \citep{vidyasagar1986,dahleh1987,dahleh1995}, and our guard's worst-case identity is that classical fact. What we add is its use as an admission rule on a dealer's balance sheet, its invariance to the unobservable cohort coordinates and identification from prices, and its link to who supplies reversion in equilibrium. Cross-impact under no dynamic arbitrage is studied by \citet{schneider2019}.
+
+\paragraph{Regulation.} SEC Rule 15c3-5 requires broker-dealers with market access to enforce pre-trade controls on credit and capital \citep{sec2010}. Our guard is a candidate pre-trade control with a provable maximality property.
+
+\paragraph{Forecast evaluation.} Our predictive tests use \citet{clark2007} and \citet{diebold1995} with \citet{newey1987} standard errors and block resampling in the spirit of \citet{kunsch1989}, the volatility baseline follows \citet{corsi2009} and \citet{riskmetrics1996}, local projections follow \citet{jorda2005}, and we correct for multiple testing as in \citet{holm1979}. Following the case for pre-registration in science \citep{nosek2018} and the concerns about multiple testing in financial economics \citep{harvey2016,harvey2017}, we pre-register specifications, count every evaluation of a held-out period, and report the failures with the successes.
+
+\subsection{Outline}
+Section~\ref{sec:model} sets out the closed-loop market. Section~\ref{sec:radius} shows why spectral stability is not solvency. Section~\ref{sec:t6} derives the amplification condition. Section~\ref{sec:guard} constructs and analyzes the guard, and Section~\ref{sec:equil} asks who supplies reversion in equilibrium. Sections~\ref{sec:depth} and~\ref{sec:spot} report the BTCUSDT evidence, and Section~\ref{sec:thin} the thin-book program, its replications and its failures. Section~\ref{sec:policy} discusses policy, and Section~\ref{sec:conclusion} concludes.

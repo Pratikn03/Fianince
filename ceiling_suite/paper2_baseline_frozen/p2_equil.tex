@@ -1,0 +1,32 @@
+\section{Who provides reversion? An equilibrium}\label{sec:equil}
+
+Proposition~\ref{prop:sum} says that transient risk is governed by one ratio, $S=\tilde\kappa/(m-q\tilde\kappa)$. Its ingredients are chosen by market participants: dealers decide how hard to lean against price displacements, which sets reversion $m$, and momentum traders decide how strongly to chase them, which sets $q$. This section asks whether those choices are efficient.
+
+\subsection{Setup}
+There are $N$ dealers. Dealer $i$ supplies reversion intensity $s_i\ge0$ by absorbing order flow against the displacement, so $m=m_0+\sum_is_i$, where $m_0$ is reversion supplied by other means. Leaning earns a spread $v$ per unit of intensity at quadratic inventory cost, so the private value is $vs_i-\tfrac c2s_i^2$. By Theorem~\ref{thm:guard} the worst-case transient loss of a position of size $Q$ facing flow shocks bounded by $U$ is $QU\,S$, so we take aggregate expected tail loss to be $\Lambda S(m,q)$ with $\Lambda>0$. Dealers bear a share $\theta<N$ of it, so each bears $\theta/N$; leveraged users and their counterparties bear the rest. Momentum traders choose aggregate intensity $q$ with private value $bq-\tfrac e2q^2$ and bear none of the tail loss. Long-run impact $\tilde\kappa$ is taken as given.
+
+\subsection{Results}
+
+\begin{proposition}[Equilibrium transient risk]\label{prop:equil}
+Let $g(m)\equiv-\partial S/\partial m=\tilde\kappa/(m-q\tilde\kappa)^2$.
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Under-provision of reversion.} The symmetric Nash equilibrium solves $m-m_0=N v/c+\theta\Lambda g(m)/c$, the planner's optimum solves $m-m_0=N v/c+N\Lambda g(m)/c$, and $m^{\rm eq}<m^{\rm SP}$, so $S^{\rm eq}>S^{\rm SP}$.
+\item \emph{Fewer dealers, more risk.} $\partial m^{\rm eq}/\partial N=(v/c)/(1-\theta\Lambda g'(m)/c)>0$, so equilibrium reversion rises and $S^{\rm eq}$ falls with the number of dealers.
+\item \emph{Over-provision of momentum.} Momentum traders choose $q=b/e$; the planner chooses $q^{\rm SP}<b/e$, solving $b-eq=\Lambda\tilde\kappa^2/(m-q\tilde\kappa)^2$.
+\item \emph{The corrective price is identified.} The first best for reversion is implemented by a rebate per unit of reversion
+\[
+\tau^*=\Bigl(1-\frac\theta N\Bigr)\Lambda\,g(m)=\Bigl(1-\frac\theta N\Bigr)\Lambda\,\frac{S^2}{\tilde\kappa},
+\]
+which depends on the market only through $S$ and $\tilde\kappa$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) Dealer $i$'s first-order condition is $v-cs_i+(\theta/N)\Lambda g(m)=0$; the planner's is $v-cs+\Lambda g(m)=0$. Summing over dealers gives the two fixed-point equations. The right-hand sides are decreasing in $m$ because $g$ is decreasing on $m>q\tilde\kappa$, and the planner's lies above the dealers' for every $m$ when $\theta<N$, so its crossing with the line $m-m_0$ lies to the right. (ii) follows by implicit differentiation, since $g'<0$. (iii) $\partial S/\partial q=\tilde\kappa^2/(m-q\tilde\kappa)^2>0$ is the marginal external cost of momentum that traders ignore. (iv) The rebate closes the wedge between the two first-order conditions, and $g=S^2/\tilde\kappa$ by Proposition~\ref{prop:sum}.
+\end{proof}
+
+At $v=0.002$, $c=0.5$, $\theta=0.3$, $\Lambda=10^{-4}$, $m_0=0.005$, $q=0.02$ and $\tilde\kappa=1$, equilibrium $S$ falls from 27.9 with one dealer to 6.8 with forty, and the planner's $S$ is 1.5--2.7 times lower throughout; the rebate computed from $S$ alone coincides with the first-order wedge to machine precision. With $m=0.03$, $b=0.3$ and $e=20$, momentum traders choose $q=0.015$ against a planner's $0.0062$.
+
+\paragraph{Interpretation.} Reversion is a public good: each dealer who leans against a displacement lowers the tail exposure of every leveraged position in the market but is paid only for his own fills. Momentum is the mirror image. Part (iv) closes the loop with the guard: the policy price of the externality is a function of the same summed response that the guard bounds, and Propositions~\ref{prop:invariance} and~\ref{prop:bridge} show that this quantity is identified from public data without identifying the traders. A venue that rebates reversion in proportion to $S^2/\tilde\kappa$, or a supervisor that sets pre-trade limits by $S$, prices the externality with an observable.
+
+\paragraph{What the data say about the model's predictions.} Part (ii) predicts that books with fewer dealers have higher $S$ because they supply less reversion. Depth is the closest proxy we observe for the number of liquidity providers. Across the three liquidity terciles of the 30 Binance perpetuals on training days, the summed response per dollar of flow rises steeply as depth falls (median $2{,}797$, $26{,}603$ and $39{,}329$ basis points per \$1M in the thick, mid and thin terciles; Spearman correlation with log depth $-0.94$), as (ii) predicts. The channel is not the one the model names, however: the unit-free gain multiple $S/|h_0|=1/(m-q\tilde\kappa)$, which isolates reversion net of momentum, is the same in all three terciles (medians $46.4$, $47.3$ and $46.9$; Spearman $-0.11$). Thinner books carry more cumulative risk because their impact $\tilde\kappa$ is larger, not because they revert more slowly. These comparisons were made after the fact (Part 13, \texttt{R2}), and depth is an imperfect proxy for dealer count, so a direct test needs data on liquidity-provider identities. The model's second prediction, that the dynamic balance forecasts tail losses where reversion is close to $q\tilde\kappa$, is what Section~\ref{sec:thin} tests.

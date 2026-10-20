@@ -2,9 +2,9 @@ name: Machine Markets & AMIP RFC-001 CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, paper2-information-safety ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, paper2-information-safety ]
   workflow_dispatch:
 
 jobs:
@@ -49,6 +49,12 @@ jobs:
       - name: Run Formal Verification Script
         working-directory: research_extension/current_manuscript_lean_20261008
         run: python verify_formalization.py
+
+      - name: Build Core Constructive Lean Proofs & Verify Ceiling Suite Manifest
+        run: |
+          cd lean_proofs && lake build && lake env lean AxiomAudit.lean
+          cd ..
+          python ceiling_suite/verify_ceiling_suite_lean_proofs.py
 
   test-matrix:
     name: Pytest Suite (${{ matrix.os }}, Python ${{ matrix.python-version }})
@@ -126,6 +132,12 @@ jobs:
         run: |
           pdflatex -interaction=nonstopmode Machine_Markets_JF_Submission.tex
           pdflatex -interaction=nonstopmode Machine_Markets_JF_Submission.tex
+
+      - name: Compile Ceiling Suite Paper 1, Paper 2, QE and JF Versions
+        run: |
+          (cd ceiling_suite/paper1 && pdflatex -interaction=nonstopmode paper1.tex && pdflatex -interaction=nonstopmode paper1.tex)
+          (cd ceiling_suite/paper2 && pdflatex -interaction=nonstopmode paper2.tex && pdflatex -interaction=nonstopmode paper2.tex)
+          python ceiling_suite/papers/versions/build_versions.py
 
       - name: Upload Submission PDF Artifact
         uses: actions/upload-artifact@v4

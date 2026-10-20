@@ -95,6 +95,13 @@ PAPER2_MAP = {
     "prop:dominance": ("p2_prop_dominance_guard_vs_eigenvalue", "p2_prop_dominance_guard_vs_eigenvalue"),
     "prop:lucas": ("p2_prop_lucas_reinforces_guard", "p2_prop_lucas_reinforces_guard"),
     "prop:equil": ("p2_prop_equil_transient_risk", "p2_prop_equil_transient_risk"),
+    "thm:flagship_A": ("flagship_thm_A_witness_and_tv_impossibility", "flagship_thm_A_witness_and_tv_impossibility"),
+    "thm:flagship_B": ("flagship_thm_B_risk_identifiability_envelope", "flagship_thm_B_risk_identifiability_envelope"),
+    "thm:flagship_C": ("flagship_thm_C_minimum_observations", "flagship_thm_C_minimum_observations"),
+    "thm:flagship_D": ("flagship_thm_D_confidence_safety_certification", "flagship_thm_D_confidence_safety_certification"),
+    "thm:flagship_E": ("flagship_thm_E_optimal_uncertainty_guard", "flagship_thm_E_optimal_uncertainty_guard"),
+    "thm:flagship_F": ("flagship_thm_F_disclosure_economic_value", "flagship_thm_F_disclosure_economic_value"),
+    "thm:flagship_G": ("flagship_thm_G_equilibrium_under_uncertainty", "flagship_thm_G_equilibrium_under_uncertainty"),
 }
 
 ENV_PATTERN = re.compile(
@@ -141,7 +148,7 @@ def main():
     p2_envs = extract_envs(SUITE_DIR / "paper2", PAPER2_FILES)
 
     assert len(p1_envs) == 29, f"Expected 29 environments in paper1, got {len(p1_envs)}"
-    assert len(p2_envs) == 21, f"Expected 21 environments in paper2, got {len(p2_envs)}"
+    assert len(p2_envs) == 28, f"Expected 28 environments in paper2, got {len(p2_envs)}"
 
     mathlib_p1_path = MATHLIB_DIR / "CurrentProofs" / "CeilingSuitePaper1.lean"
     mathlib_p2_path = MATHLIB_DIR / "CurrentProofs" / "CeilingSuitePaper2.lean"

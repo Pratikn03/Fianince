@@ -4,7 +4,39 @@ import numpy as np, json
 from scipy.stats import norm
 from scipy.optimize import brentq
 from scipy.linalg import eigh
-exec(open("recompute_p1_capital.py").read().split("out = {")[0])
+"""Paper 1: recompute the capital numbers that were 'earlier scripts' (Tables capbounds, ledger).
+Model and calibration as in recompute_theory.py: a=0.5, kappa=0.8, q=0.2, eta=0.4, sigma=0.01,
+P*=100, taker fee phi=4bp, maintenance margin mu=0.5%, alpha=beta=0.05."""
+import numpy as np, json
+from scipy.stats import norm
+from scipy.linalg import eigh, toeplitz
+from scipy.optimize import minimize
+a, k, q, eta, sig, P, phi, mu = 0.5, 0.8, 0.2, 0.4, 0.01, 100.0, 4e-4, 0.005
+z = norm.ppf(0.95); KL_T = 0.5 * (2 * z) ** 2; creq = 4 * sig ** 2 * z ** 2
+kl = 0.05 * np.log(0.05 / 0.95) + 0.95 * np.log(0.95 / 0.05)
+def imp(ws, rs, L=600):
+    y = np.zeros(len(ws)); h = []; xp = 0.0
+    for t in range(L):
+        xt = a * xp + k * np.dot(ws, y) + (k if t == 0 else 0.0); y = (1 - rs) * y + rs * xt; h.append(xt); xp = xt
+    return np.array(h)
+def pair(d, L=600):
+    return imp(np.array([q]), np.array([eta]), L), imp(np.array([q / 2, q / 2]), np.array([eta - d, eta + d]), L)
+def Hh(h, om):
+    return np.exp(-1j * np.outer(om, np.arange(len(h)))) @ h
+def conv(h, v, n):
+    return np.convolve(h[:n], v)[:n]
+def err_of(dp):
+    return float(norm.cdf(-np.sqrt((dp @ dp) / (2 * sig ** 2) / 2)))
+def ledger(v, h, tail=200):
+    """Synthetic account: fills at the average linear-book price, marks at the prevailing price, taker fee phi,
+    maintenance margin mu*mark*|I|. Returns C0 = max_t(margin_t - equity_t), peak margin, end inventory."""
+    n = len(v) + tail; vv = np.r_[v, np.zeros(tail)]
+    disp = conv(h, vv, n)                                 # displacement after each trade
+    pre = disp - h[0] * vv                                # displacement before the trade at t
+    fill = P + pre + 0.5 * h[0] * vv
+    cash = -np.cumsum(vv * fill + phi * P * np.abs(vv)); I = np.cumsum(vv); mark = P + disp
+    equity = cash + I * mark; margin = mu * mark * np.abs(I)
+    return float(np.max(margin - equity)), float(margin.max()), float(I[-1])
 V = 6.25; za = norm.ppf(0.95); out = {}
 pulse_cost = lambda v: 0.5 * k * v ** 2 + phi * P * v                 # one-leg benchmark cost per pulse
 margin0 = lambda v: mu * P * v

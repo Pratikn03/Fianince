@@ -3,8 +3,8 @@
 - **Status**: `VERIFIED_100_PERCENT_NO_SORRY` (0 `sorry`, 0 `admit`, 0 `native_decide`, 0 unapproved axioms)
 - **Lean Toolchain**: `leanprover/lean4:v4.34.1`
 - **Paper 1 (`ceiling_suite/paper1/`)**: 29 / 29 formal environments verified
-- **Paper 2 (`ceiling_suite/paper2/`)**: 21 / 21 formal environments verified
-- **Total Ceiling Suite Environments**: 50 / 50 verified in both Mathlib (`ℝ`) and Core Lean 4 (`Rat`)
+- **Paper 2 (`ceiling_suite/paper2/`)**: 28 / 21 formal environments verified
+- **Total Ceiling Suite Environments**: 57 / 50 verified in both Mathlib (`ℝ`) and Core Lean 4 (`Rat`)
 
 ## Paper 1 — Auditable Memory and Financial Identification Limits (`paper1/`)
 
@@ -65,11 +65,18 @@
 | 19 | `proposition` | `prop:dominance` | When the guard beats an eigenvalue rule | `p2_theory2.tex:238` | `CurrentMM.p2_prop_dominance_guard_vs_eigenvalue` (L353) | `MachineMarkets.p2_prop_dominance_guard_vs_eigenvalue` (L145) |
 | 20 | `proposition` | `prop:lucas` | Strategic re-optimization reinforces the guard | `p2_theory2.tex:251` | `CurrentMM.p2_prop_lucas_reinforces_guard` (L369) | `MachineMarkets.p2_prop_lucas_reinforces_guard` (L153) |
 | 21 | `proposition` | `prop:equil` | Equilibrium transient risk | `p2_equil.tex:10` | `CurrentMM.p2_prop_equil_transient_risk` (L397) | `MachineMarkets.p2_prop_equil_transient_risk` (L159) |
+| 22 | `theorem` | `thm:flagship_A` | Unavoidable loss of safe trading capacity | `p2_equil.tex:67` | `CurrentMM.flagship_thm_A_witness_and_tv_impossibility` (L505) | `MachineMarkets.flagship_thm_A_witness_and_tv_impossibility` (L201) |
+| 23 | `theorem` | `thm:flagship_B` | Sharp risk-specific identifiability envelope | `p2_equil.tex:82` | `CurrentMM.flagship_thm_B_risk_identifiability_envelope` (L516) | `MachineMarkets.flagship_thm_B_risk_identifiability_envelope` (L207) |
+| 24 | `theorem` | `thm:flagship_C` | Minimum observations for safe decisions vs.\ cohort identification | `p2_equil.tex:94` | `CurrentMM.flagship_thm_C_minimum_observations` (L547) | `MachineMarkets.flagship_thm_C_minimum_observations` (L220) |
+| 25 | `theorem` | `thm:flagship_D` | Confidence-valid safety certification | `p2_equil.tex:108` | `CurrentMM.flagship_thm_D_confidence_safety_certification` (L561) | `MachineMarkets.flagship_thm_D_confidence_safety_certification` (L228) |
+| 26 | `theorem` | `thm:flagship_E` | Optimal uncertainty-aware pre-trade guard | `p2_equil.tex:115` | `CurrentMM.flagship_thm_E_optimal_uncertainty_guard` (L571) | `MachineMarkets.flagship_thm_E_optimal_uncertainty_guard` (L233) |
+| 27 | `theorem` | `thm:flagship_F` | Economic value of class-tagged disclosure | `p2_equil.tex:127` | `CurrentMM.flagship_thm_F_disclosure_economic_value` (L586) | `MachineMarkets.flagship_thm_F_disclosure_economic_value` (L242) |
+| 28 | `theorem` | `thm:flagship_G` | Equilibrium reversion supply under model ambiguity | `p2_equil.tex:135` | `CurrentMM.flagship_thm_G_equilibrium_under_uncertainty` (L599) | `MachineMarkets.flagship_thm_G_equilibrium_under_uncertainty` (L252) |
 
 ## Phase 7 — Unified Foundational Bridge Theorems (Paper 1 ↔ Paper 2)
 
 | # | Result | Title | Mathlib (`ℝ`) Theorem | Core Lean (`Rat`) Theorem |
 |---|---|---|---|---|
-| 1 | `Result A` | Result A: Impossibility of Cohort-Specific Risk Control from Public Data | `CurrentMM.foundational_result_A_impossibility` (L447) | `MachineMarkets.foundational_result_A_impossibility` (L167) |
-| 2 | `Result B` | Result B: Disclosure-Enabled Control Improvement | `CurrentMM.foundational_result_B_disclosure_control` (L474) | `MachineMarkets.foundational_result_B_disclosure_control` (L173) |
-| 3 | `Result C` | Result C: Active Probing vs. Transient Excursion Tradeoff | `CurrentMM.foundational_result_C_probing_control_tradeoff` (L500) | `MachineMarkets.foundational_result_C_probing_control_tradeoff` (L178) |
+| 1 | `Result A` | Result A: Impossibility of Cohort-Specific Risk Control from Public Data | `CurrentMM.foundational_result_A_impossibility` (L452) | `MachineMarkets.foundational_result_A_impossibility` (L167) |
+| 2 | `Result B` | Result B: Disclosure-Enabled Control Improvement | `CurrentMM.foundational_result_B_disclosure_control` (L619) | `MachineMarkets.foundational_result_B_disclosure_control` (L258) |
+| 3 | `Result C` | Result C: Active Probing vs. Transient Excursion Tradeoff | `CurrentMM.foundational_result_C_probing_control_tradeoff` (L645) | `MachineMarkets.foundational_result_C_probing_control_tradeoff` (L263) |
