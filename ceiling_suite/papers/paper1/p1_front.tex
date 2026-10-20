@@ -1,0 +1,179 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,threeparttable,graphicx,setspace,enumitem,longtable,array}
+\usepackage{xcolor}
+\usepackage{etoolbox}
+\AtBeginEnvironment{tabular}{\footnotesize}
+\usepackage[authoryear,round]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\usepackage{fancyhdr}
+\doublespacing
+\emergencystretch=2em
+\pagestyle{fancy}\fancyhf{}
+\fancyhead[L]{\small Niroula and Niroula}
+\fancyhead[R]{\small Auditable Memory and Identification Limits}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+\setlength{\headheight}{14pt}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\KL}{D_{\mathrm{KL}}}
+\newcommand{\lab}[1]{\textsc{[#1]}}
+
+\title{Auditable Memory and Financial Identification Limits\\ in Electronic Limit Order Books}
+\author{Pratik Niroula\thanks{Department of Computer Information Science, Minnesota State University, Mankato, MN 56001, USA. \texttt{pratik.niroula@mnsu.edu}.}
+\and Prashant Niroula\thanks{Faculty of Management, Tribhuvan University, Kirtipur, Nepal. \texttt{prashantniroula20@gmail.com}.}}
+\date{Revised preprint, October 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent When trading algorithms condition on recent prices, price formation is a closed-loop system. We ask what an outside observer can learn about the algorithms from market data, and at what cost. In a linear cohort model with exponential memory, prices identify only a merged rate--weight measure. Separating two nearby memory rates with price-only probes requires executed quantity of order $\delta^{-2}$ and trading capital of order $\delta^{-4}$, with matching attainability, explicit constants, an adaptive bound and a finite-horizon duality certificate. For $K$ unknown cohorts the sample requirement is exactly of order $(\Delta\eta)^{-(4K-2)}$: a two-point lower bound and Prony's method match for every $K$. For general completely monotone memory the minimax accuracy is of exact order $1/\log N$, with matching lower and upper bounds, so the polynomial barrier is the optimistic case. Passive data identify the merged measure at the same polynomial cost. Class-tagged disclosure removes the barrier, and we price it: tagging reduces the sample requirement by a factor of order $(\Delta\eta)^{-(4K-4)}$. Monitors built on eigenvalues and volatility are blind to transient risk. In data, Binance's published long/short ratios by trader class pin down memory rates 28 to 124 times more precisely than prices and flow in each of 30 futures markets, worth about 16 years of price data for BTCUSDT, and in a pre-registered test the CFTC's legally mandated trader-class reports do the same in all eight regulated futures markets examined, from Bitcoin to Treasuries and crude oil; standard feedback indices are dominated by filtering and clock alignment; and a two-event fee experiment moves trading volume by a factor of 2.6 to 4.9 while leaving measured feedback unchanged.
+\end{abstract}
+
+\noindent\textbf{Keywords:} system identification, market microstructure, algorithmic trading, minimax sample complexity, moment problems, value of disclosure, transient risk.\\
+\textbf{JEL:} C14, C32, C58, D83, G14.
+
+\paragraph{Reproducibility.} Every number in the paper is produced by a script or notebook cell that writes a result file from public data or from a closed form; Appendix~\ref{app:repro} maps each table, figure and number to its source. Every simulation number was re-run for this version.
+
+\newpage
+\setcounter{page}{1}
+\tableofcontents
+\newpage
+
+\section{Introduction}
+
+Regulators increasingly require firms to say which algorithm sent each order. Under MiFID II, EU investment firms must flag algorithmic orders and identify the algorithm responsible for each investment and execution decision in their transaction reports \citep{esma2016}; the US Consolidated Audit Trail records who stands behind every order \citep{sec2012}. These regimes are costly to build and to comply with, and they rest on an implicit claim: that a supervisor could not learn the same thing from public prices and order flow. This paper tests that claim, and prices the answer.
+
+The setting is a closed-loop market. Algorithms update on recent prices, their orders move prices, and prices feed back into the algorithms. We model $K$ cohorts of algorithms that track the price with exponential memory, the reduced form of steady-state Kalman filtering and of regularized online gradient descent (Propositions~\ref{prop:kalman}--\ref{prop:ogd}), and ask what an outside observer can learn about them from market data. The answer is sharp. Prices reveal only a merged summary of the algorithms. Separating two algorithms whose memories differ by $\delta$ costs trading capital of order $\delta^{-4}$, and separating $K$ unknown algorithms costs a number of experiments of exact order $(\Delta\eta)^{-(4K-2)}$; with general memory, accuracy improves only as $1/\log N$, so halving the error squares the number of experiments. Class-tagged disclosure removes the barrier, and its value can be stated in samples: a factor of order $(\Delta\eta)^{-(4K-4)}$. In data, Binance's published long/short ratios by trader class, a coarse form of class tagging, pin down memories that prices and flow leave unrestricted in each of 30 futures markets, and the CFTC's mandated trader-class reports do the same in eight regulated U.S. futures markets.
+
+\paragraph{1. An identification gap.} Prices identify only the merged rate--weight measure $M=\sum_i q_i\eta_i\,\delta_{1-\eta_i}$ of the algorithms (Theorem~\ref{thm:merged}). Cohorts that share a memory rate are observationally equivalent, whatever their identities or wealth. Nearby rates can be separated, but at a cost that rises quickly as they approach each other.
+
+\paragraph{2. A resource gap.} For a known symmetric pair separated by $\delta$, price-only identification with deterministic probes requires executed quantity of order $\delta^{-2}$, and a single pulse attains this order (Theorem~\ref{thm:quantity}). Because a probe moves the price against the prober, the quantity order becomes a capital order $\delta^{-4}$, whether capital is supplied by a counterparty under a margin contract (Theorem~\ref{thm:cap}) or by the probe trader itself (Theorem~\ref{thm:capital}). We then compute what an account actually needs. A spectral argument gives a lower bound on the trading loss of any flat round trip (Theorem~\ref{thm:spectral}); Wald's identity extends it to adaptive, sequential probing (Theorem~\ref{thm:adaptive}); and a Rayleigh--H\"older dual bounds the finite-horizon optimum (Theorem~\ref{thm:rh}). At the calibrated parameters the bracket is $[61.41, 64.48]$ par units. For $K$ unknown cohorts the number of independent experiments is exactly of order $(\Delta\eta)^{-(4K-2)}$: a two-point lower bound (Theorem~\ref{thm:kcohort}) is matched by Prony's method for every $K$ (Theorem~\ref{prop:esprit}). For general completely monotone memory the minimax accuracy is of exact order $1/\log N$: a lower bound built from moment-matched cohort pairs (Lemma~\ref{lem:altpair}) is matched by a moment estimator solved as a linear program (Theorem~\ref{thm:general}), so the exponential-memory model is the optimistic case.
+
+\paragraph{3. A measurement gap.} Passive data do not escape the barrier. The closed-loop transfer function is minimum phase, so the price spectrum identifies the merged measure (Theorem~\ref{thm:minphase}), and natural excitation can separate a pair with zero controlled quantity (Proposition~\ref{prop:passive0}). But the information rate falls at the same polynomial order as for active probing (Theorem~\ref{prop:passive}). Only richer disclosure removes the dependence on rate spacing: tagged flow (Proposition~\ref{prop:tagged}) or audited equity (Proposition~\ref{prop:disclosure}). Tagging reduces the sample requirement by a factor of order $(\Delta\eta)^{-(4K-4)}$ for rates (Theorem~\ref{thm:discvalue}). On Binance, published long/short ratios by trader class pin down class memories 28 to 124 times more precisely than prices and flow in each of 30 futures markets (Section~\ref{sec:disc_data}), and calibrating the theorem to the BTCUSDT class memories makes them worth about 333 times as much data as prices alone.
+
+\paragraph{4. What feedback indices measure.} Standard reduced-form feedback indices are dominated by filtering mechanics and clock alignment; a placebo pipeline reproduces the mechanical persistence exactly; measured feedback rises with market depth across 30 perpetuals; and two fee events that multiply trading volume by 2.6 and divide it by 4.9 leave measured feedback unchanged (Section~\ref{sec:empirics}).
+
+\paragraph{5. A spectral blind spot.} Even without identification, could a supervisor monitor risk through eigenvalues or volatility? No. Markets with identical eigenvalues, one-step volatility and stationary price variance can have arbitrarily large worst-case transient loss (Theorem~\ref{thm:blind}). This motivates the open question with which the paper ends: what can be measured and controlled without identifying the algorithms? The companion paper takes it up.
+
+\paragraph{What we do not claim.} The identification results hold for the stated linear model and observation contracts. They are not universal limits on surveillance with participant-level records, which can be far more informative (Propositions~\ref{prop:disclosure} and~\ref{prop:tagged}). The matching upper bound holds on a class with separated rescaled rates and weights bounded away from zero. Capital figures depend on the observation-noise calibration, which we estimate rather than assume. The empirical results are reduced-form diagnostics; they do not identify structural learning parameters. Our pre-registered real-data test of the identification boundary failed its criterion on one of its three parts: on 42 days of data the merged response was precisely estimated in only 5 of 30 markets (Section~\ref{sec:disc_data}). Binance's class ratios are positions, not tagged order flow, so they are the closest public analogue to the disclosure of Proposition~\ref{prop:tagged}, not an instance of it.
+
+\subsection{Related literature}
+
+\paragraph{Price formation and impact.} Our price equation is a discrete linear impact model in the tradition of \citet{kyle1985}, \citet{glosten1985} and \citet{hasbrouck1991}, in which order flow moves prices and prices revert toward value. Transient impact and the cost of trading follow \citet{almgren2001}, \citet{obizhaeva2013}, \citet{gatheral2010} and \citet{bouchaud2004}; \citet{alfonsi2016} show that absence of price manipulation requires positive-definite decay kernels, which is the property Lemma~\ref{lem:toeplitz} delivers in our cohort economy. \citet{bouchaud2018} document order splitting and long memory in order flow, which is the main confounder in Section~\ref{sec:empirics}. Relative to this literature we treat the impact kernel not as a primitive but as the closed-loop output of adaptive traders, and ask what it reveals about them.
+
+\paragraph{Algorithmic trading and feedback.} Algorithms that react to recent prices can amplify or dampen moves. \citet{brunnermeier2009} and \citet{shleifer1992} study liquidity spirals and fire sales, and \citet{kirilenko2017} document the behaviour of automated intermediaries in the 2010 Flash Crash. \citet{sornette2023} show that non-normal interactions can generate transient bubbles. Our contribution is on the measurement side: we show what a closed-loop observer can and cannot learn about the feedback, and that standard reduced-form indices are dominated by filtering and timing.
+
+\paragraph{Closest work.} Three literatures are closest. Super-resolution and moment-based mixture estimation give rates for recovering clustered point sources and mixing measures from noisy moments \citep{batenkov2021,liu2023,wu2020,kong2017}. Our $K$-cohort rate is, in that language, the square of the amplitude condition number $(\Delta\eta)^{-(2K-1)}$ for $K$ clustered nodes, and we do not claim the exponent as new. What is new is the following: the observable is a closed-loop price response, whose zeros rather than poles carry the memory rates, so the moment problem must first be extracted from the loop (Theorem~\ref{thm:merged}); the matching lower and upper bounds are proved for real nodes in the power-moment problem with explicit constructions (Gauss and Gauss--Radau pairs, Prony's method); the general-memory rate is shown to be logarithmic, with both bounds; and the rates are mapped into executed quantity, trading capital and the value of disclosure, which is what a supervisor needs. The microstructure literature infers trading intentions from public prices and flow \citep{kyle1985,glosten1985,hasbrouck1991}; we show what such inference cannot recover about adaptive algorithms and at what cost. The regulatory literature on audit trails motivates disclosure; we supply a quantitative value for it.
+
+\paragraph{Statistical identification.} The identification results use two-point testing arguments \citep{lecam1986,tsybakov2009}. The moment-matching construction of Section~\ref{sec:mixtures} is the dynamical analogue of the slow rates in finite-mixture estimation \citep{manole2022} and of super-resolution of near-colliding sources \citep{liu2023,batenkov2021}; the general-memory result combines best-approximation duality \citep{bernstein1914,rivlin1981} with the moment comparisons used by \citet{kong2017} and \citet{wu2020}, and its logarithmic rate parallels supersmooth deconvolution \citep{fan1991}; recovery of exponentials connects to ESPRIT and matrix-pencil methods \citep{roy1989,hua1990}. Minimum-phase spectral factorization and the Whittle likelihood are classical \citep{whittle1953}. What is new here is the mapping from these statistical rates into executed quantity and money through a financially specified account, and the result that the relevant rates are zeros, not poles, of the observable transfer function.
+
+\paragraph{Non-normal dynamics and supervision.} Transient growth of stable non-normal systems is classical \citep{trefethen2005,kreiss1962}. We use it to show that supervision through eigenvalues and second moments of prices is blind to transient risk (Theorem~\ref{thm:blind}), which motivates the identification-free control of the companion paper. On the regulatory side, pre-trade risk controls for broker-dealers with market access are governed by SEC Rule 15c3-5 \citep{sec2010}, and participant-level audit trails are the natural disclosure regime for Proposition~\ref{prop:tagged}. A large literature studies how pre- and post-trade transparency affects liquidity and trading costs \citep{pagano1996,boehmer2005,bessembinder2006}; we ask a different question, what disclosure lets a supervisor learn about the algorithms that trade, and give the answer in samples. Crypto venues, whose market structure is studied by \citet{makarov2020}, are a natural laboratory for this question because they publish class-level positioning every five minutes, while the CFTC publishes it weekly for regulated futures.
+
+Partial fractions, Gaussian testing, convolution inequalities and positive-system gains are established tools. Our contribution is to connect them into a quantitative chain from memory resolution, through probing resources, to money, with matching orders, explicit constants and a supervisory interpretation, and then to measure the relevant quantities in data.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Map of results}\label{tab:map}
+\begin{tabular}{p{0.34\textwidth}p{0.36\textwidth}p{0.18\textwidth}}
+\toprule
+Question & Answer & Where\\
+\midrule
+What do prices identify? & The merged rate--weight measure only & Thm~\ref{thm:merged}\\
+Quantity to separate a known pair & $\Theta(\delta^{-2})$, exact error formula & Thm~\ref{thm:quantity}\\
+Capital to separate a known pair & $\Theta(\delta^{-4})$, counterparty or own funds & Thms~\ref{thm:cap}, \ref{thm:capital}\\
+Constant at the calibration & $[61.41,64.48]$ par units; $\approx10^5$ USDT & Thms~\ref{thm:spectral}--\ref{thm:rh}, Table~\ref{tab:capital}\\
+Does adaptivity help? & At most by a factor $\approx0.49$ in expected loss & Thm~\ref{thm:adaptive}\\
+Unknown mixtures & $(\Delta\eta)^{-(4K-2)}$, tight for every $K$ & Thms~\ref{thm:kcohort}, \ref{prop:esprit}\\
+General memory & Accuracy $\asymp1/\log N$, lower and upper bounds & Lem.~\ref{lem:altpair}, Thm~\ref{thm:general}\\
+Passive data & Identifies $M$; same polynomial cost & Thms~\ref{thm:minphase}, \ref{prop:passive}, Prop.~\ref{prop:passive0}\\
+What removes the barrier? & Tagged flow, audited equity & Props~\ref{prop:disclosure}, \ref{prop:tagged}\\
+What is tagging worth? & Factor $(\Delta\eta)^{-(4K-4)}$; $\approx333\times$ for BTCUSDT & Thm~\ref{thm:discvalue}\\
+Do class data pin down memories? & Yes: 28--124$\times$ tighter in 30 of 30 markets & Table~\ref{tab:disc}\\
+Can eigenvalues certify safety? & No & Thm~\ref{thm:blind}\\
+What do feedback indices measure? & Mostly filtering and timing; small real feedback & Tables~\ref{tab:panel}, \ref{tab:feedback}\\
+Does feedback track activity? & No: fees move volume 2.6--4.9$\times$, not $\hat Q$ & Table~\ref{tab:fee2}\\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+
+\subsection{Outline}
+Section~\ref{sec:model} sets out the model. Section~\ref{sec:ident} gives the identification boundary. Section~\ref{sec:resources} links memory resolution to quantity and money for a known pair. Section~\ref{sec:account} computes account-level capital. Section~\ref{sec:mixtures} treats unknown mixtures and passive data. Section~\ref{sec:disclosure} studies disclosure. Section~\ref{sec:blind} gives the spectral blind spot. Section~\ref{sec:empirics} reports the empirical evidence. Section~\ref{sec:conclusion} concludes. Proofs are in Appendix~\ref{app:proofs}; Appendix~\ref{app:ia} collects additional results, and Appendix~\ref{app:repro} maps every number to its source.
+
+\section{Model and microfoundations}\label{sec:model}
+
+Time is discrete. Let $p_t$ be the price, $p^*$ the fundamental value and $x_t=p_t-p^*$ the pricing error. Competitive dealers absorb net order flow with price impact $\kappa>0$, and arbitrage pulls the error toward zero with persistence $a\in[0,1)$:
+\begin{equation}\label{eq:price}
+x_t = a x_{t-1} + \kappa \sum_{i=1}^K q_i y_{i,t-1} + \kappa v_t + w_t,
+\end{equation}
+where $v_t$ is an executed probe quantity and $w_t$ a price innovation. Cohort $i$ holds a state $y_{i,t}$ with exponential memory and trades $q_i y_{i,t}$:
+\begin{equation}\label{eq:cohort}
+y_{i,t} = (1-\eta_i)\,y_{i,t-1} + \eta_i x_t,\qquad \eta_i\in(0,1).
+\end{equation}
+The ordering is \emph{price first}: the price responds to the probe, then cohorts update. Write $r_i=1-\eta_i$ for the memory rate and $w_i=q_i\eta_i$ for the merged weight. The feedback kernel and its transform are
+\begin{equation}\label{eq:kernel}
+k_m=\sum_i w_i r_i^{\,m},\qquad G(z)=\sum_i \frac{w_i z}{z-r_i},
+\end{equation}
+and the transfer function from probes to prices is
+\begin{equation}\label{eq:H}
+H(z)=\frac{\kappa}{z-a-\kappa G(z)},
+\end{equation}
+with impulse response $h_0=\kappa,h_1,h_2,\ldots$. Stacking $z_t=(x_t,y_{1,t},\ldots,y_{K,t})^\top$ gives $z_t=Jz_{t-1}+bv_t$ with
+\begin{equation}\label{eq:J}
+J=\begin{pmatrix} a & \kappa q_1 & \cdots & \kappa q_K\\ \eta_1 a & 1-\eta_1+\eta_1\kappa q_1 & \cdots & \eta_1\kappa q_K\\ \vdots & & \ddots & \vdots\\ \eta_K a & \eta_K\kappa q_1 & \cdots & 1-\eta_K+\eta_K\kappa q_K\end{pmatrix},\qquad S\equiv a+\kappa\sum_i q_i .
+\end{equation}
+In the \emph{positive economy} ($q_i\ge0$), $J$ is entrywise nonnegative, its price row sums to $S$, and the economy is Schur stable iff $S<1$.
+
+\begin{proposition}[Kalman memory]\label{prop:kalman}
+A desk that tracks a latent random-walk trend $v_{t+1}=v_t+\zeta_{t+1}$, $\zeta\sim N(0,\sigma_\zeta^2)$, from signals $r_t=v_t+\nu_t$, $\nu\sim N(0,\sigma_\nu^2)$, using the steady-state Kalman filter, updates as $\hat v_{t+1}=(1-\eta)\hat v_t+\eta r_t$ with
+\begin{equation}\label{eq:kgain}
+\eta=\frac{-\sigma_\zeta^2+\sqrt{\sigma_\zeta^4+4\sigma_\zeta^2\sigma_\nu^2}}{2\sigma_\nu^2}\in(0,1).
+\end{equation}
+\end{proposition}
+
+\begin{proposition}[Gradient memory]\label{prop:ogd}
+Online gradient descent with $L_2$ regularization $\gamma\in(0,1)$, step size $\alpha>0$ and loss $\tfrac12H(x_t-\theta_t)^2$ gives $\theta_{t+1}=(1-\eta)\theta_t+\eta q x_t$ with $\eta=\gamma+\alpha H\in(0,1)$ and $q=\alpha H/\eta$. Tabular Q-learning with learning rate $\eta$ has the same form.
+\end{proposition}
+
+\begin{remark}[Why exponential memory]
+Propositions~\ref{prop:kalman}--\ref{prop:ogd} show that two different design philosophies, Bayesian filtering and regularized online learning, produce the same observable reduced form. The memory rate encodes the desk's signal-to-noise ratio or regularization, which is exactly the private information a supervisor would like to recover. Section~\ref{sec:ident} shows why prices reveal it only in merged form.
+\end{remark}
+
+\begin{lemma}[Positive price-response geometry]\label{lem:cm}
+In the positive, stable economy the impulse response is a nonnegative mixture of decaying exponentials,
+\[
+h_j=\sum_\ell \omega_\ell\lambda_\ell^j,\qquad \omega_\ell\ge0,\quad \sum_\ell\omega_\ell=\kappa,\quad 0\le\lambda_\ell<1 .
+\]
+It is completely monotone and nonincreasing; its peak is the direct impact $\kappa$, even though $J$ is non-normal. In price/memory coordinates the price-only gain is $\sup_t\|e_x^\top J^t\|_2=1$.
+\end{lemma}
+
+Numerically, $(-1)^n\Delta^nh_j\ge0$ for $n\le4$ held in all 892 stable random positive economies tested. Lemma~\ref{lem:cm} matters twice: it makes probing costs positive (Section~\ref{sec:resources}), and it shows that in this economy transient amplification of the price response cannot arise from cohort feedback alone. The companion paper locates amplification in order-book depth instead.
+
+\subsection{Discussion of the assumptions}\label{sec:assumptions}
+
+\paragraph{Linearity.} The model is linear in prices, flows and memory states. Linearity is what makes the merged-measure equivalence exact and the testing problems Gaussian. Nonlinear strategies (for example threshold rules or position limits) can break the equivalence class, but they do so in regions of the state space that a small probe does not visit; for small probes the linearization around the steady state is the relevant object.
+
+\paragraph{Price-first timing.} We order the price update before the cohort update. Under the alternative lagged timing the transition matrix becomes $\begin{psmallmatrix}a&1\\ \eta Q&1-\eta\end{psmallmatrix}$ and its eigenvalues differ, so stability statements must be computed under the timing actually used. The identification results depend on the transfer function and survive either convention.
+
+\paragraph{Exponential memory.} Propositions~\ref{prop:kalman}--\ref{prop:ogd} justify exponential memory for filtering and regularized learning. Neural policies are not exponential filters; how closely their local linearizations follow exponential memory is an empirical question we do not settle here. Mixtures of exponentials can approximate any completely monotone kernel, so a power-law memory corresponds to a continuum of cohorts, for which Theorem~\ref{thm:general} shows that accuracy improves only logarithmically in the data.
+
+\paragraph{Algorithms that react to being probed.} The probing results assume that the cohorts keep their memories while they are probed. An algorithm that detects a probe could pause, shorten its memory or trade against the probe. Four observations limit what this does to our conclusions. First, a reaction that all cohorts share does not separate them, and an algorithm that hides by mimicking another rate makes the hypotheses closer, so neither lowers the costs we derive; a reaction that differs across cohorts is itself a signature, but one the observer must model, which is a new identification problem rather than a free one. Second, the passive route needs no probe: Theorem~\ref{prop:passive} shows that natural price variation identifies the same separation at the same polynomial order in sample length, so an observer who fears detection pays in time, not in rate. Third, detection is itself a testing problem against the same noise: the generalized-eigenvector probe of Section~\ref{sec:account} trades at most 1.25 par units in any period, and a probe sized within normal flow variation is hard to tell from noise, so the threat bites mainly for large single pulses, which our ledger shows are not optimal anyway. Fourth, what we cannot rule out is an algorithm designed to defeat surveillance, which turns identification into a game between observer and observed; our results are the benchmark against which such a game would be measured, and we leave it to future work.
+
+\paragraph{Known primitives.} The resource theorems take $\kappa$, $a$ and the noise law as known. Unknown primitives can only make separation harder, so the lower bounds remain valid, while the upper bounds require estimating them, which is cheap relative to the memory rates because they enter at first order.
+
+\paragraph{Observation contracts.} Each result names what the observer sees. A price-only observer, an observer with executed quantities, one with noisy statements, one with audited equity and one with tagged flow face different experiments. The paper's central message is that these differences, not the observer's statistical skill, determine what can be learned.

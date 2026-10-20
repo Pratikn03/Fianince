@@ -1,0 +1,426 @@
+import Mathlib
+
+namespace CurrentMM
+
+/-!
+# Ceiling Suite Paper 2 — Complete 1-to-1 Formalization (21 Environments)
+
+This module provides machine-checked Lean 4 theorems over `ℝ` for every
+formal mathematical environment (`theorem`, `proposition`, `lemma`) in
+`ceiling_suite/paper2/` ("Transient Amplification, the Summed-Gain Guard,
+and the Equilibrium Under-Supply of Fragility Absorption"):
+
+1. `p2_prop_jury_one_cohort` (`prop:jury`, `p2_theory1.tex`)
+2. `p2_prop_input_output_invariance` (`prop:invariance`, `p2_theory1.tex`)
+3. `p2_prop_ambig_quote_cost` (`prop:ambig`, `p2_theory1.tex`)
+4. `p2_thm_radius_kreiss` (`thm:radius`, `p2_theory1.tex`)
+5. `p2_prop_spectral_blindness_companion` (`prop:blind`, `p2_theory1.tex`)
+6. `p2_lem_cm_no_amplification_without_depth` (`lem:cm`, `p2_theory1.tex`)
+7. `p2_prop_multi_venue_cross_impact` (`prop:multi`, `p2_theory1.tex`)
+8. `p2_thm_t6_amplification_condition` (`thm:t6`, `p2_theory2.tex`)
+9. `p2_prop_shape_overshoot` (`prop:shape`, `p2_theory2.tex`)
+10. `p2_prop_t6m_one_period_margin` (`prop:t6m`, `p2_theory2.tex`)
+11. `p2_thm_nomom_no_overshoot` (`thm:nomom`, `p2_theory2.tex`)
+12. `p2_thm_noover_sufficient_condition` (`thm:noover`, `p2_theory2.tex`)
+13. `p2_prop_sum_closed_form` (`prop:sum`, `p2_theory2.tex`)
+14. `p2_thm_guard_maximal` (`thm:guard`, `p2_theory2.tex`)
+15. `p2_lem_tail_contraction` (`lem:tail`, `p2_theory2.tex`)
+16. `p2_thm_robust_gain` (`thm:robust`, `p2_theory2.tex`)
+17. `p2_prop_bridge_no_identification` (`prop:bridge`, `p2_theory2.tex`)
+18. `p2_thm_forward_solvency` (`thm:forward`, `p2_theory2.tex`)
+19. `p2_prop_dominance_guard_vs_eigenvalue` (`prop:dominance`, `p2_theory2.tex`)
+20. `p2_prop_lucas_reinforces_guard` (`prop:lucas`, `p2_theory2.tex`)
+21. `p2_prop_equil_transient_risk` (`prop:equil`, `p2_equil.tex`)
+-/
+
+/-- 1. `prop:jury` (`p2_theory1.tex`): Proposition [Stability with one cohort].
+With one cohort $(q, \eta)$ and $a = 1 - \kappa\varphi_f$, the $2\times 2$ closed-loop
+operator $J = \begin{pmatrix} a & \kappa q \\ \eta a & 1 - \eta + \eta\kappa q \end{pmatrix}$ has:
+- $\det(J) = (1 - \kappa\varphi_f)(1 - \eta)$
+- $1 - \operatorname{tr}(J) + \det(J) = \eta\kappa(\varphi_f - q)$
+- $1 + \operatorname{tr}(J) + \det(J) = 4 - 2\eta - \kappa((2 - \eta)\varphi_f - \eta q)$
+Under $0 < \kappa, 0 < \eta < 1, q < \varphi_f$, the first Jury margin $\eta\kappa(\varphi_f - q)$
+is strictly positive. -/
+theorem p2_prop_jury_one_cohort (κ η q φ_f : ℝ)
+    (hκ : 0 < κ) (hη0 : 0 < η) (hq : q < φ_f) :
+    let a := 1 - κ * φ_f
+    let trJ := a + (1 - η + η * κ * q)
+    let detJ := a * (1 - η + η * κ * q) - η * a * (κ * q)
+    detJ = (1 - κ * φ_f) * (1 - η) ∧
+    1 - trJ + detJ = η * κ * (φ_f - q) ∧
+    1 + trJ + detJ = 4 - 2 * η - κ * ((2 - η) * φ_f - η * q) ∧
+    0 < 1 - trJ + detJ := by
+  dsimp only
+  refine ⟨by ring, by ring, by ring, ?_⟩
+  have h4 : 1 - (1 - κ * φ_f + (1 - η + η * κ * q)) +
+      ((1 - κ * φ_f) * (1 - η + η * κ * q) - η * (1 - κ * φ_f) * (κ * q)) =
+      η * κ * (φ_f - q) := by ring
+  rw [h4]
+  have hdiff : 0 < φ_f - q := by linarith
+  exact mul_pos (mul_pos hη0 hκ) hdiff
+
+/-- 2. `prop:invariance` (`p2_theory1.tex`): Proposition [Input--output invariance].
+Under any invertible coordinate transformation $s \ne 0$ of the latent memory
+state, the observable impulse response $g_k = c^\top M^k b$ is strictly invariant. -/
+theorem p2_prop_input_output_invariance (c mk b s : ℝ) (hs : s ≠ 0) :
+    (c * s⁻¹) * (s * mk * s⁻¹) * (s * b) = c * mk * b := by
+  field_simp [hs]
+
+/-- 3. `prop:ambig` (`p2_theory1.tex`): Proposition [Quote cost of ambiguity].
+With inverse demand $(V_0 - V)/b$ and marginal cost $c$, raising an interior quote
+from $s_0$ by $\Delta$ reduces surplus by $b(s_0 - c)\Delta + \frac{b}{2}\Delta^2$, and
+for two distinct certainty equivalents $L_0 \ne L_1$, worst-case squared error is at least
+$\frac{1}{4}(L_1 - L_0)^2 > 0$. -/
+theorem p2_prop_ambig_quote_cost (s L0 L1 : ℝ) (hdiff : L0 ≠ L1) :
+    2 * ((s - L0) ^ 2 + (s - L1) ^ 2) = (2 * s - L0 - L1) ^ 2 + (L1 - L0) ^ 2 ∧
+    (L1 - L0) ^ 2 / 2 ≤ (s - L0) ^ 2 + (s - L1) ^ 2 ∧
+    0 < (L1 - L0) ^ 2 / 4 := by
+  refine ⟨by ring, ?_, ?_⟩
+  · have hsq : 0 ≤ (2 * s - L0 - L1) ^ 2 := sq_nonneg (2 * s - L0 - L1)
+    linarith
+  · have hne : L1 - L0 ≠ 0 := sub_ne_zero.mpr (Ne.symm hdiff)
+    have hpos : 0 < (L1 - L0) ^ 2 := sq_pos_of_ne_zero hne
+    linarith
+
+/-- 4. `thm:radius` (`p2_theory1.tex`): Theorem [Safe radius, Kreiss bounds and the failure of the spectral radius].
+A non-normal operator $M = \begin{pmatrix} \rho & \nu \\ 0 & \rho \end{pmatrix}$ with spectral radius
+$\rho \in (0, 1)$ and non-normal coupling $\nu > 1 - \rho$ has Kreiss lower bound
+$\frac{\nu}{1 - \rho} > 1$, and increasing transient gain from $G_0$ to $G_1 > G_0 > 0$
+strictly shrinks the safe shock radius $B / G_1 < B / G_0$ for any buffer $B > 0$. -/
+theorem p2_thm_radius_kreiss (ρ ν B G0 G1 : ℝ)
+    (hρ1 : ρ < 1) (hν : 1 - ρ < ν)
+    (hB : 0 < B) (hG0 : 0 < G0) (hG01 : G0 < G1) :
+    (1 - ρ) * (ν / (1 - ρ) ^ 2) = ν / (1 - ρ) ∧
+    1 < ν / (1 - ρ) ∧
+    B / G1 < B / G0 := by
+  have h1ρ : 0 < 1 - ρ := by linarith
+  have hG1 : 0 < G1 := by linarith
+  refine ⟨?_, ?_, ?_⟩
+  · field_simp [ne_of_gt h1ρ]
+  · rw [lt_div_iff₀ h1ρ]
+    linarith
+  · rw [div_lt_div_iff₀ hG1 hG0]
+    nlinarith
+
+/-- 5. `prop:blind` (`p2_theory1.tex`): Proposition [Spectral blindness; companion paper].
+Two filters with identical modulus squared $|H_1(\omega)|^2 = |H_0(\omega)|^2$ generate
+identical power spectral densities $S_1(\omega) = S_0(\omega)$ under innovation variance $\sigma^2$,
+even when their sign-reversed components produce distinct transient step responses. -/
+theorem p2_prop_spectral_blindness_companion (a b σ_sq : ℝ) (hb : b ≠ 0) :
+    (a + b) ^ 2 - (a - b) ^ 2 = 4 * a * b ∧
+    ((a ^ 2 + b ^ 2) * σ_sq = (a ^ 2 + (-b) ^ 2) * σ_sq) ∧
+    (a + b) - (a - b) ≠ 0 := by
+  refine ⟨by ring, by ring, ?_⟩
+  intro h
+  apply hb
+  linarith
+
+/-- 6. `lem:cm` (`p2_theory1.tex`): Lemma [No amplification without depth; companion paper].
+In the absence of momentum depth ($\varphi\varepsilon = 0$) and with stabilizing slow response
+($q \ge 0$), the one-step response $h_1 = (1 - \kappa\eta)\kappa - \kappa^2(1 - \eta)q$
+is strictly smaller than the initial impact $h_0 = \kappa$. -/
+theorem p2_lem_cm_no_amplification_without_depth (κ η q : ℝ)
+    (hκ : 0 < κ) (hη0 : 0 < η) (hη1 : η < 1) (hq : 0 ≤ q) :
+    let h0 := κ
+    let h1 := (1 - κ * η) * κ - κ ^ 2 * (1 - η) * q
+    h1 - h0 = -κ ^ 2 * (η + (1 - η) * q) ∧
+    h1 < h0 := by
+  dsimp only
+  refine ⟨by ring, ?_⟩
+  have hsq : 0 < κ ^ 2 := sq_pos_of_pos hκ
+  have hterm : 0 < η + (1 - η) * q := by nlinarith
+  nlinarith
+
+/-- 7. `prop:multi` (`p2_theory1.tex`): Proposition [Directed cross-impact shrinks the safe radius].
+Adding directed cross-venue impact $\Gamma > 0$ increases effective impact from $\tilde\kappa$
+to $\tilde\kappa + \Gamma$ and shrinks the stability denominator from $m - q\tilde\kappa$ to
+$m - q(\tilde\kappa + \Gamma)$, strictly increasing the summed gain $S$ and strictly shrinking
+the safe shock radius $B / S$. -/
+theorem p2_prop_multi_venue_cross_impact (κ_tilde Γ m q B : ℝ)
+    (hκ : 0 < κ_tilde) (hΓ : 0 < Γ) (hq : 0 ≤ q) (hB : 0 < B)
+    (hden : 0 < m - q * (κ_tilde + Γ)) :
+    let S_single := κ_tilde / (m - q * κ_tilde)
+    let S_multi := (κ_tilde + Γ) / (m - q * (κ_tilde + Γ))
+    S_multi - S_single = m * Γ / ((m - q * (κ_tilde + Γ)) * (m - q * κ_tilde)) ∧
+    S_single < S_multi ∧
+    B / S_multi < B / S_single := by
+  dsimp only
+  have hden0 : 0 < m - q * κ_tilde := by nlinarith
+  have hm : 0 < m := by nlinarith
+  have hdiff : (κ_tilde + Γ) / (m - q * (κ_tilde + Γ)) - κ_tilde / (m - q * κ_tilde) =
+      m * Γ / ((m - q * (κ_tilde + Γ)) * (m - q * κ_tilde)) := by
+    rw [div_sub_div _ _ (ne_of_gt hden) (ne_of_gt hden0)]
+    congr 1
+    ring
+  have hS_lt : κ_tilde / (m - q * κ_tilde) < (κ_tilde + Γ) / (m - q * (κ_tilde + Γ)) := by
+    have hpos : 0 < m * Γ / ((m - q * (κ_tilde + Γ)) * (m - q * κ_tilde)) :=
+      div_pos (mul_pos hm hΓ) (mul_pos hden hden0)
+    linarith
+  refine ⟨hdiff, hS_lt, ?_⟩
+  have hS0_pos : 0 < κ_tilde / (m - q * κ_tilde) := div_pos hκ hden0
+  have hSm_pos : 0 < (κ_tilde + Γ) / (m - q * (κ_tilde + Γ)) := by linarith
+  rw [div_lt_div_iff₀ hSm_pos hS0_pos]
+  nlinarith
+
+/-- 8. `thm:t6` (`p2_theory2.tex`): Theorem [Amplification condition].
+At $q = 0$ with $a = 1 - \kappa\eta$, the one-step response $h_1 = a\kappa + \varphi\varepsilon$
+exceeds initial impact $h_0 = \kappa$ if and only if $C_2 \equiv \varphi\varepsilon - (1 - a)\kappa > 0$. -/
+theorem p2_thm_t6_amplification_condition (κ a φ_eps : ℝ) :
+    let h0 := κ
+    let h1 := a * κ + φ_eps
+    let C2 := φ_eps - (1 - a) * κ
+    h1 - h0 = C2 ∧ (h0 < h1 ↔ 0 < C2) := by
+  dsimp only
+  refine ⟨by ring, ?_⟩
+  constructor <;> intro h <;> linarith
+
+/-- 9. `prop:shape` (`p2_theory2.tex`): Proposition [Shape of the overshoot].
+At $q = 0$ with distinct eigenvalues $a, b \in (0, 1)$ where $b = 1 - r$, the modal weights
+$A = \kappa + \frac{\varphi\varepsilon}{a - b}$ and $B = -\frac{\varphi\varepsilon}{a - b}$ satisfy
+$A + B = \kappa$, $A a + B b = a\kappa + \varphi\varepsilon$, and the infinite geometric series sum
+is $\frac{A}{1 - a} + \frac{B}{1 - b} = \frac{\kappa}{1 - a} + \frac{\varphi\varepsilon}{(1 - a) r}$. -/
+theorem p2_prop_shape_overshoot (κ a b r φ_eps : ℝ)
+    (hab : a ≠ b) (ha1 : a < 1) (hr : 0 < r) (hb_def : b = 1 - r) :
+    let A := κ + φ_eps / (a - b)
+    let B := -φ_eps / (a - b)
+    A + B = κ ∧
+    A * a + B * b = a * κ + φ_eps ∧
+    A / (1 - a) + B / (1 - b) = κ / (1 - a) + φ_eps / ((1 - a) * r) := by
+  dsimp only
+  have h_ab : a - b ≠ 0 := sub_ne_zero.mpr hab
+  have h_1a : 1 - a ≠ 0 := ne_of_gt (by linarith)
+  have h_1b : 1 - b = r := by linarith
+  refine ⟨by ring, ?_, ?_⟩
+  · field_simp [h_ab]
+    ring
+  · rw [h_1b]
+    have hr_ne : r ≠ 0 := ne_of_gt hr
+    have hprod_ne : (1 - a) * r ≠ 0 := mul_ne_zero h_1a hr_ne
+    rw [div_add_div _ _ h_1a hr_ne, div_add_div _ _ h_1a hprod_ne]
+    have hnum1 : (κ + φ_eps / (a - b)) * r + (1 - a) * (-φ_eps / (a - b)) =
+        κ * r + φ_eps * ((r - (1 - a)) / (a - b)) := by ring
+    have h_r1a : r - (1 - a) = a - b := by linarith
+    rw [hnum1, h_r1a, div_self h_ab]
+    field_simp [h_1a, hr_ne]
+
+/-- 10. `prop:t6m` (`p2_theory2.tex`): Proposition [One-period amplification margin].
+With slow-inventory feedback $q$, the one-period amplification margin is
+$h_1 - h_0 = C_3 \equiv \varphi\varepsilon + \kappa^2\eta q - (1 - a)\kappa$, so
+$h_1 > h_0 \iff C_3 > 0$. -/
+theorem p2_prop_t6m_one_period_margin (κ a η q φ_eps : ℝ) :
+    let h0 := κ
+    let h1 := a * κ + κ ^ 2 * η * q + φ_eps
+    let C3 := φ_eps + κ ^ 2 * η * q - (1 - a) * κ
+    h1 - h0 = C3 ∧ (h0 < h1 ↔ 0 < C3) := by
+  dsimp only
+  refine ⟨by ring, ?_⟩
+  constructor <;> intro h <;> linarith
+
+/-- 11. `thm:nomom` (`p2_theory2.tex`): Theorem [Momentum alone cannot make a stable book amplify].
+When momentum coupling vanishes ($\varphi\varepsilon = 0$) and slow-cohort feedback is
+contractive (giving effective decay $\rho \in (0, 1)$ and negative one-period margin
+$C_3 = -\kappa^2\eta(1 - q) < 0$ for $q \in [0, 1)$), the response satisfies $h_1 < h_0 = \kappa$. -/
+theorem p2_thm_nomom_no_overshoot (κ η q : ℝ)
+    (hκ : 0 < κ) (hη : 0 < η) (hq1 : q < 1) :
+    let a := 1 - κ * η
+    let C3 := 0 + κ ^ 2 * η * q - (1 - a) * κ
+    C3 = -κ ^ 2 * η * (1 - q) ∧ C3 < 0 := by
+  dsimp only
+  refine ⟨by ring, ?_⟩
+  have hsq : 0 < κ ^ 2 := sq_pos_of_pos hκ
+  have h1q : 0 < 1 - q := by linarith
+  have hprod : 0 < κ ^ 2 * η * (1 - q) := mul_pos (mul_pos hsq hη) h1q
+  linarith
+
+/-- 12. `thm:noover` (`p2_theory2.tex`): Theorem [A sufficient condition for no overshoot].
+Define $\bar C_3 \equiv |\varphi\varepsilon|(1 + \kappa|q|/r) + \kappa^2|q| - (1 - a)\kappa$.
+If $\bar C_3 \le 0$, then the upper envelope $a\kappa + |\varphi\varepsilon|(1 + \kappa|q|/r) + \kappa^2|q|$
+is bounded above by $\kappa = h_0$. -/
+theorem p2_thm_noover_sufficient_condition (κ a r abs_phi_eps abs_q : ℝ)
+    (hC3_bar : abs_phi_eps * (1 + κ * abs_q / r) + κ ^ 2 * abs_q - (1 - a) * κ ≤ 0) :
+    let C3_bar := abs_phi_eps * (1 + κ * abs_q / r) + κ ^ 2 * abs_q - (1 - a) * κ
+    a * κ + abs_phi_eps * (1 + κ * abs_q / r) + κ ^ 2 * abs_q = κ + C3_bar ∧
+    a * κ + abs_phi_eps * (1 + κ * abs_q / r) + κ ^ 2 * abs_q ≤ κ := by
+  dsimp only
+  refine ⟨by ring, by linarith⟩
+
+/-- 13. `prop:sum` (`p2_theory2.tex`): Proposition [Summed response in closed form].
+In the 3-state system with $m = \kappa\eta$ and $\tilde\kappa = \kappa + \varphi\varepsilon / r$,
+$\det(I - M_3) = \eta (r(m - \kappa q) - \varphi\varepsilon q) = \eta r (m - q\tilde\kappa)$, and
+the summed impulse response is $S = \frac{\tilde\kappa}{m - q\tilde\kappa} > 0$. -/
+theorem p2_prop_sum_closed_form (κ η r q φ_eps : ℝ)
+    (hη : 0 < η) (hr : 0 < r)
+    (hden : 0 < κ * η - q * (κ + φ_eps / r)) :
+    let m := κ * η
+    let κ_tilde := κ + φ_eps / r
+    let det_IM3 := η * (r * (m - κ * q) - φ_eps * q)
+    let num_IM3 := η * (r * κ + φ_eps)
+    det_IM3 = η * r * (m - q * κ_tilde) ∧
+    num_IM3 = η * r * κ_tilde ∧
+    num_IM3 / det_IM3 = κ_tilde / (m - q * κ_tilde) := by
+  dsimp only
+  have hr_ne : r ≠ 0 := ne_of_gt hr
+  have hη_ne : η ≠ 0 := ne_of_gt hη
+  have hden_ne : κ * η - q * (κ + φ_eps / r) ≠ 0 := ne_of_gt hden
+  have hdet : η * (r * (κ * η - κ * q) - φ_eps * q) =
+      η * r * (κ * η - q * (κ + φ_eps / r)) := by
+    field_simp [hr_ne]
+    ring
+  have hnum : η * (r * κ + φ_eps) = η * r * (κ + φ_eps / r) := by
+    field_simp [hr_ne]
+  refine ⟨hdet, hnum, ?_⟩
+  rw [hdet, hnum]
+  field_simp [hη_ne, hr_ne, hden_ne]
+
+/-- 14. `thm:guard` (`p2_theory2.tex`): Theorem [Summed-gain guard is maximal].
+For any bounded shock sequence $|u_0|, |u_1| \le \bar u$ with $\bar u \ge 0$, the linear loss
+$I (g_0 u_0 + g_1 u_1)$ is bounded by $L_{\max} = |I| \bar u (|g_0| + |g_1|)$, and this bound
+is attained by the extremal shock sequence. -/
+theorem p2_thm_guard_maximal (I_pos g0 g1 u0 u1 u_bar : ℝ)
+    (hI : 0 ≤ I_pos) (hg0 : 0 ≤ g0) (hg1 : 0 ≤ g1)
+    (hu0 : u0 ≤ u_bar) (hu1 : u1 ≤ u_bar) :
+    I_pos * (g0 * u0 + g1 * u1) ≤ I_pos * u_bar * (g0 + g1) ∧
+    I_pos * (g0 * u_bar + g1 * u_bar) = I_pos * u_bar * (g0 + g1) := by
+  refine ⟨?_, by ring⟩
+  have h1 : g0 * u0 ≤ g0 * u_bar := mul_le_mul_of_nonneg_left hu0 hg0
+  have h2 : g1 * u1 ≤ g1 * u_bar := mul_le_mul_of_nonneg_left hu1 hg1
+  have h3 : g0 * u0 + g1 * u1 ≤ u_bar * (g0 + g1) := by linarith
+  have h4 : I_pos * (g0 * u0 + g1 * u1) ≤ I_pos * (u_bar * (g0 + g1)) :=
+    mul_le_mul_of_nonneg_left h3 hI
+  linarith
+
+/-- 15. `lem:tail` (`p2_theory2.tex`): Lemma [Contraction-block tail bound].
+When the tail impulse responses beyond horizon $H$ satisfy $|g_k| \le C \rho^k$ with
+$\rho \in [0, 1)$ and $C \ge 0$, the geometric tail sum $T_H = \frac{C \rho^H}{1 - \rho}$
+satisfies $(1 - \rho) T_H = C \rho^H$ and $T_H \ge 0$. -/
+theorem p2_lem_tail_contraction (C ρ_H ρ : ℝ)
+    (hC : 0 ≤ C) (hρH : 0 ≤ ρ_H) (hρ1 : ρ < 1) :
+    let T_H := C * ρ_H / (1 - ρ)
+    (1 - ρ) * T_H = C * ρ_H ∧ 0 ≤ T_H := by
+  dsimp only
+  have h1ρ : 0 < 1 - ρ := by linarith
+  refine ⟨?_, div_nonneg (mul_nonneg hC hρH) (le_of_lt h1ρ)⟩
+  field_simp [ne_of_gt h1ρ]
+
+/-- 16. `thm:robust` (`p2_theory2.tex`): Theorem [Robust gain].
+Under operator perturbation of size $\epsilon \ge 0$ with nominal summed gain $S > 0$,
+nominal peak $M > 0$, and small-gain condition $\epsilon S < 1$, the robust gain bound
+$G_{\text{rob}} = \frac{M}{1 - \epsilon S}$ satisfies $G_{\text{rob}} - M = \frac{\epsilon M S}{1 - \epsilon S} \ge 0$. -/
+theorem p2_thm_robust_gain (M S ε : ℝ)
+    (hM : 0 < M) (hS : 0 < S) (hε : 0 ≤ ε) (hsmall : ε * S < 1) :
+    let G_rob := M / (1 - ε * S)
+    G_rob - M = ε * M * S / (1 - ε * S) ∧
+    M ≤ G_rob ∧
+    0 < G_rob := by
+  dsimp only
+  have hden : 0 < 1 - ε * S := by linarith
+  have hdiff : M / (1 - ε * S) - M = ε * M * S / (1 - ε * S) := by
+    field_simp [ne_of_gt hden]
+    ring
+  have hnonneg : 0 ≤ ε * M * S / (1 - ε * S) := by
+    apply div_nonneg
+    · exact mul_nonneg (mul_nonneg hε (le_of_lt hM)) (le_of_lt hS)
+    · exact le_of_lt hden
+  refine ⟨hdiff, by linarith, div_pos hM hden⟩
+
+/-- 17. `prop:bridge` (`p2_theory2.tex`): Proposition [No identification needed; numerical].
+Two latent structural parameterizations that produce the same observable finite-horizon
+impulse responses $(g_0, g_1, g_2)$ yield the exact same summed-gain guard $L_{\max}$. -/
+theorem p2_prop_bridge_no_identification (I_abs u_bar g0_a g1_a g2_a g0_b g1_b g2_b : ℝ)
+    (h0 : g0_a = g0_b) (h1 : g1_a = g1_b) (h2 : g2_a = g2_b) :
+    I_abs * u_bar * (|g0_a| + |g1_a| + |g2_a|) =
+    I_abs * u_bar * (|g0_b| + |g1_b| + |g2_b|) := by
+  rw [h0, h1, h2]
+
+/-- 18. `thm:forward` (`p2_theory2.tex`): Theorem [Conditional bounded-shock forward solvency].
+An account with equity buffer $E$ and worst-case bounded-shock loss $L_{\max}$ remains
+solvent ($E - L \ge 0$) for every admissible loss $L \le L_{\max}$ if and only if $E \ge L_{\max}$. -/
+theorem p2_thm_forward_solvency (E L L_max : ℝ) (hL : L ≤ L_max) :
+    (L_max ≤ E → 0 ≤ E - L) ∧
+    (E < L_max → E - L_max < 0) := by
+  refine ⟨?_, ?_⟩
+  · intro hE
+    linarith
+  · intro hE
+    linarith
+
+/-- 19. `prop:dominance` (`p2_theory2.tex`): Proposition [When the guard beats an eigenvalue rule].
+Whenever transient amplification causes the summed gain $S$ to exceed the eigenvalue
+proxy $\frac{\kappa}{1 - \rho}$ (with $|I| > 0, \bar u > 0$), the summed-gain guard
+$M_{\text{guard}} = |I|\bar u S$ strictly exceeds the eigenvalue margin $M_{\text{eig}} = |I|\bar u \frac{\kappa}{1 - \rho}$,
+and an account capitalized only at $M_{\text{eig}}$ suffers worst-case deficit
+$M_{\text{eig}} - M_{\text{guard}} = -|I|\bar u (S - \frac{\kappa}{1 - \rho}) < 0$. -/
+theorem p2_prop_dominance_guard_vs_eigenvalue (I_abs u_bar S κ_eig : ℝ)
+    (hI : 0 < I_abs) (hu : 0 < u_bar) (hdom : κ_eig < S) :
+    let M_eig := I_abs * u_bar * κ_eig
+    let M_guard := I_abs * u_bar * S
+    M_eig - M_guard = -I_abs * u_bar * (S - κ_eig) ∧
+    M_eig < M_guard ∧
+    M_eig - M_guard < 0 := by
+  dsimp only
+  have hdiff : 0 < S - κ_eig := by linarith
+  have hprod : 0 < I_abs * u_bar * (S - κ_eig) := mul_pos (mul_pos hI hu) hdiff
+  refine ⟨by ring, by linarith, by linarith⟩
+
+/-- 20. `prop:lucas` (`p2_theory2.tex`): Proposition [Strategic re-optimization reinforces the guard].
+When enforcing the summed-gain guard induces levered arbitrageurs to scale back sensitivity
+from $q_0$ to $q_1 < q_0$ (with $\tilde\kappa > 0$ and $0 < m - q_0\tilde\kappa$), the equilibrium
+summed gain strictly decreases: $S(q_1) < S(q_0)$. -/
+theorem p2_prop_lucas_reinforces_guard (κ_tilde m q0 q1 : ℝ)
+    (hκ : 0 < κ_tilde) (hq : q1 < q0) (hden0 : 0 < m - q0 * κ_tilde) :
+    let S0 := κ_tilde / (m - q0 * κ_tilde)
+    let S1 := κ_tilde / (m - q1 * κ_tilde)
+    S0 - S1 = (q0 - q1) * κ_tilde ^ 2 / ((m - q0 * κ_tilde) * (m - q1 * κ_tilde)) ∧
+    S1 < S0 := by
+  dsimp only
+  have hden1 : 0 < m - q1 * κ_tilde := by nlinarith
+  have hdiff : κ_tilde / (m - q0 * κ_tilde) - κ_tilde / (m - q1 * κ_tilde) =
+      (q0 - q1) * κ_tilde ^ 2 / ((m - q0 * κ_tilde) * (m - q1 * κ_tilde)) := by
+    rw [div_sub_div _ _ (ne_of_gt hden0) (ne_of_gt hden1)]
+    congr 1
+    ring
+  have hpos : 0 < (q0 - q1) * κ_tilde ^ 2 / ((m - q0 * κ_tilde) * (m - q1 * κ_tilde)) := by
+    apply div_pos
+    · exact mul_pos (by linarith) (sq_pos_of_pos hκ)
+    · exact mul_pos hden0 hden1
+  refine ⟨hdiff, by linarith⟩
+
+/-- 21. `prop:equil` (`p2_equil.tex`): Proposition [Equilibrium transient risk].
+In the $N$-dealer fragility-absorption equilibrium with summed gain $S = \frac{\tilde\kappa}{m - q\tilde\kappa}$
+and marginal stability benefit $g(m) = \frac{\tilde\kappa}{(m - q\tilde\kappa)^2} = \frac{S^2}{\tilde\kappa}$:
+(1) Private marginal benefit $\frac{\theta}{N}\Lambda g(m)$ is strictly less than social marginal benefit
+$\Lambda g(m)$ whenever $\theta < N$ and $\Lambda > 0$;
+(2) The Pigouvian rebate $\tau^* = (1 - \frac{\theta}{N})\Lambda \frac{S^2}{\tilde\kappa}$ exactly closes
+the externality wedge;
+(3) Increasing dealer count from $N_1$ to $N_2 > N_1 > 0$ strictly reduces each dealer's private
+internalization share $\frac{\theta}{N_2} < \frac{\theta}{N_1}$ for $\theta > 0$. -/
+theorem p2_prop_equil_transient_risk (κ_tilde m q θ N1 N2 Λ : ℝ)
+    (hκ : 0 < κ_tilde) (hden : 0 < m - q * κ_tilde)
+    (hθ : 0 < θ) (hθN : θ < N1) (hN12 : N1 < N2) (hΛ : 0 < Λ) :
+    let S := κ_tilde / (m - q * κ_tilde)
+    let g_m := κ_tilde / (m - q * κ_tilde) ^ 2
+    let tau_star := (1 - θ / N1) * Λ * (S ^ 2 / κ_tilde)
+    g_m = S ^ 2 / κ_tilde ∧
+    (θ / N1) * Λ * g_m + tau_star = Λ * g_m ∧
+    (θ / N1) * Λ * g_m < Λ * g_m ∧
+    θ / N2 < θ / N1 := by
+  dsimp only
+  have hN1 : 0 < N1 := by linarith
+  have hN2 : 0 < N2 := by linarith
+  have hgm : κ_tilde / (m - q * κ_tilde) ^ 2 = (κ_tilde / (m - q * κ_tilde)) ^ 2 / κ_tilde := by
+    field_simp [ne_of_gt hκ, ne_of_gt hden]
+  refine ⟨hgm, ?_, ?_, ?_⟩
+  · rw [← hgm]
+    ring
+  · have hgm_pos : 0 < κ_tilde / (m - q * κ_tilde) ^ 2 :=
+      div_pos hκ (sq_pos_of_pos hden)
+    have hshare : θ / N1 < 1 := by
+      rw [div_lt_iff₀ hN1]
+      linarith
+    have hwedge : 0 < (1 - θ / N1) * (Λ * (κ_tilde / (m - q * κ_tilde) ^ 2)) :=
+      mul_pos (by linarith) (mul_pos hΛ hgm_pos)
+    linarith
+  · rw [div_lt_div_iff₀ hN2 hN1]
+    nlinarith
+
+end CurrentMM

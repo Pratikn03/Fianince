@@ -1,0 +1,252 @@
+\section{Unknown mixtures and passive data}\label{sec:mixtures}
+
+Theorem~\ref{thm:quantity} concerns a \emph{known} pair. A supervisor faces an unknown number of cohorts with unknown rates and weights. This section asks how fast the cost of recovering them grows.
+
+\subsection{Why naive pole fitting fails}
+
+Because the memory rates are zeros of $H$ (Theorem~\ref{thm:merged}), extracting poles directly from the price impulse response by matrix-pencil or Prony methods targets closed-loop eigenvalues. A four-step inversion repairs this: (1) decouple $g_t=h_{t+1}-ah_t$; (2) form a Hankel matrix of $g$ and compute a minimal realization by Kung's eigensystem realization; (3) compute its transmission zeros, which are the roots of the denominator of $G$; (4) project reconstructed flow onto the recovered memory filters to obtain the weights (Appendix~\ref{app:era}). Without noise this recovers $K=0$, $K=1$ and well-separated two-cohort systems exactly (Appendix~\ref{app:era}); with noise, per-cohort weights become unreliable once rates are close. The reason is information-theoretic, as the rest of this section shows.
+
+\subsection{Local information: the Cram\'er--Rao benchmark}
+
+\begin{proposition}[Cram\'er--Rao benchmark]\label{prop:crb}
+Let $\theta$ collect the weights $w_1,\ldots,w_K$ and rates $\eta_1,\ldots,\eta_K$. Suppose the impulse response $h_t(\theta)$, $t\le T$, is observed with i.i.d.\ Gaussian error from $N$ reset probes of size $V_{\rm probe}$ against innovation noise $\sigma_p$, so the error has standard deviation $\sigma_h=\sigma_p/(V_{\rm probe}\sqrt N)$. With Jacobian $J_{tj}=\partial h_t/\partial\theta_j$ and $F_{\rm unit}=J^\top J$, any regular unbiased estimator has ${\rm Var}(\hat w_k)\ge\sigma_h^2[F_{\rm unit}^{-1}]_{kk}$, and a 95\% interval of half-width ${\rm tol}$ requires
+\begin{equation}\label{eq:Ncrb}
+N^*\ge\Bigl(\frac{1.96}{\rm tol}\Bigr)^2\Bigl(\frac{\sigma_p}{V_{\rm probe}}\Bigr)^2[F_{\rm unit}^{-1}]_{kk}.
+\end{equation}
+For $K=2$ with spacing $\Delta\eta$, $[F_{\rm unit}^{-1}]_{kk}=\Theta((\Delta\eta)^{-6})$, so $N^*=\Theta((\Delta\eta)^{-6})$.
+\end{proposition}
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Cram\'er--Rao sample sizes for multi-cohort weight recovery ($T=120$ taps)}\label{tab:crb}
+\begin{tabular}{lcrccc}
+\toprule
+Scenario & $K$ & $N^*$ probes & $\sigma_{\rm crit}$ & ML success ($f=1$) & RMSE/CRB\\
+\midrule
+$\eta=0.30$ & 1 & 0.1 & $6.05\times10^{-3}$ & 94\% & 1.02\\
+$\Delta\eta=0.30$ & 2 & 47.8 & $2.31\times10^{-4}$ & 94\% & 1.01\\
+$\Delta\eta=0.20$ & 2 & 597 & $6.55\times10^{-5}$ & 96\% & 0.98\\
+$\Delta\eta=0.10$ ($\delta=0.05$ pair) & 2 & 40{,}374 & $7.96\times10^{-6}$ & 93\% & 1.03\\
+$\Delta\eta=0.05$ & 2 & 2{,}620{,}320 & $9.88\times10^{-7}$ & 95\% & 1.03\\
+spacing 0.10 & 3 & 17{,}349{,}791 & $3.84\times10^{-7}$ & 98\% & 1.22\\
+spacing 0.20 & 3 & 27{,}038 & $9.73\times10^{-6}$ & 98\% & 0.88\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Tolerance $\pm0.01$ at 95\%. $\sigma_{\rm crit}$ is the single-probe noise at which one probe suffices; operational single-probe noise is $1.6\times10^{-3}$. ML columns: least squares over all weights and rates from six generic starts (never the true values), 200 replications per row at $\sigma_{\rm crit}$; success means every weight within $\pm0.01$. Fitted log--log slope of $N^*$ in $\Delta\eta$: $-6.04$. \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+At the critical noise level maximum likelihood attains the bound: its RMSE for the hardest weight is between 0.88 and 1.22 times the Cram\'er--Rao value and every weight is within tolerance in 93\% to 98\% of replications (Table~\ref{tab:crb}), so the critical noise levels, not estimator failure, are what make close cohorts expensive. Under ordinary surveillance budgets ($N\le50$) unbiased estimators cannot resolve close weights.
+
+\subsection{A global two-point bound for any estimator}
+
+Proposition~\ref{prop:crb} applies to regular unbiased estimators. Could biased, ridge, shrinkage or Bayesian estimators escape the $(\Delta\eta)^{-6}$ scaling? No.
+
+\begin{theorem}[Global two-point bound and matching upper bound, $K=2$]\label{thm:twocohort}
+Fix total weight $q=0.20$, mean rate $\bar\eta=0.40$, target weight separation $\tau=0.01$, and $\Delta\eta\in(0,8/11)$. Let $p_\mp=\tfrac12\mp\tau/q$ and
+\begin{equation}\label{eq:pair}
+\theta_0=(qp_-,qp_+,\bar\eta-p_+\Delta\eta,\bar\eta+p_-\Delta\eta),\qquad\theta_1=(qp_+,qp_-,\bar\eta-p_-\Delta\eta,\bar\eta+p_+\Delta\eta).
+\end{equation}
+\begin{enumerate}[label=(\roman*)]
+\item Both have spacing $\Delta\eta$, weight separation $\|w(\theta_1)-w(\theta_0)\|_\infty=2\tau$, and equal rate moments $M_m=\sum_kw_k\eta_k^m$ for $m\in\{0,1,2\}$, while
+\begin{equation}\label{eq:dM3}
+M_3(\theta_1)-M_3(\theta_0)=4\tau p_-p_+(\Delta\eta)^3 .
+\end{equation}
+Hence $\|h(\theta_1)-h(\theta_0)\|_2=\Theta(\tau(\Delta\eta)^3)$.
+\item For any measurable estimator (including biased, ridge, James--Stein or MAP),
+\begin{equation}\label{eq:lecam2}
+\sup_\theta P_\theta(\|\hat w-w(\theta)\|_\infty\ge\tau)\;\ge\;1-\Phi\!\Bigl(\frac{\sqrt N\|h(\theta_1)-h(\theta_0)\|_2}{2\sigma_h}\Bigr),
+\end{equation}
+so failure probability at most $0.05$ requires $N\ge4\sigma_h^2z_{0.95}^2/\|h(\theta_1)-h(\theta_0)\|_2^2=\Omega((\Delta\eta)^{-6})$.
+\item Conversely, on the known-midpoint family a linear estimator that projects the averaged impulse response on the normalized third-moment direction and inverts \eqref{eq:dM3} has error at most $|\hat M_3-M_3|/(2p_-p_+(\Delta\eta)^3)$, giving $N=O(\tau^{-2}(\Delta\eta)^{-6}\log(1/\delta_{\rm fail}))$. On the separated class with weights and rates bounded away from the boundary, Toeplitz deconvolution followed by a Prony--Hankel root step has Hankel determinant $g_1g_3-g_2^2=w_1w_2\eta_1\eta_2r_1r_2(\Delta\eta)^2>0$ for the deconvolved kernel $g_m=\sum_iw_i\eta_ir_i^m$, and perturbation analysis gives the same order.
+\end{enumerate}
+\end{theorem}
+
+We recomputed the two-point quantities exactly (Table~\ref{tab:lecam}): the moment gap equals $4\tau p_-p_+(\Delta\eta)^3$ to machine precision, and the Le Cam requirement at $\Delta\eta=0.10$ is $5{,}927.6$ resets. The worst-case failure rates of four re-implemented estimators all lie above the lower bound (Table~\ref{tab:lecam}).
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Two-point sample complexity for two-cohort weight recovery}\label{tab:lecam}
+\begin{tabular}{lcccc}
+\toprule
+$\Delta\eta$ & $\Delta M_3$ & $\|\Delta h\|_2$ & $N^*_{\rm LeCam}$ (95\%) & $N^*_{\rm CRB}$\\
+\midrule
+0.30 & $2.67\times10^{-4}$ & $1.98\times10^{-3}$ & 7.1 & 47.8\\
+0.20 & $7.92\times10^{-5}$ & $5.60\times10^{-4}$ & 88.2 & 597.0\\
+0.14 & $2.72\times10^{-5}$ & $1.89\times10^{-4}$ & 775.3 & 5{,}267.9\\
+0.10 & $9.90\times10^{-6}$ & $6.84\times10^{-5}$ & 5{,}927.6 & 40{,}374.2\\
+0.08 & $5.07\times10^{-6}$ & $3.49\times10^{-5}$ & 22{,}740.5 & 155{,}048.9\\
+0.06 & $2.14\times10^{-6}$ & $1.47\times10^{-5}$ & 128{,}333.0 & 875{,}732.3\\
+0.05 & $1.24\times10^{-6}$ & $8.50\times10^{-6}$ & 383{,}859.1 & 2{,}620{,}321.2\\
+0.04 & $6.34\times10^{-7}$ & $4.35\times10^{-6}$ & 1{,}466{,}361.5 & 10{,}012{,}662.4\\
+\midrule
+\multicolumn{5}{p{0.85\textwidth}}{\emph{Worst-case failure at $\Delta\eta=0.10$, $N=50$, 1,000 trials per hypothesis}: bound 44.1\%; ML 94.5\%, ridge 47.5\%, positive-part shrinkage 100\%, heavy prior 73.9\%.}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item $\tau=0.01$, $\sigma_h=1.6\times10^{-3}$, $a=0.5$, $\kappa=0.8$, 121 taps. Recomputed columns from \texttt{recompute\_theory.py}. Estimators re-implemented in \texttt{recompute\_p1\_estimators.py}: ML is least squares from four starts; ridge and heavy prior are posterior modes with prior standard deviations $(0.05,0.10)$ and $(0.005,0.02)$ for (weights, rates) around the symmetric centre of the two hypotheses; positive-part shrinkage pulls the ML weights toward their mean. Failure means some weight is off by at least $\tau$.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Many unknown cohorts}
+
+\begin{theorem}[$K$-cohort two-point lower bound]\label{thm:kcohort}
+Fix $K\ge2$, a center $r_c\in(0,1)$ and total merged weight $W>0$. There exist two $K$-cohort economies with rates in $r_c+\Delta\eta[-1,1]$, positive weights, and merged measures whose moments of order $0,\ldots,2K-2$ coincide while the moment of order $2K-1$ differs by a constant times $(\Delta\eta)^{2K-1}$. Their impulse responses differ by $\|h^A-h^B\|_2\asymp(\Delta\eta)^{2K-1}$, so recovering the weights from $N$ independent noisy reset experiments with worst-case error probability below $1/4$ requires
+\[
+N\;\ge\;c\,\sigma^2(\Delta\eta)^{-(4K-2)} .
+\]
+\end{theorem}
+
+The construction uses the $K$-point Gauss and Gauss--Radau rules of the same weight function: both are positive, have $K$ atoms and integrate polynomials of degree $2K-2$ exactly. For $K=2$ it reproduces the order of Theorem~\ref{thm:twocohort}. Table~\ref{tab:radau} lists the two rules: their low moments agree to machine precision and their moment of order $2K-1$ differs by $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$. The shrinking gap explains why constants deteriorate with $K$ on top of the exponent.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Gauss and Gauss--Radau rules on $[-1,1]$ used in Theorem~\ref{thm:kcohort}}\label{tab:radau}
+\begin{tabular}{cp{0.42\textwidth}cc}
+\toprule
+$K$ & Gauss nodes / Gauss--Radau nodes & Max gap, orders $<2K-1$ & Gap at order $2K-1$\\
+\midrule
+2 & $\pm0.5774$ \;/\; $-1,\ 0.3333$ & $6\times10^{-17}$ & 0.2222\\
+3 & $0,\ \pm0.7746$ \;/\; $-1,\ -0.2899,\ 0.6899$ & $2\times10^{-16}$ & 0.0533\\
+4 & $\pm0.3400,\ \pm0.8611$ \;/\; $-1,\ -0.5753,\ 0.1811,\ 0.8228$ & $4\times10^{-16}$ & 0.0131\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item All Gauss--Radau weights are positive. \end{tablenotes}
+\end{threeparttable}
+\end{table} Table~\ref{tab:kcohort} and Figure~\ref{fig:kcohort} confirm the order numerically.
+
+\begin{table}[t]\centering
+\begin{threeparttable}
+\caption{Numerical check of Theorem~\ref{thm:kcohort}}\label{tab:kcohort}
+\begin{tabular}{lccc}
+\toprule
+ & $K=2$ & $K=3$ & $K=4$\\
+\midrule
+Theoretical exponent of $N^*$ & $-6$ & $-10$ & $-14$\\
+Fitted log--log slope (small $\Delta\eta$) & $-5.96$ & $-9.96$ & $-14.01$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Le Cam bound $N^*\propto\sigma^2/\|h^A-h^B\|_2^2$ with $\sigma=1$, $a=0.5$, $\kappa=1$, total merged weight $0.10$, rates centered at $0.70$, responses over 400 lags. \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.62\textwidth]{figs/fig_kcohort.pdf}
+\caption{Two-point lower bound on the number of reset experiments needed to separate $K$-cohort economies, as a function of the rate spacing.}\label{fig:kcohort}
+\end{figure}
+
+\begin{theorem}[Matching upper bound for every $K$]\label{prop:esprit}
+Fix $K\ge2$, a compact set $\mathcal S\subset[-1,1]^K$ of rescaled rates with $\min_{i\ne j}|s_i-s_j|\ge\gamma>0$, and weights in $[\omega_{\min},\omega_{\max}]$ with $\omega_{\min}>0$. Consider the class of $K$-cohort economies with rates $r_c+\Delta\eta\,s$, $s\in\mathcal S$, and $N$ independent reset experiments whose responses carry Gaussian noise with variance $\sigma^2$. There are constants $c_0,C>0$ depending only on $(K,\mathcal S,\gamma,\omega_{\min},\omega_{\max},a,\kappa,r_c)$ such that, whenever $\epsilon_N\equiv\sigma N^{-1/2}(\Delta\eta)^{-(2K-1)}\le c_0/\sqrt{\log(2/\beta)}$, Prony's method applied to the first $2K$ estimated kernel values recovers the weights with
+\[
+\max_i|\hat w_i-w_i|\;\le\;C\sqrt{\log(2K/\beta)}\;\epsilon_N
+\]
+with probability at least $1-\beta$. Hence $N=C'\sigma^2(\Delta\eta)^{-(4K-2)}$ experiments suffice for any fixed accuracy and confidence, and together with Theorem~\ref{thm:kcohort} the minimax sample requirement is $N^*\asymp\sigma^2(\Delta\eta)^{-(4K-2)}$.
+\end{theorem}
+
+\begin{proof}
+The kernel values $k_m=\sum_iw_ir_i^m$ are the power moments of the merged measure. The closed-loop recursion $h_t=ah_{t-1}+\kappa\sum_mk_mh_{t-1-m}$ (plus $\kappa$ at $t=0$) can be solved for $k_0,\ldots,k_{2K-1}$ from $h_0,\ldots,h_{2K}$ with $h_0=\kappa\ne0$; the map is smooth with Lipschitz constant independent of $\Delta\eta$, so the estimated kernel values have error $O_P(\sigma N^{-1/2})$. Centring at $r_c$ is a fixed triangular linear map, $\mu_m=\sum_{j\le m}\binom mj(-r_c)^{m-j}k_j$, and $\mu_m=(\Delta\eta)^m t_m$ with $t_m=\sum_iw_is_i^m$. The map $F:(s,\omega)\mapsto(t_0,\ldots,t_{2K-1})$ does not depend on $\Delta\eta$; its Jacobian is a confluent Vandermonde matrix with determinant $\prod_i\omega_i\prod_{i<j}(s_i-s_j)^4$, bounded away from zero on the compact class. By the quantitative inverse function theorem there are $\rho_0>0$ and $L<\infty$, uniform over the class, such that $F^{-1}$ exists and is $L$-Lipschitz on the ball of radius $\rho_0$ around every point of $F(\text{class})$. An error $e$ in $\mu_m$ is an error $e(\Delta\eta)^{-m}$ in $t_m$, largest at $m=2K-1$. The kernel errors are Gaussian with standard deviation of order $\sigma N^{-1/2}$, so a union bound over the $2K$ coordinates gives $\|\hat t-t\|_\infty\le C_1\sqrt{\log(2K/\beta)}\,\epsilon_N$ with probability at least $1-\beta$. When this is below $\rho_0$, $\hat t$ lies in the ball where $F^{-1}$ is $L$-Lipschitz. Prony's method computes the algebraic inverse of the moment map, which does not depend on coordinates, so its output is $F^{-1}(\hat t)$ and the stated bound follows with $C=LC_1$ and $c_0=\rho_0/C_1$. The Gauss and Gauss--Radau pair of Theorem~\ref{thm:kcohort} lies in the class, so the orders match.
+\end{proof}
+
+Table~\ref{tab:kupper} confirms the order numerically. For numerical stability the estimator works in centred and rescaled coordinates (the estimator is the same; only its floating-point evaluation changes). The argument parallels the stability analysis of super-resolution for clustered complex nodes \citep{batenkov2021}, here for real nodes, and it reproduces the ESPRIT slope of $-6.15$ reported for $K=2$ in the earlier version.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Sample requirement of Prony's method against the lower-bound order}\label{tab:kupper}
+\begin{tabular}{lcccc}
+\toprule
+ & $K=2$ & $K=3$ & $K=4$ & $K=5$\\
+\midrule
+Lower-bound order $-(4K-2)$ & $-6$ & $-10$ & $-14$ & $-18$\\
+Fitted slope of $N^*$ in $\Delta\eta$ (Prony) & $-5.94$ & $-10.00$ & $-13.93$ & $-18.34$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Rates $0.7+\Delta\eta\,s$ with $s$ the $K$-point Gauss nodes, total weight 0.1, $\Delta\eta\in[0.03,0.2]$; $N^*$ is the number of experiments for a weight RMSE of 10\% of the smallest weight, from 400 simulated estimates per point. \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{General memory: the minimax rate is logarithmic}\label{sec:general}
+
+Exponential memory is a modelling choice. Suppose instead that the feedback kernel is completely monotone, $k_m=\int_{[0,\rho]}r^m\,d\mu(r)$ with $\rho<1$, where $\mu$ is any nonnegative measure of total mass $W$: a finite or infinite mixture of exponential memories with merged weight $W$. Write $\mathcal M(\rho,W)$ for this class, assume the closed loop is uniformly stable, $s\equiv a+\kappa W/(1-\rho)<1$, and measure accuracy by
+\[
+d(\mu,\mu')=\sup\Bigl\{\textstyle\int f\,d(\mu-\mu'):\ f\ \text{1-Lipschitz on }[0,\rho],\ f(0)=0\Bigr\},
+\]
+which equals the Wasserstein-1 distance between measures of equal mass and also compares estimates whose mass is not exactly $W$. Let $E_L(|x|)$ denote the error of the best uniform approximation of $|x|$ on $[-1,1]$ by polynomials of degree $L$, and let $c_*=\inf_{L\ge1}L\,E_L(|x|)$. \citet{bernstein1914} showed that $L\,E_L(|x|)$ converges to a positive constant ($0.2802$; \citealp{varga1985}), so $c_*>0$; numerically $c_*=1/4$, attained at $L=2$ (Table~\ref{tab:general}).
+
+\begin{lemma}[Moment-matched cohort pairs]\label{lem:altpair}
+For every $n\ge2$ there are two probability measures on $[0,\rho]$, each with exactly $n$ atoms, whose moments of orders $0,\ldots,2n-2$ coincide and whose Wasserstein-1 distance is at least $\rho\,E_{2n-2}(|x|)\ge c_*\rho/(2n-2)$.
+\end{lemma}
+
+The atoms are the points where the best approximation of $|r-\rho/2|$ by polynomials of degree $2n-2$ attains its maximal error with alternating signs, and the weights are those of the divided difference on these points, which annihilates every polynomial of degree $2n-2$ (Appendix~\ref{app:proofs}). Each measure is an $n$-cohort economy.
+
+\begin{theorem}[Minimax rate for general memory]\label{thm:general}
+Let $N$ independent reset experiments observe the impulse response with Gaussian noise of variance $\sigma^2$ per tap, and let $B(\rho)=(1+\sqrt2)(1+2/\rho)$ and $C_h=\kappa^2/(1-s)^2$.
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Lower bound.} Let $\Lambda_N=\log(N/\sigma^2)+\log\bigl(2C_h^2W^2/((1-\rho)\rho)^2\bigr)$. Whenever $\Lambda_N\ge4\log(1/\rho)$, every estimator $\hat\mu$ satisfies
+\[
+\sup_{\mu\in\mathcal M(\rho,W)}P_\mu\Bigl(d(\hat\mu,\mu)\ge\frac{c_*\,\rho W\log(1/\rho)}{\Lambda_N}\Bigr)\;\ge\;\frac1{4e},
+\]
+and the bound already holds over $n$-cohort economies, for a finite $n$ that grows with $N$.
+\item \emph{Upper bound.} With $a$ and $\kappa$ known, invert the averaged response into kernel values $\hat k_0,\ldots,\hat k_L$, with $L+1=\lfloor\log(N/\sigma^2)/(4\log B(\rho))\rfloor$, and let $\hat\mu$ be any measure on $[0,\rho]$ minimizing $\max_{j\le L}|\int r^jd\hat\mu-\hat k_j|$ (a linear program). For every $\beta\in(0,1)$ there is $N_0$ depending only on $(\rho,W,a,\kappa,\beta)$ such that for $N/\sigma^2\ge N_0$,
+\[
+\sup_{\mu\in\mathcal M(\rho,W)}P_\mu\Bigl(d(\hat\mu,\mu)>\frac{3\pi\rho W\log B(\rho)}{\log(N/\sigma^2)}\Bigr)\;\le\;\beta .
+\]
+\end{enumerate}
+Hence the minimax accuracy is of exact order $1/\log(N/\sigma^2)$, and reaching accuracy $w$ requires and suffices $N/\sigma^2=\exp(\Theta(1/w))$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+(i) Put the measures of Lemma~\ref{lem:altpair}, scaled to mass $W$, into the model. Their difference annihilates polynomials of degree $2n-2$, so the generating function of the kernel difference is $\int(1-rz)^{-1}d(\mu_A-\mu_B)=z^{2n-1}\int r^{2n-1}(1-rz)^{-1}d(\mu_A-\mu_B)$; on $|z|=1$ it is at most $2W\rho^{2n-1}/(1-\rho)$, and Parseval bounds $\|k^A-k^B\|_2$ by the same quantity. The response difference is $H_AH_B$ times the shifted kernel difference, so $\|h^A-h^B\|_2\le C_h\|k^A-k^B\|_2$. Choosing the smallest $n$ for which the Kullback--Leibler divergence of the $N$-sample experiments is at most one, the Bretagnolle--Huber form of Le Cam's lemma gives the bound with half the Wasserstein separation of the lemma. (ii) For a 1-Lipschitz $f$ with $f(0)=0$, Jackson's theorem gives a polynomial $q$ of degree $L$ with $\sup|f-q|\le\pi\rho/(4(L+1))$, and expanding $q$ in Chebyshev polynomials of $2r/\rho-1$ bounds the sum of its monomial coefficients by $\rho B(\rho)^{L+1}$. Hence $d(\hat\mu,\mu)\le\pi\rho(W+\delta)/(2(L+1))+2\delta\rho B(\rho)^{L+1}$, where $\delta$ is the largest kernel error. The kernel is recovered from the response by a series reciprocal, $K(z)=(1-az-\kappa/H(z))/(\kappa z)$, whose error is at most $2((1+s)/\kappa)^2(L+2)$ times the largest response error, so $\delta=O_P(\sigma N^{-1/2}L\sqrt{\log L})$. The choice of $L$ makes $\delta B(\rho)^{L+1}=O_P((\sigma^2/N)^{1/4}L\sqrt{\log L})$, negligible against the first term. Full proofs are in Appendix~\ref{app:proofs}.
+\end{proof}
+
+Theorem~\ref{thm:general} replaces a polynomial barrier with a logarithmic one. With exponential memory and $K$ known cohorts, halving the error multiplies the required number of experiments by a constant; with general memory, halving the error squares it. The lower bound holds already for finite mixtures, so knowing that the memory is a finite mixture of exponentials does not help unless the number of cohorts and their spacing are also known. The constants of the two bounds differ, by a factor that grows as $\rho\to1$, so the dependence on how long memory lasts is not pinned down. The source of the gap is visible in the proof: as $\rho\to1$ the moment-matched pairs separate their kernels more slowly ($\rho^{2n-1}$ decays slowly), which weakens the lower bound through $\log(1/\rho)$, while the upper bound pays $\log B(\rho)$, which stays bounded away from zero, for the conditioning of polynomial approximation on $[0,\rho]$. Logarithmic rates of this kind are familiar from deconvolution with supersmooth errors \citep{fan1991} and from moment methods for mixing distributions \citep{kong2017,wu2020}; here they arise from the closed loop of a market.
+
+Table~\ref{tab:general} checks the construction and the estimator. The pairs of Lemma~\ref{lem:altpair} have exactly $n$ atoms, agree in all moments below order $2n-1$ to $10^{-61}$, and remain at Wasserstein distance about $0.4/n$, while the distance between their kernels shrinks by a factor of about $0.2$ per atom at $\rho=0.9$. The linear-programming estimator applied to a continuous memory distribution has error times $\log(N/\sigma^2)$ between $0.18$ and $0.28$ for $N$ from $10^4$ to $10^{24}$: a $10^{20}$-fold increase in data halves the error. The exponential-memory model of the previous subsections, where the cost is polynomial in $1/\Delta\eta$, is therefore the optimistic case: relaxing the parametric form makes identification from prices much harder, not easier.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{General memory: moment-matched cohort pairs and the moment estimator}\label{tab:general}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccccc}
+\toprule
+\multicolumn{7}{l}{\emph{A. Best approximation of $|x|$}}\\
+$L$ & 2 & 4 & 6 & 10 & 20 & 30\\
+$L\,E_L(|x|)$ & 0.2500 & 0.2705 & 0.2756 & 0.2785 & 0.2797 & 0.2800\\
+\midrule
+\multicolumn{7}{l}{\emph{B. Pairs of Lemma~\ref{lem:altpair}}}\\
+Atoms per measure $n$ & 2 & 4 & 6 & 8 & 10 & 12\\
+$W_1(\mu_A,\mu_B)$, $\rho=0.9$ & 0.2250 & 0.1037 & 0.0669 & 0.0494 & 0.0391 & 0.0324\\
+$n\,W_1$, $\rho=0.9$ & 0.450 & 0.415 & 0.402 & 0.395 & 0.391 & 0.388\\
+$\|k^A-k^B\|_2$, $\rho=0.9$ & $4.41\times10^{-2}$ & $1.03\times10^{-3}$ & $4.08\times10^{-5}$ & $1.96\times10^{-6}$ & $1.05\times10^{-7}$ & $5.95\times10^{-9}$\\
+$\|k^A-k^B\|_2$, $\rho=0.99$ & $7.41\times10^{-2}$ & $5.84\times10^{-3}$ & $1.07\times10^{-3}$ & $2.76\times10^{-4}$ & $8.33\times10^{-5}$ & $2.76\times10^{-5}$\\
+\midrule
+\multicolumn{7}{l}{\emph{C. Linear-programming estimator, continuous memory distribution, $\rho=0.9$}}\\
+$\log_{10}N$ & 4 & 8 & 12 & 16 & 20 & 24\\
+Moments used $L$ & 2 & 3 & 5 & 6 & 7 & 8\\
+Error $d(\hat\mu,\mu)$ & 0.00878 & 0.00759 & 0.00432 & 0.00445 & 0.00382 & 0.00399\\
+Error $\times\log(N/\sigma^2)$ & 0.202 & 0.245 & 0.179 & 0.226 & 0.229 & 0.276\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item A: Remez algorithm; the limit is Bernstein's constant $0.2802$. B: moments of orders $0,\ldots,2n-2$ agree to $10^{-61}$ (60-digit arithmetic); every $W_1$ exceeds $\rho E_{2n-2}(|x|)$. C: true merged measure Beta(2,3) on $[0,0.9]$ with mass $0.1$; kernel values observed with noise $\sigma N^{-1/2}$, $\sigma=10^{-3}$; $L$ from the rule in Theorem~\ref{thm:general}(ii); measure fitted on a 401-point grid; 20 replications. Kind: recomputed (\texttt{general\_minimax.py}).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\subsection{Passive data}
+
+\begin{theorem}[Passive identification: minimum phase]\label{thm:minphase}
+In any stable economy with $|r_i|<1$ and nonzero merged weights, the zeros of $H$ are exactly the memory rates $r_i$, and $H$ is minimum phase. With a single price innovation, the price spectrum identifies $H$ up to scale, hence the memory rates; with $\kappa$ and $a$ known, as in Theorem~\ref{thm:merged}, it identifies the merged measure.
+\end{theorem}
+
+The result holds for signed weights (mean-reverting cohorts): in 1,733 stable random economies with weights of both signs, the computed zeros equalled the memory rates and lay inside the unit disk. With a second independent shock in the cohorts' memories, the Jacobian of the price spectrum with respect to six model parameters has full rank, with singular values from $34.51$ down to $0.0698$. Passive noise helps identification rather than hindering it.
+
+\begin{theorem}[Passive cost]\label{prop:passive}
+Suppose the price is observed passively as the stationary output $x_t=H_\theta(L)\xi_t$ of a single innovation with variance $\sigma^2>0$, for $\theta$ in a compact, uniformly Schur-stable family with rates in $[\eta_{\min},\eta_{\max}]\subset(0,1)$, and let $D(\theta_1\|\theta_0)$ be the Kullback--Leibler divergence rate per observation.
+\begin{enumerate}[label=(\roman*)]
+\item For a single cohort at $\bar\eta$ against the symmetric pair at $\bar\eta\pm\delta$ with the same total weight, $D=\Theta(\delta^4)$.
+\item For the moment-matched two-cohort economies of Theorem~\ref{thm:twocohort}, $D=\Theta(\tau^2(\Delta\eta)^6)$.
+\end{enumerate}
+Hence any test based on $T$ passive observations with worst-case error at most $\alpha<1/4$ needs $T=\Omega(\delta^{-4})$ and $T=\Omega(\tau^{-2}(\Delta\eta)^{-6})$ respectively, and the likelihood-ratio test attains these orders as $T\to\infty$.
+\end{theorem}
+
+The proof (Appendix~\ref{app:proofs}) combines the Whittle form of the divergence rate with the resolvent identity $H_1-H_0=H_1H_0(G_1-G_0)$: the two spectra differ by the leading unmatched moment, of order $\delta^2$ for the pair and $\tau(\Delta\eta)^3$ for the moment-matched economies, and the divergence rate is the square of that difference. Numerically, the fitted slopes of the required sample length are $-4.21$ and $-5.93$, against the theoretical $-4$ and $-6$.
+
+Passive surveillance is possible in principle but costs the same polynomial order as active probing. Proposition~\ref{prop:passive0} is the exact finite-sample version for the known pair.

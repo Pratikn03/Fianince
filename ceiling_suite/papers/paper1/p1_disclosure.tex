@@ -1,0 +1,139 @@
+\section{What disclosure buys}\label{sec:disclosure}
+
+Because active probing is costly and passive data are slow, the natural policy question is what a supervisor gains from disclosure. We compare six observation contracts at $\delta=0.05$.
+\begin{itemize}[itemsep=1pt]
+\item $I_0$: public prices only.
+\item $I_1$: prices and aggregated executed flow.
+\item $I_2$: prices and one independent noisy report of dealer marked equity per reset ($\sigma_E=0.5$).
+\item $I_3$: prices and exact audited equity (Proposition~\ref{prop:disclosure}), also with reports rounded to $0.01$.
+\item $I_4$: algorithm update timestamps without the update values.
+\item $I_5$: a supervisory audit registry with access to internal algorithm states.
+\end{itemize}
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Disclosure contracts at $\delta=0.05$ (pulse-design capital, par units)}\label{tab:contracts}
+\begin{tabular}{llrrr}
+\toprule
+Contract & Channel & Pulses & Benchmark & Saving vs.\ $T=20$\\
+\midrule
+$I_0$: prices, $T=3$ & public prices & 271 & 4{,}305.25 & $-2{,}123.5\%$\\
+$I_0^*$: prices, $T=20$ & full price path & 12 & 193.62 & 0.0\%\\
+$I_1$: prices and signed flow & public flow & 12 & 193.62 & 0.0\%\\
+$I_2$: noisy equity ($\sigma_E=0.5$) & statement & 12 & 193.62 & 0.0\%\\
+$I_3$: exact equity, 5-unit lot & audited equity & 1 & 12.70 & 93.4\%\\
+$I_3$: exact equity, 0.01 rounding & rounded report & 1 & 15.52 & 92.0\%\\
+$I_4$: timestamps only & no likelihood & 12 & 193.62 & 0.0\%\\
+$I_5$: audit registry & internal states & 0 & 0.00 & 100.0\%\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Closed-form values. Noisy equity adds information linearly in the number of resets, $\KL=N\Delta_E^2/(2\sigma_E^2)$, and saves only 1.5\% against the $T=3$ baseline. The equity difference is $\Delta E=\kappa^2q\delta^2V^2$; with reports rounded to $0.01$, a guaranteed change needs $V\ge5.59$.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Table~\ref{tab:contracts} shows that disclosure is not one thing. Timestamps without update values carry no information about $\delta$ in this model. Noisy periodic statements barely help. Exact audited equity collapses the requirement to a single trade, limited only by lot sizes and report precision, and an audit registry removes the trading requirement altogether.
+
+The cleanest form of useful disclosure is flow tagged by participant class.
+
+\begin{proposition}[Tagged flow removes the barrier]\label{prop:tagged}
+If the observer receives each cohort's flow $u_{i,t}=q_iy_{i,t}$ with measurement noise, the merged weights are estimated at rate $T^{-1/2}$ with a constant that does not depend on the rate spacing.
+\end{proposition}
+
+Each tagged flow follows $u_{i,t}=r_iu_{i,t-1}+w_ix_t$, a regression whose information about $w_i$ does not involve the other cohorts' rates. In simulation ($T=5{,}000$, 60 replications) the root-mean-square error of the recovered weights is flat in $\Delta\eta$ (fitted slope $0.011$, error between $5.8\times10^{-4}$ and $6.6\times10^{-4}$). This is the formal content of a disclosure regime such as a consolidated audit trail: tagging flow by participant class turns a polynomial barrier into an ordinary estimation problem.
+
+\subsection{How much disclosure is worth}\label{sec:discvalue}
+
+Proposition~\ref{prop:tagged} says that tagging removes the barrier; the next result says by how much.
+
+\begin{theorem}[Value of class-tagged disclosure]\label{thm:discvalue}
+In the class of Theorem~\ref{prop:esprit}, let $N_p$ be the number of experiments needed with prices alone and $N_t$ the number needed with each class's flow observed with noise $\sigma_f$. To recover the weights to fixed accuracy, $N_p/N_t\asymp(\sigma/\sigma_f)^2(\Delta\eta)^{-(4K-2)}$; to resolve the rates to accuracy proportional to their spacing, $N_p/N_t\asymp(\sigma/\sigma_f)^2(\Delta\eta)^{-(4K-4)}$.
+\end{theorem}
+
+\begin{proof}
+$N_p\asymp\sigma^2(\Delta\eta)^{-(4K-2)}$ by Theorems~\ref{thm:kcohort} and~\ref{prop:esprit}. With tagged flow each class is a single-exponential problem whose Fisher information for $(w_i,r_i)$ does not depend on the other classes, so $N_t\asymp\sigma_f^2$ for the weights and $N_t\asymp\sigma_f^2(\Delta\eta)^{-2}$ for rates resolved to a fraction of $\Delta\eta$.
+\end{proof}
+
+With the same noise and lags for both observers, the Cram\'er--Rao requirements give fitted slopes of $-6.08$ for prices and $-4.34$ for the ratio at $K=2$ (theory $-6$ and $-4$). Calibrated to the class memories estimated below, prices alone would need about 333 times as many days as the published class ratios to separate the top-trader and all-account memories in BTCUSDT (rates $0.9889$ and $0.9986$ per five minutes; about 6{,}000 days against 18), and about 19 times as many in ETHUSDT (rates $0.9793$ and $0.9972$).
+
+\subsection{Disclosure in real data}\label{sec:disc_data}
+
+Binance publishes, every five minutes, long/short ratios for its top-trader group, by position and by account, and for all accounts. These are class-level positions, the closest public analogue to the tagged data of Proposition~\ref{prop:tagged}. We treat a class's reported net position as the observable counterpart of its cohort state: it obeys the same one-lag recursion class by class, so the block-diagonal information structure of Proposition~\ref{prop:tagged} carries over. The mapping is an assumption, because the reports are positions rather than flows and returns stand in for the unobserved deviation $x_t$. For each class $c$ we estimate $n_{c,t}=r_cn_{c,t-1}+w_c\,{\rm ret}_t$, with $n=(R-1)/(R+1)$ from the ratio $R$. The price-only alternative regresses signed five-minute taker flow on twelve lagged five-minute returns and fits two exponentials to the kernel; it estimates the memory rates without class information. Intervals come from a day bootstrap with 200 draws.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Memory rates with and without class-tagged data}\label{tab:disc}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccp{0.1\textwidth}p{0.08\textwidth}}
+\toprule
+Symbol & Days & Top position $\hat r$ [95\% CI] & All accounts $\hat r$ [95\% CI] & Width ratio & Classes differ\\
+\midrule
+BTCUSDT & 48 & 0.9889 [0.9842, 0.9935] & 0.9986 [0.9955, 1.0005] & 121.7 & yes\\
+ETHUSDT & 48 & 0.9793 [0.9616, 0.9907] & 0.9972 [0.9934, 0.9997] & 55.6 & yes\\
+CELRUSDT & 48 & 0.9884 [0.9830, 0.9922] & 0.9882 [0.9804, 0.9914] & 81.6 & no\\
+CVXUSDT & 33 & 0.9822 [0.9732, 0.9908] & 0.9829 [0.9694, 0.9900] & 45.9 & no\\
+\midrule
+\multicolumn{6}{l}{\emph{Pre-registered test on fresh days, 30 USD-M perpetuals, 2025--2026}}\\
+\multicolumn{3}{l}{(i) width ratio $>10$} & \multicolumn{3}{l}{30 of 30 (range 27.6--124.0)}\\
+\multicolumn{3}{l}{(ii) price-only rate interval wider than 0.25} & \multicolumn{3}{l}{30 of 30 (range 0.65--0.99)}\\
+\multicolumn{3}{l}{(iii) merged response $\sum_mk_m$ identified} & \multicolumn{3}{l}{5 of 30}\\
+\multicolumn{3}{l}{Classes differ} & \multicolumn{3}{l}{11 of 30}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Top panel: training days 2023--2024; width ratio is the mean price-only rate-interval width over the mean tagged width. The price-only intervals for both rates cover most of $[0,0.99]$. Bottom panel: specification registered before the fresh days were downloaded (SHA-256 \texttt{65acda361861\ldots}); a symbol passes if all three of the first rows hold, and the test required 80\% of symbols to pass. \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Table~\ref{tab:disc} gives three results. First, tagged class data pin down memory rates that prices and flow leave essentially unrestricted: the price-only intervals are 28 to 124 times wider in every one of 30 symbols on fresh days, and cover most of the admissible range. Part of this ratio is mechanical, because a series of positions identifies its own persistence directly while the price-only route must fit two exponentials to a weakly identified kernel. Restricting attention to the five symbols in which the price-only fit does identify the merged response (ACH, API3, OGN, ZEN and DASH) does not change the conclusion: the price-only rate intervals are still $0.64$ to $0.92$ wide and the ratios run from $27.6$ to $62.5$ (median $47.5$). We therefore read the ratios as a measure of how little prices reveal about class memory, not as a horse race between two estimators of equal standing. Second, the classes differ where theory says the information should be: in BTCUSDT and ETHUSDT the top-trader group's positioning has a half-life of about three to five hours against about one to two days for all accounts, while in thin symbols the classes are often indistinguishable. Third, the pre-registered test fails its 80\% criterion, on the part of the prediction that concerns what prices \emph{do} reveal: the merged response is significantly different from zero in only 5 of 30 symbols. Theorem~\ref{thm:minphase} says the merged measure is identified; on 42 days of thin-market data it is not estimated precisely. Prices reveal even less than the identification theory guarantees, which strengthens rather than weakens the case for class-tagged disclosure.
+
+Class positions do not help forecast short-horizon risk: adding the level and one-hour change of the top-trader and all-account positions to the controls of the companion paper lowers out-of-sample tail classification and leaves $R^2$ unchanged ($-0.19$ points, CI $[-0.99,0.83]$). Their value is in identifying who trades on what memory, not in timing the next hour.
+
+\subsection{A second disclosure regime: the CFTC's trader-class reports}\label{sec:cot}
+
+Binance publishes its class ratios voluntarily, for one venue. The U.S. Commodity Futures Trading Commission requires large traders in regulated futures markets to report their positions and publishes them weekly by class: leveraged funds, asset managers and dealers in financial futures, and managed money, producer/merchants and swap dealers in commodities. This is class-tagged disclosure mandated by law. We registered a test (SHA-256 \texttt{6f1d6f35ae88\ldots}) before downloading any data, in eight markets that span asset classes: CME Bitcoin and Ether, the E-mini S\&P 500, 10-year Treasury notes, the euro, the yen, WTI crude oil and Henry Hub natural gas, using every weekly report through October 2026 (282 to 1{,}039 weeks per market). For each class, $n_{c,t}=(\text{long}-\text{short})/\text{open interest}$ follows $n_{c,t}=\alpha_c+r_cn_{c,t-1}+w_c\,{\rm ret}_t$, the weekly version of the cohort recursion. The price-only alternative fits a two-exponential kernel to twelve weekly return lags. Intervals come from a 13-week moving-block bootstrap. The registered hypotheses were: (H1, primary) the fast class's memory rate is pinned to an interval narrower than $0.25$ while both price-only intervals are wider, in at least 75\% of markets; (H2) the fast class trend-follows, $w_c>0$, in at least 75\%; (H3) the fast class has the shorter memory in at least half.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Trader-class memory from the CFTC Commitments of Traders, eight regulated futures markets}\label{tab:cot}
+\setlength{\tabcolsep}{3pt}\footnotesize
+\begin{tabular}{lrccccr}
+\toprule
+Market & Weeks & Fast $\hat r$ [95\% CI] & Slow $\hat r$ & $\hat r_{\rm fast}-\hat r_{\rm slow}$ [95\% CI] & $\hat w_{\rm fast}$ & Ratio\\
+\midrule
+Bitcoin (CME) & 434 & 0.951 [0.928, 0.969] & 0.986 & $-0.035$ [$-0.062$, $-0.010$] & $-$ & 23.7\\
+Ether (CME) & 282 & 0.890 [0.826, 0.932] & 0.960 & $-0.070$ [$-0.143$, $-0.011$] & $-$ & 9.1\\
+E-mini S\&P 500 & 1{,}039 & 0.914 [0.884, 0.937] & 0.954 & $-0.040$ [$-0.071$, $-0.012$] & $-$ & 18.3\\
+10-year T-note & 1{,}039 & 0.992 [0.985, 0.998] & 0.993 & $-0.000$ [$-0.006$, $+0.007$] & (0) & 71.4\\
+Euro & 1{,}035 & 0.961 [0.947, 0.972] & 0.996 & $-0.034$ [$-0.051$, $-0.022$] & $+$ & 37.3\\
+Yen & 1{,}035 & 0.955 [0.939, 0.968] & 0.984 & $-0.029$ [$-0.047$, $-0.013$] & $+$ & 34.0\\
+WTI crude oil & 1{,}039 & 0.961 [0.946, 0.974] & 0.999 & $-0.037$ [$-0.053$, $-0.023$] & $+$ & 35.2\\
+Natural gas & 1{,}039 & 0.981 [0.969, 0.990] & 0.980 & $+0.001$ [$-0.014$, $+0.017$] & $+$ & 44.0\\
+\midrule
+\multicolumn{7}{l}{\emph{Pre-registered hypotheses}: H1 (primary) 8 of 8, pass; H2 4 of 8, fail; H3 6 of 8, pass.}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Fast class: leveraged funds (financial futures) or managed money (commodities); slow class: asset managers or producer/merchants. $\hat w_{\rm fast}$: sign of the response to returns, $+$ or $-$ when the 95\% interval excludes zero, (0) otherwise. Ratio: mean width of the two price-only rate intervals over the width of the fast-class interval; the price-only intervals span 0.95--0.96 of the admissible range $[0,0.99]$ in every market. Weekly returns from Binance spot (Bitcoin, Ether) and Yahoo Finance (others; the Treasury return is minus the change in the 10-year yield). Specification SHA-256 \texttt{6f1d6f35ae88\ldots}; test opened once. Kind: real data (Part 11).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+The primary hypothesis holds in all eight markets (Table~\ref{tab:cot}). The class reports pin each fast class's memory rate to an interval between $0.013$ and $0.106$ wide, while weekly prices leave both memory rates anywhere in the admissible range; the width ratios run from 9 to 71. The ratio partly reflects how little weekly returns reveal, which is the point of the theory rather than an artefact of it: with prices alone the memories are not located at all. The classes differ as the cohort model allows. Leveraged funds and managed money have the shorter memory in six of eight markets, with half-lives of 6 to 18 weeks against months to years for asset managers and producers; in Treasuries and natural gas the two memories are indistinguishable.
+
+The trend-following hypothesis fails. The fast class buys after rises in the euro, the yen, crude oil and natural gas, but sells after rises in Bitcoin, Ether and the S\&P 500 futures. The first half matches the finding of \citet{moskowitz2012} that speculators' positions tend to go with past returns. We did not predict this. One candidate explanation is that leveraged-fund positions in financial futures are dominated by the short futures leg of cash--futures basis trades, which a single memory per class cannot represent. A post-hoc check is consistent with it but not decisive (Part 13, \texttt{R6}): weekly position changes of leveraged funds and asset managers are strongly negatively correlated in Bitcoin, Ether, the S\&P 500 and Treasuries ($-0.37$ to $-0.67$) but not in the euro or yen ($-0.04$ and $-0.05$), and holding the asset managers' change fixed removes the negative response in Bitcoin and halves it in Ether and the S\&P 500. Because class positions sum to zero across all reporting categories, some negative correlation is mechanical, so this is a signature, not a test. The failure sharpens rather than weakens the case for class tagging: class labels are not strategies, and a supervisor who wants to know how a class responds to prices needs its positions, which the price process does not reveal.
+
+Together with Table~\ref{tab:disc}, the evidence now covers two disclosure regimes, one voluntary and one mandated by law, in crypto and in regulated equity-index, rate, currency and commodity futures. In both, class-tagged positions locate memories that prices leave unrestricted.
+
+\section{A spectral blind spot}\label{sec:blind}
+
+Even without identification, could a supervisor monitor risk through eigenvalues or volatility?
+
+\begin{theorem}[Spectral blindness]\label{thm:blind}
+For any eigenvalues $0<\lambda_2<\lambda_1<1$, one-step price variance $s_1>0$ and stationary price variance $V$ large enough, there is a family of two-state markets $J_\theta=\begin{psmallmatrix}\lambda_1&\theta\\0&\lambda_2\end{psmallmatrix}$ with shock covariance ${\rm diag}(s_1,s_2(\theta))$ such that all members share the eigenvalues, the one-step price variance and the stationary price variance, while the worst-case transient gain $\sup_k\|e_1^\top J_\theta^k\|$ grows without bound in $\theta$.
+\end{theorem}
+
+At $\lambda=(0.8,0.7)$, $s_1=1$ and $V=5$, the gain is $1.77$, $5.10$, $16.95$, $50.85$ and $169.50$ for $\theta=1,3,10,30,100$, with stationary variance $5.000$ in every case; the cumulative gain rises from $18.3$ to $1{,}667.7$. No monitor that depends only on eigenvalues and second moments of the price can be uniformly safe (Figure~\ref{fig:blind}).
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.6\textwidth]{figs/fig_blind.pdf}
+\caption{Price-row transient gain of the spectral-blindness family $J_\theta$: eigenvalues $(0.8,0.7)$, one-step price variance 1 and stationary price variance 5 are the same for every $\theta$.}\label{fig:blind}
+\end{figure}
+
+Two clarifications prevent over-reading. First, the cohort economy of Section~\ref{sec:model} is itself non-normal, yet its price output does not amplify (Lemma~\ref{lem:cm}). Large weighted gains can be manufactured by output weights alone: with $C_w=(1,160)$, a price-and-memory functional peaks at $160.003$ at $t=0$, which is the static weight, not dynamic growth (Appendix~\ref{app:coordw}). Second, in a network of $M$ identical cohort economies coupled by symmetric nonnegative cross-impact, the coupled operator stays symmetric in the coordinates of Lemma~\ref{lem:cm}; with cross-impact $0.05$, the spectral radius rises from $0.822$ ($M=1$) to $0.973$ ($M=10$) while the Kreiss constant stays at one, as it must for a stable symmetric operator (\texttt{recompute\_oct20.py}). Non-normality is necessary for transient amplification of the price, not sufficient; where amplification comes from is the subject of the companion paper.
