@@ -141,15 +141,25 @@ def decimal_cos_sin_enclosure(theta_lo: Decimal, theta_hi: Decimal) -> tuple[Dec
 
 
 def _verify_decimal_sqrt_witness() -> dict:
-    """Verify the audit witness on Decimal(2): standard Decimal(2).sqrt() exceeds sqrt(2),
-    whereas decimal_sqrt_floor(Decimal(2)) strictly satisfies s_lo^2 <= 2 < s_hi^2."""
+    """Verify the audit witness on Decimal(2) (T03-02 & T03-10):
+    Standard Decimal(2).sqrt() under ROUND_FLOOR still uses round-half-even and exceeds sqrt(2),
+    so an unguarded lower-bound check rejects it (_exact_sq(raw_sqrt) > 2), whereas
+    decimal_sqrt_floor(Decimal(2)) strictly satisfies s_lo^2 <= 2 < s_hi^2."""
     two = Decimal("2")
+    with localcontext() as ctx:
+        ctx.prec = 25
+        ctx.rounding = ROUND_FLOOR
+        raw_sqrt = two.sqrt()
+    raw_sqrt_exceeds_two = bool(_exact_sq(raw_sqrt) > two)
+    assert raw_sqrt_exceeds_two, "Expected raw 25-digit Decimal(2).sqrt() to round up above sqrt(2)"
     s_lo = decimal_sqrt_floor(two, prec=25)
     s_hi = decimal_sqrt_ceil(two, prec=25)
     assert _exact_sq(s_lo) <= two < _exact_sq(s_hi)
     assert s_lo < s_hi
     return {
         "witness_input": "2",
+        "raw_decimal_sqrt_25d": str(raw_sqrt),
+        "raw_decimal_sqrt_rejected_as_floor": raw_sqrt_exceeds_two,
         "sqrt_floor_25d": str(s_lo),
         "sqrt_ceil_25d": str(s_hi),
         "floor_sq_le_2": bool(_exact_sq(s_lo) <= two),
@@ -536,6 +546,21 @@ def verify_full_domain_certificate(L: int = 80, tail: int = 80, delta: float = 0
                         worst_m_2slab = int(m)
             verified_intervals += 1
 
+        # T03-09 / E2E-C Adversarial Perturbation Rejection Test:
+        # Deliberately perturb the dominant generalized eigenvalue by +1% and verify that
+        # the residual-based Weyl enclosure detects the defect and rejects the 64.7423 certificate.
+        vals_bad = vals.copy()
+        vals_bad[-1] = vals_bad[-1] * 1.01
+        r_fro_bad_flt = float(np.linalg.norm(M @ vecs - G0 @ vecs @ np.diag(vals_bad), "fro"))
+        ctx.rounding = ROUND_CEILING
+        r_fro_bad_hi = Decimal.from_float(r_fro_bad_flt) * Decimal("1.000000000001") + Decimal("1e-16")
+        weyl_eps_bad_dec = (r_fro_bad_hi + mat_input_pad_dec) / denom_weyl_lo + Decimal("1e-16")
+        lam_1_bad_hi = Decimal.from_float(float(vals_bad[-1])) + weyl_eps_bad_dec
+        ctx.rounding = ROUND_FLOOR
+        L0_min_bad = c_req_lo / lam_1_bad_hi
+        perturbed_eigenpair_rejected = bool(L0_min_bad < Decimal("62.0"))
+        assert perturbed_eigenpair_rejected, "Adversarially perturbed eigenpair must fail certification"
+
     assert verified_intervals == n_theta
     assert unverified_d2_tail_intervals == 0
     assert full_domain_1slab_lb > Decimal("64.737")
@@ -544,6 +569,8 @@ def verify_full_domain_certificate(L: int = 80, tail: int = 80, delta: float = 0
         "L": int(L),
         "delta": float(delta),
         "decimal_sqrt_directed_witness": sqrt_witness,
+        "adversarial_perturbed_eigenpair_rejected": perturbed_eigenpair_rejected,
+        "adversarial_perturbed_weyl_eps_str": str(weyl_eps_bad_dec),
         "primary_impulse_float_vs_50d_decimal_max_err": float(impulse_entry_err_dec),
         "primary_impulse_float_vs_50d_decimal_max_err_str": prim["max_err_dec_str"],
         "primary_impulse_50d_interval_width_str": prim["max_interval_width_dec_str"],

@@ -275,16 +275,18 @@ def test_mm11_adaptive_probing_solvency_tail_risk():
 
 
 def test_mm12_lean_proof_scope_honesty():
-    """MM-12: Verify Lean 4 coverage table and MANUSCRIPT_COVERAGE.md accurately report 317-declaration 23/23 FULL coverage."""
+    """MM-12: Verify Lean 4 coverage table and MANUSCRIPT_COVERAGE.md preserve external dependencies and the open estimator obligation."""
     cov_md = (ROOT / "research_extension" / "current_manuscript_lean_20261008" / "MANUSCRIPT_COVERAGE.md").read_text()
     assert "rayleigh_holder_closed_form_analytic_lower_bound" in cov_md
     assert "kreiss_resolvent_guard_solvency_invariance" in cov_md
-    assert "23 / 23 FULL" in cov_md
-    assert "0 / 23 NOT FORMALIZED" in cov_md
+    assert "outstanding estimator-level obligation" in cov_md
+    assert "S13" in cov_md and "S20" in cov_md
 
     claim_map = (ROOT / "paper" / "generated" / "claim_to_code_map.tex").read_text()
     assert "Conditional Bounded-Shock Forward Solvency of the Real-Time Resolvent Guard" in claim_map
-    assert claim_map.count("& FULL &") == 23
+    assert claim_map.count("& FULL &") == 20
+    assert claim_map.count("& EXT &") == 2
+    assert claim_map.count("& SUB &") == 1
     assert "NOT FORMALIZED" not in claim_map
 
 
@@ -402,8 +404,11 @@ def test_mm17_113p_audit_tc_g_c_e_v_gates():
 
     # 4. Lean 4 & manuscript consistency (TC-V1..V4: F12)
     tc_v = receipt["TC_V1_to_V4_lean_and_manuscript_consistency"]
-    assert tc_v["TC_V1_named_theorems_count"] == 320
-    assert tc_v["TC_V2_full_manuscript_statements"] == 23
+    named = json.loads((ROOT / "research_extension/current_manuscript_lean_20261008/named_declarations.json").read_text())
+    assert tc_v["TC_V1_named_theorems_count"] == len(named)
+    assert tc_v["TC_V2_full_manuscript_statements"] == 20
+    assert tc_v["TC_V2_external_dependency_statements"] == 2
+    assert tc_v["TC_V2_subresult_statements"] == 1
     assert tc_v["TC_V3_zero_sorry_and_zero_unapproved_axioms"] is True
     assert tc_v["TC_V4_table_ia15_compact_s01_to_s23"] is True
 

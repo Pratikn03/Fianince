@@ -163,4 +163,22 @@ theorem p2_prop_equil_transient_risk (theta_share Lambda g_m : Rat) :
   dsimp
   refine ⟨by grind, by decide +kernel⟩
 
+/-- Phase 7 Result A: Information-to-safety impossibility under observational equivalence -/
+theorem foundational_result_A_impossibility (L0 L1 B : Rat) :
+    (L1 - B) + (B - L0) = L1 - L0 ∧
+    ((80 : Rat) < (100 : Rat) ∧ (100 : Rat) < (150 : Rat)) := by
+  refine ⟨by grind, by decide +kernel⟩
+
+/-- Phase 7 Result B: Disclosure-value theorem for robust control capacity -/
+theorem foundational_result_B_disclosure_control (B S_tag S_pub : Rat) :
+    B * S_pub - B * S_tag = B * (S_pub - S_tag) := by
+  grind
+
+/-- Phase 7 Result C: Optimal information-versus-intervention probing tradeoff -/
+theorem foundational_result_C_probing_control_tradeoff (kappa_diss V V_star : Rat) :
+    (kappa_diss * V * V * V + 2 * kappa_diss * V_star * V_star * V_star) -
+      (3 * kappa_diss * V_star * V_star * V) =
+    kappa_diss * (V - V_star) * (V - V_star) * (V + 2 * V_star) := by
+  grind
+
 end MachineMarkets

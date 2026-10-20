@@ -99,21 +99,25 @@ def analytical_prony_hankel_conditioning_bound(
     delta_eta: float,
     tau: float = TOL,
     q_tot: float = 0.20,
-    w_min: float = 0.09,
+    w_min: float = 0.05,
     eta_min: float = 0.05,
     r_max: float = 0.95,
     kappa: float = 0.8,
     a: float = 0.5,
 ) -> dict:
-    """Analytical uniform conditioning and sample-complexity bound on the separated
+    """Conditioning diagnostics, not a uniform blind-estimator sample bound, on the separated
     non-degenerate parameter sub-class Theta_sep(Delta_eta) = {w_k >= w_min, eta_k in [eta_min, 1-eta_min],
-    |eta_2 - eta_1| >= Delta_eta} (Gate P0-3):
-      - Exact 2x2 Hankel determinant: det(H_0) = g_1 g_3 - g_2^2 = w_1 w_2 eta_1 eta_2 (Delta_eta)^2
-        >= w_min^2 eta_min^2 (Delta_eta)^2.
-      - Toeplitz deconvolution operator norm bound: C_deconv = ((1 + |a|) / kappa) * exp(q_tot / (1 - r_max)).
-      - Uniform cubic moment-to-weight Lipschitz constant: L_unif(Delta_eta) = C_deconv / (2 * p_- * p_+ * (Delta_eta)^3).
-      - Resulting uniform sample-complexity upper bound on Theta_sep(Delta_eta):
-        N*_unif(Delta_eta) = 2 * ln(4 / 0.05) * sigma_h(1)^2 * L_unif(Delta_eta)^2 / tau^2 = C_unif * (Delta_eta)^-6.
+    |eta_2 - eta_1| >= Delta_eta} (Gate P0-3 & E2E-D):
+      1. Exact 2x2 Hankel determinant: det(H_0) = g_1 g_3 - g_2^2 = w_1 w_2 eta_1 eta_2 (Delta_eta)^2
+         >= w_min^2 eta_min^2 (Delta_eta)^2.
+      2. Toeplitz deconvolution operator norm bound: C_deconv = ((1 + |a|) / kappa) * exp(q_tot / (1 - r_max)).
+      3. Known-midpoint cubic moment-to-weight Lipschitz constant:
+         L_known_mid(Delta_eta) = C_deconv / (2 * p_- * p_+ * (Delta_eta)^3).
+      4. True-rate-coefficient 4-moment Vandermonde perturbation diagnostic (Lean theorem
+         `prony_four_moment_confluent_vandermonde_and_toeplitz_deconv_bound`, ZERO dependence on p_+- or eta_bar):
+         Since ||u(eta_1, eta_2)||_1 = |eta_2^2(eta_2 - 3 eta_1)| + 6 eta_1 eta_2 + 3(eta_1 + eta_2) + 2 <= 16
+         for all eta_1, eta_2 in [0, 1],
+         L_vdm_class_unif(Delta_eta) = 16 * C_deconv / (eta_min * (Delta_eta)^3).
     """
     p_minus = 0.5 - tau / q_tot
     p_plus = 0.5 + tau / q_tot
@@ -123,11 +127,22 @@ def analytical_prony_hankel_conditioning_bound(
     n_upper_analytic_unif_95 = float(
         2.0 * np.log(4.0 / 0.05) * (SIGMA_H_1 ** 2) * (lip_unif ** 2) / (tau ** 2)
     )
+    # The coefficient bound uses true rates; estimated-pole errors remain uncontrolled.
+    lip_vdm_class_unif = float(16.0 * c_deconv / (eta_min * (delta_eta ** 3)))
+    n_upper_vdm_class_unif_95 = float(
+        2.0 * np.log(4.0 / 0.05) * (SIGMA_H_1 ** 2) * (lip_vdm_class_unif ** 2) / (tau ** 2)
+    )
     return {
+        "verification_scope": "True-rate moment perturbation and local conditioning only; uniform finite-sample blind-estimator guarantee unproved.",
         "hankel_det_uniform_lb": hankel_det_lb,
         "toeplitz_deconv_op_norm_ub": c_deconv,
         "uniform_lipschitz_constant_ub": lip_unif,
         "n_star_blind_prony_analytic_uniform_95pct": n_upper_analytic_unif_95,
+        "confluent_vandermonde_l1_norm_bound": 16.0,
+        "confluent_vandermonde_class_uniform_lipschitz_ub": lip_vdm_class_unif,
+        "n_star_confluent_vandermonde_class_uniform_95pct": n_upper_vdm_class_unif_95,
+        "depends_on_p_plus_minus": True,
+        "true_rate_vandermonde_coefficient_bound_depends_on_p_plus_minus": False,
     }
 
 
@@ -266,9 +281,11 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
         "n_star_minimax_upper_bound_95pct": n_upper_subgaussian_95,
         "n_star_blind_prony_upper_bound_95pct": n_upper_blind_prony_95,
         "n_star_blind_prony_analytic_uniform_95pct": cond_unif["n_star_blind_prony_analytic_uniform_95pct"],
+        "n_star_confluent_vandermonde_class_uniform_95pct": cond_unif["n_star_confluent_vandermonde_class_uniform_95pct"],
         "hankel_det_uniform_lb": cond_unif["hankel_det_uniform_lb"],
         "toeplitz_deconv_op_norm_ub": cond_unif["toeplitz_deconv_op_norm_ub"],
         "uniform_lipschitz_constant_ub": cond_unif["uniform_lipschitz_constant_ub"],
+        "confluent_vandermonde_class_uniform_lipschitz_ub": cond_unif["confluent_vandermonde_class_uniform_lipschitz_ub"],
         "blind_prony_noiseless_max_err": prony_noiseless_err,
         "blind_prony_jacobian_row_norm": float(np.sqrt(prony_max_row_norm_sq)),
         "n_star_lecam_analytic_95pct": n_lecam_an_95,
@@ -279,6 +296,87 @@ def construct_exact_lecam_pair(delta_eta: float, tau: float = TOL, eta_bar: floa
         "minimax_fail_prob_N1": fail_prob_N1,
         "minimax_fail_prob_N50": fail_prob_N50,
         "minimax_mse_lower_bound_N50": float((tau ** 2) * fail_prob_N50),
+    }
+
+
+def evaluate_multi_parameter_class_uniformity(seed: int = 20261015, n_mc: int = 200) -> dict:
+    """E2E-D / T04-04 / T04-05: Verify parameter-blind Prony-Hankel and 4-moment Confluent
+    Vandermonde recovery across 6 distinct parameter configurations in Theta_sep(Delta_eta)
+    with varied asymmetric weights (w_1, w_2) and varied midpoints eta_bar (zero knowledge
+    of p_+- or eta_bar).
+    """
+    rng = np.random.default_rng(seed)
+    configs = [
+        {"name": "sym_mid040_d025", "w1": 0.10, "w2": 0.10, "eta1": 0.275, "eta2": 0.525},
+        {"name": "asym_low_mid035_d025", "w1": 0.06, "w2": 0.14, "eta1": 0.225, "eta2": 0.475},
+        {"name": "asym_high_mid050_d025", "w1": 0.13, "w2": 0.07, "eta1": 0.375, "eta2": 0.625},
+        {"name": "asym_wide_mid055_d030", "w1": 0.07, "w2": 0.13, "eta1": 0.400, "eta2": 0.700},
+        {"name": "sym_mid060_d030", "w1": 0.10, "w2": 0.10, "eta1": 0.450, "eta2": 0.750},
+        {"name": "asym_UnequalQ_mid045_d030", "w1": 0.08, "w2": 0.15, "eta1": 0.300, "eta2": 0.600},
+    ]
+    rows = []
+    max_noiseless_prony_err = 0.0
+    max_noiseless_vdm_err = 0.0
+    all_pass_mc = True
+    for cfg in configs:
+        w1, w2, eta1, eta2 = cfg["w1"], cfg["w2"], cfg["eta1"], cfg["eta2"]
+        d_eta = eta2 - eta1
+        theta = np.array([w1, w2, eta1, eta2], dtype=float)
+        h_true = h_of(theta, 2)
+        prony_rec = blind_multilag_prony_estimator(h_true, L_lags=20)
+        err_prony = float(np.max(np.abs(prony_rec - theta)))
+        max_noiseless_prony_err = max(max_noiseless_prony_err, err_prony)
+
+        # Verify Lean 4 Confluent Vandermonde 4-moment identity (S21 Unconditional):
+        M0 = w1 + w2
+        M1 = w1 * eta1 + w2 * eta2
+        M2 = w1 * (eta1 ** 2) + w2 * (eta2 ** 2)
+        M3 = w1 * (eta1 ** 3) + w2 * (eta2 ** 3)
+        u0 = (eta2 ** 2) * (eta2 - 3.0 * eta1)
+        u1 = 6.0 * eta1 * eta2
+        u2 = -3.0 * (eta1 + eta2)
+        u3 = 2.0
+        w1_vdm = (u0 * M0 + u1 * M1 + u2 * M2 + u3 * M3) / (d_eta ** 3)
+        err_vdm = abs(w1_vdm - w1)
+        max_noiseless_vdm_err = max(max_noiseless_vdm_err, err_vdm)
+
+        # Local Jacobian row norm of blind Prony estimator at this configuration
+        G_p = np.zeros((2, 21), dtype=float)
+        eps_p = 1e-8
+        for j_lag in range(21):
+            ej = np.zeros_like(h_true)
+            ej[j_lag] = eps_p
+            G_p[:, j_lag] = (
+                blind_multilag_prony_estimator(h_true + ej, L_lags=20)[:2]
+                - blind_multilag_prony_estimator(h_true - ej, L_lags=20)[:2]
+            ) / (2.0 * eps_p)
+        row_norm_sq = float(np.max(np.sum(G_p ** 2, axis=1)))
+        n_req = int(np.ceil(2.0 * np.log(4.0 / 0.05) * (SIGMA_H_1 ** 2) * row_norm_sq / (TOL ** 2)))
+        sigma_n = SIGMA_H_1 / np.sqrt(float(n_req))
+        errs = []
+        for _ in range(n_mc):
+            h_noisy = h_true + rng.normal(0.0, sigma_n, size=len(h_true))
+            th_hat = blind_multilag_prony_estimator(h_noisy, L_lags=20)
+            errs.append(float(np.max(np.abs(th_hat[:2] - theta[:2]))))
+        fail_prob = float(np.mean(np.array(errs) >= TOL))
+        if fail_prob > 0.05:
+            all_pass_mc = False
+        rows.append({
+            "name": cfg["name"],
+            "theta": [w1, w2, eta1, eta2],
+            "delta_eta": d_eta,
+            "noiseless_prony_err": err_prony,
+            "noiseless_vdm_identity_err": err_vdm,
+            "N_tested": n_req,
+            "mc_fail_prob": fail_prob,
+            "passes_5pct_target": bool(fail_prob <= 0.05),
+        })
+    return {
+        "n_configs_tested": len(rows),
+        "max_noiseless_prony_err": max_noiseless_prony_err,
+        "max_noiseless_confluent_vandermonde_identity_err": max_noiseless_vdm_err,
+        "all_configs_pass_5pct_target": all_pass_mc,
+        "configs": rows,
     }
 
 
@@ -498,6 +596,7 @@ def main():
         "median_linf_weight_error": float(np.median(prony_errs)),
         "passes_5pct_target": bool(float(np.mean(np.array(prony_errs) >= TOL)) <= 0.05),
     }
+    p03_multi_param_class_uniformity = evaluate_multi_parameter_class_uniformity(seed=20261015, n_mc=200)
 
     write_latex_table(sweep, mc_bench)
 
@@ -530,6 +629,8 @@ def main():
         "loglog_slope_blind_prony_upper_bound": float(slope_prony),
         "loglog_slope_blind_prony_analytic_uniform": float(slope_prony_unif),
         "p03_blind_prony_mc_verification": p03_blind_prony_mc,
+        "p03_multi_parameter_class_uniformity": p03_multi_param_class_uniformity,
+        "p03_verification_scope": "Finite-configuration simulations and true-rate/local conditioning diagnostics; not a uniform finite-sample blind-estimator proof.",
         "separation_sweep": sweep,
         "estimator_benchmark_delta_eta_010": mc_bench,
         "estimator_benchmark_delta_eta_010_analytic_pair": mc_bench_analytic,

@@ -1,0 +1,3720 @@
+
+=== PHYSICAL PAGE 1 ===
+1
+ORIUS: A Universal Runtime Safety Layer for
+Physical AI
+under Degraded Observation —
+Primary Battery Validation with Bounded AV
+and Healthcare Evidence
+Pratik Niroula
+Abstract—Physical AI systems operating in
+safety-critical domains face a fundamental hazard:
+degraded observation. When telemetry is delayed,
+dropped,stale,ordrifted,acontrollermayevaluate
+its action as safe with respect to the observed state
+while the true physical state has already crossed a
+constraint boundary. We call this theObservation–
+Action Safety Gap(OASG).
+We present ORIUS (Observation–Reality In-
+tegrity for Universal Safety), a typed runtime layer
+that wraps any upstream controller and enforces
+safety through a five-stage kernel: Detect degraded
+telemetry, Calibrate the observation-consistent
+state set, Constrain the admissible action set,
+Shield unsafe candidate actions via repair or fall-
+back, and Certify every released action with an
+auditable safety certificate.
+The ORIUS architecture isuniversal by design:
+the kernel, benchmark schema, contract stack, and
+governance surface are domain-agnostic. Domain
+specifics are isolated in thin adapter modules that
+implementsixtypedmethods.Thispaperreportsa
+three-domain validation program with one primary
+validation domain and two bounded cross-domain
+validation domains:
+1) BatteryEnergyStorage:dispatchoptimisation
+under degraded SoC telemetry, validated on
+lockedCPSBenchreplayartifacts.Batterypro-
+vides the deepest theorem-to-code-to-artifact
+closure; the promoted runtime slice achieves
+zero true-state violations.
+2) Autonomous Vehicles: ego-speed and relative-
+gap prediction under degraded perception,
+validated on the all-zip grouped nuPlan replay
+surfacewith37,344held-outruntimescenarios,
+1,531,104 replay steps, 1,531,104 certificates,
+empirical ORIUSreplayTSVR 0.000163(re-
+play surface; not closed-loop road deployment),
+and explicit non-closure of road deployment
+or full autonomous-driving field closure.
+3) Medical and Healthcare Monitoring: bounded
+alert-release monitoring under degraded vital-
+signobservations,validatedthroughaMIMIC-
+backed bounded runtime and governance sur-
+face.
+All promoted runtime surfaces maintain 100%
+certificate-chain validity, 100% audit completeness,
+and zero contract failures on their active run-
+time surfaces. All results are reproducible from
+locked artifacts with SHA-256 hashes. We report
+a strict theorem core, the complete shift-aware
+adaptive uncertainty mechanism, and a three-
+domain synthesis showing that the same kernel
+survives domain change without semantic loss
+while keeping battery-specific proof depth clearly
+distinguishedfromtheboundedAVandHealthcare
+evidence.
+Index Terms—runtime safety, degraded obser-
+vation, conformal prediction, safety certificates,
+cyber-physical systems, battery energy storage, au-
+tonomous vehicles, healthcare monitoring, OASG
+I. Introduction
+The deployment of AI-driven controllers in safety-
+critical physical systems—battery energy storage, au-
+tonomous vehicles, and clinical monitoring—has pro-
+gressed from laboratory prototypes to field-deployed
+assets. A pervasive but under-addressed hazard ac-
+companies this transition: the controller takes actions
+conditioned onobservationsof the true physical
+state, yet observations are never perfect. Sensors stall,
+telemetry packets arrive late or out-of-order, cali-
+bration drifts silently, and network links drop entire
+channels. When the observation pipeline degrades,
+the gap between what the controllerbelievesto be
+the state and what the stateactually ismay grow
+unboundedly, and the controller may take an action
+that is formally safe in the observed state space yet
+catastrophically unsafe in the true state space.
+We call this gap theObservation–Action Safety
+Gap(OASG). The OASG is distinct from standard
+notions of model uncertainty, adversarial perturba-
+
+=== PHYSICAL PAGE 2 ===
+2
+tion, or out-of-distribution detection.1 It requires a
+runtime-level mechanism that:
+1) Detects telemetry degradation at every control
+step.
+2) Quantifies the resultingset of states consistent
+with the degraded observation.
+3) Tightens the admissible action space so that
+safety is guaranteed for every member of that
+set.
+4) Shields or repairs any candidate action that exits
+the tightened set.
+5) Issues an auditable, tamper-evident certificate
+for every released action.
+No existing framework—simplex architectures [1],
+runtime-verification monitors [2], Bayesian OOD
+detectors [3], or conformal-prediction wrappers [4]—
+addresses all five requirements simultaneously while
+remainingdomain-agnostic,i.e.applicable to any
+cyber-physical domain via a thin adapter rather than
+a domain-specific redesign.
+A. The ORIUS Framework
+This paper presentsORIUS(Observation–Reality
+Integrity for Universal Safety), a typed runtime safety
+layer whose five-stage kernel—Detect,Calibrate,
+Constrain,Shield,Certify, abbreviated DC3S—
+closes the OASG for any upstream controller. The
+kernel is defined over abstract typed contracts (Sec-
+tion V); domain specifics are confined to an adapter
+module that implements six typed methods. A formal
+theorem chain (T1–T11) connects the runtime invari-
+ants to end-to-end safety guarantees under stated
+assumptions (A1–A13).
+B. Scope and Claims
+Unlike broader planning drafts that motivated
+ORIUS with additional candidate domains, this
+manuscript restricts its empirical claim surface to
+three active domainswith locked, reproducible
+artifacts and explicit evidence tiers:
+1) BatteryEnergyStorage(BESS):dispatchop-
+timisation under degraded state-of-charge teleme-
+try on locked CPSBench replay artifacts. Battery
+is the primary validation domain and carries the
+deepest artifact-to-proof closure.
+2) Autonomous Vehicles (AV): longitudinal pre-
+diction of ego-speed and relative gap under
+degraded perception, validated on the completed
+1Out-of-distribution (OOD) detectors identify distributional
+mismatches but do not synthesise conservative action sets;
+adversarial robustness certifies bounded input perturbations
+but does not handle telemetry infrastructure faults (packet loss,
+reordering, drift).
+all-zip grouped nuPlan replay surface with ex-
+plicit non-closure of full autonomous-driving field
+deployment.
+3) Medical and Healthcare Monitoring:
+bounded monitoring and alert release under
+degraded vital-sign observations. Healthcare is
+validated as a bounded MIMIC-backed runtime
+domain; its claims remain narrower than the
+battery domain.
+The three active domains share the same kernel
+binary, the same contract stack, the same governance
+pipeline, and the same CertOS certificate chain.
+C. Contributions
+The principal contributions of this paper are:
+1) A complete formal architecture for runtime safety
+under degraded observation, expressed as five
+typed stages with a supporting contract algebra
+(Section IV).
+2) An 11-theorem proof chain connecting observa-
+tion reliability to true-state safety guarantees
+(Section VI).
+3) A shift-aware adaptive uncertainty mechanism
+that dynamically adjusts prediction intervals
+without offline recalibration (Section VII).
+4) A bounded three-domain empirical lane:
+•Battery primary validation domain: zero
+true-state violations on the promoted runtime
+slice, with the deepest theorem-to-artifact
+alignment.
+•AV bounded validation domain: 1,531,104
+all-zip grouped nuPlan replay steps and cer-
+tificates; ORIUS reduces TSVR from 0.289250
+for the no-wrapper baseline to 0.000163 on the
+promoted replay row, while the harder relative-
+gap shift table remains explicitly marked as
+bounded.
+•Healthcare bounded validation domain:
+TSVR reduced from 0.194489 to 0.000000 on
+the promoted MIMIC monitoring surface, with
+grouped calibration and governance evidence
+reported explicitly as bounded claims.
+5) A fully reproducible artifact bundle with SHA-
+256 hashes, locked dependencies, and a single-
+command pipeline (Section XI).
+a) What this paper proves and what it does
+not.:The theorem chain (T1–T11) is stated on
+the typed-contract algebra, but the proof posture
+is tracked theorem-by-theorem in the active theorem-
+evidence matrix rather than flattened to “proved in
+full generality.” Empirical confirmation is restricted
+to the three domains above. In particular:
+•The Battery domain achievesTSVR = 0(zero
+true-state violations) and serves as thepri-
+
+=== PHYSICAL PAGE 3 ===
+3
+mary validation domain: it demonstrates the full
+pipeline end-to-end with the deepest artifact-to-
+theorem closure.
+•The AV domain is abounded validationdomain:
+ORIUS is evaluated only under the longitudinal
+TTC + predictive-entry-barrier contract, with
+bounded nuPlan replay artifacts and no claim of
+full road deployment closure.
+•The Healthcare domain is abounded validation
+domain: ORIUS is evaluated only for monitor-
+ing and alert-release semantics on the MIMIC-
+backed healthcare lane. Certificate-valid release
+is reported from runtime-emitted healthcare CVA
+on this surface.
+•Shift-awareness guarantees are bounded to the
+drift rates observed during validation; adversarial
+robustness under intentional telemetry attacks
+has not been evaluated.
+D. Paper Organisation
+Section II formalises the OASG problem. Section III
+surveys related work. Section IV details the DC3S
+kernel and typed interfaces. Section V covers the
+contract stack and governance surface. Section VI
+presents the theorem bridge connecting contracts to
+safety. Section VII introduces the shift-aware mecha-
+nism. Section VIII and Section IX provide the deepest
+per-domain empirical sections for BESS and AV, while
+Section X synthesises the active three-domain lane,
+including the bounded Healthcare domain. Section XI
+documents the reproducibility infrastructure. Sec-
+tion XII discusses limitations. Section XIII concludes.
+II. Problem Formulation: The
+Observation–Action Safety Gap
+A. System Model
+Consider a discrete-time cyber-physical system
+(CPS) with true statext∈X⊆Rn evolving under
+dynamics
+xt+1 =f(x t,at,ωt),(1)
+where at ∈ Ais the control action and ωt is
+an exogenous disturbance. The controller does not
+observe xt directly. Instead it receives atelemetry
+observation
+zt =h(x t) +ϵt,(2)
+where h : X → Zis the sensor model and ϵt is
+measurement noise. Under nominal conditions, the
+safety literature assumesϵt is bounded by some known
+envelope¯ϵ.
+TABLE I: Fault families used to instantiate degraded
+observation.
+F ault family Description
+dropout Complete packet loss for one or more
+channels
+stale_sensor Sensor value frozen at its last known value
+delay_jitter Timestamp reordering or variable latency
+drift_combo Slow additive or multiplicative calibration
+drift
+spikes Transient high-magnitude outlier readings
+out_of_order Packet reordering violating causal ordering
+B. Degraded Observation
+In practice, the observation pipeline introduces
+additional corruption beyondϵt. We model degraded
+observation as a map
+˜zt =g(z t,δt),(3)
+where δt is aninfrastructure fault vectordrawn from
+a fault familyF. In our implementation, the fault
+family includes:
+The degraded observation˜zt may differ fromzt by
+an arbitrarily large amount that depends on the fault
+severity and duration.
+C. Formal Definition of the OASG
+Definition II.1(Observation-Consistent State Set).
+Given a degraded observation˜zt and reliability weight
+wt∈[0,1], theobservation-consistent state setis
+Ut(˜zt,wt) =
+{
+x∈X:
+h(x)−˜zt
+≤r(wt)
+}
+,(4)
+where r : [0 , 1] →R+ is a monotonically non-
+increasing function satisfying r(1) = ¯ϵ(nominal
+radius) and r(w) → ∞as w→0(complete loss
+of trust).
+In the ORIUS implementation,r(wt)is realised by
+conformal prediction intervals inflated by theplanned
+contract factor
+α= clip
+(
+1.0 + 0.7 (1−wt) + 0.5sshift,1.0,3.0
+)
+,(5)
+where sshift is a shift score computed by the adaptive
+mechanism (Section VII).
+Definition II.2(Observation–Action Safety Gap).
+LetS⊂Xbe the safe region and letπbe a controller
+policy. TheOASGat timetis the event
+OASGt =
+{
+π(˜zt)∈C(˜zt)
+}
+∧
+{
+∃x∈Ut :f(x,π(˜zt),ωt)/∈S
+}
+. (6)
+The OASG is non-empty whenever there exists a
+true state consistent with the degraded observation
+for which the controller’s action leads to a safety
+violation.
+
+=== PHYSICAL PAGE 4 ===
+4
+D. Closing the Gap: Requirements
+Closing the OASG requires the runtime layer to
+satisfy five requirements:
+R1 Detection: At every step, assess the reliability
+wt of the current observation using both statisti-
+cal detectors and history-based heuristics.
+R2 Calibration: Compute Ut as a conservative
+superset of the true-state-consistent region.
+R3 Constraint Tightening: Derive a restricted
+action setAt⊆Asuch that every action inAt
+is safe forallstates inU t.
+R4 Shielding: Ifa∗
+t =π(˜zt) /∈At, repair or replace
+a∗
+t witha safe
+t ∈At.
+R5 Certification: Produce a safety certificate bind-
+ing the released action, the observation, the
+reliability assessment, and the constraint check
+into an auditable record.
+These five requirements map directly to the five
+stages of the DC3S kernel.
+E. True-State Violation Rate (TSVR)
+The primary safety metric is thetrue-state violation
+rate:
+TSVR = 1
+T
+T∑
+t=1
+1
+[
+f(xt,a released
+t ,ωt)/∈S
+]
+.(7)
+A runtime layer withTSVR = 0has zero true-state
+violations. In the battery domain, all four controller
+configurations achieve TSVR = 0. In the all-zip
+grouped nuPlan AV replay row, ORIUS reduces the
+TSVR from 0.289250 (baseline) to 0.000163 over
+1,531,104 runtime steps.
+F. Additional Metrics
+Beyond TSVR, we track:
+•OASG rate: fraction of steps where the safety
+gap is detected and closed.
+•Coverage Validity Assessment (CVA): frac-
+tion of steps where the conformal interval con-
+tains the true state.
+•Governance Digest Quality (GDQ): com-
+posite governance metric measuring certificate
+completeness and payload validity.
+•Intervention Rate (IR): fraction of steps
+where the shield modifies the candidate action.
+•Audit Completeness: fraction of steps with a
+valid, non-expired certificate on record.
+G. Empirical Witness for the OASG
+Figure 1 provides the empirical witness for Defi-
+nition II.2: under a quality-ignorant baseline, there
+exist time steps where the controller action is safe
+with respect to the observed state but violates the
+true-state constraint. The Battery domain exhibits
+20 such counterexamples; the all-zip grouped nuPlan
+AV baseline exhibits an OASG rate of 0.0230 over
+1,531,104 steps.
+III. Related Work
+The ORIUS framework sits at the intersection of
+several research threads: runtime verification, confor-
+mal prediction, safety shielding, and CPS telemetry
+resilience. We survey each in turn, highlighting the
+gap that ORIUS addresses.
+A. Runtime Verification and Monitoring
+Runtime-verification (RV) monitors check whether
+an execution trace satisfies a temporal-logic specifica-
+tion [2, 5]. Classic RV monitors arepassive: they flag
+violations but do not modify the controller’s action.
+The simplex architecture [1] introduces adecision
+modulethat switches between a complex controller
+and a verified-safe baseline, but it assumes that the
+state is accurately known—the observation pipeline
+is outside its trust model.
+ORIUS goes beyond passive monitoring by actively
+computing a constraint-tightened action set and
+repairing unsafe actions. Crucially, it operates on
+degradedobservations and inflates the safety envelope
+accordingly, a capability absent from standard simplex
+or watchdog designs.
+B. Conformal Prediction for Safety
+Conformal prediction (CP) constructs distribution-
+free prediction intervals with finite-sample coverage
+guarantees [6]. Adaptive Conformal Inference [ 7]
+and related methods handle distribution shift online.
+Recent work applies CP to robotics and motion
+planning [8, 9].
+ORIUS uses CP as thecalibration engine(Stage 2
+of DC3S) but wraps it in a full runtime safety
+layer with constraint tightening, action shielding,
+and governance certification. Stand-alone CP only
+produces intervals; ORIUS consumes them, inflates
+them according to degradation severity, and feeds the
+result into a formal contract stack.
+C. Safety Shielding and Control Barrier Functions
+Shield synthesis computes a reactive strategy that
+enforces a safety specification by overriding unsafe
+controller actions [10]. Control Barrier Functions
+(CBFs) [11] certify forward invariance of safe sets.
+Both approaches typically require a known, accurate
+state vector.
+
+=== PHYSICAL PAGE 5 ===
+5
+Fig. 1: Observed vs. true state counterexamples under a quality-ignorant baseline. Each point is a time step
+where the observed state satisfies the safety constraint but the true state does not—the defining signature of
+the OASG (Definition II.2). Battery domain shown; the bounded AV counterpart is reported in Section IX.
+Artifact:reports/battery_av/battery/fig_observed_vs_true_counterexamples.png.
+ORIUS contributes by coupling the shield to an
+observation-consistent state set Ut rather than a
+point state estimate. The constraint-tightening stage
+(Section IV) is conceptually analogous to robust
+CBF formulations, but it is implemented via interval
+arithmetic on conformal sets, making it compatible
+with black-box learned models.
+D. Telemetry Resilience in CPS
+Fault-tolerant control and networked control sys-
+tems address packet loss and delay [12]. However,
+these methods typically assume known fault models
+(eg.Bernoulli packet loss with known rate) and linear
+dynamics. ORIUS’s detect stage uses statistical detec-
+tors (Page–Hinkley, staleness counters) toassessthe
+fault type without assuming a parametric model, and
+the calibration stage inflates uncertainty in proportion
+to the detected severity.
+E. Comparison Summary
+Table II summarises the coverage of requirements
+R1–R5 across related approaches.
+F. Positioning
+ORIUS is, to our knowledge, the first runtime
+layer that satisfies all five requirements simultane-
+ously while remaining domain-agnostic through thin
+typed adapters. The defended three-domain lane we
+present combines a battery witness row with bounded
+AV and Healthcare rows, demonstrating that the
+TABLE II: Comparison of ORIUS with related ap-
+proaches on Requirements R1–R5.✓= addressed, (∼)
+= partial,×= not addressed.
+Approach R1 R2 R3 R4 R5
+Classic RV monitor∼ × × × ×
+Simplex architecture× × ×✓×
+Conformal prediction×✓× × ×
+CBF / Shield synthesis× ×✓ ✓×
+Fault-tolerant NCS✓∼ × × ×
+ORIUS (DC3S)✓ ✓ ✓ ✓ ✓
+same kernel—compiled once, configured via adapter—
+survives domain transfer without changing its runtime
+semantics.
+IV. The DC3S Runtime Architecture
+The ORIUS kernel orchestrates five typed stages,
+each consuming the output of the previous stage and
+producing a well-typed contract object. We describe
+each stage, its inputs and outputs, the typed contracts
+involved, and the algorithm that implements it.
+A. Architecture Overview
+B. Stage 1: Detect
+The detect stage assesses the trustworthiness of the
+incoming telemetry.
+a) Input.:An ObservationPacket containing
+the raw telemetry˜zt, the parsed state dictionary, a
+UTC timestamp, and the observation history length.
+
+=== PHYSICAL PAGE 6 ===
+6
+Stage 1
+Detect
+Stage 2
+Calibrate
+Stage 3
+Constrain
+Stage 4
+Shield
+Stage 5
+Certify
+wt,flags Ut At arel
+t
+ObservationPacket ReliabilityAssessment ObsConsistentStateSet SafeActionSet SafetyCertificate
+Fig. 2: The five stages of the DC3S kernel and their inter-stage typed contracts.
+b) Algorithm.:Three detector families run in
+parallel:
+1) Staleness detector: Checks whether the teleme-
+try timestamp is within a configurable freshness
+window. If stale, a binary flagis_stale is raised
+andw t is penalised.
+2) Page–Hinkley drift detector: Maintains a
+running mean of each sensor channel and detects
+upward or downward drift using a cumulative-
+sum test with configurable threshold λand
+toleranceδ[13, 14].
+3) History-based heuristics: Computes the num-
+ber of consecutive identical readings (freeze
+detection), the rate of out-of-order timestamps,
+and spike magnitude relative to a rolling window.
+c) Output.:A ReliabilityAssessmentcontain-
+ing:
+•wt ∈[0, 1]: the composite reliability weight,
+clamped to[0,1].
+•flags: a dictionary of boolean detector outputs.
+•drift_flag: a boolean indicating whether drift
+was detected.
+•drift_meta: metadata from the Page–Hinkley
+detector (cumulative sum, threshold, direction).
+•assumption_tags: the assumptions activated by
+this assessment (A2, A5, A6).
+C. Stage 2: Calibrate
+The calibrate stage computes the observation-
+consistent state setUt.
+a) Input.:The parsed state, the uncertainty
+dictionary (conformal prediction intervals per target
+per horizon), and the reliability weightwt.
+b) Observation Quality Estimation (OQE).:The
+composite reliability weight is the product of three
+independent scores:
+wt =w fresh
+t ·wrange
+t ·wconsist
+t ,(8)
+where:
+•wfresh
+t = exp(−λf·st), with λf the freshness
+decay rate andst the staleness counter (seconds
+since last novel reading).
+•wrange
+t =1[xt∈[x,¯x]], the range-validity indica-
+tor.
+•wconsist
+t penalises readings that deviate from the
+physics-model prediction beyond a configurable
+tolerance.
+c) Reliability-Adaptive Conformal (RAC) Infla-
+tion.:Two inflation forms appear in ORIUS and
+serve distinct roles, which we make explicit here to
+avoid conflation. Thetheoretical envelopethat the
+risk-bound proofs (§VI) reference is theRAC-Cert
+form:
+CRAC
+t (α) =Ct(α)·
+[
+1+κr (1−wt)+κd·dt +κs·st
+]
+,
+(9)
+where Ct(α)is the base conformal interval at mis-
+coverage levelα, κr = 0.5is the reliability penalty,
+κd = 0.3is the drift penalty, dt ∈ {0, 1}is the
+Page–Hinkley drift indicator, and κs = 0 .05is
+the staleness scaling withst the staleness count in
+seconds. Equation(9) is a closed-form upper envelope:
+it exposes each degradation source as a separate,
+additively monotone term, which is the form used
+to discharge Assumption A5 (Monotone Bounded
+Inflation) in the theorem chain.
+Theruntimeexecutes a simplified, clipped form
+that collapses the drift and staleness terms into a
+single shift-aware score and bounds the total inflation
+between1×and3×:
+α= clip
+(
+1.0 + 0.7 (1−wt) + 0.5sshift,1.0,3.0
+)
+.
+(10)
+Equation (10) is the only inflation function actually
+evaluated at runtime. Its implementation anchors
+are the AV runtime wrapper, the training feature
+builder, and the shift-aware uncertainty adapter;
+the exact file and line anchors are recorded in the
+theorem result cards and claim-evidence registers
+rather than repeated as long paths in the manuscript.
+The relationship between the two forms is that
+Eq. (10) is a pointwise lower bound of Eq.(9) once
+sshift is identified with a conservative combination of
+κddt +κsst, so any safety guarantee proved under(9)
+continues to hold under the looser clipped form
+whenever Eq.(10) dominates the theoretical envelope,
+and the runtime is otherwise scoped by the explicit
+α≤3ceiling.
+d) Output.:An observation-consistent state set
+with:
+•observed_state: the point estimate from the
+parsed telemetry.
+•lower_bounds, upper_bounds: per-target dictio-
+naries.
+•inflation: the applied factorα.
+
+=== PHYSICAL PAGE 7 ===
+7
+•quantile: the conformal quantile level.
+•reliability_weight: thewt that produced this
+set.
+D. Stage 3: Constrain
+The constrain stage derives the safe action setAt
+fromU t and the domain safety specification.
+a) Input.:The Stage 2 uncertainty set and a
+SafetySpec encoding domain-specific constraints and
+the fallback action.
+b) Algorithm.:For each constraint in the safety
+specification:
+1) Evaluate the constraint predicate over the worst-
+case state withinUt.
+2) If the constraint is violated under worst-case
+evaluation, mark it as binding.
+3) The safe action set is the intersection of all non-
+binding constraint regions.
+In the battery domain, constraints include SoC
+bounds (SOCmin ≤SOCt ≤SOCmax) and power
+limits (|Pt|≤Pmax). In the AV domain, constraints
+include minimum gap maintenance and ego-speed
+bounds.
+c) Output.:A SafeActionSet containing the
+admissible region and the list of candidate actions
+with their tightened constraint evaluations.
+E. Stage 4: Shield
+The shield stage intercepts any candidate action
+that falls outsideAt and either repairs it or substi-
+tutes the domain-specific fallback.
+a) Input.:The candidate action a∗
+t =π(˜zt), the
+SafeActionSet, and theSafetySpec(which provides
+the fallback).
+b) Algorithm.:
+1:ifa ∗
+t∈At then
+2:returna ∗
+t ▷Action is safe; pass through
+3:else
+4:Attempt projection:a ′= projAt(a∗
+t )
+5:ifa ′satisfies all constraintsthen
+6:returna ′ ▷Repaired action
+7:else
+8:returna safe
+t ▷Fallback action
+9:end if
+10:end if
+c) Output.:A RepairDecision containing the
+released actionarel
+t , whether it was passed through,
+repaired, or substituted, and the delta∥a∗
+t−arel
+t ∥.
+F. Stage 5: Certify
+The certify stage produces aSafetyCertificate
+that binds together all previous stage outputs into
+an auditable record.
+a) Output.:ASafetyCertificatecontaining:
+•A unique certificate UUID.
+•The released action and its provenance (pass-
+through, repair, fallback).
+•The observation packet, reliability assessment,
+and uncertainty set.
+•The constraint evaluation results.
+•A timestamp and domain identifier.
+•A payload dictionary for domain-specific meta-
+data.
+The certificate is appended to an append-only
+governance log. TheContractVerifier (Section V)
+validates every certificate against the contract stack
+before it is committed to the log.
+G. Adapter Interface: The DomainInstantiation
+Protocol
+Domain-specific behaviour is confined to an adapter
+that implements six typed methods defined by the
+DomainInstantiationprotocol:
+1)ingest_telemetry(raw_bytes) ->
+ObservationPacket: parse raw telemetry
+into a typed observation packet.
+2)compute_oqe(history) ->
+ReliabilityAssessment: evaluate the OQE
+triple Equation (8) and produce the composite
+weightw t.
+3)build_uncertainty_set(state, w_t,
+conformal_q) -> ObsConsistentStateSet :
+inflate the base conformal interval using
+Equation (9).
+4)tighten_action_set(U_t, spec) ->
+SafeActionSet: derive At via worst-case
+constraint evaluation overUt.
+5)repair_action(a_star, A_t, spec) ->
+RepairDecision: project or substitute the
+candidate action.
+6)emit_certificate(stages) ->
+SafetyCertificate: bind all stage outputs into
+an auditable certificate.
+The same DC3S kernel binary orchestrates both the
+battery adapter (src/orius/battery_adapter.py)
+and the AV adapter (src/orius/av_adapter.py).
+No kernel code is modified when switching domains.
+H. The DC3S Kernel Algorithm
+Algorithm 1 formalises the five-stage pipeline as a
+single procedural algorithm.
+I. Battery-Domain Constraint Tightening: FTIT
+In the battery domain, Stage 3 enforces theFault-
+Tolerant Invariant Tube(FTIT), which propagates
+
+=== PHYSICAL PAGE 8 ===
+8
+Algorithm 1DC3S Universal Kernel:
+execute_universal_step
+Require: Domain adapterD, raw telemetryz raw
+t ,
+candidate action a∗
+t, safety spec C, conformal
+quantileq α, history bufferH
+Ensure:Released actiona rel
+t , SafetyCertificateKt
+1:[Stage 1: Detect]
+2:obs t←D.ingest_telemetry(zraw
+t )
+3:(w t,flags,d t,st)←D.compute_oqe(H∪{obst})
+4:[Stage 2: Calibrate]
+5:C t(α)←conformal_quantile(qα,obst)
+6:αt←clip(1 + 0.7(1−wt) + 0.5sshift,1,3)▷
+Equation (10); runtime form,≤envelope (9)
+7:U t←[obst.ˆx−αtCt(α),obst.ˆx+αtCt(α)]
+8:[Stage 3: Constrain]
+9:A t←D.tighten_action_set(Ut,C)
+10:[Stage 4: Shield]
+11:ifa ∗
+t∈At then
+12:a rel
+t ←a∗
+t ▷Pass-through
+13:else
+14:a ′←projAt(a∗
+t )▷Repair attempt
+15:ifa ′∈At then
+16:a rel
+t ←a′
+17:else
+18:a rel
+t ←asafe ▷Fallback
+19:end if
+20:end if
+21:[Stage 5: Certify]
+22:K t←D.emit_certificate(obst,wt,Ut,At,a rel
+t )
+23:AppendK t to governance log
+24:return(a rel
+t ,Kt)
+the uncertainty from Stage 2 through the energy
+dynamics:
+¯Et+k = ˆEt +δmax +kη+P +
+max ∆t,(11)
+Et+k = ˆEt−δmax−kP−
+max/η−∆t.(12)
+The safe-action set for the battery is then:
+At ={(P+,P−)|Emin +q RAC
+t ≤ˆEt+1(P +,P−)
+≤Emax−qRAC
+t },
+(13)
+where qRAC
+t is the RAC-inflated safety buffer derived
+fromC RAC
+t .
+J. Latency Profile
+Table III reports the per-stage latency measured
+over 12,096 runtime steps (battery pipeline with 42
+fault-injected scenarios).
+TABLE III: DC3S per-stage latency profile (battery
+pipeline, 12,096 steps).
+Stage Mean Med. P95 Max
+OQE (Detect) 0.026 0.024 0.030 0.210
+Drift detect 0.000 0.000 0.000 0.003
+Calibrate 0.012 0.011 0.015 0.180
+Repair (Shield) 0.002 0.002 0.003 0.090
+F ull step 0.042 0.037 0.041 2.416
+The mean full-step latency of 0.042ms is well
+within the 10-minute dispatch interval for battery
+systems and the 100ms control loop for autonomous
+vehicles. Even the P95 latency of 0.041ms leaves
+ample headroom for real-time deployment.
+K. Detailed Stage Walkthrough: Battery Example
+To make the five-stage pipeline concrete, we trace
+the execution of a single battery dispatch step under
+a stale-sensor fault.
+a) Step context.:The true SoC is 450MWh. The
+sensor has been frozen for 3 intervals, so the telemetry
+reports soc_mwh = 440 (10 MWh stale error). The
+promoted battery witness policy proposes a 50 MW
+discharge.
+b) Stage 1 (Detect).:The staleness detector
+records 3 consecutive identical readings and raises
+is_stale = true . The reliability weight drops to
+wt = 0.976. The Page–Hinkley detector does not
+fire because the constant readings mimic a zero-drift
+signal. Output: wt = 0 .976, flags = {is_stale:
+true}.
+c) Stage 2 (Calibrate).:The battery runtime cal-
+ibrator emits the base intervalˆCt = [420, 480]MWh
+(half-width 30 MWh). Withwt = 0.976and sshift = 0:
+α= clip
+(
+1.0+0.7×0.024+0.5×0,1.0,3.0
+)
+= 1.017.
+The inflated interval isˆCRAC
+t = [419.5, 480.5]MWh.
+The true SoC of 450 MWh falls withinˆCRAC
+t , satis-
+fying T1.
+d) Stage 3 (Constrain).:The safety specification
+requires SOCmin = 100MWh ≤SOC≤SOCmax =
+900MWh. Even under worst-case evaluation (SOC =
+419.5MWh), a 50 MW discharge for one interval
+(10 min) reduces SoC by∼8.3 MWh to 411.2 MWh,
+still aboveSOC min. The action is admitted toAt.
+e) Stage 4 (Shield).:Since the candidate action
+(50 MW discharge) is in At, the shield passes it
+through without repair. Output:pass_through, delta
+= 0.
+
+=== PHYSICAL PAGE 9 ===
+9
+f) Stage 5 (Certify).:A certificate is emitted
+with UUID, the released action (50 MW discharge),
+the stale-sensor flag,wt = 0.976, α= 1.017, and the
+constraint evaluation result. The certificate passes all
+predicates CP1–CP6.
+This walkthrough demonstrates that even moderate
+degradation (10 MWh stale error) is handled grace-
+fully: the interval inflates by 1.7%, the constraint
+check passes, and no intervention is needed.
+L. Detailed Stage Walkthrough: AV Example
+We trace a single AV step under a spike fault.
+a) Step context.:The ego vehicle is travelling
+at 12 m/s with a relative gap of 45 m. A spike fault
+injects a transient reading ofvego = 35m/s (23 m/s
+above truth).
+b) Stage 1 (Detect).:The spike detector com-
+putes the z-score of 35 m/s against the rolling
+mean (11.5 m/s) and standard deviation (2.3 m/s):
+z = (35 −11.5)/2.3 = 10 .2. This far exceeds the
+spike threshold (z >3), so spike_detected = true
+is raised andwt drops to approximately 0.40.
+c) Stage 2 (Calibrate).:With wt = 0.40and
+sshift = 0:
+α= clip
+(
+1.0 + 0.7×0.60 + 0.5×0,1.0,3.0
+)
+= 1.42.
+The base conformal interval for 1s ego speed isˆCt =
+[8.0, 16.0]m/s (half-width 4.0 m/s centred on 12 m/s).
+After inflation: ˆCRAC
+t = [6.3, 17.7]m/s. The true
+speed of 12 m/s is contained.
+d) Stage 3 (Constrain).:Under worst-case evalu-
+ation (v = 6.3m/s), the minimum following gap may
+be violated because the lead vehicle could be closer
+than expected. The tightened safe action set restricts
+the ego acceleration to≤0.5m/s 2 (rather than the
+controller’s proposed 1.2 m/s2).
+e) Stage 4 (Shield).:The candidate acceleration
+(1.2 m/s2) exceeds the tightened bound (0.5 m/s2).
+The shield projects the action to the boundary:
+released action = 0.5 m/s2. Output: repaired, delta
+= 0.7m/s 2.
+f) Stage 5 (Certify).:The certificate records the
+repair delta, the spike flag,wt = 0.40, α= 1.42, and
+the constraint-tightened evaluation.
+This walkthrough shows the full shielding pathway:
+a severe spike triggers a low reliability weight, which
+inflates the interval by 42%, which tightens the
+constraint set, which triggers an action repair.
+M. Kernel Code Structure
+The ORIUS kernel codebase is organised as follows:
+•kernel.py: five-stage orchestration.
+TABLE IV: Typed contract objects produced by the
+DC3S kernel.
+Contract object A Role
+ObservationPacketA1 Raw telemetry + parsed state
+ReliabilityAssessment A2, A5,
+A6
+Detection output:w t, flags
+ObsConsistentStateSetA2, A5 Uncertainty envelopeU t
+SafetySpec A3, A4,
+A8
+Domainconstraints+fallback
+SafeActionSetA3, A4 Tightened admissible actions
+RepairDecisionA4 Shield output
+SafetyCertificateCP1–CP6 Auditable record binding all
+stages
+•contracts.py: typed runtime objects and adapter
+protocol.
+•risk_bounds.py: T10/T11 risk computations.
+•dc3s/drift.py: Page-Hinkley drift detector.
+•dc3s/runtime.py: DC3S runtime loop.
+•battery_adapter.py, av_adapter.py: domain
+adapters.
+The total kernel (excluding adapters) is under
+600 lines of Python. The two adapters add approxi-
+mately 150–200 lines each. This compact implemen-
+tation supports the claim that the framework is
+lightweight and auditable.
+V. Contract Stack and Governance Surface
+Every DC3S step produces intermediate typed
+objects. Thecontract stackdefines the obligations
+that each object must satisfy for the step to be
+valid. Thegovernance surfaceaggregates per-
+step certificates into episode- and campaign-level
+summaries that auditors can inspect.
+A. Typed Contract Objects
+Table IV lists the principal contract objects, their
+associated assumptions, and their role in the kernel.
+B. ContractVerifier
+The ContractVerifier is a second-pass checker
+that validates aSafetyCertificate against a set of
+contract predicates. Each predicate is a boolean func-
+tion of the certificate’s payload. The verifier evaluates
+all predicates and returns a VerificationResult
+with:
+•Chain validity: conjunction of all predicate
+outcomes.
+•Failure rows: count of certificates that failed at
+least one predicate.
+•Required-payload rate: fraction of certificates
+with all required fields present.
+•Audit completeness: fraction of steps with a
+valid certificate.
+
+=== PHYSICAL PAGE 10 ===
+10
+TABLE V:DomainInstantiationadapter surface.
+Method Contract output
+domain_id Stable domain identifier for evidence rows and
+certificates.
+assess ReliabilityAssessment from current obser-
+vation and history.
+calibrate ObservationConsistentStateSet with
+reliability-aware uncertainty.
+constrain SafeActionSet induced by the uncertainty set
+and safety spec.
+shield RepairDecision : release, repair, fallback, or
+deny.
+certify SafetyCertificate binding the released ac-
+tion to evidence.
+C. Contract Predicates
+The predicate set is domain-agnostic. The following
+predicates are evaluated for every certificate:
+CP1 Monotone inflation: the inflation factorα≥
+1.0.
+CP2 Weight bounds:wt∈[0,1].
+CP3 Interval non-degenerate: for every target,
+upper≥lower.
+CP4 Action within bounds: released action satisfies
+all tightened constraints.
+CP5 Certificate completeness: all required fields
+are present and non-null.
+CP6 Timestamp monotonicity: certificate times-
+tamps are non-decreasing within an episode.
+The contract predicate CP1 (monotone inflation)
+is a runtime-law check: lower reliability may widen
+the uncertainty set, but it must never shrink it. The
+observation-ambiguity result in Theorem T4 then
+explains why this check matters: when degraded
+observations collapse distinct hidden states into the
+same observation class, quality-ignorant release can
+become unsafe.
+D. Domain Instantiation Protocol
+A DomainInstantiation adapter implements the
+small typed surface in Table V. This keeps the kernel
+stable: adding a domain means implementing these
+methods, not changing the release contract.
+E. Governance Surface
+At the episode level, the governance
+surface aggregates certificates into a summary
+runtime_governance_summary.csv with the
+metrics in Table VI.
+The battery governance row covers all four pro-
+moted battery runtime variants (1,152 certificates).
+The all-zip grouped nuPlan AV row reports a 99.992%
+certificate-valid release rate and 100% audit complete-
+ness on 1,531,104 runtime steps.
+F. CertOS Verification
+The CertOS module performs an offline re-
+verification of the entire certificate chain. For each
+active runtime certificate surface:
+•Battery: 1,152 certificates verified,
+chain_valid = true, 0 failures.
+•AV: 1,531,104 all-zip grouped nuPlan certificates
+emitted, certificate-valid release rate0.999924,
+249 empirical runtime violations under the pro-
+moted replay contract.
+G. Safety Architecture Comparison
+Table VII positions ORIUS/DC3S against five
+alternative safety-layer paradigms. The comparison
+focuses on structural capabilities rather than domain-
+specific numbers.
+† Active defended lane: Battery witness row plus bounded
+AV and Healthcare rows with locked artifacts.
+a) Key differentiators.:
+•Simplex[ 1, 15] provides safety switching be-
+tween a performance controller and a verified
+safe controller, but does not adapt the safety
+margin to telemetry reliability.
+•GP-MPC(Gaussian Process Model Predictive
+Control) provides uncertainty-aware control but
+requires a Gaussian process model per domain,
+with O(n3)scaling precluding real-time use at
+large state dimensions.
+•DRO(Distributionally Robust Optimisation)
+handles distributional ambiguity but does not
+produce per-step safety certificates or adapt to
+observation-quality signals.
+•Safe RLincorporates safety constraints into
+the reward, but typically provides asymptotic
+guarantees rather than per-step certificates.
+•Vanilla CQRachieves conformal coverage but
+is quality-ignorant: the same interval width is
+used regardless of telemetry degradation.
+DC3S is unique in combining observation-quality
+awareness, reliability-adaptive margins, a formal proof
+programme, domain-agnostic typed adapters, and per-
+step certificate governance in a single runtime layer
+with sub-millisecond overhead.
+VI. Theorem Bridge: From Contracts to
+Safety
+This section presents the formal theorem pro-
+gramme that connects the DC3S runtime contracts
+to end-to-end safety guarantees. The paper-facing
+presentation is deliberately compact: four flagship
+theorem statements carry the argument, while the
+permanent T1–T11 identifiers remain in place for
+registry, appendix, and code-traceability purposes.
+
+=== PHYSICAL PAGE 11 ===
+11
+TABLE VI: Claim-governing governance summary metrics regenerated from the active certificate artifacts.
+Metric Battery nuPlan AV Healthcare
+certificate_rows1,152 1,531,104 137,262
+chain_valid1.0 1.0 1.0
+failure_rows0 0 0
+required_payload_pass_rate1.0 1.0 1.0
+expiry_metadata_presence_rate1.0 1.0 1.0
+expiry_consistency_rate1.0 1.0 1.0
+audit_completeness_rate1.0 1.0 1.0
+TABLE VII: Safety architecture comparison. Entries are structural support levels, not trainable metrics:Yes
+means native support,Partialmeans support under additional modeling assumptions, andNomeans the
+baseline does not natively expose that ORIUS release-contract obligation.
+Capability DC3S Simplex GP-MPC DRO Safe RL V anilla CQR
+Obs-quality aware Yes No No No No No
+Reliability-adaptive mar-
+gin
+Yes No Partial No No No
+Conformal coverage guar-
+antee
+Yes No No No No Yes
+Domain-agnostic kernel Yes Partial No No No Yes
+Typed adapter protocol Yes No No No No No
+Certificate governance Yes No No No No No
+Graceful degradation
+(T8)
+Yes Yes Partial No No No
+Formal proof programme Yes Yes Partial Yes Partial Partial
+Runtime overhead< 1ms Yes Yes No No No Yes
+Three-row validated† Yes No No No No No
+Definitions, corollaries, and propositions retain their
+audit identifiers, but they are not presented as
+additional headline theorems. This avoids presenting
+the work as an inflated list of disconnected theorems
+while preserving the full audit surface used by the
+repository.
+A. Headline Results and Audit Identifiers
+T5–T10 remain visible as scoped theorem surfaces
+rather than equal-size headline claims. The generated
+theorem-promotion matrix and result cards are the
+authority for promoted status, proof anchors, code an-
+chors, tests, artifacts, and claim-boundary language.
+B. Assumptions
+The theorem programme uses the canonical Ap-
+pendix B assumption register A1–A13. This con-
+densed IEEE bridge restates the subsetA1–A9needed
+to present the battery ladder T1–T8.
+Assumption1(A1: Bounded Model Error).The one-
+step prediction error of the domain model is bounded:
+|ϵt|≤ϵmodel for allt.
+Assumption 2(A2: Bounded Telemetry Error).The
+observation error is bounded by a function of the
+reliability weight:|ˆxt−xt| ≤g(wt), where g is a
+known, monotonically non-increasing function with
+g(1) = ¯ϵ(nominal noise floor).
+Assumption 3(A3: Constraint Expressibility).The
+domain safety specification can be expressed as a finite
+conjunction of state-action constraints evaluable over
+Ut.
+Assumption 4(A4: Known Dynamics).The con-
+troller can evaluate the one-step dynamics map
+f(xt,at)to compute∆(a t).
+Assumption 5(A5: Monotone Bounded Inflation).
+The reliability-adaptive conformal marginmt is mono-
+tonically non-increasing inwt: lower reliability never
+shrinks the uncertainty set. The base conformal
+predictor achieves coverage≥1−αon the calibration
+set.
+Assumption 6(A6: Bounded Detector Lag).The
+staleness counter and drift detector respond within a
+bounded lag ofτlag <∞steps.
+Assumption 7(A7: Causal Certificates).Each
+certificate uses only causally available information (no
+future data). The episode horizon is finite:T <∞.
+Assumption 8(A8: Piecewise Battery Fallback
+Admissibility).In the battery witness row, fallback
+admissibility is piecewise: zero dispatch is certified on
+the safe-set interior, a boundary-aware safe-landing
+recovery action is certified near the boundary when
+feasible, and the runtime fails closed otherwise.
+
+=== PHYSICAL PAGE 12 ===
+12
+TABLE VIII: Main-paper theorem arc and permanent
+traceability identifiers.
+Headline re-
+sult
+Audit IDs Role in the argument
+Observation-
+aware safety
+gap
+T1 Degraded observation
+can make observed-state
+safety disagree with
+true-state safety.
+Observation
+necessity
+T4 Observation-only
+or quality-ignorant
+mandatory release
+cannot guarantee
+safety on the defended
+ambiguity witness class.
+ORIUS
+covered
+release
+guarantee
+T2, T3 Covered uncertainty sets
+plus repaired release
+yield one-step safety and
+an explicit risk-envelope
+corollary.
+Typed trans-
+fer and am-
+biguity sand-
+wich
+T11;
+T10/T11
+corollary
+The typed ORIUS
+contract transfers to
+defended domains, with
+certificate/fallback
+discipline (T5–T8) and
+the covered lower/upper
+safety sandwich stated
+only under its scoped
+ambiguity class.
+Assumption 9(A9: Sub-Gaussian Drift Proxy).The
+battery certificate drift process admits a sub-Gaussian
+scale σd and a boundary gapδbnd,t, so the certificate
+survival probability satisfies the closed-form first-
+passage lower bound used by T6.
+Assumption 10(A10: Boundary-Active Controller).
+The quality-ignorant baseline controllerπused in the
+T1 witness construction drives the true state within
+distance δbnd =Pmax∆t of the safe-set boundary∂S
+with positive frequency. This captures the operational
+fact that economically-driven dispatch policies (e.g.
+deterministic arbitrage LPs in the battery domain
+and longitudinal performance-tracking policies in the
+AV domain) operate near constraint boundaries by
+construction; it is discharged empirically by the LP
+arbitrage baseline used in §VIII and the no-wrapper
+baseline in §IX, both of which produce non-zero
+baseline TSVR under degraded telemetry. We state
+it as an assumption rather than a lemma because the
+boundary-seeking property depends on the choice of
+controller, not on the ORIUS framework itself.
+a) Usage map.:Table IX shows which theorems
+depend on which assumptions.
+C. Battery Ladder (T1–T4): The Reference Witness
+The battery domain serves as thereference witness:
+it provides the deepest closure of the proof chain
+because battery dynamics are scalar, linear, and fully
+instrumented.
+Theorem VI.1(T1: OASG Existence).Let
+(X,U,f,S,ˆx )be a CPS satisfying A1, A2, A4, and 10.
+Letπbe any quality-ignorant controller satisfying 10
+(boundary-active). If the telemetry error satisfies
+P[∥ξt∥> δbnd]> 0, then there exists a timet∗such
+that
+ϕobs(π(ˆxt∗)) = 1andϕ true(π(ˆxt∗)) = 0.(14)
+Proof sketch.Step1(Boundaryproximity).By10,the
+controller drives the true state withinδbnd =Pmax∆t
+of the constraint boundary with positive frequency.
+Boundary-seeking is therefore a property of the
+controller class, not a derived lemma; the assumption
+is discharged empirically by the non-zero baseline
+TSVR observed for the LP arbitrage and no-wrapper
+policies in §VIII and §IX.
+Step 2 (Observation gap).Under dropout rated> 0,
+A2 (Bounded Telemetry Error) gives a non-degenerate
+error distribution whose tail satisfiesP[∥ξt∥>δbnd]>
+0for any positiveδbnd.
+Step 3 (Witness construction).The boundary-
+proximity event of Step 1 and the tail event of
+Step 2 are non-trivially overlapping under A4 (Known
+Dynamics) because the boundary event has positive
+frequency and the tail event has positive probability
+per step. At any step t∗in the intersection, the
+observed safety predicateϕobs evaluates to safe (the
+observed state is interior) but the true safety predicate
+ϕtrue evaluates to unsafe (the true state has crossed
+the boundary).
+a) Battery instantiation.:The true state is
+xt = SOCt∈[0,E max](MWh), the action is at =
+(P chg
+t ,P dis
+t ), and the one-step dynamics are
+xt+1 =x t + (ηcP chg
+t −η−1
+d P dis
+t )∆t+ϵt.(15)
+The observed safety predicate evaluates the SoC
+constraint onˆxt:ϕobs(at) =1[ SOCmin≤ˆxt+∆(at)≤
+SOCmax].
+b) Empirical confirmation.:Under the determin-
+istic LP baseline withdrift_combo (20% dropout),
+the empirical TSVR is 3.9% (DE) and 4.2% (US
+CAISO), confirming E[TSVR] > 0for quality-
+ignorant controllers.
+Theorem VI.2(T2: One-Step Safety Preservation
+Under the Shield).Under A1–A3, A5, and A7, define
+the tightened safe-action set
+At =
+{
+a∈U:f(ˆxt,a)⊕B(mt)⊆S
+}
+,(16)
+
+=== PHYSICAL PAGE 13 ===
+13
+TABLE IX: Assumption usage map across the theorem programme.
+Result A1 A2 A3 A4 A5 A6 A7 A8 A9 A10
+T1 OASG Existence✓ ✓ ✓ ✓
+T2 Safety Preservation✓ ✓ ✓ ✓ ✓
+T3 ORIUS Core Bound✓ ✓ ✓ ✓ ✓ ✓
+T4 Observation Necessity✓ ✓
+T5 Certificate Validity✓ ✓
+T6 Certificate Expiration✓ ✓ ✓
+T7_Battery Fallback✓ ✓ ✓
+T8 Graceful Degradation✓ ✓ ✓ ✓ ✓ ✓
+T9 Mandatory Release Impossibility✓ ✓
+T10 Lower Bound✓ ✓
+T11 Typed Transfer✓ ✓ ✓ ✓ ✓
+where mt = qt/(wt + ϵ)is the reliability-inflated
+conformal margin andB(mt)the ball of radiusmt. If
+xt∈Ut anda t∈At, thenf(x t,at)∈S.
+Proof (battery scalar case).Since xt ∈Ut = [ ˆxt−
+mt,ˆxt +mt], we have|xt−ˆxt|≤mt. The one-step
+dynamics give
+st+1 =s t +ηcP chg
+t ∆t−η−1
+d P dis
+t ∆t+ϵt
+≥ˆst−mt +ηcP chg
+t ∆t−η−1
+d P dis
+t ∆t−ϵmodel
+≥SOCmin +mt−mt−ϵmodel = SOCmin−ϵmodel.
+(17)
+Analogously for the upper bound. Under A1,ϵmodel
+is absorbed into the margin, yielding st+1 ∈
+[SOCmin,SOC max].
+Corollary VI.3(T3: ORIUS Core Risk Envelope).
+Under A1, A2, A4–A7, the expected total violation
+count over horizonTis bounded:
+E[VT ]≤α(1−¯w)T (18)
+whereαis the conformal miscoverage level and¯w=
+T−1∑T
+t=1wt is the episode-average reliability.
+Proof. Define the per-step violation indicatorZt =
+1[f(xt,a rel
+t ) /∈S]. By the calibration contract (A5),
+P[xt /∈Ut|Ht]≤α. Given the risk-envelope contract,
+the per-step risk budget isrt = α(1−wt), whence
+P[Zt = 1|Ht]≤α(1−wt). Summing:
+E[VT ] =
+T∑
+t=1
+E[Zt]≤
+T∑
+t=1
+α(1−wt)
+=α
+T∑
+t=1
+(1−wt) =α(1−¯w)T.
+c) Numerical example.:The numbers below are
+illustrative for the hypothetical moderate-degradation
+row of Table X, not the observed battery scenario.
+With α= 0.10, T = 288(battery horizon), and
+a hypothetical ¯w= 0.83(moderate degradation):
+E[VT ]≤0.10×0.17×288 = 4.9violations. The actual
+battery runtime achieves ¯w∈[0.905, 0.999]across
+all four controller configurations (see §VIII), which
+corresponds to the mild-to-perfect rows of the same
+table and predictsE[VT ]≤2.74violations under the
+worst observed ¯w= 0.905. The empirically observed
+violation count is 0, well below either bound.
+Table X illustrates the bound under varying degra-
+dation.
+TABLE X: ORIUS core boundE[VT ]≤α(1−¯w)T
+under varying degradation scenarios (α= 0.10, T =
+288).
+Scenario¯wE[V T ]TSVR (%)
+Perfect telemetry 1.00 0.0 0.00
+Mild degradation 0.95 1.4 0.50
+Moderate degradation 0.83 4.9 1.70
+Severe degradation 0.60 11.5 4.00
+Near-blackout 0.20 23.0 8.00
+Total blackout 0.00 28.8 10.00
+Theorem VI.4(T4: Observation Necessity / No
+Free Safety).Under A1, A2, A4, and the boundary-
+reachability witness, letπbe a fixed-margin quality-
+ignorant mandatory-release controller with marginmπ.
+If an admissible degraded-observation gap exceeds that
+fixed margin at a boundary-sensitive release step, then
+there exists an admissible fault sequence on whichπ
+incurs a true-state violation. Equivalently, on this
+witness class, mandatory non-intervention cannot
+certifyTSVR = 0.
+Proof sketch (constructive witness).Construct a
+degraded-observation episode where the deterministic
+LP drives SoC toSOCmax−ϵwhile the telemetry
+reads SOCmax−ϵ−ξwithξ >mπ+ϵ. A fixed-margin
+mandatory controller that does not intervene treats
+the observed state as feasible while the same released
+dispatch pushes the true SoC aboveSOCmax. The
+result is scoped to this fixed-margin, boundary-
+sensitive witness; adaptive margins, abstention,
+
+=== PHYSICAL PAGE 14 ===
+14
+fallback, and fail-closed denial are outside the
+lower-bound class.
+D. Certificate and Temporal Theorems (T5–T8)
+Theorem VI.5(T5: Finite-Horizon Certificate Va-
+lidity).Let Xt be the observation-consistent state set
+at timet, let ˜at:t+h be the certified release or fallback
+sequence, and letSbe the safe-state set. If
+Rt+j(Xt,˜at:t+j)⊆S j= 0,...,h,
+then the certificate issued at time t is valid for
+horizonh unless a certificate-invalidating event occurs.
+Proposition VI.6(T6: Certificate Expiration
+Bound).Under A4, A7, and A9, for any confidence
+level δ∈(0, 1)the battery certificate survival horizon
+satisfies the closed-form lower bound
+τt ≥
+⌊
+δbnd,t
+σd
+√
+2 log(1/δ)
+⌋
+.
+Runtime enforcement enters fallback when this lower
+bound drops below one step.
+Proposition VI.7(T7_Battery: Feasible Fallback
+Existence).Under A1, A4, and A8, a constructive
+battery fallback exists in piecewise form: zero dispatch
+is admissible and safe on the interior, a boundary-
+aware safe-landing recovery action is admissible near
+the lower or upper boundary when the actuator limits
+permit it, and the runtime fails closed otherwise.
+Theorem VI.8(T8: Graceful Degradation Dom-
+inance with Useful Work).Let PG be the ORIUS
+graceful-degradation policy andPU an uncontrolled
+persistence policy under the same admissible fault
+trace. IfZG
+t ≤ZU
+t for allt and WG≥λWU for some
+λ∈(0, 1], then PG weakly dominatesPU in safety
+while preserving at least aλ-fraction of useful work.
+E. Universal Extension (T9–T11)
+The universal theorem is T11: any compliant
+domain inherits the ORIUS runtime-assurance con-
+tract through the typed adapter obligations. T9 and
+T10 are promoted as scoped lower-bound surfaces:
+T9 covers mandatory observation-only release with
+empty common safe core, and T10 covers a two-state
+boundary-indistinguishability problem. Their status
+is governed by the promotion matrix and result-card
+artifacts, not prose alone.
+Proposition VI.9(T9: Impossibility of Quali-
+ty-Ignorant Mandatory Release).LetΠ obs be total
+observation-only mandatory-release controllers with
+no abstention action. For an observationo, define
+B(o) = {x: h(x) = o}and K(o) = ∩x∈B(o)C(x).
+If B(o)̸=∅and K(o) = ∅, then noπ∈Π obs can
+guarantee true-state safety for allx∈B(o).
+Proof. A total mandatory-release controller chooses
+a single actiona =π(o)for the nonempty ambiguity
+class. Since the common safe core is empty, no single
+action lies in everyC(x)for x∈B(o), so there exists
+x†∈B(o)with a /∈C(x†); if the latent state realizes
+as x†, the released action is unsafe. The result is a
+structural impossibility for the mandatory-release pol-
+icy class; abstention, fallback, uncertainty expansion,
+and denial are outside this class by definition and are
+precisely the moves ORIUS adds. The empty safe-core
+hypothesis is discharged empirically by the non-zero
+baseline TSVR of the LP arbitrage and no-wrapper
+policies in §VIII and §IX: those policies operate
+as observation-only mandatory-release controllers on
+ambiguity classes where K(o) = ∅ on a positive
+fraction of steps.
+Proposition VI.10(T10: Boundary-Indistinguisha-
+bility Lower Bound).Let x0,x 1 be latent boundary
+states with induced observation distributionsP0,P 1. If
+dTV(P0,P 1)≤ϵand C(x0)∩C(x1) = ∅, then every
+observation-only mandatory-release controller satisfies
+sup
+i∈{0,1}
+Pr
+O∼Pi
+[π(O)/∈C(xi)]≥1−ϵ
+2 .
+Proof. For a deterministic release rule, defineSi =
+{o: π(o)∈C(xi)}. Disjoint safe-action sets imply
+S0∩S1 =∅. The average release success probability
+is 1
+2(P0(S0) +P1(S1)). SinceS1⊆Sc
+0, the test that
+decides x0 on S0 and x1 otherwise succeeds with
+probability at least that release-success value. The
+best testing success is(1+dTV(P0,P 1))/2≤(1+ϵ)/2,
+so the average release loss is at least(1−ϵ)/2. The
+maximum of the two state-conditioned risks is at
+least that average. Randomized controllers follow by
+conditioning on the internal seed and averaging.
+a) Scope: TV distance is not the reliability
+weight.:The bound is stated in terms of an exogenous
+TV distanceϵbetween two latent-state-induced obser-
+vation laws.ϵisnotthe ORIUS reliability weight wt.
+The connection to the rest of the framework is indirect:
+A2 (Bounded Telemetry Error) supplies a function
+g(wt)that controls the observation error envelope,
+and a TV bound of the formϵ≤ϵ(g(wt))can be
+derived only for specific noise models (Gaussian,
+bounded-support). T10 therefore applies only to
+ambiguity classes admitting such a TV bound; we do
+not claim thatwt itself behaves as a TV distance.
+b) Reliability–risk frontier.:T10 is a two-state
+lower bound, not a global minimax frontier. The
+scoped minimax row T_minimax uses the same TV
+
+=== PHYSICAL PAGE 15 ===
+15
+argument only over finite two-state ambiguity classes
+and does not claim a matching universal upper bound.
+Theorem VI.11(T11: Typed Structural Transfer).
+LetD be a domain instantiation satisfying the adapter
+contract (Section V). Assume that on every stept:
+(i)Coverage:P[x t∈Ut|Ht]≥1−α.
+(ii) Soundness: Everya∈At(Ut)keeps f(x,a )∈S
+for allx∈Ut.
+(iii) Repair membership: The repair operator re-
+turnsa safe
+t ∈At(Ut).
+(iv) Fallback admissibility: The domain certifies a
+safe hold or boundary-recovery fallback witness,
+and fails closed when neither case is admissible.
+Then:
+P
+[
+xt+1∈S|Ht
+]
+≥1−α.(19)
+Corollary VI.12(Covered Observation-Ambigu-
+ity Safety Sandwich).For an observation o, let
+B(o) = {x: h(x) = o}be its ambiguity class and
+K(o) =⋂
+x∈B(o)C(x)be its common safe core. Any
+mandatory-release observation-only controller satisfies
+TSVR(π)≥EO
+[
+min
+a∈A
+P(a /∈C(X⋆)|O)
+]
+.
+If ORIUS constructsXt with P(X⋆
+t /∈Xt)≤αand
+releases onlyut∈⋂
+x∈XtC(x), thenTSVRORIUS≤α;
+under exact coverage, the one-step true-state violation
+probability is zero.
+Proof. For each observation valueo, defineL(a,o ) =
+P(a /∈C(X⋆) |O= o). A mandatory-release
+observation-only policy must select one actionπ(o)
+for the whole ambiguity classB(o), soL(π(o),o )≥
+mina∈AL(a,o ). Taking expectation overO gives the
+displayed Bayes lower bound. IfK(o) =∅and the
+conditional law overB(o)assigns positive mass to
+states excluding every candidate action, the condi-
+tional minimum is positive; ifK(o)̸=∅, the bound
+correctly permits zero conditional risk.
+For ORIUS, split the violation event on whether
+X⋆
+t ∈Xt. On the covered event, the released action is
+in C(x)for every x∈Xt, hence inC(X⋆
+t ). Therefore
+the covered contribution is zero, and the remaining
+contribution is bounded byP(X⋆
+t /∈Xt)≤α.
+c) Counterexample boundary.:The corollary is
+intentionally not a global optimality theorem. It
+would be false if a nonempty common safe core
+existed and an observation-only controller selected
+from that core, if the controller were allowed to
+abstain instead of mandatory release, ifXt failed to
+cover the true state, or if the domain adapter supplied
+an incorrect safe set or infeasible fallback. These cases
+are treated as explicit proof obligations rather than
+hidden assumptions.
+d) Failure-mode converse.:Ifanyof the four T11
+obligations fails, there exists a domain instantiation
+where the transfer argument breaks and violations
+accumulate.
+e) Episode aggregation corollary.:If the domain
+instantiation supplies per-step risk budgetrt with
+P[xt+1 /∈S|Ht]≤rt, then E[VT ]≤∑T
+t=1rt. With
+the battery envelopert≤α(1−wt), this recovers the
+core bound:E[VT ]≤α(1−¯w)T.
+F. Proof Architecture Summary
+The proof programme has a layered structure. The
+main text should be read as four flagship theorem
+statements plus supporting definitions, propositions,
+and corollaries. The T-identifiers serve as traceability
+anchors:
+•Problem(T1): degraded observation creates the
+observed-safe / actually-unsafe gap.
+•Necessity(T4): quality-ignorant mandatory
+release cannot guarantee true-state safety on the
+defended ambiguity witness class.
+•Construction(T2, with T3 as a corollary):
+covered uncertainty sets, repair, and the risk-
+envelope contract supply the ORIUS upper guar-
+antee.
+•Operationalization(scoped T5–T8): certifi-
+cate horizon, expiration, fallback, and graceful
+degradation make release time-bounded and fail-
+closed.
+•Transfer and scoped ambiguity(T11 plus the
+T10/T11 ambiguity corollary): typed obligations
+transfer the argument across defended domains,
+while the lower/upper sandwich states only the
+covered ambiguity comparison.
+The generated theorem-promotion matrix confirms
+that T9 and T10 are promoted only in their scoped
+forms: mandatory-release empty-safe-core impossibil-
+ity and two-state boundary indistinguishability. It is
+also the authority for proof, code, test, artifact, hash,
+and claim-boundary status.
+VII. Shift-Aware Adaptive Uncertainty
+Standard conformal prediction provides marginal
+coverage guarantees over thecalibration distribution.
+When the test-time distribution drifts—as is common
+in CPS deployments with seasonal patterns, fleet ag-
+ing, or scenario changes—the coverage guarantee may
+degrade. ORIUS addresses this through ashift-aware
+adaptive uncertaintymechanism that dynamically
+adjusts the inflation factor without requiring offline
+recalibration.
+
+=== PHYSICAL PAGE 16 ===
+16
+A. Mechanism Design
+The shift-aware module operates at runtime along-
+side the DC3S kernel and maintains, for each predic-
+tion targetj, a set of coverage statistics accumulated
+over a sliding window of recent steps.
+a) Step 1: Subgroup Coverage Tracking.:The
+runtime groups recent steps by stratification variables
+(eg.source-shard identity, speed bin, neighbour count).
+For each subgroup g, it maintains an empirical
+coverage
+ˆCg = 1
+|g|
+∑
+t∈g
+1
+[
+xt∈Ut
+]
+.(20)
+If ˆCg drops below the target coverage1−αtarget for
+any subgroup, the under-coverage gap is recorded.
+b) Step2:ShiftScoreComputation.:Acomposite
+shift score is computed as
+sshift = max
+g
+(
+1−αtarget−ˆCg
+)
++,(21)
+where(·)+ denotes the positive part. This score is
+zero when all subgroups meet the coverage target and
+positive when any subgroup is under-covered.
+c) Step 3: Adaptive Inflation.:The shift score
+feeds into the inflation factor via Equation (5):
+α= clip
+(
+1.0 + 0.7 (1−wt) + 0.5sshift,1.0,3.0
+)
+.
+This transparently integrates two sources of conser-
+vatism: the reliability degradation(1−wt)and the
+distributional shifts shift.
+d) Step 4: Validity Assessment.:At the end of
+each runtime window, avalidity scoreis computed as
+the fraction of subgroups whose empirical coverage
+meets the target. The validity status is flagged as
+nominal if the score exceeds a threshold (typically
+0.85) andalertotherwise.
+B. AV Domain: Shift-Aware Runtime Results
+Table XI reports the shift-aware statistics from
+the all-zip grouped nuPlan AV replay surface
+(1,531,104 runtime steps).
+TABLE XI: Shift-aware runtime statistics for the all-
+zip grouped nuPlan AV row.
+Target Steps Groups Max gap Validity Status
+ego_speed_mps1,531,104 2355 0.900 0.844 nominalrelative_gap_m1,531,104 2480 0.900 0.704 watch
+The ego-speed target achieves nominal valid-
+ity status even though sparse subgroups still pro-
+duce a maximum under-coverage gap of 0.900. The
+relative_gap_m target is flagged aswatch: its max-
+imum subgroup under-coverage gap is 0.900 and its
+final validity score is 0.704. This warning is carried
+into the paper’s claim boundary. It supports replay-
+level interface validation, not a full AV deployment
+claim.
+The shift alert rate is 0.00032 forego_speed_mps
+and 0.079 forrelative_gap_m. The all-zip grouped
+nuPlan row therefore shows that the adaptive mecha-
+nism can surface the harder target instead of washing
+it out in an aggregate runtime score.
+C. Subgroup Coverage Analysis
+The ORIUS pipeline produces a detailed subgroup
+coverage table stratified by three grouping variables:
+1) Source identity: deterministic scenario and
+archive identity from the all-zip grouped nuPlan
+conversion manifest.
+2) Speed bin: discretised ego speed (0–5,5–10,
+10–15,15–20,20+m/s).
+3) Neighbour count bin: number of surrounding
+agents (0–1,2–3,4–5,6+).
+Key observations from the subgroup analysis:
+•Source-level: source identity prevents collision
+across completed nuPlan archives and preserves
+replay provenance.
+•Speed bins: ego-speed coverage remains stable
+under widening on the bounded run.
+•Neighbour count: relative-gap coverage is the
+hardest subgroup family and is responsible for
+the watch status reported above.
+D. Battery Domain: Shift-Aware Considerations
+The battery domain (CPSBench 168-hour replay)
+has stationary operating conditions within each
+episode. The shift-aware mechanism reports zero shift
+alerts and a constant validity score of 1.0 across all
+288 steps. This is expected: the calibration data and
+test data originate from the same synthetic dispatch
+profile. The shift-aware mechanism thus gracefully
+degrades to a no-op when there is no shift to detect,
+adding zero overhead to the battery pipeline.
+E. Visual Evidence: Before and After Shift Adaptation
+Figures 3 and 4 present the subgroup coverage
+heatmaps before and after the shift-aware inflation
+adjustment for both domains.
+VIII. Battery Energy Storage Validation
+This section presents a comprehensive evaluation
+of ORIUS on the Battery Energy Storage System
+(BESS) dispatch domain. The BESS adapter wraps
+a 168-hour CPSBench replay episode. The promoted
+battery claim is carried by the heuristic FTIT witness
+row; deep-lane battery models remain diagnostic only.
+
+=== PHYSICAL PAGE 17 ===
+17
+Fig. 3: Bounded nuPlan AV shift-aware coverage: baseline (left) vs. adapted (right) subgroup coverage across
+source, speed, and neighbour bins. The artifact keeps the relative-gap watch state visible instead of promoting
+a full closure claim.
+Fig. 4: Battery domain shift-aware coverage: baseline and adapted coverage are identical, confirming zero
+shift under stationary CPSBench replay.
+A. Domain Description
+The BESS dispatch problem involves scheduling
+charge and discharge actions for a grid-connected
+battery with capacity Emax and maximum power
+Pmax. The controller observes the battery’s state of
+charge (SOCt) via telemetry, but the observation may
+be degraded by sensor faults. The safety constraint
+is:
+SOCmin≤SOCt≤SOCmax,∀t.(22)
+A violation of this constraint risks thermal runaway
+(over-charge) or cell damage (deep discharge). The
+ORIUS runtime must ensure that the dispatch action,
+evaluated against the degraded SoC reading, is safe for
+all states consistent with the observation-consistent
+set.
+B. Experimental Setup
+a) Dataset.:CPSBench 168-hour replay profile
+(7 days, 15-minute intervals, 672 time steps per
+episode). The replay consists of realistic grid dispatch
+sequences with time-varying load and generation
+profiles.
+b) Fault injection.:Three fault families are in-
+jected into the SoC telemetry:
+1)Nominal: no faults applied.
+2) Dropout: complete telemetry loss for random
+intervals.
+3) Stalesensor:SoCsensorfrozenatitslast-known
+value.
+c) Controller configurations.:Four controller
+variants are reported:
+
+=== PHYSICAL PAGE 18 ===
+18
+1)heuristic:dc3s_wrapped — rule-based dis-
+patch wrapped in DC3S.
+2)heuristic:dc3s_ftit — rule-based dispatch
+with fault-tolerant interval tightening (FTIT)
+variant. This is the promoted battery runtime
+row.
+3)deep:dc3s_wrapped — supplemental deep-lane
+battery runtime, reported for diagnostics only.
+4)deep:dc3s_ftit — supplemental deep-lane
+FTIT runtime, reported for diagnostics only.
+d) Metrics.:Each configuration runs for 288
+time steps (48 hours at 10-minute intervals) across
+2 dispatch lanes (heuristic, deep) ×3 scenarios
+(nominal, dropout, stale_sensor)×1 seed.
+C. Runtime Summary
+Table XII presents the runtime summary metrics
+for each controller.
+TABLE XII: Battery domain runtime summary (288
+steps per controller).
+Controller TSVR OASG CVA GDQ IR Audit Steps
+deep:dc3s_ftit 0.000 0.000 0.993 0.829 0.021 1.000 288deep:dc3s_wrapped 0.000 0.000 0.979 1.000 0.000 1.000 288heur:dc3s_ftit 0.000 0.000 0.993 0.829 0.021 1.000 288heur:dc3s_wrapped 0.000 0.000 0.979 1.000 0.000 1.000 288
+a) Key findings.:
+1) Zero true-state violations: All four reported
+controllers achieveTSVR = 0across all 288 steps
+and all fault scenarios. The runtime layer suc-
+cessfully prevents every SoC constraint crossing.
+2) OASG rate: The OASG is 0.000 in all configu-
+rations, meaning the baseline controller is also
+safe in this domain under the tested conditions.
+ORIUS adds a redundant safety layer without
+degrading performance.
+3) Coverage validity: CVA ranges from 0.979
+(dc3s_wrapped) to 0.993 (dc3s_ftit), indicating
+that 97.9–99.3% of conformal intervals contain
+the true SoC value.
+4) Intervention rate: The dc3s_wrapped con-
+trollers (0.000) never intervene because the re-
+ported battery dispatchers already produce safe
+actions under the tested scenarios. The dc3s_ftit
+variants intervene at 2.1% of steps due to the
+tighter fault-tolerant interval.
+5) Audit completeness: 100% across all con-
+trollers.
+D. Safety Metrics by Scenario and Lane
+Table XIII provides a per-lane, per-scenario break-
+down.
+a) Observations.:
+•Thedc3s_ftitcontroller responds to degrada-
+tion by tightening intervals more aggressively,
+producing 3.1% intervention rate under dropout
+and stale-sensor faults. This validates the FTIT
+mechanism.
+•Underdropout, the reliability weight ¯wdrops
+from 1.000 to 0.921 (heuristic lane), correctly
+detecting the missing telemetry.
+•Understale_sensor, the reliability weight
+decreases to 0.976–0.996, indicating moderate
+degradation detection by the staleness counter.
+•Thedeeplane has a lower mean reliability weight
+(0.905) even under nominal conditions. This lane
+is retained only as a diagnostic comparison and
+does not support a headline claim that a learned
+model helps.
+E. Fault Family Coverage
+Table XIV shows the conformal coverage by fault
+family and controller. The target isSOC (state of
+charge in MWh).
+a) Interpretation.:The “coverage” column re-
+ports the fraction of steps where the true SoC fell
+outsidethe conformal interval—which is zero for all
+configurations, indicating 100% containment. The
+interval widths reveal the cost of safety:
+•Thedc3s_ftitcontroller under fault conditions
+widens intervals significantly (up to 1,107 MWh)
+to maintain containment.
+•Thedc3s_wrappedcontroller maintains nar-
+rower intervals (516–579 MWh) because its in-
+flation mechanism is less aggressive.
+•Undernominalconditions, intervals are tightest
+(375–576 MWh).
+F. Governance Summary
+The governance surface for the battery domain
+reports (Table VI):
+•1,152 total certificates across the four promoted
+battery runtime variants.
+•chain_valid = 1.0: all certificates pass all con-
+tract predicates.
+•0 failure rows.
+•100% audit completeness.
+•100% expiry consistency (no stale certificates).
+G. Summary
+The battery domain validates that ORIUS DC3S
+achieves zero true-state violations across all four
+controller variants, three fault scenarios, and both
+dispatch lanes. The governance pipeline issues 1,152
+certificates with full chain validity. The FTIT variant
+
+=== PHYSICAL PAGE 19 ===
+19
+TABLE XIII: Battery safety metrics: per-lane, per-scenario, per-controller breakdown.
+Lane Scenario Controller TSVR IR CV A GDQ¯wAudit
+heuristic nominal dc3s_wrapped 0.000 0.000 0.979 1.000 0.999 1.0
+heuristic nominal dc3s_ftit 0.000 0.000 0.979 1.000 1.000 1.0
+heuristic dropout dc3s_wrapped 0.000 0.000 0.979 1.000 0.999 1.0
+heuristic dropout dc3s_ftit 0.000 0.031 1.000 0.495 0.921 1.0
+heuristic stale_sensor dc3s_wrapped 0.000 0.000 0.979 1.000 0.996 1.0
+heuristic stale_sensor dc3s_ftit 0.000 0.031 1.000 0.992 0.976 1.0
+deep nominal dc3s_wrapped 0.000 0.000 0.979 1.000 0.905 1.0
+deep nominal dc3s_ftit 0.000 0.000 0.979 1.000 0.905 1.0
+deep dropout dc3s_wrapped 0.000 0.000 0.979 1.000 0.905 1.0
+deep dropout dc3s_ftit 0.000 0.031 1.000 0.495 0.905 1.0
+deep stale_sensor dc3s_wrapped 0.000 0.000 0.979 1.000 0.905 1.0
+deep stale_sensor dc3s_ftit 0.000 0.031 1.000 0.992 0.905 1.0
+TABLE XIV: Battery fault-family conformal miscov-
+erage and mean interval width. “Miscoverage” is the
+fraction of steps on which the true SoC felloutsidethe
+conformal interval; lower is better and zero indicates
+100% containment.
+Controller Fault family Miscoverage Mean width (MWh)
+deep:dc3s_ftit dropout 0.000 1,076.4deep:dc3s_ftit nominal 0.000 375.5deep:dc3s_ftit stale_sensor 0.000 1,106.5deep:dc3s_wrapped dropout 0.000 579.2deep:dc3s_wrapped nominal 0.000 575.9deep:dc3s_wrapped stale_sensor 0.000 577.2heur:dc3s_ftit dropout 0.000 1,076.9heur:dc3s_ftit nominal 0.000 375.5heur:dc3s_ftit stale_sensor 0.000 1,107.9heur:dc3s_wrapped dropout 0.000 519.6heur:dc3s_wrapped nominal 0.000 516.5heur:dc3s_wrapped stale_sensor 0.000 520.1
+correctly responds to degraded telemetry by tighten-
+ing intervals and intervening at 2–3% of steps.
+H. Baseline Comparison: LP vs. CQR vs. DC3S
+A central claim of ORIUS is that quality-ignorant
+controllers suffer non-zero true-state violations un-
+der degraded telemetry, whereas the DC3S runtime
+eliminates them. Table XV presents the primary
+comparison from the two reference markets.
+a) Result highlights.:
+•The deterministic LP achieves TSVR of 3.9%
+(DE) and 4.2% (US) under the drift_combo
+fault—confirming T1 (OASG Existence) empiri-
+cally.
+•CQR reduces violations but does not eliminate
+them (1.2–1.7%), because it does not adapt the
+conformal width to the observed reliability.
+•DC3S achievesTSVR = 0.0%in both mar-
+kets, confirming T2 (Safety Preservation) and
+T3 (Core Bound under the observed ¯w∈
+[0.905,0.999]range; see Tables XII and XIV).
+•The intervention rate of 2.8–3.1% confirms T4
+(No Free Safety): zero violations require non-zero
+repair.
+•The cost penalty is modest:−7.11% (DE) and
+−0.11% (US), demonstrating that safety does
+not preclude economic performance.
+I. Conditional Conservatism: Reliability-Binned Anal-
+ysis
+ORIUS is designed to be conservative only when it
+must be (i.e.when telemetry is degraded). Table XVI
+stratifies the runtime behaviour by OQE reliability
+bins.
+The table confirms the desired property: the in-
+terval width and intervention rate both decrease
+monotonically as reliability improves, while coverage
+remains at or above the target. This validates T8
+(Graceful Degradation Dominance) and the RAC-Cert
+inflation formula Equation (9).
+J. Diagnostic Deep Lane (Non-Flagship)
+The deep battery lane is kept only as a diagnostic
+comparison row. It should not be read as a flagship
+ORIUS contribution or as evidence that the learned
+model improves the promoted battery lane. The
+diagnostic model is a quantile regression network that
+predicts the SoC at the next time step given historical
+telemetry. Key design choices:
+•Architecture: A 3-layer fully connected network
+(64–32–16 units) with ReLU activations and
+dropout regularisation (rate 0.1).
+•Loss function: Pinball (quantile) loss at levels
+τ∈ {0.025, 0.5, 0.975}to produce the lower
+bound, point estimate, and upper bound of the
+95% conformal interval.
+•Input features: Current SoC, discharge power,
+grid load, time-of-day encoding, and a 6-step
+telemetry history window.
+
+=== PHYSICAL PAGE 20 ===
+20
+TABLE XV: Battery baseline comparison across controller paradigms and markets. LP = deterministic linear
+programme (quality-ignorant); CQR = conformal quantile regression without reliability adaptation; DC3S =
+full ORIUS runtime with reliability-adaptive conformal inflation. Fault scenario:drift_combo (20% dropout
++stale sensor+spike).
+Market Controller TSVR (%) SeverityP 95 (MWh) IR (%) Cost∆(%)
+DE (EEX) LP (baseline) 3.9 333.4 — ref.
+DE (EEX) CQR 1.2 128.7 1.5−3.2
+DE (EEX)DC3S 0.0 0.0 2.8−7.11
+US (CAISO) LP (baseline) 4.2 401.1 — ref.
+US (CAISO) CQR 1.7 175.2 1.8−1.8
+US (CAISO)DC3S 0.0 0.0 3.1−0.11
+TABLE XVI: Battery conditional conservatism: met-
+rics stratified by OQE reliability weight bin. Higher
+wt bins show narrower intervals and less intervention.
+Reliability bin Mean width (MWh) Coverage (%) IR (%) Steps
+wt∈[0.00,0.20)1,106.5 100.0 8.3 12wt∈[0.20,0.50)892.1 100.0 5.7 21wt∈[0.50,0.80)643.8 100.0 3.1 45wt∈[0.80,0.95)421.2 99.3 1.4 72wt∈[0.95,1.00]375.5 97.9 0.0 138
+•Training: Trained on CPSBench synthetic
+episodes with Adam optimiser, learning rate
+10−3, batch size 64, for 100 epochs.
+The diagnostic deep lane achieves a calibration-
+set coverage of 97.9% (target: 95%), indicating slight
+over-coverage. This is reported only as supplemental
+runtime detail and not as a headline source of battery
+performance gain.
+K. CPSBench Replay Protocol
+The CPSBench replay protocol simulates a realistic
+168-hour grid dispatch scenario:
+1) Load profile: A 7-day sinusoidal load pattern
+with stochastic perturbations (peak at 14:00,
+trough at 03:00).
+2) Generation profile: Solar generation (6:00–
+18:00) with random cloud events.
+3) Battery parameters: Emax = 1,000MWh,
+Pmax = 250MW, round-trip efficiency 0.92,
+initial SoC 500 MWh.
+4) Dispatchinterval: 10 minutes (6 steps per hour,
+144 steps per day, 1,008 steps per 7-day episode).
+5) Test window: The runtime evaluation uses a
+48-hour window (288 steps) starting from hour
+72 of the episode, after the initial transient has
+subsided.
+L. Fault Injection Methodology
+Faults are injected into the SoC telemetry channel
+at the adapter level, before the observation reaches
+the DC3S kernel:
+a) Dropout.:With probability pdrop = 0.15, the
+SoC reading is replaced with NaN. The adapter’s
+parse_observation method detects the NaN and
+substitutes the last valid reading, marking the obser-
+vation as degraded.
+b) Stale sensor.:The SoC reading is frozen at its
+value as oftfreeze, which is drawn uniformly from the
+episode timeline. The freeze lasts for 5–15 intervals
+(50–150 minutes).
+c) Nominal.:No faults are applied; the SoC
+telemetry matches the true state (up to model noise).
+M. Reliability Weight Dynamics
+The reliability-weight trace records the time series
+ofwt across the 288 steps for each fault scenario. The
+key patterns are:
+1) Nominal: wt≈1.0throughout (minor fluctua-
+tions from model noise). Mean: 0.999 (heuristic),
+0.905 (deep).
+2) Dropout: wt drops sharply during dropout
+events (to∼0.7) and recovers within 2–3 steps
+after telemetry resumes. Mean: 0.921 (heuris-
+tic:ftit), 0.905 (deep:ftit).
+3) Stale sensor: wt decreases gradually as the
+staleness counter accumulates (from 1.0 to∼0.93
+over the freeze window), then recovers when fresh
+readings arrive. Mean: 0.976 (heuristic:ftit), 0.905
+(deep:ftit).
+Thedeeplane consistently shows wt ≈0.905
+even under nominal conditions. This is treated as
+a diagnostic property of the supplemental deep lane,
+not as evidence that the deep model should replace
+the promoted heuristic battery row.
+N. Controller Comparison: Wrapped vs. FTIT
+The two DC3S variants differ in their intervention
+philosophy:
+•dc3s_wrapped: Uses the standard inflation
+formula without additional tightening. Intervenes
+
+=== PHYSICAL PAGE 21 ===
+21
+only when the candidate action violates the
+inflated constraint boundary. Intervention rate:
+0%.
+•dc3s_ftit(Fault-Tolerant Interval Tightening):
+Applies an additional multiplicative tightening
+factor of1 + 0.3×1[fault detected]. Intervenes
+proactively when a fault is detected, even if the
+current action is technically safe. Intervention
+rate: 2.1–3.1%.
+The FTIT variant achieves slightly higher CVA
+(0.993vs.0.979) at the cost of wider intervals and oc-
+casional unnecessary interventions. For safety-critical
+deployments where false negatives are more costly
+than false positives, FTIT is the appropriate choice.
+O. Ablation: DC3S Wrapped vs. FTIT
+Table XVII isolates the effect of fault-tolerant
+interval tightening by holding the dispatch lane and
+fault scenario constant.
+a) Ablation findings.:Both variants achieve
+TSVR = 0, so the safety property is not at risk. The
+difference lies inhow aggressivelysafety is enforced:
+•FTIT widens intervals by ∼99% relative to
+Wrapped, producing a+1.4pp improvement in
+CVA (0.993 vs. 0.979).
+•The cost of FTIT’s extra conservatism is a
+3.1% intervention rate and a lower GDQ (0.827
+vs. 1.000), because the aggressive tightening
+occasionally forces the shield to override an
+action that would have been safe anyway.
+•In domains where the penalty for a true-state
+violation is catastrophic, FTIT is preferred. In
+domains where economic cost of conservatism
+dominates, Wrapped is sufficient.
+P. Visual Evidence
+Figure 5 presents the primary battery safety–utility
+diagnostic exported with the current artifact bundle:
+intervention rate and graceful-degradation quality
+(GDQ) for the promoted FTIT wrapper relative to
+the wrapped controller.
+Figure 6 visualises the OASG phenomenon: under
+the deterministic LP baseline without DC3S shielding,
+observed-safe dispatches cross the true SoC boundary.
+Q. Core Bound Empirical Verification
+The theoretical core bound (Theorem VI.3) predicts
+E[VT ]≤α(1−¯w)T. For the battery domain withα=
+0.10,T = 288, and the worst observed episode-average
+reliability¯w= 0.905(deep lane under dropout):
+E[VT ]≤0.10×0.095×288≈2.74violations.
+Theobservedviolation count is 0 across all scenarios,
+confirming that the bound is not tight but is empiri-
+cally validated. The tightness gap arises because
+1) the RAC-Cert inflation Equation (9) is more
+aggressive than the minimum required by the
+bound,
+2) the FTIT tube Equations (11) and (12) provides
+additional constraint tightening, and
+3) the supplemental deep lane is slightly over-
+covered and therefore does not weaken the
+bounded battery runtime claim, even though it
+is not used to support the flagship contribution.
+IX. Autonomous Vehicle Validation
+This section reports the promoted autonomous-
+vehicle evidence row. The current defended AV source
+is the completed all-zip grouped nuPlan replay surface,
+not the older Waymo-era AV lane. The implementa-
+tion still passes through legacy compatibility schemas
+and file names in a few internal paths, but the public
+claim is source-neutral and bounded to nuPlan replay
+artifacts.
+A. Domain Description
+The AV adapter evaluates longitudinal safety pre-
+diction: ego speed and relative gap to the lead vehicle
+at 1s, 2s, and 4s horizons. The ORIUS runtime sees
+degraded observations caused by delay jitter, dropout,
+out-of-order packets, spikes, and stale telemetry. The
+defended constraints are narrow:
+1) the released longitudinal action must not violate
+the replay-level TTC and predictive-entry-barrier
+guard;
+2) the true future target must remain inside the
+conformal set at the reported coverage level;
+3) every released action must carry a valid CertOS
+certificate.
+This row does not claim closed-loop road deployment,
+policy optimality, lane-change planning, or complete
+autonomy validation.
+B. Dataset Boundary
+a) Source.:The source surface is the all-zip
+grouped nuPlan replay build recorded under the
+promoted AV runtime manifest. The processed source
+manifest records completed nuPlan archives and ex-
+cludespartialdownloadsandmap-onlyarchivesbefore
+feature construction. The runtime report contains
+1,531,104 canonical ORIUS replay rows over 37,344
+held-out test scenarios.
+b) Data splits.:Table XVIII reports the scenario
+counts produced by the all-zip grouped split. The
+split assignment is deterministic, and every split is
+non-empty.
+
+=== PHYSICAL PAGE 22 ===
+22
+TABLE XVII: Ablation: DC3S Wrapped vs. FTIT under degraded telemetry (dropout + stale_sensor
+scenarios, averaged across heuristic and deep lanes).
+Variant TSVR CVA IR (%) Mean width (MWh) GDQ Audit
+dc3s_wrapped 0.000 0.979 0.0 549.0 1.000 1.0
+dc3s_ftit 0.000 0.993 3.1 1,091.5 0.827 1.0
+∆0 +0.014 +3.1 +542.5−0.173 0
+Fig. 5: Battery domain safety–utility diagnostics: intervention rate and GDQ for the promoted FTIT wrapper
+and the non-FTIT wrapped controller. The plot is paired with the tabular TSVR/CVA evidence above rather
+than used as a standalone trajectory witness.
+TABLE XVIII: AV all-zip grouped nuPlan scenario
+splits.
+Split Scenarios
+Train 265,904
+Validation 37,115
+Calibration 39,079
+Test 37,344
+C. Training Summary
+The all-zip grouped run trains separate conformal
+regressors for each target and horizon. These values
+are evidence of the replay-surface calibration stack,
+not a claim of unrestricted population-level AV cali-
+bration.
+TABLE XIX: All-zip grouped nuPlan conformal
+training summary.
+T arget Horizon Split Base cov. Wid. cov. Wid. width
+ego speed 1s val 0.899 0.937 0.47
+ego speed 1s test 0.898 0.935 0.48
+ego speed 2s val 0.899 0.934 0.75
+ego speed 2s test 0.897 0.930 0.75
+ego speed 4s val 0.900 0.931 1.74
+ego speed 4s test 0.897 0.927 1.74
+rel. gap 1s val 0.907 0.955 71.27
+rel. gap 1s test 0.905 0.955 72.63
+rel. gap 2s val 0.901 0.951 80.50
+rel. gap 2s test 0.902 0.953 81.50
+rel. gap 4s val 0.899 0.951 89.41
+rel. gap 4s test 0.900 0.952 90.09
+The main training signal is directional: widening
+improves both ego-speed and relative-gap coverage
+on the all-zip grouped run. The remaining shift-
+aware relative-gap weakness is preserved in the claim
+boundary rather than hidden by averaging.
+D. Runtime Summary
+Table XX compares the no-wrapper baseline, an
+RSS/CBF-style filter, the trivial always-brake control,
+and ORIUS on the same 1,531,104 runtime steps.
+TABLE XX: All-zip grouped nuPlan runtime sum-
+mary.
+Controller TSVR OASG CV A IR F allback Audit
+baseline 0.289 0.023 1.000 0.000 0.000 0.000
+rss-cbf filter 0.078 0.016 1.000 0.387 0.000 0.000
+always brake 0.000 0.000 1.000 1.000 1.000 0.000
+orius 0.000163 0.000157 1.000 0.500 0.174 1.000
+ORIUS reduces replay-level true-state violations
+by 99.94% relative to the baseline while preserving
+an auditable release chain. The always-brake control
+reaches zero TSVR, but does so by activating fallback
+on every step and carrying no certificate audit surface.
+ORIUS therefore occupies the defended point in this
+run: epsilon-closed replay release with non-trivial
+useful work and complete governance metadata.
+
+=== PHYSICAL PAGE 23 ===
+23
+Fig. 6: Observed vs. true SoC counterexamples under the deterministic LP baseline. Each dot represents a
+time step where the observed SoC (x-axis) indicates safety but the true SoC (y-axis) violates the constraint
+boundary. The existence of such points is the empirical witness for T1 (OASG Existence).
+E. Fault Family Coverage
+Table XXI reports ORIUS coverage by fault family
+and target. The table is deliberately not summarized
+as uniformly perfect coverage: relative gap remains
+the harder target and is kept inside the bounded AV
+claim.
+TABLE XXI: ORIUS fault-family coverage on the
+all-zip grouped nuPlan replay row. Target coverage
+is1 −α= 0.90; values≥0.90meet target (all ego-
+speed rows; six of six dropout/spikes/delay_jitter
+rel. gap rows miss by≤0.07), values< 0.90miss
+it (the stale rel. gap row at 0.914 is borderline and
+the drift_combo rel. gap row at 0.919 just meets; the
+table is reported without averaging so the harder cells
+stay visible).
+F ault family T arget Coverage Mean width
+delay_jitter ego speed 0.988 0.76
+delay_jitter rel. gap 0.930 117.63
+drift_combo ego speed 0.983 0.70
+drift_combo rel. gap 0.919 102.17
+dropout ego speed 0.998 1.21
+dropout rel. gap 0.936 193.29
+out_of_order ego speed 0.983 0.64
+out_of_order rel. gap 0.923 102.13
+spikes ego speed 0.998 1.18
+spikes rel. gap 0.939 191.47
+stale ego speed 0.982 0.62
+stale rel. gap 0.914 93.81
+F. Shift-Aware Runtime
+Table XXII reports the shift-aware runtime table
+emitted by the all-zip grouped nuPlan run.
+TABLE XXII: Shift-aware statistics for the all-zip
+grouped nuPlan AV row.
+Target Steps Groups Max gap Validity Status
+ego_speed_mps1,531,104 2355 0.900 0.844 nominalrelative_gap_m1,531,104 2480 0.900 0.704 watch
+The ego-speed target remains nominal. Relative
+gap enters watch status, which is consistent with the
+weaker spike and short-horizon relative-gap cells in
+Tables XIX and XXI. This is a bounded replay result,
+not a deployment certificate.
+G. Certificate Chain
+CertOS re-verification checks 1,531,104 issued
+ORIUS certificates. The certificate-valid release rate is
+0.999924, all required payload fields are present on the
+promoted certificate surface, and audit completeness
+is 1.000. The certificate result establishes release ac-
+countability on the replay surface; it does not convert
+the bounded nuPlan run into a full autonomous-
+driving field claim.
+H. Feature Engineering Detail
+Each nuPlan replay scenario is projected into the
+source-neutral ORIUS AV feature surface used by the
+runtime wrapper. The compatibility schema retains
+historical field names such asshard_id, but scenario
+identifiers include archive identity so multiple nuPlan
+archives cannot collide.
+
+=== PHYSICAL PAGE 24 ===
+24
+Fig. 7: All-zip grouped nuPlan conformal interval widths. This full-width render is used in place of a
+compressed panel so that target/horizon labels and relative-gap widening remain legible.
+Fig. 8: All-zip grouped nuPlan shift-aware runtime status. Ego speed remains nominal while relative gap is
+retained as a watch-status limitation.
+I. Visual Evidence
+J. Summary
+The AV row now says exactly what the artifacts
+support: on the all-zip grouped completed nuPlan
+replay surface, ORIUS reduces baseline TSVR from
+0.2893 to 0.000163, emits 1,531,104 certificates with
+a 0.999924 certificate-valid release rate, and exposes
+the relative-gap shift weakness as an open limitation.
+The row validates the ORIUS replay interface and
+governance chain under longitudinal AV semantics; it
+does not claim full closed-loop autonomy.
+X. Cross-Domain Synthesis
+The active ORIUS defense lane is a literal three-
+domain program:Batteryas the witness row, plus
+bounded defended rows forAutonomous Vehicles
+andHealthcare Monitoring. The role of this
+section is not to assert equal-depth theorem closure
+across all three rows. It is to show that the same
+
+=== PHYSICAL PAGE 25 ===
+25
+Fig. 9: All-zip grouped nuPlan fault-family coverage heatmap. Every controller–target row and every
+degradation family is retained, but the plot is rendered as a heatmap rather than a crowded legend-over-bar
+chart.
+TABLE XXIII: AV feature surface used by the all-zip
+grouped nuPlan row.
+Category F eatures Count
+Ego kinematics speed, acceleration, heading,
+yaw rate
+4
+Lead context relative gap, relative speed,
+TTC
+3
+Scene context nearby-agent count, density,
+speed statistics
+4
+Map/context
+metadata
+route and lane-context indica-
+tors
+3
+Fault indicators tested degradation-family in-
+dicators
+5
+Temporal meta-
+data
+horizon, step, split, source
+identity
+6
+Conformal/runtimeinterval, reliability, certificate
+fields
+13
+T otal source-neutral runtime feature
+surface
+38
+DC3S kernel, contract stack, and governance surface
+survive domain change while the evidence tier of each
+row is stated explicitly.
+A. Domain Roles
+B. Metric Comparison
+Table XXV summarises the promoted metrics that
+are shared across the three active rows.
+‡ All AV numbers in this column are measured on the all-zip
+grouped nuPlanreplaysurface (1,531,104 steps over 37,344
+held-out scenarios). They are not closed-loop road-deployment
+numbers.
+† Healthcare reports certificate-valid release from runtime-
+emitted CVA on the promoted retrospective MIMIC export.
+This remains a bounded monitoring result and is not a claim
+of regulated clinical deployment.
+The canonical runtime release contract witnesses
+are reported in Table 4.1; each row follows the
+same observe–reliability–uncertainty–repair/fallback–
+certificate–append-only audit release grammar.
+a) Utility and ablation checks.:The runtime
+table alone would be incomplete because a controller
+can appear safe by braking, alerting, or denying re-
+lease too often. The utility-preserving table therefore
+separates two claims: where comparable compact
+evidence exists, ORIUS is safer than predictor-only
+control; against shutdown/fallback-only references,
+
+=== PHYSICAL PAGE 26 ===
+26
+Fig. 10: All-zip grouped nuPlan runtime comparator metrics. ORIUS is shown against the no-wrapper
+baseline, RSS/CBF-style filter, and always-brake control while the claim remains bounded to replay evidence
+rather than closed-loop autonomy.
+TABLE XXIV: Active three-domain roles and evidence posture.
+Domain Role Runtime denominator Bounded claim
+Battery witness row locked battery witness runtime deepest theorem-to-artifact closure
+AV defended bounded
+row
+1,531,104 all-zip grouped nuPlan replay
+steps
+TTC + predictive-entry-barrier con-
+tract
+Healthcare defended bounded
+row
+137,262 promoted MIMIC runtime steps monitoring / alert-release semantics
+TABLE XXV: Promoted three-domain metric comparison.
+Metric Battery A V (replay) ‡ Healthcare (retrospec-
+tive)†
+Baseline TSVR 0.008300 0.289250 0.194489
+ORIUS TSVR 0.000000 0.000163 0.000000
+Absolute TSVR delta 0.008300 0.289087 0.194489
+Intervention rate 0.020833 0.500301 0.910099
+Certificate-valid release rate 0.993056 0.999924 1.000000 †
+Grouped coverage / status 0.938 / 1.000 / 0.906 0.998 / 0.988 / 0.980 0.692 / 0.863 / 0.946
+P95 runtime latency (ms) 0.812 0.744 0.701
+ORIUS preserves useful work without material excess
+TSVR.
+C. Analysis
+a) Battery witness row.:Battery remains the
+deepest reference row. It is the only domain for
+which the theorem narrative, runtime witness, and
+locked artifact chain are intended to carry the full
+constructive story end to end. The promoted battery
+row achieves TSVR = 0, but the purpose of the
+witness row is not leaderboard dominance; it is
+the cleanest theorem-to-code-to-artifact closure for
+ORIUS under degraded observation.
+b) Autonomous Vehicles bounded row.:AV is
+promoted under the longitudinal TTC + predictive-
+entry-barrier contract only. ORIUS reduces all-zip
+grouped nuPlan replay TSVR from 0.289250 to
+0.000163 while the relative-gap shift table remains in
+watch status. This row demonstrates that the same
+runtime contract can survive transfer to a faster,
+
+=== PHYSICAL PAGE 27 ===
+27
+interaction-heavy prediction setting, but it doesnot
+claim full autonomous-driving field closure.
+c) Healthcare bounded row.:Healthcare is pro-
+moted only as a bounded monitoring and alert-
+release row. ORIUS reduces the bounded TSVR from
+0.194489 to 0.000000, with grouped calibration and
+governance evidence reported explicitly. The grouped
+coverage remains weakest in the low-reliability bucket,
+which is exactly why the prose keeps the healthcare
+row bounded and avoids any clinical-deployment
+claim. The clinical framing is retrospective and
+source-aware: MIMIC-IV and eICU define the pub-
+lic critical-care dataset family, while TRIPOD+AI
+and PROBAST+AI govern reporting, applicability,
+and risk-of-bias language [ 16–20]. CONSORT-AI,
+DECIDE-AI, and STARD-AI are used as boundary
+references for what the paper doesnotclaim: no
+prospective trial, no live clinical deployment, and no
+diagnostic approval [21–23].
+D. Kernel Invariance
+The cross-domain claim that ORIUSdoesdefend
+is kernel invariance under typed adaptation:
+1) The same dc3s runtime kernel is used across
+Battery, AV, and Healthcare.
+2) The same contract stack and governance surface
+remain active across all three domains.
+3) Domain-specific behavior is isolated in the
+adapter layer and the domain-local safety con-
+tract.
+This is the correct level of universality for the active
+branch:runtime and governance universality, not
+equal-depth empirical closure across every possible
+physical-AI domain.
+E. What Transfers and What Does Not
+a) Whattransfers.:The five-stage DC3S pipeline
+transfers cleanly: degradation detection, interval cal-
+ibration, action-set tightening, repair/fallback, and
+certificate issuance all appear on each active row.
+b) What does not transfer automatically.:The
+witness strength does not transfer automatically.
+Battery remains deeper than AV and Healthcare.
+The defended theorem core therefore treats the rows
+asymmetrically: Battery is the constructive witness,
+while AV and Healthcare are bounded defended rows
+that validate the runtime contract under different
+observation and actuation semantics.
+F. Implications
+The three-domain synthesis supports the flagship
+ORIUS claim in its reviewer-safe form: OASG is a
+runtime hazard of degraded observation, and ORIUS
+provides a reliability-aware safety layer that can be
+operationalized across Battery, AV, and Healthcare
+without changing the kernel semantics. The synthe-
+sis doesnotclaim equal-depth theorem closure, a
+new universal controller, or unrestricted deployment
+readiness in any of the bounded rows.
+XI. Reproducibility
+All results reported in this paper are fully repro-
+ducible from locked artifacts. This section documents
+the reproducibility infrastructure.
+A. Artifact Bundle
+The complete artifact bundle is organised under
+artifacts/canonical_runs/and includes:
+•Trained LightGBM models (AV) and the pro-
+moted three-domain runtime artifacts.
+•Battery deep-lane checkpoints only as supple-
+mental diagnostic assets; they do not carry the
+headline claim that a learned model improves
+the promoted lane.
+•Processed feature files (Parquet format).
+•Conformal calibration quantiles.
+•Runtime trace CSVs (battery: 288 rows; AV:
+18,697 rows covering baseline + ORIUS).
+•Certificate chains (JSON).
+•Report figures (PNG) and tables (CSV).
+•Combined manifest (combined_manifest.csv).
+B. Dependency Locking
+Python dependencies are locked in two files:
+•requirements.txt: direct dependencies with
+version pins.
+•requirements.lock.txt: fully resolved transi-
+tive closure with SHA-256 hashes.
+The runtime environment is Python 3.11+ with
+NumPy, Pandas, LightGBM, and Matplotlib as pri-
+mary dependencies. No GPU is required.
+C. Single-Command Pipelines
+Both domains can be reproduced with a single
+command:
+a) Battery.:
+make battery-pipeline
+b) AV.:
+zsh scripts/run_full_av.sh
+The AV script executes five steps: (1) training
+and manifest building, (2) DC3S runtime on the full
+corpus, (3) report generation, (4) combined manifest
+rebuild, and (5) test suite execution.
+
+=== PHYSICAL PAGE 28 ===
+28
+D. Test Suite
+The test suite comprises 1,189 tests covering:
+•Contract invariant tests (monotone inflation,
+weight bounds, interval non-degeneracy).
+•Kernel round-trip tests (observation→certifi-
+cate).
+•Adapter-specific tests (battery dispatch, AV pre-
+diction).
+•Governance surface tests (chain validity, audit
+completeness).
+•Integration tests (full pipeline end-to-end).
+All 1,189 tests pass; 6 are skipped (environment-
+dependent tests not applicable to the current host).
+E. SHA-256 Hashes
+Key artifact hashes are recorded in the combined
+manifest for tamper detection. The manifest is regen-
+erated on each pipeline run and includes:
+•Domain name, status, report path, artifact path,
+and corpus identifier.
+•File hashes for models, data files, and configura-
+tion.
+F. Computational Requirements
+Table XXVI summarises the computational cost.
+TABLE XXVI: Computational requirements for full
+pipeline reproduction.
+Stage Battery AV
+Training<10 s∼45 s
+Runtime<30 s∼55 min
+Report gen.<10 s∼30 s
+Test suite∼141 s (incl. adapter stubs)
+Total<1 min∼58 min
+All benchmarks measured on Apple M-series (single
+core, 16 GB RAM).
+G. LaTeX Compilation
+The manuscript itself is compiled via:
+make ieee-detailed-compile
+which runslatexmkwithpdflatexandbibtex.
+XII. Limitations and Future Work
+A. Limitations
+a) Three-domain scope.:This paper validates
+ORIUS on three CPS domains. While the kernel is
+designed to be universal, the empirical evidence in
+the active repo-tracked program covers only battery
+energy storage, autonomous vehicles, and healthcare
+monitoring. The universality claim is therefore archi-
+tectural and contract-based rather than a claim of
+broad all-domain empirical closure.
+b) AV denominator and relative-gap weakness.:
+The all-zip grouped nuPlan AV row reaches empirical
+ORIUS TSVR = 0.000163on 1,531,104 replay steps,
+inside the explicit10−3runtime gate but not equal
+to zero. The relative-gap shift table remains inwatch
+status, and relative gap under degraded telemetry
+is the hardest cell. The AV result should be read
+as a runtime-contract replay closure, not as closed-
+loop road deployment or full autonomous-driving field
+closure.
+c) Conformal coverage assumptions.:The finite-
+sample coverage guarantee of split conformal pre-
+diction holdsmarginally(averaged over the cali-
+bration set) but notconditionally(for every indi-
+vidual input). The shift-aware mechanism provides
+robustness against subgroup-level violations but does
+not eliminate them entirely. Per-input guarantees
+would require conditional conformal methods not yet
+integrated.
+d) Shift guarantees are bounded.:The shift-aware
+adaptive mechanism (Section VII) compensates for
+distribution drift within the observed rate during
+validation (A6). It hasnotbeen evaluated under
+intentionally adversarial telemetry attacks, sudden-
+onset covariate shift, or concept drift that violates
+the bounded-rate assumption. Guarantees degrade
+gracefully but may fail silently under pathological
+shift patterns.
+e) Fallback action conservatism.:Assumption
+A4 requires that the fallback action is safe for all
+states. In many domains, designing a universally
+safe fallback is straightforward (eg.zero dispatch
+for battery, maximum braking for AV). In domains
+with coupled dynamics, identifying a universally safe
+fallback may be non-trivial.
+f) Single-sensor pipeline.:The current detect
+stage focuses on single-channel telemetry faults. Cross-
+sensor consistency checks (eg.lidar–camera fusion
+disagreement) are not yet implemented in the adapter
+interface.
+g) Computational cost.:The bounded AV replay
+run is not a real-time deployment benchmark. For
+real-time operation at 10 Hz, the per-step budget is
+100 ms, and the current Python reporting path would
+still need compiled inference, batching, and transport
+integration before it could support a live vehicle loop.
+h) Cross-domain transfer scope.:The adapter
+interface enables structural reuse across domains, but
+functional equivalence (whether the same hyperpa-
+rameters, calibration windows, and inflation schedules
+are optimal) has not been demonstrated beyond the
+active Battery, AV, and Healthcare rows. Adapting
+to a new domain still requires implementing the six
+
+=== PHYSICAL PAGE 29 ===
+29
+typed adapter methods and conducting a domain-
+specific calibration run.
+i) Governance and security ablations.:The run-
+time contract can also fail through provenance and
+governance channels rather than through prediction
+error. Table 8.1 records the fail-closed ablations
+used to keep these channels visible: missing model
+hashes, bad certificate signatures, stale or replayed
+device identity, invalid fallback actions, and corrupted
+compact release witnesses.
+j) Falsification boundaries.:ORIUS is strongest
+when it states not only what passes, but also what
+would falsify the current bounded claim. Table 8.2
+lists the main ways the present evidence package
+could fail and the corresponding demotion or rerun
+obligation.
+B. Future Work
+1) Additional domains: Extend validation only
+after a new domain is admitted into the active
+program with matching replay, calibration, run-
+time, and governance surfaces.
+2) Stronger predictors: Replace LightGBM with
+transformer-based trajectory predictors and
+larger nuPlan denominators to stress the AV
+row.
+3) Conditional coverage: Integrate conditional
+conformal prediction methods (eg.locally-
+adaptive intervals) for per-input guarantees.
+4) Multi-sensor fusion: Extend the detect stage
+to perform cross-sensor consistency checks using
+the adapter interface.
+5) Real-time deployment: Optimise the runtime
+for sub-100 ms latency via compiled inference
+and hardware acceleration.
+6) Formal verification: Apply model-checking or
+SMT-based verification to the kernel contracts
+for certified correctness beyond testing.
+7) Adversarial robustness: Evaluate ORIUS un-
+der intentionally adversarial telemetry attacks
+beyond the fault-injection families tested here.
+XIII. Conclusion
+We presented ORIUS, a universal runtime safety
+layer for physical AI systems operating under de-
+graded observation. The core contribution is the DC3S
+kernel—Detect,Calibrate,Constrain,Shield,Certify—
+that closes the Observation–Action Safety Gap for
+any upstream controller through typed contracts and
+domain-agnostic governance.
+A. Summary of Results
+We validated ORIUS on a three-domain defended
+lane with intentionally unequal evidence tiers: Battery
+is the theorem-grade witness row, AV is an all-zip
+grouped nuPlan replay row, and Healthcare is a
+bounded retrospective monitoring row.
+a) Battery Energy Storage.:
+•4 controller variants×3 fault scenarios = 12
+configurations.
+•288 runtime steps per configuration.
+•Zero true-state violations(TSVR = 0) across
+all configurations.
+•288 safety certificates, all chain-valid, 100% audit
+completeness.
+b) Autonomous Vehicles.:
+•Completed all-zip grouped nuPlan replay sur-
+face with 37,344 held-out runtime scenarios and
+1,531,104 runtime steps.
+•Replay TSVR reducedfrom 0.289250 (base-
+line) to 0.000163 (ORIUS) on the 1,531,104-step
+all-zip grouped nuPlan replay surface; this is
+a replay metric, not a closed-loop deployment
+metric.
+•50.03% intervention rate and 17.37% fallback
+activation rate.
+•1,531,104 safety certificates, 99.992% certificate-
+valid release rate, and 100% audit completeness
+on the promoted row.
+•Relative-gap shift coverage remains an explicit
+limitation; the row is not promoted as full closed-
+loop road deployment.
+c) Healthcare Monitoring.:
+•Bounded MIMIC-backed monitoring and alert-
+release row.
+•Retrospective evidence only; no prospective clin-
+ical deployment, regulatory approval, or treat-
+ment recommendation is claimed.
+B. Key Insights
+1) Typed transfer is practical: The same ker-
+nel binary, contract stack, and governance sur-
+face handle a slow-timescale energy system, a
+bounded AV replay surface, and a retrospective
+healthcare monitoring row. Domain adaptation
+requires only implementing six typed adapter
+methods.
+2) Degradation-proportional conservatism:
+The inflation mechanism (Equation (5)) provides
+a smooth trade-off between safety and perfor-
+mance, becoming more conservative precisely
+when observation quality degrades.
+3) Governanceisnon-negotiable: The certificate
+chain and audit trail are essential for regulatory
+compliance and post-incident analysis in safety-
+critical deployments.
+4) Conformal prediction is a strong founda-
+tion: The distribution-free coverage guarantee
+
+=== PHYSICAL PAGE 30 ===
+30
+of conformal prediction, combined with the shift-
+aware adaptive mechanism, provides robust cali-
+bration across diverse scenarios.
+C. Impact
+ORIUS demonstrates that a single runtime safety
+kernel can be reused across different CPS semantics
+without rewriting the kernel itself. The camera-ready
+claim is deliberately bounded: Battery supplies the
+deepest proof witness, nuPlan AV shows bounded
+replay transfer, and Healthcare shows bounded ret-
+rospective monitoring. The next scientific step is not
+broader rhetoric; it is larger denominators, closed-loop
+AV evidence, and prospective healthcare governance
+under the same certificate gate.
+
+=== PHYSICAL PAGE 31 ===
+31
+Appendix A
+Complete Notation Reference
+Symbol Meaning Domain
+xt True (hidden) physical state All
+zt Clean telemetry observation All
+˜zt Degraded telemetry observation All
+wt Reliability weight∈[0,1]All
+ˆCt Base conformal interval All
+ˆCRAC
+t RAC-certified (inflated) interval All
+Ut Observation-consistent state set All
+αInflation factor All
+a∗
+t Candidate action from controller All
+asafe
+t Fallback safe action All
+At Safe action set (tightened) All
+sshift Shift score from adaptive mechanism All
+TSVRTrue-state violation rate All
+OASGObservation–action safety gap rate All
+CVACoverage validity assessment All
+GDQGovernance digest quality All
+IRIntervention rate All
+SOCt State of charge (MWh) Battery
+Emax Battery capacity Battery
+Pmax Maximum discharge power Battery
+vt Ego vehicle speed (m/s) AV
+gt Relative gap to lead vehicle (m) AV
+Appendix B
+Assumption Summary
+ID Statement
+A1 Almost-sure model error bound: the one-step domain model
+error is bounded by an explicit slack used in shielded postcondi-
+tions.
+A2 Telemetry-state bridge: the reliability score bounds telemetry-
+state discrepancy through a known monotone function.
+A3 Feasible safe repair: whenever repair is invoked, the tightened
+safe-action set is non-empty.
+A4 Known one-step dynamics: the runtime can evaluate the one-
+step state increment induced by a candidate action.
+A5 Absorbed monotone tightening: the model-error-absorbed
+margin is monotone non-increasing in reliability and uniformly
+bounded.
+A6 Bounded detector lag: supported telemetry faults are detected
+within a finite configured lag.
+A7 Causal certificate rule: certificates use only history available at
+release time.
+A8 Piecewise certified fallback: fallback either safely holds, safely
+recovers inward, or fails closed.
+A9 Sub-Gaussian disturbance law: disturbance increments satisfy
+the stated sub-Gaussian proxy used by T6 and trajectory-PAC
+surfaces.
+
+=== PHYSICAL PAGE 32 ===
+32
+ID Statement
+A10a Polynomial mixing telemetry: retained for scoped weak-
+dependence diagnostics where polynomial decay is sufficient.
+A10b Geometric mixing telemetry: retained for archived weak-
+dependence diagnostics; active T9 no longer depends on a
+separated-window mixing proof.
+A11 Arbitrage boundary reachability: the witness controller can
+be driven to a boundary-sensitive state under admissible demand.
+A12 Controller-fault independence: the fault/reliability process is
+conditionally independent of controller actions given history.
+A13 Boundary TV radius: a declared two-state boundary witness
+satisfiesdTV(P0,P 1)≤ϵ; this is not an identity between reliability
+and TV distance.
+Appendix C
+Theorem Summary
+ID Name Assumptions Verification
+T1 OASG Existence A1, A2, A4, A11, A12 Proof + Empirical + Code
+T2 One-Step Safety Preservation A1–A5, A7 Proof + Empirical + Code
+T3a Covered Release Risk Envelope A1, A2, A4–A7, A9 Proof + Empirical + Code
+T3b Residual-Risk Corollary A1, A2, A4–A7, A9 Corollary + Code
+T4 Fixed-Margin No-Free-Safety Witness A1, A2, A4, A11 Proof + Empirical + Code
+T5 Finite-Horizon Certificate Validity A1, A2, A4–A7, A9 Proof + Empirical + Code
+T6 Certificate Expiration Bound A4, A7, A9 Proof + Empirical + Code
+T7 Feasible Fallback Existence A1, A4, A8 Proof + Code
+T8 Graceful Degradation Dominance with
+Useful Work
+A1–A5, A8 Proof + Empirical + Code
+T9 Mandatory Release Impossibility total mandatory policy;
+nonempty ambiguity class;
+empty common safe core
+Proof + Empirical + Code
+T10 Boundary-Indistinguishability LB two-state TV radius; dis-
+joint safe-action sets
+Proof + Empirical + Code
+T10/T11 Covered Observation-Ambiguity Safety
+Sandwich
+covered uncertainty set;
+common safe core
+Corollary + Code
+T11 Typed Structural Transfer coverage, safe-set
+soundness, repair,
+fallback, adapter
+obligations
+Proof + Code
+Tminimax Finite Ambiguity-Class Minimax Lower
+Bound
+finite two-state class;
+mandatory-release loss
+Proof + Code
+Tsensor Sensor Necessity Under Adapter Seman-
+tics
+missing coordinate; obser-
+vation invariance; disjoint
+safe sets
+Proof + Code
+The generated theorem-promotion matrix is the status authority. The “Empirical” tag means that Battery,
+AV, and Healthcare evidence artifacts instantiate the theorem’s scoped obligations; it is not an unbounded
+deployment claim. The “Code” tag indicates a direct runtime, helper, or test-suite anchor.
+Appendix D
+Contract Predicate Register
+ID Predicate
+CP1 Inflation factorα≥1.0(Theorem T4).
+CP2 Reliability weightw t∈[0,1].
+
+=== PHYSICAL PAGE 33 ===
+33
+ID Predicate
+CP3 For every target,upper≥lower.
+CP4 Released action satisfies all tightened constraints.
+CP5 All required certificate fields are present and non-null.
+CP6 Certificate timestamps are non-decreasing within an episode.
+Appendix E
+Complete Battery Results
+The complete per-step safety metrics for all 12 battery configurations (2 lanes×3 scenarios×2 controllers)
+are recorded in the artifact filereports/battery_av/battery/battery_deep_oqe_safety_metrics.csv.
+Each row reports:
+•lane: heuristic or deep.
+•scenario: nominal, dropout, or stale_sensor.
+•controller: dc3s_wrapped or dc3s_ftit.
+•true_soc_violation_rate: 0.000 for all 12 rows.
+•intervention_rate: 0.000 (wrapped) or 0.031 (ftit under faults).
+•mean_reliability_w: 0.905–1.000.
+•audit_completeness: 1.000 for all 12 rows.
+Appendix F
+Complete AV Fault Coverage Matrix
+The all-zip grouped nuPlan fault-family coverage matrix is recorded in the AV fault-family coverage CSV
+listed by the compact publication manifest. The ORIUS controller reaches high ego-speed coverage on the
+promoted row, while relative gap remains weaker and is retained as a limitation.
+Appendix G
+Fault Specification Register
+Table XXXI documents the complete parameter space for all six fault families used in the AV evaluation.
+Each family is parameterised by a severity axis; the pipeline sweeps the full severity range.
+TABLE XXXI: Fault specification register for the AV evaluation.
+Fault Family Severity Axis Parameters
+dropoutDrop rated d∈ { 0.05, 0.10, 0.15, 0.20, 0.25, 0.30}. At each
+step, the telemetry reading is replaced with NaN
+with probabilityd. The adapter substitutes the
+last valid reading and marks the observation as
+degraded.
+delay_jitterBuffer depthτ b τb ∈ {1, 3, 5, 10}seconds. Telemetry is delayed
+by a random jitter drawn from Uniform(0,τb).
+The adapter detects late-arriving packets via
+timestamp comparison.
+spikes Spike magnitude
+µs
+µs∈{2, 3, 4, 5}×σof the sensor channel. At each
+step with probability p = 0.05, the reading is
+perturbed byN (0,µs·σ). The spike detector uses
+a z-score test with threshold 3.
+staleHorizonh h∈{ 2, 4, 6, 8, 12}steps. The sensor freezes at its
+last value forh consecutive steps. The staleness
+counter accumulates andwfresh
+t = exp(−λf·h)
+decays accordingly.
+
+=== PHYSICAL PAGE 34 ===
+34
+Fault Family Severity Axis Parameters
+driftDrift rateβ β∈ { 0.01, 0.02, 0.03, 0.04, 0.05}units/step. A
+linear biasβ·tis added to the sensor reading. The
+Page–Hinkley detector fires when the cumulative
+sum exceeds the thresholdλ.
+reorderWindowB B∈ { 2, 4, 6, 8}steps. Timestamps within a
+window ofB steps are randomly permuted. The
+adapter detects out-of-order packets and marks
+the observation accordingly.
+Appendix H
+Reliability Audit Protocol
+The reliability audit stratifies the runtime behaviour into five OQE-weight bins and verifies that the
+RAC-Cert inflation responds proportionally to degradation. For each bin, the audit checks:
+1)Monotone interval width: lowerwt bins produce wider intervals.
+2)Monotone intervention rate: lowerwt bins show higher IR.
+3)Coverage maintenance: all bins maintain coverage≥1−α.
+4)No over-conservatism: the highestwt bin does not inflate beyond the base conformal interval.
+Both domains pass all four audit checks. The battery domain shows the clearest monotonicity due to its
+scalar state; the AV domain shows monotonicity in aggregate but has slightly noisier per-bin statistics due
+to multi-dimensional state interaction.
+Appendix I
+Reproducibility Artifact Manifest
+The combined manifest for both domains contains the following artifact checksums:
+Domain Artifact SHA-256 prefix (8 chars)
+Battery Runtime governance summary a3b7e1f2
+Battery Battery OQE safety metrics8d4c2a91
+Battery Contract verifier reportf1e09b3c
+Battery Combined manifestc7d4a8e5
+AV Runtime governance summary 2e8f5b71
+AV Fault-family coverage table9a3d7c42
+AV Conformal training summaryb5e12f8d
+AV Shift-aware target summaryd4a6c913
+AV Combined manifest71f3e8b2
+Full SHA-256 checksums and file sizes are recorded in the respectivecombined_manifest.json files. The
+Makefile target make verify-manifests re-computes all checksums and compares against the recorded
+values.
+Appendix J
+Artifact Policy
+This section documents what is included in the Git-tracked repository, what is excluded, and how heavy
+artifacts can be obtained.
+a) In the repository (Git-tracked).:
+•Summary artifacts: all CSV, JSON, and PNG files in reports/battery_av/ and
+reports/orius_av/nuplan_bounded/.
+•SHA-256 manifests: artifact_manifest.json for each domain, plus the combined
+evidence_freeze_certificate.json.
+•Source code: the fullsrc/orius/ package, adapter implementations, benchmarking harness, and test
+suite.
+
+=== PHYSICAL PAGE 35 ===
+35
+•Manuscript sources: all LATEX files underpaper/.
+•Configuration: pyproject.toml, requirements.lock.txt, Makefile, and all pipeline scripts in
+scripts/.
+•Claim ledger:docs/claim_ledger.mdmapping every empirical claim to its frozen artifact.
+b) Excluded from Git (obtainable on request).:
+•AV audit database:dc3s_av_waymo_dryrun.duckdb is retained as a compatibility filename for the
+nuPlan-bounded report. Regenerate locally through the nuPlan AV surface builder and report path.
+•Raw nuPlan archives: not Git-tracked. Completed training archives are synchronized through the
+private dataset repository used by the training workflow; partial.crdownload files and map-only archives
+are excluded from the training manifest.
+•Trained model checkpoints: stored as LightGBM serialised artifacts in
+artifacts/models_orius_av_full_corpus/. Included in the repository but can be retrained
+from processed features.
+c) Delivery path for heavy artifacts.:The intended path for oversized files is a tagged GitHub release
+asset or Git LFS. Until that infrastructure is provisioned, the Git-tracked CSV/JSON/PNG surfaces serve
+as the canonical lightweight evidence layer, and the generation scripts serve as the reproducibility path for
+heavy artifacts.
+d) Reproducibility guarantee.:A cold-start user with access to the completed nuPlan archives
+can regenerate the bounded AV artifacts through the nuPlan surface build and report scripts. The
+evidence_freeze_certificate.json records the exact git commit, artifact counts, and SHA-256 verification
+results at freeze time.
+
+=== PHYSICAL PAGE 36 ===
+36
+Appendix K
+Full Theorem Appendix Attachment
+The following pages attach the generated theorem appendix used to check consistency between proof
+statements, code anchors, tests, and artifacts. This attachment supports review of the detailed draft; it
+does not introduce additional theorem claims beyond the scoped theorem register. The editable source is
+appendices/app_c_all_theorems.tex.
+
+=== PHYSICAL PAGE 37 ===
+Appendix C
+Full Proofs
+This appendix is the authoritative proof surface for the defended ORIUS theorem program, but
+it is not a flat headline ladder. The active promotion gate now distinguishes flagship theorems,
+flagship corollaries, flagship lemmas, and archived-only historical text. No draft theorem
+row remains in the defended theorem register. T9, T10,T11_Byzantine, T_stale_decay,
+T_minimax, and T_sensor_converse are promoted only in their scoped forms, with domain-
+discharge artifacts binding the mathematical contracts to Battery, AV, and Healthcare
+evidence. The battery witness remains the deepest proof chain, so the full step-by-step
+derivations below begin with the reference ladder:
+1. OASG existence,
+2. one-step safety preservation,
+3. the ORIUS core bound,
+4. observation necessity / no free safety,
+5. certificate validity horizon,
+6. certificate expiration bound,
+7. feasible fallback existence, and
+8. graceful degradation dominance.
+The certificate half-life result remains a corollary, and safe-budget monotonicity is retained
+as a narrow runtime law rather than a broad converse. The broader integrated theorem-
+like surface, including precursor results and supporting chapter statements, is catalogued
+separately in Appendix M. The active promotion truth source isreports/publication/
+theorem_promotion_matrix.csv.
+1
+37
+
+=== PHYSICAL PAGE 38 ===
+APPENDIX C. FULL PROOFS2
+Mathematical contract vs. domain discharge.The proof copies below use only stated
+assumptions and typed obligations as mathematical premises. Domain discharge is evidence,
+not an extra hidden assumption: the discharge artifacts instantiate constants, verify boundary-
+mass and mixing witnesses, and bind the proof kernels to the promoted bounded Battery, AV,
+and Healthcare artifacts. Thus T9/T10/T11 are contract-universal, not unrestricted-global;
+new physical-AI domains may reuse the proof pattern only after their adapters, safe sets,
+coverage witnesses, and fallback obligations are discharged by domain-specific evidence.
+C.1 C.1 Battery-Domain OASG Existence
+Theorem C.1(restated).Under A1, A2, A4, A11, and A12, for dropout rated> 0and
+any optimal arbitrage controller,∃t∗withϕobs(at∗) = 1,ϕtrue(at∗) = 0.
+Proof. Fix η >0. By A11, the battery witness controller can be driven to a boundary-
+sensitive state under admissible demand, so there exists a stept∗and an admissible released
+action at∗ such that the observed-state forward prediction lies on the safe side of the upper
+SOC boundary while remaining arbitrarily close to it:
+SOCmax−η≤ˆxt∗ + ∆(at∗)≤SOCmax.
+By A2 and the standing dropout rated> 0, there exists an admissible positive observation
+gapδon a degraded-telemetry window. Choose that gap so thatη <δ≤gmax and let
+xt∗ = ˆxt∗ +δ.
+By A12, the fault process is conditionally independent of the controller action stream given
+the history, so the boundary-sensitive witness step and the admissible telemetry fault can
+co-occur on the same realized history. Now choose the admissible one-step model residual
+ϵt∗ = 0, which is allowed by A1 because0∈[−ϵmodel,ϵmodel].
+The controller evaluates the action through the observed state only, so the observed
+successor satisfies
+ˆxt∗+1 = ˆxt∗ + ∆(at∗)≤SOCmax,
+henceϕobs(at∗) = 1. Using A4 for the shared one-step dynamics, the true successor is
+xt∗+1 =x t∗ + ∆(at∗) +ϵt∗ = ˆxt∗ + ∆(at∗) +δ.
+38
+
+=== PHYSICAL PAGE 39 ===
+APPENDIX C. FULL PROOFS3
+Combining this identity with the lower side of the observed-state witness gives
+xt∗+1≥(SOCmax−η) +δ= SOCmax + (δ−η)>SOCmax.
+Therefore ϕtrue(at∗) = 0while ϕobs(at∗) = 1, which is exactly the battery witness-row
+observation-action safety gap. This is an existence witness, not a frequency or univer-
+sality claim: A11 supplies the boundary-sensitive step, A12 permits the fault/controller
+co-occurrence, and a new domain cannot reuse T1 unless it discharges the same boundary-
+reachability obligation.
+C.2 C.2 One-Step Safety Preservation
+Theorem C.2(restated).Under A1–A5, A7, ifasafe
+t ∈At and xt∈ˆCRAC
+t , thenϕ(xt+1) =
+1, where the tightened margin used to defineAt already absorbs the one-step model-error
+allowance.
+Proof. Fix a stept and assume the standing conditions A1–A5 and A7. Becausext∈ˆCRAC
+t ,
+the true state lies in the reliability-adjusted conformal tube issued from the current observation.
+In particular, membership in that tube gives
+|xt−ˆxt|≤mt,
+where mt is the inflation-adjusted half-width determined by A2 and A5. This step is
+deterministic once the theorem is conditioned onxt∈ˆCRAC
+t ; it does not introduce a new
+probability statement. By A5, the shield uses the absorbed tightening margin
+m⋆
+t =m t +ϵmodel
+when constructingAt. Since asafe
+t ∈At, the observed-state forward prediction therefore
+satisfies
+SOCmin +m⋆
+t≤ˆxt + ∆(a safe
+t )≤SOCmax−m⋆
+t,
+with∆( asafe
+t )denoting the one-step battery state update implied by the known dynamics
+from A4. Now write the true next state as
+xt+1 =x t + ∆(a safe
+t ) +ϵt,
+where the model residualϵt is bounded by A1. Substitutingxt = ˆxt + (xt−ˆxt)and using
+39
+
+=== PHYSICAL PAGE 40 ===
+APPENDIX C. FULL PROOFS4
+|xt−ˆxt|≤mt yields
+xt+1≥(ˆxt+∆(a safe
+t ))−mt−|ϵt|≥SOCmin+m⋆
+t−mt−ϵmodel = SOCmin+(mt+ϵmodel)−mt−ϵmodel = SOCmin.
+The same substitution on the upper side gives
+xt+1≤(ˆxt+∆(a safe
+t ))+mt+|ϵt|≤SOCmax−m⋆
+t +mt+ϵmodel = SOCmax−(mt+ϵmodel)+mt+ϵmodel = SOCmax.
+Therefore
+SOCmin≤xt+1≤SOCmax.
+This is exactly the safety predicateϕ(xt+1) = 1. The argument uses only the current-step
+information certified by A7 and therefore preserves causality. Hence any action selected from
+At while the current state is insideˆCRAC
+t keeps the one-step successor in the safe set. The
+theorem stops at this one-step conditional statement; it does not itself quantify how often
+xt∈ˆCRAC
+t occurs.
+C.3 C.3 Battery ORIUS Core Bound
+Theorem C.3(restated).Under A1–A5, A7, and the explicit predictable battery risk-envelope
+contract P[Zt = 1|Ht]≤rt with rt =α(1−wt)on the fixed certified budget trace, one has
+E[V]≤αT(1−¯w)for¯w=T−1∑T
+t=1wt.
+Proof.Let
+V=
+T∑
+t=1
+Zt, Z t =1
+[
+¬ϕ(xt)
+]
+,
+so thatV counts the number of true-state safety violations across the episode. Because each
+Zt is an indicator, E[Zt] = P[Zt = 1]. Applying linearity of expectation, which does not
+require independence across time, gives
+E[V] =
+T∑
+t=1
+E[Zt] =
+T∑
+t=1
+P[Zt = 1].
+The theorem-local battery contract supplies the per-step conditional envelope
+P[Zt = 1|Ht]≤rt, r t =α(1−wt),
+where rt is predictable from the runtime history used to issue the certificate. In the fixed
+replay/certificate trace used by the theorem artifact, the recorded budget values are treated
+40
+
+=== PHYSICAL PAGE 41 ===
+APPENDIX C. FULL PROOFS5
+as constants. If the reliability process is left random instead, the defensible statement is the
+weaker averaged formE[V]≤α∑
+t E[1−wt]. Taking expectations of both sides gives
+P[Zt = 1] =E[P[Z t = 1|Ht]]≤E[rt].
+On the fixed recorded budget trace,E[rt] =r t, giving the next display.
+Substituting the per-step bound into the expectation identity yields
+E[V]≤
+T∑
+t=1
+rt =
+T∑
+t=1
+α(1−wt) =α
+T∑
+t=1
+(1−wt).
+Now expand the sum:
+T∑
+t=1
+(1−wt) =T−
+T∑
+t=1
+wt =T
+(
+1−1
+T
+T∑
+t=1
+wt
+)
+.
+By definition of the episode-average reliability,
+¯w=1
+T
+T∑
+t=1
+wt.
+Replacing the bracketed term with¯wgives
+E[V]≤αT(1−¯w).
+This is the desired aggregation corollary. The actual burden is the per-step envelope hypoth-
+esis P[Zt = 1|Ht]≤α(1−wt); once that T3a-style derivation is available, the displayed
+E[V ]≤αT(1−¯w)bound follows by linearity of expectation alone. The derivation invokes
+only finite-horizon identities and the explicit theorem-local battery risk budget; no tempo-
+ral independence, exchangeability across time, or martingale strengthening is introduced.
+Therefore the battery ORIUS core bound holds for any admissible horizonT on the defended
+replay surface whenever that per-step budget contract has been justified.
+C.4 C.4 Observation Necessity / No Free Safety
+Theorem C.4(restated).Under A1, A2, A4, and A11, let πbe a fixed-margin, quality-
+ignorant mandatory-release controller with effective marginmπ. If the battery witness row
+has an admissible degraded-observation gapδ >mπ+ηat a boundary-sensitive release step
+for someη >0, then there exists an admissible fault sequence withTSVR(π)>0.
+41
+
+=== PHYSICAL PAGE 42 ===
+APPENDIX C. FULL PROOFS6
+Proof. Fix such a controllerπ. By definition, its effective safety margin does not depend
+on the runtime reliability score, so there exists a constant marginmπ≥0used across all
+observation qualities. By A11, the battery witness controller can be driven to a boundary-
+sensitive state under admissible demand. Consequently, for everyη >0there exists a stept⋆
+and an action released byπsuch that the observed-state forward prediction nearly saturates
+the controller’s fixed margin on the upper SOC boundary:
+ˆxt⋆+ ∆(π(ˆxt⋆))≥SOCmax−mπ−η.
+By the theorem’s gap hypothesis and A2, choose a degraded-observation fault realization
+with
+δ∈(mπ+η, gmax], x t⋆= ˆxt⋆+δ.
+Now set the admissible one-step model residual to zero, which is allowed by A1. Using A4
+for the shared battery dynamics,
+xt⋆+1 =x t⋆+ ∆(π(ˆxt⋆)) +ϵt⋆= ˆxt⋆+ ∆(π(ˆxt⋆)) +δ.
+Substituting the observed-state witness inequality gives
+xt⋆+1≥SOCmax−mπ−η+δ= SOCmax + (δ−mπ−η)>SOCmax.
+The observed state therefore still appears feasible relative to the fixed marginmπ, while the
+same released action produces a true-state boundary crossing. Hence the controller incurs
+at least one true-state violation on the constructed admissible sequence, soTSVR(π)> 0.
+The witness is finite-horizon and class-scoped exactly as claimed in T4. It does not rule out
+controllers with adaptive margins, abstention, fallback, or a fixed margin so large that the
+stated degraded-observation gap is impossible.
+C.5 C.5 Certificate Validity Horizon
+Proof source.This section restates T5,Finite-Horizon Certificate Validity.
+TheoremT5: Finite-HorizonCertificateValidity.Let Xt betheobservation-consistent
+state set at issue timet, let ˜at:t+h be the certified action or fallback sequence, and letS be
+the domain safe-state set. Assume the forward reachable tube satisfies
+Rt+j(Xt,˜at:t+j)⊆S j= 0,...,h.
+42
+
+=== PHYSICAL PAGE 43 ===
+APPENDIX C. FULL PROOFS7
+Then every release governed by the certificate is safe forh steps unless a certificate-invalidating
+event occurs.
+Proof.At j = 0, all states consistent with the issued certificate lie inRt(Xt)⊆S. Suppose
+the claim holds through stepj <h. By definition of the reachable tube, every state reachable
+after applying the certified prefix ˜at:t+j+1 lies inRt+j+1(Xt,˜at:t+j+1). The containment
+assumption places that set insideS. Induction proves safety for allj = 0,...,h. If a fresh
+observation contradictsXt, the model, or the action sequence, the certificate is outside the
+theorem hypothesis and must be renewed, repaired, or expired by the runtime.
+C.6 C.6 Certificate Expiration Bound
+Theorem C.5(restated).Under A4, A7, A9 and confidence levelδ∈(0, 1), the battery
+certificate horizon satisfies the lower bound
+τt≥
+⌊
+δ2
+bnd,t
+2σ2
+d log(2/δ)
+⌋
+.
+Proof. Fora σd-sub-Gaussiandisturbance, thereflection-principle/first-passagetailinequality
+gives
+P
+(
+|S∆|≥δbnd,t
+)
+≤2 exp
+(
+−δ2
+bnd,t
+2σ2
+d∆
+)
+.
+Demanding the right-hand side be at mostδand solving for∆yields
+∆≤ δ2
+bnd,t
+2σ2
+d log(2/δ).
+Flooringgivestheintegerlowerbound, andtheruntimehelper certificate_expiration_bound()
+implements this confidence-aware expression directly.
+C.7 C.7 Certificate Half-Life Corollary
+Corollary C.6(restated).The certificate half-life remains a corollary rather than part of
+the flagship T1–T8 ladder.
+Proof. The current battery blackout evidence supports a bounded safe-hold claim more
+strongly than a finite empirically identified half-life law. The corollary therefore remains
+analytical and should be interpreted together with the more conservative wording in Chapter 7.
+43
+
+=== PHYSICAL PAGE 44 ===
+APPENDIX C. FULL PROOFS8
+C.8 C.8 Feasible Fallback Existence
+Theorem C.7(restated).Under A1, A4, and A8, there exists a battery piecewise fallback
+rule that either safely holds on the interior or executes a boundary-aware safe-landing recovery
+action; otherwise the runtime fails closed instead of asserting a false fallback guarantee.
+Proof. Zero dispatch is the constructive hold action on the interior. If the current SOC has
+enough slack against the one-step model error, the next state remains inside the admissible
+interval. If the current SOC is safe but too close to a boundary for zero dispatch to be
+certified, the safe-landing controller computes a charge or discharge action that moves the
+SOC toward the interior safe zone while respecting the active battery limits. The helper
+certify_fallback_existence() now checks exactly this piecewise surface and returns
+infeasible rather than over-claiming when neither case is safe.
+C.9 C.9 Graceful Degradation Dominance
+Proof source.This section restates T8,Graceful Degradation Dominance with Useful
+Work.
+Theorem T8: Graceful Degradation Dominance with Useful Work.Fix a finite
+horizon and a paired admissible fault trace. LetPG be an ORIUS graceful-degradation policy
+andPU an uncontrolled persistence policy evaluated on that same trace. LetZG
+t ,Z U
+t ∈{0, 1}
+be true-state violation indicators, and letWG,WU≥0be the corresponding useful-work
+totals on the horizon. For a declared operating thresholdλ∈(0,1], if
+ZG
+t ≤ZU
+t ∀tandW G≥λWU,
+thenP G weakly dominatesPU in the safety–work preorder
+P⪯λQ⇐⇒
+∑
+t
+ZP
+t ≤
+∑
+t
+ZQ
+t andW P≥λWQ.
+This is a paired-trace dominance statement, not a claim thatPG is globally optimal among
+all fallback policies.
+Proof.Summing the pointwise inequality over the fixed horizon gives
+∑
+t
+ZG
+t ≤
+∑
+t
+ZU
+t ,
+44
+
+=== PHYSICAL PAGE 45 ===
+APPENDIX C. FULL PROOFS9
+so the graceful policy has no larger violation count, and therefore no larger violation rate, on
+the paired trace. The second hypothesis is exactly the useful-work lower boundWG≥λWU.
+These two inequalities are the two coordinates of the stated preorder. Immediate shutdown
+can satisfy the safety coordinate, but it is a T8 witness only if it also satisfies the same
+useful-work threshold; otherwise it is outside the theorem’s dominance claim.
+C.10 C.10 Safe-Budget Monotonicity Proposition
+Proposition C.8(restated).Under A1–A5,B t =|At|·∆tis monotone increasing inwt.
+Proof.|At|= SOCmax−SOCmin−2mt and mt =qt/(wt +ϵ)is monotone decreasing inwt,
+soB t increases withwt.
+C.11 C.11 Impossibility of Quality-Ignorant Manda-
+tory Release (T9)
+Theorem T9: Impossibility of Quality-Ignorant Mandatory Release.LetΠ obs
+be total observation-only mandatory-release controllersπ:O→A, with no abstention or
+fail-closed action in the policy class. AssumeC(x)⊆Ais the state-conditioned safe-action
+set. For an observationowith nonempty ambiguity class, define
+B(o) ={x∈X:h(x) =o}, K(o) =
+⋂
+x∈B(o)
+C(x).
+If B(o)̸= ∅ and K(o) = ∅, no controller inΠ obs can guarantee true-state safety for all
+x∈B(o).
+Proof.A total mandatory observation-only controller must choose one actiona =π(o)for
+the entire nonempty ambiguity classB(o). If that action were safe for everyx∈B(o), then
+a∈
+⋂
+x∈B(o)
+C(x) =K(o),
+contradictingK(o) = ∅. Hence there exists at least onex†∈B(o)with a /∈C(x†), so the
+release cannot be certified true-state safe on the whole ambiguity class. The claim is restricted
+to mandatory release; abstention, fallback, uncertainty expansion, or denial of release are
+outsideΠ obs.
+45
+
+=== PHYSICAL PAGE 46 ===
+APPENDIX C. FULL PROOFS10
+C.12 C.12 Boundary-IndistinguishabilityLowerBound
+(T10)
+Theorem T10: Boundary-Indistinguishability Lower Bound.Letx0,x 1 be two latent
+boundary states with observation lawsP0,P 1. AssumedTV(P0,P 1)≤ϵandC(x0)∩C(x1) = ∅.
+For any observation-only mandatory-release controllerπ, deterministic or randomized,
+sup
+i∈{0,1}
+Pr
+O∼Pi
+[π(O)/∈C(xi)]≥1−ϵ
+2 .
+Proof.It suffices to prove the deterministic case; randomized controllers follow by condi-
+tioning on the controller’s internal random seed and averaging. Define
+Si ={o:π(o)∈C(xi)}, i∈{0,1}.
+The disjoint-safe-set hypothesis givesS0∩S1 = ∅. The average success probability of the
+release rule is
+1
+2{P0(S0) +P 1(S1)}.
+Since S1⊆Sc
+0, the binary testδ(o) = 0for o∈S0 and δ(o) = 1otherwise has testing success
+1
+2{P0(S0) +P 1(Sc
+0)}≥1
+2{P0(S0) +P 1(S1)}.
+The best possible two-hypothesis testing success betweenP0 and P1 is(1 + dTV(P0,P 1))/2.
+Therefore the release rule’s average success is at most(1 +ϵ)/2, so its average loss is at least
+(1−ϵ)/2. The larger of the two state-conditioned release risks is at least that average loss,
+which proves the bound.
+C.13 C.13 Typed Structural Transfer and Failure-
+Mode Converse (T11)
+Theorem reference.The forward theorem is Theorem 8.3 and the converse witness is
+Proposition 8.4 in Chapter 8. The appendix copies the key proof logic so the full-proofs
+surface remains self-contained.
+Appendix proof copy.Fix a stept and condition on the causal observation historyHt. Let
+Et ={xt∈Ut}denote the event that the latent state lies in the constructed observation-
+46
+
+=== PHYSICAL PAGE 47 ===
+APPENDIX C. FULL PROOFS11
+consistent set. By the first T11 obligation,
+P[Et|Ht]≥1−α.
+On Et, the soundness obligation implies that every action in the tightened safe-action set
+preserves safety at the next step for every state inUt and every admissible disturbance. If
+the tightened safe-action set is non-empty, the repair-membership obligation guarantees that
+the released repaired action lies inside that set and is therefore safe onEt. If the tightened
+safe-action set is empty, the fallback-admissibility obligation guarantees a safe release path
+from the current safe state. In either branch,
+P[xt+1∈S|Ht]≥P[Et|Ht]≥1−α.
+This proves the forward one-step transfer direction. The converse is not claimed as part of
+T11 itself; it is tracked separately as a structural failure-mode witness showing that if any
+one of the four obligations fails, the corresponding step in the forward proof disappears.
+Corollary C.9(T10_T11_ObservationAmbiguitySandwich: Covered Observation-Ambigu-
+ity Safety Sandwich).LetB(o) ={x:h(x) =o}denote an observation ambiguity class and let
+K(o) = ⋂
+x∈B(o)C(x)denote its common safe core. Every mandatory-release observation-only
+controller satisfies
+TSVR(π)≥EO
+[
+min
+a∈A
+P(a /∈C(X⋆)|O)
+]
+.
+If ORIUS constructs a setXt with P(X⋆
+t /∈Xt)≤αand releases onlyut∈⋂
+x∈XtC(x), then
+TSVRORIUS≤α; under exact coverage, the one-step true-state violation probability is zero.
+Proof. Conditioning onO =o, an observation-only controller must select one action for all
+states inB(o). Its conditional violation probability isP(a /∈C(X⋆)|O= o), so no such
+controller can improve on the minimum overa. Averaging over observations gives the Bayes
+lower bound. WhenK(o) =∅, no action is safe for all states in the ambiguity class, so any
+mandatory release has positive conditional risk if the unsafe state has positive conditional
+mass.
+For ORIUS, on the eventX⋆
+t ∈Xt, membership ofut in everyC(x)for x∈Xt implies
+ut∈C(X⋆
+t ), hence no true-state violation. The remaining violation probability is bounded
+by the coverage miss probabilityα.
+Lemma C.10(T11_AV_BrakeHold: AV Brake-Hold Runtime Lemma).For a promoted
+ORIUS autonomous-vehicle replay row, suppose the emitted domain runtime contract witness
+has source theorem T11, T11 statusruntime_linked, no failed T11 obligations, a valid
+47
+
+=== PHYSICAL PAGE 48 ===
+APPENDIX C. FULL PROOFS12
+certificate, and a passing true brake-hold postcondition in the runtime trace. Then that row is
+a bounded runtime instance of the forward T11 transfer surface for the longitudinal brake-hold
+contract.
+Proof. The witness records the four executable T11 obligations through the typed contract
+summaryandrecordstheAV-specifictruepostconditionseparatelyas domain_postcondition_passed.
+The stated hypotheses therefore instantiate the coverage, soundness, repair-membership, and
+fallback admissibility steps used in the T11 proof, and the runtime postcondition checks the
+narrowed brake-hold safety predicate for the emitted next state. The result is only row-local
+and contract-local; it does not assert complete autonomous-driving closure.
+Lemma C.11(T11_HC_FailSafeRelease: Healthcare Fail-Safe Release Runtime Lemma).
+For a promoted ORIUS healthcare monitoring row, suppose the emitted domain runtime con-
+tract witness has source theorem T11, T11 statusruntime_linked, no failed T11 obligations,
+a valid certificate, and a passing true fail-safe alert-release postcondition in the runtime trace.
+Then that row is a bounded runtime instance of the forward T11 transfer surface for the
+healthcare fail-safe release contract.
+Proof. The witness records the typed T11 summary emitted by the universal runtime and
+separately records the healthcare-specific true alert-release predicate. If the T11 status is not
+runtime_linked, if any obligation fails, if the certificate is invalid, or if the postcondition
+fails, the witness is not passing. A passing witness therefore supplies exactly the forward
+one-step T11 obligations plus the narrowed clinical-monitoring runtime postcondition. It
+does not assert regulated clinical deployment closure.
+Lemma C.12(T6_AV_FallbackValidity: AV One-Step Fallback Certificate Lemma).For
+a promoted ORIUS AV replay row, if the certificate records thesingle_step_fallback
+validity scope, the released action is the full-brake fail-safe action, the T11 runtime witness is
+linked, and the true brake-hold postcondition passes, then the certificate has a theorem-backed
+one-step validity horizon for that row.
+Proof. The helper implementing the certificate semantics assignsHt = 1, half-life one, and
+expiration at the next step only in the fallback branch where the emitted action is the domain
+fail-safe action. The runtime witness separately checks T11 linkage and the true brake-hold
+postcondition. Thus the certificate is valid only for the single emitted transition; no multi-step
+validity is inferred from degraded observation.
+Lemma C.13(T6_HC_FallbackValidity: Healthcare One-Step Fallback Certificate Lemma).
+For a promoted ORIUS healthcare monitoring row, if the certificate records thesingle_step_fallback
+48
+
+=== PHYSICAL PAGE 49 ===
+APPENDIX C. FULL PROOFS13
+validity scope, the released action is the max-alert fail-safe action, the T11 runtime witness
+is linked, and the true fail-safe alert-release postcondition passes, then the certificate has a
+theorem-backed one-step validity horizon for that row.
+Proof. The certificate-validity helper gives fallback releases a positive horizon only for the
+domain fail-safe action and only for one step. T11 linkage and the healthcare postcondition
+are checked by the runtime witness. Therefore the row satisfies the formal validity predicate
+for the emitted transition, while degraded observations are not promoted to multi-step
+certificates.
+Lemma C.14(T_EQ_Battery_RuntimeArtifactPackage: Battery Equal Artifact Discipline
+Package).If the battery report directory contains runtime-denominator comparator, ablation,
+negative-control, trace, utility, theorem, proof-appendix, and reproducibility artifacts satisfying
+the equal-domain gate, then the battery row satisfies the repository’s equal artifact-discipline
+contract.
+Proof. The equal-domain gate is an executable artifact obligation, not a new safety theorem. It
+checks that the battery evidence package contains a runtime trace, runtime-native comparator
+rows, runtime-native ablation rows, runtime-native negative controls, a proof-surface anchor,
+and a reproducibility manifest. It also checks the non-vacuity condition that the ORIUS
+row has zero TSVR, certificate/witness closure, and useful work greater than the degenerate
+safe-fallback comparator. If any required artifact is missing or proxy-labelled, the validator
+fails closed. Therefore a passing gate is exactly the stated artifact-discipline contract.
+Lemma C.15(T_EQ_AV_RuntimeArtifactPackage: AV Equal Artifact Discipline Package).
+If the AV report directory contains runtime-denominator comparator, ablation, negative-
+control, trace, utility, theorem, proof-appendix, and reproducibility artifacts satisfying the
+equal-domain gate, then the bounded AV replay row satisfies the repository’s equal artifact-
+discipline contract.
+Proof. The gate requires the AV T11 brake-hold runtime lemma and the AV T6 one-step
+fallback-validity lemma, then separately requires domain-native runtime denominator rows for
+baselines, ablations, negative controls, utility, and reproducibility. The ORIUS row must have
+zero TSVR, valid runtime certificates, passing runtime witnesses, and useful work greater
+than the always-brake comparator. The conclusion is limited to artifact discipline for the
+promoted replay contract; it does not assert full autonomous-driving closure.
+Lemma C.16(T_EQ_HC_RuntimeArtifactPackage: Healthcare Equal Artifact Discipline
+Package).If the healthcare report directory contains runtime-denominator comparator, ab-
+lation, negative-control, trace, utility, theorem, proof-appendix, and reproducibility artifacts
+49
+
+=== PHYSICAL PAGE 50 ===
+APPENDIX C. FULL PROOFS14
+satisfying the equal-domain gate, then the bounded healthcare monitoring row satisfies the
+repository’s equal artifact-discipline contract.
+Proof. The gate requires the healthcare T11 fail-safe release runtime lemma and the healthcare
+T6 one-step fallback-validity lemma, then requires native runtime denominator rows for
+baselines, ablations, negative controls, utility, and reproducibility. The ORIUS row must have
+zero TSVR, valid runtime certificates, passing runtime witnesses, and useful work greater than
+the always-alert comparator. The result is an artifact-discipline guarantee for the promoted
+monitoring contract only; it does not assert regulated clinical deployment readiness.
+C.14 L1 — Reliability-Monotone Inflation
+Lemma L1: Reliability-Monotone Inflation.Let mt = qt/(wt +ϵ)with qt > 0,
+wt∈[0,1], andϵ>0. Thenmt is monotonically nonincreasing inwt.
+Proof.
+∂mt
+∂wt
+=− qt
+(wt +ϵ)2 <0.
+Thus increasing reliability cannot increase the margin.
+C.15 L2 — Safe-Set Antitonicity
+Lemma L2: Safe-Set Antitonicity.IfX 1⊆X2, then
+⋂
+x∈X2
+C(x)⊆
+⋂
+x∈X1
+C(x).
+Proof.Any action safe for every state in the larger setX2 is safe for every state in its
+subset X1. Hence the larger uncertainty set has a smaller or equal common safe-action set.
+C.16 L3 — Intervention Threshold
+Lemma L3: Intervention Threshold.If a candidate actionat lies outside∩x∈XtC(x),
+any certified ORIUS release must repair, fallback, or deny release.
+Proof.Membership in ∩x∈XtC(x)is exactly the condition for the action to be safe for every
+state covered by the runtime uncertainty set. If the action is outside that set, releasing it
+50
+
+=== PHYSICAL PAGE 51 ===
+APPENDIX C. FULL PROOFS15
+would violate the covered-release contract. Therefore a certified runtime must choose a repair,
+fallback, or denial path.
+C.17 L4 — Observation-Ambiguity Safety Sandwich
+Lemma L4: Observation-Ambiguity Safety Sandwich.Observation-only mandatory
+release inherits the lower-side ambiguity risks in T9 and T10. ORIUS covered release has
+upper-side risk bounded by its coverage miss probability under the T2/T3 covered-release
+contract.
+Proof.The lower side follows by applying T9 to empty safe cores and T10 to two-state
+boundary ambiguity classes. For the upper side, ORIUS releases only actions safe over the
+covered state set. Thus violation can occur only when the true state is outside that covered
+set or an explicit runtime assumption is broken. Under the T2/T3 contract this event has
+probability no larger than the declared coverage miss probability. Combining the lower and
+upper statements gives the sandwich.
+C.18 T11_Byzantine — Byzantine-Robust Reliability
+Aggregation
+Theorem T11_Byzantine: Byzantine-Robust Reliability Aggregation.Suppose n
+telemetry channels emit scores in[0, 1], at most b < n/2are Byzantine, and ˆwt is the
+b-trimmed mean after sorting all reported scores and removing theb smallest andb largest
+values. If the honest scores lie in an interval of radiusρaroundwH
+t , then
+|ˆwt−wH
+t|≤ρ.
+Proof.Trimming removes the b smallest andb largest reported values. Since at mostb
+reports are Byzantine, no value below all honest scores can remain after the lower trim: there
+are at mostb such values, so they are among theb smallest reports. Similarly, no value above
+all honest scores can remain after the upper trim. All honest scores lie in[wH
+t −ρ,wH
+t +ρ]
+by hypothesis. Hence every retained value that contributes to the trimmed mean lies in
+[wH
+t −ρ,wH
+t +ρ]. Their arithmetic mean lies in the same interval, which proves the bound.
+The theorem makes no claim forb≥n/2or for honest scores outside the stated interval.
+51
+
+=== PHYSICAL PAGE 52 ===
+APPENDIX C. FULL PROOFS16
+C.19 T_stale_decay—Stale-HoldUncertaintyGrowth
+Theorem T_stale_decay: Stale-Hold Uncertainty Growth.Assume no fresh observa-
+tion arrives fors steps and the latent state obeys∥x⋆
+t+k−x⋆
+t+k−1∥≤Lfork = 1,...,s. If the
+uncertainty radius at timetisr t, then the conservative stale-hold radius isrt+s =r t +Ls.
+Proof.By the triangle inequality,
+∥x⋆
+t+s−x⋆
+t∥≤
+s∑
+k=1
+∥x⋆
+t+k−x⋆
+t+k−1∥≤Ls.
+Combining this drift radius with the existing uncertainty radiusrt givesrt +Ls. Therefore
+any certified release att +s must be safe over the expanded set. This is a bounded-drift
+containment theorem, not a claim that a particular exponential decay schedule is physically
+derived.
+C.20 T_minimax — Finite Ambiguity-Class Minimax
+Lower Bound
+Theorem T_minimax: Finite Ambiguity-Class Minimax Lower Bound.LetPϵbe
+a nonempty class of finite two-state boundary problemsP = (x0,x 1,P 0,P 1,C )satisfying
+dTV(P0,P 1)≤ϵand C(x0)∩C(x1) = ∅. For a mandatory observation-only controllerπ,
+define the worst-latent-state loss onPby
+L(π,P) = sup
+i∈{0,1}
+Pr
+O∼Pi
+[π(O)/∈C(xi)].
+Then
+inf
+π∈Πobs
+sup
+P∈Pϵ
+L(π,P)≥1−ϵ
+2 .
+Proof.Fix any π. For everyP∈Pϵ, the hypotheses of T10 hold by definition of the class,
+so
+L(π,P)≥1−ϵ
+2 .
+Because the class is nonempty, taking the supremum overP∈Pϵpreserves the same lower
+bound for the fixedπ. Taking the infimum overπthen preserves it for the controller class.
+This is a finite ambiguity-class lower bound under the displayed loss; it is not a global minimax
+optimality theorem and does not assert a matching ORIUS upper bound.
+52
+
+=== PHYSICAL PAGE 53 ===
+APPENDIX C. FULL PROOFS17
+C.21 T_sensor_converse — Sensor Necessity Under
+Adapter Semantics
+Theorem T_sensor_converse: Sensor Necessity Under Adapter Semantics.Let
+xj be a latent coordinate on which the safe-action map depends. Suppose the adapter
+observation map is invariant to that coordinate: whenever two states differ only inxj, they
+have the same observation. If there existx0,x 1 differing only inxj such that
+h(x0) =h(x 1) =o, C(x 0)∩C(x1) =∅,
+then no observation-only mandatory-release policy can certify safety over the ambiguity class
+containingx 0,x 1 without additional sensing, uncertainty expansion, fallback, or denial.
+Proof.By the adapter-invariance hypothesis, x0 and x1 produce the same observation
+o, so both states lie in the nonempty ambiguity classB(o). Because C(x0)∩C(x1) = ∅,
+the common safe core over that class is empty. T9 then rules out certification by any
+total observation-only mandatory-release policy onB(o). Additional sensing, uncertainty
+expansion, fallback, or denial are the escape routes because they change the observation map
+or leave the mandatory-release policy class.
+C.22 T_trajectory_PAC — Finite-Horizon PAC Re-
+lease Certificate
+Theorem T_trajectory_PAC: Finite-Horizon PAC Release Certificate.LetZt be
+the true-state violation event at stept. Suppose
+Pr(Zt = 1)≤ϵt, t= 1,...,T.
+Then
+Pr
+( T∑
+t=1
+Zt≥1
+)
+≤
+T∑
+t=1
+ϵt.
+Therefore, if
+∑T
+t=1ϵt≤δ, the trajectory is violation-free with probability at least1−δ. The
+same conclusion holds when the runtime supplies predictable conditional budgetsPr(Zt = 1|
+Ht−1)≤ϵt, after taking expectations.
+53
+
+=== PHYSICAL PAGE 54 ===
+APPENDIX C. FULL PROOFS18
+Proof.The event {∑T
+t=1Zt≥1}is the union of the per-step violation events∪T
+t=1{Zt = 1}.
+By the union bound,
+Pr
+(
+∪T
+t=1{Zt = 1}
+)
+≤
+T∑
+t=1
+Pr(Zt = 1)≤
+T∑
+t=1
+ϵt.
+If the sum is at mostδ, then the complementary no-violation event has probability at least
+1−δ. This defended surface is exactly the finite-horizon Bonferroni certificate; it does not
+claim a Ville or supermartingale strengthening and does not require temporal independence.
+54
+
+=== PHYSICAL PAGE 55 ===
+55
+References
+[1] Sha, Lui, “Using simplicity to control complexity,” 2001, IEEE Software.
+[2] M. Leucker and C. Schallhart, “A brief account of runtime verification,” 2009.
+[3] Hendrycks, Dan and Gimpel, Kevin, “A baseline for detecting misclassified and out-of-distribution
+examples in neural networks,” 2017, international Conference on Learning Representations.
+[4] Y. Romano, E. Patterson, and R. J. Candès, “Conformalized quantile regression,” 2019.
+[5] Bartocci, Ezio and Falcone, Ylies and Francalanza, Adrian and Reger, Giles, “Introduction to runtime
+verification,” 2018, lecture Notes in Computer Science.
+[6] V. Vovk, A. Gammerman, and G. Shafer, “Algorithmic learning in a random world,” 2005.
+[7] I. Gibbs and E. J. Candès, “Adaptive conformal inference under distribution shift,” 2021.
+[8] L. Lindemann, M. Cleaveland, G. Shim, and G. J. Pappas, “Safe planning in dynamic environments
+using conformal prediction,” 2023.
+[9] A. Dixit, L. Lindemann, S. X. Wei, M. Cleaveland, G. J. Pappas, and J. V. Deshmukh, “Adaptive
+conformal prediction for motion planning among dynamic agents,” 2023.
+[10] R. Bloem, B. Könighofer, R. Könighofer, and C. Wang, “Shield synthesis: Runtime enforcement for
+reactive systems,” 2015.
+[11] A. D. Ames, S. Coogan, M. Egerstedt, G. Notomista, K. Sreenath, and P. Tabuada, “Control barrier
+functions: Theory and applications,” 2019.
+[12] Hespanha, Joao P. and Naghshtabrizi, Payam and Xu, Yonggang, “A survey of recent results in networked
+control systems,” 2007, Proceedings of the IEEE.
+[13] Page, E. S., “Continuous inspection schemes,” 1954, biometrika.
+[14] Hinkley, David V., “Inference about the change-point in a sequence of random variables,” 1971, biometrika.
+[15] Seto, Daisuke and Krogh, Bruce H. and Sha, Lui and Chutinan, Alongkrit, “The simplex architecture
+for safe online control system upgrades,” 1998, Proceedings of ACC.
+[16] Johnson, Alistair E. W. and Bulgarelli, Lucas and Shen, Lu and Gayles, Anna and Shammout, Ahmad
+and Horng, Steven and Pollard, Tom and Hao, Shirly and Moody, Benjamin and Gow, Brian and others,
+“Mimic-iv, a freely accessible electronic health record dataset,” 2023, scientific Data.
+[17] Johnson, Alistair E. W. and Bulgarelli, Lucas and Pollard, Tom J. and Celi, Leo Anthony and Mark,
+Roger G., “Mimic-iv version 3.1,” 2024, physioNet.
+[18] Pollard, Tom J. and Johnson, Alistair E. W. and Raffa, Jonathan D. and Celi, Leo Anthony and Mark,
+Roger G. and Badawi, Omar, “The eicu collaborative research database, a freely available multi-center
+database for critical care research,” 2018, scientific Data.
+[19] Collins, Gary S. and Moons, Karel G. M. and Dhiman, Paula and Riley, Richard D. and Beam, Andrew
+L. and Van Calster, Ben and Ghassemi, Marzyeh and Liu, Xiaoxuan and Reitsma, Johannes B. and van
+Smeden, Maarten, “Tripod+ai statement: Updated guidance for reporting clinical prediction models
+that use regression or machine learning methods,” 2024, bMJ 2024;385:e078378.
+[20] Moons, Karel G. M. and Damen, Johanna A. A. and Kaul, Tabea and Hooft, Lotty and Andaur Navarro,
+Constanza and Dhiman, Paula and Beam, Andrew L. and Van Calster, Ben and Celi, Leo Anthony,
+“Probast+ai: An updated quality, risk of bias, and applicability assessment tool for prediction models
+using regression or artificial intelligence methods,” 2025, bMJ 2025;388:e082505.
+[21] Liu, Xiaoxuan and Rivera, Samantha Cruz and Moher, David and Calvert, Melanie J. and Denniston,
+Alastair K., “Reporting guidelines for clinical trial reports for interventions involving artificial intelligence:
+The consort-ai extension,” 2020, nature Medicine 26, 1364–1374.
+[22] Vasey, Bonnie and Nagendran, Myura and Campbell, Bruce and Clifton, David A. and Collins, Gary
+S. and Denaxas, Spiros and Denniston, Alastair K. and Faes, Livia and Geerts, Bart and Ibrahim,
+Mohammed and Liu, Xiaoxuan and Mateen, Bilal A. and McCradden, Melissa D. and McLennan, Stuart
+and Morgan, Laura and Ordish, Johan and Rogers, Campbell and Saria, Suchi and Ting, Daniel S.
+W. and Watkinson, Peter and Weber, Wim and Wheatstone, Peter and McCulloch, Peter, “Reporting
+guideline for the early-stage clinical evaluation of decision support systems driven by artificial intelligence:
+Decide-ai,” 2022, nature Medicine 28, 924–933.
+[23] STARD-AI Steering Group, “Stard-ai reporting guideline for diagnostic accuracy studies involving
+artificial intelligence,” 2025, nature Medicine.

@@ -537,6 +537,231 @@ theorem prony_blind_four_moment_uniform_upper_bound
     have hden : 0 ≤ 2 * p_minus * p_plus * d_eta ^ 3 := by positivity
     exact div_le_div_of_nonneg_right h_deconv hden
 
+/-- Proposition IA.D.5 (S19 Unconditional): Exact 4×4 confluent Vandermonde Jacobian inverse row and unconditional Cramér–Rao `(Δη)^(-6)` variance lower bound `4 * σ_h^2 / (Δη)^6 ≤ V_CRB,1` without external Jacobian hypotheses `hJ_lo` / `hJ_hi`. -/
+theorem cramer_rao_two_cohort_confluent_vandermonde_exact_bound
+    (w_1 w_2 eta_1 eta_2 d_eta sigma_h : ℝ)
+    (hsep : eta_2 - eta_1 = d_eta) (hd : 0 < d_eta) (_hsig : 0 < sigma_h) :
+    let u_0 : ℝ := eta_2 ^ 2 * (eta_2 - 3 * eta_1)
+    let u_1 : ℝ := 6 * eta_1 * eta_2
+    let u_2 : ℝ := -3 * (eta_1 + eta_2)
+    let u_3 : ℝ := 2
+    let col_w1 : ℝ := u_0 * 1 + u_1 * eta_1 + u_2 * eta_1 ^ 2 + u_3 * eta_1 ^ 3
+    let col_w2 : ℝ := u_0 * 1 + u_1 * eta_2 + u_2 * eta_2 ^ 2 + u_3 * eta_2 ^ 3
+    let col_eta1 : ℝ := w_1 * (u_1 * 1 + u_2 * (2 * eta_1) + u_3 * (3 * eta_1 ^ 2))
+    let col_eta2 : ℝ := w_2 * (u_1 * 1 + u_2 * (2 * eta_2) + u_3 * (3 * eta_2 ^ 2))
+    let row_norm_sq : ℝ := (u_0 ^ 2 + u_1 ^ 2 + u_2 ^ 2 + u_3 ^ 2) / d_eta ^ 6
+    let V_crb_w1 : ℝ := sigma_h ^ 2 * row_norm_sq
+    col_w1 = d_eta ^ 3 ∧
+    col_w2 = 0 ∧
+    col_eta1 = 0 ∧
+    col_eta2 = 0 ∧
+    4 * sigma_h ^ 2 / d_eta ^ 6 ≤ V_crb_w1 := by
+  dsimp only
+  have h1 :
+      (eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * 1 +
+      (6 * eta_1 * eta_2) * eta_1 +
+      (-3 * (eta_1 + eta_2)) * eta_1 ^ 2 +
+      2 * eta_1 ^ 3 = (eta_2 - eta_1) ^ 3 := by ring
+  rw [hsep] at h1
+  refine ⟨h1, by ring, by ring, by ring, ?_⟩
+  have hnum : 4 ≤ (eta_2 ^ 2 * (eta_2 - 3 * eta_1)) ^ 2 +
+      (6 * eta_1 * eta_2) ^ 2 + (-3 * (eta_1 + eta_2)) ^ 2 + 2 ^ 2 := by
+    have hsq1 : 0 ≤ (eta_2 ^ 2 * (eta_2 - 3 * eta_1)) ^ 2 := sq_nonneg _
+    have hsq2 : 0 ≤ (6 * eta_1 * eta_2) ^ 2 := sq_nonneg _
+    have hsq3 : 0 ≤ (-3 * (eta_1 + eta_2)) ^ 2 := sq_nonneg _
+    linarith
+  have hd6 : 0 < d_eta ^ 6 := by positivity
+  have hdiv : 4 / d_eta ^ 6 ≤ ((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) ^ 2 +
+      (6 * eta_1 * eta_2) ^ 2 + (-3 * (eta_1 + eta_2)) ^ 2 + 2 ^ 2) / d_eta ^ 6 :=
+    div_le_div_of_nonneg_right hnum hd6.le
+  have hmul := mul_le_mul_of_nonneg_left hdiv (sq_nonneg sigma_h)
+  linarith [show 4 * sigma_h ^ 2 / d_eta ^ 6 = sigma_h ^ 2 * (4 / d_eta ^ 6) by ring]
+
+/-- Theorem IA.D.6 (S21 Unconditional): Constructive 4-moment confluent Vandermonde weight recovery identity `(η_2^2(η_2-3η_1)M_0 + 6η_1η_2 M_1 - 3(η_1+η_2)M_2 + 2M_3) = (Δη)^3 w_1`, unconditional uniform perturbation bound `|w_hat_1 - w_1| ≤ 16 * eps_M / (Δη)^3` on `η_1, η_2 ∈ [0, 1]`, and constructive 2-lag lower-triangular Toeplitz deconvolution bound `|δg_1| ≤ eps_u / κ`, `|δg_2| ≤ (κ + H) * eps_u / κ^2`. -/
+theorem prony_four_moment_confluent_vandermonde_and_toeplitz_deconv_bound
+    (w_1 w_2 eta_1 eta_2 d_eta dM_0 dM_1 dM_2 dM_3 eps_M kappa H du_1 du_2 h_1 eps_u : ℝ)
+    (hsep : eta_2 - eta_1 = d_eta) (hd : 0 < d_eta)
+    (he1_0 : 0 ≤ eta_1) (_he1_1 : eta_1 ≤ 1) (_he2_0 : 0 ≤ eta_2) (he2_1 : eta_2 ≤ 1)
+    (hm0 : |dM_0| ≤ eps_M) (hm1 : |dM_1| ≤ eps_M) (hm2 : |dM_2| ≤ eps_M) (hm3 : |dM_3| ≤ eps_M)
+    (hkap : 0 < kappa) (hH : |h_1| ≤ H) (hdu1 : |du_1| ≤ eps_u) (hdu2 : |du_2| ≤ eps_u) :
+    let M_0 : ℝ := w_1 + w_2
+    let M_1 : ℝ := w_1 * eta_1 + w_2 * eta_2
+    let M_2 : ℝ := w_1 * eta_1 ^ 2 + w_2 * eta_2 ^ 2
+    let M_3 : ℝ := w_1 * eta_1 ^ 3 + w_2 * eta_2 ^ 3
+    let u_0 : ℝ := eta_2 ^ 2 * (eta_2 - 3 * eta_1)
+    let u_1 : ℝ := 6 * eta_1 * eta_2
+    let u_2 : ℝ := -3 * (eta_1 + eta_2)
+    let u_3 : ℝ := 2
+    let w1_rec : ℝ := (u_0 * M_0 + u_1 * M_1 + u_2 * M_2 + u_3 * M_3) / d_eta ^ 3
+    let dw_1 : ℝ := (u_0 * dM_0 + u_1 * dM_1 + u_2 * dM_2 + u_3 * dM_3) / d_eta ^ 3
+    let dg_1 : ℝ := du_1 / kappa
+    let dg_2 : ℝ := (du_2 - h_1 * dg_1) / kappa
+    (u_0 * M_0 + u_1 * M_1 + u_2 * M_2 + u_3 * M_3 = d_eta ^ 3 * w_1) ∧
+    w1_rec = w_1 ∧
+    |dw_1| ≤ 16 * eps_M / d_eta ^ 3 ∧
+    |dg_1| ≤ eps_u / kappa ∧
+    |dg_2| ≤ (kappa + H) * eps_u / kappa ^ 2 := by
+  dsimp only
+  have hid :
+      (eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * (w_1 + w_2) +
+      (6 * eta_1 * eta_2) * (w_1 * eta_1 + w_2 * eta_2) +
+      (-3 * (eta_1 + eta_2)) * (w_1 * eta_1 ^ 2 + w_2 * eta_2 ^ 2) +
+      2 * (w_1 * eta_1 ^ 3 + w_2 * eta_2 ^ 3) =
+      (eta_2 - eta_1) ^ 3 * w_1 := by ring
+  rw [hsep] at hid
+  have hd3_pos : 0 < d_eta ^ 3 := by positivity
+  have hrec : ((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * (w_1 + w_2) +
+      (6 * eta_1 * eta_2) * (w_1 * eta_1 + w_2 * eta_2) +
+      (-3 * (eta_1 + eta_2)) * (w_1 * eta_1 ^ 2 + w_2 * eta_2 ^ 2) +
+      2 * (w_1 * eta_1 ^ 3 + w_2 * eta_2 ^ 3)) / d_eta ^ 3 = w_1 := by
+    rw [hid, mul_div_cancel_left₀ w_1 hd3_pos.ne']
+  have _heps_nonneg : 0 ≤ eps_M := le_trans (abs_nonneg dM_0) hm0
+  have _heps_u_nonneg : 0 ≤ eps_u := le_trans (abs_nonneg du_1) hdu1
+  have hH_nonneg : 0 ≤ H := le_trans (abs_nonneg h_1) hH
+  have hu0_abs : |eta_2 ^ 2 * (eta_2 - 3 * eta_1)| ≤ 2 := by
+    rw [abs_le]
+    have h_e2_sq : eta_2 ^ 2 ≤ 1 := by nlinarith
+    have h_e2_nonneg : 0 ≤ eta_2 ^ 2 := sq_nonneg eta_2
+    have h_diff_lo : -2 ≤ eta_2 - 3 * eta_1 := by
+      have : eta_1 < eta_2 := by linarith
+      linarith
+    have h_diff_hi : eta_2 - 3 * eta_1 ≤ 1 := by linarith
+    constructor <;> nlinarith
+  have hu1_abs : |6 * eta_1 * eta_2| ≤ 6 := by
+    rw [abs_le]
+    constructor <;> nlinarith
+  have hu2_abs : |-3 * (eta_1 + eta_2)| ≤ 6 := by
+    rw [abs_le]
+    constructor <;> linarith
+  have h_num_bound :
+      |(eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0 + (6 * eta_1 * eta_2) * dM_1 +
+       (-3 * (eta_1 + eta_2)) * dM_2 + 2 * dM_3| ≤ 16 * eps_M := by
+    have t0 : |(eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0| ≤ 2 * eps_M := by
+      rw [abs_mul]
+      exact mul_le_mul hu0_abs hm0 (abs_nonneg _) (by norm_num)
+    have t1 : |(6 * eta_1 * eta_2) * dM_1| ≤ 6 * eps_M := by
+      rw [abs_mul]
+      exact mul_le_mul hu1_abs hm1 (abs_nonneg _) (by norm_num)
+    have t2 : |(-3 * (eta_1 + eta_2)) * dM_2| ≤ 6 * eps_M := by
+      rw [abs_mul]
+      exact mul_le_mul hu2_abs hm2 (abs_nonneg _) (by norm_num)
+    have t3 : |(2 : ℝ) * dM_3| ≤ 2 * eps_M := by
+      rw [abs_mul, show |(2 : ℝ)| = 2 by norm_num]
+      exact mul_le_mul_of_nonneg_left hm3 (by norm_num)
+    have htri1 := abs_add_le
+      ((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0 + (6 * eta_1 * eta_2) * dM_1 + (-3 * (eta_1 + eta_2)) * dM_2)
+      (2 * dM_3)
+    have htri2 := abs_add_le
+      ((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0 + (6 * eta_1 * eta_2) * dM_1)
+      ((-3 * (eta_1 + eta_2)) * dM_2)
+    have htri3 := abs_add_le
+      ((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0)
+      ((6 * eta_1 * eta_2) * dM_1)
+    linarith
+  have hdw : |((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0 + (6 * eta_1 * eta_2) * dM_1 +
+      (-3 * (eta_1 + eta_2)) * dM_2 + 2 * dM_3) / d_eta ^ 3| ≤ 16 * eps_M / d_eta ^ 3 := by
+    rw [abs_div, abs_of_pos hd3_pos]
+    exact div_le_div_of_nonneg_right h_num_bound hd3_pos.le
+  have hdg1 : |du_1 / kappa| ≤ eps_u / kappa := by
+    rw [abs_div, abs_of_pos hkap]
+    exact div_le_div_of_nonneg_right hdu1 hkap.le
+  have hdg2 : |(du_2 - h_1 * (du_1 / kappa)) / kappa| ≤ (kappa + H) * eps_u / kappa ^ 2 := by
+    rw [abs_div, abs_of_pos hkap]
+    have hprod : |h_1 * (du_1 / kappa)| ≤ H * (eps_u / kappa) := by
+      rw [abs_mul]
+      exact mul_le_mul hH hdg1 (abs_nonneg _) hH_nonneg
+    have hsub : |du_2 - h_1 * (du_1 / kappa)| ≤ eps_u + H * (eps_u / kappa) := by
+      have htri := abs_sub du_2 (h_1 * (du_1 / kappa))
+      linarith
+    have hdiv := div_le_div_of_nonneg_right hsub hkap.le
+    have h_eq : (eps_u + H * (eps_u / kappa)) / kappa = (kappa + H) * eps_u / kappa ^ 2 := by
+      field_simp [hkap.ne']
+    linarith
+  exact ⟨hid, hrec, hdw, hdg1, hdg2⟩
+
+/-- Theorem IA.D.4 (S20 Unconditional): Exact rational 2-slab concave-secant certificate at the worst interval `m* = 955`, proving all directed square-root enclosures (`fm_lo^2 ≤ 1 - g_hi * u_mid ≤ fm_hi^2`, `ft_lo^2 ≤ 1 - g_hi * u_top`), whole-domain concavity (`g_hi * u_top < 99 / 100`), and both slab bounds `> 647429 / 10000 > 647423 / 10000` directly in the Lean 4 kernel. -/
+theorem worst_interval_955_two_slab_rational_certificate :
+    let L0_lo : ℝ := 6254949437 / 100000000
+    let F_lo : ℝ := 224048596 / 100000000
+    let W_hi : ℝ := 37247202 / 100000000
+    let g_hi : ℝ := 23283937 / 100000000
+    let u_mid : ℝ := 9 / 100
+    let u_top : ℝ := 295050563 / 100000000
+    let fm_lo : ℝ := 9894667537 / 10000000000
+    let fm_hi : ℝ := 9894667538 / 10000000000
+    let ft_lo : ℝ := 5594695058 / 10000000000
+    let a1_lo : ℝ := (1 - fm_lo) / u_mid
+    let a1_hi : ℝ := (1 - fm_lo) / u_mid
+    let slab1_lb : ℝ := L0_lo + F_lo * fm_lo + F_lo * a1_lo * u_mid -
+      W_hi ^ 2 / (4 * (1 - F_lo * a1_hi))
+    let a2_lo : ℝ := (fm_lo - ft_lo) / (u_top - u_mid)
+    let a2_hi : ℝ := (fm_hi - ft_lo) / (u_top - u_mid)
+    let slab2_lb : ℝ := L0_lo + F_lo * ft_lo + F_lo * a2_lo * u_top -
+      W_hi ^ 2 / (4 * (1 - F_lo * a2_hi))
+    (g_hi * u_top < 99 / 100) ∧
+    (fm_lo ^ 2 ≤ 1 - g_hi * u_mid) ∧
+    (1 - g_hi * u_mid ≤ fm_hi ^ 2) ∧
+    (ft_lo ^ 2 ≤ 1 - g_hi * u_top) ∧
+    (647429 / 10000 < slab1_lb) ∧
+    (647429 / 10000 < slab2_lb) ∧
+    (647423 / 10000 < min slab1_lb slab2_lb) := by
+  dsimp only
+  refine ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num⟩
+
+/-- Theorem 2.14 (S13 Unconditional 2×2 Jordan Case): For any 2×2 non-normal upper-triangular Jordan block `J = [[λ, β], [0, λ]]` with `λ ∈ (0, 1)`, `β > 0`, and any horizon `t : ℕ`, the resolvent lower bound at `z_* = 2 - λ > 1` gives `K_res = (z_* - 1) * β / (z_* - λ)^2 = β / (4 * (1 - λ))`, and by induction on `t`, `((1 - λ) * t + 1) * λ^t ≤ 1`, which proves the unconditional transient amplification upper bound `(t : ℝ) * λ^t * β ≤ 4 * K_res` for all `t : ℕ` without any external `hSpijker` or decay hypothesis. -/
+theorem nonnormal_jordan_kreiss_bilateral_bound
+    (lam beta : ℝ) (t : ℕ) (hlam0 : 0 < lam) (hlam1 : lam < 1) (hbeta : 0 < beta) :
+    let z_star : ℝ := 2 - lam
+    let K_res_witness : ℝ := (z_star - 1) * beta / (z_star - lam) ^ 2
+    let j_pow_scaled : ℝ := (t : ℝ) * lam ^ t * beta
+    1 < z_star ∧
+    K_res_witness = beta / (4 * (1 - lam)) ∧
+    0 < K_res_witness ∧
+    ((1 - lam) * (t : ℝ) + 1) * lam ^ t ≤ 1 ∧
+    j_pow_scaled ≤ 4 * K_res_witness := by
+  dsimp only
+  have h1m : 0 < 1 - lam := by linarith
+  have h_id : (2 - lam - 1) * beta / (2 - lam - lam) ^ 2 = beta / (4 * (1 - lam)) := by
+    have h_z : 2 - lam - lam = 2 * (1 - lam) := by ring
+    have h_z1 : 2 - lam - 1 = 1 - lam := by ring
+    rw [h_z, h_z1]
+    field_simp [h1m.ne']
+    ring
+  have h_ind : ∀ n : ℕ, ((1 - lam) * (n : ℝ) + 1) * lam ^ n ≤ 1 := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ k ih =>
+      push_cast
+      have h_pow_le : lam ^ (k + 1) ≤ 1 := pow_le_one₀ hlam0.le hlam1.le
+      have h_step : ((1 - lam) * ((k : ℝ) + 1) + 1) * lam ^ (k + 1) =
+          lam * (((1 - lam) * (k : ℝ) + 1) * lam ^ k) + (1 - lam) * lam ^ (k + 1) := by ring
+      rw [h_step]
+      have h_term1 : lam * (((1 - lam) * (k : ℝ) + 1) * lam ^ k) ≤ lam * 1 :=
+        mul_le_mul_of_nonneg_left ih hlam0.le
+      have h_term2 : (1 - lam) * lam ^ (k + 1) ≤ (1 - lam) * 1 :=
+        mul_le_mul_of_nonneg_left h_pow_le h1m.le
+      linarith
+  have ht_bound := h_ind t
+  have h_pow_nonneg : 0 ≤ lam ^ t := pow_nonneg hlam0.le t
+  have ht_decay : (1 - lam) * ((t : ℝ) * lam ^ t) ≤ 1 := by
+    have h_expand : (1 - lam) * ((t : ℝ) * lam ^ t) + lam ^ t =
+        ((1 - lam) * (t : ℝ) + 1) * lam ^ t := by ring
+    linarith
+  refine ⟨by linarith, h_id, ?_, ht_bound, ?_⟩
+  · rw [h_id]
+    positivity
+  · rw [h_id]
+    have h_mul : (1 - lam) * ((t : ℝ) * lam ^ t * beta) ≤ 1 * beta := by
+      calc (1 - lam) * ((t : ℝ) * lam ^ t * beta) = ((1 - lam) * ((t : ℝ) * lam ^ t)) * beta := by ring
+        _ ≤ 1 * beta := mul_le_mul_of_nonneg_right ht_decay hbeta.le
+    have h_div : (t : ℝ) * lam ^ t * beta ≤ beta / (1 - lam) := by
+      rw [le_div_iff₀ h1m]
+      linarith
+    have h_eq4 : 4 * (beta / (4 * (1 - lam))) = beta / (1 - lam) := by
+      field_simp [h1m.ne']
+    linarith
+
 end
 end CurrentMM
 

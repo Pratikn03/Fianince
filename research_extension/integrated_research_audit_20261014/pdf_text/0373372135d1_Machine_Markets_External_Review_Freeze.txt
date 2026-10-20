@@ -1,0 +1,2375 @@
+
+=== PHYSICAL PAGE 1 ===
+From Human Markets to Machine Markets:
+Feedback Stability, Auditable Memory, and Financial Constraints
+Pratik Niroula∗ andPrashant Niroula †
+October 6, 2026
+Abstract
+Can public market data identify destabilizing algorithmic feedback, and when does
+feedback threaten dealer solvency? We establish two fundamental limits. First, public
+price–flow data identify only merged rate–weight representations, with anΩ(δ−4)sam-
+ple complexity lower bound for distinguishing nearby adaptation rates; finite observa-
+tion windows force mandatory surveillance abstention near critical stability thresholds.
+Empirically, measured feedback is dominated by filtering choices: raw-return feedback
+intervals span zero, and covariance restrictions reject (J= 73.0,df= 4). Second, spec-
+tral price stability (ρ(J)<1) does not prevent dealer balance-sheet exhaustion under
+non-normal transient amplification (r∗=B/sup t≥0∥CJt∥2). Funded dealer simula-
+tions illustrate that capital solvency fails inside the spectrally stable regime, motivating
+capital-aware pre-trade gating.
+Keywords:Adaptive learning, algorithmic trading, financial stability, market microstruc-
+ture, system identification, non-normal dynamics, Kreiss constant.
+JEL Classification Codes:G01, G10, G14, C32, C58, D83.
+∗Corresponding author email:pratik.niroula@alumni.harvard.edu. Open-science replication repos-
+itory and timestamped code archive:github.com/pratikniroula/machine-markets(Release commit:
+488af63e9f884bf05d15320e8b262d04ba4287c8).
+†Email:prashant.niroula@alumni.harvard.edu.
+
+=== PHYSICAL PAGE 2 ===
+Niroula and Niroula From Human Markets to Machine Markets
+1 Introduction
+The delegation of financial execution and market making to autonomous algorithms has fun-
+damentally transformed the microstructural physics of modern electronic exchanges. Over
+the past three decades, financial markets have undergone an unprecedented structural tran-
+sition from human-intermediated floor trading and manual specialist posts (such as the
+historic open-outcry pits of Chicago and the specialist trading posts of the New York Stock
+Exchange) to fully automated, electronic continuous double auctions housed in co-located
+server racks in Secaucus, New Jersey (Equinix NY4) and Slough, United Kingdom (Equinix
+LD4). In contemporary equity, sovereign debt, foreign exchange, and digital asset venues,
+automated execution engines, statistical arbitrageurs, and high-frequency market makers
+(HFMs) submit and cancel the overwhelming majority of limit quotes, respond to order
+flow in microseconds, and continuously adapt their execution strategies to prevailing mar-
+ket conditions (Hasbrouck, 1991; Menkveld, 2013; Budish, Cramton, and Shim, 2015; Biais,
+Foucault, and Moinas, 2015).
+When trading algorithms condition their order submission and quote-placement decisions
+on recent transaction prices, prevailing order book imbalances, and trade innovations, the
+price-formation process ceases to be an open-loop mechanism driven purely by exogenous
+informational updates regarding fundamentals. Instead, price formation becomes an au-
+tonomousclosed-loop dynamical system: trading decisions generate endogenous price impact,
+and the resulting price adjustments directly feed back into the learning rules, momentum
+filters, risk-budgeting heuristics, and execution programs of competing market participants
+(Bouchaud et al., 2004; Cont, Stoikov, and Talreja, 2010; Cont, Kukanov, and Stoikov, 2014).
+This closed-loop structural reality was dramatically underscored by major episodic dis-
+ruptions in electronic markets over the past decade and a half. During the May 6, 2010 Flash
+Crash, the E-mini S&P 500 index collapsed by more than 9% in a matter of minutes before
+rebounding, triggered when an automated selling program interacted with high-frequency
+market makers whose internal risk management algorithms rapidly depleted resting order
+book depth. Similar self-amplifying cascades occurred during the October 15, 2014 Treasury
+flash rally, the August 24, 2015 equity exchange-traded fund (ETF) pricing breakdowns, and
+the catastrophic liquidity unpegs across digital asset exchanges in March 2020 and November
+2022. In each of these events, markets populated by sophisticated algorithms designed to
+optimize execution individually exhibited severe collective fragility.
+These structural phenomena confront financial economists, central banks, and market
+regulators with an urgent, foundational question:
+Can observable market data identify destabilizing adaptive feedback, when does
+1
+
+=== PHYSICAL PAGE 3 ===
+Niroula and Niroula From Human Markets to Machine Markets
+that feedback become financially dangerous, and what information is
+fundamentally missing from public surveillance data?
+In this paper, we address this question directly by integrating realization-theoretic sys-
+tem identification with empirical limit order book econometrics and balance-sheet financial
+constraints. Rather than making speculative assertions regarding black-box artificial intelli-
+gence, we organize our theoretical and empirical findings aroundtwo foundational pillars:
+Pillar 1: Observable Feedback Does Not Imply Identifiable Machine Behavior.
+We establish what public price and order-flow data can and cannot reveal about underlying
+learning algorithms. We prove that in any linear market–learning system with heterogeneous
+adaptive cohorts, aggregate public price responses identify only themerged rate–weight rep-
+resentation. Individual algorithmic cohorts that share common adaptation rates cannot be
+distinguished from public price feeds—an exact realization-theoretic equivalence class (The-
+orem 2.3). Furthermore, detecting heterogeneity between two cohorts whose adaptation
+timescales differ by a small marginδrequires an active probing budget growing at the se-
+vere sample-complexity rate ofΩ(δ−4)(Theorem 2.3). With finite observation windows, any
+error-controlled stability classifier must strictly abstain from issuing safety certificates near
+the critical stability boundary (Theorem 2.5).
+Crucially, we show that this identification boundary extends to empirical measurement:
+estimated feedback parameters are fragile artifacts of microstructural observation clocks
+and state definitions. Using continuous high-frequency limit order books and a multi-year
+panel of 768 asset-days on Binance Spot (2021–2024), we show that while an exponentially
+smoothed price-deviation proxy exhibits modest positive autocorrelation (ˆQ≈0.008), this
+parameter measures mean-reversion toward a trailing moving-average anchor rather than
+fundamental mispricing. When order flow is properly aligned with past observed intervals,
+feedback drops to ˆQ≈0.0019, and when the state is defined as raw price returns, empirical
+feedback intervals uniformly span zero. Furthermore, dynamic minimum-distance covariance
+matching formally rejects the parsimonious linear model (J= 73.0,df= 4,p <0.001),
+while Rigobon heteroskedasticity identification reveals negative contemporaneous buffering
+(QRig =−0.0191). As a secondary institutional case study, we examine the July 8, 2022
+Binance zero-fee schedule overhaul (N= 192): eliminating taker fees sparked a+75.01%
+volume surge without detectable feedback persistence amplification (ˆβ3 =−0.00186,p=
+0.547, permutationp= 0.750), remaining strictly subcritical.
+Pillar 2: Dynamic Eigenvalue Stability Does Not Imply Financial Safety.We
+prove that local price stability (ρ(J)<1) does not guarantee financial intermediary solvency.
+2
+
+=== PHYSICAL PAGE 4 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Becausetheclosed-loopmarketJacobianJisgenericallynon-normalunderasymmetricprice-
+impact and memory parameters (withJJ⊤−J⊤J̸= 0except on a measure-zero algebraic
+subvariety), stable eigenvalues can coexist with massive transient balance-sheet excursion.
+The exact worst-case safe shock radius for a leveraged dealer is governed by peak transient
+magnification:
+r∗
+exact = B
+supt≥0∥CJt∥2
+≡B
+MC
+,(1)
+which the Kreiss constantK(J)bounds and the spectral radius completely fails to control
+(Theorem 2.6). By Spijker’s theorem, under full-state observation (C=I), we establish the
+bilateral bounds:
+B
+e·n·K(J)≤r∗
+exact≤B
+K(J),(2)
+proving that B
+enK(J) provides a guaranteed safe lower bound, whereasB
+K(J) is an upper bound
+that must never be mistaken for a conservative safety threshold. In complementary simu-
+lation environments (N= 19,200paths across 48 cells), we evaluate dealer capital solvency
+strictly inside the spectrally stable regime (ρ(J)∈[0.80,0.985]<1.0), demonstrating that
+dealer solvency failure surges from11.0%to100.0%as feedback increases, driven by(1−S)−2
+low-frequency variance inflation. This structural divergence motivates capital-aware pre-
+trade gating grounded in the exact safe radiusr∗
+exact =B/M C.
+1.1 Related Literature
+Our work bridges four major strands of literature across financial economics, market mi-
+crostructure, systemic risk, and dynamical systems theory.
+High-Frequency Trading and Market Microstructure.Beginning with the seminal
+contributions of Kyle (1985) and Glosten and Milgrom (1985), classical microstructure mod-
+els analyze the informational content of order flow and dealer inventory management under
+asymmetric information. Hasbrouck (1991) pioneered the empirical vector autoregressive
+decomposition of trades and quotes, establishing that trade innovations exert persistent im-
+pacts on security prices. Campbell, Grossman, and Wang (1993) demonstrated that trading
+volume and return serial correlations reflect interactions between liquidity traders and risk-
+averse market makers.
+In modern electronic markets, high-frequency trading firms and automated algorithms
+dominate liquidity provision and execution (Menkveld, 2013; Budish, Cramton, and Shim,
+2015; Biais, Foucault, and Moinas, 2015). While Hendershott, Jones, and Menkveld (2011)
+document that algorithmic trading improves liquidity and narrows bid-ask spreads during
+3
+
+=== PHYSICAL PAGE 5 ===
+Niroula and Niroula From Human Markets to Machine Markets
+normal trading periods, Budish, Cramton, and Shim (2015) show that continuous double
+auctions generate socially wasteful latency arms races, and Biais, Foucault, and Moinas
+(2015) demonstrate that algorithmic speed advantages can lead to adverse selection spirals.
+We advance this literature by formalizing the closed loop between algorithmic learning rules
+and endogenous price impact, establishing fundamental realization-theoretic bounds on what
+econometricians can infer from public ticker feeds.
+Price Impact and Limit Order Book Dynamics.A extensive literature examines the
+physics of price impact in electronic limit order books (Almgren and Chriss, 2000; Bouchaud
+et al., 2004; Cont, Stoikov, and Talreja, 2010; Cont, Kukanov, and Stoikov, 2014). Empirical
+studies consistently reveal that signed order flow exhibits strong positive autocorrelation over
+hundreds of trades (long memory), while price returns remain approximately unpredictable
+(Bouchaud et al., 2004; Cont, Kukanov, and Stoikov, 2014). This apparent paradox is
+resolved by subtle negative feedback in quote replacement and cancellation. Cont, Kukanov,
+and Stoikov (2014) introduce Order Flow Imbalance (OFI) as a powerful predictor of short-
+term price movements across multiple depth levels. We explicitly incorporate and control for
+order-splitting memory in our econometric models, demonstrating that even after purging 30
+to 90 lags of signed flow memory, a positive and statistically significant feedback component
+persists in continuous high-frequency trading.
+Intermediary Solvency, Funding Liquidity, and Systemic Risk.The distinction
+between market liquidity and funding liquidity is central to modern theories of financial
+fragility (Brunnermeier and Pedersen, 2009; Adrian and Shin, 2010; He and Krishnamurthy,
+2013). When leveraged market makers suffer balance-sheet drawdowns, risk-management
+constraints (such as Value-at-Risk limits or regulatory margin requirements) force them to
+withdraw quotes, widening spreads and amplifying price dislocations (Greenwood, Landier,
+and Thesmar, 2015; Eisenberg and Noe, 2001). Our analysis demonstrates that non-normal
+transient amplification can trigger intermediary insolvency even when the underlying price-
+formation process is spectrally stable (ρ(J)<1).
+Non-Normal Dynamics and the Kreiss Matrix Theorem.In applied mathematics
+and fluid mechanics, non-normal linear systems have long been recognized as capable of
+explosive transient growth despite asymptotic eigenvalue decay (Kreiss, 1962; Spijker, 1991;
+Trefethen and Embree, 2005). While eigenvalues govern asymptotic behavior ast→∞,
+the pseudospectrum and the Kreiss constant determine short-term amplification. Although
+non-normal operator theory has been applied in macroeconomics to examine input-output
+4
+
+=== PHYSICAL PAGE 6 ===
+Niroula and Niroula From Human Markets to Machine Markets
+networks, its application to high-frequency market microstructure and dealer solvency is
+novel. We derive the exact safe shock radius for leveraged dealers, prove tight bilateral
+boundsusingSpijker’soptimalconstant, anddemonstratewhyspectralstabilityalonecannot
+guarantee intermediary solvency.
+Table 1: Comparison of Microstructural Frameworks and Surveillance Assumptions.
+Model / Paradigm Information Archi-
+tecture
+Dynamics Stability Metric Surveillance Scope
+Kyle (1985) Informed vs. noise
+flow
+Single-auction Linear pricingλAdverse selection
+Hasbrouck (1991) Trades and quotes
+(VAR)
+Open-loop
+flow
+Cumulative IRF Permanent price
+impact
+Bouchaud et al.
+(2004)
+Signed order flow
+memory
+Propagator Kernel decay Meta-order split-
+ting
+Cont, Kukanov, and
+Stoikov (2014)
+Multi-level order
+book
+Static regres-
+sion
+R2 of OFI Short-term price
+discovery
+Brunnermeier and
+Pedersen (2009)
+Leveraged margin
+financing
+Nonlinear spi-
+ral
+Margin constraints Liquidity spirals
+This Paper Closed-loop
+learning
+Non-normal
+VAR
+Kreiss radius
+r∗
+exact
+Abstention lim-
+its; Pre-trade
+gating
+1.2 The 10-Study Empirical Program
+Rather than presenting isolated empirical exercises, our empirical program is organized as
+a unified, ten-module chain where each study systematically addresses an econometric or
+economic objection raised by the preceding one:
+1.Baseline Crypto Panel:Measures baseline feedback ˆQand persistence ˆSacross
+768 asset-days on Binance Spot, establishing subcritical positive feedback in normal
+conditions.
+2.Regulated Equity Replication:Replicates the baseline model on NASDAQ Nordic
+FI-2010 limit order books (272,941 snapshots across 5 stocks), replicating the qualita-
+tive subcritical pattern in regulated equities.
+3.Cross-Venue Propagation:Examines simultaneous 1-second order books across
+Coinbase and Binance, evaluating whether feedback is local or propagates across ex-
+changes.
+4.Liquidity-State Dependence:Estimates Threshold VAR and Hamilton regime-
+switching models on Level-3 BTC books, showing that liquidity depletion produces a
+large volatility and effective price-sensitivity regime shift.
+5.Flagship Natural Experiment:Exploits the July 8, 2022 Binance zero-fee trading
+5
+
+=== PHYSICAL PAGE 7 ===
+Niroula and Niroula From Human Markets to Machine Markets
+schedule shock via Difference-in-Differences, finding no detectable feedback response
+despite a massive volume surge.
+6.Dynamic Event Study:Verifies parallel pre-trends, dynamic treatment persistence,
+and cross-sectional permutation inference for the natural experiment.
+7.Agent Attribution Limits:Proves theoretically and empirically that public order
+flows cannot identify individual algorithmic cohorts without regulatory audit trails.
+8.Financial Consequence Test:Evaluates dealer inventory buffer exhaustion and
+capital solvency, demonstrating that inventory buffer halts jump to69.1%under con-
+strained capacity and solvency failure reaches100%under high persistence.
+9.Falsification and Placebo Battery:Tests order-splitting controls up to 90 lags,
+day-shuffled placebos, lead order flow, and completely monotone memory cones.
+10.Documented Out-of-Sample Holdout:Evaluates the frozen out-of-sample econo-
+metric pipeline on untouched January 2023 Bitcoin perpetual futures data (935,199
+records).
+Paper Organization.The remainder of the paper is organized as follows. Section 2
+presents the theoretical model, provides microfoundations, proves the core identification and
+solvency theorems, and analyzes cross-impact non-normal inflation. Section 3 defines the
+econometric estimand, details dynamic robustness and contemporaneous structural identi-
+fication (analytical minimum-distance Lyapunov matching vs. Rigobon heteroskedasticity),
+explains multi-level OFI construction, and describes the high-frequency datasets. Section 4
+presents the baseline multi-year panel, analyzes the natural experiment, and reports cross-
+venue propagation. Section 5 evaluates state-dependent liquidity thinning, cross-market eq-
+uity replication, and dealer balance-sheet solvency. Section 6 establishes attribution bound-
+aries, executes the falsification battery, and reports the documented holdout test. Section 7
+discusses regulatory policy implications and concludes.
+2 Theoretical Model and Identification Boundaries
+2.1 Microfoundations of Closed-Loop Price Formation
+We formalize an electronic financial market sampled at discrete uniform time intervals
+t∈{0,1,2,...}, where time step∆represents the operational sampling frequency (e.g.,
+1 second). Letp t denote the log mid-price of a traded asset, and letp∗
+t denote the unob-
+6
+
+=== PHYSICAL PAGE 8 ===
+Niroula and Niroula From Human Markets to Machine Markets
+served fundamental value, which evolves as a martingale:
+p∗
+t+1 =p∗
+t +ξt+1, ξ t+1∼i.i.d.(0,σ2
+ξ).(3)
+We define the pricing error (displacement from fundamental) asxt≡pt−p∗
+t.
+Dealer Pricing and Kyle Auction Microfoundation.Following the continuous auc-
+tion framework of Kyle (1985) adapted to discrete quote adjustments (Hasbrouck, 1991;
+Bouchaud et al., 2004), a competitive, risk-neutral market maker sets quotes to absorb ag-
+gregate order flow. Total incoming order flow at timetconsists of two components: aggregate
+demandu t submitted by algorithmic trading agents, and exogenous liquidity/hedging noise
+εt+1∼i.i.d.(0,σ2
+ε). In addition, fundamentalist arbitrageurs submit mean-reverting demand
+−φxt whenever prices deviate from fundamentals.
+The market maker updates the transaction price according to linear price impactκ>0:
+pt+1−pt =κ(ut−φxt +εt+1).(4)
+Subtracting fundamental incrementξt+1 from both sides yields the pricing error recursion:
+xt+1 = (1−κφ)xt +κut + (κεt+1−ξt+1).(5)
+Definingthedirectpricepersistenceparametera≡1−κφ∈[0,1)andrescalingthecombined
+disturbance innovation aswt+1≡κεt+1−ξt+1, we obtain the foundational pricing equation:
+xt+1 =ax t +κut +wt+1, w t+1∼i.i.d.(0,σ2
+w).(6)
+When fundamentalist arbitrage is strong (φ→1/κ),a→0and prices immediately reflect
+fundamentals. When liquidity is thin and arbitrage capital is limited,aapproaches unity,
+reflecting high price persistence.
+Algorithmic Learning Microfoundations.We considerKheterogeneous cohorts of
+algorithmic traders. Each cohorti∈{1,...,K}maintains an internal state variableyi,t∈R
+representing its estimate of price momentum, trend, or fundamental mispricing. We show
+that two widely deployed algorithmic learning paradigms—steady-state Kalman filtering and
+regularized Online Gradient Descent—both reduce locally to the identical linear adaptive
+recursion.
+Proposition 2.1(Steady-State Kalman Filtering Yields Exponential Memory).As an inde-
+7
+
+=== PHYSICAL PAGE 9 ===
+Niroula and Niroula From Human Markets to Machine Markets
+pendent microfoundation for exponential-memory signals, suppose an algorithmic execution
+desk tracks a latent local trendvt∈Rfollowing a random walkvt+1 =v t+ζt+1 with innovation
+varianceσ2
+ζ>0, observing noisy price return incrementsrt =v t +νt with observation noise
+σ2
+ν>0. The minimum mean-squared error (MMSE) estimator is given by the steady-state
+Kalman filter recursion:
+ˆvt+1 = (1−η)ˆvt +ηrt,(7)
+where the steady-state Kalman gainη∈(0,1)is the unique positive root of the algebraic
+Riccati equation:
+η=
+−σ2
+ζ+
+√
+σ4
+ζ+ 4σ2
+ζσ2
+ν
+2σ2
+ν
+.(8)
+Proof.The scalar state-space model isvt+1 =v t +ζt+1 andr t =v t +νt. LetP∞denote the
+steady-state prior error variance. The Riccati equation isP∞=P ∞−P 2
+∞
+P∞+σ2ν
++σ2
+ζ, which
+simplifies toP 2
+∞−σ2
+ζP∞−σ2
+ζσ2
+ν= 0. The unique positive root isP ∞=
+σ2
+ζ+
+√
+σ4
+ζ+4σ2
+ζσ2ν
+2 .
+The steady-state Kalman gain isη= P∞
+P∞+σ2ν
+∈(0,1). Substituting into the updateˆvt+1 =
+ˆvt +η(rt−ˆvt)yields (7).
+Proposition 2.2(Regularized Online Gradient Descent Yields Exponential Memory).Con-
+sider an automated trading agent updating policy weightsθt∈Rvia Online Gradient De-
+scent (OGD) withL2 weight regularizationγ∈(0,1)to minimize a quadratic prediction loss
+L(θt;xt) = 1
+2(xt−θt)⊤H(xt−θt):
+θt+1 = (1−γ)θt−α∇θL(θt;xt),(9)
+whereα >0is the learning step size. If the effective adaptation rateη≡γ+αH∈(0,1)
+and we define gainq≡αH
+γ+αH, the parameter recursion is mathematically identical to:
+θt+1 = (1−η)θt +ηqxt.(10)
+Proof.Differentiating the loss,∇θL=−H(xt−θt). The parameter update becomes:θt+1 =
+(1−γ)θt +αH(xt−θt) = (1−(γ+αH))θt +αHxt. Substitutingη=γ+αHandq= αH
+η
+yieldsθt+1 = (1−η)θt +ηqxt.
+Propositions 2.1 and 2.2 demonstrate that exponential memory decay is not an ad hoc
+modeling assumption, but rather a common local linear reduction of standard optimal fil-
+tering and regularized gradient optimization.
+The Joint Closed-Loop Dynamical System.Let cohortisubmit demand proportional
+to its state,ui,t =q iyi,t, whereqi∈Rreflects aggressive capital allocation (qi >0represents
+8
+
+=== PHYSICAL PAGE 10 ===
+Niroula and Niroula From Human Markets to Machine Markets
+trend-following / momentum;qi <0represents mean-reversion). Total algorithmic demand
+isu t = ∑K
+i=1qiyi,t. Each cohort updates its internal state according to:
+yi,t+1 = (1−ηi)yi,t +ηixt+1, η i∈(0,1).(11)
+Substituting the market price formation equation (6) into the update rule (11), we obtain:
+yi,t+1 = (1−ηi)yi,t +ηi
+
+axt +κ
+K∑
+j=1
+qjyj,t +wt+1
+
+.(12)
+Stacking the pricing errorxt and theKinternal cohort states into the state vectorz t =
+(xt,y 1,t,...,yK,t)⊤∈RK+1, the joint economy forms an autonomous discrete-time linear
+dynamical system:
+zt+1 =Jz t +bwt+1,(13)
+where the closed-loop system Jacobian matrixJ∈R(K+1)×(K+1)is given by:
+J=
+
+
+a κq 1 κq2 ···κqK
+η1a1−η1 +η1κq1 η1κq2 ···η1κqK
+η2a η 2κq1 1−η2 +η2κq2 ···η2κqK
+... ... ... ... ...
+ηKa η Kκq1 ηKκq2 ···1−ηK +ηKκqK
+
+
+,(14)
+andb= (1,η1,η2,...,ηK)⊤.
+Single-Cohort Stability Boundary.In the single-cohort case (K= 1), defining total
+loop feedback gainQ≡κq1, the characteristic polynomial ofJis:
+P(λ) = det(λI−J) =λ2−(a+ 1−η+ηQ)λ+ (1−η)a.(15)
+By the Jury stability criterion, all roots ofP(λ)lie strictly inside the open unit disk{|λ|<1}
+if and only if|P(0)|<1,P(1)>0, andP(−1)>0. Here|P(0)|= (1−η)a<1holds for all
+a∈[0,1)andη∈(0,1). Evaluating atλ= 1andλ=−1:
+P(1) = (1−a−Q)η, P(−1) = (2−η)(1 +a) +ηQ.(16)
+9
+
+=== PHYSICAL PAGE 11 ===
+Niroula and Niroula From Human Markets to Machine Markets
+For the positive-feedback economy (Q≥0),P(−1)>0is strictly satisfied, so Schur stability
+is strictly equivalent to:
+S≡a+Q<1,or equivalentlyL≡ Q
+1−a<1,(17)
+whereSis total closed-loop persistence andLis the loop ratio. In the general signed-
+feedback economy (Q∈R), the full Jury stability interval is−(2−η)(1+a)
+η <Q<1−a, where
+the lower bound prevents period-doubling oscillatory explosion. This stability criterion is
+invariant to information timing: if execution features a discrete one-period lag (xt+1 =ax t +
+yt+wt+1,yt+1 = (1−η)yt+ηQxt), evaluatingPlag(1) = (1−a−Q)η >0⇐⇒S≡a+Q<1,
+identically.
+2.2 Theorem 1: Merged Rate-Weight Equivalence andΩ(δ−4)Sep-
+aration
+A central question in algorithmic market surveillance is whether an econometrician observing
+public trade executions and prices can identify the individual algorithmic strategies active
+in the market.
+Theorem 2.3(Merged Rate-Weight Equivalence and Minimax Separation Complexity).Let
+price impactκ>0and anchora∈[0,1)be known.
+1.Exact Equivalence Class:Two market economiesE A ={(qA
+i ,ηA
+i )}KA
+i=1 andE B =
+{(qB
+i ,ηB
+i )}KB
+i=1 generate mathematically identical public price responsesxt for allt≥0
+under all public probing sequences{uprobe
+t }t≥0if and only if their merged rate–weight
+measures coincide: ∑
+i:ηA
+i =η
+qA
+i =
+∑
+j:ηB
+j =η
+qB
+j ∀η∈(0,1).(18)
+The minimal state-space realization dimension is1 +|supp(M)|, where|supp(M)|is
+the number of distinct dynamic adaptation ratesηi∈(0,1)(any instantaneous cohort
+withη= 1merges directly into the feedforward anchorawithout adding a dynamic
+pole).
+2.Minimax Separation Complexity:Consider testing whether a noiseless-state mar-
+ket (wt = 0) consists of a single merged cohort with rate¯ηversus two split cohorts
+with rates¯η±δand identical total feedbackQ. Under deterministic probing sequences
+satisfying power constraint1
+T
+∑T−1
+t=0 u2
+t≤Pprobe and independent additive Gaussian ob-
+servation noise˜xt =x t +v t withv t∼N(0,σ2
+v), any deterministic/open-loop probing
+sequence satisfying the stated average-power constraint distinguishing the two economies
+10
+
+=== PHYSICAL PAGE 12 ===
+Niroula and Niroula From Human Markets to Machine Markets
+with worst-case probability of error at mostα∈(0,1/4)requires an observation budget
+Tsatisfying:
+T≥C(α,σv,P probe)
+δ4 = Ω(δ−4),(19)
+whereC(α,σv,P probe)>0is a constant independent ofδ.
+Proof.Part 1 (Equivalence Class):Takingz-transforms of the pricing equation (6) and
+cohort updates (11), we haveX(z) = κ
+z−aU(z)andY i(z) = ηiz
+z−(1−ηi)X(z). Summing across
+cohorts, total endogenous demand isUend(z) =
+∑K
+i=1qiYi(z) =
+(∑K
+i=1
+qiηiz
+z−(1−ηi)
+)
+X(z). Apply-
+ing feedback closureX(z) = κ
+z−a(Uend(z)+U probe(z))yields the public transfer function from
+probe to price:
+H(z)≡ X(z)
+Uprobe(z) = κ
+z−a−κG(z), G(z)≡z
+∑
+r∈R
+cr
+z−r,(20)
+wherethesetofpolesisR={1−η:η∈supp(M)}, withmergedcoefficientscr =η∑
+i:ηi=ηqi.
+Because zcr
+z−r=c r + rcr
+z−r, the pole isr= 1−η, and its residue isrcr. Sincer̸= 0forη∈(0,1),
+equality of poles and residues is equivalent to equality of the merged coefficientscr. By the
+fundamental theorem of algebra and the uniqueness of partial fraction expansions of proper
+rational functions onC, two transfer functionsHA(z)andH B(z)are identical for allz∈C
+if and only if their poles and residues match identically. Thus, any two economies with
+identical merged rate-weightsc r produce identical transfer functions, and hence identical
+price impulse responses. By Kalman’s realization theorem (Kalman, 1960), the minimal
+realization degree equals the degree of the denominator polynomial, which is1 +|supp(M)|
+for dynamic cohortsηi∈(0,1).
+Part 2 (Minimax Sample Complexity):LetE0 have single cohort(¯q,¯η), andE1 have
+two cohorts with rates¯η1 = ¯η−δand¯η2 = ¯η+δwith weightsq1 =q 2 = ¯q/2, so total feedback
+Q=κ¯qis preserved. The endogenous demand transfer per unit price isG0(z) = ¯q¯ηz
+z−(1−¯η)
+underE 0, andGδ(z) = ¯qz
+2 [ ¯η−δ
+z−(1−¯η+δ)+ ¯η+δ
+z−(1−¯η−δ)]underE 1. Due to bilateral symmetry¯η±δ,
+the perturbation∆G(z)≡Gδ(z)−G0(z)is strictly even inδ, so all odd-order terms inδ
+vanish identically:∆G(z) =G 2(z)δ2 +O(δ4). WritingD(z)≡z−a−κG(z), the closed-loop
+price transfer discrepancy is:
+Hδ(z)−H0(z) = κ
+Dδ(z)−κ
+D0(z) = κ2∆G(z)
+D0(z)Dδ(z) =H 0(z)Hδ(z)∆G(z).(21)
+Assume the parameter family lies in a uniformly Schur-stable compact setSε≡{J:ρ(J)≤
+1−ε}for some fixedε >0for all|δ|≤δ0. Under this condition, all closed-loop poles lie
+strictly inside the disk{|z|≤1−ε}. ThusHδ(z)−H0(z)is analytic on{|z|≥1}, and its in-
+11
+
+=== PHYSICAL PAGE 13 ===
+Niroula and Niroula From Human Markets to Machine Markets
+versez-transform∆h t≡h(1)
+t −h(0)
+t satisfies|∆ht|≤C0t(t−1)(1−ε)tδ2 +O(δ4)uniformly for
+allt≥1. Summing the sequence yields boundedℓ1 norm∥∆h∥ℓ1 = ∑∞
+t=1|∆ht|≤CH·δ2 with
+constantC H <∞strictly independent ofδ. Under probe sequence{ut}T−1
+t=0 with power bud-
+get 1
+T
+∑T−1
+t=0 u2
+t≤Pprobe (so∥u∥ℓ2≤
+√
+TP probe), the deterministic output price discrepancy is
+∆x= ∆h∗u. By Young’s convolution inequality,∥∆x∥ℓ2≤∥∆h∥ℓ1∥u∥ℓ2≤CHδ2
+√
+TP probe,
+yielding ∑T
+t=1(∆x t)2≤C2
+HPprobeTδ4. Under controlled probing with independent additive
+Gaussian observation noisevt∼N(0,σ2
+v)on prices˜xt =x t +vt, the noise covarianceσ2
+vIT is
+identical across both hypotheses, and the trajectory mean discrepancy is deterministic∆x.
+The exact Kullback–Leibler (KL) divergence is therefore:
+DKL
+(
+PT
+0 ∥PT
+1
+)
+= 1
+2σ2
+v
+T∑
+t=1
+(∆x t)2≤C2
+HPprobe
+2σ2
+v
+Tδ4≡T·C0·δ4.(22)
+By Le Cam’s two-point inequality (Le Cam, 1986), the minimax probability of error across
+the two hypotheses satisfies:
+inf
+Ψ
+max
+i∈{0,1}
+Pi(Ψ̸=i)≥1
+2
+(
+1−∥PT
+0 −PT
+1∥TV
+)
+≥1
+2
+
+1−
+√
+1
+2DKL(PT
+0 ∥PT
+1 )
+
+.(23)
+To achieve worst-case error bounded byα∈(0,1/4), we must have∥PT
+0−PT
+1∥TV≥1−2α>
+1/2, which requiresDKL(PT
+0 ∥PT
+1 )≥2(1−2α)2. SubstitutingD KL≤T·C0·δ4 yields:
+T≥2(1−2α)2
+C0δ4 ≡C(α,σv,P probe)
+δ4 = Ω(δ−4),(24)
+completing the proof.
+Remark2.4 (Economic Interpretation of Theorem 1).Theorem 2.3 establishes an insur-
+mountable barrier for passive market surveillance. If two algorithmic execution engines
+deploy identical learning horizons (e.g., 5-minute moving averages), no statistical estimator
+can ever determine from public trade records whether the volume originates from a sin-
+gle 100-million-dollar hedge fund or ten 10-million-dollar prop trading desks. Furthermore,
+Theorem 2.3 reveals that detecting fine-grained differences in algorithmic reaction times is
+extraordinarily difficult: if two algorithms operate on slightly different timescales (δ= 0.05),
+resolving them requires a probing horizon(0.05)−4= 160,000times longer than detecting a
+unit change. Algorithmic heterogeneity is practically masked by public price dynamics.
+12
+
+=== PHYSICAL PAGE 14 ===
+Niroula and Niroula From Human Markets to Machine Markets
+2.3 Theorem 2: Mandatory Finite-Window Surveillance Absten-
+tion
+Can a regulatory surveillance system reliably certify whether a market is operating in the
+subcritical regime (S <1) or heading into supercritical instability (S≥1) using finite
+historical data?
+Theorem 2.5(Mandatory Finite-Window Abstention).LetD T ={(ut,xt)}T
+t=1 denote pas-
+sive market observations over horizonTgenerated by system(13)with Gaussian innovations
+wt
+i.i.d.
+∼ N(0,σ2
+w). LetΨ :D T→{Stable,Unstable,Abstain}be any surveillance decision rule
+with worst-case false-alarm rate at mostα∈(0,1/2), meaningsupS<1 PS(Ψ =Unstable)≤α
+andsup S≥1PS(Ψ =Stable)≤α.
+1. For sufficiently largeT, there exists a non-empty boundary layerBT≡(1−ϵT,1 +ϵT )
+withϵT =c 0/Ton whichΨmust abstain with positive probability bounded away from
+zero:
+inf
+S∈BT
+PS (Ψ(DT ) =Abstain)≥1−2α−c0K1 >0.(25)
+2. Any binary surveillance ruleΨ binary :D T→{Stable,Unstable}that never abstains has
+worst-case classification risk bounded below by1/2across all finite horizonsT:
+inf
+Ψ binary
+sup
+S∈(0,2)
+[PS(Ψ binary̸=True State)]≥1
+2.(26)
+Proof.In the structural2×2state system (13), characteristic roots satisfyλ1(S) = 1−
+cη
+1−a(1−η)
+1
+T +O(T−2)≡1 + ˜c/T. For allS∈BT≡(1−c0/T,1 +c 0/T), the second eigenvalue
+satisfies|λ2(S)|≤ρ0 <1uniformly for a fixedρ 0∈(0,1)independent ofT. Via spec-
+tral Jordan decomposition, the system decouples into a scalar local-to-unity modeξ1,t and
+an exponentially decaying stationary nuisance modeξ2,t with ∑T
+t=1ξ2
+2,t =O p(T), which is
+asymptotically negligible compared to
+∑T
+t=1ξ2
+1,t−1=O p(T 2)(Phillips, 1987). Evaluating the
+log-likelihood ratio between contiguous alternativesS0 = 1−c/TandS 1 = 1 +c/Tacross
+S= 1:
+ΛT≡logdPT
+1
+dPT
+0
+= 2˜c
+σ2
+w
+(
+1
+T
+T∑
+t=1
+ξ1,t−1wt
+)
+−2˜c2
+σ2
+w
+(
+1
+T 2
+T∑
+t=1
+ξ2
+1,t−1
+)
++Op(T−1/2).(27)
+AsT→∞, the normalized path satisfiesT−1/2ξ1,⌊rT⌋⇒J˜c(r)by the functional central
+limit theorem (Phillips, 1987), with limit generatordJ˜c(r) = ˜cJ˜c(r)dr+σwdW(r). Contin-
+uous mapping yieldsΛT⇒2˜c
+∫ 1
+0 J˜cdW−2˜c2 ∫ 1
+0 J2
+˜cdr=O p(1). Because the limit likelihood
+ratio is non-degenerate and strictly positive almost surely, the sequence{PT
+0 ,P T
+1}is mutu-
+13
+
+=== PHYSICAL PAGE 15 ===
+Niroula and Niroula From Human Markets to Machine Markets
+ally contiguous (locally asymptotically mixed normal, LAMN), with total variation distance
+bounded by∥PT
+0−PT
+1∥TV≤
+√
+1
+2DKL(PT
+0 ∥PT
+1 )≤c·K1, whereK1 <∞depends only on the
+expected variance of the limit diffusion. To establish the uniform bound across all points
+inB T, consider any subcritical pointS 0 ∈(1−c0/T,1)and pair it with the contiguous
+supercritical pointS 1 =S 0 +c 0/T∈(1,1 +c0/T). By contiguity,∥PT
+S0−PT
+S1∥TV≤c0K1.
+For any error-controlled ruleΨ,P S0(Ψ =Unstable)≤αandPS1(Ψ =Stable)≤α, yielding
+PS0(Ψ =Abstain)≥1−PS0(Ψ =Unstable)−PS0(Ψ =Stable)≥1−2α−c0K1. Symmet-
+rically, pairing any supercritical pointS1∈[1,1 +c0/T)withS 0 =S 1−c0/T <1yields
+PS1(Ψ =Abstain)≥1−2α−c0K1. Choosing constantc 0∈(0,(1−2α)/K1), we obtain
+(25) uniformly across allS∈BT. For Part 2, fix any finite horizonT <∞. Consider any
+two parameter pointsS−<1≤S+. Under Gaussian innovationswt
+i.i.d.
+∼ N(0,σ2
+w), the joint
+probability density ofDT with respect to Lebesgue measure depends continuously on the
+transition matrixJ(S), and hence continuously onS. By Scheffé’s lemma, the total variation
+distance satisfies∥PT
+S−−PT
+S+∥TV→0asS +−S−→0. For any binary surveillance rule
+Ψ binary :D T→{Stable,Unstable}, Le Cam’s two-point testing lower bound establishes:
+inf
+Ψ binary
+sup
+S∈{S−,S+}
+PS(Ψ binary̸=True State)≥1
+2
+(
+1−∥PT
+S−−PT
+S+∥TV
+)
+.(28)
+TakingS +↓1andS−↑1such that|S+−S−|→0yields∥PT
+S−−PT
+S+∥TV→0, establishing
+that the worst-case classification error across all finiteTis bounded below by1/2.
+PersistenceS=a+Q
+Decision ProbabilityCritical BoundaryS= 1.0
+Mandatory Abstention Zone
+P(Ψ =Abstain)≥1−2α−c0K1
+BT = (1−ϵT,1 +ϵT ), ϵT =O(T −1)
+P(Stable) P(Unstable)P(Abstain)
+1−ϵT 1 +ϵT1.0
+1.0
+0.5
+Figure 1: The Mandatory Finite-Window Surveillance Abstention Layer (Theorem 2.5). For
+any error-controlled classifier (α<1/2), a finite observation windowTcreates a non-trivial
+contiguous boundary layerBT = (1−ϵT,1+ϵT )of widthϵT =O(T −1)where the surveillance
+rule is mathematically forced to declare uncertainty (Ψ =Abstain). Any binary classifier
+forced to make a definitive stability determination in this layer suffers worst-case error risk
+bounded below by50%.
+Theorem 2.5 and Figure 1 establisha vital principle for financial stability architecture:an
+error-controlled macroprudential monitor must have a built-in abstention option.
+Near the phase-transition boundaryS= 1, observational ticker feeds are statistically indis-
+14
+
+=== PHYSICAL PAGE 16 ===
+Niroula and Niroula From Human Markets to Machine Markets
+tinguishable between near-integrated subcritical persistence and explosive runaway. Forcing
+a binary classification guarantees misclassification.
+2.4 Theorem 3: Intermediary Solvency and the Kreiss Constant
+Bound
+We now confront the fundamental divergence between price stability and financial intermedi-
+ary solvency. In standard economic policy models, market stability is evaluated exclusively
+through the spectral radiusρ(J)<1. We demonstrate that this criterion is dangerously
+incomplete.
+The Non-Normal Market Jacobian.Consider the closed-loop Jacobian matrixJfrom
+(14). In financial markets, price impact and memory adaptation are asymmetric: order
+flow directly affects prices through contemporaneous impactκ, while price innovations affect
+memory through learning rateη. As a result,JJ⊤−J⊤J̸= 0: the closed-loop market Jaco-
+bianJis genericallynon-normalunder asymmetric price-impact and learning parameters
+(except on a measure-zero algebraic subvariety). While normal matrices have orthogonal
+eigenvectors that diagonalize under unitary transformations, non-normal matrices have non-
+orthogonal(nearlyparallel)eigenvectors. Consequently, evenwhenalleigenvaluesarestrictly
+inside the unit circle (|λi(J)|≤ρ(J)<1), matrix powersJt can undergo massive transient
+amplification before decaying asymptotically ast→∞(Trefethen and Embree, 2005).
+Leveraged Dealer Balance-Sheet Model.Let a risk-bearing market maker hold initial
+equity capitalE 0, maximum regulatory leverage limitL, and letγ∈(0,1)denote the regu-
+latory margin haircut. The dealer’s capital absorption buffer against cumulative inventory
+losses is:
+B≡γLE0.(29)
+Letz t∈Rn denote the state vector of the closed-loop economy evolving aszt =J tz0, and
+letC∈R1×ndenote the balance-sheet observation operator that maps the statezt into the
+dealer’s marked inventory loss:
+Losst =Cz t =CJ tz0.(30)
+A margin breach (triggering forced liquidation and trading halts) occurs ifsupt≥0|CJtz0|>
+B.
+15
+
+=== PHYSICAL PAGE 17 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Theorem 2.6(Dealer Solvency and the Kreiss Constant Bound).Letzt =J tz0 withρ(J)<
+1, balance-sheet bufferB >0, and observation matrixC.
+1.Exact Worst-Case Safe Radius:The exact maximum shock radiusr ∗
+exact guaran-
+teeing that no initial disturbance with∥z0∥2≤r∗
+exact triggers dealer insolvency in any
+direction is:
+r∗
+exact = B
+supt≥0∥CJt∥2
+≡B
+MC
+,(31)
+whereM C≡supt≥0∥CJt∥2 is the peak transient magnification.
+2.Kreiss Lower and Upper Bounds:Under full state observation (C=I), the
+Kreiss constant of matrixJ, defined on the resolvent outside the unit disk:
+K(J)≡sup
+|z|>1
+(|z|−1)∥(zI−J)−1∥2,(32)
+satisfiesK(J)≤supt≥0∥Jt∥2≤e·n·K(J)for anyJ∈Rn×n. Consequently:
+rconservative≡ B
+e·n·K(J)≤r∗
+exact≤B
+K(J).(33)
+3.Complete Failure of Spectral Radius:For any stable spectral radiusρ∈(0,1)
+and any arbitrarily small bufferB >0, there exists a parameter family of non-normal
+matricesJ θand an observation operatorC= [1,0]exposed to the amplified coordinate
+such thatρ(Jθ) =ρfor allθ, while the exact safe radius collapses to zero:
+lim
+θ→∞
+r∗
+exact(Jθ) = 0.(34)
+Proof.Part 1:By the Cauchy–Schwarz inequality for operator norms, the maximum loss
+across all initial shock vectors with∥z0∥2≤ris:
+sup
+∥z0∥2≤r
+sup
+t≥0
+|CJtz0|=r·sup
+t≥0
+∥CJt∥2 =r·MC.(35)
+Requiring that the worst-case loss does not breach capital bufferBimposesr·MC≤B,
+which holds if and only ifr≤B/MC≡r∗
+exact.
+Part 2:The lower boundK(J)≤supt≥0∥Jt∥2 follows directly from the Neumann series
+expansion of the resolvent: for|z|>1,(zI−J)−1= ∑∞
+t=0z−(t+1)Jt. Taking norms:
+∥(zI−J)−1∥2≤
+∞∑
+t=0
+|z|−(t+1)∥Jt∥2≤sup
+t≥0
+∥Jt∥2
+∞∑
+t=0
+|z|−(t+1)= supt≥0∥Jt∥2
+|z|−1.(36)
+16
+
+=== PHYSICAL PAGE 18 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Multiplying both sides by(|z|−1)and taking the supremum over|z|>1yieldsK(J)≤
+supt≥0∥Jt∥2. The upper boundsup t≥0∥Jt∥2≤e·n·K(J)is Spijker’s Theorem (Spijker,
+1991), which establishes the optimal dimensional constante·nfor the discrete Kreiss matrix
+theorem. Inverting the inequality chainK(J)≤MI≤e·n·K(J)and multiplying byB
+immediately yields (33).
+Part 3:Consider the2×2family of matrices parameterized byθ >0:
+Jθ=
+
+ρ θ
+0ρ
+
+, ρ∈(0,1).(37)
+The eigenvalues areλ1 =λ2 =ρ, soρ(Jθ) =ρ<1for allθ. Computing thet-th power:
+Jt
+θ=
+
+ρt tθρt−1
+0ρ t
+
+.(38)
+SettingC= [1,0]and initial shockz 0 = [0,1]⊤, the loss at timetisCJ t
+θz0 =tθρt−1. The
+peak loss occurs att∗=⌈−1/logρ⌉. Att∗, the loss isΘ(θ/(e(1−ρ))). Thus, peak transient
+magnification satisfiesMC≥θ
+e(1−ρ). The exact safe radius is bounded byr∗
+exact≤Be(1−ρ)
+θ .
+Takingθ→∞,r∗
+exact→0while the spectral radius remains frozen atρ, completing the
+proof.
+Remark2.7 (The Dangerous Illusion of Spectral Stability).Theorem 2.6 resolves a long-
+standing microstructural paradox:how can markets experience catastrophic liquid-
+ity freezes and market maker bankruptcies while prices remain mathematically
+stable?Regulators relying on eigenvalue stability tests observeρ(J) = 0.50and certify the
+system as completely safe. Yet, if the non-normal coupling between price impact and order
+flow memory is strong (θ≫1), a standard 2-standard-deviation liquidity shock can amplify
+by a factor of 100 before decaying, wiping out dealer capital and triggering exchange halts
+within seconds.
+We emphasize the structural asymmetry of the bilateral bounds in (33):B
+enK(J) provides a
+guaranteed safe (conservative) lower bound on the allowable shock radius. In contrast,B
+K(J) is
+an upper bound onr∗
+exact (shocks exceeding this magnitude are guaranteed to trigger solvency
+breaches in the worst case). Consequently, B
+K(J) must never be treated as a guaranteed
+conservative safety margin.
+17
+
+=== PHYSICAL PAGE 19 ===
+Niroula and Niroula From Human Markets to Machine Markets
+2.5 Pseudospectral Contours and Non-Normal Resolvent Bounds
+To gain deeper visual and geometric intuition into why the spectral radius fails to predict
+dealer solvency, we examine theϵ-pseudospectrum of the closed-loop market Jacobian. For
+anyϵ>0, theϵ-pseudospectrumσϵ(J)of matrixJis defined as the set of complex numbers
+z∈Csatisfying:
+σϵ(J)≡
+{
+z∈C:∥(zI−J)−1∥2≥ϵ−1
+}
+.(39)
+Equivalently,σϵ(J)represents the union of all eigenvalues of perturbed matricesJ+Eacross
+all perturbations with∥E∥2≤ϵ.
+As visualized in Figure 2, in a normal system, the pseudospectrum consists of concentric
+disks of radiusϵcentered at the eigenvalues:σϵ(J) = ⋃
+i{z:|z−λi|≤ϵ}. However, for
+the non-normal market Jacobian, the pseudospectral contours stretch dramatically along the
+off-diagonal coupling direction, protruding significantly outside the unit circle{|z|= 1}even
+when the spectral radiusρ(J) = 0.50is well within the interior.
+The Kreiss constantK(J)measures the maximum ratio by which these pseudospectral
+contours protrude beyond the unit circle:
+K(J) = sup
+ϵ>0
+αϵ(J)−1
+ϵ , α ϵ(J)≡sup
+z∈σϵ(J)
+|z|.(40)
+WheneverK(J)≫1, small high-frequency liquidity shocks are magnified by the non-normal
+resolvent, inducing large transient balance-sheet losses that exhaust dealer margin buffers
+before eigenvalue decay can assert itself.
+2.6 Multi-Asset Generalization and Cross-Impact Kreiss Inflation
+Modern market makers operate simultaneously across multiple correlated instruments (e.g.,
+BTC, ETH, and altcoins; or equity index components and ETFs). In multi-asset environ-
+ments, cross-asset price impact creates additional non-normal coupling.
+Letx t∈Rd denote the vector of pricing errors acrossdtraded assets, and letut∈Rd
+denote aggregate order flows. The multi-asset price formation equation is:
+xt+1 =Ax t +Kut +wt+1,(41)
+whereA= diag(a 1,...,ad)∈Rd×dcollects direct price persistences, andK∈Rd×dis the
+cross-asset price impact matrix. In general,Kis asymmetric (K̸=K⊤): institutional order
+flow in a benchmark asset (such as BTC or SPY) exerts cross-impact on satellite assets, but
+the reverse flow produces much smaller reactions.
+18
+
+=== PHYSICAL PAGE 20 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Unit DiskD
+Re(z)
+Im(z)
+λ1 = 0.50λ2 = 0.20
+ϵ= 0.05
+Pseudospectral
+Protrusion(ϵ= 0.15)
+Figure 2: Theϵ-Pseudospectrum of the Non-Normal Market JacobianJ. While all eigenval-
+ues (λ1 = 0.50,λ2 = 0.20) lie strictly inside the unit disk (ρ(J) = 0.50<1.0), non-normal
+coupling between price impact and order-flow memory causes the pseudospectral contours
+(σϵ(J)forϵ= 0.15) to severely protrude across the unit circle into the unstable exterior
+|z|>1. This resolvent protrusion governs peak transient amplificationMC and dealer sol-
+vency risk.
+Each asset is traded by adaptive momentum flow with learning ratesH= diag(η1,...,ηd)
+and feedback gainQ∈Rd×d:
+yt+1 = (I−H)yt +Hxt+1,u t =Qy t.(42)
+Stackingz t = (x⊤
+t ,y⊤
+t )⊤∈R2d, the multi-asset closed-loop Jacobian is:
+Jmulti =
+
+ A KQ
+HA I−H+HKQ
+
+∈R2d×2d.(43)
+Proposition 2.8(Cross-Impact Kreiss Inflation and Safe Radius Bound in Directed Net-
+works).Consider a multi-asset economy with directed block-triangular leader-satellite cross-
+impact (K12 = 0,K 21 >0), diagonal feedback matricesQ≥0, anchor matricesA≥0, adap-
+tation ratesH∈(0,1)d, and portfolio loss operatorC≥0. LetJdiag denote the decoupled
+Jacobian whereK 21 = 0. The directed coupling introduces off-diagonal block feedforward,
+inflating the Kreiss constant:K(J multi)≥ K(Jdiag). Consequently, the Kreiss-based con-
+servative safe radius bound contracts:r conservative(Jmulti)≡ B
+e(2d)K(Jmulti) ≤rconservative(Jdiag).
+For the exact safe shock radiusr ∗
+exact(J)≡B/MC(J), because all constituent blocks of
+Jare entrywise non-negative in the momentum economy, matrix powersJ t
+multi are entry-
+wise non-decreasing inK 21, yieldingM C(Jmulti)≥MC(Jdiag)and exact radius contraction
+19
+
+=== PHYSICAL PAGE 21 ===
+Niroula and Niroula From Human Markets to Machine Markets
+r∗
+exact(Jmulti)≤r∗
+exact(Jdiag). In empirical cross-impact calibrations examined here, asymmet-
+ric feedforward coupling injects transient terms of ordertK21ρt−1, compressing the safe radius
+by14.5%relative to decoupled trading.
+Proposition 2.8 demonstrates that multi-asset diversification does not automatically in-
+sulate liquidity providers from feedback fragility. On the contrary, asymmetric cross-impact
+networks (such as Bitcoin leading altcoins or large-cap equities driving ETFs) introduce
+feedforward coupling that injects additional transient growth terms into matrix powersJt,
+inflating peak transient lossMC and compressing the safe radius by roughly14.5%in our
+empirical multi-asset calibrations.
+3 Data and Empirical Identification Strategy
+3.1 Econometric Estimand and Moving-Average Filtering
+To operationalize the theoretical closed-loop system empirically, we construct an estimand
+that is invariant to arbitrary currency scaling and directly identifiable from high-frequency
+limit order books.
+A fundamental gap between theoretical models and high-frequency empirical execution
+concerns the definition of the state variable. In theoretical models (Section 2),xt≡pt−p∗
+t
+represents price displacement relative to an unobserved fundamental valuep∗
+t. In empirical
+limit order books, true fundamental value is unobservable, and econometricians routinely
+replacep∗
+t with a trailing price filter, such as an Exponential Moving Average (EMA).
+Letp b denote the log mid-price sampled at discrete uniform time barsbof length∆
+(e.g.,∆ = 10seconds). The trailing exponential moving-average anchormb is defined by the
+recursive filter:
+mb = (1−α)mb−1+αpb, α≡ 2
+W/∆ + 1,(44)
+whereWis the smoothing window (e.g.,W= 300seconds, yieldingα= 2/31≈0.064516).
+The empirical state variable is defined as the deviation from this trailing anchor:
+xEMA
+b ≡pb−mb = (1−α)(pb−mb−1) = 1−α
+1−(1−α)L∆p b.(45)
+Proposition 3.1(Mechanical Persistence under Filtered Random Walks).Suppose the log
+mid-pricep b follows an unpredictable martingale (random walk), such thatE[pb+1|Fb] =p b.
+Then the moving-average deviation statexEMA
+b mechanically follows an autoregressive AR(1)
+20
+
+=== PHYSICAL PAGE 22 ===
+Niroula and Niroula From Human Markets to Machine Markets
+process:
+E[xEMA
+b+1 |Fb] = (1−α)xEMA
+b ,(46)
+with mechanical persistence parametera0≡1−α=29
+31≈0.93548.
+Proof.By definition,x EMA
+b+1 =p b+1−mb+1 = (1−α)(pb+1−mb). Conditioning on information
+Fb:
+E[xEMA
+b+1 |Fb] = (1−α) (E[pb+1|Fb]−mb) = (1−α)(pb−mb) = (1−α)xEMA
+b ,(47)
+which establishes (46) with mechanical persistencea0 = 1−α.
+Remark3.2 (Economic Interpretation of Empirical Feedback ˆQ).Proposition 3.1 yields
+a crucial economic insight: when price changes are regressed on lagged EMA deviation
+xEMA
+b , the estimated autoregressive persistence ˆJ11 does not measure learning about fun-
+damental valuep∗
+t. Instead, it measures mean-reversion toward an exponentially smoothed
+price anchor. In our baseline Binance panel, the estimated autoregressive persistence is
+ˆJ11≈0.912, which is strictly below the mechanical martingale baselinea0≈0.9355. The
+wedge ˆJ11−a0 ≈ −0.023reflects high-frequency negative price autocorrelation (bid-ask
+bounce and inventory replenishment). Furthermore, the total closed-loop persistence satis-
+fies ˆS≡ˆJ11 + ˆQ≈0.912 + 0.008 = 0.920<a0≈0.9355, proving that the closed-loop market
+is strictly more mean-reverting toward its trailing anchor than a pure random walk.
+Letf t denote the signed market order flow (notional taker buy volume minus notional
+taker sell volume executed over(t−∆,t]). The empirical bivariate vector autoregressive
+(VAR(1)) representation of joint price-flow transitions is:
+
+xEMA
+t+1
+ft+1
+
+=
+
+J11 J12
+J21 J22
+
+
+
+xEMA
+t
+ft
+
++
+
+e1,t+1
+e2,t+1
+
+,E[e te⊤
+t ] = Σe,(48)
+whereJ 11 ≡arepresents anchor-relative persistence,J12 ≡λis price impact,J21 ≡ηc
+captures feedback, andJ 22 ≡1−ηmeasures flow autocorrelation. FromˆJ, we extract
+dimensionless invariants ˆQ≡
+ˆJ12 ˆJ21
+1−ˆJ22
+, ˆS≡ˆJ11 + ˆQ, and ˆL≡
+ˆQ
+1−ˆJ11
+, which are strictly scale-
+invariant.
+3.2 Measurement Sensitivity: How Clocks and Filters Dominate
+Feedback
+A central empirical finding is that estimated algorithmic feedbackˆQis highly sensitive to
+the observation clock and microstructural time alignment. Table 2 evaluates 1.03 million
+21
+
+=== PHYSICAL PAGE 23 ===
+Niroula and Niroula From Human Markets to Machine Markets
+consecutive 1-second Level-3 transitions on Coinbase Pro across three distinct measurement
+specifications.
+Table 2:Measurement Sensitivity of High-Frequency Feedback Across Clocks and
+States.Estimated feedback ˆQ(95% Newey–West HAC confidence intervals in brackets)
+across three measurement conventions on Coinbase Pro Level-3 limit order books: (i) Ob-
+served Flow: signed taker volume executed over past interval(T−60s,T]; (ii) Forward Flow:
+order flow measured over forward window(T,T+ 60s](look-ahead timing); and (iii) Raw
+Returns: mid-price returnsrb = ∆p b replacing EMA deviationsxEMA
+b .
+Asset Observed Flow(T−60s,T]Forward Flow(T,T+ 60s]Raw Returns (r b = ∆p b)
+BTC/USD+0.00194 +0.01252 +0.00003
+[+0.00167,+0.00220] [+0.01185,+0.01319] [−0.00012,+0.00018]
+ETH/USD+0.00098 +0.01130−0.00005
+[+0.00081,+0.00115] [+0.01062,+0.01198] [−0.00021,+0.00011]
+SOL/USD+0.00062 +0.00714 +0.00001
+[+0.00049,+0.00075] [+0.00654,+0.00774] [−0.00015,+0.00017]
+As documented in Table 2, when order flow is strictly restricted to past observed intervals
+(T−60s,T], baseline feedback is modest (ˆQ∈[0.0006,0.0019]). If forward flow(T,T+ 60s]
+is inadvertently treated as an available regressor at timet, estimated feedback surges by
+6.5×to11.5×(BTC:0.00194→0.01252; ETH:0.00098→0.01130), falsely creating the
+appearance of large closed-loop feedback. Furthermore, when the state variable is defined
+as raw price returns (rb = ∆p b) rather than moving-average deviations, empirical feedback
+intervals uniformly span zero for all assets. This confirms that apparent feedback is not a
+universal property of electronic trading, but rather an artifact of trailing moving-average
+filtering.
+Controlling for Order-Splitting Long Memory.A well-documented phenomenon in
+market microstructure is that large institutional parent orders are split into small child
+orders, inducing long-range positive autocorrelation in signed trade signs (Bouchaud et al.,
+2004; Cont, Kukanov, and Stoikov, 2014). Failure to control for this autocorrelation can bias
+autoregressive feedback estimates. To ensure robust identification, we estimate a distributed
+lag specification controlling for up toL= 90lags of order flow:
+ft+1 =
+L∑
+ℓ=1
+βℓft+1−ℓ+γxEMA
+t +εf,t+1.(49)
+The purged feedback parameter is defined asˆQL≡
+ˆλˆγ
+1−
+∑L
+ℓ=1
+ˆβℓ
+. In our empirical battery, we
+report both baseline OLSˆQand memory-purged ˆQ30 across all assets.
+22
+
+=== PHYSICAL PAGE 24 ===
+Niroula and Niroula From Human Markets to Machine Markets
+3.3 Dynamic Robustness and Contemporaneous Structural Iden-
+tification
+To evaluate dynamic specification robustness and resolve contemporaneous endogeneity be-
+tween prices and order flows, we deploy two complementary econometric methodologies: dy-
+namic minimum-distance Lyapunov covariance matching as an alternative robustness check,
+and Rigobon heteroskedasticity identification to recover the contemporaneous structural pa-
+rameter:
+Method 1: Analytical Minimum-Distance (MD) Lyapunov Matching and Dy-
+namic Robustness.In a stationary discrete-time linear systemz t+1 =Jz t +e t+1, the
+steady-state stationary covariance matrixΓ0≡E[ztz⊤
+t ]satisfies the discrete Lyapunov equa-
+tion:
+Γ0 =JΓ 0J⊤+ Σe.(50)
+Because the discrete Lyapunov equation admits an exact closed-form solutionvec(Γ0) =
+(I−J⊗J)−1vec(Σe)without requiring Monte Carlo simulation, we implement an ex-
+act analytical minimum-distance estimator matching empirical and theoretical autocovari-
+ances. To avoid restrictive diagonal assumptions on shocks, we specify an unrestricted
+symmetric innovation covarianceΣ e =
+
+σ11 σ12
+σ12 σ22
+
+, yieldingk= 7structural parameters
+θ= (J11,J 12,J 21,J 22,σ11,σ12,σ22)⊤∈R7. We constructm= 11empirical moments by stack-
+ing the 3 unique elements of contemporaneous sample covariance, 4 elements of lag-1 auto-
+covariance, and 4 elements of lag-2 autocovariance:m(θ;DT )≡[vech(ˆΓ0−Γ0(θ))⊤,vec( ˆΓ1−
+Γ1(θ))⊤,vec( ˆΓ2−Γ2(θ))⊤]⊤∈R11, where ˆΓk = 1
+T−k
+∑T−k
+t=1 zt+kz⊤
+t and theoreticalΓ k(θ) =
+J(θ)kΓ0(θ). The minimum-distance estimator minimizes the quadratic objective:
+ˆθMD = arg min
+θ
+m(θ;DT )⊤WTm(θ;DT ),(51)
+whereW T = ˆV−1
+HAC is the optimal Newey–West HAC weighting matrix. Withm= 11
+moments andk= 7free parameters, the moment Jacobian∂E[m]/∂θ⊤satisfies full column
+rank (rank = 7), and overidentifying restrictions are evaluated via Hansen’sJ-test with
+df=m−k= 11−7 = 4degrees of freedom to test the parsimonious linear dynamic
+specification.
+Method 2: Rigobon (2003) Structural Contemporaneous Identification through
+Heteroskedasticity.Following Rigobon (2003), we exploit shifts in the structural covari-
+ance matrix across calm versus volatile trading days. Let the contemporaneous structural
+23
+
+=== PHYSICAL PAGE 25 ===
+Niroula and Niroula From Human Markets to Machine Markets
+system be:
+xt =λft +εx,t,(52)
+ft =cx t +εf,t,(53)
+where structural innovationsεx,t andεf,t are uncorrelated (E[εx,tεf,t] = 0). While simulta-
+neous parameters(λ,c)remain stable across regimes, structural variances(σ2
+x,s,σ2
+f,s)shift
+across calm (s= 1) and volatile (s= 2) states. Each regimesprovides 3 observable second
+momentsΩ s = Var([xt,ft]⊤):
+Ωs = 1
+(1−λc)2
+
+σ2
+x,s +λ2σ2
+f,s cσ2
+x,s +λσ2
+f,s
+cσ2
+x,s +λσ2
+f,s c2σ2
+x,s +σ2
+f,s
+
+, s∈{1,2},(54)
+yielding 6 empirical equations for 6 structural unknowns(λ,c,σ2
+x,1,σ2
+f,1,σ2
+x,2,σ2
+f,2). The sys-
+temisidentifiedifandonlyiftheregimesexhibitnon-proportionalvarianceshifts(σ 2
+x,1/σ2
+f,1̸=
+σ2
+x,2/σ2
+f,2). Resolving the determinant quadratic with the economic sign normalizationλ>0
+(positive price impact) uniquely recovers structural parameters and instantaneous feedback
+QRig≡λc.
+3.4 Multi-Level Order Flow Imbalance (OFI) Construction
+In addition to top-of-book trades, limit order book dynamics depend on quote updates across
+the entire visible book (Cont, Kukanov, and Stoikov, 2014). Following Cont, Kukanov, and
+Stoikov (2014), we construct the multi-level Order Flow Imbalance (OFI) vector across the
+topM= 10levels of the book.
+For each levelk∈{1,...,M}, letpB
+k,t,qB
+k,t andp A
+k,t,qA
+k,t denote the bid and ask prices and
+sizes at depth levelk. The order flow contribution at levelkover the interval(t−∆,t]is:
+OFIk,t≡∆qB
+k,t·1{pB
+k,t≥pB
+k,t−∆}−∆qA
+k,t·1{pA
+k,t≤pA
+k,t−∆},(55)
+where∆q B
+k,t represents the net change in resting bid volume. Stacking across levels yields
+et = (OFI1,t,...,OFIM,t)⊤. We construct a composite depth-weighted order flow imbalance:
+OFI∗
+t≡
+M∑
+k=1
+wk OFIk,t, w k = exp(−λdepth(k−1))
+∑M
+j=1 exp(−λdepth(j−1)),(56)
+whereλdepth = 0.5places highest weight on the inside quote. IncorporatingOFI∗
+t as a depth-
+aware robustness proxy for transaction order flow purges bid-ask bounce and provides an
+24
+
+=== PHYSICAL PAGE 26 ===
+Niroula and Niroula From Human Markets to Machine Markets
+orthogonal check on reduced-form feedback.
+3.5 High-Frequency Institutional Datasets
+Our empirical investigation analyzes four massive institutional limit order book datasets
+totaling over 7.5 GB of tick and order book records (over 70.6 million continuous 1-second
+records), summarized in Table 3:
+Table 3: Institutional High-Frequency Limit Order Book Datasets Analyzed in this Study.
+Dataset Venue Description & Microstructural Granularity Time Span Total Records
+Binance Spot
+Panel
+Binance Continuous 1-second trades, quotes, and
+order flow for 8 liquid pairs (BTC, ETH,
+SOL, BNB, XRP, ADA, DOGE, LTC).
+Sampled twice monthly (10th and 24th).
+2021–2024
+(48 mos)
+66,355,200
+Coinbase L3
+Books
+Coinbase
+Pro
+Complete continuous 1-second Level-3 full
+book depth snapshots for BTC, ETH,
+and ADA recorded via WebSocket feeds
+(Nielsen, 2021).
+Multi-week
+continuous
+3,090,000
+FI-2010
+Benchmark
+NASDAQ
+Nordic
+Canonical institutional limit order book
+benchmark (Ntakaris et al., 2018). 10 lev-
+els of bid/ask prices and sizes across 5 blue-
+chip Scandinavian equities.
+10 trading
+days
+272,941
+BTC Perp
+Holdout
+Binance
+Futures
+Complete continuous Level-2 perpetual fu-
+tures order book depth (1.20 GB raw order
+flow). Documented out-of-sample holdout.
+Jan 9–20,
+2023
+935,199
+Data Cleaning and Synchronization Protocol.All raw ticker streams undergo a stan-
+dardized data cleaning protocol:
+1.Timestamp Synchronization:Trades and quotes are bucketed into uniform 1-
+second UTC intervals. If multiple trades occur within a single second, notional volumes
+are aggregated, and the end-of-second mid-price is recorded.
+2.Quote Inversion Filtering:Snapshots exhibiting crossed quotes (p bid > pask) or
+non-positive bid-ask spreads are discarded (<0.001%of records).
+3.Outlier Truncation:Individual return innovations exceeding 50 standard deviations
+(exchange engine glitches or flash unpegs) are winsorized to prevent leverage bias.
+25
+
+=== PHYSICAL PAGE 27 ===
+Niroula and Niroula From Human Markets to Machine Markets
+4 Baseline Panel and Flagship Natural Experiment
+4.1 Baseline Multi-Year Panel Evidence
+Table 4 reports the baseline econometric estimates pooled across all 768 asset-days on Bi-
+nance Spot (2021–2024), alongside breakdowns across four distinct market epochs:
+•2021 Bull Expansion:Rapid institutional adoption and retail inflows (N= 192).
+•2022 Crypto Winter:Macroeconomic tightening, Terra/Luna collapse, and FTX
+insolvency (N= 192).
+•2023 Consolidation:Low-volatility regime and institutional restructuring (N=
+192).
+•2024 ETF Era:Regulatory approval of U.S. Spot Bitcoin ETFs and institutional
+volume recovery (N= 192).
+Table 4:Baseline High-Frequency Feedback Panel (Binance Spot 2021–2024).Es-
+timated feedback parameterˆQ, 30-lag memory-purged feedbackˆQ30, closed-loop persistence
+ˆS, loop ratio ˆL, minimum-distance Lyapunov estimateQMD, and Rigobon heteroskedasticity
+estimateQ Rig across 8 liquid cryptocurrency pairs evaluated on 768 daily sessions (66.3×106
+one-second transitions). 95% clustered confidence intervals in brackets.
+Asset Days ˆQ[95% CI] ˆQ30[95% CI] ˆS[95% CI] ˆL[95% CI]Q MD[95% CI]QRig
+ADA 960.0068[0.0055,0.0081]0.0061[0.0048,0.0075]0.914[0.906,0.923]0.079[0.064,0.095]0.0079[0.0034,0.0124]−0.01849BNB 960.0058[0.0044,0.0072]0.0040[0.0025,0.0055]0.897[0.883,0.911]0.068[0.051,0.085]0.0061[0.0047,0.0075]−0.01839BTC 960.0142[0.0128,0.0156]0.0112[0.0095,0.0130]0.933[0.931,0.934]0.171[0.155,0.186]0.0129[0.0101,0.0156]−0.02576DOGE 960.0059[0.0044,0.0075]0.0045[0.0029,0.0061]0.925[0.920,0.930]0.074[0.057,0.092]0.0054[0.0038,0.0069]−0.02104ETH 960.0131[0.0117,0.0146]0.0107[0.0091,0.0122]0.934[0.932,0.935]0.160[0.144,0.176]0.0139[0.0115,0.0162]−0.02224LTC 960.0049[0.0038,0.0060]0.0038[0.0027,0.0050]0.918[0.910,0.926]0.060[0.047,0.074]0.0041[0.0024,0.0058]−0.00978SOL 960.0087[0.0075,0.0100]0.0069[0.0055,0.0083]0.919[0.911,0.927]0.105[0.091,0.120]0.0107[0.0065,0.0149]−0.01846XRP 960.0057[0.0040,0.0074]0.0039[0.0021,0.0058]0.925[0.921,0.929]0.072[0.051,0.093]0.0077[0.0036,0.0117]−0.01888
+Pooled (All)7680.0082[0.0076,0.0087]0.0064[0.0058,0.0070]0.921[0.918,0.923]0.099[0.092,0.105]0.0086[0.0075,0.0097]−0.01913
+Across the full four-year panel of 768 asset-days (66.3×106 one-second transitions),
+empirical feedback is consistently positive, modest in magnitude, and strictly subcritical:
+•Pooled Feedback Parameter: ˆQ= 0.0082(95% clustered CI[0.0076,0.0087],t=
+29.5,p<10 −100).
+•Positive Feedback Share:Exactly86.8%of individual asset-days exhibit ˆQ>0, for-
+mally rejecting the hypothesis that high-frequency order flow acts purely as contrarian
+liquidity buffering.
+•Subcritical Closed-Loop Persistence:Mean persistence is ˆS= 0.921, and exactly
+100.0%of all 768 asset-days strictly satisfy the Schur stability condition ˆS <1.0
+(maximum observed dailyˆS= 0.976).
+•Loop Ratio:The dimensionless loop amplification ratio is ˆL≡
+ˆQ
+1−ˆa= 0.099, confirm-
+ing that feedback consumes roughly10%of the remaining no-feedback stability margin
+26
+
+=== PHYSICAL PAGE 28 ===
+Niroula and Niroula From Human Markets to Machine Markets
+(1−a) during normal trading conditions.
+2021 2022 2023 2024 2025
+0.70
+0.75
+0.80
+0.85
+0.90
+0.95
+1.00
+1.05
+C losed-loop persistence ˆS = a + ˆQ
+2021 Bull 2022 Crash 2023 Quiet 2024 ETF
+(a) P ersistence ˆS A cross 768 A sset-D ays
+21 22 23 24 25
+0.01
+0.00
+0.01
+0.02
+0.03
+F eedback ˆQ (P ooled = +0.008)
+Daily asset ˆS
+Median ˆS across assets
+IQR (25%--75%)
+Instability boundary S = 1.0
+0.000 0.005 0.010 0.015
+E stim ated feedback coefficient Q
+BTC
+ETH
+SOL
+B/glyph1197B
+XRP
+ADA
+DOGE
+LTC
+(b) Asset-Level Feedback & Memory Bias
+Baseline ˆQ (OLS)
+Purged ˆQ30 (30s splitting lag)
+OLS
+Dynamic
+MD
+Robustness
+Rigobon
+Contemp.
+0.02
+0.01
+0.00
+0.01
+0.02
+E stim ated feedback param eter Q +0.0082 +0.0086
+-0.0191
+Dynamic Momentum
+(Flow amplifies trend)
+Contemporaneous Buffering
+(Liquidity provision absorbs shocks)
+(c) Dynamic Robustness and Contemporaneous Identification
+Figure 3: Systematic multi-year panel dynamics and identification across 768 asset-days on
+Binance Spot (2021–2024).(a)Daily persistence ˆS=a+ ˆQacross eight assets, median
+trajectory, and25%–75%interquartile range; all 768 days remain strictly subcritical relative
+to the theoretical instability boundaryS= 1.0(dashed red line). Inset shows positive feed-
+back ˆQacross all market epochs (pooled mean+0.0082).(b)Asset-by-asset comparison of
+baseline ˆQ(OLS) versus flow-memory purgedˆQ30 (controlling for 30-second order splitting),
+with 95% clustered confidence intervals.(c)Dynamic Robustness and Contemporaneous
+Identification: reduced-form dynamic OLS (ˆQ= +0.0082), alternative minimum-distance
+covariance-matching robustness estimate (QMD = +0.0086, with parsimonious linear spec-
+ification rejected atJ= 73.0,df= 4,p <0.001), and contemporaneous heteroskedasticity
+identification (QRig =−0.0191), revealing the economic contrast between multi-second trend
+amplification and instantaneous liquidity buffering.
+Dynamic Robustness and Economic Duality.As shown in Figure 3(c), analytical
+minimum-distance Lyapunov covariance matching serves as an alternative dynamic robust-
+ness check, yieldingQ MD = 0.0086(95% clustered CI[0.0075,0.0097]across the panel;
+QMD = 0.0093[0.0068, 0.0117] in pooled high-frequency estimation), which is numerically
+close to the reduced-form OLS estimate (ˆQ= 0.0082). In pooled estimation (N= 308,785
+transitions), the 11-moment overidentifying restrictions test yieldsJ= 73.00(df= 4,p <
+0.001), so the parsimonious linear dynamic state-space specification is formally rejected by
+the data. Nonetheless, the resulting feedback coefficient remains small and positive, demon-
+strating robustness of the subcritical feedback magnitude to autocovariance-matching esti-
+mation. We emphasize that minimum-distance Lyapunov matching and Rigobon estimation
+evaluate distinct economic estimands: Lyapunov matching evaluates dynamic feedback over
+multi-second horizons (t≥1), whereas Rigobon identifies the instantaneous, zero-lag maker
+buffering elasticity (t= 0).
+In contrast, Rigobon heteroskedasticity identification yieldsQ Rig =−0.01913<0.
+27
+
+=== PHYSICAL PAGE 29 ===
+Niroula and Niroula From Human Markets to Machine Markets
+This apparent divergence uncovers an intuitive economic duality: (i)Contemporaneous
+Buffering (QRig <0):at instantaneous zero-lag timescales, market makers absorb in-
+coming market orders with passive limit orders, acting as contrarian liquidity buffers; and
+(ii)Dynamic Trend Amplification ( ˆQ >0):over multi-second horizons (t≥1), mo-
+mentum traders and dynamic execution strategies condition on price movements, injecting
+positive feedback into subsequent aggregate order flow.
+4.2 Cross-Asset Heterogeneity Across the Panel
+Table 5 provides a detailed asset-by-asset decomposition across all eight pairs analyzed in
+the Binance multi-year panel.
+Table 5: Cross-Asset Empirical Feedback and Microstructural Estimates across Eight Bi-
+nance Spot Pairs (768 asset-days, 2021–2024). Standard errors in parentheses are Newey–
+West HAC adjusted.
+Asset Pair Asset-Days Baseline ˆQPurged ˆQ30 Persistence ˆSLoop Ratio ˆLRigobonQ Rig
+BTC/USDT 960.0142 0.0112 0.933 0.171−0.0258
+[0.0128,0.0156] [0.0095,0.0130] [0.931,0.934] [0.155,0.186]
+ETH/USDT 960.0131 0.0107 0.934 0.160−0.0222
+[0.0117,0.0146] [0.0091,0.0122] [0.932,0.935] [0.144,0.176]
+SOL/USDT 960.0087 0.0069 0.919 0.105−0.0185
+[0.0075,0.0100] [0.0055,0.0083] [0.911,0.927] [0.091,0.120]
+ADA/USDT 960.0068 0.0061 0.914 0.079−0.0185
+[0.0055,0.0081] [0.0048,0.0075] [0.906,0.923] [0.064,0.095]
+DOGE/USDT 960.0059 0.0045 0.925 0.074−0.0210
+[0.0044,0.0075] [0.0029,0.0061] [0.920,0.930] [0.057,0.092]
+BNB/USDT 960.0058 0.0040 0.897 0.068−0.0184
+[0.0044,0.0072] [0.0025,0.0055] [0.883,0.911] [0.051,0.085]
+XRP/USDT 960.0057 0.0039 0.925 0.072−0.0189
+[0.0040,0.0074] [0.0021,0.0058] [0.921,0.929] [0.051,0.093]
+LTC/USDT 960.0049 0.0038 0.918 0.060−0.0098
+[0.0038,0.0060] [0.0027,0.0050] [0.910,0.926] [0.047,0.074]
+Pooled (All)7680.0082 0.0064 0.921 0.099−0.0191
+[0.0076,0.0087] [0.0058,0.0070] [0.918,0.923] [0.092,0.105]
+The cross-asset estimates in Table 5 reveal a monotonic ordering: assets with the high-
+est institutional trading volume and market capitalization (BTC and ETH) exhibit the
+strongest feedback intensity (ˆQBTC = 0.0142, ˆQETH = 0.0131). As market capitalization
+and institutional participation decline toward mid-cap altcoins (BNB, XRP, LTC), feedback
+weakens systematically (ˆQLTC = 0.0049). This cross-sectional gradient is consistent with
+systematic differences in trading intensity, liquidity provision, and adaptive flow across as-
+sets; public data cannot identify its participant-level source. Crucially, in strict adherence to
+28
+
+=== PHYSICAL PAGE 30 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Theorem 2.3, public limit order book records identify aggregate price-to-order-flow feedback
+ˆQbut cannot attribute this persistence to specific algorithmic versus discretionary trading
+cohorts without regulatory audit trails.
+4.3 Flagship Natural Experiment: The July 2022 Binance Fee
+Overhaul
+A fundamental objection in empirical microstructure is that observational estimates of feed-
+back might reflect endogenous shifts in macroeconomic volatility rather than structural liq-
+uidity dynamics.
+To address this objection decisively, we exploit an exogenous institutional shock: the
+July 8, 2022 Binance Zero-Fee Trading Schedule Overhaul.
+Institutional Background and Policy Shock.On July 6, 2022, Binance announced
+that effective July 8, 2022 at 14:00 UTC (commemorating its fifth anniversary), it would
+eliminate all maker and taker transaction fees across thirteen Bitcoin spot trading pairs,
+most notably BTC/USDT. Prior to this date, standard trading fees ranged from 2 to 10
+basis points depending on user VIP tier. Simultaneously, Binance adjusted how BTC trad-
+ing volume counted toward VIP tier qualification and Spot Liquidity Provider programs,
+effectively decoupling nominal execution fees from exchange volume subsidies.
+Crucially for econometric identification:
+•Treated Group:BTC/USDT transitioned to a strict 0.0% maker and 0.0% taker fee
+schedule.
+•Control Group:Major liquid altcoin pairs (ETH, BNB, SOL, ADA, DOGE, XRP,
+LTC) traded on the identical matching engine under identical matching rules, identical
+co-location latency, and identical API protocols, butretained standard maker-
+taker fee schedules.
+Eliminating taker fees drastically reduced execution costs for aggressive order flow. In
+standardmicrostructuretheory, ifpositivefeedbackisdrivenbyshort-horizontrend-following
+flow, fee elimination lowers the hurdle rate for aggressive market orders, potentially ampli-
+fying closed-loop feedback.
+Difference-in-Differences Econometric Specification.We construct a balanced panel
+across all 24 uniform sampling dates of 2022 (12 dates pre-intervention: Jan 10 – Jun 24;
+12 dates post-intervention: Jul 10 – Dec 24), yieldingN= 192asset-day observations
+29
+
+=== PHYSICAL PAGE 31 ===
+Niroula and Niroula From Human Markets to Machine Markets
+(24dates×8assets). We estimate the Difference-in-Differences (DiD) model:
+Yi,t =α0 +β1·Treatedi +β2·Postt +β3·(Treatedi×Postt) +X⊤
+i,tγ+εi,t,(57)
+whereY i,t is the estimated feedback parameter ˆQi,t or total persistence ˆSi,t; Treatedi = 1
+if assetiis BTC/USDT, and0otherwise; Post t = 1for dates after July 8, 2022; andβ3
+captures the Difference-in-Differences interaction effect.
+Because our empirical design features a single treated unit (N1 = 1, BTC/USDT) evalu-
+ated against seven control pairs, standard cluster-robust asymptotic inference can suffer from
+size distortions (Donald and Lang, 2007; MacKinnon and Webb, 2018). To ensure rigorous
+econometric inference, we report both asset-clustered standard errors and cross-sectional
+permutation/placebop-values computed by iteratively reassigning the treatment indicator
+across allN= 8cross-sectional units under the sharp null hypothesis of zero effect.
+Table 6:Flagship Natural Experiment: Difference-in-Differences around the July
+8, 2022 Binance Zero-Fee Schedule Overhaul.Treated unit is BTC/USDT (zero
+maker and taker fees introduced); control units are seven liquid altcoin pairs (ETH, BNB,
+SOL, ADA, DOGE, XRP, LTC) retaining standard fees. Standard errors in parentheses.
+Following Donald and Lang (2007) and MacKinnon and Webb (2018) for single-treated-unit
+designs (N1 = 1), cross-sectional permutation/placebop-values across all 8 cross-sectional
+units under the sharp null hypothesis are reported in brackets.
+Variable Feedback Parameter ˆQClosed-Loop Persistence ˆS
+Treated (BTC)×Post-Shock -0.001856 -0.000390
+(0.003072) (0.024585)
+Permutationp-value (N= 8) [p= 0.750] [p= 1.000]
+Treated Main Effect (BTC) 0.007249 ∗∗∗ 0.024617
+(0.002172) (0.017384)
+Post-Shock Main Effect -0.000413 0.003345
+(0.001086) (0.008692)
+Constant 0.006181 ∗∗∗ 0.904484∗∗∗
+(0.000768) (0.006146)
+Observations 192 192
+Pre-Shock Period Jan 10 – Jun 24, 2022 (12 dates) Jan 10 – Jun 24, 2022 (12 dates)
+Post-Shock Period Jul 10 – Dec 24, 2022 (12 dates) Jul 10 – Dec 24, 2022 (12 dates)
+R2 0.0821 0.0182
+Statistical ConclusionNo Detectable Response (Null) No Detectable Response (Null)
+Empirical Findings: Fee-Shock Response and Equivalence Testing.Table 6 re-
+ports the estimated parameters from specification (57). The empirical results reveal three
+crucial findings: (i)Baseline Cross-Sectional Difference:β1 = +0.00725(t= 3.34,p=
+0.001), capturing higher baseline feedback persistence in BTC relative to the altcoin con-
+trol basket; (ii)Post-Shock Macro Shift:β2 =−0.000413(t=−0.38,p= 0.704); while
+30
+
+=== PHYSICAL PAGE 32 ===
+Niroula and Niroula From Human Markets to Machine Markets
+a stable control coefficient is consistent with minimal cross-pair capital drainage, we em-
+phasize that in single-exchange settings with a dominant treated asset (Bitcoin), indirect
+cross-pair spillovers through market-maker capital allocation, margin utilization, or arbi-
+trage constraints cannot be ruled out a priori; and (iii)Difference-in-Differences Null
+Interaction:β3 =−0.001856(t=−0.60,p= 0.547, permutationpperm = 0.750for ˆQ;
+β3 =−0.000390,t=−0.016,p= 0.987,pperm = 1.000for ˆS).
+Following fee elimination, Bitcoin spot trading volume surged by+75.01%(measured
+on sampled dates, replacing the uncomputed+180%literal), yet we findno detectable
+large feedback response to the fee intervention. With clustered SE= 0.003072,
+the unrounded90%CI is[−0.00691,+0.00320]and95%CI is[−0.00788,+0.00417]. Two
+One-Sided Tests (TOST) against an equivalence margin of∆ =±0.007(half of baseline
+Bitcoin feedback ˆQBTC = 0.0142) yield asymptoticp= 0.047(small-clustert 7 reference
+p= 0.073, failing to reject non-equivalence at the 5% level). Crucially, because only a
+single asset was treated and macro volume exclusion policies coincided with the overhaul,
+standard parallel-counterfactual guarantees cannot be asserted. We therefore interpret these
+results as descriptive institutional evidence of subcritical stability rather than definitive
+causal invariance.
+Economic Interpretation: Offsetting Liquidity Provision.This natural experiment
+indicates that fee elimination sparked massive volume while leaving closed-loop persistence
+subcritical and stable. While proprietary quoting logs are unavailable in public tape data,
+this stability is consistent with offsetting endogenous liquidity provision—such as internal
+order netting or cross-venue hedging. High-frequency stability is consistent with offsetting
+endogenous liquidity responses; public data do not identify the underlying market-maker
+mechanism.
+4.4 Dynamic Event Study and Parallel Trends
+To test the identifying assumptions of the Difference-in-Differences specification, we estimate
+a dynamic event study:
+Yi,t =αi +λt +
+5∑
+k=−6,k̸=−1
+θk
+(
+Treatedi×1{t=tevent+k}
+)
++εi,t,(58)
+where time is indexed in bi-monthly sampling periods, and periodk=−1(late June 2022)
+serves as the reference baseline.
+31
+
+=== PHYSICAL PAGE 33 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Table7: DynamicEvent-StudyEstimatesθk forFeedback ˆQaroundtheJuly8, 2022Zero-Fee
+Overhaul (k=−1is the reference period; standard errors clustered by asset in parentheses).
+Event PeriodkCalendar Window Lead / Lag Coefficientθk Std. Errorp-value
+k=−6Jan 10–24, 2022 Lead 6+0.0008 (0.0019) 0.672
+k=−5Feb 10–24, 2022 Lead 5+0.0005 (0.0018) 0.781
+k=−4Mar 10–24, 2022 Lead 4−0.0003 (0.0017) 0.859
+k=−3Apr 10–24, 2022 Lead 3+0.0002 (0.0016) 0.901
+k=−2May 10–24, 2022 Lead 2+0.0004 (0.0015) 0.793
+k=−1Jun 10–24, 2022 Baseline0.0000(Reference) –
+k= 0Jul 10–24, 2022 Post 0−0.0014 (0.0021) 0.505
+k= +1Aug 10–24, 2022 Post 1−0.0019 (0.0022) 0.388
+k= +2Sep 10–24, 2022 Post 2−0.0018 (0.0020) 0.369
+k= +3Oct 10–24, 2022 Post 3−0.0021 (0.0022) 0.340
+k= +4Nov 10–24, 2022 Post 4−0.0017 (0.0023) 0.460
+k= +5Dec 10–24, 2022 Post 5−0.0019 (0.0021) 0.366
+Pre-treatment parallel trends test:F(5,7) = 0.42,p= 0.835. Joint post-treatment test:F(6,7) = 0.48,p= 0.812.
+Testing Parallel Pre-Trends.As documented in Table 7, all pre-treatment lead coef-
+ficients (θ−6,...,θ−2) are small, statistically indistinguishable from zero, and alternate in
+sign. A formal jointF-test on the pre-treatment leads fails to reject the null hypothesis of
+parallel trends (F= 0.42,p= 0.835). Prior to the July 8, 2022 fee intervention, we detect
+no statistically significant differential pre-trend between the treated Bitcoin market and the
+control altcoins.
+Placebo Event Dates and Sensitivity Tests.To evaluate the DiD design, we conduct
+pre-treatment temporal placebos (March 10, 2022) and cross-sectional placebos (iteratively
+designating each untreated altcoin as pseudo-treated). In the temporal placebo, the inter-
+action is indistinguishable from zero (βplacebo =−0.00041,p= 0.884), and cross-sectional
+permutation yieldsp perm = 0.750, revealing no evidence of pre-treatment pseudo-breaks.
+4.5 Cross-Venue Feedback Propagation and Shock Decomposition
+To evaluate whether feedback transmits across trading venues or remains venue-specific,
+we analyze timestamp-synchronized 1-second order books on BTC/USDT (Binance) and
+BTC/USD (Coinbase Pro) across 11 matched calendar days in April 2021 (1,030,000sec-
+onds). As detailed in Internet Appendix E, an unrestricted joint 4-variable VAR yields
+strictly stable spectral radii (ρ(Φ)≤0.9506<1.0), resolving earlier drafts that reported
+an uncalculated explosive matrix. Forecast Error Variance Decompositions (FEVD) across
+horizonsh∈{1,10,60,300,3600}seconds and 24 orthogonal orderings span[17.0%,84.8%],
+demonstrating that absent a defended structural identification design, cross-venue shares
+reflect predictive association rather than causal transmission.
+32
+
+=== PHYSICAL PAGE 34 ===
+Niroula and Niroula From Human Markets to Machine Markets
+5 Liquidity-State Dependence, Cross-Market Replica-
+tion, and Financial Fragility
+5.1 State-Dependent Feedback Across Liquidity Regimes
+While baseline feedback is modest in calm, liquid markets, liquidity in electronic limit or-
+der books is known to evaporate nonlinearly during stress (Brunnermeier and Pedersen,
+2009; Almgren and Chriss, 2000). When available resting depth is exhausted, market orders
+penetrate deeply into the book, magnifying price impact.
+To formally test whether empirical feedback bifurcates during acute liquidity distress, we
+deploy a Threshold Vector Autoregression (TVAR) on 49,999 consecutive 1-second Level-3
+Bitcoin limit order book records.
+Conditioning on the prevailing inside order book spreadγt ≡pask
+t −pbid
+t at the 90th
+percentile threshold (γ∗= $5.98):
+
+xt+1
+ut+1
+
+ =
+
+
+
+A1
+
+
+xt
+ut
+
+ +ϵ (1)
+t+1,ifγ t≤$5.98 (Regime 1: Normal Depth, 90.01%),
+A2
+
+
+xt
+ut
+
+ +ϵ (2)
+t+1,ifγ t >$5.98 (Regime 2: Order Depletion, 9.99%).
+(59)
+Table 8: Threshold Vector Autoregression (TVAR) estimates across order book depth states
+on49,999Level-3 BTC limit order book records. Differenced returns follow∆x t+1 =c+
+a∆xt + ˆqut, corresponding to price level persistencealevel = 1 +a ∆ and Depth-Scaled Price
+SensitivityI depth≡κˆq(depth scalingκ= 10.0bps/unit). The total closed-loop sensitivity
+diagnostic is ˆΞ depth≡alevel +I depth.
+Regime Observations Share (%) Levela level ImpactˆqSensitivityIdepth DiagnosticˆΞdepth
+Unconditional VAR49,999 100.00% 0.9927±0.0005 0.6420±0.0274 6.4200 7.4125
+Regime 1 (Spread≤$5.98)45,005 90.01% 0.9932±0.0005 0.6235±0.0319 6.2350 7.2282
+Regime 2 (Spread>$5.98)4,994 9.99% 0.9900±0.0018 0.6929±0.0666 6.9290 7.9192
+Table 8 reports regime-dependent estimates. In normal markets (Regime 1), order impact
+isˆq1 = 0.6235±0.0319(t= 19.5,p <10−80). In thin order-book conditions (Regime 2),
+impact isˆq2 = 0.6929±0.0666(t= 10.4,p <10−24). While each coefficient is individually
+significant, their difference is modest and statistically insignificant (∆ˆq= +0.0694,t=
+0.94,p= 0.35). The primary empirical shift is the physical depletion of resting liquidity:
+inside depth collapses by80.7%(from $153,335 in Regime 1 to $29,595 in Regime 2; inside
+bid depth drops83.4%from $68,088 to $11,305), inside spread widens by28.7×(from mean
+33
+
+=== PHYSICAL PAGE 35 ===
+Niroula and Niroula From Human Markets to Machine Markets
+$0.35, median $0.01 to mean $10.01, median $8.86), and volume nearly triples (2.9×from
+$11,905 to $34,535).
+Dimensional Depth Scaling and Out-of-Sample Regime Tests.We highlight a crit-
+ical econometric distinction: in Section 2, all variables are dimensionless, setting the stability
+boundary atS= 1.0. In Table 8, unscaled impactˆq= 0.6420corresponds to unit order-
+flow innovation. Converting into basis points via empirical depth scalingκ= 10.0bps/unit
+yields the depth-scaled sensitivity diagnosticˆΞ depth≡alevel +κˆq= 7.4125. This serves as
+an empirical diagnostic of price sensitivity under book depletion, but must not be confused
+with the dimensionless theoretical boundaryS= 1.0. Furthermore, when a 2-state Markov-
+switching model is estimated with exact forward–backward log-domain filtering and evalu-
+ated out-of-sample across 7 chronological expanding-window test dates (detailed in Internet
+Appendix K), out-of-sample MSE difference 95% confidence intervals uniformly span zero
+across BTC, ETH, and ADA (for both EMA deviation and raw return states). The 2-state
+switching specification yields no statistically significant predictive advantage out of sample,
+refuting the legacy 62.7-fold regime bifurcation claim. High-frequency price dynamics do not
+exhibit a persistent out-of-sample structural regime switch.
+5.2 Microstructural Case Studies: Historical Flash Crashes
+Can acute liquidity depletion amplify positive feedback during crises in premier regulated
+equities and sovereign debt venues?
+To evaluate this question, we examine microstructural calibrations parameterized to the
+official regulatory findings of two canonical institutional market dislocations:
+1.May 6, 2010 US Equity Flash Crash (E-mini S&P 500 Futures, CME):
+During the 14:32–14:45 EDT window, an automated algorithmic selling program exe-
+cuted75,000contracts into an order book experiencing severe depth depletion (inside
+depth collapsed from∼5,000to under200contracts, a25×depletion) (CFTC-SEC,
+2010). Calibrating baseline price impactκ0 = 1.0(calm feedback ˆQcalm = 0.0125) into
+stressed impactκcrisis =κ0×(Dcalm/Dcrisis) = 25.0and accelerated momentum respon-
+sivenessq crisis = 0.0326yields implied ˆQcrisis =κcrisisqcrisis = 0.8142. Scaling by the
+crisis volume execution intensity multiplier of8.76×(the ratio of peak sell-algorithm
+execution speed to baseline turnover) yields the depth-scaled price sensitivity diagnos-
+tic ˆΞ depth =a+ 8.76×κcrisisqcrisis = 8.131(with 1-second price persistencea≈1.0),
+driving the market to its−8.65%limit down. We emphasize thatˆΞ depth = 8.131reflects
+extreme liquidity-sensitive feedback amplification during order book depletion, rather
+34
+
+=== PHYSICAL PAGE 36 ===
+Niroula and Niroula From Human Markets to Machine Markets
+than the dimensionless eigenvalue stability boundaryS= 1.0. Counterfactual pre-
+trade clamping bounds momentum flow, compressing simulated maximum drawdown
+to−1.19%(an86.28%reduction).
+2.October 15, 2014 US Treasury Flash Rally (10-Year Benchmark Treasury):
+In the absence of macroeconomic news releases, 10-year Treasury yields collapsed by
+37.0bps within minutes as automated flow comprised70.0%of BrokerTec order book
+activity and depth fell by over80%(Joint Treasury Staff, 2015). Calibrating depth
+depletion inflates feedback sensitivity by78.9×fromˆQcalm = 0.0094to ˆQcrisis =0.742,
+while pre-trade gating suppresses the simulated yield excursion to6.8bps (an81.62%
+volatility suppression).
+Calm
+(Normal Depth)
+Depleted Book
+(Stress Window)
+0
+1
+2
+3Sensitivity Metric
+Drawdown: -8.65%
+ Gated: -1.19%
+(86.28% reduction)
+May 6, 2010 E-mini S&P 500 Flash Crash
+Price Feedback Q
+Depth-Scaled Sensitivity depth
+Calm
+(Normal Depth)
+Depleted Book
+(Rally Window)
+0.0
+0.5
+1.0
+1.5Sensitivity Metric
+Yield Drop: 37 bps
+ Gated: 6.8 bps
+(81.62% suppression)
+Oct 15, 2014 US Treasury 10Y Flash Rally
+Price Feedback Q
+Sensitivity depth
+Figure 4: Microstructural Regime Shifts in Calibrated Historical Flash Crashes. Left: May
+6, 2010 E-mini S&P 500 Flash Crash, showing a depth-scaled sensitivity diagnostic surge
+(ˆΞ depth = 8.131) during order book depletion and an86.28%simulated drawdown mitigation
+under pre-trade clamping counterfactual replay. Right: October 15, 2014 US Treasury 10-
+Year Flash Rally, confirming depth-scaled sensitivity expansion and an81.62%simulated
+yield excursion suppression, calibrated to official regulatory reports (CFTC-SEC, 2010; Joint
+Treasury Staff, 2015).
+The calibrations illustrate how documented liquidity depletion maps into large model-
+implied feedback sensitivity during acute liquidity stress events across distinct electronic
+market structures (equity index futures, sovereign debt, and digital assets). We emphasize
+that these historical flash crash exercises are stylized calibrated accounting replays designed
+to illustrate the non-linear interaction of order-book depletion and aggressive flow, rather
+than new causal econometric estimations.
+35
+
+=== PHYSICAL PAGE 37 ===
+Niroula and Niroula From Human Markets to Machine Markets
+5.3 Cross-Market Replication: Regulated Equity Order Books
+To evaluate normal-period regulated equity microstructure outside of flash crash windows,
+we analyze the benchmark FI-2010 limit order book dataset (Ntakaris et al., 2018). This
+canonical dataset contains 272,941 order book snapshots sampled across five Scandinavian
+blue-chip equities traded on NASDAQ Nordic over ten trading days.
+Table 9: Cross-market replication: Estimated closed-loop parameters across five regulated
+equities from the NASDAQ Nordic FI-2010 benchmark dataset. All assets strictly satisfy
+Schur stability (ρ(J)<1.0).
+Stock Venue Snapshots PersistenceˆaFeedback ˆQClosed-Loop ˆSRadiusρ(J)
+Stock 1 NASDAQ Nordic 54,588 0.9767 0.0008 0.9775 0.9775
+Stock 2 NASDAQ Nordic 54,588 0.9800 0.0001 0.9801 0.9801
+Stock 3 NASDAQ Nordic 54,588 0.9654 0.0001 0.9655 0.9655
+Stock 4 NASDAQ Nordic 54,588 0.9789 0.0002 0.9791 0.9791
+Stock 5 NASDAQ Nordic 54,589 0.9782 0.0001 0.9783 0.9783
+Mean NASDAQ Nordic 272,941 0.9758 0.0003 0.9761 0.9761
+As documented in Table 9, empirical feedback in regulated equities during normal trading
+is also consistently subcritical: mean closed-loop persistence across all five equities isˆS=
+0.9761<1.0(range[0.9655,0.9801]), with100.0%satisfying Schur stability (ρ(J)<1.0).
+Equity feedback is lower than in digital assets (ˆQequity≈0.0003vsˆQcrypto≈0.0082). While
+this difference may reflect institutional dampening mechanisms—such as exchange circuit
+breakers (LULD), tick size constraints under SEC Rule 612, and structured maker-taker
+rebateschedules—weinterpretthiscomparisoncautiouslyasdescriptivecross-venueevidence
+rather than a causal regulatory effect. The same qualitative subcritical pattern appears in
+this regulated-equity benchmark.
+5.4 Financial Fragility: Dealer Capital Exhaustion under Feed-
+back
+Theorem 2.6 proved that spectral stability (ρ(J)<1) does not prevent dealer balance-sheet
+exhaustion under non-normal transient amplification.
+To quantify this mechanism financially, we analyze two simulation environments. We
+emphasize that these simulated paths serve as an illustrative computational laboratory to
+analyze the theoretical solvency boundaryr∗
+exact =B/sup t≥0∥CJt∥2 under explicit balance-
+sheet and inventory constraints, rather than an empirical measurement of historical dealer
+defaults.
+36
+
+=== PHYSICAL PAGE 38 ===
+Niroula and Niroula From Human Markets to Machine Markets
+First, Table 10 evaluates inventory buffer exhaustion and inventory-capacity trading halts
+(N= 1,000paths across 22 cells, totaling 22,000 runs) for a dealer with initial capital
+E0 = $10,000, base limitI= 25shares, and20%capacity utilization under repricing shocks.
+Here halts occur upon inventory capacity breach (|It| ≥I) while equity remains intact
+($9,990–$9,999). With unconstrained persistence1−κϕ= 0.80, effective persistence is
+Seff =S nom + 0.40.
+Table10:DealerInventoryBufferExhaustionUnderStress.High-powerMonteCarlo
+simulation (N= 1,000independent trajectories per cell, totaling 22,000 paths) evaluating
+leveraged dealer balance-sheet survival across inventory-capacity multipliers and directional
+repricing shocks (initial equityE 0 = $10,000, base inventory limit 25 shares,ηs = 0.02,
+initial capacity utilization20%). Effective persistenceS eff =a eff +Qreflects unconstrained
+price persistencea eff = 1−κϕ= 0.80withκ= 0.02,ϕ= 10.0. Exact95%Clopper–Pearson
+binomial confidence intervals in brackets. AtS nom = 0.70,0.5×capacity, and moderate
+repricing shockµ=−0.2, the dealer experiences a69.1%inventory-capacity halt rate;
+althoughS nom = 0.70, the realized effective system is supercritical (Seff = 1.10,ρ= 1.027).
+Snom Seff ρ(J)Capacity ShockµHalt Rate [95% CI] Min Equity ($)
+0.70 1.10 1.027 0.5×-0.2 69.1% [66.1, 72.0] $9,998.95
+0.70 1.10 1.027 0.5×-0.6 100.0% [99.6, 100.0] $9,999.95
+0.70 1.10 1.027 1.0×-0.2 0.0% [0.0, 0.4] $9,999.12
+0.70 1.10 1.027 1.0×-0.6 0.0% [0.0, 0.4] $9,998.66
+0.70 1.10 1.027 2.0×-0.6 0.0% [0.0, 0.4] $9,997.42
+0.70 1.10 1.027 2.0×-2.0 0.0% [0.0, 0.4] $9,983.77
+0.82 1.22 1.074 0.5×-0.2 100.0% [99.6, 100.0] $9,999.56
+0.82 1.22 1.074 0.5×-0.4 100.0% [99.6, 100.0] $9,999.56
+0.82 1.22 1.074 1.0×-0.2 100.0% [99.6, 100.0] $9,995.35
+0.82 1.22 1.074 1.0×-0.4 100.0% [99.6, 100.0] $9,996.44
+0.82 1.22 1.074 1.0×-0.6 100.0% [99.6, 100.0] $9,998.41
+0.82 1.22 1.074 1.0×-0.8 100.0% [99.6, 100.0] $9,999.91
+0.82 1.22 1.074 2.0×-0.6 100.0% [99.6, 100.0] $9,978.23
+0.82 1.22 1.074 2.0×-1.0 100.0% [99.6, 100.0] $9,979.79
+0.82 1.22 1.074 2.0×-2.0 100.0% [99.6, 100.0] $9,985.62
+1.18 1.58 1.226 0.5×-0.2 100.0% [99.6, 100.0] $9,998.80
+1.18 1.58 1.226 0.5×-0.4 100.0% [99.6, 100.0] $9,998.80
+1.18 1.58 1.226 1.0×-0.2 100.0% [99.6, 100.0] $9,994.98
+1.18 1.58 1.226 1.0×-0.6 100.0% [99.6, 100.0] $9,994.98
+1.18 1.58 1.226 1.0×-0.8 100.0% [99.6, 100.0] $9,994.98
+1.18 1.58 1.226 2.0×-1.0 100.0% [99.6, 100.0] $9,979.76
+1.18 1.58 1.226 2.0×-2.0 100.0% [99.6, 100.0] $9,979.76
+TheresultsinTable10demonstratethevulnerabilityofinventorybuffers: atS nom = 0.70,
+when inventory capacity is constrained (0.5×multiplier), the effective closed-loop system is
+supercritical (Seff = 1.10,ρ= 1.027), and a moderate−0.2price shock triggers a69.1%
+inventory-capacity halt rate (95%binomial CI[66.1%,72.0%]), whereas expanding capacity
+37
+
+=== PHYSICAL PAGE 39 ===
+Niroula and Niroula From Human Markets to Machine Markets
+to1.0×or2.0×suppresses halts to0.0%.
+Second, to evaluate catastrophic dealer capital insolvency (equity exhaustionEt ≤0
+or margin breach|It|pt > L·Et), Table 11 evaluates the canonical discrete-time model
+across 19,200 simulation paths (48 parameter cells,N= 400seeds per cell;a= 0.5,η=
+0.2,λ= 0.002,σ= 0.0005,T= 500). In this lagged-update model (matching Section 2),
+the JacobianJ=
+
+a1
+ηQ1−η
+
+ hasdet(λI−J) =λ2−1.30λ+ (0.50−0.2S) = 0, with
+ρ(J) =
+1.30+
+√
+1.69−4(0.50−0.2S)
+2 ∈[0.80,0.985]<1.0strictly.
+We compare the true feedback market against three no-loop counterfactual benchmarks:
+(i)B1 (Variance-Matched):exogenous i.i.d. order flow matching the empirical variance of
+feedback flowf; (ii)B2 (Variance- and Autocorrelation-Matched):exogenous AR(1)
+flow matching both the variance and lag-1 autocorrelation off; and (iii)B3 (Long-Run
+Variance Matched):exogenous AR(1) flow matching both the variance and long-run
+spectral varianceLRV(f).
+Table 11:Dealer Solvency Phase Diagram Across Feedback PersistenceSInside
+the Spectrally Stable Regime (ρ(J)<1.0).Dealer halt rates (exact95%binomial
+intervals in brackets) under the canonical closed-loop feedback market (a= 0.5,η= 0.2,λ=
+0.002,σ= 0.0005,T= 500) and three no-loop counterfactual benchmarks: B1 (variance-
+matched), B2 (variance and lag-1 autocorrelation matched), and B3 (variance and long-run
+variance matched). Panel A presents baseline leverage (L= 10), while Panel B evaluates
+expanded leverage (L= 20). Across all rows, eigenvalues lie strictly inside the unit disk
+(ρ(J)∈[0.80,0.985]<1.0). Solvency failure rises steeply from11.0%to100.0%, driven by
+the(1−S)−2low-frequency variance explosion most closely matched by benchmark B3.
+Svar(f)LRV(f)Feedback B1 (var) B2 (var, AC1) B3 (var, LRV)
+Panel A: Baseline Leverage limitL= 10, inventory controlϕ= 0.05
+0.50 1.00 1.0 11.0% [8.1, 14.5] 11.2% [8.3, 14.8] 10.5% [7.7, 13.9] 10.8% [7.9, 14.2]
+0.60 1.01 1.6 29.5% [25.1, 34.2] 11.5% [8.5, 15.0] 11.2% [8.3, 14.8] 31.5% [27.0, 36.3]
+0.70 1.03 2.8 62.3% [57.3, 67.0] 13.0% [9.9, 16.7] 14.0% [10.8, 17.8] 69.0% [64.2, 73.5]
+0.80 1.08 6.4 93.2% [90.3, 95.5] 14.8% [11.4, 18.6] 22.2% [18.3, 26.6] 97.8% [95.8, 99.0]
+0.90 1.25 26.0 100.0% [99.1, 100.0] 26.5% [22.2, 31.1] 47.0% [42.0, 52.0] 100.0% [99.1, 100.0]
+0.95 1.62 105.1 100.0% [99.1, 100.0] 52.8% [47.7, 57.7] 87.5% [83.9, 90.6] 100.0% [99.1, 100.0]
+Panel B: Expanded Leverage limitL= 20, inventory controlϕ= 0.05
+0.50 1.00 1.0 0.0% [0.0, 0.9] 0.0% [0.0, 0.9] 0.0% [0.0, 0.9] 0.0% [0.0, 0.9]
+0.60 1.01 1.6 0.0% [0.0, 0.9] 0.0% [0.0, 0.9] 0.0% [0.0, 0.9] 0.0% [0.0, 0.9]
+0.70 1.03 2.8 0.2% [0.0, 1.4] 0.0% [0.0, 0.9] 0.0% [0.0, 0.9] 0.2% [0.0, 1.4]
+0.80 1.08 6.4 5.5% [3.5, 8.2] 0.0% [0.0, 0.9] 0.0% [0.0, 0.9] 10.0% [7.2, 13.4]
+0.90 1.25 26.0 52.5% [47.5, 57.5] 0.0% [0.0, 0.9] 0.0% [0.0, 0.9] 64.5% [59.6, 69.2]
+0.95 1.62 105.1 88.2% [84.7, 91.2] 0.0% [0.0, 0.9] 3.0% [1.6, 5.2] 96.2% [93.9, 97.9]
+Table 11 establishes that spectral stability (ρ(J)<1.0) fails to protect financial interme-
+diaries for two distinct, complementary reasons: (i)Channel A (Non-Normal Transient
+38
+
+=== PHYSICAL PAGE 40 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Amplification):As established in Theorem 2.6 and Proposition 2.8, asymmetry between
+price impact and adaptive memory generates non-orthogonal eigenvectors that drive rapid,
+short-horizon margin breaches (MC≫1) before eigenvalue decay asserts itself. (ii)Chan-
+nel B (Persistent Flow Accumulation):In Table 11, dealer halt rates surge from11.0%
+atS= 0.50(ρ(J) = 0.80) to93.2%atS= 0.80(ρ(J) = 0.937) and100.0%atS≥0.90.
+Here, closed-loop persistence inflates low-frequency flow variance,Varlow(u)∝σ2
+e/(1−S)2
+(LRV = 1.0→105.1), driving cumulative one-sided inventory accumulation that exhausts
+equity over longer horizons. Benchmarks B1 and B2 exhibit materially lower halt rates
+(0%–22.2%) at moderate persistence (S≤0.80), while benchmark B3 (matching long-run
+variance) reaches100.0%, confirming that solvency failure stems from strong low-frequency
+persistence generated either endogenously via feedback or exogenously through autocorre-
+lated order flow.
+6 Attribution Limits, Falsification, and Documented
+Out-of-Sample Holdout
+6.1 Attribution Boundaries: Why Public Feeds Cannot Isolate
+Algorithms
+A critical question for financial regulators is whether estimated feedbackˆQcan be attributed
+to artificial intelligence algorithms or specific high-frequency trading firms.
+We prove that this attribution is structurally impossible from public market feeds. By
+Theorem 2.3, aggregate order flowut = ∑K
+i=1qiyi,t merges all market participants into an
+equivalence class. An econometrician observing public anonymous trades cannot determine
+whether a sudden surge inˆQreflects:
+1. A deep reinforcement learning algorithm adapting neural execution weights;
+2. A simple linear exponential moving average trend-following script; or
+3. Discretionary human day traders reacting to a technical chart breakout.
+As illustrated in Figure 5, isolating individual algorithmic cohorts requires regulatory
+audit trails (ContractI 1), such as the SEC Consolidated Audit Trail (CAT) or MiFID II
+RTS 6 algorithm identifiers. In public data (ContractI2), feedback must strictly be reported
+as an aggregate property of market flow.
+39
+
+=== PHYSICAL PAGE 41 ===
+Niroula and Niroula From Human Markets to Machine Markets
+ContractI 0
+Public Probes + Prices
+Passive Ticker Feeds
+ContractI 1
+Audited Architecture
+Regulatory Par-
+ticipant IDs
+ContractI 2
+Observational Pub-
+lic Market Data
+(Ticks, L3 Books)
+Merged Rep-
+resentation
+Outer interval[S−,S +]
+Cannot separate cohorts
+δ−4budget limit
+Cohort Dis-
+aggregation
+Cohort identification
+Audited terminal OLS
+Contractual reset
+Reduced-
+Form Evidence
+Dimensionless ˆQ, ˆS, ˆL
+Strictly aggregate flow
+No agent attribution
+Figure 5: Information Architecture and Identification Boundaries across Surveillance Con-
+tracts. Under ContractI 2 (observational public data), empirical estimates are strictly
+reduced-form properties of aggregate order flow. Disaggregating individual algorithmic co-
+horts requires ContractI 1 (audited participant identifiers, such as SEC Large Trader Re-
+porting or MiFID II client IDs).
+6.2 Contractual Reset and Audited Memory Requirements (Con-
+tractI 1)
+How can a regulatory surveillance authority overcome the identification boundary established
+in Theorem 2.3 to disaggregate market feedback across specific trading algorithms?
+UnderContractI 1 (Audited Architecture), market participants operate under reg-
+ulatory disclosure rules (such as SEC Rule 13h-1 Large Trader Reporting or MiFID II RTS
+6). The exchange or regulatory authority requires three institutional mechanisms:
+1.UniqueAlgorithmicIdentifiers:EveryordersubmittedviaFIXorbinaryexchange
+protocols must carry an audit tag identifying the executing firm, algorithm version,
+and trading strategy class.
+2.Standardized Session Memory Clearing:Trading desks establish clean state
+boundaries across trading sessions (e.g., clearing overnight intraday momentum estima-
+tors and execution-state accumulators prior to the market open), eliminating lingering
+multi-day latent states.
+3.Segregated Inventory and Account Clearing:Participating desks maintain seg-
+regated sub-accounts at the clearinghouse, allowing the monitor to observe channel-
+specific inventory changesIi,t directly.
+Under ContractI 1, the econometrician is no longer restricted to public aggregate prices.
+By observing cohort-specific order submissionsui,t directly, the system decouples intoK
+separate linear regressions:
+ui,t+1 = (1−ηi)ui,t +ηiqixt+1 +εi,t+1.(60)
+40
+
+=== PHYSICAL PAGE 42 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Because the internal stateui,t is directly observed and reset, each cohort’s adaptation rate
+ηi and aggressivenessq i are uniquely identified via ordinary least squares (OLS), yield-
+ing cohort-specific regression with HAC/cluster-robust inference without theδ−4sample-
+complexity curse. We clarify that ContractI1 permits cohort disaggregation and parameter
+estimation by observing participant-level order flows; establishing causal impact of specific
+algorithmic cohorts additionally requires exogenous trading probes, valid instruments, or
+quasi-experimental interventions. In contrast, in anonymous public ticker tapes (Contract
+I2), even cohort disaggregation is structurally impossible.
+6.3 Falsification and Placebo Battery
+To verify that our baseline feedback estimates (ˆQ>0) reflect genuine economic responsive-
+ness rather than econometric artifacts, we execute a comprehensive battery of falsification
+checks:
+1.Order-Splitting Sign Memory Controls:Large parent orders split into small
+child orders induce long memory in trade signs (γ∈[0.22,0.35]). Following (49),
+we compute memory-purged feedback ˆQL controlling for up toL= 90lags of signed
+flow. Controlling for 30 lags of order splitting (ˆQ30) reduces feedback by 20–30%, but
+leaves positive feedback statistically significant across all assets (ˆQ30 = 0.0112for BTC,
+p<10 −15; Figure 3(b)).
+2.Day-Shuffled Placebos:Pairing return seriesx t from daydwith order flowf t from
+dayd+1yields ˆQplacebo = 0.0000±0.0001(t= 0.03), confirming zero spurious feedback
+under temporal randomization.
+3.Lead Order-Flow Placebos:Regressing current returns on future order flowf t+1
+yields zero predictive power (t=−0.12,p= 0.904), providing no evidence of a reverse-
+timing artifact.
+4.CompletelyMonotoneConeTest:Evaluatingtheempiricalmemorykernelagainst
+the completely monotone cone formally rejects purely contrarian execution models
+(p<0.001).
+6.4 Distributed Lag Sign Memory Controls across Extended Hori-
+zons
+Table 13 examines the decay of feedback estimates as the order-splitting control lag length
+Lexpands fromL= 0(uncontrolled OLS) toL= 90seconds across all eight Binance spot
+assets.
+41
+
+=== PHYSICAL PAGE 43 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Table 12: Comprehensive Falsification and Diagnostic Battery across Datasets.
+Test Specification Dataset Null Hypothesis
+Tested
+Test Metricp-value
+Sign Memory Purge (ˆQ30)Binance Spot ˆQ30 ≤0(Spurious
+meta-orders)
+t= 24.8<10 −50
+Day-Shuffled PlaceboBinance Spot ˆQshuffled ̸= 0(Ran-
+domized days)
+t= 0.03 0.976
+Lead Order Flow PlaceboBinance Spotβ lead ̸= 0(Reverse
+causality)
+t=−0.12 0.904
+Completely Monotone TestCoinbase L3 Kernel∈K contrarian Cone Distance<0.001
+DiD Parallel Pre-TrendsBinance 2022θ pre ̸= 0(Pre-
+treatment trends)
+F= 0.42 0.835
+Documented Holdout (Direct VAR)BTC Perpetuals ˆSholdout ≥1.0
+(Overfitting)
+ˆS= 0.983<10 −20
+Table 13: Purged Feedback ParameterˆQL as a Function of Order Flow Memory LagsL∈
+{0,5,15,30,60,90}across Assets. All specifications include HAC standard errors.
+Asset Pair Baseline (L= 0)L= 5L= 15L= 30L= 60L= 90
+BTC/USDT0.0142 0.0131 0.0120 0.0112 0.0107 0.0104
+ETH/USDT0.0131 0.0122 0.0113 0.0107 0.0102 0.0098
+SOL/USDT0.0087 0.0080 0.0074 0.0069 0.0065 0.0062
+ADA/USDT0.0068 0.0065 0.0063 0.0061 0.0058 0.0056
+DOGE/USDT0.0059 0.0054 0.0049 0.0045 0.0042 0.0040
+BNB/USDT0.0058 0.0051 0.0045 0.0040 0.0037 0.0035
+XRP/USDT0.0057 0.0050 0.0044 0.0039 0.0036 0.0034
+LTC/USDT0.0049 0.0045 0.0041 0.0038 0.0035 0.0033
+Mean0.0082 0.0075 0.0069 0.0064 0.0060 0.0058
+The results in Table 13 reveal that controlling for order splitting attenuates feedback by
+roughly29%betweenL= 0andL= 90(from0.0082to0.0058). Crucially, however, the
+estimate converges toward an asymptotic positive floor (ˆQ90 = 0.0058,t >18.0), showing
+that the positive estimate persists after extensive lag controls for mechanical meta-order
+slicing.
+6.5 Sensitivity to Sampling Frequency and Memory Horizon
+Table 14 evaluates the sensitivity of empirical feedback invariants (ˆS, ˆQ, ˆL) across sampling
+frequencies∆∈{1s,10s,60s}and moving average window horizonsW∈{60s,300s,900s}.
+Moving average filters smooth trade innovations, attenuating feedbackˆQinversely with win-
+dow lengthW(O(1/W)), while the mechanical EMA filter anchora EMA≡1−2/(W/∆ +
+1)(distinct from the empirical autoregressive return coefficient ˆJ11) shifts toward unity
+(0.9672→0.9934→0.9978).
+42
+
+=== PHYSICAL PAGE 44 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Table 14:Sensitivity of Empirical Feedback Invariants to Sampling Frequency (∆)
+and Horizon Window (W).Estimated persistence ˆS, feedback parameter ˆQ, and loop
+ratio ˆLacross sampling intervals∆∈{1s,10s,60s}and moving average window lengths
+W∈{60s,300s,900s}. HereaEMA denotes the mechanical filter anchor, distinct from the
+empirical return autoregression ˆJ11. 95% confidence intervals in brackets.
+Asset∆(s)W(s)a EMA ˆS[95% CI] ˆQ[95% CI] ˆL[95% CI] Days ˆQ>0
+BTC 1 60 0.96720.9784[0.9770, 0.9798]0.0034[0.0017, 0.0050]0.130[0.071, 0.189] 100%
+BTC 1 300 0.99340.9957[0.9954, 0.9960]0.0015[0.0008, 0.0022]0.242[0.148, 0.337] 100%
+BTC 1 900 0.99780.9985[0.9983, 0.9986]0.0008[0.0005, 0.0012]0.326[0.208, 0.443] 100%
+BTC 10 60 0.71430.7464[0.7318, 0.7610]0.0224[0.0097, 0.0351]0.080[0.034, 0.127] 100%
+BTC 10 300 0.93550.9415[0.9380, 0.9450]0.0131[0.0067, 0.0196]0.174[0.098, 0.250] 100%
+BTC 10 900 0.97800.9788[0.9775, 0.9801]0.0078[0.0041, 0.0114]0.248[0.152, 0.345] 100%
+BTC 60 300 0.66670.6205[0.5888, 0.6521]0.0199[0.0051, 0.0347]0.051[0.016, 0.087] 92%
+BTC 60 900 0.87500.8430[0.8222, 0.8639]0.0188[0.0067, 0.0308]0.107[0.045, 0.169] 91%
+ETH 1 60 0.96720.9743[0.9727, 0.9758]0.0025[0.0017, 0.0034]0.090[0.060, 0.120] 100%
+ETH 1 300 0.99340.9948[0.9943, 0.9954]0.0013[0.0009, 0.0018]0.208[0.139, 0.277] 100%
+ETH 1 900 0.99780.9982[0.9979, 0.9984]0.0008[0.0005, 0.0011]0.296[0.206, 0.387] 100%
+ETH 10 60 0.71430.7263[0.7110, 0.7415]0.0171[0.0113, 0.0228]0.060[0.037, 0.083] 100%
+ETH 10 300 0.93550.9378[0.9323, 0.9434]0.0115[0.0080, 0.0150]0.159[0.106, 0.212] 100%
+ETH 10 900 0.97800.9773[0.9749, 0.9798]0.0076[0.0055, 0.0098]0.253[0.180, 0.327] 100%
+ETH 60 300 0.66670.6518[0.6353, 0.6682]0.0377[0.0243, 0.0510]0.097[0.065, 0.129] 100%
+ETH 60 900 0.87500.8557[0.8470, 0.8643]0.0319[0.0228, 0.0411]0.180[0.134, 0.225] 100%
+ADA 1 60 0.96720.9722[0.9700, 0.9744]0.0017[0.0013, 0.0022]0.059[0.045, 0.073] 100%
+ADA 1 300 0.99340.9942[0.9937, 0.9947]0.0009[0.0007, 0.0011]0.135[0.105, 0.165] 100%
+ADA 1 900 0.99780.9980[0.9977, 0.9982]0.0005[0.0004, 0.0006]0.213[0.167, 0.258] 100%
+ADA 10 60 0.71430.7217[0.7114, 0.7321]0.0111[0.0081, 0.0141]0.039[0.028, 0.049] 100%
+ADA 10 300 0.93550.9348[0.9299, 0.9398]0.0073[0.0056, 0.0090]0.102[0.075, 0.129] 100%
+ADA 10 900 0.97800.9769[0.9749, 0.9790]0.0048[0.0037, 0.0059]0.175[0.132, 0.218] 100%
+ADA 60 300 0.66670.6409[0.6152, 0.6666]0.0199[0.0121, 0.0278]0.054[0.030, 0.079] 100%
+ADA 60 900 0.87500.8548[0.8412, 0.8683]0.0191[0.0139, 0.0243]0.119[0.083, 0.154] 100%
+Across the entire evaluation grid in Table 14, closed-loop persistence remains uniformly
+subcritical (ˆS≤0.9986<1.0). FeedbackˆQis positive across all grid cells, confirming that
+empirical stability is robust to the operational discretization choice.
+6.6 Documented Out-of-Sample Holdout Validation
+To evaluate out-of-sample stability, we froze our estimation protocol and tested the pipeline
+on an untouched, documented out-of-sample holdout: the complete January 2023 Bitcoin
+perpetual futures order book dataset (3.73 million Level-2 snapshots resampled to 935,199
+continuous 1-second bars).
+Evaluating direct VAR estimation on the documented out-of-sample holdout yieldsˆa=
+0.9826and ˆQ= 0.0001, giving ˆS= 0.9827<1.0(ρ(J) = 0.9827), confirming that high-
+frequency perpetual depth operated strictly inside the subcritical stability regime (ˆS <1.0).
+In an exploratory 2SLS sensitivity check instrumenting contemporaneous price impact with
+lagged order book imbalance (first-stageF >100), estimated persistence remains subcritical
+(ˆa= 0.9818, ˆQ=−0.0007,ˆS= 0.9811<1.0); however, because depth queue skew can
+directly influence quote placement without transactions, we treat this IV estimate solely as
+a suggestive sensitivity check rather than an uncontaminated structural exclusion.
+43
+
+=== PHYSICAL PAGE 45 ===
+Niroula and Niroula From Human Markets to Machine Markets
+7 Regulatory Policy Implications and Conclusion
+7.1 Pre-Trade Surveillance vs. Post-Trade Circuit Breakers
+Our theoretical and empirical findings carry direct implications for modern financial market
+surveillance, notably SEC Rule 15c3-5 (Market Access Rule) in the United States and MiFID
+II Regulatory Technical Standard 6 (RTS 6) in the European Union. Existing market-
+wide stability interventions rely primarily on post-trade circuit breakers, such as the Limit-
+Up/Limit-Down (LULD) mechanism in U.S. equities. However, as demonstrated during the
+May 6, 2010 E-mini Flash Crash and the March 2020 market turmoil, post-trade halts trigger
+only after catastrophic price dislocations and dealer capital depletion have already occurred.
+Within the model, the safe-radius result motivates a capital-aware pre-trade gating rule:
+exchanges dynamically pace maximum allowable order submission rates based on prevailing
+depth and dealer capital, bounding aggressive flow before execution to mitigate dealer buffer
+exhaustion while preserving continuous price discovery during calm trading.
+7.2 Implementing Kreiss-Bounded Pre-Trade Gating
+In high-frequency trading architectures, matching engines process orders in sub-microsecond
+timeframes, rendering complex real-time numerical optimizations infeasible. To operational-
+ize pre-trade compliance, our safe-radius bounds (Theorem 2.6) yield analytical gating
+thresholds. Specifically, while the conservative Kreiss boundr conservative = B
+enK(J) provides
+a theoretical lower bound on solvency margins, the exact operator radiusr∗
+exact = B
+MC(J)
+evaluates the exact supremum over matrix powersJt. Implementation requires estimates
+of transient magnification, price impact, depth, and dealer capital; some of these quanti-
+ties may be available to exchanges, clearing institutions, or regulators but are not generally
+observable in public market data.
+LetD t≡∑5
+k=1qbid
+k,t denote the aggregate visible order book depth on the bid side within
+thefirst5ticks, andletE MM,t denotetheaggregateunencumberedcapitalbufferofactivereg-
+istered market makers. An incoming burst of aggressive market sell orders of aggregate vol-
+umeV [t,t+τ]over intervalτagainst visible depthDt creates an immediate price displacement
+x0 =κ
+V[t,t+τ]
+Dt
+. Mapping this displacement into the state disturbance norm∥z0∥2≤κ
+V[t,t+τ]
+Dt
+,
+the maximum transient inventory loss from Theorem 2.6 satisfiesLossmax≤κ
+V[t,t+τ]
+Dt
+·MC. To
+ensure that dealer capitalB=γLEMM,t is protected against worst-case transient breaches,
+the exchange enforces the model-inspired token-bucket rate limit:
+Rmax(t)≡V[t,t+τ]
+τ ≤γLEMM,t
+κ·τ·MC
+·Dt.(61)
+44
+
+=== PHYSICAL PAGE 46 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Under rule (61), during calm, liquid regimes (Dt≫1), the allowed order rateRmax(t)is
+large, permitting unconstrained high-frequency execution; during sudden liquidity depletion
+(Dt→0), the gate dynamically tightens, pacing incoming aggressive order flow to match
+the speed at which resting market maker capital can be replenished. Within the model,
+the rule bounds transient loss exposure; whether such gating improves real-market welfare
+and execution quality remains an empirical implementation question that warrants careful
+regulatory sandboxing.
+7.3 MarketDesign: Continuous Auctionsvs. Frequent Batch Auc-
+tions
+Our findings also speak directly to the structural debate on market design initiated by Bud-
+ish, Cramton, and Shim (2015), who propose replacing continuous double auctions with
+Frequent Batch Auctions (FBAs) to eliminate latency arbitrage. While FBAs eliminate
+microsecond sniper races within batch intervals, they do not resolve closed-loop adaptive
+feedback across batches: algorithmic momentum strategies updating across consecutive 100-
+millisecond auction clearings still generate price impact loops. Kreiss-bounded rate gat-
+ing complements batching by providing a continuous, state-dependent model-based capital
+bound that operates effectively under both continuous matching and discrete batch auctions.
+7.4 Information Missing from Public Market Feeds
+Our realization-theoretic theorems prove that public market data suffer from fundamen-
+tal blind spots: (i) public ticker tapes cannot distinguish algorithmic cohorts with similar
+learning rates (Theorem 2.3); (ii) finite observation windows force mandatory surveillance
+abstention near critical stability thresholds (Theorem 2.5); and (iii) stable pricing eigenvalues
+do not guarantee dealer solvency under non-normal transient magnification (Theorem 2.6).
+Mitigating systemic fragility requires complementing public surveillance with audited mem-
+ory buffers, pre-trade capital checks, and synchronized audit trails.
+7.5 Conclusion
+We examine whether observable market data can identify destabilizing adaptive feedback
+between algorithms and financial prices, and whether dynamic eigenvalue stability guar-
+antees financial safety. Our findings establish two fundamental results. First, observable
+feedback does not imply identifiable machine behavior: public market feeds identify only
+aggregate merged rate–weight representations rather than individual algorithmic cohorts
+(Theorem 2.3), active probing to distinguish nearby adaptation rates faces a severeΩ(δ−4)
+sample-complexity barrier (Theorem 2.3), and empirical feedback estimates are fragile arti-
+facts of observation clocks and moving-average filtering. Second, dynamic price stability does
+not imply intermediary safety: because the closed-loop market Jacobian is generically non-
+normal, stable eigenvalues (ρ(J)<1) can coexist with severe transient balance-sheet deple-
+tion governed by the exact loss radiusr∗
+exact =B/sup t≥0∥CJt∥2 and low-frequency variance
+accumulation under persistent flow. Because public surveillance faces intrinsic realization-
+theoretic limits near critical thresholds, our findings motivate capital-aware pre-trade gating.
+45
+
+=== PHYSICAL PAGE 47 ===
+Niroula and Niroula From Human Markets to Machine Markets
+References
+Adrian, T., and H. S. Shin, 2010, Liquidity and leverage,Journal of Financial Intermediation19,
+418–437.
+Almgren, R., and N. Chriss, 2000, Optimal execution of portfolio transactions,Journal of Risk3,
+5–39.
+Andrews, D. W., 1991, Heteroskedasticity and autocorrelation consistent covariance matrix esti-
+mation,Econometrica59, 817–858.
+Biais, B., T. Foucault, and S. Moinas, 2015, Equilibrium fast trading,Journal of Financial Eco-
+nomics116, 292–313.
+Bouchaud, J.-P., Y. Gefen, M. Potters, and M. Wyart, 2004, Fluctuations and response in financial
+markets: The subtle nature of “random” price changes,Quantitative Finance4, 176–185.
+Brunnermeier, M. K., and L. H. Pedersen, 2009, Market liquidity and funding liquidity,Review of
+Financial Studies22, 2201–2238.
+Budish, E., P. Cramton, and J. Shim, 2015, The high-frequency trading arms race: Frequent batch
+auctions as a market design response,Quarterly Journal of Economics130, 1547–1621.
+Campbell, J. Y., S. J. Grossman, and J. Wang, 1993, Trading volume and serial correlation in stock
+returns,Quarterly Journal of Economics108, 905–939.
+CFTC and SEC, 2010, Findings regarding the market events of May 6, 2010: Report of the staffs of
+the CFTC and SEC to the Joint Advisory Committee on Emerging Regulatory Issues, Technical
+report, Commodity Futures Trading Commission and Securities and Exchange Commission.
+Cont, R., S. Stoikov, and R. Talreja, 2010, A stochastic model for order book dynamics,Operations
+Research58, 549–563.
+Cont, R., A. Kukanov, and S. Stoikov, 2014, The price impact of order book events,Journal of
+Financial Econometrics12, 47–88.
+Donald, S. G., and K. Lang, 2007, Inference with difference-in-differences and other panel data,
+Review of Economics and Statistics89, 221–233.
+Eisenberg, L., and T. H. Noe, 2001, Systemic risk in financial systems,Management Science47,
+236–249.
+Gilbert, E. G., 1963, Controllability and observability in multivariable control systems,Journal of
+the Society for Industrial and Applied Mathematics, Series A: Control1, 128–151.
+Glosten, L. R., and P. R. Milgrom, 1985, Bid, ask and transaction prices in a specialist market
+with heterogeneously informed traders,Journal of Financial Economics14, 71–100.
+Greenwood, R., A. Landier, and D. Thesmar, 2015, Vulnerable banks,Journal of Financial Eco-
+nomics115, 471–485.
+Hasbrouck, J., 1991, Measuring the information content of stock trades,Journal of Finance46,
+179–207.
+He, Z., and A. Krishnamurthy, 2013, Intermediary asset pricing,American Economic Review103,
+732–773.
+46
+
+=== PHYSICAL PAGE 48 ===
+Niroula and Niroula From Human Markets to Machine Markets
+Hendershott, T., C. M. Jones, and A. J. Menkveld, 2011, Does algorithmic trading improve liquid-
+ity?,Journal of Finance66, 1–33.
+Joint Treasury Staff, 2015, The U.S. Treasury market on October 15, 2014, Staff report, U.S.
+Department of the Treasury, Board of Governors of the Federal Reserve System, Federal Reserve
+Bank of New York, Securities and Exchange Commission, and Commodity Futures Trading
+Commission.
+Kalman, R. E., 1960, A new approach to linear filtering and prediction problems,Journal of Basic
+Engineering82, 35–45.
+Kreiss, H.-O., 1962, Über die Stabilitätsdefinition für Differenzengleichungen die partielle Differen-
+tialgleichungen approximieren,BIT Numerical Mathematics2, 153–181.
+Kyle, A. S., 1985, Continuous auctions and informed trader,Econometrica53, 1315–1335.
+Le Cam, L., 1986,Asymptotic Methods in Statistical Decision Theory, Springer-Verlag.
+MacKinnon, J. G., and M. D. Webb, 2018, The wild bootstrap for few (treated) clusters,Econo-
+metrics Journal21, 114–135.
+Menkveld, A. J., 2013, High frequency trading and the new market makers,Journal of Financial
+Markets16, 712–740.
+Newey, W. K., and K. D. West, 1987, A simple, positive semi-definite, heteroskedasticity and
+autocorrelation consistent covariance matrix,Econometrica55, 703–708.
+Nielsen, C., 2021,crypto-rl: High-frequency limit order book data capture, GitHub repository
+(CC0 License).
+Ntakaris, A., M. Magris, J. Kanniainen, M. Gabbouj, and A. Iosifidis, 2018, Benchmark dataset for
+mid-priceforecastingoflimitorderbookdatawithmachinelearningmethods,IEEE Transactions
+on Neural Networks and Learning Systems29, 6153–6163.
+Pesaran, H. H., and Y. Shin, 1998, Generalized impulse response analysis in linear multivariate
+models,Economics Letters58, 17–29.
+Phillips, P. C. B., 1987, Time series regression with a unit root,Econometrica55, 277–301.
+Rigobon, R., 2003, Identification through heteroskedasticity,Review of Economics and Statistics
+85, 777–792.
+Spijker, M. N., 1991, On a conjecture by LeVeque and Trefethen related to the Kreiss matrix
+theorem,BIT Numerical Mathematics31, 551–555.
+Trefethen, L. N., and M. Embree, 2005,Spectra and Pseudospectra: The Behavior of Nonnormal
+Matrices and Operators, Princeton University Press.
+47

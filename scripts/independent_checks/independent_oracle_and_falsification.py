@@ -299,6 +299,8 @@ def run_tc_v1_to_v4() -> dict:
     return {
         "TC_V1_named_theorems_count": int(receipt["named_theorems"]),
         "TC_V2_full_manuscript_statements": int(claim_map.count("& FULL &")),
+        "TC_V2_external_dependency_statements": int(claim_map.count("& EXT &")),
+        "TC_V2_subresult_statements": int(claim_map.count("& SUB &")),
         "TC_V3_zero_sorry_and_zero_unapproved_axioms": bool(
             receipt["status"] == "NAMED_PROOFS_BUILD_AND_STRICT_AXIOM_AUDIT_PASS"
         ),

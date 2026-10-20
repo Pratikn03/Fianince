@@ -495,14 +495,16 @@ def test_unknown_mixture_equivalence_and_noise_boundary():
 # ----------------------------------------------------------------------
 def test_formal_proof_bridge_coverage():
     """Verify that Lean formalization bridge matches 23 manuscript mathematical environments
-    and MANUSCRIPT_COVERAGE.md explicitly documents 320 kernel-checked declarations."""
+    and coverage records match the named declarations."""
     bridge_script = Path("scripts/verify_theorem_code_bridge.py")
     assert bridge_script.exists(), "Theorem-code bridge script must exist"
     
     cov_file = Path("research_extension/current_manuscript_lean_20261008/MANUSCRIPT_COVERAGE.md")
     assert cov_file.exists(), "Manuscript coverage markdown must exist"
     cov_text = cov_file.read_text()
-    assert "320" in cov_text, "Coverage file must document 320 declarations"
+    declarations = json.loads((cov_file.parent / "named_declarations.json").read_text())
+    assert str(len(declarations)) in cov_text
+    assert "no claim of 23/23" in cov_text.lower()
     assert Path("paper/generated/claim_to_code_map.tex").exists()
 
 # ----------------------------------------------------------------------
@@ -1077,15 +1079,16 @@ def test_tc91_08_unknown_k_blind_candidate_set():
 # ----------------------------------------------------------------------
 def test_tc91_09_and_10_formal_proof_and_prose_integrity():
     """Verify that MANUSCRIPT_COVERAGE.md, claim_to_code_map.tex, and Machine_Markets_JF_Submission.tex
-    are synchronized with 320 Lean declarations and 23/23 FULL environments, and contain no stale overclaims."""
+    preserve current declaration counts and formalization boundaries."""
     tex_text = Path("paper/Machine_Markets_JF_Submission.tex").read_text()
     cov_text = Path("research_extension/current_manuscript_lean_20261008/MANUSCRIPT_COVERAGE.md").read_text()
     map_text = Path("paper/generated/claim_to_code_map.tex").read_text()
     
-    # Check 320 declarations and 23/23 FULL statements in manuscript prose
-    assert "320 kernel-checked Lean~4 declarations" in tex_text
-    assert "23 / 23 FULL" in tex_text
-    assert "320" in cov_text
+    # Check current declaration count and narrower semantic coverage.
+    named = json.loads(Path("research_extension/current_manuscript_lean_20261008/named_declarations.json").read_text())
+    assert f"{len(named)} named declarations" in tex_text
+    assert "outstanding estimator-level obligation" in tex_text
+    assert str(len(named)) in cov_text
     
     # Check that Theorems IA.D.1-IA.D.6 and Proposition IA.D.3 are mapped
     for label in [
@@ -1477,7 +1480,7 @@ def test_p02_p03_p04_scientific_validation_gates():
     claim_map_tex = Path("paper/generated/claim_to_code_map.tex").read_text()
     assert r"\texttt{S17}: Spectral Dissipation Lower Bound" in claim_map_tex
     assert r"\texttt{S19}: Cram\'er--Rao Local Information Benchmark" in claim_map_tex
-    assert "cramer_rao_two_cohort_inverse_sixth_scaling" in claim_map_tex
+    assert "cramer_rao_two_cohort_confluent_vandermonde_exact_bound" in claim_map_tex
     assert r"\texttt{S22}: Coordinate-Weighted Output Sensitivity" in claim_map_tex
     assert "coordinate_weighted_output_cone_contraction" in claim_map_tex
 

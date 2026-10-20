@@ -423,4 +423,98 @@ theorem p2_prop_equil_transient_risk (κ_tilde m q θ N1 N2 Λ : ℝ)
   · rw [div_lt_div_iff₀ hN2 hN1]
     nlinarith
 
+/-!
+## Phase 7 Unified Foundational Bridge (Identification Limits to Robust Control)
+
+Connects Paper 1's compatible-model set $\Theta(\mathcal D)$ to Paper 2's certifiably safe
+admission set $\mathcal A_{\mathrm{safe}}(\Theta(\mathcal D))$:
+- `foundational_result_A_impossibility`: Information-to-safety impossibility under observational equivalence
+- `foundational_result_B_disclosure_control`: Disclosure-value theorem for robust control capacity
+- `foundational_result_C_probing_control_tradeoff`: Optimal information-versus-intervention tradeoff
+-/
+
+/-- Phase 7 Result A (Information-to-Safety Impossibility Theorem):
+Suppose two market systems $\theta_0, \theta_1 \in \Theta(\mathcal D)$ are observationally
+indistinguishable under public data $\mathcal D$, with cumulative transient gains
+$0 < S_0 < S_1$. For any risk budget $\mathcal B$ with $|I|\bar u S_0 < \mathcal B < |I|\bar u S_1$,
+any public-data-measurable controller must choose a single admission action $\alpha \in [0, 1]$
+across both systems:
+(1) Full admission ($\alpha = 1$) is safe in $\theta_0$ ($|I|\bar u S_0 < \mathcal B$) but causes
+a strictly positive solvency breach $|I|\bar u S_1 - \mathcal B > 0$ in $\theta_1$;
+(2) Any universally safe admission rule ($\alpha |I|\bar u S_1 \le \mathcal B$) must throttle flow
+to $\alpha \le \frac{\mathcal B}{|I|\bar u S_1} < 1$, incurring strictly positive conservative
+volume sacrifice $1 - \alpha \ge \frac{|I|\bar u S_1 - \mathcal B}{|I|\bar u S_1} > 0$ in $\theta_0$. -/
+theorem foundational_result_A_impossibility (I_abs u_bar S0 S1 B α : ℝ)
+    (hI : 0 < I_abs) (hu : 0 < u_bar) (hS0 : 0 < S0)
+    (hB_lo : I_abs * u_bar * S0 < B) (hB_hi : B < I_abs * u_bar * S1)
+    (h_safe : α * (I_abs * u_bar * S1) ≤ B) :
+    let L0_full := I_abs * u_bar * S0
+    let L1_full := I_abs * u_bar * S1
+    let alpha_max := B / L1_full
+    L0_full < B ∧
+    0 < L1_full - B ∧
+    α ≤ alpha_max ∧
+    alpha_max < 1 ∧
+    0 < 1 - α := by
+  dsimp only
+  have hL0 : 0 < I_abs * u_bar * S0 := mul_pos (mul_pos hI hu) hS0
+  have hL1 : 0 < I_abs * u_bar * S1 := by linarith
+  have hα_le : α ≤ B / (I_abs * u_bar * S1) := (le_div_iff₀ hL1).mpr h_safe
+  have hα_max_lt : B / (I_abs * u_bar * S1) < 1 := (div_lt_iff₀ hL1).mpr (by linarith)
+  refine ⟨hB_lo, by linarith, hα_le, hα_max_lt, by linarith⟩
+
+/-- Phase 7 Result B (Disclosure-Value Theorem for Robust Control):
+When class-tagged disclosure $\mathcal D_{\mathrm{tag}}$ refines the compatible-model set
+$\Theta(\mathcal D_{\mathrm{tag}}) \subset \Theta(\mathcal D_{\mathrm{pub}})$, lowering the
+worst-case compatible cumulative gain from $S_{\mathrm{pub}}$ to $S_{\mathrm{tag}} \in (0, S_{\mathrm{pub}}]$,
+the certifiably safe admission cap increases from $\alpha^*_{\mathrm{pub}} = \frac{\mathcal B}{|I|\bar u S_{\mathrm{pub}}}$
+to $\alpha^*_{\mathrm{tag}} = \frac{\mathcal B}{|I|\bar u S_{\mathrm{tag}}}$, with exact capacity gain
+$\alpha^*_{\mathrm{tag}} - \alpha^*_{\mathrm{pub}} = \frac{\mathcal B (S_{\mathrm{pub}} - S_{\mathrm{tag}})}{|I|\bar u S_{\mathrm{tag}} S_{\mathrm{pub}}} > 0$
+whenever $S_{\mathrm{tag}} < S_{\mathrm{pub}}$. -/
+theorem foundational_result_B_disclosure_control (B denom S_tag S_pub : ℝ)
+    (hB : 0 < B) (hden : 0 < denom) (hStag : 0 < S_tag) (hsep : S_tag < S_pub) :
+    let alpha_pub := B / (denom * S_pub)
+    let alpha_tag := B / (denom * S_tag)
+    alpha_tag - alpha_pub = B * (S_pub - S_tag) / (denom * S_tag * S_pub) ∧
+    alpha_pub < alpha_tag := by
+  dsimp only
+  have hSpub : 0 < S_pub := lt_trans hStag hsep
+  have hd_pub : 0 < denom * S_pub := mul_pos hden hSpub
+  have hd_tag : 0 < denom * S_tag := mul_pos hden hStag
+  have hdiff : B / (denom * S_tag) - B / (denom * S_pub) =
+      B * (S_pub - S_tag) / (denom * S_tag * S_pub) := by
+    field_simp [ne_of_gt hden, ne_of_gt hStag, ne_of_gt hSpub]
+  have hpos : 0 < B * (S_pub - S_tag) / (denom * S_tag * S_pub) := by
+    apply div_pos
+    · exact mul_pos hB (by linarith)
+    · exact mul_pos hd_tag hSpub
+  refine ⟨hdiff, by linarith⟩
+
+/-- Phase 7 Result C (Optimal Information-versus-Intervention Tradeoff):
+Consider probing intensity $V > 0$ with probing cost $C_{\mathrm{probe}}(V) = \frac{1}{2}\kappa_{\mathrm{diss}} V^2$
+and conservatism loss $C_{\mathrm{throt}}(V) = \frac{\lambda_{\mathrm{throt}} c_\sigma}{2 V}$ from
+uncertainty radius $\propto 1/V$. At the stationary probe intensity $V^* > 0$ satisfying
+$\kappa_{\mathrm{diss}} (V^*)^3 = \frac{1}{2}\lambda_{\mathrm{throt}} c_\sigma$, every alternative intensity
+$V > 0$ satisfies the exact algebraic excess-cost identity
+$C_{\mathrm{total}}(V) - C_{\mathrm{total}}(V^*) = \frac{\kappa_{\mathrm{diss}} (V - V^*)^2 (V + 2 V^*)}{2 V} \ge 0$. -/
+theorem foundational_result_C_probing_control_tradeoff (κ_diss V V_star : ℝ)
+    (hκ : 0 < κ_diss) (hV : 0 < V) (hVs : 0 < V_star) :
+    let lam_c := 2 * κ_diss * V_star ^ 3
+    let C_tot := fun x : ℝ => (1 / 2) * κ_diss * x ^ 2 + lam_c / (2 * x)
+    C_tot V - C_tot V_star = κ_diss * (V - V_star) ^ 2 * (V + 2 * V_star) / (2 * V) ∧
+    C_tot V_star ≤ C_tot V := by
+  dsimp only
+  have hV_ne : V ≠ 0 := ne_of_gt hV
+  have hVs_ne : V_star ≠ 0 := ne_of_gt hVs
+  have hdiff : 1 / 2 * κ_diss * V ^ 2 + 2 * κ_diss * V_star ^ 3 / (2 * V) -
+      (1 / 2 * κ_diss * V_star ^ 2 + 2 * κ_diss * V_star ^ 3 / (2 * V_star)) =
+      κ_diss * (V - V_star) ^ 2 * (V + 2 * V_star) / (2 * V) := by
+    field_simp [hV_ne, hVs_ne]
+    ring
+  have hnonneg : 0 ≤ κ_diss * (V - V_star) ^ 2 * (V + 2 * V_star) / (2 * V) := by
+    apply div_nonneg
+    · exact mul_nonneg (mul_nonneg (le_of_lt hκ) (sq_nonneg (V - V_star))) (by linarith)
+    · linarith
+  refine ⟨hdiff, by linarith⟩
+
 end CurrentMM

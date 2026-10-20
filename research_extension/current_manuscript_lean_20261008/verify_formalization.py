@@ -73,7 +73,8 @@ def main():
                    axiom_log_sha256=sha(HERE / "axiom_audit.log"),
                    manuscript_coverage_sha256=sha(HERE / "MANUSCRIPT_COVERAGE.json"),
                    verification_script_sha256=sha(Path(__file__)),
-                   full_manuscript_formalization_complete=True,
+                   full_manuscript_formalization_complete=False,
+                   coverage_boundary="S13/S20 external dependencies; S21 uniform blind-estimator obligation open",
                    limits=["Named declarations are kernel-checked; manuscript equivalence needs the explicit coverage review.",
                            "No market calibration, novelty, causal identification or independent human review follows."])
     receipt_path.write_text(json.dumps(receipt, indent=2) + "\n")

@@ -122,7 +122,7 @@ def test_mixture_weights_scored_per_cohort():
 
 
 def test_theorem_bridge_reports_partial_formal_coverage():
-    """Finding 6: name-matching is not proof coverage; the generated map must show coverage status (now 23/23 FULL)."""
+    """Finding 6: name-matching is not proof coverage; the generated map must show coverage status with explicit external and subresult boundaries."""
     import importlib.util
     import sys
     spec = importlib.util.spec_from_file_location("bridge", "scripts/verify_theorem_code_bridge.py")
@@ -131,7 +131,23 @@ def test_theorem_bridge_reports_partial_formal_coverage():
     spec.loader.exec_module(bridge)
     cov = bridge.load_formal_coverage()
     statuses = [bridge.coverage_for(m.title, cov) for m in bridge.REGISTRY]
-    assert sum(s == "FULL" for s in statuses) == len(statuses) == 23
+    assert len(statuses) == 23
+    assert statuses.count("FULL") == 20
+    assert statuses.count("CORE + EXTERNAL") == 2
+    assert statuses[20] == "SUBRESULTS (obligations remain)"
     assert bridge.coverage_for("Finite-Window Abstention in a Scalar Gaussian Experiment", cov) == "FULL"
     tex = Path("paper/generated/claim_to_code_map.tex").read_text()
-    assert ("Status" in tex or "formal coverage" in tex) and tex.count("& FULL &") == 23
+    assert ("Status" in tex or "formal coverage" in tex) and tex.count("& FULL &") == 20
+
+
+def test_formal_registry_preserves_external_and_estimator_boundaries():
+    import json
+    registry = json.loads(Path("formal_statement_registry.json").read_text())
+    rows = {row["id"]: row for row in registry["registry"]}
+    assert registry["full_manuscript_formalization_complete"] is False
+    assert rows["S13"]["status"] == "CORE + EXTERNAL"
+    assert "hSpijker" in rows["S13"]["verification_note"]
+    assert rows["S20"]["status"] == "CORE + EXTERNAL"
+    assert "1,800" in rows["S20"]["verification_note"]
+    assert rows["S21"]["verification_tier"] == "KERNEL_SUBRESULTS_ESTIMATOR_OBLIGATION_OPEN"
+    assert "do not prove a uniform finite-sample blind-estimator guarantee" in rows["S21"]["verification_note"]

@@ -589,7 +589,7 @@ theorem p1_thm_discvalue_ratio (sigma sigma_f Delta_eta D_pow : ℝ)
 -- 27. Theorem [Spectral blindness] (\label{thm:blind})
 theorem p1_thm_blind_spectral_blindness (lam1 lam2 s1 V theta : ℝ)
     (hl2 : 0 < lam2) (hl12 : lam2 < lam1) (hl1 : lam1 < 1)
-    (hs1 : 0 < s1) (htheta : theta ≠ 0)
+    (_hs1 : 0 < s1) (htheta : theta ≠ 0)
     (hV : s1 / (1 - lam1 ^ 2) ≤ V) :
     let denom := (1 - lam1 ^ 2) * (1 - lam2 ^ 2) * (1 - lam1 * lam2)
     let s2_theta := (V - s1 / (1 - lam1 ^ 2)) * denom / (theta ^ 2 * (1 + lam1 * lam2))

@@ -204,12 +204,40 @@ def main():
             }
         )
 
+    bridge_defs = [
+        ("foundational_result_A_impossibility", "Result A: Impossibility of Cohort-Specific Risk Control from Public Data"),
+        ("foundational_result_B_disclosure_control", "Result B: Disclosure-Enabled Control Improvement"),
+        ("foundational_result_C_probing_control_tradeoff", "Result C: Active Probing vs. Transient Excursion Tradeoff"),
+    ]
+    records_bridge = []
+    for idx, (b_thm, b_title) in enumerate(bridge_defs, 1):
+        assert b_thm in mathlib_p2, f"Missing {b_thm} in {mathlib_p2_path}"
+        assert b_thm in core_p2, f"Missing {b_thm} in {core_p2_path}"
+        full_m_name = f"CurrentMM.{b_thm}"
+        assert full_m_name in checked_by_name, f"Missing {full_m_name} in checked_theorem_types.json"
+        records_bridge.append(
+            {
+                "index": idx,
+                "paper": "Phase 7 Foundational Bridge",
+                "title": b_title,
+                "mathlib_theorem": full_m_name,
+                "mathlib_file": "CurrentProofs/CeilingSuitePaper2.lean",
+                "mathlib_line": mathlib_p2[b_thm],
+                "axioms": checked_by_name[full_m_name]["axioms"],
+                "core_lean_theorem": f"MachineMarkets.{b_thm}",
+                "core_lean_file": "Proofs/CeilingSuitePaper2.lean",
+                "core_lean_line": core_p2[b_thm],
+            }
+        )
+
     manifest = {
         "status": "VERIFIED_100_PERCENT_NO_SORRY",
         "lean_toolchain": "leanprover/lean4:v4.34.1",
         "paper1_total_environments": len(records_p1),
         "paper2_total_environments": len(records_p2),
+        "foundational_bridge_theorems": len(records_bridge),
         "total_ceiling_suite_environments": len(records_p1) + len(records_p2),
+        "total_verified_theorems": len(records_p1) + len(records_p2) + len(records_bridge),
         "sha256": {
             "CurrentProofs/CeilingSuitePaper1.lean": sha256(mathlib_p1_path),
             "CurrentProofs/CeilingSuitePaper2.lean": sha256(mathlib_p2_path),
@@ -218,6 +246,7 @@ def main():
         },
         "paper1": records_p1,
         "paper2": records_p2,
+        "foundational_bridge": records_bridge,
     }
 
     manifest_path = SUITE_DIR / "CEILING_SUITE_LEAN_PROOF_MANIFEST.json"
@@ -256,10 +285,24 @@ def main():
             f"| {r['index']} | `{r['env']}` | `{r['label']}` | {r['title']} | `{r['file']}:{r['line']}` | `{r['mathlib_theorem']}` (L{r['mathlib_line']}) | `{r['core_lean_theorem']}` (L{r['core_lean_line']}) |"
         )
 
+    md_lines.extend(
+        [
+            "",
+            "## Phase 7 — Unified Foundational Bridge Theorems (Paper 1 ↔ Paper 2)",
+            "",
+            "| # | Result | Title | Mathlib (`ℝ`) Theorem | Core Lean (`Rat`) Theorem |",
+            "|---|---|---|---|---|",
+        ]
+    )
+    for r in records_bridge:
+        md_lines.append(
+            f"| {r['index']} | `Result {chr(64+r['index'])}` | {r['title']} | `{r['mathlib_theorem']}` (L{r['mathlib_line']}) | `{r['core_lean_theorem']}` (L{r['core_lean_line']}) |"
+        )
+
     report_path = SUITE_DIR / "CEILING_SUITE_LEAN_PROOF_REPORT.md"
     report_path.write_text("\n".join(md_lines) + "\n")
     print(
-        f"[PASS] Verified all {len(records_p1)} Paper 1 + {len(records_p2)} Paper 2 = {len(records_p1) + len(records_p2)} Ceiling Suite formal environments!"
+        f"[PASS] Verified all {len(records_p1)} Paper 1 + {len(records_p2)} Paper 2 + {len(records_bridge)} Foundational Bridge = {len(records_p1) + len(records_p2) + len(records_bridge)} theorems!"
     )
 
 

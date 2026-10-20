@@ -203,6 +203,28 @@ def compute_single_step_admissible_shock_bound(
     return float(avail_safe / denom), float(avail_liq / denom)
 
 
+def compute_passive_fill_and_bound(
+    alpha: float,
+    shock_scale: float,
+    w1_shock: float = 0.0,
+    u_bar_step: float = 0.05,
+    halted: bool = False,
+) -> tuple[float, float]:
+    """Canonical shared passive-fill law and worst-case admissible fill bound (Theorem IA.D.8, E2E-A):
+      - Executed passive fill: Delta I_fill(alpha) = 0 if halted else -12.0 * alpha * shock_scale * w1_shock
+      - Admissible fill bound: Delta I_fill,max(alpha) = 0 if halted else 12.0 * alpha * shock_scale * u_bar_step
+    """
+    if halted or alpha <= 0.0:
+        return 0.0, 0.0
+    executed_fill = -12.0 * float(alpha) * float(shock_scale) * float(w1_shock)
+    max_fill_qty = 12.0 * float(alpha) * float(shock_scale) * float(u_bar_step)
+    if abs(w1_shock) <= u_bar_step + 1e-12:
+        assert abs(executed_fill) <= max_fill_qty + 1e-12, (
+            f"Passive fill {executed_fill} exceeded admissible bound {max_fill_qty}"
+        )
+    return executed_fill, max_fill_qty
+
+
 def evaluate_guard_inequalities_ia39(
     alpha: float,
     mc_val: float,
@@ -244,7 +266,9 @@ def evaluate_guard_inequalities_ia39(
     # Delta I_fill,max(alpha) = 12 * alpha * s(alpha) * u_bar_step, with net base-price maintenance-margin
     # minus maker half-spread surcharge C_fill(alpha) = max(0, mu * p_t - half_spread) * Delta I_fill,max(alpha).
     # At alpha = 0 (protective halt), Delta I_fill,max(0) = 0 and C_fill(0) = 0.
-    max_fill_qty = 12.0 * alpha * s_alpha * u_bar_step
+    _, max_fill_qty = compute_passive_fill_and_bound(
+        alpha=alpha, shock_scale=s_alpha, w1_shock=u_bar_step, u_bar_step=u_bar_step, halted=False
+    )
     post_fill_inv_bound = abs(inv_after) + max_fill_qty
     c_fill = max_fill_qty * max(0.0, maint_rate * p_curr - 0.02)
     post_fill_mm_increment_bound = maint_rate * max_fill_qty * (p_curr + mc_val * z_norm + mc_val * s_alpha * u_bar_step)
@@ -487,10 +511,13 @@ def simulate_double_entry_dealer_episode(
         # Order flow absorbed by dealer during step t at quoted depth g_star = alpha_t
         # (\Delta I^{fill}_t = -12 * \alpha_t * s(\alpha_t) * w_{1,t}, earning maker half-spread 0.02 USDT/unit).
         # Under NO_SAFE_ACTION protective halt (step_infeasible_halt or g_star == 0), passive maker fill intake is zero.
-        if step_infeasible_halt:
-            flow_absorbed = 0.0
-        else:
-            flow_absorbed = -12.0 * g_star * shock_scale * float(shocks[t, 0])
+        flow_absorbed, _ = compute_passive_fill_and_bound(
+            alpha=g_star,
+            shock_scale=shock_scale,
+            w1_shock=float(shocks[t, 0]),
+            u_bar_step=0.05,
+            halted=step_infeasible_halt,
+        )
         last_flow_absorbed = float(flow_absorbed)
         exec_price = 0.5 * (p_curr + p_next)
         maker_spread_rev = 0.02 * abs(flow_absorbed) * (1.0 if not step_halted else 0.0)

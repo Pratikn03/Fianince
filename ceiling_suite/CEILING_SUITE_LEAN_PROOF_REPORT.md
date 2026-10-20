@@ -53,15 +53,23 @@
 | 7 | `proposition` | `prop:multi` | Directed cross-impact shrinks the safe radius | `p2_theory1.tex:118` | `CurrentMM.p2_prop_multi_venue_cross_impact` (L139) | `MachineMarkets.p2_prop_multi_venue_cross_impact` (L60) |
 | 8 | `theorem` | `thm:t6` | Amplification condition | `p2_theory2.tex:22` | `CurrentMM.p2_thm_t6_amplification_condition` (L168) | `MachineMarkets.p2_thm_t6_amplification_condition` (L66) |
 | 9 | `proposition` | `prop:shape` | Shape of the overshoot | `p2_theory2.tex:42` | `CurrentMM.p2_prop_shape_overshoot` (L182) | `MachineMarkets.p2_prop_shape_overshoot` (L75) |
-| 10 | `proposition` | `prop:t6m` | One-period amplification margin | `p2_theory2.tex:61` | `CurrentMM.p2_prop_t6m_one_period_margin` (L210) | `MachineMarkets.p2_prop_t6m_one_period_margin` (L84) |
-| 11 | `theorem` | `thm:nomom` | Momentum alone cannot make a stable book amplify | `p2_theory2.tex:71` | `CurrentMM.p2_thm_nomom_no_overshoot` (L223) | `MachineMarkets.p2_thm_nomom_no_overshoot` (L93) |
-| 12 | `theorem` | `thm:noover` | A sufficient condition for no overshoot | `p2_theory2.tex:79` | `CurrentMM.p2_thm_noover_sufficient_condition` (L239) | `MachineMarkets.p2_thm_noover_sufficient_condition` (L101) |
-| 13 | `proposition` | `prop:sum` | Summed response in closed form | `p2_theory2.tex:95` | `CurrentMM.p2_prop_sum_closed_form` (L251) | `MachineMarkets.p2_prop_sum_closed_form` (L108) |
-| 14 | `theorem` | `thm:guard` | Summed-gain guard is maximal | `p2_theory2.tex:121` | `CurrentMM.p2_thm_guard_maximal` (L279) | `MachineMarkets.p2_thm_guard_maximal` (L118) |
-| 15 | `lemma` | `lem:tail` | Contraction-block tail bound | `p2_theory2.tex:139` | `CurrentMM.p2_lem_tail_contraction` (L296) | `MachineMarkets.p2_lem_tail_contraction` (L123) |
-| 16 | `theorem` | `thm:robust` | Robust gain | `p2_theory2.tex:155` | `CurrentMM.p2_thm_robust_gain` (L309) | `MachineMarkets.p2_thm_robust_gain` (L129) |
-| 17 | `proposition` | `prop:bridge` | No identification needed; numerical | `p2_theory2.tex:165` | `CurrentMM.p2_prop_bridge_no_identification` (L329) | `MachineMarkets.p2_prop_bridge_no_identification` (L134) |
-| 18 | `theorem` | `thm:forward` | Conditional bounded-shock forward solvency | `p2_theory2.tex:216` | `CurrentMM.p2_thm_forward_solvency` (L338) | `MachineMarkets.p2_thm_forward_solvency` (L139) |
-| 19 | `proposition` | `prop:dominance` | When the guard beats an eigenvalue rule | `p2_theory2.tex:230` | `CurrentMM.p2_prop_dominance_guard_vs_eigenvalue` (L353) | `MachineMarkets.p2_prop_dominance_guard_vs_eigenvalue` (L145) |
-| 20 | `proposition` | `prop:lucas` | Strategic re-optimization reinforces the guard | `p2_theory2.tex:239` | `CurrentMM.p2_prop_lucas_reinforces_guard` (L369) | `MachineMarkets.p2_prop_lucas_reinforces_guard` (L153) |
+| 10 | `proposition` | `prop:t6m` | One-period amplification margin | `p2_theory2.tex:66` | `CurrentMM.p2_prop_t6m_one_period_margin` (L210) | `MachineMarkets.p2_prop_t6m_one_period_margin` (L84) |
+| 11 | `theorem` | `thm:nomom` | Momentum alone cannot make a stable book amplify | `p2_theory2.tex:76` | `CurrentMM.p2_thm_nomom_no_overshoot` (L223) | `MachineMarkets.p2_thm_nomom_no_overshoot` (L93) |
+| 12 | `theorem` | `thm:noover` | A sufficient condition for no overshoot | `p2_theory2.tex:84` | `CurrentMM.p2_thm_noover_sufficient_condition` (L239) | `MachineMarkets.p2_thm_noover_sufficient_condition` (L101) |
+| 13 | `proposition` | `prop:sum` | Summed response in closed form | `p2_theory2.tex:100` | `CurrentMM.p2_prop_sum_closed_form` (L251) | `MachineMarkets.p2_prop_sum_closed_form` (L108) |
+| 14 | `theorem` | `thm:guard` | Summed-gain guard is maximal | `p2_theory2.tex:129` | `CurrentMM.p2_thm_guard_maximal` (L279) | `MachineMarkets.p2_thm_guard_maximal` (L118) |
+| 15 | `lemma` | `lem:tail` | Contraction-block tail bound | `p2_theory2.tex:147` | `CurrentMM.p2_lem_tail_contraction` (L296) | `MachineMarkets.p2_lem_tail_contraction` (L123) |
+| 16 | `theorem` | `thm:robust` | Robust gain | `p2_theory2.tex:163` | `CurrentMM.p2_thm_robust_gain` (L309) | `MachineMarkets.p2_thm_robust_gain` (L129) |
+| 17 | `proposition` | `prop:bridge` | No identification needed; numerical | `p2_theory2.tex:173` | `CurrentMM.p2_prop_bridge_no_identification` (L329) | `MachineMarkets.p2_prop_bridge_no_identification` (L134) |
+| 18 | `theorem` | `thm:forward` | Conditional bounded-shock forward solvency | `p2_theory2.tex:224` | `CurrentMM.p2_thm_forward_solvency` (L338) | `MachineMarkets.p2_thm_forward_solvency` (L139) |
+| 19 | `proposition` | `prop:dominance` | When the guard beats an eigenvalue rule | `p2_theory2.tex:238` | `CurrentMM.p2_prop_dominance_guard_vs_eigenvalue` (L353) | `MachineMarkets.p2_prop_dominance_guard_vs_eigenvalue` (L145) |
+| 20 | `proposition` | `prop:lucas` | Strategic re-optimization reinforces the guard | `p2_theory2.tex:251` | `CurrentMM.p2_prop_lucas_reinforces_guard` (L369) | `MachineMarkets.p2_prop_lucas_reinforces_guard` (L153) |
 | 21 | `proposition` | `prop:equil` | Equilibrium transient risk | `p2_equil.tex:10` | `CurrentMM.p2_prop_equil_transient_risk` (L397) | `MachineMarkets.p2_prop_equil_transient_risk` (L159) |
+
+## Phase 7 — Unified Foundational Bridge Theorems (Paper 1 ↔ Paper 2)
+
+| # | Result | Title | Mathlib (`ℝ`) Theorem | Core Lean (`Rat`) Theorem |
+|---|---|---|---|---|
+| 1 | `Result A` | Result A: Impossibility of Cohort-Specific Risk Control from Public Data | `CurrentMM.foundational_result_A_impossibility` (L447) | `MachineMarkets.foundational_result_A_impossibility` (L167) |
+| 2 | `Result B` | Result B: Disclosure-Enabled Control Improvement | `CurrentMM.foundational_result_B_disclosure_control` (L474) | `MachineMarkets.foundational_result_B_disclosure_control` (L173) |
+| 3 | `Result C` | Result C: Active Probing vs. Transient Excursion Tradeoff | `CurrentMM.foundational_result_C_probing_control_tradeoff` (L500) | `MachineMarkets.foundational_result_C_probing_control_tradeoff` (L178) |
