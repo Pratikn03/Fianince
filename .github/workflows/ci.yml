@@ -97,7 +97,8 @@ jobs:
             echo "::error::last lines: $(tail -12 suite.log | tr '\n' '|' | cut -c1-900)"
             exit 1
           fi
-          grep -E "TEXT DIFFERS" suite.log | while read -r line; do echo "::warning::${line}"; done
+          { grep -E "TEXT DIFFERS" suite.log || true; } | while read -r line; do echo "::warning::${line}"; done
+          grep -E "done: all checks passed" suite.log
 
   test-matrix:
     name: Pytest Suite (${{ matrix.os }}, Python ${{ matrix.python-version }})
