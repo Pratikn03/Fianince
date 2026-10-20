@@ -1,0 +1,45 @@
+\section{Tests of the information-safety results}\label{sec:istests}
+
+The theorems of Sections~\ref{sec:infosafety}--\ref{sec:disclosure} concern declared contracts. This section reports two kinds of tests: simulations in which the true economy is known, so that coverage, attainment and optimality can be checked directly; and two pre-registered tests on market data that no earlier part of this paper used.
+
+\subsection{Simulation tests with a known truth}\label{sec:simtests}
+
+\begin{table}[t]\centering\footnotesize
+\begin{threeparttable}
+\caption{Simulation tests of the information-safety results}\label{tab:simtests}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{p{0.05\textwidth}p{0.36\textwidth}p{0.5\textwidth}}
+\toprule
+Test & Question & Result\\
+\midrule
+T01 & Can markets agree on early responses yet differ in risk? & Example~\ref{ex:witness} in rational arithmetic: lags 0--2 equal, summed responses $1.92$ and $5.59$\\
+T02 & Does Proposition~\ref{prop:twoworld} bound the capacity a safe rule gives up? & Attained exactly with identical data ($0.324$ at $\beta=0.05$); respected in 9 of 9 noisy designs by the certificate rule, whose unsafe-admission rate is at most $3.2\%$\\
+T03 & Is certifying risk cheaper than identifying cohorts? & Table~\ref{tab:certvsid}: slope $-6.06$ in $\Delta\eta$ for identification, $+0.23$ for certification\\
+T04 & Does the certificate cover at its nominal level? & 18 designs: coverage at or above nominal in all (minimum $93.6\%$ at nominal $90\%$); median excess $3$--$15\%$ with memory bound $0.6$--$0.9$, about $230\%$ at $0.97$\\
+T05 & Is the corrected gate exact? & 2{,}000 cases, horizons 1--10, every sign path enumerated: per-period worst case equals $V\sum|g|$ and total-budget worst case equals $V\max|g|$ in all; the peak gain understates the per-period worst case in 1{,}800\\
+T06 & Is the closed-form guard globally optimal? & 500 economies: equal to brute force over 1{,}001 levels from the state matrices in all; safe sets always intervals; 28 infeasible states flagged\\
+T07 & What does disclosure add? & Table~\ref{tab:discsim}\\
+T08 & Does the guard depend on the channel? & Momentum learners, fixed-rule traders, depth and slow dealer reversion calibrated to $S=5$: identical guard capacity ($0.20$); one-period margins differ ($-0.34$ to $-0.20$)\\
+T09 & What breaks the certificate? & Coverage at nominal 95\%: as assumed $100\%$; delayed feedback $100\%$; contrarian cohorts $100\%$; depth channel $92.8\%$; memory longer than declared $86.3\%$; feedback 20\% stronger after certification $34.7\%$\\
+T12 & Should rebates use certified bounds? & No: a 10\% overstatement of $S$ costs $2.4$--$2.8\%$ of first-best welfare, a 50\% overstatement $70$--$80\%$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item All tests are deterministic given their seeds and run without data (\texttt{research\_extension/information\_safety/run\_all.py} $\to$ \texttt{IS\_results.json}, about three minutes). Kind: recomputed. \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+The simulations confirm what the theorems claim and locate what they do not (Table~\ref{tab:simtests}). The certificate is valid where its contract holds, including with delayed feedback and contrarian cohorts, and conservative when the declared memory is long. It fails in two ways that matter for practice: when memory is longer than declared, which is the case Theorem~\ref{thm:window}(iii) warns about, and when feedback strengthens after certification, in which case a stale certificate covers the new risk only a third of the time. A guard must therefore be re-certified as conditions change; it cannot be set once.
+
+\subsection{Pre-registered test on untouched days (Part 15)}\label{sec:p15}
+We registered a test (Part 15) before downloading any day used in it: the 12th to 15th of each month on Binance, days no earlier part used on Binance. It has two primaries, with Holm's correction across them. First, the forecasting model of Table~\ref{tab:z9}, frozen at its 2023--2024 training estimates, is applied to the 15th of each month from January 2025 to September 2026. Second, an uncertainty-aware guard throttles a position by $\min(1,k_s/(U_{\rm cert}S^{\rm up}_{60}))$, where $S^{\rm up}_{60}$ is the 90th percentile of the summed response over 100 block-bootstrap refits of the operator certified from the three preceding days; it is compared with a static limit at matched activity, and secondarily with the point-estimate guard, a depth throttle, a spectral-radius throttle and a volatility cap. The bootstrap bound is a diagnostic for observational data, not the finite-sample certificate of Theorem~\ref{thm:certcost}.
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{\textbf{[Results pending: Part 15 is running.]} This subsection will report the frozen-model $\Delta R^2$ with its 97.5\% interval and Clark--West statistic; the guard's log difference in tail loss per unit of position against the static limit with its 97.5\% interval; the secondary comparisons; activity retained, share of hours throttled and breach rates for each rule; and the outcome of each primary under Holm's correction, pass or fail.}}
+\end{center}
+
+\subsection{Pre-registered test on untouched symbols (Part 16)}\label{sec:p16}
+A third registered test (Part 16) uses Binance perpetuals that no earlier part used, thirty drawn by a seeded rule before any analysis and kept if their training depth is below the thin threshold of Part 5. It has three primaries, with Holm's correction across them: the forecasting specification of Table~\ref{tab:z9} on the new thin symbols; the same beyond the baseline \emph{plus VPIN}, which turns the post-hoc comparison of Section~\ref{sec:z9} into a confirmatory one; and the guard of Section~\ref{sec:p15} against a static limit.
+
+\begin{center}
+\fbox{\parbox{0.9\textwidth}{\textbf{[Results pending: Part 16 is running.]} This subsection will report the symbols that entered, the three primary statistics with their intervals and Holm-adjusted $p$-values, VPIN's own gain, and the guard comparisons.}}
+\end{center}

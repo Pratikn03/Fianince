@@ -1,6 +1,12 @@
 import Mathlib
+import CurrentProofs.PositiveDynamics
+import CurrentProofs.CohortConvolution
+import CurrentProofs.WindowGate
 
 namespace CurrentMM
+noncomputable section
+open scoped BigOperators
+open MeasureTheory
 
 /-!
 # Ceiling Suite Paper 2 — Complete 1-to-1 Formalization (21 Environments)
@@ -272,22 +278,68 @@ theorem p2_prop_sum_closed_form (κ η r q φ_eps : ℝ)
   rw [hdet, hnum]
   field_simp [hη_ne, hr_ne, hden_ne]
 
-/-- 14. `thm:guard` (`p2_theory2.tex`): Theorem [Summed-gain guard is maximal].
-For any bounded shock sequence $|u_0|, |u_1| \le \bar u$ with $\bar u \ge 0$, the linear loss
-$I (g_0 u_0 + g_1 u_1)$ is bounded by $L_{\max} = |I| \bar u (|g_0| + |g_1|)$, and this bound
-is attained by the extremal shock sequence. -/
-theorem p2_thm_guard_maximal (I_pos g0 g1 u0 u1 u_bar : ℝ)
-    (hI : 0 ≤ I_pos) (hg0 : 0 ≤ g0) (hg1 : 0 ≤ g1)
-    (hu0 : u0 ≤ u_bar) (hu1 : u1 ≤ u_bar) :
-    I_pos * (g0 * u0 + g1 * u1) ≤ I_pos * u_bar * (g0 + g1) ∧
-    I_pos * (g0 * u_bar + g1 * u_bar) = I_pos * u_bar * (g0 + g1) := by
-  refine ⟨?_, by ring⟩
-  have h1 : g0 * u0 ≤ g0 * u_bar := mul_le_mul_of_nonneg_left hu0 hg0
-  have h2 : g1 * u1 ≤ g1 * u_bar := mul_le_mul_of_nonneg_left hu1 hg1
-  have h3 : g0 * u0 + g1 * u1 ≤ u_bar * (g0 + g1) := by linarith
-  have h4 : I_pos * (g0 * u0 + g1 * u1) ≤ I_pos * (u_bar * (g0 + g1)) :=
-    mul_le_mul_of_nonneg_left h3 hI
-  linarith
+/-- Sign-aligned extremal disturbance path for the per-period shock bound $|u_k| \le \bar u$. -/
+def signAlignedShock {H : ℕ} (u_bar : ℝ) (g : Fin H → ℝ) : Fin H → ℝ :=
+  fun k => u_bar * alignedSign (g k)
+
+/-- 14. `thm:guard` and `eq:gate` (`p2_guard.tex`): Theorem [Summed-gain guard is maximal & Quantity Gate Duality].
+Over any finite horizon `Fin H → ℝ` with inventory magnitude `I_abs ≥ 0`, per-period shock bound `u_bar ≥ 0`,
+and total-window budget `V ≥ 0`:
+(1) Under a per-period bound `∀ k, |u k| ≤ u_bar`, the worst-case loss `I_abs * |∑ k, g k * u k|`
+    has greatest value `I_abs * u_bar * ∑ k, |g k|`, attained by `signAlignedShock u_bar g`;
+(2) Under a total-window budget `∑ k, |v k| ≤ V` with peak lag `k_star` (`∀ k, |g k| ≤ |g k_star|`),
+    the worst-case displacement `|∑ k, g k * v k|` has greatest value `V * |g k_star|`, attained by
+    concentrating `V` at `k_star` (`scalarWorstPulse 0 V g k_star`). -/
+theorem p2_thm_guard_maximal {H : ℕ} (I_abs u_bar V : ℝ) (g : Fin H → ℝ) (k_star : Fin H)
+    (hI : 0 ≤ I_abs) (hu : 0 ≤ u_bar) (hV : 0 ≤ V)
+    (hpeak : ∀ k, |g k| ≤ |g k_star|) :
+    IsGreatest {L : ℝ | ∃ u : Fin H → ℝ, (∀ k, |u k| ≤ u_bar) ∧
+      L = I_abs * |∑ k, g k * u k|} (I_abs * u_bar * ∑ k, |g k|) ∧
+    IsGreatest {L : ℝ | ∃ v : Fin H → ℝ, (∑ k, |v k| ≤ V) ∧
+      L = |∑ k, g k * v k|} (V * |g k_star|) := by
+  refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
+  · refine ⟨signAlignedShock u_bar g, ?_, ?_⟩
+    · intro k
+      dsimp [signAlignedShock]
+      rw [abs_mul, abs_of_nonneg hu, aligned_sign_abs, mul_one]
+    · have hsum : (∑ k, g k * signAlignedShock u_bar g k) = u_bar * ∑ k, |g k| := by
+        rw [Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro k _
+        dsimp [signAlignedShock]
+        calc g k * (u_bar * alignedSign (g k))
+          _ = u_bar * (g k * alignedSign (g k)) := by ring
+          _ = u_bar * |g k| := by rw [aligned_sign_product]
+      have h_abs_sum_nonneg : 0 ≤ ∑ k, |g k| := Finset.sum_nonneg (fun k _ => abs_nonneg (g k))
+      have h_prod_nonneg : 0 ≤ u_bar * ∑ k, |g k| := mul_nonneg hu h_abs_sum_nonneg
+      rw [hsum, abs_of_nonneg h_prod_nonneg, mul_assoc]
+  · rintro L ⟨u, hu_bound, rfl⟩
+    have h_abs : |∑ k, g k * u k| ≤ u_bar * ∑ k, |g k| := by
+      calc |∑ k, g k * u k|
+        _ ≤ ∑ k, |g k * u k| := Finset.abs_sum_le_sum_abs _ _
+        _ = ∑ k, |g k| * |u k| := by
+            apply Finset.sum_congr rfl
+            intro k _
+            exact abs_mul (g k) (u k)
+        _ ≤ ∑ k, |g k| * u_bar :=
+            Finset.sum_le_sum (fun k _ => mul_le_mul_of_nonneg_left (hu_bound k) (abs_nonneg (g k)))
+        _ = u_bar * ∑ k, |g k| := by rw [← Finset.sum_mul, mul_comm]
+    calc I_abs * |∑ k, g k * u k|
+      _ ≤ I_abs * (u_bar * ∑ k, |g k|) := mul_le_mul_of_nonneg_left h_abs hI
+      _ = I_abs * u_bar * ∑ k, |g k| := by ring
+  · refine ⟨scalarWorstPulse 0 V g k_star, ?_, ?_⟩
+    · have hq := scalar_worst_pulse_quantity 0 V g k_star hV
+      simpa [scalarProbeQuantity] using le_of_eq hq
+    · have hout := scalar_worst_pulse_output 0 V g k_star hV
+      unfold scalarWindowOutput at hout
+      rw [zero_add, abs_zero, zero_add, mul_comm] at hout
+      exact hout.symm
+  · rintro L ⟨v, hv_budget, rfl⟩
+    have h_env := scalar_window_envelope_bound 0 0 0 (|g k_star|) V g v
+      (abs_nonneg (g k_star)) (le_refl 0) hpeak hv_budget
+    unfold scalarWindowLoad scalarWindowOutput scalarProbeQuantity at h_env
+    rw [zero_add, abs_zero] at h_env
+    linarith
 
 /-- 15. `lem:tail` (`p2_theory2.tex`): Lemma [Contraction-block tail bound].
 When the tail impulse responses beyond horizon $H$ satisfy $|g_k| \le C \rho^k$ with
@@ -501,8 +553,8 @@ theorem foundational_result_A_impossibility
   refine ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num,
     by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, h_bound⟩
 
-/-- Flagship Theorem A (`thm:flagship_A`): Exact Two-Market Ambiguity Witness and TV Capacity-Loss Bound. -/
-theorem flagship_thm_A_witness_and_tv_impossibility
+/-- Algebraic core for Theorem A (`thm:flagship_A`): scalar TV capacity-loss inequality and numerical witness. -/
+theorem thmA_algebraic_core
     (v0 v1 beta d_tv P0_E P1_E ExpLoss1 : ℝ)
     (hv : v0 < v1) (hP0 : 1 - beta ≤ P0_E) (htv : P0_E - P1_E ≤ d_tv)
     (hE_nonneg : 0 ≤ ExpLoss1) (hE_markov : (v1 - v0) * P1_E ≤ ExpLoss1) :
@@ -512,8 +564,8 @@ theorem flagship_thm_A_witness_and_tv_impossibility
   dsimp only at hA
   exact ⟨hA.2.2.2.2.2.2.2.2.2.2.2, by norm_num⟩
 
-/-- Flagship Theorem B (`thm:flagship_B`): Sharp Risk-Specific Identifiability and Markov-Krein Moment Envelope. -/
-theorem flagship_thm_B_risk_identifiability_envelope
+/-- Algebraic core for Theorem B (`thm:flagship_B`): two-atom Markov-Krein envelope and numerical endpoints. -/
+theorem thmB_algebraic_core
     (w1 w2 r1 r2 r_bar : ℝ)
     (hw1 : 0 ≤ w1) (hw2 : 0 ≤ w2)
     (hr1_lo : 0 ≤ r1) (hr1_hi : r1 ≤ r_bar)
@@ -543,8 +595,8 @@ theorem flagship_thm_B_risk_identifiability_envelope
     linarith
   refine ⟨by linarith, h_sum_hi, by norm_num, by norm_num⟩
 
-/-- Flagship Theorem C (`thm:flagship_C`): Minimum Observations Required for Safe Decisions vs. Parameter Identification. -/
-theorem flagship_thm_C_minimum_observations
+/-- Algebraic core for Theorem C (`thm:flagship_C`): scalar Pinsker sample-size rearrangement. -/
+theorem thmC_algebraic_core
     (N snr beta eps d_tv : ℝ)
     (hsnr : 0 < snr) (hmargin : 0 ≤ 1 - beta - eps)
     (hpinsker : d_tv ^ 2 ≤ (N / 4) * snr)
@@ -557,8 +609,8 @@ theorem flagship_thm_C_minimum_observations
   have h_N : 4 * (1 - beta - eps) ^ 2 / snr ≤ N := (div_le_iff₀ hsnr).mpr h_ineq
   exact ⟨h_N, by norm_num⟩
 
-/-- Flagship Theorem D (`thm:flagship_D`): Statistically Valid Confidence-Compatible Safety Certification. -/
-theorem flagship_thm_D_confidence_safety_certification
+/-- Algebraic core for Theorem D (`thm:flagship_D`): scalar dominance under upper bound. -/
+theorem thmD_algebraic_core
     (I_abs v S_true S_upper B P_noncov gamma : ℝ)
     (hI : 0 ≤ I_abs) (hv : 0 ≤ v) (hcov : S_true ≤ S_upper)
     (hcert : I_abs * v * S_upper ≤ B) (hprob : P_noncov ≤ gamma) :
@@ -567,8 +619,8 @@ theorem flagship_thm_D_confidence_safety_certification
   have h_le : I_abs * v * S_true ≤ I_abs * v * S_upper := mul_le_mul_of_nonneg_left hcov hIv
   exact ⟨by linarith, hprob⟩
 
-/-- Flagship Theorem E (`thm:flagship_E`): Optimal Uncertainty-Aware Pre-Trade Guard. -/
-theorem flagship_thm_E_optimal_uncertainty_guard
+/-- Algebraic core for Theorem E (`thm:flagship_E`): linear division equivalence for admission cap. -/
+theorem thmE_algebraic_core
     (m_lo q_hi kappa_hi req_inv alpha : ℝ)
     (hqk : 0 < q_hi * kappa_hi) (hfeas : req_inv ≤ m_lo) (_halpha_nonneg : 0 ≤ alpha) :
     let alpha_unclamped := (m_lo - req_inv) / (q_hi * kappa_hi)
@@ -582,8 +634,8 @@ theorem flagship_thm_E_optimal_uncertainty_guard
   · rw [le_div_iff₀ hqk]
     constructor <;> intro h <;> linarith
 
-/-- Flagship Theorem F (`thm:flagship_F`): Strict Economic Value of Class-Tagged Disclosure and Net Welfare Ledger. -/
-theorem flagship_thm_F_disclosure_economic_value
+/-- Algebraic core for Theorem F (`thm:flagship_F`): scalar welfare ledger sign condition. -/
+theorem thmF_algebraic_core
     (B_over_I q eta eta_min omega c_comp c_leak : ℝ)
     (hBI : 0 < B_over_I) (hq : 0 < q) (heta_min : 0 < eta_min) (heta : eta_min < eta) :
     let delta_v := B_over_I * q * (eta / eta_min - 1)
@@ -595,8 +647,8 @@ theorem flagship_thm_F_disclosure_economic_value
     mul_pos (mul_pos hBI hq) (by linarith)
   refine ⟨h_dv, by constructor <;> intro h <;> linarith⟩
 
-/-- Flagship Theorem G (`thm:flagship_G`): Equilibrium Reversion Supply and Double Dividend of Disclosure Under Ambiguity. -/
-theorem flagship_thm_G_equilibrium_under_uncertainty
+/-- Algebraic core for Theorem G (`thm:flagship_G`): scalar equilibrium reversion comparison. -/
+theorem thmG_algebraic_core
     (q_true delta_q_pub delta_q_disc kappa_tilde wedge_eq wedge_soc : ℝ)
     (hkt : 0 < kappa_tilde) (hdisc : delta_q_disc < delta_q_pub) (hwedge : wedge_eq < wedge_soc) :
     let m_eq_pub := (q_true + delta_q_pub) * kappa_tilde + wedge_eq
@@ -662,4 +714,515 @@ theorem foundational_result_C_probing_control_tradeoff (κ_diss V V_star : ℝ)
     · linarith
   refine ⟨hdiff, by linarith⟩
 
+/-- Example 5.1 (`ex:witness`): Exact Ambiguity Witness in Price-First Cohort Recurrence (`p2_infosafety.tex`). -/
+theorem p2_ex_witness :
+    let a : ℝ := 2 / 5
+    let kappa : ℝ := 1
+    let qA : ℝ := 2 / 25
+    let etaA : ℝ := 1 / 2
+    let qB1 : ℝ := 2 / 95
+    let etaB1 : ℝ := 19 / 20
+    let qB2 : ℝ := 2 / 5
+    let etaB2 : ℝ := 1 / 20
+    let hA0 : ℝ := kappa
+    let yA0 : ℝ := etaA * hA0
+    let hA1 : ℝ := a * hA0 + kappa * qA * yA0
+    let yA1 : ℝ := (1 - etaA) * yA0 + etaA * hA1
+    let hA2 : ℝ := a * hA1 + kappa * qA * yA1
+    let yA2 : ℝ := (1 - etaA) * yA1 + etaA * hA2
+    let hA3 : ℝ := a * hA2 + kappa * qA * yA2
+    let hB0 : ℝ := kappa
+    let yB1_0 : ℝ := etaB1 * hB0
+    let yB2_0 : ℝ := etaB2 * hB0
+    let hB1 : ℝ := a * hB0 + kappa * (qB1 * yB1_0 + qB2 * yB2_0)
+    let yB1_1 : ℝ := (1 - etaB1) * yB1_0 + etaB1 * hB1
+    let yB2_1 : ℝ := (1 - etaB2) * yB2_0 + etaB2 * hB1
+    let hB2 : ℝ := a * hB1 + kappa * (qB1 * yB1_1 + qB2 * yB2_1)
+    let yB1_2 : ℝ := (1 - etaB1) * yB1_1 + etaB1 * hB2
+    let yB2_2 : ℝ := (1 - etaB2) * yB2_1 + etaB2 * hB2
+    let hB3 : ℝ := a * hB2 + kappa * (qB1 * yB1_2 + qB2 * yB2_2)
+    let SA : ℝ := kappa / (1 - a - kappa * qA)
+    let SB : ℝ := kappa / (1 - a - kappa * (qB1 + qB2))
+    hA0 = 1 ∧ hB0 = 1 ∧
+    hA1 = 11 / 25 ∧ hB1 = 11 / 25 ∧
+    hA2 = 267 / 1250 ∧ hB2 = 267 / 1250 ∧
+    hA3 = 7049 / 62500 ∧ hB3 = 30221 / 250000 ∧
+    hB3 - hA3 = 81 / 10000 ∧
+    SA = 25 / 13 ∧ SB = 95 / 17 ∧
+    1 / SA = 13 / 25 ∧ 1 / SB = 17 / 95 := by
+  dsimp only
+  refine ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num,
+    by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num⟩
+
+/-- Total variation distance between two measures over all measurable events:
+$\mathrm{TV}(P_0, P_1) = \sup_{E \text{ measurable}} |P_0(E) - P_1(E)|$. -/
+def totalVariationDist {Ω : Type*} [MeasurableSpace Ω] (P0 P1 : Measure Ω) : ℝ :=
+  sSup {x : ℝ | ∃ E : Set Ω, MeasurableSet E ∧ x = |P0.real E - P1.real E|}
+
+/-- For probability measures $P_0, P_1$ and any measurable event $E$,
+$|P_0(E) - P_1(E)| \le \mathrm{TV}(P_0, P_1)$ and $P_0(E) - P_1(E) \le \mathrm{TV}(P_0, P_1)$. -/
+theorem totalVariationDist_event_le {Ω : Type*} [MeasurableSpace Ω]
+    (P0 P1 : Measure Ω) [IsProbabilityMeasure P0] [IsProbabilityMeasure P1]
+    (E : Set Ω) (hE : MeasurableSet E) :
+    |P0.real E - P1.real E| ≤ totalVariationDist P0 P1 ∧
+    P0.real E - P1.real E ≤ totalVariationDist P0 P1 := by
+  have hbdd : BddAbove {x : ℝ | ∃ F : Set Ω, MeasurableSet F ∧ x = |P0.real F - P1.real F|} := by
+    refine ⟨1, ?_⟩
+    rintro x ⟨F, _, rfl⟩
+    have h0_lo : 0 ≤ P0.real F := measureReal_nonneg
+    have h0_hi : P0.real F ≤ 1 := by
+      calc P0.real F ≤ P0.real Set.univ := measureReal_mono (Set.subset_univ F)
+        _ = 1 := probReal_univ
+    have h1_lo : 0 ≤ P1.real F := measureReal_nonneg
+    have h1_hi : P1.real F ≤ 1 := by
+      calc P1.real F ≤ P1.real Set.univ := measureReal_mono (Set.subset_univ F)
+        _ = 1 := probReal_univ
+    exact abs_le.mpr ⟨by linarith, by linarith⟩
+  have hle : |P0.real E - P1.real E| ≤ totalVariationDist P0 P1 :=
+    le_csSup hbdd ⟨E, hE, rfl⟩
+  exact ⟨hle, le_trans (le_abs_self _) hle⟩
+
+/-- Proposition 5.2 (`prop:twoworld`): Unavoidable Loss of Safe Capacity (`p2_infosafety.tex`).
+Formalized with actual probability measures `P0 P1 : Measure Ω`, measurable admission rule `A : Ω → ℝ`
+bounded in `[0, v1]`, total variation distance `totalVariationDist P0 P1` defined as the supremum over
+measurable events, and Mathlib's Markov inequality (`mul_meas_ge_le_integral_of_nonneg`) for the
+Bochner integral `∫ ω, (v1 - A ω) ∂P1`. -/
+theorem p2_prop_twoworld {Ω : Type*} [MeasurableSpace Ω]
+    (P0 P1 : Measure Ω) [IsProbabilityMeasure P0] [IsProbabilityMeasure P1]
+    (A : Ω → ℝ) (v0 v1 beta : ℝ)
+    (hv : v0 < v1) (hA_meas : Measurable A)
+    (hA_bound : ∀ ω, 0 ≤ A ω ∧ A ω ≤ v1)
+    (h_safe0 : 1 - beta ≤ P0.real {ω | A ω ≤ v0}) :
+    (v1 - v0) * max 0 (1 - beta - totalVariationDist P0 P1) ≤ ∫ ω, (v1 - A ω) ∂P1 ∧
+    ((13 / 25 : ℝ) - 17 / 95) * (1 - 1 / 20 - 0) = 81 / 250 := by
+  let E : Set Ω := {ω | A ω ≤ v0}
+  have hE_meas : MeasurableSet E := hA_meas measurableSet_Iic
+  have h_tv := (totalVariationDist_event_le P0 P1 E hE_meas).2
+  have hP1_lower : 1 - beta - totalVariationDist P0 P1 ≤ P1.real E := by linarith
+  let f : Ω → ℝ := fun ω => v1 - A ω
+  have hf_meas : Measurable f := measurable_const.sub hA_meas
+  have hf_nonneg : ∀ ω, 0 ≤ f ω := fun ω => by dsimp [f]; linarith [(hA_bound ω).2]
+  have hf_int : Integrable f P1 := by
+    refine Integrable.of_mem_Icc 0 v1 hf_meas.aemeasurable (Filter.Eventually.of_forall (fun ω => ?_))
+    exact ⟨hf_nonneg ω, by dsimp [f]; linarith [(hA_bound ω).1]⟩
+  have h_markov := mul_meas_ge_le_integral_of_nonneg (Filter.Eventually.of_forall hf_nonneg) hf_int (v1 - v0)
+  have h_set_eq : {ω | v1 - v0 ≤ f ω} = E := by
+    ext ω
+    change v1 - v0 ≤ v1 - A ω ↔ A ω ≤ v0
+    constructor <;> intro h <;> linarith
+  rw [h_set_eq] at h_markov
+  have h_int_nonneg : 0 ≤ ∫ ω, f ω ∂P1 := integral_nonneg hf_nonneg
+  have h_pos : 0 < v1 - v0 := by linarith
+  have h_bound : (v1 - v0) * max 0 (1 - beta - totalVariationDist P0 P1) ≤ ∫ ω, f ω ∂P1 := by
+    rcases le_total 0 (1 - beta - totalVariationDist P0 P1) with h_nonneg | h_neg
+    · rw [max_eq_right h_nonneg]
+      have h_mul : (v1 - v0) * (1 - beta - totalVariationDist P0 P1) ≤ (v1 - v0) * P1.real E :=
+        mul_le_mul_of_nonneg_left hP1_lower (le_of_lt h_pos)
+      linarith
+    · rw [max_eq_left h_neg]
+      simpa using h_int_nonneg
+  exact ⟨h_bound, by norm_num⟩
+
+/-- Empirical moment $k_m = \sum_i w_i r_i^m$ of a discrete $K$-cohort memory measure $(r, w)$. -/
+def discreteMoment {K : ℕ} (r w : Fin K → ℝ) (m : ℕ) : ℝ :=
+  ∑ i, w i * (r i) ^ m
+
+/-- Feedback load $\Phi = \sum_i \frac{w_i}{1 - r_i}$ of a discrete $K$-cohort memory measure $(r, w)$. -/
+def discretePhi {K : ℕ} (r w : Fin K → ℝ) : ℝ :=
+  ∑ i, w i / (1 - r i)
+
+/-- Theorem 5.3 (`thm:window`): Finite-Window Certification via Markov-Krein Bounds and Unboundedness
+Without a Memory Bound (`p2_infosafety.tex`).
+Proves:
+(1) Under a memory bound $r_i \in [0, \bar r]$ with $\bar r < 1$, any $K$-cohort nonnegative measure
+    satisfies $k_0 \le \Phi \le k_0 / (1 - \bar r)$;
+(2) Without a memory bound ($r \in [0, 1)$), for any target moment sequence $c_0, \dots, c_{n-1}$ that
+    admits an interior slack $\epsilon > 0$ (so $c_m - \epsilon r_0^m$ is represented on $[0, 1)$ for every
+    $r_0 \in [0, 1)$) and any target $M_{\text{target}} \in \mathbb R$, appending the atom $(r_0, \epsilon)$
+    yields a valid nonnegative measure on $[0, 1)$ with the exact same first $n$ moments $c_0, \dots, c_{n-1}$
+    and feedback load $\Phi > M_{\text{target}}$. -/
+theorem p2_thm_window {K n : ℕ}
+    (r w : Fin K → ℝ) (r_bar : ℝ)
+    (hw : ∀ i, 0 ≤ w i) (hr : ∀ i, 0 ≤ r i ∧ r i ≤ r_bar) (hrbar : r_bar < 1)
+    (c : Fin n → ℝ) (eps : ℝ) (heps : 0 < eps)
+    (r_res w_res : ℝ → Fin K → ℝ)
+    (h_res_valid : ∀ r0 ∈ Set.Ico (0 : ℝ) 1, ∀ i,
+      0 ≤ w_res r0 i ∧ 0 ≤ r_res r0 i ∧ r_res r0 i < 1)
+    (h_res_mom : ∀ r0 ∈ Set.Ico (0 : ℝ) 1, ∀ m : Fin n,
+      discreteMoment (r_res r0) (w_res r0) (m : ℕ) = c m - eps * r0 ^ (m : ℕ))
+    (M_target : ℝ) :
+    discreteMoment r w 0 ≤ discretePhi r w ∧
+    discretePhi r w ≤ discreteMoment r w 0 / (1 - r_bar) ∧
+    ∃ (r_aug w_aug : Option (Fin K) → ℝ),
+      (∀ j, 0 ≤ w_aug j ∧ 0 ≤ r_aug j ∧ r_aug j < 1) ∧
+      (∀ m : Fin n, (∑ j, w_aug j * (r_aug j) ^ (m : ℕ)) = c m) ∧
+      M_target < ∑ j, w_aug j / (1 - r_aug j) := by
+  have h1_rb : 0 < 1 - r_bar := by linarith
+  have h_lo : discreteMoment r w 0 ≤ discretePhi r w := by
+    unfold discreteMoment discretePhi
+    apply Finset.sum_le_sum
+    intro i _
+    simp only [pow_zero, mul_one]
+    have h1_ri : 0 < 1 - r i := by linarith [(hr i).2]
+    rw [le_div_iff₀ h1_ri]
+    nlinarith [hw i, (hr i).1]
+  have h_hi : discretePhi r w ≤ discreteMoment r w 0 / (1 - r_bar) := by
+    unfold discreteMoment discretePhi
+    rw [Finset.sum_div]
+    apply Finset.sum_le_sum
+    intro i _
+    simp only [pow_zero, mul_one]
+    exact div_le_div_of_nonneg_left (hw i) h1_rb (by linarith [(hr i).2])
+  refine ⟨h_lo, h_hi, ?_⟩
+  let denom : ℝ := max 0 M_target + 1
+  have h_denom_pos : 0 < denom := by dsimp [denom]; positivity
+  let delta : ℝ := min (1 / 2) (eps / denom)
+  have h_delta_pos : 0 < delta := lt_min (by norm_num) (div_pos heps h_denom_pos)
+  have h_delta_le_half : delta ≤ 1 / 2 := min_le_left _ _
+  have h_delta_le_ratio : delta ≤ eps / denom := min_le_right _ _
+  let r0 : ℝ := 1 - delta
+  have hr0_mem : r0 ∈ Set.Ico (0 : ℝ) 1 := by
+    simp only [Set.mem_Ico, r0]
+    exact ⟨by linarith, by linarith⟩
+  let r_aug : Option (Fin K) → ℝ := fun j => j.elim r0 (r_res r0)
+  let w_aug : Option (Fin K) → ℝ := fun j => j.elim eps (w_res r0)
+  refine ⟨r_aug, w_aug, ?_, ?_, ?_⟩
+  · intro j
+    cases j with
+    | none =>
+      dsimp [r_aug, w_aug]
+      exact ⟨le_of_lt heps, hr0_mem.1, hr0_mem.2⟩
+    | some i =>
+      dsimp [r_aug, w_aug]
+      exact h_res_valid r0 hr0_mem i
+  · intro m
+    rw [Fintype.sum_option]
+    dsimp [r_aug, w_aug]
+    have h_m := h_res_mom r0 hr0_mem m
+    unfold discreteMoment at h_m
+    linarith
+  · rw [Fintype.sum_option]
+    dsimp [r_aug, w_aug]
+    have h_res_phi_nonneg : 0 ≤ ∑ i : Fin K, w_res r0 i / (1 - r_res r0 i) := by
+      apply Finset.sum_nonneg
+      intro i _
+      have hv := h_res_valid r0 hr0_mem i
+      exact div_nonneg hv.1 (by linarith [hv.2.2])
+    have h_1_r0 : 1 - r0 = delta := by dsimp [r0]; ring
+    rw [h_1_r0]
+    have h_eps_div : denom ≤ eps / delta := by
+      rw [le_div_iff₀ h_delta_pos]
+      have h_mul := mul_le_mul_of_nonneg_right h_delta_le_ratio (le_of_lt h_denom_pos)
+      rw [div_mul_cancel₀ eps (ne_of_gt h_denom_pos)] at h_mul
+      linarith [h_mul]
+    have h_M_lt_denom : M_target < denom := by
+      dsimp [denom]
+      linarith [le_max_right 0 M_target]
+    linarith
+
+/-- One-step contraction of the positive cohort state-space recursion (`cohortStep`):
+When $a + \kappa \sum_i q_i \le \bar s \le 1$ and $1 - \bar r \le \eta_i \le 1$ with $\bar r \in [0, 1)$,
+the box bound $M$ contracts by $\bar\lambda = 1 - (1 - \bar r)(1 - \bar s)$ in a single step. -/
+theorem positive_cohort_step_contraction_box {n : ℕ} (a kappa s_bar r_bar M : ℝ)
+    (q rate : Fin n → ℝ) (state : CohortState n)
+    (ha : 0 ≤ a) (hk : 0 ≤ kappa) (hM : 0 ≤ M)
+    (hq : ∀ i, 0 ≤ q i)
+    (hrbar0 : 0 ≤ r_bar) (hrbar1 : r_bar ≤ 1) (hsbar1 : s_bar ≤ 1)
+    (hrate : ∀ i, 1 - r_bar ≤ rate i ∧ rate i ≤ 1)
+    (hfeedback : a + kappa * ∑ i, q i ≤ s_bar)
+    (hstate : stateInBox state M) :
+    let lambda_bar := 1 - (1 - r_bar) * (1 - s_bar)
+    stateInBox (cohortStep a kappa q rate 0 state) (lambda_bar * M) := by
+  intro lambda_bar
+  have h_rate_nonneg : ∀ i, 0 ≤ rate i := fun i => by linarith [(hrate i).1]
+  have hp_nonneg : 0 ≤ (cohortStep a kappa q rate 0 state).price := by
+    dsimp only [cohortStep]
+    simp only [mul_zero, add_zero]
+    exact add_nonneg (mul_nonneg ha hstate.1.1)
+      (mul_nonneg hk (Finset.sum_nonneg fun i _ => mul_nonneg (hq i) (hstate.2 i).1))
+  have hp_le_sbar : (cohortStep a kappa q rate 0 state).price ≤ s_bar * M := by
+    dsimp only [cohortStep]
+    simp only [mul_zero, add_zero]
+    have hs : (∑ i, q i * state.memory i) ≤ (∑ i, q i) * M := by
+      rw [Finset.sum_mul]
+      exact Finset.sum_le_sum fun i _ => mul_le_mul_of_nonneg_left (hstate.2 i).2 (hq i)
+    calc a * state.price + kappa * ∑ i, q i * state.memory i
+      _ ≤ a * M + kappa * ((∑ i, q i) * M) :=
+        add_le_add (mul_le_mul_of_nonneg_left hstate.1.2 ha) (mul_le_mul_of_nonneg_left hs hk)
+      _ = (a + kappa * ∑ i, q i) * M := by ring
+      _ ≤ s_bar * M := mul_le_mul_of_nonneg_right hfeedback hM
+  have hsbar_le_lam : s_bar ≤ lambda_bar := by
+    dsimp [lambda_bar]
+    nlinarith
+  have hp_le_lam : (cohortStep a kappa q rate 0 state).price ≤ lambda_bar * M :=
+    le_trans hp_le_sbar (mul_le_mul_of_nonneg_right hsbar_le_lam hM)
+  refine ⟨⟨hp_nonneg, hp_le_lam⟩, ?_⟩
+  intro i
+  change 0 ≤ (1 - rate i) * state.memory i + rate i * (cohortStep a kappa q rate 0 state).price ∧
+    (1 - rate i) * state.memory i + rate i * (cohortStep a kappa q rate 0 state).price ≤ lambda_bar * M
+  constructor
+  · exact add_nonneg (mul_nonneg (by linarith [(hrate i).2]) (hstate.2 i).1)
+      (mul_nonneg (h_rate_nonneg i) hp_nonneg)
+  · have h_mem : (1 - rate i) * state.memory i ≤ (1 - rate i) * M :=
+      mul_le_mul_of_nonneg_left (hstate.2 i).2 (by linarith [(hrate i).2])
+    have h_p : rate i * (cohortStep a kappa q rate 0 state).price ≤ rate i * (s_bar * M) :=
+      mul_le_mul_of_nonneg_left hp_le_sbar (h_rate_nonneg i)
+    have h_rate_s : (1 - r_bar) * (1 - s_bar) ≤ rate i * (1 - s_bar) :=
+      mul_le_mul_of_nonneg_right (hrate i).1 (by linarith)
+    have h_coeff : 1 - rate i * (1 - s_bar) ≤ lambda_bar := by
+      dsimp [lambda_bar]
+      linarith
+    calc (1 - rate i) * state.memory i + rate i * (cohortStep a kappa q rate 0 state).price
+      _ ≤ (1 - rate i) * M + rate i * (s_bar * M) := add_le_add h_mem h_p
+      _ = (1 - rate i * (1 - s_bar)) * M := by ring
+      _ ≤ lambda_bar * M := mul_le_mul_of_nonneg_right h_coeff hM
+
+/-- Inductive trajectory contraction for the positive cohort state-space system:
+at every lag $t \in \mathbb N$, the state lies in `stateInBox _ (kappa * lambda_bar ^ t)`. -/
+theorem positive_cohort_trajectory_contraction {n : ℕ} (a kappa s_bar r_bar : ℝ)
+    (q rate : Fin n → ℝ)
+    (ha : 0 ≤ a) (hk : 0 ≤ kappa) (hq : ∀ i, 0 ≤ q i)
+    (hrbar0 : 0 ≤ r_bar) (hrbar1 : r_bar ≤ 1)
+    (hsbar0 : 0 ≤ s_bar) (hsbar1 : s_bar ≤ 1)
+    (hrate : ∀ i, 1 - r_bar ≤ rate i ∧ rate i ≤ 1)
+    (hfeedback : a + kappa * ∑ i, q i ≤ s_bar) (t : ℕ) :
+    let lambda_bar := 1 - (1 - r_bar) * (1 - s_bar)
+    stateInBox (autonomousState a kappa q rate (pulse1 a kappa q rate 1) t) (kappa * lambda_bar ^ t) := by
+  intro lambda_bar
+  have h_lam_nonneg : 0 ≤ lambda_bar := by
+    dsimp [lambda_bar]
+    nlinarith
+  induction t with
+  | zero =>
+    simp only [autonomousState, pow_zero, mul_one]
+    have h_rate01 : ∀ i, 0 ≤ rate i ∧ rate i ≤ 1 := fun i => ⟨by linarith [(hrate i).1], (hrate i).2⟩
+    simpa using positive_pulse_initial_box a kappa 1 q rate hk (by norm_num) h_rate01
+  | succ t ih =>
+    rw [autonomousState, pow_succ', ← mul_assoc, mul_comm kappa lambda_bar, mul_assoc]
+    exact positive_cohort_step_contraction_box a kappa s_bar r_bar (kappa * lambda_bar ^ t)
+      q rate _ ha hk (mul_nonneg hk (pow_nonneg h_lam_nonneg t))
+      hq hrbar0 hrbar1 hsbar1 hrate hfeedback ih
+
+/-- Finite geometric series identity $(1 - \lambda) \sum_{k < M} \lambda^{T + k} = \lambda^T - \lambda^{T + M}$. -/
+theorem geom_tail_sum_identity (lam : ℝ) (T M : ℕ) :
+    (1 - lam) * (∑ k ∈ Finset.range M, lam ^ (T + k)) = lam ^ T - lam ^ (T + M) := by
+  induction M with
+  | zero => simp
+  | succ M ih =>
+    rw [Finset.sum_range_succ, mul_add, ih, ← Nat.add_assoc, pow_add lam (T + M) 1, pow_one]
+    ring
+
+/-- Theorem 5.4 (`thm:certcost`): Certification at the Parametric Rate (`p2_infosafety.tex`).
+Proves by induction on the positive cohort state-space recursion (`actualCohortImpulse`) that:
+(1) At every lag $t \in \mathbb N$, $0 \le h_t \le \kappa \bar\lambda^t$ where
+    $\bar\lambda = 1 - (1 - \bar r)(1 - \bar s) \in [0, 1)$;
+(2) Any $M$-step tail sum $\sum_{k < M} h_{T + k}$ beyond truncation horizon $T$ is bounded above
+    by the closed-form geometric remainder $\frac{\kappa \bar\lambda^T}{1 - \bar\lambda}$. -/
+theorem p2_thm_certcost {n : ℕ} (a kappa s_bar r_bar : ℝ)
+    (q rate : Fin n → ℝ)
+    (ha : 0 ≤ a) (hk : 0 ≤ kappa) (hq : ∀ i, 0 ≤ q i)
+    (hrbar0 : 0 ≤ r_bar) (hrbar1 : r_bar < 1)
+    (hsbar0 : 0 ≤ s_bar) (hsbar1 : s_bar < 1)
+    (hrate : ∀ i, 1 - r_bar ≤ rate i ∧ rate i ≤ 1)
+    (hfeedback : a + kappa * ∑ i, q i ≤ s_bar)
+    (T M : ℕ) :
+    let lambda_bar := 1 - (1 - r_bar) * (1 - s_bar)
+    (0 ≤ lambda_bar ∧ lambda_bar < 1) ∧
+    (∀ t : ℕ, 0 ≤ actualCohortImpulse a kappa q rate t ∧
+      actualCohortImpulse a kappa q rate t ≤ kappa * lambda_bar ^ t) ∧
+    (∑ k ∈ Finset.range M, actualCohortImpulse a kappa q rate (T + k)) ≤
+      kappa * lambda_bar ^ T / (1 - lambda_bar) := by
+  intro lambda_bar
+  have h1_r : 0 < 1 - r_bar := by linarith
+  have h1_s : 0 < 1 - s_bar := by linarith
+  have h_prod_pos : 0 < (1 - r_bar) * (1 - s_bar) := mul_pos h1_r h1_s
+  have h_lam_lt1 : lambda_bar < 1 := by dsimp [lambda_bar]; linarith
+  have h_lam_nonneg : 0 ≤ lambda_bar := by dsimp [lambda_bar]; nlinarith
+  have h_pointwise : ∀ t : ℕ, 0 ≤ actualCohortImpulse a kappa q rate t ∧
+      actualCohortImpulse a kappa q rate t ≤ kappa * lambda_bar ^ t := by
+    intro t
+    rw [actual_impulse_matches_physical_pulse]
+    exact (positive_cohort_trajectory_contraction a kappa s_bar r_bar q rate ha hk hq
+      hrbar0 (le_of_lt hrbar1) hsbar0 (le_of_lt hsbar1) hrate hfeedback t).1
+  refine ⟨⟨h_lam_nonneg, h_lam_lt1⟩, h_pointwise, ?_⟩
+  have h1_lam_pos : 0 < 1 - lambda_bar := by linarith
+  have h_sum_le : (∑ k ∈ Finset.range M, actualCohortImpulse a kappa q rate (T + k)) ≤
+      kappa * ∑ k ∈ Finset.range M, lambda_bar ^ (T + k) := by
+    rw [Finset.mul_sum]
+    exact Finset.sum_le_sum (fun k _ => (h_pointwise (T + k)).2)
+  have h_geom_le : (∑ k ∈ Finset.range M, lambda_bar ^ (T + k)) ≤
+      lambda_bar ^ T / (1 - lambda_bar) := by
+    rw [le_div_iff₀ h1_lam_pos, mul_comm]
+    rw [geom_tail_sum_identity lambda_bar T M]
+    have h_pow_nonneg : 0 ≤ lambda_bar ^ (T + M) := pow_nonneg h_lam_nonneg (T + M)
+    linarith
+  calc ∑ k ∈ Finset.range M, actualCohortImpulse a kappa q rate (T + k)
+    _ ≤ kappa * ∑ k ∈ Finset.range M, lambda_bar ^ (T + k) := h_sum_le
+    _ ≤ kappa * (lambda_bar ^ T / (1 - lambda_bar)) := mul_le_mul_of_nonneg_left h_geom_le hk
+    _ = kappa * lambda_bar ^ T / (1 - lambda_bar) := by ring
+
+/-- Lemma 6.4 (`lem:sound`): Soundness of Compatible-Set Guards (`p2_guard.tex`). -/
+theorem p2_lem_sound
+    (I_abs u_bar S_true S_sup B : ℝ)
+    (hI : 0 ≤ I_abs) (hu : 0 ≤ u_bar) (hcov : S_true ≤ S_sup)
+    (hcert : I_abs * u_bar * S_sup ≤ B) :
+    I_abs * u_bar * S_true ≤ B := by
+  have hIu : 0 ≤ I_abs * u_bar := mul_nonneg hI hu
+  have h_le : I_abs * u_bar * S_true ≤ I_abs * u_bar * S_sup := mul_le_mul_of_nonneg_left hcov hIu
+  linarith
+
+/-- Certifiably safe admission set for a compatible feedback-load interval `[0, Phi_plus]`:
+all admission fractions $\alpha \in [0, 1]$ such that every compatible economy $\Phi \in [0, \Phi^+]$
+is stable ($1 - a - \kappa\alpha\Phi > 0$) and has worst-case loss within budget $\mathcal B$. -/
+def robustSafeAdmissionSet (a kappa I_abs u_bar B Phi_plus : ℝ) : Set ℝ :=
+  {alpha : ℝ | 0 ≤ alpha ∧ alpha ≤ 1 ∧
+    ∀ Phi ∈ Set.Icc 0 Phi_plus,
+      0 < 1 - a - kappa * alpha * Phi ∧
+      I_abs * u_bar * (kappa / (1 - a - kappa * alpha * Phi)) ≤ B}
+
+/-- Characterization of membership in `robustSafeAdmissionSet` via $c_I = 1 - a - \kappa|I|\bar u / \mathcal B$. -/
+theorem mem_robustSafeAdmissionSet_iff (a kappa I_abs u_bar B Phi_plus alpha : ℝ)
+    (hk : 0 < kappa) (hI : 0 < I_abs) (hu : 0 < u_bar) (hB : 0 < B) (hPhi : 0 < Phi_plus) :
+    alpha ∈ robustSafeAdmissionSet a kappa I_abs u_bar B Phi_plus ↔
+      (0 ≤ alpha ∧ alpha ≤ 1 ∧ alpha * (kappa * Phi_plus) ≤ 1 - a - kappa * I_abs * u_bar / B) := by
+  have h_req_pos : 0 < kappa * I_abs * u_bar / B := by positivity
+  constructor
+  · rintro ⟨ha0, ha1, hall⟩
+    refine ⟨ha0, ha1, ?_⟩
+    have h_top := hall Phi_plus ⟨le_of_lt hPhi, le_refl Phi_plus⟩
+    have hden := h_top.1
+    have hloss := h_top.2
+    have h_rew : I_abs * u_bar * (kappa / (1 - a - kappa * alpha * Phi_plus)) =
+        (kappa * I_abs * u_bar) / (1 - a - kappa * alpha * Phi_plus) := by ring
+    rw [h_rew, div_le_iff₀ hden] at hloss
+    have h_divB : kappa * I_abs * u_bar / B ≤ 1 - a - kappa * alpha * Phi_plus := by
+      rw [div_le_iff₀ hB]
+      linarith
+    linarith
+  · rintro ⟨ha0, ha1, h_cap⟩
+    refine ⟨ha0, ha1, ?_⟩
+    intro Phi hPhi_mem
+    have h_mono : alpha * (kappa * Phi) ≤ alpha * (kappa * Phi_plus) := by
+      have h_ka : 0 ≤ alpha * kappa := mul_nonneg ha0 (le_of_lt hk)
+      calc alpha * (kappa * Phi)
+        _ = (alpha * kappa) * Phi := by ring
+        _ ≤ (alpha * kappa) * Phi_plus := mul_le_mul_of_nonneg_left hPhi_mem.2 h_ka
+        _ = alpha * (kappa * Phi_plus) := by ring
+    have h_ineq : kappa * I_abs * u_bar / B ≤ 1 - a - kappa * alpha * Phi := by
+      linarith
+    have hden : 0 < 1 - a - kappa * alpha * Phi := lt_of_lt_of_le h_req_pos h_ineq
+    refine ⟨hden, ?_⟩
+    have h_rew : I_abs * u_bar * (kappa / (1 - a - kappa * alpha * Phi)) =
+        (kappa * I_abs * u_bar) / (1 - a - kappa * alpha * Phi) := by ring
+    rw [h_rew, div_le_iff₀ hden]
+    have h_mulB := (div_le_iff₀ hB).mp h_ineq
+    linarith
+
+/-- Theorem 6.5 (`thm:robustguard`): Optimal Uncertainty-Aware Admission (`p2_guard.tex`).
+Formalized in the style of `exact_safe_radius_isGreatest`:
+(i)-(iii) When $c_I \ge 0$, the safe admission set `robustSafeAdmissionSet` equals the closed interval
+          `Set.Icc 0 alpha_star` and `alpha_star = min 1 (c_I / (kappa * Phi_plus))` is its greatest
+          element (`IsGreatest`);
+(iv)      The safe admission set is empty (`= ∅`, infeasible) if and only if $c_I < 0$. -/
+theorem p2_thm_robustguard (a kappa I_abs u_bar B Phi_plus : ℝ)
+    (hk : 0 < kappa) (hI : 0 < I_abs) (hu : 0 < u_bar) (hB : 0 < B) (hPhi : 0 < Phi_plus) :
+    let c_I := 1 - a - kappa * I_abs * u_bar / B
+    let alpha_star := min 1 (c_I / (kappa * Phi_plus))
+    (0 ≤ c_I →
+      robustSafeAdmissionSet a kappa I_abs u_bar B Phi_plus = Set.Icc 0 alpha_star ∧
+      IsGreatest (robustSafeAdmissionSet a kappa I_abs u_bar B Phi_plus) alpha_star) ∧
+    (robustSafeAdmissionSet a kappa I_abs u_bar B Phi_plus = ∅ ↔ c_I < 0) := by
+  intro c_I alpha_star
+  have hkP : 0 < kappa * Phi_plus := mul_pos hk hPhi
+  have h_set_eq : 0 ≤ c_I →
+      robustSafeAdmissionSet a kappa I_abs u_bar B Phi_plus = Set.Icc 0 alpha_star := by
+    intro hc
+    ext alpha
+    rw [mem_robustSafeAdmissionSet_iff a kappa I_abs u_bar B Phi_plus alpha hk hI hu hB hPhi]
+    change (0 ≤ alpha ∧ alpha ≤ 1 ∧ alpha * (kappa * Phi_plus) ≤ c_I) ↔
+      alpha ∈ Set.Icc 0 alpha_star
+    simp only [Set.mem_Icc, alpha_star, le_min_iff, le_div_iff₀ hkP]
+  refine ⟨?_, ?_⟩
+  · intro hc
+    have heq := h_set_eq hc
+    refine ⟨heq, ?_⟩
+    rw [heq]
+    have h_astar_nonneg : 0 ≤ alpha_star :=
+      le_min (by norm_num) (div_nonneg hc (le_of_lt hkP))
+    exact ⟨⟨h_astar_nonneg, le_refl alpha_star⟩, fun x hx => hx.2⟩
+  · constructor
+    · intro h_empty
+      by_contra h_not_neg
+      have hc_nonneg : 0 ≤ c_I := not_lt.mp h_not_neg
+      have heq := h_set_eq hc_nonneg
+      have h0_mem : (0 : ℝ) ∈ robustSafeAdmissionSet a kappa I_abs u_bar B Phi_plus := by
+        rw [heq]
+        exact ⟨le_refl 0, le_min (by norm_num) (div_nonneg hc_nonneg (le_of_lt hkP))⟩
+      rw [h_empty] at h0_mem
+      exact h0_mem
+    · intro hc_neg
+      ext alpha
+      simp only [Set.mem_empty_iff_false, iff_false]
+      intro h_mem
+      rw [mem_robustSafeAdmissionSet_iff a kappa I_abs u_bar B Phi_plus alpha hk hI hu hB hPhi] at h_mem
+      have h_prod_nonneg : 0 ≤ alpha * (kappa * Phi_plus) :=
+        mul_nonneg h_mem.1 (le_of_lt hkP)
+      dsimp [c_I] at hc_neg
+      linarith [h_mem.2.2]
+
+/-- Theorem 7.1 (`thm:disclosure`): Decision Value of Disclosure (`p2_disclosure.tex`).
+Stated with actual compatible feedback-load sets `Theta_O_prime ⊆ Theta_O : Set ℝ`:
+(i)  A finer disclosure contract `Theta_O_prime ⊆ Theta_O` lowers the worst-case compatible feedback load
+     `sSup Theta_O_prime ≤ sSup Theta_O`, expands the safe admission set
+     `robustSafeAdmissionSet ... (sSup Theta_O) ⊆ robustSafeAdmissionSet ... (sSup Theta_O_prime)`,
+     and raises the optimal admission cap `alpha_star_O ≤ alpha_star_O_prime`;
+(ii) When $c_I > 0$, $sSup \Theta_{O'} < sSup \Theta_O$, and $c_I / (\kappa \cdot sSup \Theta_O) < 1$,
+     the optimal admission cap strictly increases (`alpha_star_O < alpha_star_O_prime`). -/
+theorem p2_thm_disclosure (a kappa I_abs u_bar B w c_cost : ℝ)
+    (Theta_O_prime Theta_O : Set ℝ)
+    (hk : 0 < kappa)
+    (h_sub : Theta_O_prime ⊆ Theta_O)
+    (h_bdd : BddAbove Theta_O)
+    (Phi0 : ℝ) (hPhi0_mem : Phi0 ∈ Theta_O_prime) (hPhi0_pos : 0 < Phi0) :
+    let Phi_O_prime := sSup Theta_O_prime
+    let Phi_O := sSup Theta_O
+    let c_I := 1 - a - kappa * I_abs * u_bar / B
+    let alpha_O_prime := min 1 (c_I / (kappa * Phi_O_prime))
+    let alpha_O := min 1 (c_I / (kappa * Phi_O))
+    0 < Phi_O_prime ∧
+    Phi_O_prime ≤ Phi_O ∧
+    robustSafeAdmissionSet a kappa I_abs u_bar B Phi_O ⊆
+      robustSafeAdmissionSet a kappa I_abs u_bar B Phi_O_prime ∧
+    (0 ≤ c_I → alpha_O ≤ alpha_O_prime) ∧
+    (0 < c_I → Phi_O_prime < Phi_O → c_I / (kappa * Phi_O) < 1 → alpha_O < alpha_O_prime) ∧
+    (0 < w * (alpha_O_prime - alpha_O) - c_cost ↔ c_cost < w * (alpha_O_prime - alpha_O)) := by
+  intro Phi_O_prime Phi_O c_I alpha_O_prime alpha_O
+  have h_bdd_prime : BddAbove Theta_O_prime := h_bdd.mono h_sub
+  have h_Phi_prime_pos : 0 < Phi_O_prime :=
+    lt_of_lt_of_le hPhi0_pos (le_csSup h_bdd_prime hPhi0_mem)
+  have h_Phi_le : Phi_O_prime ≤ Phi_O :=
+    csSup_le_csSup h_bdd ⟨Phi0, hPhi0_mem⟩ h_sub
+  have h_safe_sub : robustSafeAdmissionSet a kappa I_abs u_bar B Phi_O ⊆
+      robustSafeAdmissionSet a kappa I_abs u_bar B Phi_O_prime := by
+    rintro alpha ⟨ha0, ha1, hall⟩
+    refine ⟨ha0, ha1, ?_⟩
+    intro Phi hPhi_mem
+    exact hall Phi ⟨hPhi_mem.1, le_trans hPhi_mem.2 h_Phi_le⟩
+  have hkP_prime : 0 < kappa * Phi_O_prime := mul_pos hk h_Phi_prime_pos
+  have hkP_le : kappa * Phi_O_prime ≤ kappa * Phi_O :=
+    mul_le_mul_of_nonneg_left h_Phi_le (le_of_lt hk)
+  refine ⟨h_Phi_prime_pos, h_Phi_le, h_safe_sub, ?_, ?_, by constructor <;> intro h <;> linarith⟩
+  · intro hc
+    exact min_le_min_left 1 (div_le_div_of_nonneg_left hc hkP_prime hkP_le)
+  · intro hc_pos h_strict h_unclamped
+    have hkP_lt : kappa * Phi_O_prime < kappa * Phi_O :=
+      mul_lt_mul_of_pos_left h_strict hk
+    have h_div_lt : c_I / (kappa * Phi_O) < c_I / (kappa * Phi_O_prime) :=
+      div_lt_div_of_pos_left hc_pos hkP_prime hkP_lt
+    have h_alpha_O_eq : alpha_O = c_I / (kappa * Phi_O) :=
+      min_eq_right (le_of_lt h_unclamped)
+    rw [h_alpha_O_eq]
+    exact lt_min h_unclamped h_div_lt
+
+end
 end CurrentMM

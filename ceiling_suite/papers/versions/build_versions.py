@@ -1,8 +1,7 @@
 """Build journal-format versions from the working sources (run after every edit of the sources)."""
 import re, subprocess, os, shutil
-HERE = os.path.dirname(os.path.abspath(__file__))
-PAPERS_DIR = os.path.dirname(HERE)
-P1, P2, OUT = os.path.join(PAPERS_DIR, "paper1"), os.path.join(PAPERS_DIR, "paper2"), HERE
+_BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+P1, P2, OUT = os.path.join(_BASE, "paper1"), os.path.join(_BASE, "paper2"), os.path.dirname(os.path.abspath(__file__))
 def build(tex, name):
     open(os.path.join(OUT, name + ".tex"), "w").write(tex)
     for _ in range(3):
@@ -18,18 +17,14 @@ for d in ("figs",):
             for f in os.listdir(os.path.join(src, d)):
                 shutil.copy(os.path.join(src, d, f), os.path.join(OUT, d, f))
 rd = lambda p: open(p).read()
+P2_BODY = ["p2_theory1.tex", "p2_t6.tex", "p2_infosafety.tex", "p2_guard.tex", "p2_disclosure.tex", "p2_equil.tex", "p2_evidence.tex", "p2_thin.tex", "p2_istests.tex", "p2_close.tex"]
 
 # ---------------- Paper 2, Journal of Finance format ----------------
 front = rd(f"{P2}/p2_front.tex")
 front = front.replace("\\usepackage[margin=1in]{geometry}", "\\usepackage[left=1in,right=1in,top=1.5in,bottom=1.5in]{geometry}")
 front = front.replace("\\doublespacing", "\\onehalfspacing")
 a = front.index("\\begin{abstract}"); b = front.index("\\end{abstract}")
-JF_ABS = ("\\begin{abstract}\n\\noindent Eigenvalues and volatility do not bound the losses a stable market produces before it settles. "
-          "We show that cumulative transient risk in a limit order book equals long-run impact divided by reversion net of momentum, "
-          "that a pre-trade guard on this summed response is the largest safe admission rule without identifying traders, "
-          "and that dealers under-supply reversion in equilibrium. The statistic forecasts next-hour adverse excursions beyond "
-          "volatility forecasts in four pre-registered tests in thin Binance books and, more weakly, in thin US stocks; it is "
-          "negligible on Bybit, and as a position limit it improves volatility limits only modestly.\n")
+JF_ABS = ("\\begin{abstract}\n\\noindent " + 'Eigenvalues and volatility do not bound the losses a market produces before it settles. We show that cumulative transient risk in a book equals long-run impact divided by reversion net of momentum, that a pre-trade guard on this summed response is the largest safe admission rule for bounded shocks, and that certifying it is cheaper than identifying the traders: experiments certify it at the parametric rate, and the resulting guard is minimax-optimal in lost capacity. The statistic forecasts adverse excursions beyond volatility in pre-registered tests in thin Binance books and, more weakly, thin US stocks; it is negligible on Bybit.' + "\n")
 front = front[:a] + JF_ABS + front[b:]
 front = front.replace("\\newpage\n\\setcounter{page}{1}\n\\tableofcontents\n\\newpage", "\\newpage\n\\setcounter{page}{1}")
 app = rd(f"{P2}/p2_appendix.tex")
@@ -38,7 +33,7 @@ app_main, app_ia = app[:i_ia], app[i_ia:]
 app_ia = app_ia.replace("\\end{document}", "")
 IA_HEAD = ("\\clearpage\n\\setcounter{page}{1}\\renewcommand{\\thepage}{IA-\\arabic{page}}\n"
            "\\begin{center}{\\Large Internet Appendix for ``From Human Markets to Machine Markets''}\\end{center}\n\\label{app:iastart}\n")
-body = "".join(rd(f"{P2}/{f}") for f in ["p2_theory1.tex", "p2_theory2.tex", "p2_equil.tex", "p2_evidence.tex", "p2_thin.tex", "p2_close.tex"])
+body = "".join(rd(f"{P2}/{f}") for f in P2_BODY)
 ia_extra = ""
 MOVES = [
     ("\\subsection{Is $\\hat C_3$ just price impact?}\\label{sec:y8}",
@@ -59,9 +54,50 @@ for head, pointer, ia_head in MOVES:
     blk = body[i0:i1]
     body = body[:i0] + pointer + body[i1:]
     ia_extra += blk.replace(head, ia_head)
+_c0 = body.index("\\subsection{Crash events}"); _c1 = body.index("\\section{Evidence from spot prices}")
+ia_extra += "\\section{BTCUSDT crash events}" + body[_c0+len("\\subsection{Crash events}"):_c1]
+body = body[:_c0] + "\\subsection{Crash events}\nOn three crash days with valid depth data (SVB, the 2024 yen carry unwind and the 2025 tariff shock), $\\hat C_3$ was elevated in the hours before the worst hour but stayed negative throughout (Internet Appendix, Table~\\ref{tab:d9} and Figure~\\ref{fig:events}); three events are not a test.\n\n" + body[_c1:]
+_m0 = body.index("\\subsection{Multi-asset coupling}"); _m1 = body.index("\\section{When does a book amplify?")
+ia_extra += "\\section{Multi-asset coupling}" + body[_m0+len("\\subsection{Multi-asset coupling}"):_m1]
+body = body[:_m0] + "\\subsection{Multi-asset coupling}\nWith many instruments and a leader--satellite cross-impact structure, every power of the stacked operator is entrywise non-decreasing in the cross-impact, so directed coupling can only shrink the safe radius and raise the Kreiss constant (Internet Appendix, Proposition~\\ref{prop:multi}); symmetric coupling raises persistence without transient amplification.\n\n" + body[_m1:]
 _i0 = body.index("\\paragraph{Bybit with order-book depth.}"); _i1 = body.index("\\subsection{A regulated market: thin US stocks}")
 ia_extra += "\\section{Bybit with order-book depth}\n" + body[_i0:_i1].replace("\\paragraph{Bybit with order-book depth.} ", "")
 body = body[:_i0] + "\\paragraph{Bybit with order-book depth.} A second pre-registered Bybit test, with depth within 1\\% of the mid rebuilt from Bybit's order-book files and the full volatility baseline, kept six coins under its pre-registered inclusion rule. Its criterion is met ($\\hat C_3$ adds $0.033$ points of $R^2$, 95\\% interval $[0.019,0.053]$, Clark--West $t=5.73$), but the effect is about one eightieth of the Binance gain, tail classification does not improve, and only the momentum term helps. The Internet Appendix gives the design and the full results (Table~\\ref{tab:bybitob}). With trades alone the statistic has no content on Bybit, and with depth its content is detectable but too small to matter.\n\n" + body[_i1:]
+
+def mv(start, end, ia_title, pointer):
+    global body, ia_extra
+    i0 = body.index(start); i1 = body.index(end, i0 + len(start))
+    blk = body[i0:i1]
+    head_end = blk.index("\n") + 1
+    ia_extra += "\\section{" + ia_title + "}" + blk[len(start):] if blk.startswith(start) else blk
+    body = body[:i0] + pointer + body[i1:]
+mv("\\subsection{Structural estimates}", "\\subsection{Pre-registered out-of-sample test}", "BTCUSDT structural estimates and local projections",
+   "\\subsection{Structural estimates and local projections}\nDay-by-day fits of model \\eqref{eq:x}--\\eqref{eq:d} on one-minute bars (Internet Appendix, Table~\\ref{tab:d3}) put the market on the stable side of the condition: $\\hat C_3<0$ on 93.5\\% of training days and the median implied response peaks at impact. In the re-centred bands the depletion coefficient is small and negative, a sign that Section~\\ref{sec:fixedgrid} shows to be an artefact; the momentum term is about $0.008$ against $(1-a)\\kappa\\approx0.022$. Local projections with future flow, and then future depth, held fixed show no overshoot in any version (Figure~\\ref{fig:med}, Table~\\ref{tab:d4}).\n\n")
+mv("\\section{Evidence from spot prices}", "\\section{Evidence from thinner books}", "Evidence from spot prices",
+   "\\subsection{Spot prices}\nOn Binance BTCUSDT spot, a unit-free amplification statistic from one-second data is indistinguishable from one and from a no-feedback pipeline null on five crash days; overshoots disappear once future flow is held fixed, so they come from order splitting; and a pre-registered predictive test fails ($\\Delta R^2=-0.023$ points, interval $[-0.056,-0.002]$). The Internet Appendix reports the details (Section~\\ref{sec:spot}).\n\n")
+mv("\\subsection{Overshoot and depletion}", "\\subsection{Depletion on a fixed price grid}", "Overshoot and depletion in Binance depth bands",
+   "\\subsection{Overshoot and depletion}\nWith future flow held fixed there is no overshoot in any liquidity tercile, so the registered prediction of an overshoot in thin books fails (Internet Appendix, Table~\\ref{tab:x4}); in Binance's re-centred depth bands, taker flow appears to replenish the side it hits even at the 30-second snapshot scale (Table~\\ref{tab:x8}).\n\n")
+mv("\\subsection{Out-of-sample replication on new symbols}\\label{sec:y6}", "\\subsection{Is $\\hat C_3$ just price impact?}", "Replication on new symbols",
+   "\\subsection{Out-of-sample replication on new symbols}\\label{sec:y6}\nA second registered test on ten thin symbols never used before passes ($+0.85$ points of $R^2$, interval $[0.30,6.37]$; Internet Appendix, Table~\\ref{tab:y6}); the momentum and reversion terms each carry content, the depth term and a unit-free ratio do not.\n\n")
+mv("\\subsection{A third test on fresh days}\\label{sec:z6}", "\\subsection{Beyond volatility forecasting}", "A third test on fresh days",
+   "\\subsection{A third test on fresh days}\\label{sec:z6}\nOn fresh days, with impact in the baseline, $\\hat C_3$ adds $1.6$ points of $R^2$ (Internet Appendix, Table~\\ref{tab:z6}); two unit-free statistics, the gain multiple and the log half-life of reversion, each add about half a point; the reversion term carries most of the signal; and the depth-free statistic forecasts as well as the full one. The registered six-hour position-sizing backtest on the same days fails (Section~\\ref{sec:backtest}).\n\n")
+mv("\\subsection{The cross-section of the amplification condition}", "\\subsection{Overshoot and depletion}", "The cross-section of the amplification condition",
+   "\\subsection{The cross-section of the amplification condition}\nAcross the 30 perpetuals, mean $\\hat C_3$ is negative in every liquidity tercile; what changes with depth is the frequency of the amplifying regime, from 9.4\\% of symbol-days in the thick tercile to 16.1\\% in the thin one (Spearman $-0.59$ with log depth). Measured feedback is largest in the \\emph{deepest} books (Spearman $+0.70$), so feedback and amplification are different objects (Internet Appendix, Table~\\ref{tab:x3}).\n\n")
+mv("\\subsection{Pre-registered out-of-sample test}", "\\subsection{Crash events}", "BTCUSDT pre-registered test",
+   "\\subsection{Pre-registered out-of-sample test}\nA registered test (SHA-256 \\texttt{d95212187ae4\\ldots}, opened once) of whether six-hour $\\hat C_3$ forecasts the next hour's adverse excursion in BTCUSDT on 2025--2026 fails: it adds $0.018$ points of $R^2$ with an interval including zero, and a volatility flag classifies tail hours far better (Internet Appendix, Table~\\ref{tab:d8}).\n\n")
+mv("\\subsection{The guard as a position limit}\\label{sec:backtest}", "\\subsection{A certified guard}", "The guard as a position limit",
+   "\\subsection{The guard as a position limit}\\label{sec:backtest}\nA registered backtest sized positions as $c_s/R_t$ with $R_t$ a six-hour volatility limit scaled by the gain multiple. It fails: the scaled limit lowers tail loss per unit of position in 91\\% of bootstrap draws, but the interval includes zero, and limits built on the six-hour response alone are worse than volatility and than a static limit (Internet Appendix, Table~\\ref{tab:backtest}).\n\n")
+_k0 = body.index("\\begin{table}[t]\\centering\\small\n\\begin{threeparttable}\n\\caption{Safe radius and Kreiss bounds")
+_k1 = body.index("\\end{table}", _k0) + len("\\end{table}")
+ia_extra += "\\section{Kreiss bounds at a fixed spectral radius}\n" + body[_k0:_k1] + "\n"
+body = body[:_k0] + body[_k1:]
+body = body.replace("Table~\\ref{tab:kreiss} illustrates the theorem", "Internet Appendix Table~\\ref{tab:kreiss} illustrates the theorem")
+mv("\\subsection{A second venue: Bybit}\\label{sec:bybit}", "\\paragraph{Bybit with order-book depth.}", "Bybit with trades only",
+   "\\subsection{A second venue: Bybit}\\label{sec:bybit}\nA registered test on Bybit USDT perpetuals of the same coins, with trades only, fails without ambiguity ($\\hat C_3^{\\rm flow}$ adds $-0.000$ points of $R^2$, interval $[-0.001,0.001]$). A post-hoc check rules out bid--ask bounce and points to sparse trading: 11\\% of Bybit minutes have no trade, against 0.1\\% on Binance (Internet Appendix).\n\n")
+# proofs and notation to the Internet Appendix
+_p0 = app_main.index("\\section{Proofs}\\label{app:proofs}")
+ia_extra = app_main[_p0:] + ia_extra
+app_main = app_main[:_p0]
 body = body.replace("\\includegraphics[width=0.78\\textwidth]{figs/fig_forest.pdf}", "\\includegraphics[height=0.62\\textheight]{figs/fig_forest.pdf}")
 tex2 = front + body + app_main + IA_HEAD + ia_extra + app_ia + "\n\\end{document}\n"
 n2, bad2 = build(tex2, "Paper2_JF")

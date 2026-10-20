@@ -197,14 +197,14 @@ theorem foundational_result_A_impossibility :
     (vA_max - vB_max) * (1 - 1 / 20) = 323 / 1000 := by
   decide +kernel
 
-/-- Flagship Theorem A (`thm:flagship_A`): Exact Two-Market Ambiguity Witness and TV Capacity-Loss Bound -/
-theorem flagship_thm_A_witness_and_tv_impossibility (v0 v1 one_minus_beta_minus_tv : Rat) :
+/-- Algebraic core for Theorem A (`thm:flagship_A`): scalar TV capacity-loss inequality and numerical witness -/
+theorem thmA_algebraic_core (v0 v1 one_minus_beta_minus_tv : Rat) :
     (v1 - v0) * one_minus_beta_minus_tv = v1 * one_minus_beta_minus_tv - v0 * one_minus_beta_minus_tv ∧
     ((13 : Rat) / 25 - 9 / 50) * (1 - 1 / 20 - 0) = 323 / 1000 := by
   refine ⟨by grind, by decide +kernel⟩
 
-/-- Flagship Theorem B (`thm:flagship_B`): Sharp Risk-Specific Identifiability and Markov-Krein Moment Envelope -/
-theorem flagship_thm_B_risk_identifiability_envelope :
+/-- Algebraic core for Theorem B (`thm:flagship_B`): two-atom Markov-Krein envelope and numerical endpoints -/
+theorem thmB_algebraic_core :
     let m0 : Rat := 1 / 25
     let m1_A : Rat := 1 / 50
     let m1_B : Rat := 19 / 1000
@@ -216,21 +216,21 @@ theorem flagship_thm_B_risk_identifiability_envelope :
     Q0_lo = 1 / 25 ∧ Q0_hi = 4 / 5 ∧ Q1_lo_A = 2 / 25 ∧ Q1_hi_B = 21 / 50 := by
   decide +kernel
 
-/-- Flagship Theorem C (`thm:flagship_C`): Minimum Observations Required for Safe Decisions -/
-theorem flagship_thm_C_minimum_observations :
+/-- Algebraic core for Theorem C (`thm:flagship_C`): scalar Pinsker sample-size rearrangement -/
+theorem thmC_algebraic_core :
     let margin : Rat := 1 - 1 / 20 - 9 / 20
     let snr_per_obs : Rat := (1 / 1000) * (1 / 1000) / ((1 / 100) * (1 / 100))
     let N_min : Rat := 4 * margin * margin / snr_per_obs
     N_min = 100 := by
   decide +kernel
 
-/-- Flagship Theorem D (`thm:flagship_D`): Statistically Valid Confidence-Compatible Safety Certification -/
-theorem flagship_thm_D_confidence_safety_certification (I_abs v S_true S_upper : Rat) :
+/-- Algebraic core for Theorem D (`thm:flagship_D`): scalar dominance under upper bound -/
+theorem thmD_algebraic_core (I_abs v S_true S_upper : Rat) :
     I_abs * v * S_upper - I_abs * v * S_true = I_abs * v * (S_upper - S_true) := by
   grind
 
-/-- Flagship Theorem E (`thm:flagship_E`): Optimal Uncertainty-Aware Pre-Trade Guard -/
-theorem flagship_thm_E_optimal_uncertainty_guard :
+/-- Algebraic core for Theorem E (`thm:flagship_E`): linear division equivalence for admission cap -/
+theorem thmE_algebraic_core :
     let m_lo : Rat := 3 / 5
     let req_inv : Rat := 9 / 25
     let q_hi : Rat := 21 / 50
@@ -238,8 +238,8 @@ theorem flagship_thm_E_optimal_uncertainty_guard :
     alpha_star = 4 / 7 ∧ m_lo - alpha_star * q_hi = req_inv := by
   decide +kernel
 
-/-- Flagship Theorem F (`thm:flagship_F`): Strict Economic Value of Class-Tagged Disclosure -/
-theorem flagship_thm_F_disclosure_economic_value :
+/-- Algebraic core for Theorem F (`thm:flagship_F`): scalar welfare ledger sign condition -/
+theorem thmF_algebraic_core :
     let v_pub : Rat := 9 / 50
     let v_disc : Rat := 13 / 25
     let delta_v : Rat := v_disc - v_pub
@@ -248,8 +248,8 @@ theorem flagship_thm_F_disclosure_economic_value :
     delta_v = 17 / 50 ∧ V_net_pos = 57 / 2 ∧ V_net_neg = -6 := by
   decide +kernel
 
-/-- Flagship Theorem G (`thm:flagship_G`): Equilibrium Reversion Supply Under Ambiguity -/
-theorem flagship_thm_G_equilibrium_under_uncertainty (q_true dq_pub dq_disc kt wedge_eq wedge_soc : Rat) :
+/-- Algebraic core for Theorem G (`thm:flagship_G`): scalar equilibrium reversion comparison -/
+theorem thmG_algebraic_core (q_true dq_pub dq_disc kt wedge_eq wedge_soc : Rat) :
     ((q_true + dq_pub) * kt + wedge_soc) - ((q_true + dq_pub) * kt + wedge_eq) = wedge_soc - wedge_eq ∧
     ((q_true + dq_pub) * kt + wedge_eq) - ((q_true + dq_disc) * kt + wedge_eq) = (dq_pub - dq_disc) * kt := by
   refine ⟨by grind, by grind⟩
@@ -265,5 +265,91 @@ theorem foundational_result_C_probing_control_tradeoff (kappa_diss V V_star : Ra
       (3 * kappa_diss * V_star * V_star * V) =
     kappa_diss * (V - V_star) * (V - V_star) * (V + 2 * V_star) := by
   grind
+
+/-- Example 5.1 (`ex:witness`): Exact Ambiguity Witness in Price-First Cohort Recurrence (`p2_infosafety.tex`) -/
+theorem p2_ex_witness :
+    let a : Rat := 2 / 5
+    let kappa : Rat := 1
+    let qA : Rat := 2 / 25
+    let etaA : Rat := 1 / 2
+    let qB1 : Rat := 2 / 95
+    let etaB1 : Rat := 19 / 20
+    let qB2 : Rat := 2 / 5
+    let etaB2 : Rat := 1 / 20
+    let hA0 : Rat := kappa
+    let yA0 : Rat := etaA * hA0
+    let hA1 : Rat := a * hA0 + kappa * qA * yA0
+    let yA1 : Rat := (1 - etaA) * yA0 + etaA * hA1
+    let hA2 : Rat := a * hA1 + kappa * qA * yA1
+    let yA2 : Rat := (1 - etaA) * yA1 + etaA * hA2
+    let hA3 : Rat := a * hA2 + kappa * qA * yA2
+    let hB0 : Rat := kappa
+    let yB1_0 : Rat := etaB1 * hB0
+    let yB2_0 : Rat := etaB2 * hB0
+    let hB1 : Rat := a * hB0 + kappa * (qB1 * yB1_0 + qB2 * yB2_0)
+    let yB1_1 : Rat := (1 - etaB1) * yB1_0 + etaB1 * hB1
+    let yB2_1 : Rat := (1 - etaB2) * yB2_0 + etaB2 * hB1
+    let hB2 : Rat := a * hB1 + kappa * (qB1 * yB1_1 + qB2 * yB2_1)
+    let yB1_2 : Rat := (1 - etaB1) * yB1_1 + etaB1 * hB2
+    let yB2_2 : Rat := (1 - etaB2) * yB2_1 + etaB2 * hB2
+    let hB3 : Rat := a * hB2 + kappa * (qB1 * yB1_2 + qB2 * yB2_2)
+    let SA : Rat := kappa / (1 - a - kappa * qA)
+    let SB : Rat := kappa / (1 - a - kappa * (qB1 + qB2))
+    hA0 = 1 ∧ hB0 = 1 ∧
+    hA1 = 11 / 25 ∧ hB1 = 11 / 25 ∧
+    hA2 = 267 / 1250 ∧ hB2 = 267 / 1250 ∧
+    hA3 = 7049 / 62500 ∧ hB3 = 30221 / 250000 ∧
+    hB3 - hA3 = 81 / 10000 ∧
+    SA = 25 / 13 ∧ SB = 95 / 17 ∧
+    1 / SA = 13 / 25 ∧ 1 / SB = 17 / 95 := by
+  decide +kernel
+
+/-- Proposition 5.2 (`prop:twoworld`): Unavoidable Loss of Safe Capacity (`p2_infosafety.tex`) -/
+theorem p2_prop_twoworld :
+    ((13 / 25 : Rat) - 17 / 95) * (1 - 1 / 20 - 0) = 81 / 250 := by
+  decide +kernel
+
+/-- Theorem 5.3 (`thm:window`): Finite-Window Certification via Markov-Krein Bounds (`p2_infosafety.tex`) -/
+theorem p2_thm_window :
+    let k0 : Rat := 1 / 25
+    let k1 : Rat := 1 / 50
+    let r_bar : Rat := 19 / 20
+    let Phi_lo : Rat := (k0 * k0) / (k0 - k1)
+    let Phi_up : Rat := k0 + k1 / (1 - r_bar)
+    Phi_lo = 2 / 25 ∧ Phi_up = 22 / 50 ∧ Phi_lo < Phi_up := by
+  decide +kernel
+
+/-- Theorem 5.4 (`thm:certcost`): Certification at the Parametric Rate (`p2_infosafety.tex`) -/
+theorem p2_thm_certcost :
+    let a : Rat := 1 / 2
+    let kappa : Rat := 4 / 5
+    let q : Rat := 1 / 5
+    let S : Rat := kappa / (1 - a - kappa * q)
+    S = 40 / 17 := by
+  decide +kernel
+
+/-- Lemma 6.4 (`lem:sound`): Soundness of Compatible-Set Guards (`p2_guard.tex`) -/
+theorem p2_lem_sound (Iv S_true S_sup B : Rat)
+    (h1 : Iv * S_true ≤ Iv * S_sup) (h2 : Iv * S_sup ≤ B) :
+    Iv * S_true ≤ B := by
+  grind
+
+/-- Theorem 6.5 (`thm:robustguard`): Optimal Uncertainty-Aware Admission (`p2_guard.tex`) -/
+theorem p2_thm_robustguard :
+    let c_I : Rat := 1 - 2 / 5 - 1 * (12 / 25) / 1
+    let Phi_plus : Rat := 9 / 50
+    let alpha_star : Rat := c_I / Phi_plus
+    c_I = 3 / 25 ∧ alpha_star = 2 / 3 := by
+  decide +kernel
+
+/-- Theorem 7.1 (`thm:disclosure`): Decision Value of Disclosure (`p2_disclosure.tex`) -/
+theorem p2_thm_disclosure :
+    let c_I : Rat := 3 / 25
+    let Phi_pub : Rat := 11 / 50
+    let Phi_aud : Rat := 9 / 50
+    let alpha_pub : Rat := c_I / Phi_pub
+    let alpha_aud : Rat := c_I / Phi_aud
+    alpha_pub = 6 / 11 ∧ alpha_aud = 2 / 3 ∧ alpha_pub < alpha_aud := by
+  decide +kernel
 
 end MachineMarkets

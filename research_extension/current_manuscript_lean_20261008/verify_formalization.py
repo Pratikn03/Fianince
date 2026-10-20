@@ -52,6 +52,7 @@ def main():
     assert len(summaries) == 1 and len(named) == len(entries)
     assert {row["name"] for row in named} == {row["name"] for row in entries}
     assert all(set(row["axioms"]) <= ALLOWED for row in named)
+    (HERE / "axiom_audit.jsonl").write_text("\n".join(json.dumps(row) for row in rows) + "\n")
     (HERE / "checked_theorem_types.json").write_text(json.dumps(named, indent=2) + "\n")
     body_dir = ROOT / "research_extension/gap_closure_20261006/publication_completion"
     manuscript_paths = [ROOT / "paper/Machine_Markets_JF_Submission.tex"] + [body_dir / (s + ".tex")

@@ -1,6 +1,6 @@
 """Forest plot of every thin-book out-of-sample evaluation (Parts 4 and 5). Reads result JSONs only."""
 import json, sys, matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
-X, R, Y, K, Z, U, W, V, A, out = sys.argv[1:11]
+X, R, Y, K, Z, U, W, V, A, R8, out = sys.argv[1:12]
 x6 = json.load(open(f"{X}/X6_xsec_test_G2.json"))["metrics"]
 xr = json.load(open(f"{R}/X6r_robustness_posthoc.json"))["metrics"]["checks"]
 y6 = json.load(open(f"{Y}/Y6_replication_G2.json"))["metrics"]
@@ -11,6 +11,7 @@ u9 = json.load(open(f"{U}/U6_volbench_test.json"))["metrics"]
 byb = json.load(open(f"{W}/W6_bybit_test.json"))["metrics"]["primary"]
 v6 = json.load(open(f"{V}/V6_bybit_ob_test.json"))["metrics"]
 a5 = json.load(open(f"{A}/A5_us_equity_test.json"))["metrics"]
+r8 = json.load(open(R8))["metrics"]
 rows = [("Part 4, pre-registered", None),
         ("Thin, $\\hat C_3$ (primary)", x6["primary"]),
         ("Mid, $\\hat C_3$", x6["secondary"]["mid: MAE_60 | C3_hat"]),
@@ -42,6 +43,9 @@ rows = [("Part 4, pre-registered", None),
         ("Summed response $S_{60}$", u9["secondary"]["thin: MAE | S60"]),
         ("Gain multiple (unit-free)", u9["secondary"]["thin: MAE | gain_multiple"]),
         ("Mid, $\\hat C_3$", u9["secondary"]["mid: MAE | C3_hat"]),
+        ("Part 13, post hoc (against VPIN)", None),
+        ("VPIN beyond the Part 9 baseline", r8["vpin_beyond_baseline"]),
+        ("$\\hat C_3$ beyond baseline + VPIN", r8["c3_beyond_baseline_plus_vpin"]),
         ("Part 7, pre-registered (Bybit)", None),
         ("$\\hat C_3$ without depth", byb),
         ("Part 10, pre-registered (Bybit, order-book depth)", None),
@@ -54,7 +58,7 @@ rows = [("Part 4, pre-registered", None),
         ("Reversion term", a5["secondary"]["thin: MAE | term_reversion"]),
         ("Momentum term", a5["secondary"]["thin: MAE | term_momentum"]),
         ("Mid control, $\\hat C_3$ without depth", a5["secondary"]["mid: MAE | C3_flow"])]
-fig, ax = plt.subplots(figsize=(6.6, 12.0)); yy = len(rows)
+fig, ax = plt.subplots(figsize=(6.6, 12.6)); yy = len(rows)
 labels, ticks = [], []
 for name, v in rows:
     yy -= 1; ticks.append(yy)

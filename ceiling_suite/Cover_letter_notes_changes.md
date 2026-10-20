@@ -79,3 +79,33 @@ Verified without change: all other results, including the summed-response closed
 - 23 thin US stocks (of 40 drawn; validity rule), SIP trades via Alpaca, depth-free C3_flow beyond the full volatility + impact baseline: dR2 +0.499 pts [0.272, 0.779], Clark-West t 5.05. S60 +0.153 [0.046, 0.272]; reversion term +0.613; momentum term nil. Mid-size controls ALSO show a gain (+0.316 [0.074, 0.634]) against the prediction. Limitations stated: universe rule did not exclude funds (CRF, BNDX); 17 thinnest names dropped by validity rule; survivorship; tick-rule signing.
 - New subsection and Table tab:us; abstract (both versions), introduction, map, what-we-do-not-claim, ledger (11 tests, 7 pass, 4 fail), threats (multiple testing over 11, sequential design, dependence, venue), summary, conclusion, data statement and forest figure (now includes Parts 7, 10 and 14) updated.
 - JF version: price-impact check and Bybit order-book detail moved to the Internet Appendix with pointer paragraphs; main text 60 pages.
+
+## October 20, 2026 (Part 13 R8: VPIN, post hoc)
+- VPIN (six-hour window, 50 equal-volume buckets, measured taker imbalance) on the Part 9 test hours: adds +1.24 pts [0.44, 2.30] beyond the baseline. C3_hat beyond baseline + VPIN: +2.03 pts [1.01, 3.42], CW t 12.1, AUC improves; keeps ~73% of its +2.79 gain (reproduced exactly). Spearman(C3, VPIN) -0.35; VPIN training coefficient negative. New paragraph "Against VPIN" (Section z9), related-literature sentence, map row, introduction clause, forest figure, repro row.
+
+## October 20, 2026 (external blueprint: repairs to Paper 2)
+- Quantity gate (Section 5.1): the peak gain is sharp only for a total quantity budget over the window; for per-period bounds the summed gain applies. Both contracts now stated; previous text paired a per-period bound with the peak gain (understated worst case).
+- Prop. shape: domain 0<a, 0<b<1, a!=b stated; boundary cases a=b, a=0, r=1 given explicitly.
+- Prop. dominance: restated as failure of the one-step solvency certificate (a bound), not as an actual breach; proof updated.
+- Thm. guard: loss/inventory/shock contract stated explicitly (inventory fixed over horizon, per-period shock bound, mark-to-market at any date; worst date is the last).
+- Thm. robust: stated as deterministic; statistical guarantee only via operator confidence set coverage.
+- Algorithm: guard checks every grid point, so it does not rely on the safe set being an interval.
+- New Remark (why the tail certificate is needed): exact two-market witness in the paper's own notation (rational arithmetic): identical h0-h2, summed response 1.92 vs 5.59, safe per-period shock 0.52 vs 0.18; two-point capacity-loss bound (1-beta)(0.52-0.18).
+- Abstract: guard maximality qualified "for bounded shocks".
+- Float placement fixed: map table (Table 1) and forest figure had drifted to the back matter; now placed near first reference.
+- JF version: multi-asset coupling and BTC crash-event detail moved to the Internet Appendix with pointers; main text 60 pages.
+
+## October 20, 2026 (flagship upgrade per the blueprint)
+### Paper 2: new theory (Sections 5-7)
+- Section 5 "Identification and financial safety": observation and risk contracts (O1 reset experiments, O2 exact window, O3 tagged, O4 audited; deterministic worst-case risk contract); exact two-market witness (Example); Prop. twoworld (two-point capacity-loss bound, attained with identical data); Thm window (finite-window certification: sharp Markov-Krein interval, geometric convergence via Chebyshev's best-approximation formula, no certificate without a memory bound); Thm certcost (certificate valid at 1-gamma, N = O(sigma^2 eps^-2 log(1/eps)), matching two-point lower bound; independent of number/spacing of cohorts, vs identification (Delta eta)^-(4K-2)); Table certvsid (companion paper's hard pairs have identical S; identify 7 -> 1.5M experiments, certify 11-18).
+- Section 6 additions: Lemma sound (compatible-set guards; abstain/halt when nothing qualifies); Thm robustguard (closed form, interval admission set, safety, maximality, infeasibility, minimax capacity loss up to log).
+- Section 7 "Value of disclosure": Thm disclosure (monotonicity, strictness iff extremal economy excluded, long-memory limit, net value can be negative; noisy certificates combined by Bonferroni intersection); Table discsim; pricing vs guarding (rebates must use point estimates; T12).
+- Section 12 "Tests of the information-safety results": simulation table T01-T09, T12 (all pass where the contract holds; failures documented: memory longer than declared 86% coverage; feedback rising after certification 35%); placeholders for Part 15 and Part 16.
+- Introduction (three questions; contributions 4-5), abstract (both versions), map rows, what-we-do-not-claim (contracts; no AI attribution), policy paragraph (certify / cannot certify / abstain), conclusion updated. 7 new references (van Waarde et al. 2020; Milanese and Vicino 1991; Krein and Nudel'man 1977; Karlin and Studden 1966; Achieser 1956; Le Cam 1986; Tu, Boczar and Recht 2018).
+- Proofs of all new results in Appendix A. Code: research_extension/information_safety (run_all.py, unit tests).
+- JF version: proofs, notation and detailed evidence moved to the Internet Appendix with pointer paragraphs; main text 59 pages including placeholders.
+### Paper 1
+- Thm 6.2 and Thm 6.4: label-permutation and parameter-class corrections (rate-ordered labels; ordered, separated node class; matching requires the class to contain the Gauss/Gauss-Radau pair).
+- New Remark (hard directions carry no risk): the two-point pair has identical summed response; links to Paper 2's certification theory. Policy paragraph updated; companion paper cited.
+### New notebooks
+- Part 15 (untouched days, frozen model + uncertainty-aware guard), Part 16 (untouched symbols: forecasting, beyond-VPIN confirmatory, guard). Both pre-registered; results pending.

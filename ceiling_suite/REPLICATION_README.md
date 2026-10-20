@@ -26,6 +26,8 @@ intermediate files there (`data_xsec/`, `data_bybit/`, `data_bybit_ob/`, `data_c
 | 12 | `Part12_CertifiedGuard.ipynb` | 2 | Certified-guard backtest, economic size, Oct 10 2025 event (`E1`, `Q4`–`Q7`) | `P12_certified_guard` (`b9a56af4`) | Parts 4, 9 (`X3`, `Y3`, `blocks_p9_30sym.parquet`) |
 | 13 | `Part13_PostHoc_Robustness.ipynb` | 1, 2 | Post-hoc checks: throttle guard, terciles, Bybit bars, IV estimate, fixed-grid depletion, CFTC basis signature, VPIN, Cochrane–Orcutt (`R1`–`R8`) | none (post hoc) | Parts 4, 7, 9, 11, 12 |
 | 14 | `Part14_US_Equities.ipynb` | 2 | Thin US stocks, consolidated trades via Alpaca (`A1`–`A5`) | `P14_us_equities` (`f5800a69`) | — (needs a free Alpaca key) |
+| 15 | `Part15_InfoSafety_Untouched.ipynb` | 2 | Frozen Part 9 model and uncertainty-aware guard on untouched Binance days, the 12th-15th of each month (`W4`-`W6`) | `P15_info_safety` (hash printed by W3) | Parts 4, 5, 9 (`X3`, `Y3`, `U2_build`, `blocks_p9_30sym.parquet`) |
+| 16 | `Part16_Untouched_Symbols.ipynb` | 2 | Thirty never-used Binance perpetuals: forecasting, beyond-VPIN and guard primaries (`X2`, `X4`-`X6`) | `P16_untouched_symbols` (hash printed by X3) | Parts 4, 5 (`X1`, `X3`, `Y1`, `Y3`) |
 
 There is no notebook numbered 3.
 
@@ -46,6 +48,7 @@ Hashes and unlock counts are reported in each paper's table notes.
 | `papers/recompute_theory.py`, `recompute_extra.py`, `recompute_crb.py`, `recompute_p1_capital.py`, `recompute_p1_protocols.py`, `recompute_p1_sprt.py` | 1 | Capital constants, protocols, CRB table, SPRT |
 | `papers/recompute_p1_estimators.py` | 1 | ML at the critical noise level (Table `tab:crb`); four-estimator check (Table `tab:lecam`) |
 | `papers/recompute_oct20.py` | 1, 2 | Cohort-split invariance; symmetric multi-asset network; re-optimization check (Prop. `prop:lucas`) |
+| `papers/research_extension/information_safety/run_all.py` (+ `tests/`) | 2 | Information-safety theorems: witness, two-world bound, Markov-Krein window bounds, certificate coverage, exact worst cases, optimal guard, disclosure, mechanisms, misspecification, rebate (tests T01-T09, T12) -> `results/IS_results.json` |
 | `papers/recompute_audit.py` | 1, 2 | Proof audit (Oct 2026): symbolic and numerical checks of Prop. shape (peak bracket), Remark counterexamples, Props. sum and equil (Paper 2); Thm. quantity K* bound, Thm. twocohort moments, Thm. blind example (Paper 1) → `R_audit_oct2026.json` |
 | `papers/recompute_dollar.py` | 2 | Liquidation probabilities and dollar losses from `E1_economic_size` (Part 12) → `R_P2_dollar_translation.json` |
 | `papers/calib_guard.py`, `papers/kreiss_table.py`, `papers/make_figs*.py`, `scripts_p45/make_fig_forest.py` | 2 | Calibrated guard illustration, Kreiss table, figures |

@@ -33,10 +33,14 @@ PAPER1_FILES = [
 PAPER2_FILES = [
     "p2_front.tex",
     "p2_theory1.tex",
-    "p2_theory2.tex",
+    "p2_t6.tex",
+    "p2_infosafety.tex",
+    "p2_guard.tex",
+    "p2_disclosure.tex",
     "p2_equil.tex",
     "p2_evidence.tex",
     "p2_thin.tex",
+    "p2_istests.tex",
     "p2_close.tex",
     "p2_appendix.tex",
 ]
@@ -95,17 +99,24 @@ PAPER2_MAP = {
     "prop:dominance": ("p2_prop_dominance_guard_vs_eigenvalue", "p2_prop_dominance_guard_vs_eigenvalue"),
     "prop:lucas": ("p2_prop_lucas_reinforces_guard", "p2_prop_lucas_reinforces_guard"),
     "prop:equil": ("p2_prop_equil_transient_risk", "p2_prop_equil_transient_risk"),
-    "thm:flagship_A": ("flagship_thm_A_witness_and_tv_impossibility", "flagship_thm_A_witness_and_tv_impossibility"),
-    "thm:flagship_B": ("flagship_thm_B_risk_identifiability_envelope", "flagship_thm_B_risk_identifiability_envelope"),
-    "thm:flagship_C": ("flagship_thm_C_minimum_observations", "flagship_thm_C_minimum_observations"),
-    "thm:flagship_D": ("flagship_thm_D_confidence_safety_certification", "flagship_thm_D_confidence_safety_certification"),
-    "thm:flagship_E": ("flagship_thm_E_optimal_uncertainty_guard", "flagship_thm_E_optimal_uncertainty_guard"),
-    "thm:flagship_F": ("flagship_thm_F_disclosure_economic_value", "flagship_thm_F_disclosure_economic_value"),
-    "thm:flagship_G": ("flagship_thm_G_equilibrium_under_uncertainty", "flagship_thm_G_equilibrium_under_uncertainty"),
+    "thm:flagship_A": ("thmA_algebraic_core", "thmA_algebraic_core"),
+    "thm:flagship_B": ("thmB_algebraic_core", "thmB_algebraic_core"),
+    "thm:flagship_C": ("thmC_algebraic_core", "thmC_algebraic_core"),
+    "thm:flagship_D": ("thmD_algebraic_core", "thmD_algebraic_core"),
+    "thm:flagship_E": ("thmE_algebraic_core", "thmE_algebraic_core"),
+    "thm:flagship_F": ("thmF_algebraic_core", "thmF_algebraic_core"),
+    "thm:flagship_G": ("thmG_algebraic_core", "thmG_algebraic_core"),
+    "ex:witness": ("p2_ex_witness", "p2_ex_witness"),
+    "prop:twoworld": ("p2_prop_twoworld", "p2_prop_twoworld"),
+    "thm:window": ("p2_thm_window", "p2_thm_window"),
+    "thm:certcost": ("p2_thm_certcost", "p2_thm_certcost"),
+    "lem:sound": ("p2_lem_sound", "p2_lem_sound"),
+    "thm:robustguard": ("p2_thm_robustguard", "p2_thm_robustguard"),
+    "thm:disclosure": ("p2_thm_disclosure", "p2_thm_disclosure"),
 }
 
 ENV_PATTERN = re.compile(
-    r"\\begin\{(theorem|proposition|lemma|corollary)\}(?:\[([^\]]*)\])?\s*\\label\{([^}]+)\}",
+    r"\\begin\{(theorem|proposition|lemma|corollary|example)\}(?:\[([^\]]*)\])?\s*\\label\{([^}]+)\}",
     re.S,
 )
 

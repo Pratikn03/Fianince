@@ -28,55 +28,55 @@
 | 16 | `corollary` | `cor:garch` | Invariance under impact-induced heteroskedasticity | `p1_account.tex:147` | `CurrentMM.p1_cor_garch_heteroskedastic_invariance` (L371) | `MachineMarkets.p1_cor_garch_invariance` (L119) |
 | 17 | `proposition` | `prop:crb` | Cram\'er--Rao benchmark | `p1_mixture.tex:11` | `CurrentMM.p1_prop_crb_benchmark` (L383) | `MachineMarkets.p1_prop_crb_benchmark` (L127) |
 | 18 | `theorem` | `thm:twocohort` | Global two-point bound and matching upper bound, $K=2$ | `p1_mixture.tex:45` | `CurrentMM.p1_thm_twocohort_hankel_and_moment_gap` (L399) | `MachineMarkets.p1_thm_twocohort_hankel` (L136) |
-| 19 | `theorem` | `thm:kcohort` | $K$-cohort two-point lower bound | `p1_mixture.tex:92` | `CurrentMM.p1_thm_kcohort_lower_bound` (L438) | `MachineMarkets.p1_thm_kcohort_lower_bound` (L145) |
-| 20 | `theorem` | `prop:esprit` | Matching upper bound for every $K$ | `p1_mixture.tex:138` | `CurrentMM.p1_thm_esprit_matching_upper_bound` (L453) | `MachineMarkets.p1_prop_esprit_upper_bound` (L151) |
-| 21 | `lemma` | `lem:altpair` | Moment-matched cohort pairs | `p1_mixture.tex:175` | `CurrentMM.p1_lem_altpair_moment_matched_wasserstein` (L490) | `MachineMarkets.p1_lem_altpair_moment_matched` (L162) |
-| 22 | `theorem` | `thm:general` | Minimax rate for general memory | `p1_mixture.tex:181` | `CurrentMM.p1_thm_general_memory_minimax` (L506) | `MachineMarkets.p1_thm_general_memory_minimax` (L177) |
-| 23 | `theorem` | `thm:minphase` | Passive identification: minimum phase | `p1_mixture.tex:235` | `CurrentMM.p1_thm_minphase_passive_identification` (L528) | `MachineMarkets.p1_thm_minphase_identification` (L183) |
-| 24 | `theorem` | `prop:passive` | Passive cost | `p1_mixture.tex:241` | `CurrentMM.p1_thm_passive_cost` (L544) | `MachineMarkets.p1_prop_passive_cost` (L189) |
+| 19 | `theorem` | `thm:kcohort` | $K$-cohort two-point lower bound | `p1_mixture.tex:96` | `CurrentMM.p1_thm_kcohort_lower_bound` (L438) | `MachineMarkets.p1_thm_kcohort_lower_bound` (L145) |
+| 20 | `theorem` | `prop:esprit` | Matching upper bound for every $K$ | `p1_mixture.tex:142` | `CurrentMM.p1_thm_esprit_matching_upper_bound` (L453) | `MachineMarkets.p1_prop_esprit_upper_bound` (L151) |
+| 21 | `lemma` | `lem:altpair` | Moment-matched cohort pairs | `p1_mixture.tex:179` | `CurrentMM.p1_lem_altpair_moment_matched_wasserstein` (L490) | `MachineMarkets.p1_lem_altpair_moment_matched` (L162) |
+| 22 | `theorem` | `thm:general` | Minimax rate for general memory | `p1_mixture.tex:185` | `CurrentMM.p1_thm_general_memory_minimax` (L506) | `MachineMarkets.p1_thm_general_memory_minimax` (L177) |
+| 23 | `theorem` | `thm:minphase` | Passive identification: minimum phase | `p1_mixture.tex:239` | `CurrentMM.p1_thm_minphase_passive_identification` (L528) | `MachineMarkets.p1_thm_minphase_identification` (L183) |
+| 24 | `theorem` | `prop:passive` | Passive cost | `p1_mixture.tex:245` | `CurrentMM.p1_thm_passive_cost` (L544) | `MachineMarkets.p1_prop_passive_cost` (L189) |
 | 25 | `proposition` | `prop:tagged` | Tagged flow removes the barrier | `p1_disclosure.tex:38` | `CurrentMM.p1_prop_tagged_flow_removes_barrier` (L565) | `MachineMarkets.p1_prop_tagged_flow_ident` (L195) |
 | 26 | `theorem` | `thm:discvalue` | Value of class-tagged disclosure | `p1_disclosure.tex:48` | `CurrentMM.p1_thm_discvalue_ratio` (L574) | `MachineMarkets.p1_thm_disclosure_value` (L203) |
 | 27 | `theorem` | `thm:blind` | Spectral blindness | `p1_disclosure.tex:128` | `CurrentMM.p1_thm_blind_spectral_blindness` (L590) | `MachineMarkets.p1_thm_spectral_blindness` (L211) |
 | 28 | `proposition` | `prop:mech` | Mechanical persistence under filtered random walks | `p1_empirics.tex:12` | `CurrentMM.p1_prop_mech_persistence` (L627) | `MachineMarkets.p1_prop_mechanical_persistence` (L219) |
-| 29 | `theorem` | `thm:abstain` | Finite-window abstention | `p1_appendix.tex:154` | `CurrentMM.p1_thm_abstain_finite_window` (L640) | `MachineMarkets.p1_thm_abstain_finite_window` (L228) |
+| 29 | `theorem` | `thm:abstain` | Finite-window abstention | `p1_appendix.tex:155` | `CurrentMM.p1_thm_abstain_finite_window` (L640) | `MachineMarkets.p1_thm_abstain_finite_window` (L228) |
 
 ## Paper 2 — Transient Amplification & Summed-Gain Guard (`paper2/`)
 
 | # | Environment | Label | Title | LaTeX Source | Mathlib (`ℝ`) Theorem | Core Lean (`Rat`) Theorem |
 |---|---|---|---|---|---|---|
-| 1 | `proposition` | `prop:jury` | Stability with one cohort | `p2_theory1.tex:15` | `CurrentMM.p2_prop_jury_one_cohort` (L44) | `MachineMarkets.p2_prop_jury_one_cohort` (L13) |
-| 2 | `proposition` | `prop:invariance` | Input--output invariance | `p2_theory1.tex:29` | `CurrentMM.p2_prop_input_output_invariance` (L65) | `MachineMarkets.p2_prop_input_output_invariance` (L24) |
-| 3 | `proposition` | `prop:ambig` | Quote cost of ambiguity | `p2_theory1.tex:39` | `CurrentMM.p2_prop_ambig_quote_cost` (L74) | `MachineMarkets.p2_prop_ambig_quote_cost` (L32) |
-| 4 | `theorem` | `thm:radius` | Safe radius, Kreiss bounds and the failure of the spectral radius | `p2_theory1.tex:57` | `CurrentMM.p2_thm_radius_kreiss` (L90) | `MachineMarkets.p2_thm_radius_kreiss` (L38) |
-| 5 | `proposition` | `prop:blind` | Spectral blindness; companion paper | `p2_theory1.tex:94` | `CurrentMM.p2_prop_spectral_blindness_companion` (L109) | `MachineMarkets.p2_prop_spectral_blindness_companion` (L46) |
-| 6 | `lemma` | `lem:cm` | No amplification without depth; companion paper | `p2_theory1.tex:105` | `CurrentMM.p2_lem_cm_no_amplification_without_depth` (L122) | `MachineMarkets.p2_lem_cm_no_amplification_without_depth` (L52) |
-| 7 | `proposition` | `prop:multi` | Directed cross-impact shrinks the safe radius | `p2_theory1.tex:118` | `CurrentMM.p2_prop_multi_venue_cross_impact` (L139) | `MachineMarkets.p2_prop_multi_venue_cross_impact` (L60) |
-| 8 | `theorem` | `thm:t6` | Amplification condition | `p2_theory2.tex:22` | `CurrentMM.p2_thm_t6_amplification_condition` (L168) | `MachineMarkets.p2_thm_t6_amplification_condition` (L66) |
-| 9 | `proposition` | `prop:shape` | Shape of the overshoot | `p2_theory2.tex:42` | `CurrentMM.p2_prop_shape_overshoot` (L182) | `MachineMarkets.p2_prop_shape_overshoot` (L75) |
-| 10 | `proposition` | `prop:t6m` | One-period amplification margin | `p2_theory2.tex:66` | `CurrentMM.p2_prop_t6m_one_period_margin` (L210) | `MachineMarkets.p2_prop_t6m_one_period_margin` (L84) |
-| 11 | `theorem` | `thm:nomom` | Momentum alone cannot make a stable book amplify | `p2_theory2.tex:76` | `CurrentMM.p2_thm_nomom_no_overshoot` (L223) | `MachineMarkets.p2_thm_nomom_no_overshoot` (L93) |
-| 12 | `theorem` | `thm:noover` | A sufficient condition for no overshoot | `p2_theory2.tex:84` | `CurrentMM.p2_thm_noover_sufficient_condition` (L239) | `MachineMarkets.p2_thm_noover_sufficient_condition` (L101) |
-| 13 | `proposition` | `prop:sum` | Summed response in closed form | `p2_theory2.tex:100` | `CurrentMM.p2_prop_sum_closed_form` (L251) | `MachineMarkets.p2_prop_sum_closed_form` (L108) |
-| 14 | `theorem` | `thm:guard` | Summed-gain guard is maximal | `p2_theory2.tex:129` | `CurrentMM.p2_thm_guard_maximal` (L279) | `MachineMarkets.p2_thm_guard_maximal` (L118) |
-| 15 | `lemma` | `lem:tail` | Contraction-block tail bound | `p2_theory2.tex:147` | `CurrentMM.p2_lem_tail_contraction` (L296) | `MachineMarkets.p2_lem_tail_contraction` (L123) |
-| 16 | `theorem` | `thm:robust` | Robust gain | `p2_theory2.tex:163` | `CurrentMM.p2_thm_robust_gain` (L309) | `MachineMarkets.p2_thm_robust_gain` (L129) |
-| 17 | `proposition` | `prop:bridge` | No identification needed; numerical | `p2_theory2.tex:173` | `CurrentMM.p2_prop_bridge_no_identification` (L329) | `MachineMarkets.p2_prop_bridge_no_identification` (L134) |
-| 18 | `theorem` | `thm:forward` | Conditional bounded-shock forward solvency | `p2_theory2.tex:224` | `CurrentMM.p2_thm_forward_solvency` (L338) | `MachineMarkets.p2_thm_forward_solvency` (L139) |
-| 19 | `proposition` | `prop:dominance` | When the guard beats an eigenvalue rule | `p2_theory2.tex:238` | `CurrentMM.p2_prop_dominance_guard_vs_eigenvalue` (L353) | `MachineMarkets.p2_prop_dominance_guard_vs_eigenvalue` (L145) |
-| 20 | `proposition` | `prop:lucas` | Strategic re-optimization reinforces the guard | `p2_theory2.tex:251` | `CurrentMM.p2_prop_lucas_reinforces_guard` (L369) | `MachineMarkets.p2_prop_lucas_reinforces_guard` (L153) |
-| 21 | `proposition` | `prop:equil` | Equilibrium transient risk | `p2_equil.tex:10` | `CurrentMM.p2_prop_equil_transient_risk` (L397) | `MachineMarkets.p2_prop_equil_transient_risk` (L159) |
-| 22 | `theorem` | `thm:flagship_A` | Unavoidable loss of safe trading capacity | `p2_equil.tex:67` | `CurrentMM.flagship_thm_A_witness_and_tv_impossibility` (L505) | `MachineMarkets.flagship_thm_A_witness_and_tv_impossibility` (L201) |
-| 23 | `theorem` | `thm:flagship_B` | Sharp risk-specific identifiability envelope | `p2_equil.tex:82` | `CurrentMM.flagship_thm_B_risk_identifiability_envelope` (L516) | `MachineMarkets.flagship_thm_B_risk_identifiability_envelope` (L207) |
-| 24 | `theorem` | `thm:flagship_C` | Minimum observations for safe decisions vs.\ cohort identification | `p2_equil.tex:94` | `CurrentMM.flagship_thm_C_minimum_observations` (L547) | `MachineMarkets.flagship_thm_C_minimum_observations` (L220) |
-| 25 | `theorem` | `thm:flagship_D` | Confidence-valid safety certification | `p2_equil.tex:108` | `CurrentMM.flagship_thm_D_confidence_safety_certification` (L561) | `MachineMarkets.flagship_thm_D_confidence_safety_certification` (L228) |
-| 26 | `theorem` | `thm:flagship_E` | Optimal uncertainty-aware pre-trade guard | `p2_equil.tex:115` | `CurrentMM.flagship_thm_E_optimal_uncertainty_guard` (L571) | `MachineMarkets.flagship_thm_E_optimal_uncertainty_guard` (L233) |
-| 27 | `theorem` | `thm:flagship_F` | Economic value of class-tagged disclosure | `p2_equil.tex:127` | `CurrentMM.flagship_thm_F_disclosure_economic_value` (L586) | `MachineMarkets.flagship_thm_F_disclosure_economic_value` (L242) |
-| 28 | `theorem` | `thm:flagship_G` | Equilibrium reversion supply under model ambiguity | `p2_equil.tex:135` | `CurrentMM.flagship_thm_G_equilibrium_under_uncertainty` (L599) | `MachineMarkets.flagship_thm_G_equilibrium_under_uncertainty` (L252) |
+| 1 | `proposition` | `prop:jury` | Stability with one cohort | `p2_theory1.tex:15` | `CurrentMM.p2_prop_jury_one_cohort` (L50) | `MachineMarkets.p2_prop_jury_one_cohort` (L13) |
+| 2 | `proposition` | `prop:invariance` | Input--output invariance | `p2_theory1.tex:29` | `CurrentMM.p2_prop_input_output_invariance` (L71) | `MachineMarkets.p2_prop_input_output_invariance` (L24) |
+| 3 | `proposition` | `prop:ambig` | Quote cost of ambiguity | `p2_theory1.tex:39` | `CurrentMM.p2_prop_ambig_quote_cost` (L80) | `MachineMarkets.p2_prop_ambig_quote_cost` (L32) |
+| 4 | `theorem` | `thm:radius` | Safe radius, Kreiss bounds and the failure of the spectral radius | `p2_theory1.tex:57` | `CurrentMM.p2_thm_radius_kreiss` (L96) | `MachineMarkets.p2_thm_radius_kreiss` (L38) |
+| 5 | `proposition` | `prop:blind` | Spectral blindness; companion paper | `p2_theory1.tex:94` | `CurrentMM.p2_prop_spectral_blindness_companion` (L115) | `MachineMarkets.p2_prop_spectral_blindness_companion` (L46) |
+| 6 | `lemma` | `lem:cm` | No amplification without depth; companion paper | `p2_theory1.tex:105` | `CurrentMM.p2_lem_cm_no_amplification_without_depth` (L128) | `MachineMarkets.p2_lem_cm_no_amplification_without_depth` (L52) |
+| 7 | `proposition` | `prop:multi` | Directed cross-impact shrinks the safe radius | `p2_theory1.tex:118` | `CurrentMM.p2_prop_multi_venue_cross_impact` (L145) | `MachineMarkets.p2_prop_multi_venue_cross_impact` (L60) |
+| 8 | `theorem` | `thm:t6` | Amplification condition | `p2_t6.tex:22` | `CurrentMM.p2_thm_t6_amplification_condition` (L174) | `MachineMarkets.p2_thm_t6_amplification_condition` (L66) |
+| 9 | `proposition` | `prop:shape` | Shape of the overshoot | `p2_t6.tex:42` | `CurrentMM.p2_prop_shape_overshoot` (L188) | `MachineMarkets.p2_prop_shape_overshoot` (L75) |
+| 10 | `proposition` | `prop:t6m` | One-period amplification margin | `p2_t6.tex:61` | `CurrentMM.p2_prop_t6m_one_period_margin` (L216) | `MachineMarkets.p2_prop_t6m_one_period_margin` (L84) |
+| 11 | `theorem` | `thm:nomom` | Momentum alone cannot make a stable book amplify | `p2_t6.tex:71` | `CurrentMM.p2_thm_nomom_no_overshoot` (L229) | `MachineMarkets.p2_thm_nomom_no_overshoot` (L93) |
+| 12 | `theorem` | `thm:noover` | A sufficient condition for no overshoot | `p2_t6.tex:79` | `CurrentMM.p2_thm_noover_sufficient_condition` (L245) | `MachineMarkets.p2_thm_noover_sufficient_condition` (L101) |
+| 13 | `proposition` | `prop:sum` | Summed response in closed form | `p2_t6.tex:95` | `CurrentMM.p2_prop_sum_closed_form` (L257) | `MachineMarkets.p2_prop_sum_closed_form` (L108) |
+| 14 | `example` | `ex:witness` | An exact ambiguity witness | `p2_infosafety.tex:20` | `CurrentMM.p2_ex_witness` (L718) | `MachineMarkets.p2_ex_witness` (L270) |
+| 15 | `proposition` | `prop:twoworld` | Unavoidable loss of safe capacity | `p2_infosafety.tex:24` | `CurrentMM.p2_prop_twoworld` (L790) | `MachineMarkets.p2_prop_twoworld` (L308) |
+| 16 | `theorem` | `thm:window` | Finite-window certification | `p2_infosafety.tex:42` | `CurrentMM.p2_thm_window` (L844) | `MachineMarkets.p2_thm_window` (L313) |
+| 17 | `theorem` | `thm:certcost` | Certification at the parametric rate | `p2_infosafety.tex:55` | `CurrentMM.p2_thm_certcost` (L1021) | `MachineMarkets.p2_thm_certcost` (L323) |
+| 18 | `theorem` | `thm:guard` | Summed-gain guard is maximal | `p2_guard.tex:13` | `CurrentMM.p2_thm_guard_maximal` (L293) | `MachineMarkets.p2_thm_guard_maximal` (L118) |
+| 19 | `lemma` | `lem:tail` | Contraction-block tail bound | `p2_guard.tex:31` | `CurrentMM.p2_lem_tail_contraction` (L348) | `MachineMarkets.p2_lem_tail_contraction` (L123) |
+| 20 | `theorem` | `thm:robust` | Robust gain | `p2_guard.tex:49` | `CurrentMM.p2_thm_robust_gain` (L361) | `MachineMarkets.p2_thm_robust_gain` (L129) |
+| 21 | `proposition` | `prop:bridge` | No identification needed; numerical | `p2_guard.tex:59` | `CurrentMM.p2_prop_bridge_no_identification` (L381) | `MachineMarkets.p2_prop_bridge_no_identification` (L134) |
+| 22 | `lemma` | `lem:sound` | Soundness of compatible-set guards | `p2_guard.tex:69` | `CurrentMM.p2_lem_sound` (L1065) | `MachineMarkets.p2_lem_sound` (L332) |
+| 23 | `theorem` | `thm:robustguard` | Optimal uncertainty-aware admission | `p2_guard.tex:73` | `CurrentMM.p2_thm_robustguard` (L1127) | `MachineMarkets.p2_thm_robustguard` (L338) |
+| 24 | `theorem` | `thm:forward` | Conditional bounded-shock forward solvency | `p2_guard.tex:131` | `CurrentMM.p2_thm_forward_solvency` (L390) | `MachineMarkets.p2_thm_forward_solvency` (L139) |
+| 25 | `proposition` | `prop:dominance` | When an eigenvalue rule admits an uncertified level | `p2_guard.tex:145` | `CurrentMM.p2_prop_dominance_guard_vs_eigenvalue` (L405) | `MachineMarkets.p2_prop_dominance_guard_vs_eigenvalue` (L145) |
+| 26 | `proposition` | `prop:lucas` | Strategic re-optimization reinforces the guard | `p2_guard.tex:154` | `CurrentMM.p2_prop_lucas_reinforces_guard` (L421) | `MachineMarkets.p2_prop_lucas_reinforces_guard` (L153) |
+| 27 | `theorem` | `thm:disclosure` | Decision value of disclosure | `p2_disclosure.tex:5` | `CurrentMM.p2_thm_disclosure` (L1181) | `MachineMarkets.p2_thm_disclosure` (L346) |
+| 28 | `proposition` | `prop:equil` | Equilibrium transient risk | `p2_equil.tex:10` | `CurrentMM.p2_prop_equil_transient_risk` (L449) | `MachineMarkets.p2_prop_equil_transient_risk` (L159) |
 
 ## Phase 7 — Unified Foundational Bridge Theorems (Paper 1 ↔ Paper 2)
 
 | # | Result | Title | Mathlib (`ℝ`) Theorem | Core Lean (`Rat`) Theorem |
 |---|---|---|---|---|
-| 1 | `Result A` | Result A: Impossibility of Cohort-Specific Risk Control from Public Data | `CurrentMM.foundational_result_A_impossibility` (L452) | `MachineMarkets.foundational_result_A_impossibility` (L167) |
-| 2 | `Result B` | Result B: Disclosure-Enabled Control Improvement | `CurrentMM.foundational_result_B_disclosure_control` (L619) | `MachineMarkets.foundational_result_B_disclosure_control` (L258) |
-| 3 | `Result C` | Result C: Active Probing vs. Transient Excursion Tradeoff | `CurrentMM.foundational_result_C_probing_control_tradeoff` (L645) | `MachineMarkets.foundational_result_C_probing_control_tradeoff` (L263) |
+| 1 | `Result A` | Result A: Impossibility of Cohort-Specific Risk Control from Public Data | `CurrentMM.foundational_result_A_impossibility` (L504) | `MachineMarkets.foundational_result_A_impossibility` (L167) |
+| 2 | `Result B` | Result B: Disclosure-Enabled Control Improvement | `CurrentMM.foundational_result_B_disclosure_control` (L671) | `MachineMarkets.foundational_result_B_disclosure_control` (L258) |
+| 3 | `Result C` | Result C: Active Probing vs. Transient Excursion Tradeoff | `CurrentMM.foundational_result_C_probing_control_tradeoff` (L697) | `MachineMarkets.foundational_result_C_probing_control_tradeoff` (L263) |

@@ -1,4 +1,7 @@
 """Pytest integration for Flagship Paper 2 Information-Safety Extension (T01-T12)."""
+import subprocess
+import sys
+
 from research_extension.information_safety.tests.test_exact_witness import test_exact_witness_rational_values
 from research_extension.information_safety.tests.test_convolution_gain import test_convolution_gain_horizons_1_to_8
 from research_extension.information_safety.tests.test_confidence_coverage import (
@@ -18,3 +21,13 @@ def test_all_flagship_information_safety_checks():
     test_two_world_bound_and_sample_complexity()
     test_robust_optimizer_and_abstention()
     test_balance_sheet_solvency_contract()
+
+
+def test_ceiling_suite_information_safety_suite():
+    res = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "ceiling_suite/papers/research_extension/information_safety/tests/test_information_safety.py"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res.returncode == 0, res.stdout + res.stderr

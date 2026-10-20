@@ -1,0 +1,84 @@
+\section{Identification and financial safety}\label{sec:infosafety}
+
+The companion paper shows that identifying the cohorts of algorithms from prices is expensive: separating $K$ cohorts whose memories differ by $\Delta\eta$ takes a number of experiments of order $(\Delta\eta)^{-(4K-2)}$, and with general memory accuracy improves only as $1/\log N$ \citep{niroula2026}. A pre-trade control does not need the cohorts; it needs a bound on the risk they create. This section asks what information certifies a safe trading decision, what that information costs, and how much safe trading must be given up when it is missing.
+
+\subsection{Observation and risk contracts}\label{sec:contracts}
+We work in the positive cohort economy \eqref{eq:J} with $q_i\ge0$ and known $a$ and $\kappa$. Its merged measure $M=\sum_iq_i\eta_i\delta_{r_i}$, $r_i=1-\eta_i$, has kernel $k_m=\int r^m\,dM$, and the price response to a unit of flow obeys $h_0=\kappa$, $h_{t+1}=ah_t+\kappa\sum_{m\le t}k_mh_{t-m}$. All $h_t\ge0$ (Lemma~\ref{lem:cm}), and the summed response is
+\begin{equation}\label{eq:SPhi}
+S=\sum_th_t=\frac{\kappa}{1-a-\kappa\Phi},\qquad \Phi=\int\frac{dM(r)}{1-r}=\sum_iq_i ,
+\end{equation}
+with stability exactly when $a+\kappa\Phi<1$. A \emph{memory bound} $\bar r<1$ states that every memory rate satisfies $r_i\le\bar r$.
+
+\emph{Risk contract.} A position $I$ is held fixed, each period's flow shock is bounded by $\bar u$, losses are marked to market at every date, and the horizon is unbounded. By Theorem~\ref{thm:guard} the worst-case loss is $|I|\bar uS$, so the safe capacity, the largest shock bound with loss at most the budget $\mathcal B$, is $\mathcal B/(|I|S)$. Section~\ref{sec:guard} adds admission, margin and fills. All statements below are deterministic worst cases under this contract; none is a probability-of-ruin statement.
+
+\emph{Observation contracts.} We consider four: (O1) $N$ independent reset experiments, each returning $h_0,\ldots,h_{T-1}$ with independent Gaussian errors of standard deviation $\sigma$ per tap, the controlled-probe contract of the companion paper; (O2) an exact window $h_0,\ldots,h_n$; (O3) class-tagged flows; and (O4) audited exposure, which reveals $\Phi$. The theorems concern these contracts. Observational public records of a live book are a different contract, for which we offer evidence (Section~\ref{sec:p15}) but no finite-sample guarantee.
+
+Given data $D$, let $\Theta(D)$ be the set of economies compatible with it. A decision is \emph{certifiably safe} if its worst-case loss is within budget for every economy in $\Theta(D)$, \emph{certifiably unsafe} if it exceeds the budget for every one, and \emph{undecidable} otherwise. This classification is a definition, not a result; it is the finance version of the data-informativity view of control without identification \citep{vanwaarde2020} and of set-membership estimation \citep{milanese1991}. The results below make it explicit for this economy.
+
+\subsection{Two markets that look the same}
+
+\begin{example}[An exact ambiguity witness]\label{ex:witness}
+Let $a=0.4$ and $\kappa=1$. Market A has one cohort ($q=0.08$, $\eta=0.5$); market B has two ($q=0.02/0.95$, $\eta=0.95$; $q=0.4$, $\eta=0.05$). Their merged measures have the same mass and first moment, so in rational arithmetic their price responses coincide at lags 0, 1 and 2 ($1$, $11/25$, $267/1250$) and first differ at lag 3. Their summed responses are $1.92$ and $5.59$, so for a unit position and budget the safe shock bound is $0.52$ in A and $0.18$ in B.
+\end{example}
+
+\begin{proposition}[Unavoidable loss of safe capacity]\label{prop:twoworld}
+Let two economies have safe capacities $v_0<v_1$ and data laws $P_0,P_1$. If a data-driven rule $A(D)\in[0,v_1]$ admits an unsafe level in economy 0 with probability at most $\beta$, $P_0(A>v_0)\le\beta$, then
+\[
+\E_1[v_1-A(D)]\;\ge\;(v_1-v_0)\,\bigl[1-\beta-{\rm TV}(P_0,P_1)\bigr]_+ .
+\]
+The bound is attained when $P_0=P_1$ by the rule that admits $v_1$ with probability $\beta$ and $v_0$ otherwise.
+\end{proposition}
+
+\begin{proof}
+Let $E=\{A\le v_0\}$. Then $P_0(E)\ge1-\beta$ and $P_1(E)\ge P_0(E)-{\rm TV}$. On $E$ the capacity given up in economy 1 is at least $v_1-v_0$, and it is nonnegative elsewhere.
+\end{proof}
+
+The argument is the two-point method of statistical decision theory \citep{lecam1986}; its use here is to price missing information in units of safe trading. In Example~\ref{ex:witness}, a supervisor who sees the first three coefficients and must admit an unsafe level in B with probability at most 5\% gives up at least $0.95\times0.34=0.32$ units of safe shock capacity in A.
+
+\subsection{What a finite window certifies}
+
+Lags $1$ to $n$ of the response determine the first $n$ moments of $M$ exactly, through $k_t=(h_{t+1}-ah_t-\kappa\sum_{m<t}k_mh_{t-m})/\kappa^2$. The summed response depends on $M$ only through $\Phi=\int f\,dM$ with $f(r)=(1-r)^{-1}$. Certifying it from a window is therefore an extremal moment problem.
+
+\begin{theorem}[Finite-window certification]\label{thm:window}
+Observe $h_0,\ldots,h_n$ exactly under a memory bound $\bar r<1$, and let $\mu_-$ and $\mu_+$ be the lower and upper principal representations of the implied moments $k_0,\ldots,k_{n-1}$ on $[0,\bar r]$ (the extremal measures of the Markov--Krein theorem; $\mu_+$ has an atom at $\bar r$). Let $\Phi_\pm=\int f\,d\mu_\pm$.
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Sharp interval.} The summed responses of stable economies compatible with the data form the interval $[S(\Phi_-),S(\Phi_+)]$ if $a+\kappa\Phi_+<1$, and $[S(\Phi_-),\infty)$ otherwise. Both endpoints are attained by economies with at most $\lfloor n/2\rfloor+1$ cohorts.
+\item \emph{Geometric convergence.} $\Phi_+-\Phi_-\le2k_0E_{n-1}$, where $E_{n-1}=(2/\bar r)\,\varrho^{\,n-1}/(x_0^2-1)$ is the error of the best uniform approximation of $f$ on $[0,\bar r]$ by polynomials of degree $n-1$, $x_0=2/\bar r-1$ and $\varrho=x_0-\sqrt{x_0^2-1}<1$. A window of length $n=O\bigl(\log(1/\epsilon)/\log(1/\varrho)\bigr)$ certifies $\Phi$ to precision $\epsilon$, and $\log(1/\varrho)\sim2\sqrt{(1-\bar r)/\bar r}$ as $\bar r\to1$.
+\item \emph{No certificate without a memory bound.} If memory rates may lie anywhere in $[0,1)$, then for every $n$ and every window whose moment vector is interior to the moment space, compatible stable economies have arbitrarily large summed responses: no finite window certifies any finite risk bound.
+\end{enumerate}
+\end{theorem}
+
+Part (i) is an application of the Markov--Krein theorem \citep{krein1977,karlin1966}: since $f^{(n)}(r)=n!/(1-r)^{n+1}>0$, the extremes of $\int f\,d\mu$ over measures with given moments are attained at the principal representations. Part (ii) uses Chebyshev's formula for the best approximation of $1/(x_0-x)$ \citep{achieser1956}. The proofs are in Appendix~\ref{app:proofs}. Theorem~\ref{thm:window} turns the three-way classification into a computation: a decision is certifiably safe from the window when $|I|\bar uS(\Phi_+)\le\mathcal B$, certifiably unsafe when $|I|\bar uS(\Phi_-)>\mathcal B$, and undecidable in between. In an eight-cohort economy with memory bound $0.95$ and true summed response $5.56$, the window of lags $0$--$3$ certifies nothing ($a+\kappa\Phi_+\ge1$), lags $0$--$4$ certify $S\le92.8$, lags $0$--$6$ give $[5.01,7.20]$ and lags $0$--$8$ give $[5.30,6.00]$; the widths stay inside the bound of part (ii) at every window. For fixed data the upper bound grows without limit as the memory bound approaches one ($\Phi_+=2.42$, $9.45$, $79.7$ and $782$ for $\bar r=0.9$, $0.99$, $0.999$ and $0.9999$, from the first four moments of a three-cohort economy), as part (iii) says (\texttt{research\_extension/information\_safety}).
+
+\subsection{What certification costs, and what identification costs}
+
+\begin{theorem}[Certification at the parametric rate]\label{thm:certcost}
+Consider the class $\mathcal K(\bar r,\bar s)$ of positive economies with memory bound $\bar r$ and $a+\kappa\Phi\le\bar s<1$, observed under contract (O1). Let $\bar\lambda=1-(1-\bar r)(1-\bar s)$ and $\bar h_t$ the average of the $N$ responses.
+\begin{enumerate}[label=(\roman*)]
+\item \emph{A valid certificate.} For every economy in the class, $h_t\le\kappa\bar\lambda^t$, and
+\[
+\hat S^+_T=\sum_{t<T}\bar h_t+z_{1-\gamma}\,\sigma\sqrt{T/N}+\frac{\kappa\bar\lambda^T}{1-\bar\lambda}
+\]
+satisfies $P(S\le\hat S^+_T)\ge1-\gamma$. With $T_\epsilon=\lceil\log(2\kappa/((1-\bar\lambda)\epsilon))/\log(1/\bar\lambda)\rceil$ and $N\ge16z_{1-\gamma}^2\sigma^2T_\epsilon/\epsilon^2$, the excess $\hat S^+-S$ is at most $\epsilon$ with probability at least $1-2\gamma$. Certification to precision $\epsilon$ therefore costs $N=O(\sigma^2\epsilon^{-2}\log(1/\epsilon))$.
+\item \emph{A matching lower bound.} Fix an interior single-cohort economy $\theta_0$ and let $C_0=\|\partial h/\partial q\|_2/(\partial S/\partial q)$ at $\theta_0$. Any procedure that is valid at level $1-\gamma$ on the class and overshoots $S$ by less than $2\epsilon$ with probability at least $1/2$ at $\theta_0$ needs $N\ge\bigl((1-2\gamma)\sigma/(2C_0\epsilon)\bigr)^2(1+o(1))$ as $\epsilon\to0$.
+\item \emph{Independence of the cohort structure.} Neither bound depends on the number of cohorts or on the spacing of their memories, whereas identifying them costs $N\asymp\sigma^2(\Delta\eta)^{-(4K-2)}$ with exponential memory and $\exp(\Theta(1/w))$ experiments for accuracy $w$ with general memory \citep{niroula2026}.
+\end{enumerate}
+\end{theorem}
+
+The certificate in part (i) is elementary: it is a sum of averaged taps, a Gaussian margin and a tail that the memory bound controls. The content is in the comparison. In contrast to the $\mathcal H_\infty$ norm, which \citet{tu2018} show is no easier to estimate than the model itself, the summed response of a positive economy is a linear functional of the response, so certifying it is a parametric problem, while the cohort parameters are not. Table~\ref{tab:certvsid} makes this concrete on the companion paper's hardest two-cohort pairs. Those pairs have \emph{identical} summed responses, because they share the total weight $\sum_iq_i$: the directions in which prices are least informative are directions in which the risk a guard must bound does not move. Identifying their weights to $\pm0.01$ needs from 7 to 1.5 million reset experiments as the spacing falls from $0.30$ to $0.04$ (log--log slope $-6.06$), while certifying the summed response to 1\% needs 11 to 18 at every spacing (slope $+0.23$).
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Identifying the cohorts versus certifying the risk they create}\label{tab:certvsid}
+\begin{tabular}{lcccccccc}
+\toprule
+Rate spacing $\Delta\eta$ & 0.30 & 0.20 & 0.14 & 0.10 & 0.08 & 0.06 & 0.05 & 0.04\\
+\midrule
+Identify weights ($\pm0.01$), $N$ & 7 & 88 & 775 & 5{,}928 & 22{,}741 & 128{,}333 & 383{,}859 & 1{,}466{,}362\\
+Certify $S$ (1\%), $N$ & 18 & 14 & 13 & 12 & 11 & 11 & 11 & 11\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item The two-cohort moment-matched pairs of the companion paper ($q=0.2$, mean rate $0.4$, $\tau=0.01$, $a=0.5$, $\kappa=0.8$, per-tap noise $1.6\times10^{-3}$). Identification: Le Cam requirement at 95\% (companion paper, Table on two-point sample complexity). Certification: sufficient $N$ from Theorem~\ref{thm:certcost}(i) with memory bound equal to the largest rate in the pair and $\bar s=a+\kappa q+0.02$. The two economies of each pair have the same summed response, $2.353$. Kind: recomputed (\texttt{research\_extension/information\_safety}, test T03).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
