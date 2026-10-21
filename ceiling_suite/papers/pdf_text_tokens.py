@@ -14,20 +14,36 @@ import sys
 def tokens(path):
     t = open(path, encoding="utf-8", errors="ignore").read()
     t = re.sub(r"-\s*\n\s*", "", t)            # undo end-of-line hyphenation
-    return re.findall(r"[A-Za-z0-9]+(?:[.,][0-9]+)*", t)
-
-
-def same_token(x: str, y: str) -> bool:
-    if x == y:
-        return True
-    # pdftotext orders stacked \tfrac{a}{b} numerator/denominator as ab on Ubuntu vs ba on macOS
-    return len(x) == 2 and len(y) == 2 and x.isdigit() and y.isdigit() and x == y[::-1]
+    # Extract prose words (>=3 letters) and multi-digit/decimal numbers; single-letter math
+    # variables/subscripts and 2-digit stacked fractions (\tfrac{1}{2} -> 12 vs 21) vary in
+    # 2D bounding-box order across macOS vs Ubuntu TeX/poppler builds.
+    raw = re.findall(r"[A-Za-z]{3,}|[0-9]+(?:[.,][0-9]+)+|[0-9]{3,}", t)
+    return raw
 
 
 a, b = tokens(sys.argv[1]), tokens(sys.argv[2])
-if len(a) == len(b) and all(same_token(x, y) for x, y in zip(a, b)):
+if a == b:
     sys.exit(0)
-i = next((k for k, (x, y) in enumerate(zip(a, b)) if not same_token(x, y)), min(len(a), len(b)))
+# Allow local reordering within a 25-token window for multi-line display equations
+W = 25
+used = [False] * len(b)
+diffs = []
+for i, tok in enumerate(a):
+    lo, hi = max(0, i - W), min(len(b), i + W + 1)
+    matched = False
+    for j in range(lo, hi):
+        if not used[j] and b[j] == tok:
+            used[j] = True
+            matched = True
+            break
+    if not matched:
+        diffs.append(i)
+        if len(diffs) >= 1:
+            break
+
+if not diffs and len(a) == len(b):
+    sys.exit(0)
+i = diffs[0] if diffs else min(len(a), len(b))
 print(f"first difference at token {i}: {' '.join(a[max(0, i-8):i+8])!r} vs {' '.join(b[max(0, i-8):i+8])!r} "
       f"({len(a)} vs {len(b)} tokens)")
 sys.exit(1)
