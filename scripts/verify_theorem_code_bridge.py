@@ -9,12 +9,17 @@ Generates paper/generated/claim_to_code_map.tex.
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+_ELAN_BIN = Path.home() / ".elan" / "bin"
+if _ELAN_BIN.is_dir() and str(_ELAN_BIN) not in os.environ.get("PATH", ""):
+    os.environ["PATH"] = f"{_ELAN_BIN}:{os.environ.get('PATH', '')}"
 
 ROOT = Path(__file__).resolve().parents[1]
 TEX_FILE = ROOT / "paper" / "Machine_Markets_JF_Submission.tex"

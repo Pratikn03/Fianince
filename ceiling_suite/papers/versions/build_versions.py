@@ -24,7 +24,7 @@ front = rd(f"{P2}/p2_front.tex")
 front = front.replace("\\usepackage[margin=1in]{geometry}", "\\usepackage[left=1in,right=1in,top=1.5in,bottom=1.5in]{geometry}")
 front = front.replace("\\doublespacing", "\\onehalfspacing")
 a = front.index("\\begin{abstract}"); b = front.index("\\end{abstract}")
-JF_ABS = ("\\begin{abstract}\n\\noindent " + 'Eigenvalues and volatility do not bound the losses a market produces before settling. We show that cumulative transient risk equals long-run impact divided by reversion net of momentum, that a pre-trade guard on this summed response is the largest safe admission rule for bounded shocks, and that certifying it is cheaper than identifying the traders: experiments certify it at the parametric rate, and the guard is minimax-optimal in lost capacity. In pre-registered tests the statistic forecasts adverse excursions beyond volatility in thin Binance books, including untouched days and symbols, more weakly in thin US stocks, not on Bybit or Coinbase.' + "\n")
+JF_ABS = ("\\begin{abstract}\n\\noindent " + 'Eigenvalues and volatility do not bound the losses a market produces before settling. We show that cumulative transient risk equals long-run impact divided by reversion net of momentum, that a pre-trade guard on this summed response is the largest safe admission rule for bounded shocks, and that certifying it is cheaper than identifying the traders: experiments certify it at the parametric rate, and the guard is minimax-optimal in lost capacity. In pre-registered tests the statistic forecasts adverse excursions beyond volatility in thin Binance books, including untouched days and symbols, more weakly in thin US stocks, not on Bybit or Coinbase; on untouched dates its spot gain is $15.2\\%$ of its perpetual gain and $2.2\\times$ larger in high-leverage hours; around three fee events zero fees lower impact by $18.3\\%$ while leaving reversion unchanged; and on a $\\$1\\text{M}$ $20\\times$ position the certified guard saves $\\$398$--$\\$2{,}557$/hr in $\\mathrm{ES}_{95}$ beyond a volatility cap.' + "\n")
 front = front[:a] + JF_ABS + front[b:]
 front = front.replace("\\newpage\n\\setcounter{page}{1}\n\\tableofcontents\n\\newpage", "\\newpage\n\\setcounter{page}{1}")
 app = rd(f"{P2}/p2_appendix.tex")
@@ -171,10 +171,12 @@ a = f1.index("\\begin{abstract}"); b = f1.index("\\end{abstract}")
 QE_ABS = ("\\begin{abstract}\n\\noindent When trading algorithms condition on recent prices, price formation is a closed-loop system. We ask what an "
           "outside observer can learn about the algorithms from market data, and at what cost. In a linear cohort model, prices identify "
           "only a merged rate--weight measure. Separating two memory rates $\\delta$ apart costs executed quantity of order $\\delta^{-2}$ and "
-          "trading capital of order $\\delta^{-4}$, with explicit constants; separating $K$ unknown cohorts costs $(\\Delta\\eta)^{-(4K-2)}$ "
+          "trading capital of order $\\delta^{-4}$, with explicit constants, and five nonlinear and reinforcement-learning rules follow the same "
+          "$O(A^2)$ local gap and $\\delta^{-4}$ scaling below their saturation thresholds; separating $K$ unknown cohorts costs $(\\Delta\\eta)^{-(4K-2)}$ "
           "experiments, a rate attained by Prony's method; with general completely monotone memory the minimax accuracy is only of order "
-          "$1/\\log N$. Class-tagged disclosure removes the barrier and reduces the sample requirement by a factor of order "
-          "$(\\Delta\\eta)^{-(4K-4)}$. In data, trader-class positions published by Binance and, in a pre-registered test, by the CFTC for "
+          "$1/\\log N$. Class-tagged disclosure removes the barrier, reduces the sample requirement by a factor of order "
+          "$(\\Delta\\eta)^{-(4K-4)}$, and breaks even against U.S.\\ Consolidated Audit Trail operating costs at 16 markets for $K=3$ ($\\Delta\\eta=0.10$). "
+          "In data, trader-class positions published by Binance and, in a pre-registered test, by the CFTC for "
           "eight regulated futures markets pin down memories that prices leave unrestricted.\n")
 f1 = f1[:a] + QE_ABS + f1[b:]
 app1 = rd(f"{P1}/p1_appendix.tex")

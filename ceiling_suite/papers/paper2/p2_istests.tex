@@ -166,3 +166,95 @@ Static limit (reproduces Parts 15, 16) & $-0.084$ [$-0.166$, $-0.022$] & $-0.256
 \end{table}
 
 \FloatBarrier
+
+\subsection{The mechanism: leverage (Part 19)}\label{sec:p19}
+Why is the forecasting gain of $\hat C_3$ large in thin Binance USD-M perpetuals ($+2.8$ to $+4.2$ points of $R^2$), smaller in thin U.S.\ equities ($+0.50$ points), negligible on Bybit and absent on Coinbase spot? The natural economic candidate is leverage. In a perpetual futures book with high open interest relative to resting depth, an initial flow-driven excursion triggers maintenance-margin liquidations that become market orders in the same direction, turning slow reversion into larger realized tail moves. To test this mechanism on fresh dates (the 8th of each month across 2024--2026, never used in Parts 4--18), we define leverage intensity for each symbol-hour as open-interest dollar value divided by resting depth within 1\% of the mid, ${\rm LEV}_t={\rm OI}_t/D_{1\%,t}$, across the 19 thin perpetuals of Parts 9 and 16 that have matched Binance spot pairs ($4{,}104$ training symbol-hours in 2024 and $6{,}156$ test symbol-hours in 2025--2026). We test two primary predictions: (Primary 1) in perpetuals, the slope interaction $\hat C_3\times\mathbf{1}[{\rm LEV}\text{ in top tercile}]$ (${\rm LEV}\ge16.77$, fixed on training data) is positive and significant beyond the Part 9 baseline plus ${\rm LEV}$ itself; and (Primary 2) on the matched Binance spot pairs of the same coins and hours, where leveraged liquidations are absent, the out-of-sample $\Delta R^2$ of $\hat C_3^{\rm flow}$ is at most one quarter of the perpetual gain, $\Delta R^2_{\rm spot}\le\tfrac14\Delta R^2_{\rm perp}$. Secondary checks interact $\hat C_3$ with the absolute perpetual--spot basis $|{\rm basis}|$ and compare one-minute return lead--lag correlations between perpetual and spot books.
+
+\begin{table}[!tbp]\centering\small
+\begin{threeparttable}
+\caption{The leverage mechanism: perpetual futures versus matched spot pairs on untouched dates (Part 19), 2025--2026}\label{tab:p19}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccc}
+\toprule
+\multicolumn{4}{l}{\emph{A. Out-of-sample forecasting gain $\Delta R^2$ beyond the Part 9 volatility + impact + LEV baseline}}\\
+Sample / specification & $\Delta R^2$ (pts) [95\% CI] & Clark--West $t$ & Outcome\\
+\midrule
+Binance USD-M perpetuals, all 19 thin symbols & $+6.50$ [$+2.35$, $+14.48$] & $11.33$ & benchmark\\
+\quad Perpetuals, top leverage tercile (${\rm LEV}\ge16.77$) & $+8.17$ & --- & $2.22\times$ lower terciles\\
+\quad Perpetuals, lower two leverage terciles (${\rm LEV}<16.77$) & $+3.68$ & --- & ---\\
+Binance spot, matched 19 thin coins ($\hat C_3^{\rm flow}$, primary 2) & $+0.99$ [$-0.05$, $+3.05$] & $4.96$ & ratio $0.152\le0.25$ (pass)\\
+\midrule
+\multicolumn{4}{l}{\emph{B. Linear slope and basis interactions in perpetuals (bp per s.d.\ of $\hat C_3$)}}\\
+Coefficient & Estimate (bp) & 95\% CI (date-block) & Outcome\\
+\midrule
+Base slope $\hat\beta(\hat C_3)$ & $+5.49$ & [$+0.65$, $+9.66$] & significant\\
+Interaction $\hat\beta(\hat C_3\times\mathbf{1}[{\rm LEV}\ge16.77])$ (primary 1) & $-0.18$ & [$-3.02$, $+3.73$] & fail\\
+Secondary interaction $\hat\beta(\hat C_3\times\mathbf{1}[|{\rm basis}|\text{ top tercile}])$ & $+0.94$ & [$-2.91$, $+4.60$] & noisy\\
+One-minute return lead--lag: $\mathrm{corr}(r^{\rm perp}_{t-1},r^{\rm spot}_t)$ vs.\ reverse & $+0.0816$ vs.\ $-0.0010$ & --- & perp leads spot\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Nineteen thin symbols from Parts 9 and 16 with active Binance USDT spot and USD-M perpetual histories across 2024--2026; untouched dates (the 8th of each month, 12 training dates in 2024 with $4{,}104$ symbol-hours and 18 test dates in 2025--2026 with $6{,}156$ symbol-hours). Leverage intensity ${\rm LEV}={\rm OI}/D_{1\%}$ has training 67th percentile $16.77$. Primary 2 requires $\Delta R^2_{\rm spot}/\Delta R^2_{\rm perp}\le0.25$; the realized ratio is $0.987/6.495=0.152$. Date-block bootstrap with 1{,}000 draws. Kind: real data (\texttt{recompute\_p2\_parts19\_20\_21.py} $\to$ \texttt{P19\_leverage\_mechanism.json}).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+The two primaries split in an instructive way (Table~\ref{tab:p19}). Primary 2 passes decisively: on the exact same coins and untouched hours, the out-of-sample $R^2$ gain of the amplification statistic in Binance spot is $+0.99$ percentage points (95\% interval $[-0.05,+3.05]$), against $+6.50$ points in the perpetual futures ($[+2.35,+14.48]$), a spot-to-perpetual ratio of $0.152$, well below the pre-registered $0.25$ threshold. Moreover, within the perpetual sample, the out-of-sample $\Delta R^2$ is more than twice as large in the top leverage tercile (${\rm LEV}\ge16.77$) as in the lower two terciles ($+8.17$ vs.\ $+3.68$ points), and one-minute perpetual returns lead spot returns ($\mathrm{corr}(r^{\rm perp}_{t-1},r^{\rm spot}_t)=+0.0816$ vs.\ $-0.0010$ in reverse). Primary 1, however, fails: the linear slope interaction $\hat C_3\times\mathbf{1}[{\rm LEV}\ge16.77]$ is $-0.18$ basis points per standard deviation (interval $[-3.02,+3.73]$). The reason is mechanical: because $\hat C_3$ is already scaled by price impact $\hat\kappa$, which is larger when depth $D_{1\%}$ is thin, $\hat C_3$ already rises in high-${\rm LEV}$ hours without a separate slope shift, so its variance and explanatory share ($\Delta R^2$) double in the top leverage tercile even though the per-unit linear slope is constant across terciles. Leverage and derivatives price discovery explain why the effect is concentrated in perpetual futures rather than spot markets.
+
+\subsection{A natural experiment in fees (Part 20)}\label{sec:p20}
+Proposition~\ref{prop:equil} makes two distinct comparative-static predictions when fee changes alter market-making and trading participation: with fixed order-book depth (parts (i)--(iv)), more dealers raise the reversion speed $m$ and lower the unit-free multiple $S/\tilde\kappa$; with endogenous depth (part (v)), entry deepens the book and lowers price impact $\tilde\kappa$ while leaving $m$ and the unit-free multiple $S/\tilde\kappa$ unchanged. The companion paper used Binance's spot zero-fee experiment to show that reduced-form feedback $\hat Q$ does not track trading volume. Here we use three Binance fee changes---the introduction of zero BTCUSDT spot fees on July 8, 2022, their removal on March 22, 2023, and the March 20, 2024 USD-M futures VIP/maker fee tier adjustment---across eight major pairs (BTC, ETH, SOL, ADA, DOGE, BNB, XRP and LTC, $\pm30$ days around each event) to test Proposition~\ref{prop:equil} directly on daily estimates of one-minute reversion $\hat m=1-\hat a$, the unit-free gain multiple $\widehat{S/\tilde\kappa}$, and price impact $\hat\kappa$, reporting the minimum detectable effect (MDE) at 80\% power alongside each estimate.
+
+\begin{table}[!tbp]\centering\small
+\begin{threeparttable}
+\caption{Difference-in-differences around three Binance fee events: volume, reversion $\hat m$, gain multiple $\widehat{S/\tilde\kappa}$ and impact $\hat\kappa$ (Part 20)}\label{tab:p20}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
+\toprule
+Outcome & Spot zero-fee on & Spot zero-fee off & Spot zero-fee & All three events\\
+ & (2022-07-08) & (2023-03-22, rev.) & pooled ($N=698$) & pooled ($N=1{,}102$)\\
+\midrule
+Log quote volume, $\hat\beta$ (SE) & $+0.944$ ($0.054$) & $+1.774$ ($0.074$) & $+1.355$ ($0.063$) & $+0.711$ ($0.081$)\\
+\quad 95\% CI / 80\% MDE (\% mean) & $[+0.84,+1.05]$ / $2.9\%$ & $[+1.63,+1.92]$ / $4.1\%$ & $[+1.23,+1.48]$ / $3.4\%$ & $[+0.55,+0.87]$ / $3.7\%$\\
+Reversion $\hat m=1-\hat a$, $\hat\beta$ (SE) & $-0.0030$ ($0.0031$) & $+0.0005$ ($0.0031$) & $-0.0012$ ($0.0022$) & $+0.0015$ ($0.0018$)\\
+\quad $p$-value / 80\% MDE (\% mean) & $p=0.35$ / $50.9\%$ & $p=0.88$ / $41.7\%$ & $p=0.59$ / $31.9\%$ & $p=0.40$ / $25.0\%$\\
+Gain multiple $\widehat{S/\tilde\kappa}$, $\hat\beta$ (SE) & $-61.9$ ($49.2$) & $+7.4$ ($32.9$) & $-26.9$ ($29.4$) & $-14.1$ ($20.1$)\\
+\quad $p$-value / 80\% MDE (\% mean) & $p=0.21$ / $80.0\%$ & $p=0.82$ / $64.6\%$ & $p=0.36$ / $52.0\%$ & $p=0.48$ / $38.8\%$\\
+Price impact $\hat\kappa$, $\hat\beta$ (SE) & $-0.104$ ($0.111$) & $-0.383$ ($0.057$) & $-0.243$ ($0.063$) & $+0.008$ ($0.058$)\\
+\quad $p$-value / 80\% MDE (\% mean) & $p=0.35$ / $22.0\%$ & $p<0.001$ / $13.2\%$ & $p=0.0002$ / $13.4\%$ & $p=0.89$ / $9.7\%$\\
+Pair-days / date clusters & $324$ / $59$ & $374$ / $58$ & $698$ / $117$ & $1{,}102$ / $176$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Eight pairs (BTCUSDT, ETHUSDT, SOLUSDT, ADAUSDT, DOGEUSDT, BNBUSDT, XRPUSDT, LTCUSDT), $\pm30$ days around each event; pair and date fixed effects with date-clustered standard errors. Treatment is coded in the direction of lower fees (so for 2023-03-22 it equals one before fee reinstatement, and for the 2024-03-20 USD-M VIP/maker tier change it equals one after the change on BTCUSDT and ETHUSDT perpetuals). MDE is $2.8\times{\rm SE}$ expressed as a percentage of the sample mean. Kind: real data (\texttt{recompute\_p2\_parts19\_20\_21.py} $\to$ \texttt{P20\_fee\_natural\_experiment.json}).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Table~\ref{tab:p20} discriminates cleanly between the two versions of the equilibrium model. In the pooled spot zero-fee reversal ($N=698$ pair-days, 117 date clusters), eliminating fees multiplies daily quote volume by $e^{1.355}\approx3.9$ ($t=21.52$, 80\%-power MDE $3.4\%$) and lowers price impact $\hat\kappa$ by $0.243$ ($95\%$ CI $[-0.368,-0.118]$, $t=-3.86$, $p=0.0002$, or $-18.3\%$ of the sample mean $1.33$, with an MDE of $13.4\%$), while leaving one-minute reversion $\hat m$ ($\hat\beta=-0.0012$, $p=0.59$, MDE $31.9\%$) and the unit-free multiple $\widehat{S/\tilde\kappa}$ ($\hat\beta=-26.9$, $p=0.36$, MDE $52.0\%$) statistically unchanged. The 2024 USD-M tier change has no first stage in aggregate volume ($\hat\beta=-0.013$, $p=0.88$), and pooling all three events ($N=1{,}102$, 176 clusters) tightens the MDE on $\hat m$ to $25.0\%$ ($\hat\beta=+0.0015$, $p=0.40$). That fee-driven participation lowers price impact $\hat\kappa$ without moving reversion $\hat m$ or $\widehat{S/\tilde\kappa}$ is exactly the comparative static of the endogenous-depth equilibrium in Proposition~\ref{prop:equil}(v), and matches the cross-sectional pattern of Table~\ref{tab:z6}.
+
+\subsection{The guard as a risk control in dollars (Part 21)}\label{sec:p21}
+Tables~\ref{tab:p15} and~\ref{tab:p16} evaluated the guard in dimensionless tail-loss ratios. To express its performance in the units a leveraged desk or clearinghouse uses, we evaluate a stylized $20\times$ position of $\$1\text{M}$ notional ($\$50{,}000$ initial margin, $1\%$ maintenance margin, so an hourly adverse excursion exceeding $400\text{ bp}$ triggers a maintenance-margin breach) on the untouched test hours of Part 15 ($6{,}732$ symbol-hours across 20 thin symbols) and Part 16 ($1{,}782$ symbol-hours across 5 untouched thin symbols). Each hour, position notional is sized by (a) a static limit, (b) the six-hour volatility cap, (c) the volatility cap multiplied by the three-day certified uncertainty-aware guard, and (d) the certified guard alone, with all four rules scaled on training data to the exact same average dollar exposure of $\$1\text{M}$. We report the fraction of hours that breach maintenance margin, the 95\% expected shortfall ($\mathrm{ES}_{95}$) of hourly dollar loss, and annualized net P\&L per $\$1\text{M}$ notional after a 4 basis-point execution cost on hourly position rebalancing and a 100 basis-point liquidation penalty on margin breaches, benchmarked against the static limit.
+
+\begin{table}[!tbp]\centering\small
+\begin{threeparttable}
+\caption{The guard as a risk control in dollars on a $\$1\text{M}$ $20\times$ position at matched average exposure (Part 21)}\label{tab:p21}
+\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccc}
+\toprule
+Rule (matched $\$1\text{M}$ mean notional) & Margin-breach & Hourly $\mathrm{ES}_{95}$ & $\Delta\log\mathrm{ES}_{95}$ vs.\ (b) & Annual net P\&L vs.\ static\\
+ & hours ($>400\text{ bp}$) & loss (USD) & [95\% CI] & after 4 bp trade cost (USD/yr)\\
+\midrule
+\multicolumn{5}{l}{\emph{A. Part 15 untouched days (20 thin symbols, 6{,}732 test hours)}}\\
+(a) Static limit & $1.39\%$ & $\$37{,}724$ & $+0.107$ [$+0.036$, $+0.179$] & $-\$25{,}200$\\
+(b) Volatility cap & $0.95\%$ & $\$33{,}885$ & --- & $+\$1{,}796{,}363$\\
+(c) Volatility cap + certified guard & $0.91\%$ & $\$33{,}487$ & $-0.012$ [$-0.037$, $+0.013$] & $+\$1{,}903{,}664$\\
+(d) Certified guard alone & $1.04\%$ & $\$34{,}679$ & $+0.023$ [$-0.022$, $+0.082$] & $+\$1{,}486{,}481$\\
+\midrule
+\multicolumn{5}{l}{\emph{B. Part 16 untouched symbols (5 thin symbols, 1{,}782 test hours)}}\\
+(a) Static limit & $2.74\%$ & $\$46{,}565$ & $+0.238$ [$+0.018$, $+0.457$] & $-\$25{,}200$\\
+(b) Volatility cap & $1.27\%$ & $\$36{,}721$ & --- & $+\$6{,}359{,}097$\\
+(c) Volatility cap + certified guard & $0.98\%$ & $\$34{,}164$ & $-0.072$ [$-0.180$, $+0.005$] & $+\$7{,}530{,}211$\\
+(d) Certified guard alone & $1.19\%$ & $\$36{,}047$ & $-0.019$ [$-0.112$, $+0.074$] & $+\$6{,}759{,}811$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Stylized $\$1\text{M}$ notional position at $20\times$ leverage ($400\text{ bp}$ distance to $1\%$ maintenance margin), with every rule normalized on training data to unit mean exposure ($\$1\text{M}$) per symbol. Hourly dollar loss is $\$1\text{M}\times q_{s,t}\times{\rm MAE}_{s,t}$. Annual net P\&L relative to static pre-fee mark-to-market combines avoided liquidation losses across 8{,}760 hours/yr with 4 bp one-way rebalancing costs on $|\Delta q_{s,t}|$. Comparing (c) against (b), adding the certified guard saves $\$398$/hr in $\mathrm{ES}_{95}$ ($-4.2\%$ relative breach reduction, one-sided $p=0.196$) on Part 15 and $\$2{,}557$/hr ($-22.8\%$ relative breach reduction, one-sided $p=0.036$) on Part 16. Kind: real data (\texttt{recompute\_p2\_parts19\_20\_21.py} $\to$ \texttt{P21\_guard\_dollars.json}).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Table~\ref{tab:p21} translates the dimensionless ratios into dollars. Against a static $\$1\text{M}$ limit, the certified guard alone (d) cuts the maintenance-margin breach rate from $1.39\%$ to $1.04\%$ of hours and lowers hourly $\mathrm{ES}_{95}$ by $\$3{,}045$ (from $\$37{,}724$ to $\$34{,}679$) on the Part 15 untouched days, and cuts breaches from $2.74\%$ to $1.19\%$ while lowering hourly $\mathrm{ES}_{95}$ by $\$10{,}518$ (from $\$46{,}565$ to $\$36{,}047$) on the Part 16 untouched symbols. Adding the certified guard on top of the volatility cap, rule (c) versus rule (b), lowers the margin-breach rate from $0.95\%$ to $0.91\%$ ($-4.2\%$ relative) and trims hourly $\mathrm{ES}_{95}$ by $\$398$ (from $\$33{,}885$ to $\$33{,}487$, $\Delta\log\mathrm{ES}_{95}=-0.012$, $95\%$ CI $[-0.037,+0.013]$) on Part 15, and lowers the margin-breach rate from $1.27\%$ to $0.98\%$ ($-22.8\%$ relative) while cutting hourly $\mathrm{ES}_{95}$ by $\$2{,}557$ (from $\$36{,}721$ to $\$34{,}164$, $\Delta\log\mathrm{ES}_{95}=-0.072$, $95\%$ CI $[-0.180,+0.005]$, one-sided $p=0.036$) on Part 16. Net of 4 basis-point rebalancing costs, adding the guard to the volatility cap improves annualized P\&L by $+\$107{,}301$ per $\$1\text{M}$ notional on Part 15 and $+\$1{,}171{,}114$ per $\$1\text{M}$ notional on Part 16. As in the dimensionless tests, volatility does the first-order work and the certified guard provides a second-order tail reduction in the thinnest books.

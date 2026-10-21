@@ -1,7 +1,12 @@
+import os
 import shutil
 import subprocess
 from pathlib import Path
 import pytest
+
+_ELAN_BIN = Path.home() / ".elan" / "bin"
+if _ELAN_BIN.is_dir() and str(_ELAN_BIN) not in os.environ.get("PATH", ""):
+    os.environ["PATH"] = f"{_ELAN_BIN}:{os.environ.get('PATH', '')}"
 
 def test_lean_proofs_build_and_axiom_audit():
     if shutil.which("lake") is None:

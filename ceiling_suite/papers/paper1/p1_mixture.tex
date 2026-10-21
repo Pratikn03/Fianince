@@ -260,3 +260,41 @@ Hence any test based on $T$ passive observations with worst-case error at most $
 The proof (Appendix~\ref{app:proofs}) combines the Whittle form of the divergence rate with the resolvent identity $H_1-H_0=H_1H_0(G_1-G_0)$: the two spectra differ by the leading unmatched moment, of order $\delta^2$ for the pair and $\tau(\Delta\eta)^3$ for the moment-matched economies, and the divergence rate is the square of that difference. Numerically, the fitted slopes of the required sample length are $-4.21$ and $-5.93$, against the theoretical $-4$ and $-6$; for part (iii) the fitted slopes of the Whittle divergence rate in $\Delta\eta$ are $5.91$, $9.98$ and $14.05$ for $K=2,3,4$, against $6$, $10$ and $14$ (\texttt{hardening/p1\_checks.py}).
 
 Passive surveillance is possible in principle but costs the same polynomial order as active probing. Proposition~\ref{prop:passive0} is the exact finite-sample version for the known pair.
+
+\section{Robustness to realistic trading algorithms}\label{sec:learners}
+
+The theorems of Sections~\ref{sec:ident}--\ref{sec:mixtures} use the linear exponential-memory recursion~\eqref{eq:cohort}. Real desks run policies with position caps, dead-zones, adaptive gain matrices, or neural and reinforcement-learning updates. Because a small probe $A$ perturbs the price path around the steady state by $O(A)$, any policy whose mean response is twice continuously differentiable in the signal has a first-order Jacobian that matches a linear cohort filter and a second-order curvature remainder of size $O(A^2)$. We test two predictions across five representative trading algorithms at the baseline calibration ($a=0.50$, $\kappa=0.80$, $q=0.20$, $\bar\eta=0.30$, $T=20$ taps):
+\begin{enumerate}[label=(\Alph*)]
+\item \emph{Local merged-measure invariance (Test A).} Two economies with distinct cohort decompositions that share the same linearized merged measure $M=\sum_i w_i\delta_{1-\eta_i}$ (specifically, a two-cohort split $(q_1,q_2)=(0.08,0.12)$ vs.\ a three-cohort split $(0.05,0.09,0.06)$ at identical rates $\eta_i=0.30$) have impulse-response discrepancy $\|h^{(1)}(A)-h^{(2)}(A)\|_2/A = O(A^2)$ as the probe amplitude $A\to 0$, so the log--log slope of the normalized gap against $A$ is $2$.
+\item \emph{Small-probe $\delta^{-4}$ capital barrier and saturation breakdown (Test B).} For a single cohort at $\bar\eta$ against a symmetric pair at $\bar\eta\pm\delta$ ($\delta\in[0.01,0.12]$), the normalized response separation $\|\Delta h(\delta;A)\|_2/A$ scales as $\delta^2$ (log--log slope $2$) and the required probing capital $B^*(\delta;A)$ scales as $\delta^{-4}$ (log--log slope $-4$) for all probe amplitudes below a saturation threshold $A_{\rm sat}$, which we define as the smallest probe amplitude at which the empirical $\delta^{-4}$ capital slope departs from $-4$ by more than $10\%$ (outside $[-4.4,-3.6]$) or the nonlinear response deviates from the linear cohort response by more than $25\%$.
+\end{enumerate}
+
+The five algorithms are: (1) \emph{saturating momentum}, $u_{i,t}=q_i c_{\rm sat}\tanh(y_{i,t}/c_{\rm sat})$ with $c_{\rm sat}=0.50$; (2) \emph{threshold momentum}, $u_{i,t}=q_i y_{i,t}\mathbf{1}(|y_{i,t}|>\tau_{\rm th})$ with $\tau_{\rm th}=0.05$, evaluated both under micro-price dithering ($\sigma_{\rm dither}=0.04$, which smooths the expectation across the threshold) and as an unsmoothed deterministic dead-zone; (3) \emph{recursive least squares (RLS) with exponential forgetting} $\lambda_i=1-\eta_i$, updating both the predictive gain $\hat\beta_{i,t}$ and covariance $P_{i,t}$ online from $(x_{t-1},x_t)$; (4) a \emph{two-layer $\tanh$ neural network} ($m=8$ hidden units) updated at every bar by online stochastic gradient descent with $L_2$ weight decay matched to $\eta_i$; and (5) a \emph{tabular Q-learner} over discretized state-action bins with Boltzmann policy temperature $\tau_Q=0.10$ and Q-table learning rate $\eta_i$, plus an unsmoothed single-bin greedy Q-learner with bin half-width $\Delta_x=0.06$.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Merged-measure invariance and $\delta^{-4}$ capital scaling across five nonlinear and adaptive trading algorithms}\label{tab:learners}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lccccp{0.23\textwidth}}
+\toprule
+Algorithm & Test A slope & Test B $\|\Delta h\|_2$ & Test B $B^*(\delta)$ & $A_{\rm sat}$ & Behaviour beyond linear regime\\
+ & ($\log\text{gap}$ vs.\ $\log A$) & slope in $\delta$ & slope in $\delta$ & (par units) & \\
+\midrule
+1. Saturating $\tanh$ momentum & $2.02$ $[2.00,2.03]$ & $2.01$ $[2.00,2.01]$ & $-4.00$ $[-4.01,-3.99]$ & $0.83$ & $\tanh$ clipping compresses $\Delta h$ for $A>0.83$\\
+2. Threshold $|y_t|>\tau$ (dithered) & $2.04$ $[2.02,2.06]$ & $2.01$ $[2.00,2.01]$ & $-4.00$ $[-4.01,-4.00]$ & $0.05$ & Hard dead-zone ($0$ dither) gives $\Delta h=0$ for $A<0.139$\\
+3. RLS with forgetting $1-\eta_i$ & $2.06$ $[2.03,2.10]$ & $2.01$ $[2.00,2.01]$ & $-4.00$ $[-4.01,-4.00]$ & $0.75$ & Gain-covariance drift shifts weights for $A>0.75$\\
+4. Two-layer neural SGD & $2.01$ $[2.00,2.02]$ & $2.01$ $[2.00,2.01]$ & $-4.00$ $[-4.01,-4.00]$ & $0.75$ & Hidden-layer $\tanh$ saturation for $A>0.75$\\
+5. Tabular Q-learner (Boltzmann) & $2.04$ $[2.02,2.06]$ & $2.01$ $[2.00,2.01]$ & $-4.00$ $[-4.01,-4.00]$ & $1.27$ & Hard single-bin greedy Q fails for $A<0.149$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Baseline parameters $a=0.50$, $\kappa=0.80$, $q=0.20$, $\bar\eta=0.30$, horizon $T=20$, observation noise $\sigma=0.01$. Test A regresses $\log\|h^{(1)}(A)-h^{(2)}(A)\|_2/A$ on $\log A$ over $A\in[0.005,0.25]$ (theory: $2$). Test B regresses $\log(\|\Delta h(\delta;A)\|_2/A)$ and $\log B^*(\delta;A)$ on $\log\delta$ over $\delta\in[0.01,0.12]$ at small probe amplitude $A=0.02$ (theory: $2$ and $-4$); 95\% intervals in brackets. $A_{\rm sat}$ is the probe amplitude where the $\delta^{-4}$ law or linear response breaks down across $A\in[0.02,8.0]$. Kind: recomputed (\texttt{recompute\_p1\_learners.py}).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.92\textwidth]{figs/fig_learners.pdf}
+\caption{Left: Test A merged-measure invariance gap $\|h^{(1)}(A)-h^{(2)}(A)\|_2/A$ against probe amplitude $A$, confirming the $O(A^2)$ small-probe law across all five learner families. Right: Test B required probing capital $B^*(\delta)$ against rate half-spacing $\delta$, confirming the $\delta^{-4}$ scaling law.}\label{fig:learners}
+\end{figure}
+
+Table~\ref{tab:learners} and Figure~\ref{fig:learners} report the results. Every smooth or dithered algorithm confirms both theoretical laws in the small-probe regime: the Test~A merged-measure gap vanishes with a log--log slope between $2.01$ and $2.06$ (against the theoretical $2$), and the Test~B separation and capital slopes are $2.01$ and $-4.00$ across all five families. More informative is where each family breaks down. For saturating $\tanh$ momentum, RLS with forgetting, two-layer neural SGD and the Boltzmann Q-learner, the linear cohort theory holds up to probe amplitudes $A_{\rm sat}\in[0.75,1.27]$ par units; above $A_{\rm sat}$, activation clipping or state-dependent gain updates compress the impulse-response difference and raise the capital needed per unit of Kullback--Leibler divergence. For rules with hard discontinuities---an unsmoothed deterministic dead-zone $|y_{i,t}|>\tau_{\rm th}$ or an unsmoothed single-bin greedy Q-learner---a probe smaller than the dead-zone threshold ($A<\tau_{\rm th}/(\kappa\eta_{\max})=0.139$ for the threshold rule, $A<0.149$ for the greedy Q-learner) never crosses the activation boundary, producing identically zero cohort response ($\|\Delta h\|_2=0$) and infinite probing cost. Thus neither smooth nonlinearities nor hard thresholds offer a shortcut around the identification barrier: smooth rules obey the $\delta^{-4}$ law locally and saturate for large probes, while hard thresholds conceal the cohorts completely from small probes.
+

@@ -1,11 +1,16 @@
 """Test that every mathematical theorem in the paper maps to an automated proof or test."""
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 import pytest
+
+_ELAN_BIN = Path.home() / ".elan" / "bin"
+if _ELAN_BIN.is_dir() and str(_ELAN_BIN) not in os.environ.get("PATH", ""):
+    os.environ["PATH"] = f"{_ELAN_BIN}:{os.environ.get('PATH', '')}"
 
 ROOT = Path(__file__).resolve().parents[1]
 

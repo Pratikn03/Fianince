@@ -24,6 +24,9 @@ def get(d, *ks):
 
 # (row label prefix in the LaTeX ledger, (point, lo, hi) computed from JSON, decimals printed)
 p15 = M("outputs/p15res/results/W6_info_safety_test.json"); p16 = M("outputs/p16res/results/X6_untouched_symbols_test.json"); p17 = M("outputs/p17res/results/C6_new_venue_test.json"); p18 = M("outputs/p18res/results/R3_placebo_binance.json")["results"]
+p19 = json.load(open(os.path.join(ROOT, "outputs/p19_20_21/P19_leverage_mechanism.json")))
+p20 = json.load(open(os.path.join(ROOT, "outputs/p19_20_21/P20_fee_natural_experiment.json")))
+p21 = json.load(open(os.path.join(ROOT, "outputs/p19_20_21/P21_guard_dollars.json")))
 LEDGER = [
     ("BTCUSDT futures", lambda: [pts(get(M("depthres/results/D8_depth_test_G2.json"), "primary", "delta_r2"))] + [pts(x) for x in get(M("depthres/results/D8_depth_test_G2.json"), "primary", "delta_r2_ci")], 3),
     ("BTCUSDT spot", lambda: [pts(M("realres/results/P2.5_predictive_G2.json")["delta_r2"])] + [pts(x) for x in M("realres/results/P2.5_predictive_G2.json")["delta_r2_ci"]], 3),
@@ -43,6 +46,8 @@ LEDGER = [
     ("Untouched symbols, guard vs static", lambda: [p16["guard"]["comparisons"]["robust_guard vs static"]["log_TLR_diff"]] + p16["guard"]["comparisons"]["robust_guard vs static"]["ci95"], 3),
     ("New venue, Coinbase", lambda: [pts(p17["thin_eval"]["cands"]["real"]["delta_r2"])] + [pts(x) for x in p17["thin_eval"]["cands"]["real"]["delta_r2_ci"]], 3),
     ("Coinbase, real minus placebo", lambda: [pts(p17["real_minus_placebo"]["diff"])] + [pts(x) for x in p17["real_minus_placebo"]["ci"]], 3),
+    ("Leverage interaction, 19 thin", lambda: [p19["primary_1_interaction"]["beta_C3_x_high_LEV_bps"]] + p19["primary_1_interaction"]["beta_C3_x_high_LEV_ci"], 3),
+    ("Spot vs.\\ perp $\\Delta R^2$, 19 thin", lambda: [p19["primary_2_spot_comparison"]["delta_r2_spot_pts"]] + p19["primary_2_spot_comparison"]["delta_r2_spot_ci_pts"], 3),
 ]
 
 tex = open(os.path.join(TEX, "p2_thin.tex")).read()
@@ -72,8 +77,15 @@ for lab, key, val in [("P1", "+0.73", pts(p16["P1"]["delta_r2"])), ("P2", "+0.56
     print(f"{'OK ' if ok else 'BAD'} Part 16 {lab:6s} printed {key} json {val:.4f}")
 for lab, key, val in [("P18 part9 real-placebo", "+2.74", pts(p18["part9_thin"]["real_minus_placebo"]["diff"])),
                       ("P18 part16 real-placebo", "+0.79", pts(p18["part16_thin"]["real_minus_placebo"]["diff"])),
-                      ("P17 primary", "-0.09", pts(p17["thin_eval"]["cands"]["real"]["delta_r2"]))]:
-    ok = abs(float(key) - val) < 0.005 and key in t16; checked += 1; bad += not ok
+                      ("P17 primary", "-0.09", pts(p17["thin_eval"]["cands"]["real"]["delta_r2"])),
+                      ("P19 perp delta_r2", "+6.50", p19["primary_1_interaction"]["delta_r2_perp_pts"]),
+                      ("P19 spot delta_r2", "+0.99", p19["primary_2_spot_comparison"]["delta_r2_spot_pts"]),
+                      ("P19 spot/perp ratio", "0.152", p19["primary_2_spot_comparison"]["ratio_spot_to_perp"]),
+                      ("P20 pooled spot kappa", "-0.243", p20["by_event"]["spot_zero_fee_pooled"]["impact_kappa_hat"]["beta"]),
+                      ("P21 part15 (c)-(b) saving", "398", p21["part15_untouched_days"]["c_vs_b_es95_saving_usd"]),
+                      ("P21 part16 (c)-(b) saving", "2{,}557", p21["part16_untouched_symbols"]["c_vs_b_es95_saving_usd"])]:
+    num_key = float(key.replace("{,}", ""))
+    ok = abs(num_key - val) < 0.0051 and key in t16; checked += 1; bad += not ok
     print(f"{'OK ' if ok else 'BAD'} {lab:24s} printed {key} json {val:.4f}")
 print(f"\n{checked} numbers checked, {bad} mismatches")
 sys.exit(1 if bad else 0)
