@@ -30,10 +30,12 @@ p21 = json.load(open(os.path.join(ROOT, "outputs/p19_20_21/P21_guard_dollars.jso
 RECOMP = os.path.join(_H, "recomputed")
 TEX1 = os.path.join(_H, "paper1")
 p22_23 = json.load(open(os.path.join(RECOMP, "R_P2_p22_p23.json")))
+p24_25 = json.load(open(os.path.join(RECOMP, "R_P2_p24_p25.json")))
 p2_step2 = json.load(open(os.path.join(RECOMP, "R_P2_step2_theory.json")))
 p1_cat = json.load(open(os.path.join(RECOMP, "R_P1_cat_disclosure_dollars.json")))
 p1_lrn = json.load(open(os.path.join(RECOMP, "R_P1_learners.json")))
 p1_oos = json.load(open(os.path.join(RECOMP, "R_P1_disclosure_oos.json")))
+p1_state_oos = json.load(open(os.path.join(RECOMP, "R_P1_disclosure_state_oos.json")))
 LEDGER = [
     ("BTCUSDT futures", lambda: [pts(get(M("depthres/results/D8_depth_test_G2.json"), "primary", "delta_r2"))] + [pts(x) for x in get(M("depthres/results/D8_depth_test_G2.json"), "primary", "delta_r2_ci")], 3),
     ("BTCUSDT spot", lambda: [pts(M("realres/results/P2.5_predictive_G2.json")["delta_r2"])] + [pts(x) for x in M("realres/results/P2.5_predictive_G2.json")["delta_r2_ci"]], 3),
@@ -56,6 +58,10 @@ LEDGER = [
     ("OI liquidation forecast, 19 thin", lambda: [p22_23["part22"]["primary_1_forecast_liquidation"]["delta_r2_liq_pts"]] + p22_23["part22"]["primary_1_forecast_liquidation"]["delta_r2_liq_ci_pts"], 3),
     ("OI liquidation mediation, 19 thin", lambda: [pts(p22_23["part22"]["primary_2_mediation_by_liquidation"]["mediation_share"])] + [pts(x) for x in p22_23["part22"]["primary_2_mediation_by_liquidation"]["mediation_share_ci"]], 1),
     ("Non-resetting 18h guard capacity", lambda: [p22_23["part23"]["primary_matched_breach_capacity"]["delta_notional_usd"] / 1000.0] + [x / 1000.0 for x in p22_23["part23"]["primary_matched_breach_capacity"]["delta_notional_ci_usd"]], 1),
+    ("Capped 18h throttle liq.", lambda: [p24_25["part24"]["primary_1_capped_liq_reduction"]["delta_liq_rate_pp"]] + p24_25["part24"]["primary_1_capped_liq_reduction"]["delta_liq_rate_ci_pp"], 2),
+    ("Capped 18h throttle ES", lambda: [p24_25["part24"]["primary_2_capped_es95_loss_reduction"]["delta_es95_usd"] / 1000.0] + [x / 1000.0 for x in p24_25["part24"]["primary_2_capped_es95_loss_reduction"]["delta_es95_ci_usd"]], 1),
+    ("Persistence forecast, 19 thin", lambda: [p24_25["part25"]["primary_1_forecast_ckpt_persistence"]["delta_r2_pers_pts"]] + p24_25["part25"]["primary_1_forecast_ckpt_persistence"]["delta_r2_pers_ci_pts"], 3),
+    ("Persistence mediation + placebo", lambda: [pts(p24_25["part25"]["primary_2_mediation_by_ckpt_persistence"]["mediation_share"])] + [pts(x) for x in p24_25["part25"]["primary_2_mediation_by_ckpt_persistence"]["mediation_share_ci"]], 1),
 ]
 
 tex = open(os.path.join(TEX, "p2_thin.tex")).read()
@@ -103,7 +109,15 @@ for lab, key, val in [("P18 part9 real-placebo", "+2.74", pts(p18["part9_thin"][
                       ("P22 primary 1 liq", "-0.795", p22_23["part22"]["primary_1_forecast_liquidation"]["delta_r2_liq_pts"]),
                       ("P22 primary 2 share", "-6.8", 100 * p22_23["part22"]["primary_2_mediation_by_liquidation"]["mediation_share"]),
                       ("P23 primary delta N", "332{,}848", p22_23["part23"]["primary_matched_breach_capacity"]["delta_notional_usd"]),
-                      ("P23 secondary log es95", "+0.1427", p22_23["part23"]["primary_matched_breach_capacity"]["c_vs_b_log_es95_diff"])]:
+                      ("P23 secondary log es95", "+0.1427", p22_23["part23"]["primary_matched_breach_capacity"]["c_vs_b_log_es95_diff"]),
+                      ("P24 primary 1 liq pp", "-7.41", p24_25["part24"]["primary_1_capped_liq_reduction"]["delta_liq_rate_pp"]),
+                      ("P24 primary 1 per 1M", "-4.09", p24_25["part24"]["primary_1_capped_liq_reduction"]["delta_liq_per_1M_deployed_pp"]),
+                      ("P24 primary 2 es95", "26{,}429", abs(p24_25["part24"]["primary_2_capped_es95_loss_reduction"]["delta_es95_usd"])),
+                      ("P24 secondary delta N", "172{,}416", p24_25["part24"]["secondary_matched_breach_capacity_42dates"]["delta_notional_usd"]),
+                      ("P25 excursion 02_09", "+3.944", p24_25["part25"]["excursion_forecast_on_02_09"]["delta_r2_mae_pts"]),
+                      ("P25 primary 1 pers", "+3.713", p24_25["part25"]["primary_1_forecast_ckpt_persistence"]["delta_r2_pers_pts"]),
+                      ("P25 primary 2 share", "97.6", 100 * p24_25["part25"]["primary_2_mediation_by_ckpt_persistence"]["mediation_share"]),
+                      ("P25 secondary L1", "+3.809", p24_25["part25"]["secondary_l1_integral_persistence"]["forecast_delta_r2_pts"])]:
     num_key = float(key.replace("{,}", ""))
     ok = abs(num_key - val) < 0.0051 and key in t16; checked += 1; bad += not ok
     print(f"{'OK ' if ok else 'BAD'} {lab:26s} printed {key} json {val:.4f}")
@@ -117,14 +131,20 @@ for lab, key, val in [("P2 inventory S_with_inv", "2.5000", p2_step2["inventory_
     ok = abs(float(key) - val) < 0.001 and key in t_p2_th; checked += 1; bad += not ok
     print(f"{'OK ' if ok else 'BAD'} {lab:26s} printed {key} json {val:.4f}")
 
-# Paper 1 checks (learners, CAT dollars, disclosure OOS)
+# Paper 1 checks (learners, CAT dollars, disclosure OOS, disclosure state OOS)
 t_p1 = open(os.path.join(TEX1, "p1_mixture.tex")).read() + open(os.path.join(TEX1, "p1_disclosure.tex")).read()
 for lab, key, val in [("P1 learners R2_exp", "0.9448", p1_lrn["trained_online_learners"]["rls_trained"]["pred_a_single_exp_r2"]),
                       ("P1 learners fast gap", "5.31", 100 * p1_lrn["trained_online_learners"]["rls_trained"]["pred_d_nonstationary_rel_gap"]),
                       ("P1 CAT K2 Radau 0.10 roll", "14{,}741{,}376", p1_cat["rows"][4]["annual_loss_weekly_roll_usd"]),
                       ("P1 CAT K3 Radau 0.20 1s", "1{,}011{,}405{,}564", p1_cat["rows"][5]["annual_loss_weekly_1s_usd"]),
                       ("P1 disc OOS delta_r2", "-1.089", p1_oos["delta_r2_tagged_vs_price_only_pts"]),
-                      ("P1 disc OOS cw_t", "0.96", p1_oos["clark_west_t"])]:
+                      ("P1 disc OOS cw_t", "0.96", p1_oos["clark_west_t"]),
+                      ("P1 state OOS P1 delta_r2", "+50.728", p1_state_oos["primary_1_cohort_divergence_30m"]["delta_r2_pts"]),
+                      ("P1 state OOS P1 cw_t", "21.27", p1_state_oos["primary_1_cohort_divergence_30m"]["clark_west_t"]),
+                      ("P1 state OOS P2 delta_r2", "+50.404", p1_state_oos["primary_2_top_trader_state_30m"]["delta_r2_pts"]),
+                      ("P1 state OOS P2 cw_t", "21.85", p1_state_oos["primary_2_top_trader_state_30m"]["clark_west_t"]),
+                      ("P1 state OOS S1 delta_r2", "+37.639", p1_state_oos["secondary_all_5m_bars"]["cohort_divergence_30m"]["delta_r2_pts"]),
+                      ("P1 state OOS S2 delta_r2", "+46.593", p1_state_oos["secondary_all_5m_bars"]["top_trader_state_30m"]["delta_r2_pts"])]:
     num_key = float(key.replace("{,}", ""))
     ok = abs(num_key - val) < 0.0051 and key in t_p1; checked += 1; bad += not ok
     print(f"{'OK ' if ok else 'BAD'} {lab:26s} printed {key} json {val:.4f}")
