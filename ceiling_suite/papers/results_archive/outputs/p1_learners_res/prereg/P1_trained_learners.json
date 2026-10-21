@@ -1,0 +1,17 @@
+{
+  "burn_in": "5,000 periods of closed-loop trading under exogenous flow noise sigma_u=0.05 (seed=20261021) before probing",
+  "cohorts": [
+    "RLS: Recursive Least Squares learner with forgetting factor lambda_fgt=0.995 updating return-prediction slope online on exponential price state y_{i,t}=(1-eta_i)y_{i,t-1}+eta_i x_{t-1}",
+    "SGD_MLP: Two-layer neural network (1->8->1, tanh hidden units) trained online by SGD with L2 regularization on next-period return prediction error",
+    "Q_learner: Online tabular/linear Q-learning cohort trained with realized trading profit u_{i,t}(x_t - x_{t-1}) - (gamma/2) u_{i,t}^2 as reward"
+  ],
+  "market": "x_t = a x_{t-1} + kappa * (u_t + sum_i q_i phi_{i,t}) + xi_t with a=0.5, kappa=0.8, sigma_xi=0.01",
+  "predictions": {
+    "a_single_exp_r2": "A single fitted exponential explains at least 90% (R^2 >= 0.90) of each settled learned cohort impulse response over L=120 taps",
+    "b_merged_measure_equiv": "Two settled trained-learner populations (K=1 vs K=2 at delta=0.05) with the same fitted merged measure (M_0, M_1) have small-probe (A=0.005) closed-loop price responses within 1% relative L2 distance, with raw gap O(A^2) and normalized gap O(A)",
+    "c_capital_slope": "Across separations delta in [0.015, 0.12], certified probing capital for settled trained learners has log-log slope in [-4.15, -3.85] (theoretical -4.0), with 95% confidence interval reported",
+    "d_nonstationary_breakdown": "When online learning continues with fast step size during the probe window (non-stationary memories), report where the time-invariant merged-measure equivalence and delta^-4 scaling fail",
+    "e_dead_zone": "Hard action thresholds |y_{i,t}| <= tau_dead hide cohorts from probes smaller than tau_dead/kappa (||Delta h||_2 = 0)"
+  },
+  "study": "Paper 1 Section 7: Trained online learning algorithms in closed-loop price formation"
+}
