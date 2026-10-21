@@ -14,7 +14,8 @@ Parts
   D  the window family with a closed form (n = 2 moments): Phi_-(k) = k0^2/(k0-k1), Phi_+(rbar) = k0 + k1/(1-rbar),
      the explicit family Phi(delta) = k0 + k1/delta that has no finite certificate without a memory bound,
      checked against an independent linear program;
-  E  counterexample to the sufficiency step when responses are signed (contrarian cohort).
+  E  counterexample to the sufficiency step when responses are signed (contrarian cohort);
+  F  counterexample to hidden-state invariance when initial state z_0 != 0 is not reset or observed.
 
 Run:  python3 ceiling_suite/bridge/bridge_check.py   (writes results/bridge_results.json)
 """
@@ -277,6 +278,78 @@ def part_e(horizon=3000):
     }
 
 
+# --------------------------------------------------------------------------------------------------------------
+# F. counterexample: unknown non-zero initial hidden cohort state z_0 != 0 breaks cohort invariance
+# --------------------------------------------------------------------------------------------------------------
+def part_f():
+    """Two positive-cohort economies with identical (a, kappa) = (2/5, 1), identical total feedback Phi = 2/5 (S = 5),
+    and identical early impulse window (h_0, h_1, h_2) = (1, 3/5, 363/800), yet different future drift from non-zero
+    initial cohort states z_0 != 0."""
+    a, kappa = F(2, 5), F(1, 1)
+    q1, eta1 = [F(1, 5), F(1, 5)], [F(5, 8), F(3, 8)]
+    q2, eta2 = [F(9, 25), F(1, 25)], [F(13, 24), F(1, 8)]
+
+    def _sim_states(q, eta, steps=5):
+        x = kappa
+        y = [e * x for e in eta]
+        states = [(x, list(y))]
+        for _ in range(steps - 1):
+            x = a * x + kappa * sum(qi * yi for qi, yi in zip(q, y))
+            y = [(1 - e) * yi + e * x for e, yi in zip(eta, y)]
+            states.append((x, list(y)))
+        return states
+
+    st1 = _sim_states(q1, eta1, 5)
+    st2 = _sim_states(q2, eta2, 5)
+    h1 = [s[0] for s in st1]
+    h2 = [s[0] for s in st2]
+
+    # At t = 0 after a unit shock two steps earlier (lag 2): x_0 = h_2 = 363/800 in both economies
+    x0_1, y0_1 = st1[2]
+    x0_2, y0_2 = st2[2]
+    b1_1 = a * x0_1 + kappa * sum(qi * yi for qi, yi in zip(q1, y0_1))
+    b1_2 = a * x0_2 + kappa * sum(qi * yi for qi, yi in zip(q2, y0_2))
+
+    # At t = 0 after a unit shock three steps earlier (lag 3): cumulative future drift sum_{t>=1} b_t
+    x3_1, y3_1 = st1[3]
+    x3_2, y3_2 = st2[3]
+    s_val = kappa / (1 - a - kappa * sum(q1))
+    cum_drift_1 = (a * x3_1 + kappa * sum((qi / ei) * yi for qi, ei, yi in zip(q1, eta1, y3_1))) / (
+        1 - a - kappa * sum(q1)
+    )
+    cum_drift_2 = (a * x3_2 + kappa * sum((qi / ei) * yi for qi, ei, yi in zip(q2, eta2, y3_2))) / (
+        1 - a - kappa * sum(q2)
+    )
+
+    # Worst-case cumulative future drift over unknown hidden cohort state ||y_0||_2 <= 1 at x_0 = 0
+    wc_cum_drift_1 = float(s_val) * math.sqrt(float(sum((qi / ei) ** 2 for qi, ei in zip(q1, eta1))))
+    wc_cum_drift_2 = float(s_val) * math.sqrt(float(sum((qi / ei) ** 2 for qi, ei in zip(q2, eta2))))
+
+    # One-step price-row operator norm ||c_price^T J||_2 = sqrt(a^2 + kappa^2 sum_i q_i^2)
+    row_norm_1 = math.sqrt(float(a**2 + kappa**2 * sum(qi**2 for qi in q1)))
+    row_norm_2 = math.sqrt(float(a**2 + kappa**2 * sum(qi**2 for qi in q2)))
+
+    return {
+        "economy_1": {"q": [str(x) for x in q1], "eta": [str(x) for x in eta1]},
+        "economy_2": {"q": [str(x) for x in q2], "eta": [str(x) for x in eta2]},
+        "phi_equal": sum(q1) == sum(q2) == F(2, 5),
+        "S_equal": str(s_val),
+        "h_lags_0_to_2_equal": h1[:3] == h2[:3] == [F(1, 1), F(3, 5), F(363, 800)],
+        "h_lags_0_to_2": [str(x) for x in h1[:3]],
+        "next_step_drift_b1_economy_1": str(b1_1),
+        "next_step_drift_b1_economy_2": str(b1_2),
+        "next_step_drift_diff": str(b1_1 - b1_2),
+        "cum_future_drift_from_lag3_economy_1": str(cum_drift_1),
+        "cum_future_drift_from_lag3_economy_2": str(cum_drift_2),
+        "cum_future_drift_diff": str(cum_drift_1 - cum_drift_2),
+        "worst_case_unit_hidden_norm_drift_economy_1": wc_cum_drift_1,
+        "worst_case_unit_hidden_norm_drift_economy_2": wc_cum_drift_2,
+        "worst_case_hidden_drift_ratio": wc_cum_drift_2 / wc_cum_drift_1,
+        "one_step_price_row_norm_economy_1": row_norm_1,
+        "one_step_price_row_norm_economy_2": row_norm_2,
+    }
+
+
 def main():
     out = {
         "A_exact_split": part_a(),
@@ -284,6 +357,7 @@ def main():
         "C_monte_carlo_O1": part_c(),
         "D_windows": part_d(),
         "E_signed_counterexample": part_e(),
+        "F_hidden_state_counterexample": part_f(),
     }
     RESULTS.parent.mkdir(parents=True, exist_ok=True)
     RESULTS.write_text(json.dumps(out, indent=2) + "\n")

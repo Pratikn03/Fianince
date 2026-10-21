@@ -9,7 +9,7 @@ arithmetic, so the returned enclosure contains the exact interval whatever the f
 import mpmath as mp
 import numpy as np
 from interval import IV
-from model_contracts import impulse, moments_from_impulse, summed_response
+from model_contracts import summed_response
 
 mp.mp.dps = 60
 
@@ -31,7 +31,7 @@ def gauss_from_moments(mom, m):
             if i == j:
                 if j == m:
                     R[i, j] = mp.mpf(1); continue
-                if s <= 0:
+                if s <= mp.mpf("1e-45") * (H[0, 0] if H[0, 0] > 0 else mp.mpf(1)):
                     raise ValueError("moment sequence not positive definite at order %d" % i)
                 R[i, j] = mp.sqrt(s)
             else:
@@ -197,19 +197,35 @@ def certified_phi_bounds(k, rbar, rel_slack=1e-11):
             "boxes_checked": out["lower"]["boxes"] + out["upper"]["boxes"]}
 
 
+def _moments_mp(a, kappa, q, eta, n):
+    """Moments k_0..k_{n-1} inverted in 60-digit arithmetic from the 60-digit state-space impulse response."""
+    a_m, k_m = mp.mpf(a), mp.mpf(kappa)
+    q_m = [mp.mpf(float(x)) for x in q]
+    e_m = [mp.mpf(float(x)) for x in eta]
+    x = k_m; y = [e * x for e in e_m]; h = [x]
+    for _ in range(n):
+        x = a_m * x + k_m * sum(qi * yi for qi, yi in zip(q_m, y))
+        y = [(1 - e) * yi + e * x for e, yi in zip(e_m, y)]
+        h.append(x)
+    k = []
+    for t in range(n):
+        kt = (h[t + 1] - a_m * h[t] - k_m * sum(k[m] * h[t - m] for m in range(t))) / (k_m ** 2)
+        k.append(kt)
+    return k
+
+
 def run_window_checks():
     """Theorem thm:window: an eight-cohort economy with memory bound 0.95, windows of several lengths."""
     rhoB = 0.95; aB, kaB = 0.4, 1.0
     rB = np.linspace(0.05, 0.93, 8); etaB = 1 - rB; qB = np.full(8, 0.42 / 8)
-    hBf = impulse(aB, kaB, qB, etaB, 60)
     TB = []
     for n in [3, 4, 6, 8, 10, 12, 16, 20]:
-        c = moments_from_impulse(aB, kaB, hBf, n)
+        c = _moments_mp(aB, kaB, qB, etaB, n)
         try:
             lo, up, L_, U_ = phi_bounds(c, rhoB)
         except ValueError:
             TB.append({"n": n, "note": "moment vector on the boundary: measure identified"}); continue
-        w = up - lo; bnd = 2 * c[0] * best_approx_error_formula(n - 1, rhoB)
+        w = up - lo; bnd = 2 * float(c[0]) * best_approx_error_formula(n - 1, rhoB)
         TB.append({"n": n, "Phi_lo": lo, "Phi_up": up, "Phi_true": float(qB.sum()),
                    "S_lo": summed_response(aB, kaB, lo), "S_up": summed_response(aB, kaB, up),
                    "width": w, "width_bound": bnd, "within_bound": w <= bnd * (1 + 1e-9)})
@@ -225,10 +241,9 @@ def run_certified_numerics():
     """E05: certified enclosures contain the 60-digit principal-representation values; report the overhead."""
     aB, kaB = 0.4, 1.0                       # the eight-cohort economy of run_window_checks (Section 5 example)
     rB = np.linspace(0.05, 0.93, 8); qB = np.full(8, 0.42 / 8)
-    hBf = impulse(aB, kaB, qB, 1 - rB, 60)
     rows = []
     for n in [4, 6, 8, 10, 12]:
-        k = [float(x) for x in moments_from_impulse(aB, kaB, hBf, n)]
+        k = _moments_mp(aB, kaB, qB, 1 - rB, n)
         c = certified_phi_bounds(k, 0.95)
         Shi = lambda P: summed_response(aB, kaB, P)
         rows.append({"n_moments": n, "lags_used": f"0-{n}", **c,

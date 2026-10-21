@@ -99,3 +99,19 @@ def test_e_signed_responses_break_the_sufficiency_step():
     assert e["sum_h_signed"] == pytest.approx(e["S_net_formula"], rel=1e-9)  # S is the same
     assert e["min_h_signed"] < 0  # the response changes sign
     assert e["loss_understatement_ratio"] > 1.3  # but the worst-case loss is more than 30% larger
+
+
+def test_f_unknown_hidden_state_breaks_cohort_invariance():
+    f = bc.part_f()
+    assert f["phi_equal"] is True
+    assert f["S_equal"] == "5"
+    assert f["h_lags_0_to_2_equal"] is True
+    assert f["h_lags_0_to_2"] == ["1", "3/5", "363/800"]
+    assert f["next_step_drift_b1_economy_1"] == "3003/8000"
+    assert f["next_step_drift_b1_economy_2"] == "8959/24000"
+    assert f["next_step_drift_diff"] == "1/480"
+    assert f["cum_future_drift_from_lag3_economy_1"] == "20567/8000"
+    assert f["cum_future_drift_from_lag3_economy_2"] == "61751/24000"
+    assert f["cum_future_drift_diff"] == "-1/480"
+    assert f["worst_case_hidden_drift_ratio"] > 1.18
+    assert f["one_step_price_row_norm_economy_2"] > f["one_step_price_row_norm_economy_1"] * 1.10
