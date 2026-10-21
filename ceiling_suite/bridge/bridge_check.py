@@ -118,12 +118,34 @@ def n_lower_bound(norm_dh, sigma=SIGMA, total_error=0.10):
 
 def part_b():
     deltas = [0.02, 0.04, 0.08, 0.16]
+    delta_bar = 0.20
+    s_bar = A_F + K_F * Q_F
+    c_lower = (K_F**2) * Q_F
+    c_upper = (2.0 * (K_F**2) * Q_F) / (((1.0 - s_bar) ** 2) * ETA_F * ((ETA_F - delta_bar) ** 2))
     rows = []
     for d in deltas:
         nd = float(np.linalg.norm(delta_h(d)))
-        rows.append({"delta": d, "norm_dh": nd, "N_necessary_to_separate": n_lower_bound(nd)})
+        lb_analytic = c_lower * (d**2)
+        ub_analytic = c_upper * (d**2)
+        rows.append(
+            {
+                "delta": d,
+                "norm_dh": nd,
+                "analytic_lower_bound_norm_dh": lb_analytic,
+                "analytic_upper_bound_norm_dh": ub_analytic,
+                "within_analytic_sandwich": bool(lb_analytic <= nd <= ub_analytic),
+                "N_necessary_to_separate": n_lower_bound(nd),
+            }
+        )
     slope = np.polyfit(np.log(deltas), np.log([r["norm_dh"] for r in rows]), 1)[0]
-    return {"sigma": SIGMA, "rows": rows, "loglog_slope_norm_dh": float(slope), "implied_N_exponent": float(-2 * slope)}
+    return {
+        "sigma": SIGMA,
+        "analytic_c_lower": c_lower,
+        "analytic_c_upper": c_upper,
+        "rows": rows,
+        "loglog_slope_norm_dh": float(slope),
+        "implied_N_exponent": float(-2 * slope),
+    }
 
 
 def wilson(p_hat, n, z=1.959964):

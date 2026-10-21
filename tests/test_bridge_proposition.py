@@ -38,6 +38,11 @@ def test_b_identification_cost_scales_as_delta_to_the_minus_four():
     b = bc.part_b()
     assert b["loglog_slope_norm_dh"] == pytest.approx(2.0, abs=0.05)
     assert b["implied_N_exponent"] == pytest.approx(-4.0, abs=0.1)
+    assert b["analytic_c_lower"] == pytest.approx(0.08, abs=1e-12)
+    assert b["analytic_c_upper"] > b["analytic_c_lower"]
+    for r in b["rows"]:
+        assert r["within_analytic_sandwich"] is True
+        assert r["analytic_lower_bound_norm_dh"] <= r["norm_dh"] <= r["analytic_upper_bound_norm_dh"]
     n = [r["N_necessary_to_separate"] for r in b["rows"]]
     assert all(x > y for x, y in zip(n, n[1:]))  # smaller delta needs more experiments
 

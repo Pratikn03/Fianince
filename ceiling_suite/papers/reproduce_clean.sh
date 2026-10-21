@@ -25,7 +25,7 @@ sh build_p1.sh; sh build_p2.sh
 python3 versions/build_versions.py
 for f in paper1/paper1 paper2/paper2 versions/Paper1_QE versions/Paper2_JF; do
   pdftotext -layout "$f.pdf" "$f.rebuilt.txt"; pdftotext -layout "pdf_delivered/$(basename $f).pdf" "$f.delivered.txt"
-  if cmp -s "$f.rebuilt.txt" "$f.delivered.txt"; then echo "IDENTICAL TEXT $f"; else echo "TEXT DIFFERS $f"; diff "$f.rebuilt.txt" "$f.delivered.txt" | head -5; fi
+  if cmp -s "$f.rebuilt.txt" "$f.delivered.txt"; then echo "IDENTICAL TEXT $f"; else echo "TEXT DIFFERS $f"; diff "$f.rebuilt.txt" "$f.delivered.txt" | head -5; exit 1; fi
 done
 echo "== 4. every ledger number from the archived real-data results"
 python3 verify_paper_numbers.py

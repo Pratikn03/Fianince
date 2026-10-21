@@ -37,17 +37,54 @@ For every $E\in\mathcal E^+$:
 |---|---|---|
 | Worst case $=\bar u\sum_k\lvert g_k\rvert$, attained by $u_k=\bar u\,\mathrm{sign}(g_k)$ | Hölder; sign-aligned path | **Lean, full:** `p2_thm_guard_maximal`, `is_per_period_upper`, `is_per_period_attained` |
 | $h_t\ge0$ and $h_t\le\kappa\bar\lambda^t$, so $\sum\lvert h_t\rvert=\sum h_t$ | positivity of $J\ge0$; row sums | **Lean, full:** `actual_positive_impulse_peak`, `is_iter_bound`, `is_tail_bound` |
-| $S=\kappa/(1-a-\kappa\Phi)$ | sum the recursion over $t\ge0$: $S-\kappa=aS+\kappa\Phi S$, using the Cauchy product of absolutely convergent series and $\sum_mk_m=\sum_iq_i$ | **Not in Lean.** Elementary proof (here); checked in exact rationals, `part_a`, and by a long-horizon sum, `test_a_summed_response_formula_matches_long_horizon_sum` |
+| $S=\kappa/(1-a-\kappa\Phi)$ | sum the recursion over $t\ge0$: $S-\kappa=aS+\kappa\Phi S$, using Tonelli/Cauchy product of nonnegative absolutely convergent series and $\sum_mk_m=\sum_iq_i$ | **Proved analytically in §2.1 below** (3-state analogue in Lean: `is_summed_response_closed_form`); checked in exact rationals (`part_a`) and long-horizon sum (`test_a_summed_response_formula_matches_long_horizon_sum`) |
 | $h_2^\delta-h_2^0=-\kappa^2q\delta^2$ | $k_0$ equal; $k_1^\delta=k_1^0-q\delta^2$; $h_2=ah_1+\kappa(k_0h_1+k_1h_0)$ | **Lean, full** for the reset recursion: `symmetric_third_tap_difference`, `physical_third_observation_separation`; exact check `part_a` |
 | Gaussian KL $=N\lVert\Delta h\rVert^2/2\sigma^2$; two-point error $\ge(1-\mathrm{TV})/2$ | equal-variance Gaussians; Le Cam | **Lean, full:** `actual_pair_observation_kl`, `gaussian_equal_variance_kl`, `binary_rule_minimax_error_lower_bound` |
-| $\lVert\Delta h\rVert_2=O(\delta^2)$ uniformly in the horizon | $\Delta h(\delta)$ is even and smooth in $\delta$, vanishes at $\delta=0$, and the operators have spectral radius bounded away from 1 for $\delta\le0.2$ | **Argued, not formalized.** Measured log-log slope $2.002$ is a consistency check, not a proof. Without this step only $N\ge 3.24\sigma^2/\lVert\Delta h\rVert^2$ is proved, not $\Omega(\delta^{-4})$ |
-| $\mathrm{TV}\le\sqrt{\mathrm{KL}/2}$ | Pinsker | **Cited, not formalized** (Lean takes it as a hypothesis in `thmC_algebraic_core`) |
-| Certificate validity and $N$-rate | deterministic geometric tail + Gaussian tail of an average | **Conditional:** tail in Lean (`p2_thm_certcost`); Gaussian step analytic. Matching lower bound (Thm 5.4(ii)) *not re-derived here* |
+| $\lVert\Delta h\rVert_2=\Theta(\delta^2)$ uniformly in the horizon | Explicit two-sided Parseval/resolvent sandwich $\kappa^2 q\delta^2 \le \lVert\Delta h(\delta)\rVert_2 \le C_{\mathrm{Parseval}}(\bar\delta)\delta^2$ proved analytically in §2.2 below | **Proved analytically in §2.2 below** and verified numerically in `part_b` (`within_analytic_sandwich: true` across all $\delta$; measured log-log slope $2.002$) |
+| $\mathrm{TV}\le\sqrt{\mathrm{KL}/2}$ | Pinsker | **Cited** (classical Pinsker inequality; Lean takes it as an explicit hypothesis in `thmC_algebraic_core`) |
+| Certificate validity and $N$-rate | deterministic geometric tail + Gaussian tail of an average | **Conditional:** tail in Lean (`p2_thm_certcost`); Gaussian step analytic. Matching lower bound (Thm 5.4(ii)) proved in `p2_appendix.tex` |
 | $n=2$ window endpoints | lower: Jensen on convex $f(r)=1/(1-r)$; upper: chord $f(r)\le1+r/(1-\bar r)$ on $[0,\bar r]$, equality at atoms $\{0,\bar r\}$ | **Elementary, proved here;** independent LP and 200 random measures agree (`part_d`, `test_d_*`). General $n$ is Markov–Krein (cited); Lean has weak duality only (`is_upper_bound`, `is_lower_bound`) |
 | Explicit unbounded family | atoms $\{0,1-\delta\}$ with weights $k_1/(1-\delta)$ and $k_0-k_1/(1-\delta)$ have moments $(k_0,k_1)$ and $\Phi(\delta)=k_0+k_1/\delta$ | **Proved here;** exact check `part_d`. General $n$: `p2_thm_window` (iii), conditional on the interior moment-cone hypothesis |
 | Two-world loss | $E=\{A\le v_0\}$, Markov | **Lean, full:** `p2_prop_twoworld` (measure-theoretic), `is_two_world_capacity_loss` |
 
-**The one dependency gap that matters:** the closed form for $S$ in the *cohort* economy is the load-bearing step for part 1, and it is not mechanized (Paper 2 `thm:sum` in Lean is the separate 3-state system). It is a two-line analytic proof, but `COVERAGE.md` should say so.
+### 2.1 Self-contained analytical proof of $S = \kappa/(1-a-\kappa\Phi)$ on $\mathcal E^+$
+
+Let $E\in\mathcal E^+$ have parameters $a\ge 0$, $\kappa>0$, $q_i\ge 0$, $\eta_i\in(0,1]$, $\bar r = \max_i(1-\eta_i)<1$, and $\bar s = a+\kappa\Phi < 1$ where $\Phi=\sum_{i=1}^K q_i$.
+1. **Nonnegativity and geometric decay.** By induction on $t\ge 0$, $h_t\ge 0$ and $y_{i,t}=\eta_i\sum_{m=0}^t (1-\eta_i)^{t-m}h_m\ge 0$. By the positive-cohort contraction lemma (`is_iter_bound` in Lean), $0\le h_t\le \kappa\bar\lambda^t$ with $\bar\lambda = 1 - (1-\bar r)(1-\bar s)\in[0,1)$. Hence $S = \sum_{t=0}^\infty h_t < \infty$ and $Y_i = \sum_{t=0}^\infty y_{i,t} < \infty$ converge absolutely.
+2. **Cohort state sum.** By Tonelli's theorem for nonnegative series,
+   \[
+   Y_i = \sum_{t=0}^\infty \eta_i \sum_{m=0}^t (1-\eta_i)^{t-m} h_m = \sum_{m=0}^\infty h_m \, \eta_i \sum_{k=0}^\infty (1-\eta_i)^k = \sum_{m=0}^\infty h_m \, \eta_i \cdot \frac{1}{\eta_i} = S.
+   \]
+3. **Price recursion sum.** Summing $h_{t+1} = a h_t + \kappa\sum_{i=1}^K q_i y_{i,t}$ over $t=0,1,2,\ldots$ yields
+   \[
+   S - h_0 = a S + \kappa \sum_{i=1}^K q_i Y_i = (a + \kappa\Phi) S \quad\Longrightarrow\quad (1 - a - \kappa\Phi) S = \kappa \quad\Longrightarrow\quad S = \frac{\kappa}{1 - a - \kappa\Phi}.
+   \]
+
+### 2.2 Self-contained analytical proof of the uniform sandwich $\lVert\Delta h(\delta)\rVert_2 = \Theta(\delta^2)$
+
+Compare the single-cohort economy $E_0=(a,\kappa,q,\eta_0)$ with the symmetric split $E_\delta=\bigl(a,\kappa,(q/2,q/2),(\eta_0-\delta,\eta_0+\delta)\bigr)$ for $\delta\in(0,\bar\delta]$ where $\bar\delta < \min(\eta_0,1-\eta_0)$ and $\bar s = a+\kappa q < 1$. Write $r_0 = 1-\eta_0$.
+1. **Lower bound.** Because $h_0(\delta)-h_0(0)=0$, $h_1(\delta)-h_1(0)=0$, and $h_2(\delta)-h_2(0)=-\kappa^2 q\delta^2$ (`symmetric_third_tap_difference` in Lean),
+   \[
+   \lVert\Delta h(\delta)\rVert_2 \;\ge\; \bigl(\lvert h_0(\delta)-h_0(0)\rvert^2 + \lvert h_1(\delta)-h_1(0)\rvert^2 + \lvert h_2(\delta)-h_2(0)\rvert^2\bigr)^{1/2} \;=\; \kappa^2 q\,\delta^2.
+   \]
+2. **Uniform upper bound via Parseval's identity.** For $|\zeta|\le 1$, the open-loop memory transfer function is $K_\delta(\zeta) = \frac{q\zeta}{2}\bigl(\frac{\eta_0-\delta}{1-(r_0+\delta)\zeta} + \frac{\eta_0+\delta}{1-(r_0-\delta)\zeta}\bigr)$. Putting the difference over a common denominator gives the exact rational identity
+   \[
+   K_\delta(\zeta) - K_0(\zeta) \;=\; \frac{-q(1-\zeta)\zeta^2\,\delta^2}{(1-r_0\zeta)\bigl((1-r_0\zeta)^2 - \delta^2\zeta^2\bigr)}.
+   \]
+   On the unit circle $|\zeta|=1$, $|1-\zeta|\le 2$, $|1-r_0\zeta|\ge 1-r_0=\eta_0$, and $|(1-r_0\zeta)^2-\delta^2\zeta^2| = |1-(r_0+\delta)\zeta|\,|1-(r_0-\delta)\zeta| \ge (\eta_0-\bar\delta)^2 > 0$. Moreover, since $k_m(\delta)\ge 0$ and $\sum_{m=0}^\infty k_m(\delta)=q$, the closed-loop denominator satisfies $|1 - a\zeta - \kappa K_\delta(\zeta)| \ge 1 - a - \kappa q = 1-\bar s > 0$ for all $|\zeta|=1$ and all $\delta\in[0,\bar\delta]$. By Parseval's identity applied to $H_\delta(z) - H_0(z) = \frac{\kappa^2(K_\delta(z^{-1})-K_0(z^{-1}))}{(1-az^{-1}-\kappa K_\delta(z^{-1}))(1-az^{-1}-\kappa K_0(z^{-1}))}$,
+   \[
+   \kappa^2 q\,\delta^2 \;\le\; \lVert\Delta h(\delta)\rVert_2 \;\le\; \frac{2\kappa^2 q}{(1-a-\kappa q)^2\,\eta_0\,(\eta_0-\bar\delta)^2}\,\delta^2 \equiv C_{\mathrm{Parseval}}(\bar\delta)\,\delta^2.
+   \]
+
+### 2.3 Rate hierarchy across identification vs. certification problems
+
+| Problem | Unknowns & Observation Contract | Minimax Sample / Probe Complexity | Dependence on Pole Separation $\Delta\eta = 2\delta$ | Where Established |
+|---|---|---|---|---|
+| **Known-pair binary testing** ($K=2$ vs. $1$) | Candidate poles $\eta_0\pm\delta$ known; contract `O1` | $N = \Theta(\sigma^2\delta^{-4})$ | $\delta^{-4}$ | Bridge Prop B(2); Paper 1 `thm:quantity`, `thm:spectral`, `thm:rh` |
+| **Unknown 2-cohort parameter learning** ($K=2$) | Both $(\eta_1,\eta_2,q_1,q_2)$ unknown; permutation-invariant loss | $N = \Theta(\sigma^2(\Delta\eta)^{-6})$ | $(\Delta\eta)^{-6}$ | Paper 1 `prop:crb`, `thm:twocohort` |
+| **General unknown $K$-cohort learning** | All $(q_i,\eta_i)_{i=1}^K$ unknown; contract `O1` or passive `I2` | $N = \Theta(\sigma^2(\Delta\eta)^{-(4K-2)})$ | $(\Delta\eta)^{-(4K-2)}$ | Paper 1 `thm:kcohort` (lower), `prop:esprit` (upper), `prop:passive` (passive) |
+| **Unrestricted completely monotone memory** | Arbitrary nonnegative measure $M$ on $[0,\bar r]$ under $W_1$ metric | $W_1 \asymp (\log N)^{-1} \iff N = \exp(\Theta(\varepsilon^{-1}))$ | Exponential in $1/\varepsilon$ | Paper 1 `lem:altpair`, `thm:general` |
+| **Summed-gain risk certification** ($S$ or $\Phi$) | Any $E\in\mathcal E^+$ with memory bound $\bar r<1$ and stability margin $\bar s<1$; contract `O1` | $N = \Theta(\sigma^2\varepsilon^{-2}\log(1/\varepsilon))$ | **Independent of $\Delta\eta$ and $K$** | Bridge Prop B(1)–(2); Paper 2 `thm:certcost`, `thm:robustguard` |
 
 ## 3. Counterexamples under weaker assumptions
 
@@ -85,9 +122,18 @@ Both economies lie in $\mathcal E^+$, share identical total feedback $\Phi^{(1)}
 
 **How to read it.** The accuracy column is the Bayes accuracy for the *simple-versus-simple* problem: two known Gaussian-mean economies, equal prior probability, 0-1 loss, for which the likelihood-ratio rule is optimal and its accuracy is $\Phi(d'/2)$ with $d'=\sqrt N\lVert\Delta h\rVert_2/\sigma$ (theory column matches the MC to within 0.003). It is *not* a bound on any procedure that must also learn the economies, and it says nothing about other priors or minimax criteria. The certificate, built without knowing the split, covers at about the nominal level with the same width for every $\delta$. $\lVert\Delta h\rVert_2$ has measured log-log slope $2.002$ (necessary $N$ slope $-4.003$), a consistency check on the analytic scaling in §2, not a proof. The contract requires controlled, independent probes; nothing in this table speaks to passive prices.
 
-## 5. What this does and does not establish
+## 5. What this does and does not establish (Nearest-Literature Comparison)
 
 **Novelty, honestly.** Part 1 combines realization theory (impulse response determines only the merged measure), $\ell_1$-optimal control (worst case $=\ell_1$ norm), and the positive-feedback closed form. Part 2 is Le Cam plus a Gaussian average. Part 3 is Markov–Krein. A control or statistics referee will say each ingredient is classical. The defensible contribution is the finance statement: *for positive-feedback adaptive trading, risk certification is cheaper than identification by a polynomial factor in $1/\Delta\eta$, but only under a controlled-probe contract, a positivity assumption and a memory bound — and the price of lacking them is computable.* I would not describe it as a new mathematical principle.
+
+| Adjacent Literature | Closest Existing Result & What It Assumes | What the Machine Markets Program Adds |
+|---|---|---|
+| **Financial Microstructure** (Kyle 1985; Glosten–Milgrom 1985; Hasbrouck 1991; Bouchaud et al. 2018) | Infers private information or transient impact kernels from prices and order flow assuming exogenous impact kernels or static informed-trader rules. | Treats the price-response kernel as the **closed-loop output of adaptive filtering/learning cohorts**, proves what public prices cannot identify about cohort memories, and maps statistical experiments into executed quantity, trading loss, and dealer margin capital. |
+| **Statistical Mixture & Super-Resolution Theory** (Moitra 2015; Kong–Valiant 2017; Wu–Yang 2020; Batenkov et al. 2021; Manole–Ho 2022) | Establishes $(\Delta\eta)^{-(2K-1)}$ conditioning and $(\Delta\eta)^{-(4K-2)}$ sample complexity for open-loop moment / exponential-sum recovery. | Extracts the moment problem from the **zeros (not poles) of a closed-loop price transfer function** (`thm:merged`), proves matching real-node lower/upper bounds for finite $K$ and $\Theta(1/\log N)$ for general completely monotone memory, and prices class-tagged disclosure (`thm:discvalue`) at $\Theta((\Delta\eta)^{-(4K-4)})$. |
+| **System Identification** (Ho–Kalman 1966; Ljung 1999; Whittle 1953) | Shows input–output data identify minimal state-space realizations up to similarity transforms $z\mapsto Tz$ and Whittle spectral information governs passive estimation. | Shows that cohort splitting leaves the minimal realization and summed gain $S$ invariant while making individual strategy identification arbitrarily ill-conditioned, and proves that Euclidean latent-state norms $\lVert z_t\rVert_2$ are coordinate-dependent and not cohort-invariant (`prop:invariance`, Counterexample C4). |
+| **Robust & $\ell_1$-Optimal Control** (Vidyasagar 1986; Dahleh–Pearson 1987; Kreiss 1962; Trefethen–Embree 2005) | Establishes that the $\ell_\infty\to\ell_\infty$ induced norm is the $\ell_1$ impulse norm $\sum_k\lvert g_k\rvert$ and that non-normal operators exhibit transient growth invisible to $\rho(J)$. | Applies $\ell_1$ gain certification to **endogenous admission gates** $J(\alpha)=J_0+\alpha B_F$ where the dealer's control action alters the market operator itself, carries the bound through maintenance margin, hedging, and passive fills (`thm:forward`), and proves non-monotone safe admission sets in venue mode (`prop:venue`, `thm:venuebb`). |
+| **Moment Problems & Extremal Approximations** (Markov; Krein–Nudel'man 1977; Achieser 1956) | Characterizes sharp upper/lower bounds on $\int g(r)\,dM(r)$ from finite moment prefixes $(k_0,\ldots,k_{n-1})$ on a compact interval $[0,\bar r]$. | Embeds the Markov–Krein moment interval into closed-loop market stability $S=\kappa/(1-a-\kappa\Phi)$ (`thm:window`), proving that without a memory bound $\bar r<1$ no finite impulse window can certify even market stability ($a+\kappa\Phi<1$), and provides outward-rounded interval-arithmetic certificates (`lem:certnum`). |
+| **Information Economics & Market Design** (Pagano–Röell 1996; SEC Rule 15c3-5; MiFID II / CAT) | Qualitative or static welfare analysis of pre-/post-trade transparency and pre-trade broker-dealer risk limits. | Quantifies the **information–safety separation**: under reset positive-cohort dynamics (`R`, `O1`), pre-trade solvency requires only $\Phi$ at $\delta$-free cost $O(\sigma^2\varepsilon^{-2}\log(1/\varepsilon))$, whereas strategy surveillance requires class-tagged disclosure (`I1`) to avoid the $(\Delta\eta)^{-(4K-2)}$ barrier. |
 
 **What it does not support.** It does not support "passive public prices certify risk". The repository's own evidence on that contract is: no overshoot in the BTCUSDT depth analysis; the merged response was estimated precisely in 5 of 30 markets (a failed pre-registered criterion); a failed pre-registered Coinbase test; a ~2.4% certified position-limit gain over a volatility limit in one test. Those results narrow the empirical claim; they should not be cited as confirming the bridge.
 
