@@ -238,6 +238,8 @@ run_cmd do
   `CurrentMM.is_depth_solution_increasing,
   `CurrentMM.is_depth_eq_lt_sp,
   `CurrentMM.is_depth_rebate_identified,
+  `CurrentMM.p2_prop_inventory_S,
+  `CurrentMM.p2_prop_driftguard,
   `CurrentMM.defectiveJ_charpoly_det,
   `CurrentMM.defectiveJ_commutator,
   `CurrentMM.defectiveJ_not_normal,

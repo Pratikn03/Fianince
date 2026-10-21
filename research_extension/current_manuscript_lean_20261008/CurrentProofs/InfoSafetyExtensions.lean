@@ -859,6 +859,43 @@ theorem is_depth_eq_lt_sp (θ N X b Deq Dsp : ℝ) (hX : 0 < X) (hθ : 0 ≤ θ)
 theorem is_depth_rebate_identified (Γ D : ℝ) (hD : D ≠ 0) : Γ / D ^ 2 = (Γ / D) * (1 / D) := by
   field_simp
 
+/-! ## Paper 2, Propositions `prop:inventory_S` and `prop:driftguard` -/
+
+/-- **Proposition `prop:inventory_S` (`p2_theory1.tex`): Summed response with carried cohort inventory.**
+With inventory decay `δ > 0` and inventory aversion `ψ ≥ 0`, the effective long-run feedback weight
+`Φ_eff = (δ / (δ + ψ)) Φ` satisfies `0 ≤ Φ_eff ≤ Φ`, and whenever `a + κ Φ < 1` the inventory-stabilized
+summed response `S(ψ) = κ / (1 - a - κ Φ_eff)` is at most `S(0) = κ / (1 - a - κ Φ)` (strictly smaller when `ψ > 0` and `Φ > 0`). -/
+theorem p2_prop_inventory_S (a κ Φ δ ψ : ℝ)
+    (hκ : 0 < κ) (hΦ : 0 ≤ Φ) (hδ : 0 < δ) (hψ : 0 ≤ ψ) (hstab : a + κ * Φ < 1) :
+    let Φ_eff := (δ / (δ + ψ)) * Φ
+    let S_inv := κ / (1 - a - κ * Φ_eff)
+    let S_0 := κ / (1 - a - κ * Φ)
+    Φ_eff ≤ Φ ∧ S_inv ≤ S_0 := by
+  intro Φ_eff S_inv S_0
+  have hδψ : 0 < δ + ψ := by linarith
+  have hfrac_le : δ / (δ + ψ) ≤ 1 := by rw [div_le_one hδψ]; linarith
+  have hΦ_eff_le : Φ_eff ≤ Φ := by
+    calc (δ / (δ + ψ)) * Φ ≤ 1 * Φ := mul_le_mul_of_nonneg_right hfrac_le hΦ
+    _ = Φ := one_mul Φ
+  have hden0 : 0 < 1 - a - κ * Φ := by linarith
+  have hden_le : 1 - a - κ * Φ ≤ 1 - a - κ * Φ_eff := by nlinarith
+  exact ⟨hΦ_eff_le, div_le_div_of_nonneg_left hκ.le hden0 hden_le⟩
+
+/-- **Proposition `prop:driftguard` (`p2_guard.tex`): Uniformly safe guard under interval-bounded unknown hidden drift.**
+At `x_0 = 0` with budget `B > 0`, inventory `I_abs ≥ 0`, hidden-state bound `y0_bar ≥ 0`, and positive feedback load `κ Φ⁺ > 0`,
+the capacity cost between the interior reset guard `α* = c_I / (κ Φ⁺ B)` and the drift-adjusted guard
+`α*_drift = c_I / (κ Φ⁺ (B + I_abs y0_bar))` equals `α* (I_abs y0_bar) / (B + I_abs y0_bar)`. -/
+theorem p2_prop_driftguard (c_I kPhi B I_abs y0_bar : ℝ)
+    (hkP : kPhi ≠ 0) (hB : B ≠ 0) (hBy : B + I_abs * y0_bar ≠ 0) :
+    let alpha_star := c_I / (kPhi * B)
+    let alpha_drift := c_I / (kPhi * (B + I_abs * y0_bar))
+    alpha_star - alpha_drift = alpha_star * (I_abs * y0_bar) / (B + I_abs * y0_bar) := by
+  intro alpha_star alpha_drift
+  change c_I / (kPhi * B) - c_I / (kPhi * (B + I_abs * y0_bar)) =
+    (c_I / (kPhi * B)) * (I_abs * y0_bar) / (B + I_abs * y0_bar)
+  field_simp
+  ring
+
 end IS_Hardening
 
 end CurrentMM

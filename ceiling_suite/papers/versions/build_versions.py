@@ -160,6 +160,8 @@ for tlab, tsec in [
     ("tab:p16", "Pre-registered test on untouched symbols table (Part 16)"),
     ("tab:p22", "Pre-registered liquidation mechanism table (Part 22)"),
     ("tab:p23", "Pre-registered multi-hour guard capacity table (Part 23)"),
+    ("tab:p24", "Pre-registered capped multi-hour throttle table (Part 24)"),
+    ("tab:p25", "Pre-registered persistence mechanism table (Part 25)"),
 ]:
     _l0 = body.index("\\label{" + tlab + "}")
     _t0 = body.rfind("\\begin{table}", 0, _l0)

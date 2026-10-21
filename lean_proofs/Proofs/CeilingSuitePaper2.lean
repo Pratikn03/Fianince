@@ -393,4 +393,21 @@ theorem p2_thm_venuebb (lam : Rat) : (1 - lam) * (1 + lam + lam * lam) = 1 - lam
 theorem p2_prop_probe (D A L G : Rat) (hA : A ≠ 0) : D * D - A * (L + 2 * G) = A * (D * D / A - L - 2 * G) := by
   grind
 
+/-- `prop:inventory_S` (`p2_theory1.tex`): summed response with carried cohort inventory,
+`Φ_eff(ψ) = (δ / (δ + ψ)) q` and calibrated comparison `S(ψ) = 5/2 < S(0) = 25/9`. -/
+theorem p2_prop_inventory_S (delta psi q : Rat) (h : delta + psi ≠ 0) :
+    (q - (delta / (delta + psi)) * q = (psi / (delta + psi)) * q) ∧
+    ((1 : Rat) / (1 - 2 / 5 - 1 * (6 / 25)) = 25 / 9) ∧
+    ((1 : Rat) / (1 - 2 / 5 - 1 * (1 / 5)) = 5 / 2) := by
+  refine ⟨by grind, by grind, by grind⟩
+
+/-- `prop:driftguard` (`p2_guard.tex`): drift-adjusted guard and exact capacity cost of unknown hidden state,
+`α* - α*_drift = α* (I y0) / (B + I y0)` and calibrated comparison `3/10 - 6/25 = 3/50`. -/
+theorem p2_prop_driftguard (c_I kPhi B I_abs y0_bar : Rat)
+    (hkP : kPhi ≠ 0) (hB : B ≠ 0) (hBy : B + I_abs * y0_bar ≠ 0) :
+    (c_I / (kPhi * B) - c_I / (kPhi * (B + I_abs * y0_bar)) =
+      (c_I / (kPhi * B)) * (I_abs * y0_bar) / (B + I_abs * y0_bar)) ∧
+    ((3 : Rat) / 10 - 6 / 25 = 3 / 50) := by
+  refine ⟨by grind, by grind⟩
+
 end MachineMarkets

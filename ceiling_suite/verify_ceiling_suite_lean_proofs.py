@@ -79,6 +79,7 @@ PAPER1_MAP = {
 PAPER2_MAP = {
     "prop:jury": ("p2_prop_jury_one_cohort", "p2_prop_jury_one_cohort"),
     "prop:invariance": ("p2_prop_input_output_invariance", "p2_prop_input_output_invariance"),
+    "prop:inventory_S": ("p2_prop_inventory_S", "p2_prop_inventory_S"),
     "prop:ambig": ("p2_prop_ambig_quote_cost", "p2_prop_ambig_quote_cost"),
     "thm:radius": ("p2_thm_radius_kreiss", "p2_thm_radius_kreiss"),
     "prop:multi": ("p2_prop_multi_venue_cross_impact", "p2_prop_multi_venue_cross_impact"),
@@ -93,6 +94,7 @@ PAPER2_MAP = {
     "lem:tail": ("p2_lem_tail_contraction", "p2_lem_tail_contraction"),
     "thm:robust": ("p2_thm_robust_gain", "p2_thm_robust_gain"),
     "thm:forward": (["p2_thm_forward_solvency", "is_buffer_after_step", "is_scenario"], "p2_thm_forward_solvency"),
+    "prop:driftguard": ("p2_prop_driftguard", "p2_prop_driftguard"),
     "prop:dominance": ("p2_prop_dominance_guard_vs_eigenvalue", "p2_prop_dominance_guard_vs_eigenvalue"),
     "prop:lucas": ("p2_prop_lucas_reinforces_guard", "p2_prop_lucas_reinforces_guard"),
     "prop:equil": (["p2_prop_equil_transient_risk", "is_depth_solution_increasing", "is_depth_eq_lt_sp",
@@ -162,7 +164,7 @@ def main():
     p2_envs = extract_envs(SUITE_DIR / "paper2", PAPER2_FILES)
 
     assert len(p1_envs) == 26, f"Expected 26 environments in paper1, got {len(p1_envs)}"
-    assert len(p2_envs) == 26, f"Expected 26 environments in paper2, got {len(p2_envs)}"
+    assert len(p2_envs) == 28, f"Expected 28 environments in paper2, got {len(p2_envs)}"
 
     mathlib_p1_path = MATHLIB_DIR / "CurrentProofs" / "CeilingSuitePaper1.lean"
     mathlib_p2_path = MATHLIB_DIR / "CurrentProofs" / "CeilingSuitePaper2.lean"
@@ -287,8 +289,8 @@ def main():
         "- **Status**: every environment mapped to a kernel-checked declaration (0 `sorry`, 0 `admit`, 0 `native_decide`, 0 unapproved axioms); how much of each statement is formalized is in `COVERAGE.md`",
         "- **Lean Toolchain**: `leanprover/lean4:v4.34.1`",
         f"- **Paper 1 (`ceiling_suite/paper1/`)**: {len(records_p1)} / 26 formal environments mapped (see COVERAGE.md for full / conditional / arithmetic)",
-        f"- **Paper 2 (`ceiling_suite/paper2/`)**: {len(records_p2)} / 26 formal environments mapped (see COVERAGE.md for full / conditional / arithmetic)",
-        f"- **Total Ceiling Suite Environments**: {len(records_p1) + len(records_p2)} / 52 mapped to kernel-checked declarations in Mathlib (`ℝ`) and Core Lean 4 (`Rat`); mapping is not semantic equivalence",
+        f"- **Paper 2 (`ceiling_suite/paper2/`)**: {len(records_p2)} / 28 formal environments mapped (see COVERAGE.md for full / conditional / arithmetic)",
+        f"- **Total Ceiling Suite Environments**: {len(records_p1) + len(records_p2)} / 54 mapped to kernel-checked declarations in Mathlib (`ℝ`) and Core Lean 4 (`Rat`); mapping is not semantic equivalence",
         "",
         "## Paper 1 — Auditable Memory and Financial Identification Limits (`paper1/`)",
         "",
