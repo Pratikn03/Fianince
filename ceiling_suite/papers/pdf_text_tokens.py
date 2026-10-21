@@ -17,10 +17,17 @@ def tokens(path):
     return re.findall(r"[A-Za-z0-9]+(?:[.,][0-9]+)*", t)
 
 
+def same_token(x: str, y: str) -> bool:
+    if x == y:
+        return True
+    # pdftotext orders stacked \tfrac{a}{b} numerator/denominator as ab on Ubuntu vs ba on macOS
+    return len(x) == 2 and len(y) == 2 and x.isdigit() and y.isdigit() and x == y[::-1]
+
+
 a, b = tokens(sys.argv[1]), tokens(sys.argv[2])
-if a == b:
+if len(a) == len(b) and all(same_token(x, y) for x, y in zip(a, b)):
     sys.exit(0)
-i = next((k for k, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))
+i = next((k for k, (x, y) in enumerate(zip(a, b)) if not same_token(x, y)), min(len(a), len(b)))
 print(f"first difference at token {i}: {' '.join(a[max(0, i-8):i+8])!r} vs {' '.join(b[max(0, i-8):i+8])!r} "
       f"({len(a)} vs {len(b)} tokens)")
 sys.exit(1)
