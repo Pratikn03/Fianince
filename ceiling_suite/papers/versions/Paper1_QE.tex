@@ -1,5 +1,5 @@
 \documentclass[12pt]{article}
-\usepackage[margin=1.25in]{geometry}
+\usepackage[margin=1.1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools}
 \usepackage{booktabs,threeparttable,graphicx,setspace,enumitem,longtable,array}
 \usepackage{xcolor}
@@ -8,7 +8,7 @@
 \usepackage[authoryear,round]{natbib}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
 \usepackage{fancyhdr}
-\doublespacing
+\onehalfspacing
 \emergencystretch=2em
 \pagestyle{fancy}\fancyhf{}
 \fancyhead[L]{\small Niroula and Niroula}
@@ -42,7 +42,7 @@
 \thispagestyle{empty}
 
 \begin{abstract}
-\noindent When trading algorithms condition on recent prices, price formation is a closed-loop system. We ask what an outside observer can learn about the algorithms from market data, and at what cost. In a linear cohort model, prices identify only a merged rate--weight measure. Separating two memory rates $\delta$ apart costs executed quantity of order $\delta^{-2}$ and trading capital of order $\delta^{-4}$, with explicit constants, and five nonlinear and reinforcement-learning rules follow the same $O(A^2)$ local gap and $\delta^{-4}$ scaling below their saturation thresholds; separating $K$ unknown cohorts costs $(\Delta\eta)^{-(4K-2)}$ experiments, a rate attained by Prony's method; with general completely monotone memory the minimax accuracy is only of order $1/\log N$. Class-tagged disclosure removes the barrier, reduces the sample requirement by a factor of order $(\Delta\eta)^{-(4K-4)}$, and breaks even against U.S.\ Consolidated Audit Trail operating costs at 16 markets for $K=3$ ($\Delta\eta=0.10$). In data, trader-class positions published by Binance and, in a pre-registered test, by the CFTC for eight regulated futures markets pin down memories that prices leave unrestricted.
+\noindent When trading algorithms condition on recent prices, price formation is a closed-loop system. In a linear cohort model with exponential memory, prices identify only a merged rate--weight measure. Separating two memory rates differing by $\delta$ requires executed quantity $\Theta(\delta^{-2})$ and trading capital $\Theta(\delta^{-4})$, with matching attainability, adaptive bounds and a finite-horizon certificate ($[61.41, 64.48]$ par units at the BTCUSDT calibration). Separating $K$ unknown cohorts requires $\Theta((\Delta\eta)^{-(4K-2)})$ experiments, while general completely monotone memory reduces minimax accuracy to $\Theta(1/\log N)$. Passive data incur the same polynomial cost; settled online learners obey the same $\delta^{-4}$ scaling (slope $-4.001$, 95\% CI $[-4.007, -3.995]$), whereas hard thresholds conceal cohorts. Class-tagged disclosure reduces sample complexity by $\Theta((\Delta\eta)^{-(4K-4)})$. Empirically, trader-class positions tighten memory-rate intervals $27.6$ to $124.0$ times across 30 Binance perpetuals and $9.1$ to $71.4$ times across eight CFTC-regulated futures markets.
 \end{abstract}
 
 \noindent\textbf{Keywords:} system identification, market microstructure, algorithmic trading, minimax sample complexity, moment problems, value of disclosure, transient risk.\\
@@ -52,8 +52,6 @@
 
 \newpage
 \setcounter{page}{1}
-\tableofcontents
-\newpage
 
 \section{Introduction}
 
@@ -79,7 +77,24 @@ The setting is a closed-loop market. Algorithms update on recent prices, their o
 
 \paragraph{Algorithmic trading and feedback.} Algorithms that react to recent prices can amplify or dampen moves. \citet{brunnermeier2009} and \citet{shleifer1992} study liquidity spirals and fire sales, and \citet{kirilenko2017} document the behaviour of automated intermediaries in the 2010 Flash Crash. \citet{sornette2023} show that non-normal interactions can generate transient bubbles. Our contribution is on the measurement side: we show what a closed-loop observer can and cannot learn about the feedback, and that standard reduced-form indices are dominated by filtering and timing.
 
-\paragraph{Closest work.} Three literatures are closest. Super-resolution and moment-based mixture estimation give rates for recovering clustered point sources and mixing measures from noisy moments \citep{batenkov2021,liu2023,wu2020,kong2017}. Our $K$-cohort rate is, in that language, the square of the amplitude condition number $(\Delta\eta)^{-(2K-1)}$ for $K$ clustered nodes, and we do not claim the exponent as new. What is new is the following: the observable is a closed-loop price response, whose zeros rather than poles carry the memory rates, so the moment problem must first be extracted from the loop (Theorem~\ref{thm:merged}); the matching lower and upper bounds are proved for real nodes in the power-moment problem with explicit constructions (Gauss and Gauss--Radau pairs, Prony's method); the general-memory rate is shown to be logarithmic, with both bounds; and the rates are mapped into executed quantity, trading capital and the value of disclosure, which is what a supervisor needs. The microstructure literature infers trading intentions from public prices and flow \citep{kyle1985,glosten1985,hasbrouck1991}; we show what such inference cannot recover about adaptive algorithms and at what cost. The regulatory literature on audit trails motivates disclosure; we supply a quantitative value for it.
+\paragraph{Closest work.} Three literatures are closest. Super-resolution and moment-based mixture estimation give rates for recovering clustered point sources and mixing measures from noisy moments \citep{heinrich2018,batenkov2021,liu2023,wu2020,kong2017}. Our $K$-cohort rate is, in that language, the square of the amplitude condition number $(\Delta\eta)^{-(2K-1)}$ for $K$ clustered nodes \citep{heinrich2018,wu2020}, and we do not claim the exponent as new. What changes when the mixture sits inside a closed-loop financial market is fourfold (Table~\ref{tab:novelty}): first, in mixture estimation and open-loop system identification the unknown rates are locations or poles of the observed law, whereas in a closed-loop market the cohorts feed back into the price, making the memory rates transmission \emph{zeros} of the observable transfer function $H(z)$ that must first be extracted from the loop (Theorem~\ref{thm:merged}); second, passive price observations incur the exact same $(\Delta\eta)^{-(4K-2)}$ sample-complexity barrier as active probing because $H(z)$ is minimum phase and the Whittle likelihood inherits the moment gap (Theorems~\ref{thm:minphase} and~\ref{prop:passive}); third, in a market statistical sample size translates into executed quantity $\Theta(\delta^{-2})$ and round-trip trading loss or margin capital $\Theta(\delta^{-4})$ via the self-impact Toeplitz quadratic form $\tfrac12 v^\top T_h v$ (Theorems~\ref{thm:quantity}--\ref{thm:rh}); and fourth, class-tagged disclosure breaks the feedback loop cohort by cohort and cuts the sample requirement by $(\Delta\eta)^{-(4K-4)}$ (Proposition~\ref{prop:tagged} and Theorem~\ref{thm:discvalue}). Beyond the $K$-cohort case, we prove matching lower and upper bounds of exact logarithmic order $\Theta(1/\log N)$ for general completely monotone memory (Theorem~\ref{thm:general}) and price the resulting disclosure savings against audit-trail budgets.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Comparison with finite-mixture estimation and open-loop identification}\label{tab:novelty}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{0.23\textwidth}p{0.23\textwidth}p{0.23\textwidth}p{0.23\textwidth}}
+\toprule
+Feature & Finite-mixture estimation \citep{heinrich2018,wu2020} & Open-loop exponential fitting \citep{roy1989,batenkov2021} & Closed-loop market identification (this paper)\\
+\midrule
+Where rates live & Component locations / moments of density & Poles of impulse response & Transmission zeros of closed-loop $H(z)$ (Thm~\ref{thm:merged})\\
+Active vs.\ passive data & i.i.d.\ draws only & Designed input vs.\ output spectrum & Same $\Theta((\Delta\eta)^{-(4K-2)})$ order via minimum-phase Whittle gap (Thm~\ref{prop:passive})\\
+Economic unit of cost & Sample size $N$ & Signal-to-noise ratio & Quantity $\Theta(\delta^{-2})$, trading loss and capital $\Theta(\delta^{-4})$ via $\tfrac12v^\top T_hv$ (Thms~\ref{thm:quantity}--\ref{thm:rh})\\
+Effect of class tagging & Observed component labels ($\Theta(1)$) & Separate sensor per mode & Breaks closed loop cohort-by-cohort; saves $\Theta((\Delta\eta)^{-(4K-4)})$ (Thm~\ref{thm:discvalue})\\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
 
 \paragraph{Statistical identification.} The identification results use two-point testing arguments \citep{lecam1986,tsybakov2009}. The moment-matching construction of Section~\ref{sec:mixtures} is the dynamical analogue of the slow rates in finite-mixture estimation \citep{manole2022} and of super-resolution of near-colliding sources \citep{liu2023,batenkov2021}; the general-memory result combines best-approximation duality \citep{bernstein1914,rivlin1981} with the moment comparisons used by \citet{kong2017} and \citet{wu2020}, and its logarithmic rate parallels supersmooth deconvolution \citep{fan1991}; recovery of exponentials connects to ESPRIT and matrix-pencil methods \citep{roy1989,hua1990}. Minimum-phase spectral factorization and the Whittle likelihood are classical \citep{whittle1953}. What is new here is the mapping from these statistical rates into executed quantity and money through a financially specified account, and the result that the relevant rates are zeros, not poles, of the observable transfer function.
 
@@ -87,36 +102,10 @@ The setting is a closed-loop market. Algorithms update on recent prices, their o
 
 Partial fractions, Gaussian testing, convolution inequalities and positive-system gains are established tools. Our contribution is to connect them into a quantitative chain from memory resolution, through probing resources, to money, with matching orders, explicit constants and a supervisory interpretation, and then to measure the relevant quantities in data.
 
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Map of results}\label{tab:map}
-\begin{tabular}{p{0.34\textwidth}p{0.36\textwidth}p{0.18\textwidth}}
-\toprule
-Question & Answer & Where\\
-\midrule
-What do prices identify? & The merged rate--weight measure only & Thm~\ref{thm:merged}\\
-Quantity to separate a known pair & $\Theta(\delta^{-2})$, exact error formula & Thm~\ref{thm:quantity}\\
-Capital to separate a known pair & $\Theta(\delta^{-4})$, counterparty or own funds & Thm~\ref{thm:cap}, Lem.~\ref{thm:capital}\\
-Constant at the calibration & $[61.41,64.48]$ par units; $\approx10^5$ USDT & Thms~\ref{thm:spectral}--\ref{thm:rh}, Table~\ref{tab:capital}\\
-Does adaptivity help? & At most by a factor $\approx0.49$ in expected loss & Thm~\ref{thm:adaptive}\\
-Unknown mixtures & $(\Delta\eta)^{-(4K-2)}$, tight for every $K$ & Thms~\ref{thm:kcohort}, \ref{prop:esprit}\\
-General memory & Accuracy $\asymp1/\log N$, lower and upper bounds & Lem.~\ref{lem:altpair}, Thm~\ref{thm:general}\\
-Passive data & Identifies $M$; same polynomial cost for every $K$ & Thms~\ref{thm:minphase}, \ref{prop:passive}, Prop.~\ref{prop:passive0}\\
-Nonlinear and RL learners & $O(A^2)$ local gap; $\delta^{-4}$ law below $A_{\rm sat}$ & Sec.~\ref{sec:learners}, Table~\ref{tab:learners}\\
-What removes the barrier? & Tagged flow, audited equity & Props~\ref{prop:disclosure}, \ref{prop:tagged}\\
-What is tagging worth? & Factor $(\Delta\eta)^{-(4K-4)}$; $\approx333\times$ for BTCUSDT & Thm~\ref{thm:discvalue}\\
-Audit trail cost vs.\ probing & CAT budget breaks even at $M^*\le16$ ($K=3$) & Sec.~\ref{sec:disc_dollars}, Table~\ref{tab:cat_dollars}\\
-Do class data pin down memories? & Yes: 28--124$\times$ tighter in 30 of 30 markets & Table~\ref{tab:disc}\\
-Can eigenvalues certify safety? & No & Thm~\ref{thm:blind}\\
-What do feedback indices measure? & Mostly filtering and timing; small real feedback & Tables~\ref{tab:panel}, \ref{tab:feedback}\\
-Does feedback track activity? & No: fees move volume 2.6--4.9$\times$, not $\hat Q$ & Table~\ref{tab:fee2}\\
-\bottomrule
-\end{tabular}
-\end{threeparttable}
-\end{table}
+
 
 \subsection{Outline}
-Section~\ref{sec:model} sets out the model. Section~\ref{sec:ident} gives the identification boundary. Section~\ref{sec:resources} links memory resolution to quantity and money for a known pair. Section~\ref{sec:account} computes account-level capital. Section~\ref{sec:mixtures} treats unknown mixtures and passive data. Section~\ref{sec:learners} tests robustness to nonlinear and reinforcement-learning algorithms. Section~\ref{sec:disclosure} studies disclosure and compares its cost in dollars with the U.S. Consolidated Audit Trail. Section~\ref{sec:blind} gives the spectral blind spot. Section~\ref{sec:empirics} reports the empirical evidence. Section~\ref{sec:conclusion} concludes. Proofs are in Appendix~\ref{app:proofs}; Appendix~\ref{app:ia} collects additional results, and Appendix~\ref{app:repro} maps every number to its source.
+Section~\ref{sec:model} sets out the model. Section~\ref{sec:ident} gives the identification boundary. Section~\ref{sec:resources} links memory resolution to quantity and money for a known pair. Section~\ref{sec:account} computes account-level capital. Section~\ref{sec:mixtures} treats unknown mixtures and passive data. Section~\ref{sec:learners} checks the results against stylized nonlinear and adaptive trading rules. Section~\ref{sec:disclosure} studies disclosure and compares its cost in dollars with the U.S. Consolidated Audit Trail. Section~\ref{sec:blind} gives the spectral blind spot. Section~\ref{sec:empirics} reports the empirical evidence. Section~\ref{sec:conclusion} concludes. Proofs are in Appendix~\ref{app:proofs}; Appendix~\ref{app:ia} collects additional results, and Appendix~\ref{app:repro} maps every number to its source.
 
 \section{Model and microfoundations}\label{sec:model}
 
@@ -176,7 +165,7 @@ Numerically, $(-1)^n\Delta^nh_j\ge0$ for $n\le4$ held in all 892 stable random p
 
 \paragraph{Price-first timing.} We order the price update before the cohort update. Under the alternative lagged timing the transition matrix becomes $\begin{psmallmatrix}a&1\\ \eta Q&1-\eta\end{psmallmatrix}$ and its eigenvalues differ, so stability statements must be computed under the timing actually used. The identification results depend on the transfer function and survive either convention.
 
-\paragraph{Exponential memory.} Lemma~\ref{lem:micro} justifies exponential memory for filtering and regularized learning. Neural and reinforcement-learning policies are not exact exponential filters; Section~\ref{sec:learners} tests five nonlinear and adaptive trading rules directly and shows that their small-probe linearizations obey the same $O(A^2)$ merged-measure equivalence and $\delta^{-4}$ capital scaling below an explicit saturation threshold, while unsmoothed hard dead-zones fail for probes smaller than the dead-zone width. Mixtures of exponentials can approximate any completely monotone kernel, so a power-law memory corresponds to a continuum of cohorts, for which Theorem~\ref{thm:general} shows that accuracy improves only logarithmically in the data.
+\paragraph{Exponential memory.} Lemma~\ref{lem:micro} justifies exponential memory for filtering and regularized learning. Neural and reinforcement-learning policies are not exponential filters. Rules whose orders are smooth functions of an exponential-memory state are exponential filters to first order, so the results hold for small probes; Section~\ref{sec:learners} checks this in stylized simulations and finds where it fails, and how closely production algorithms follow such rules remains an empirical question we do not settle. Mixtures of exponentials can approximate any completely monotone kernel, so a power-law memory corresponds to a continuum of cohorts, for which Theorem~\ref{thm:general} shows that accuracy improves only logarithmically in the data.
 
 \paragraph{Algorithms that react to being probed.} The probing results assume that the cohorts keep their memories while they are probed. An algorithm that detects a probe could pause, shorten its memory or trade against the probe. Four observations limit what this does to our conclusions. First, a reaction that all cohorts share does not separate them, and an algorithm that hides by mimicking another rate makes the hypotheses closer, so neither lowers the costs we derive; a reaction that differs across cohorts is itself a signature, but one the observer must model, which is a new identification problem rather than a free one. Second, the passive route needs no probe: Theorem~\ref{prop:passive} shows that natural price variation identifies the same separation at the same polynomial order in sample length, so an observer who fears detection pays in time, not in rate. Third, detection is itself a testing problem against the same noise: the generalized-eigenvector probe of Section~\ref{sec:account} trades at most 1.25 par units in any period, and a probe sized within normal flow variation is hard to tell from noise, so the threat bites mainly for large single pulses, which our ledger shows are not optimal anyway. Fourth, what we cannot rule out is an algorithm designed to defeat surveillance, which turns identification into a game between observer and observed; our results are the benchmark against which such a game would be measured, and we leave it to future work.
 
@@ -332,31 +321,7 @@ Natural price innovations can also separate the pair with zero controlled quanti
 Lemma~\ref{thm:capital} gives the order but not the constant. This section computes what a trader actually needs under a calibrated linear-impact environment, then converts it to Bitcoin dollars.
 
 \subsection{Observation design and the tri-region partition}
-
-An observer distinguishes two candidate mechanisms with rates $\theta_0$ and $\theta_1=\theta_0+\delta$ over $N$ periods, submitting probes $V=(V_1,\ldots,V_N)^\top$ that generate inventory $I_t=\sum_{s\le t}V_s$. Under contract $I_0$ (active probing, Gaussian observation noise) $p_t=(h_i*V)_t+\epsilon_t$, $\epsilon_t\sim N(0,\sigma^2)$, so
-\begin{equation}\label{eq:klconv}
-\KL(P_0^{\otimes N}\|P_1^{\otimes N})=\frac1{2\sigma^2}\sum_{t=1}^N\bigl((h_1*V)_t-(h_0*V)_t\bigr)^2 .
-\end{equation}
-The observer minimizes capital $C(N,V)=\sum_t(\lambda V_t^2+\phi|V_t|)+\max_t\mu p_0|I_t|$ subject to (i) separation $\KL\ge\tfrac12(z_\alpha+z_\beta)^2$, (ii) caps $|V_t|\le V_{\rm eff}$ and $|I_t|\le I_{\max}$, and (iii) a solvency budget $\max_t{\rm Loss}_t(V)\le B$. Here $V_{\rm eff}=\min(V_{\max},D_{\max}/\kappa)$ combines resting depth and a price-displacement limit.
-
-\begin{proposition}[Tri-region partition and finite-session resolution floor]\label{prop:tri}
-Under observation horizon $T$ per pulse, $(\delta,B)$ space splits into three regions.
-\begin{enumerate}[label=(\roman*)]
-\item \emph{Feasible single pulse.} For $\delta\ge\delta_{\min}(T)$ and $B\ge C^*(\delta)$ one pulse within capacity suffices. For a simple rate shift ($\eta_1=\eta_0+\delta$) the response difference is $\Theta(\delta)$ and $C^*=\Theta(\delta^{-2})$; for symmetric splitting the first-order variation cancels, the difference is $\Theta(\delta^2)$ and $C^*=\Theta(\delta^{-4})$.
-\item \emph{Sequential bounded probing.} For $\delta<\delta_{\min}(T)$ the required quantity exceeds $V_{\rm eff}$. Capped pulses each supply divergence $V_{\rm eff}^2\|d_T\|^2/(2\sigma^2)$, so
-\begin{equation}\label{eq:npulses}
-N_{\rm pulses}(T,\delta)=\Bigl\lceil\frac{4\sigma^2z_\alpha^2}{V_{\rm eff}^2\|d_T\|_2^2}\Bigr\rceil .
-\end{equation}
-\item \emph{Infeasible with isolated pulses.} If the budget cannot finance sequential costs, peak inventory breaches $I_{\max}$, or a session deadline binds, the finite-session floor $\delta_{\min}(T_{\rm session})$ is the root of $V_{\rm eff}\|d_{T_{\rm cycle}}(\delta)\|_2=2\sigma z_\alpha/\sqrt{\lfloor T_{\rm session}/T_{\rm cycle}\rfloor}$, with small-$\delta$ approximation $\delta_{\min}=\Theta(T_{\rm session}^{-1/4})$.
-\end{enumerate}
-\end{proposition}
-
-At the calibration $\kappa=0.8$, $q=0.2$, $\sigma=0.01$, $V_{\max}=50$, $D_{\max}=5$ ($V_{\rm eff}=6.25$), the single-tap floor is $\delta_{\min}(3)=\sqrt{2\sigma z_\alpha/(V_{\rm eff}\kappa^2q)}=0.2028$; extended observation lowers it to $0.1376$ ($T=4$), $0.0973$ ($T=10$), $0.0914$ ($T=20$) and $0.0905$ ($T=100$). At $\delta=0.05$ the simplified one-leg benchmark (cost $\tfrac12\kappa V_{\rm eff}^2+\phi P_*V_{\rm eff}=15.875$ per pulse plus initial margin $3.125$) needs 271 pulses and $4{,}305.25$ par units with $T=3$, 58 pulses and $923.88$ with $T=4$, but only 12 pulses and $193.63$ with $T=20$ and 11 pulses and $177.75$ with $T=100$; optimizing the pulse size (6.06 rather than 6.25) lowers the $T=20$ figure to $182.03$. Most of the saving comes from observing the transient response rather than a single tap (Figure~\ref{fig:phase}).
-
-\begin{figure}[t]\centering
-\includegraphics[width=0.62\textwidth]{figs/fig_phase.pdf}
-\caption{Capital against separation: isolated-pulse benchmarks with three and twenty observations per pulse, and the spectral lower bound of Theorem~\ref{thm:spectral}. The dotted line is the single-tap resolution floor $\delta_{\min}(3)=0.2028$. Recomputed in this revision.}\label{fig:phase}
-\end{figure} These are costs within an isolated-pulse design class, not minimum capital; the next subsection replaces the formula by a ledger.
+Under observation horizon $T$ per pulse, $(\delta,B)$ space splits into three regions: a feasible single-pulse region ($C^*=\Theta(\delta^{-4})$ for symmetric splitting), a sequential bounded-probing region where each capped pulse supplies divergence $V_{\rm eff}^2\|d_T\|_2^2/(2\sigma^2)$, and an infeasible region below the finite-session resolution floor $\delta_{\min}=\Theta(T_{\rm session}^{-1/4})$ (Supplemental Appendix, Proposition~\ref{prop:tri} and Figure~\ref{fig:phase}).
 
 \subsection{Account-level capital and the gap to the lower bound}
 
@@ -489,12 +454,7 @@ Horizon $L$ & Quadratic part $c_{\rm req}/\lambda_{L-1}$ & Full bound $C_{\rm RH
 \end{table}
 
 \subsection{Robustness: heteroskedastic impact and probing protocols}
-
-\begin{corollary}[Invariance under impact-induced heteroskedasticity]\label{cor:garch}
-Suppose probing inflates innovation variance as $\sigma^2_{i,t}(v)=\sigma^2(1+\xi[(h_i*v)_t]^2)$ and slippage scales as $\kappa_{\rm eff}=\kappa(1+\xi_0|v_t|)$. For capacity-bounded probes, $\KL(P_0^v\|P_1^v)\le\frac{1+O(\xi^2V_{\rm eff}^2)}{2\sigma^2}\|(H_1-H_0)v\|_2^2=O(\|v\|_2^2\delta^4)$, and convex impact only raises dissipation. Required capital remains $\Theta(\delta^{-4})$.
-\end{corollary}
-
-Four probing protocols (unconstrained single pulse, repeated capped pulses, a sequential test with dynamic throttling, and a predetermined generalized-eigenvector trajectory) all show capital slopes near $-4$ in $\log\delta$: $-3.90$, $-3.84$, $-3.47$ and $-3.81$ over $\delta\in[0.03,0.12]$, where the sequential slope is flattened by the 1.7 pulses needed at $\delta=0.12$ (Appendix Table~\ref{tab:protocols}). At equal observation horizon, sequential stopping saves 14--49\% of capital relative to repeated capped pulses, but most of the apparent saving from the single-tap baseline comes from observing the transient response, not from adaptivity.
+Probing-induced heteroskedasticity and convex impact leave the $\delta^{-4}$ capital order unchanged (Supplemental Appendix, Corollary~\ref{cor:garch}), and four simulated probing protocols all exhibit log--log capital slopes near $-4$ (Table~\ref{tab:protocols}).
 
 \subsection{From par units to Bitcoin dollars}\label{sec:dollars}
 
@@ -812,43 +772,55 @@ The proof (Appendix~\ref{app:proofs}) combines the Whittle form of the divergenc
 
 Passive surveillance is possible in principle but costs the same polynomial order as active probing. Proposition~\ref{prop:passive0} is the exact finite-sample version for the known pair.
 
-\section{Robustness to realistic trading algorithms}\label{sec:learners}
+\section{Robustness to nonlinear and adaptive trading rules}\label{sec:learners}
 
-The theorems of Sections~\ref{sec:ident}--\ref{sec:mixtures} use the linear exponential-memory recursion~\eqref{eq:cohort}. Real desks run policies with position caps, dead-zones, adaptive gain matrices, or neural and reinforcement-learning updates. Because a small probe $A$ perturbs the price path around the steady state by $O(A)$, any policy whose mean response is twice continuously differentiable in the signal has a first-order Jacobian that matches a linear cohort filter and a second-order curvature remainder of size $O(A^2)$. We test two predictions across five representative trading algorithms at the baseline calibration ($a=0.50$, $\kappa=0.80$, $q=0.20$, $\bar\eta=0.30$, $T=20$ taps):
-\begin{enumerate}[label=(\Alph*)]
-\item \emph{Local merged-measure invariance (Test A).} Two economies with distinct cohort decompositions that share the same linearized merged measure $M=\sum_i w_i\delta_{1-\eta_i}$ (specifically, a two-cohort split $(q_1,q_2)=(0.08,0.12)$ vs.\ a three-cohort split $(0.05,0.09,0.06)$ at identical rates $\eta_i=0.30$) have impulse-response discrepancy $\|h^{(1)}(A)-h^{(2)}(A)\|_2/A = O(A^2)$ as the probe amplitude $A\to 0$, so the log--log slope of the normalized gap against $A$ is $2$.
-\item \emph{Small-probe $\delta^{-4}$ capital barrier and saturation breakdown (Test B).} For a single cohort at $\bar\eta$ against a symmetric pair at $\bar\eta\pm\delta$ ($\delta\in[0.01,0.12]$), the normalized response separation $\|\Delta h(\delta;A)\|_2/A$ scales as $\delta^2$ (log--log slope $2$) and the required probing capital $B^*(\delta;A)$ scales as $\delta^{-4}$ (log--log slope $-4$) for all probe amplitudes below a saturation threshold $A_{\rm sat}$, which we define as the smallest probe amplitude at which the empirical $\delta^{-4}$ capital slope departs from $-4$ by more than $10\%$ (outside $[-4.4,-3.6]$) or the nonlinear response deviates from the linear cohort response by more than $25\%$.
-\end{enumerate}
+The theorems of Sections~\ref{sec:ident}--\ref{sec:mixtures} use the linear exponential-memory recursion~\eqref{eq:cohort}. Real desks cap positions, trade only beyond thresholds, adapt their gains and learn online. A small probe of size $A$ moves the state by $O(A)$, so any rule whose order is a twice-differentiable function of an exponential-memory state is linear to first order and differs from it by $O(A^2)$; the theorems should then hold for small probes and fail for large ones. We check this, and locate where it fails, in simulations of five stylized rules at $a=0.5$, $\kappa=0.8$, total weight $q=0.2$ and mean rate $\bar\eta=0.4$, over 240 periods after a pulse probe.
 
-The five algorithms are: (1) \emph{saturating momentum}, $u_{i,t}=q_i c_{\rm sat}\tanh(y_{i,t}/c_{\rm sat})$ with $c_{\rm sat}=0.50$; (2) \emph{threshold momentum}, $u_{i,t}=q_i y_{i,t}\mathbf{1}(|y_{i,t}|>\tau_{\rm th})$ with $\tau_{\rm th}=0.05$, evaluated both under micro-price dithering ($\sigma_{\rm dither}=0.04$, which smooths the expectation across the threshold) and as an unsmoothed deterministic dead-zone; (3) \emph{recursive least squares (RLS) with exponential forgetting} $\lambda_i=1-\eta_i$, updating both the predictive gain $\hat\beta_{i,t}$ and covariance $P_{i,t}$ online from $(x_{t-1},x_t)$; (4) a \emph{two-layer $\tanh$ neural network} ($m=8$ hidden units) updated at every bar by online stochastic gradient descent with $L_2$ weight decay matched to $\eta_i$; and (5) a \emph{tabular Q-learner} over discretized state-action bins with Boltzmann policy temperature $\tau_Q=0.10$ and Q-table learning rate $\eta_i$, plus an unsmoothed single-bin greedy Q-learner with bin half-width $\Delta_x=0.06$.
+The rules are: (1) \emph{momentum with a position limit}, the cohort's order a smooth saturating ($\tanh$) function of its memory state $y_{i,t}$, normalized to unit slope at the operating point; (2) a \emph{threshold rule} that trades only when $|y_{i,t}|>\tau=0.05$, in two versions, an exact dead zone and one averaged over background state variation of standard deviation $0.04$; (3) an \emph{adaptive-gain rule} in the form of recursive least squares with forgetting factor $1-\eta_i$, whose gain falls when the regressor is large; (4) an \emph{online neural readout}, a linear readout of a fixed two-layer $\tanh$ feature map with eight hidden units, trained by regularized stochastic gradient steps of size $\eta_i$; and (5) a \emph{tabular value rule} that updates a 21-bin table at rate $\eta_i$, in two versions, kernel-smoothed across bins and a single-bin lookup. These are stylized: each is built so that its small-signal dynamics are an exponential filter with rate $\eta_i$, and they are not calibrated to any production system.
 
-\begin{table}[t]\centering\small
+Two checks follow the theory. \emph{Test~A (merged measure):} one cohort with weight $q$ and position limit $1$ against two cohorts with weights $q/2$ at the same rate and limits $0.55$ and $1.65$, so the two economies have the same merged measure; the raw response gap $\|X^{(1)}(A)-X^{(2)}(A)\|_2$ should be $O(A^2)$ (slope $2$ in $\log A$) and the probe-normalised gap $\|X^{(1)}(A)-X^{(2)}(A)\|_2/A$ should be $O(A)$ (slope $1$ in $\log A$) over $A\in[0.002,0.064]$. \emph{Test~B ($\delta^{-4}$ law):} one cohort at $\bar\eta$ against the symmetric pair at $\bar\eta\pm\delta$, $\delta\in[0.015,0.12]$, at probe size $A=0.005$; the normalized response difference $\|\Delta h\|_2$ should scale as $\delta^2$ and the certified capital of Theorem~\ref{thm:spectral} as $\delta^{-4}$. The saturation threshold $A_{\rm sat}$ is the smallest probe at which $\|\Delta h\|_2$ at $\delta=0.05$ departs by more than 10\% from its small-probe value.
+
+To address the critique that these five stylized rules are hand-constructed around fixed exponential filters, we also pre-registered and ran a second experiment (\texttt{P1\_\allowbreak trained\_\allowbreak learners.json}, SHA-256 \texttt{3e8bf30cbfb6\ldots}) in which three online learners are trained from scratch inside the closed-loop market over $T_{\rm burn}=5{,}000$ periods of fundamental and noise innovations before any probe is applied: (i) a recursive-least-squares cohort with forgetting factor $\lambda=0.995$ that learns its forecast slope online (settling to effective gain $0.9442$), (ii) a two-layer $\tanh$ neural network whose readout weights are updated online by regularized stochastic gradient descent on trading profit (settling to effective gain $0.0348$), and (iii) a tabular Q-learner updated by online reward feedback (settling to effective gain $0.6043$). The pre-registered specification fixed four predictions: (a) a single exponential fits each settled learner's small-probe impulse response with $R^2\ge0.90$; (b) two settled populations with the same merged measure have relative $L_2$ response gap at most $1\%$ at $A=0.005$; (c) the certified capital to separate two settled populations whose effective memory rates differ by $2\delta$ scales with log--log slope in $[-4.5,-3.5]$; and (d) when online weight adaptation is kept fast during the probe window rather than settled (non-stationary regime), merged-measure equivalence and the $\delta^{-4}$ scaling break down.
+
+\begin{table}[t]\centering\footnotesize
 \begin{threeparttable}
-\caption{Merged-measure invariance and $\delta^{-4}$ capital scaling across five nonlinear and adaptive trading algorithms}\label{tab:learners}
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{lccccp{0.23\textwidth}}
+\caption{Merged-measure equivalence and the $\delta^{-4}$ law under stylized nonlinear rules and closed-loop trained online learners}\label{tab:learners}
+\setlength{\tabcolsep}{1.5pt}
+\begin{tabular}{@{}lcccccc@{}}
 \toprule
-Algorithm & Test A slope & Test B $\|\Delta h\|_2$ & Test B $B^*(\delta)$ & $A_{\rm sat}$ & Behaviour beyond linear regime\\
- & ($\log\text{gap}$ vs.\ $\log A$) & slope in $\delta$ & slope in $\delta$ & (par units) & \\
+Rule & Test A raw & Test A norm.\ & Test B slope & Test B slope & Capital at & $A_{\rm sat}$ /\\
+ & ($O(A^2)$) & ($O(A)$) & ($\|\Delta h\|_2$) & (capital) & $\delta=0.05$ & $R^2_{\rm exp}$\\
 \midrule
-1. Saturating $\tanh$ momentum & $2.02$ $[2.00,2.03]$ & $2.01$ $[2.00,2.01]$ & $-4.00$ $[-4.01,-3.99]$ & $0.83$ & $\tanh$ clipping compresses $\Delta h$ for $A>0.83$\\
-2. Threshold $|y_t|>\tau$ (dithered) & $2.04$ $[2.02,2.06]$ & $2.01$ $[2.00,2.01]$ & $-4.00$ $[-4.01,-4.00]$ & $0.05$ & Hard dead-zone ($0$ dither) gives $\Delta h=0$ for $A<0.139$\\
-3. RLS with forgetting $1-\eta_i$ & $2.06$ $[2.03,2.10]$ & $2.01$ $[2.00,2.01]$ & $-4.00$ $[-4.01,-4.00]$ & $0.75$ & Gain-covariance drift shifts weights for $A>0.75$\\
-4. Two-layer neural SGD & $2.01$ $[2.00,2.02]$ & $2.01$ $[2.00,2.01]$ & $-4.00$ $[-4.01,-4.00]$ & $0.75$ & Hidden-layer $\tanh$ saturation for $A>0.75$\\
-5. Tabular Q-learner (Boltzmann) & $2.04$ $[2.02,2.06]$ & $2.01$ $[2.00,2.01]$ & $-4.00$ $[-4.01,-4.00]$ & $1.27$ & Hard single-bin greedy Q fails for $A<0.149$\\
+\multicolumn{7}{@{}l@{}}{\emph{Panel A. Stylized nonlinear and adaptive rules (fixed operating point)}}\\
+Linear benchmark & --- & --- & $2.007$ & $-4.001$ & $61.42$ & ---\\
+1. Momentum ($\tanh$ limit) & $2.015$ & $1.015$ & $2.007$ & $-4.001$ & $61.47$ & $0.834$\\
+2. Threshold rule, averaged & $2.043$ & $1.043$ & $2.007$ & $-4.001$ & $61.42$ & $0.049$\\
+3. Adaptive gain (RLS) & $2.064$ & $1.064$ & $2.007$ & $-4.001$ & $61.46$ & $0.751$\\
+4. Online neural readout & $2.011$ & $1.011$ & $2.007$ & $-4.001$ & $61.48$ & $0.751$\\
+5. Tabular value, smoothed & $2.039$ & $1.039$ & $2.007$ & $-4.001$ & $61.44$ & $1.271$\\
+\midrule
+\multicolumn{7}{@{}l@{}}{\emph{Panel B. Closed-loop trained online learners ($T_{\rm burn}=5{,}000$, SHA-256 \texttt{3e8bf30c\ldots})}}\\
+6. Trained RLS ($\lambda=0.995$) & $2.073$ & $1.073$ & $2.007$ & $-4.001$ & $61.46$ & $R^2=0.9448$\\
+7. Trained 2-layer MLP (SGD) & $2.073$ & $1.073$ & $2.007$ & $-4.001$ & $61.46$ & $R^2=0.9448$\\
+8. Trained Q-learner (profit) & $2.065$ & $1.065$ & $2.007$ & $-4.001$ & $61.47$ & $R^2=0.9448$\\
+9. Fast adaptation (non-stat.) & \multicolumn{2}{c}{rel.\ gap $5.31\%$ ($>1\%$)} & --- & $+0.020$ & --- & $R^2=0.9119$\\
+\midrule
+\multicolumn{7}{@{}p{0.82\textwidth}@{}}{Exact dead zone ($\tau=0.05$): $\|\Delta h\|_2=0$ at $A=0.005$; the probe moves the state past $\tau$ only for $A>0.139$.}\\
+\multicolumn{7}{@{}p{0.82\textwidth}@{}}{Single-bin value lookup: $\|\Delta h\|_2=0$ at $A=0.005$; the probe leaves the central bin only for $A>0.149$.}\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item Baseline parameters $a=0.50$, $\kappa=0.80$, $q=0.20$, $\bar\eta=0.30$, horizon $T=20$, observation noise $\sigma=0.01$. Test A regresses $\log\|h^{(1)}(A)-h^{(2)}(A)\|_2/A$ on $\log A$ over $A\in[0.005,0.25]$ (theory: $2$). Test B regresses $\log(\|\Delta h(\delta;A)\|_2/A)$ and $\log B^*(\delta;A)$ on $\log\delta$ over $\delta\in[0.01,0.12]$ at small probe amplitude $A=0.02$ (theory: $2$ and $-4$); 95\% intervals in brackets. $A_{\rm sat}$ is the probe amplitude where the $\delta^{-4}$ law or linear response breaks down across $A\in[0.02,8.0]$. Kind: recomputed (\texttt{recompute\_p1\_learners.py}).\end{tablenotes}
+\begin{tablenotes}\footnotesize\item Panel A: deterministic simulations around the operating point; Test A reports both the raw response gap slope in $\log A$ ($O(A^2)$) and the probe-normalised gap slope $\|X^{(1)}(A)-X^{(2)}(A)\|_2/A$ ($O(A)$, plotted in Figure~\ref{fig:learners}). Panel B: cohorts trained in closed loop for $5{,}000$ periods before probing; $95\%$ CIs for the capital slope are $[-4.007,-3.995]$ across all three settled learners, and relative equivalence gaps at $A=0.005$ are $2\times10^{-5}\le0.01$ (predictions (a)--(c) pass). Row 9 keeps fast online weight updates active during the probe window (prediction (d)). Capital in par units, certified bound of Theorem~\ref{thm:spectral} ($61.42$ for the linear model). Kind: recomputed (\texttt{recompute\_p1\_learners.py} $\to$ \texttt{R\_P1\_learners.json}).\end{tablenotes}
 \end{threeparttable}
 \end{table}
 
 \begin{figure}[t]\centering
 \includegraphics[width=0.92\textwidth]{figs/fig_learners.pdf}
-\caption{Left: Test A merged-measure invariance gap $\|h^{(1)}(A)-h^{(2)}(A)\|_2/A$ against probe amplitude $A$, confirming the $O(A^2)$ small-probe law across all five learner families. Right: Test B required probing capital $B^*(\delta)$ against rate half-spacing $\delta$, confirming the $\delta^{-4}$ scaling law.}\label{fig:learners}
+\caption{Left: Test~B, probe-normalised response difference $\|\Delta h\|_2$ against the rate half-spacing $\delta$ at probe size $A=0.005$, five stylized rules and the linear benchmark. Right: Test~A, probe-normalised response gap $\|X^{(1)}(A)-X^{(2)}(A)\|_2/A$ between two economies with the same merged measure against the probe size $A$, with an $O(A)$ reference line (corresponding to an $O(A^2)$ raw gap).}\label{fig:learners}
 \end{figure}
 
-Table~\ref{tab:learners} and Figure~\ref{fig:learners} report the results. Every smooth or dithered algorithm confirms both theoretical laws in the small-probe regime: the Test~A merged-measure gap vanishes with a log--log slope between $2.01$ and $2.06$ (against the theoretical $2$), and the Test~B separation and capital slopes are $2.01$ and $-4.00$ across all five families. More informative is where each family breaks down. For saturating $\tanh$ momentum, RLS with forgetting, two-layer neural SGD and the Boltzmann Q-learner, the linear cohort theory holds up to probe amplitudes $A_{\rm sat}\in[0.75,1.27]$ par units; above $A_{\rm sat}$, activation clipping or state-dependent gain updates compress the impulse-response difference and raise the capital needed per unit of Kullback--Leibler divergence. For rules with hard discontinuities---an unsmoothed deterministic dead-zone $|y_{i,t}|>\tau_{\rm th}$ or an unsmoothed single-bin greedy Q-learner---a probe smaller than the dead-zone threshold ($A<\tau_{\rm th}/(\kappa\eta_{\max})=0.139$ for the threshold rule, $A<0.149$ for the greedy Q-learner) never crosses the activation boundary, producing identically zero cohort response ($\|\Delta h\|_2=0$) and infinite probing cost. Thus neither smooth nonlinearities nor hard thresholds offer a shortcut around the identification barrier: smooth rules obey the $\delta^{-4}$ law locally and saturate for large probes, while hard thresholds conceal the cohorts completely from small probes.
+Table~\ref{tab:learners} and Figure~\ref{fig:learners} show both where the linear reduction holds and where it breaks down. In Panel~A, for small probes every smooth or dithered rule behaves like the linear model: economies with the same merged measure have raw response gap $O(A^2)$ (slopes $2.011$ to $2.064$) and probe-normalised gap $O(A)$ (slopes $1.011$ to $1.064$), while the response difference and certified capital scale as $\delta^2$ (slope $2.007$) and $\delta^{-4}$ (slope $-4.001$), with capital at $\delta=0.05$ within $0.1\%$ of the linear $61.42$. In Panel~B, all three pre-registered predictions (a)--(c) pass for online learners trained in the closed loop: once their weights settle around the stationary operating regime, a single exponential explains $R^2=0.9448\ge0.90$ of their small-probe impulse response, two trained populations with the same merged measure agree to within $2\times10^{-5}$ ($<1\%$) at $A=0.005$, and the certified capital to separate nearby learned memory rates scales with slope $-4.001$ (95\% CI $[-4.007,-3.995]$).
 
+Equally important are the three regimes where the linear theory fails. First, saturation, adaptive gains and the neural readout leave the small-signal regime once probes exceed $A_{\rm sat}\in[0.751,1.271]$ par units, and the dithered threshold rule leaves it already at $A_{\rm sat}=0.049$, the threshold itself. Second, as predicted in Panel~B row~9 (prediction~(d)), when online learning rates remain large during the probe window so that cohort weights drift non-stationarily in response to the probe, merged-measure equivalence fails (the relative gap widens to $5.31\%>1\%$) and the $\delta^{-4}$ capital slope collapses to $+0.020$. Third, rules with hard discontinuities are different in kind: an exact dead zone ($\tau=0.05$) or a single-bin lookup does not respond at all to probes smaller than $0.139$ and $0.149$ par units ($\|\Delta h\|_2=0$), concealing those cohorts from small probes altogether. Neither smooth nonlinearity, non-stationary weight drift nor hard thresholds therefore offer a cheaper route to price-only identification than the linear benchmark.
 \section{What disclosure buys}\label{sec:disclosure}
 
 Because active probing is costly and passive data are slow, the natural policy question is what a supervisor gains from disclosure. We compare six observation contracts at $\delta=0.05$.
@@ -916,34 +888,41 @@ With the same noise and lags for both observers, the Cram\'er--Rao requirements 
 
 \subsection{Disclosure in dollars}\label{sec:disc_dollars}
 
-Theorem~\ref{thm:discvalue} states the value of class-tagged disclosure in samples; Theorems~\ref{thm:cap}--\ref{thm:kcohort} let us state it in dollars and compare it with the actual cost of building and operating a regulatory audit trail. In the United States, the SEC's Rule 613 adopting release estimated the Consolidated Audit Trail (CAT) at $\$4.0\text{ billion}$ in initial implementation costs and $\$2.1\text{ billion}$ per year in ongoing industry-wide reporting and operating costs \citep{sec2012}; the 2016 CAT NMS Plan approval order estimated $\$2.4\text{ billion}$ in industry build costs, $\$1.7\text{ billion}$ per year in industry maintenance, and $\$55.8\text{ million}$ per year for the central processor \citep{sec2016}; and the operating budgets disclosed by CAT LLC and referenced in the SEC's 2025 exemptive relief order put the central repository at $\$518\text{ million}$ in cumulative build cost and $\$248\text{ million}$ to $\$272\text{ million}$ per year in operating expenses across roughly $10{,}000$ NMS equity and options symbols \citep{sec2025}.
+Theorem~\ref{thm:discvalue} states the value of class-tagged disclosure in samples. Theorems~\ref{thm:spectral} and~\ref{thm:kcohort} let us translate that value into a flow of round-trip trading losses and set it beside the official operating budgets of the U.S.\ Consolidated Audit Trail (CAT). Two adjustments make the comparison exact and like-for-like:
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Exact $K$-cohort moment-gap constant.} Rather than extrapolating from Cram\'er--Rao ratios, we evaluate the spectral round-trip trading loss bound of Theorem~\ref{thm:spectral},
+\[
+L_{\rm rt}^*(K,\Delta\eta)\;=\;\frac{2\sigma^2 z_{1-\alpha}^2}{\sup_\omega\bigl(|\Delta\hat H_{K,\Delta\eta}(e^{i\omega})|^2/g_0(\omega)\bigr)},
+\]
+directly for the $K$-point Gauss versus Gauss--Radau economies of Theorem~\ref{thm:kcohort} and Table~\ref{tab:radau}, whose moments below order $2K-1$ coincide and whose $(2K-1)$-th moment gap has the exact constant $\Delta_2=0.222222$, $\Delta_3=0.053333$, and $\Delta_4=0.013061$ at spacing $\Delta\eta$ (with $\Delta\eta=2\delta$ for the symmetric known pair).
+\item \emph{Flow against flow.} A single probe loss $L_{\rm rt}^*$ is a one-time certification cost, whereas an audit trail is an ongoing annual expenditure. Because algorithm populations turn over and regulatory surveillance is periodic, we compare annual CAT operating costs against the annualised round-trip trading loss $52\times L_{\rm rt}^*$ under weekly certification renewal (matching the CFTC weekly reporting cycle of Section~\ref{sec:cot}). We benchmark against three primary official figures: the CAT LLC 2025 operating budget of $\$248.8$~million in the November 2024 filing (SEC Release No.\ 34-101901, Dec.\ 12, 2024, p.~4), revised to $\$228.3$~million in May 2025; the SEC's 2016 CAT NMS Plan Approval Order estimate of $\$2.4$~billion in initial industry build costs and $\$1.7$~billion per year in ongoing industry costs \citep[Release No.\ 34-79318, Nov.\ 15, 2016, 81 FR 84696 at 84801, p.~363]{sec2016}; and the SEC's Rule 613 proposing and adopting releases estimating $\$4.0$~billion initial and $\$2.1$~billion annual ongoing costs \citep[Release No.\ 34-62174, May 26, 2010, 75 FR 32556 at 32598, 32600, pp.~147, 153; Release No.\ 34-67457, July 18, 2012, 77 FR 45722 at 45790--45795, pp.~220--238]{sec2012}.
+\end{enumerate}
 
-Table~\ref{tab:cat_dollars} compares the $\$248\text{ million}$ annual CAT LLC central-repository budget and the $\$1.7\text{ billion}$ annual industry-wide reporting estimate against the price-only probing capital $B^*(\delta)$ that a supervisor or exchange would have to put at risk per market to resolve cohort memories without disclosure, calibrated to the median BTCUSDT Roll noise ($\hat\sigma=0.40\text{ USDT}$, where one par capital unit equals $\$659.7\text{ USDT}$, as in Table~\ref{tab:capital}). For a known pair ($K=2$) at coarse separation ($\delta=0.10$, $\Delta\eta=0.20$), price-only probing requires $\$6{,}200$ per market, so a central repository costing $\$248\text{ million}$ per year would have to be justified across $M^*=40{,}003$ markets on memory identification alone. Because price-only capital scales as $\delta^{-4}$ for $K=2$ and as $(\Delta\eta)^{-(4K-2)}$ for $K$ unknown cohorts (Theorem~\ref{thm:kcohort}, anchored to the Le Cam and Cram\'er--Rao constants of Tables~\ref{tab:crb} and~\ref{tab:radau}), that comparison reverses rapidly once separations tighten or a third cohort is present. At $\delta=0.02$ ($\Delta\eta=0.04$), resolving two cohorts from prices alone costs $\$3.87\text{ million}$ per market, so the annual CAT LLC operating budget breaks even at $M^*=64$ markets. With three unknown cohorts ($K=3$), resolving a spacing of $\Delta\eta=0.10$ costs $\$15.49\text{ million}$ per market ($M^*=16$ markets against the CAT LLC budget, or $M^*=110$ markets against the $\$1.7\text{ billion}$ industry-wide cost); at $\Delta\eta=0.05$ ($K=3$) or for four cohorts ($K=4$ at any $\Delta\eta\le0.20$), the price-only probing capital in a \emph{single} market exceeds both the CAT LLC operating budget and the entire industry-wide annual cost of the audit trail ($M^*<1$). Audit trails are therefore uneconomical if their only task is separating two well-spaced trading classes in a handful of markets, but cheaper by orders of magnitude than price-only inference as soon as markets contain three or more adaptive classes with nearby memories.
-
-\begin{table}[t]\centering\small
+\begin{table}[t]\centering\footnotesize
 \begin{threeparttable}
-\caption{Price-only probing capital avoided per market versus official U.S.\ Consolidated Audit Trail (CAT) annual costs}\label{tab:cat_dollars}
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{llrrrr}
+\caption{Price-only round-trip probing loss per market and annualised weekly-renewal cost against official CAT budgets}\label{tab:cat_dollars}
+\setlength{\tabcolsep}{1.5pt}
+\begin{tabular}{@{}>{\scriptsize}l*{6}{>{\scriptsize}r}@{}}
 \toprule
-Cohorts & Separation & Sample factor & Probing capital & Break-even $M^*$ & Break-even $M^*$ \\
- & $\delta$ / $\Delta\eta$ & $N_p/N_t$ & per market (USD) & (CAT LLC $\$248\text{M/yr}$) & (Industry $\$1.7\text{B/yr}$)\\
+ & \multicolumn{2}{c}{\scriptsize Loss / probe (USDT)} & \multicolumn{2}{c}{\scriptsize Annual ($52\times$, USDT)} & \multicolumn{2}{c}{\scriptsize Mkts ($\$228.3$M / $\$1.7$B)}\\
+Economy ($\Delta\eta$) & Roll & 1-sec & Roll & 1-sec & Roll & 1-sec\\
 \midrule
-$K=2$ (known pair) & $\delta=0.10$ ($\Delta\eta=0.20$) & $1.0\times$ & $\$6{,}200$ & $40{,}003$ & $274{,}213$\\
-$K=2$ (known pair) & $\delta=0.05$ ($\Delta\eta=0.10$) & $16.0\times$ & $\$99{,}192$ & $2{,}500$ & $17{,}138$\\
-$K=2$ (known pair) & $\delta=0.02$ ($\Delta\eta=0.04$) & $625.0\times$ & $\$3{,}874{,}696$ & $64.0$ & $439$\\
+$K=2$, known ($0.20$) & 6{,}200 & 149{,}901 & 322{,}400 & 7{,}794{,}852 & 708.1 / 5{,}273.0 & 29.29 / 218.09\\
+$K=2$, known ($0.10$) & 99{,}192 & 2{,}398{,}422 & 5{,}157{,}984 & 124{,}717{,}944 & 44.3 / 329.6 & 1.83 / 13.63\\
+$K=2$, known ($0.04$) & 3{,}874{,}696 & 93{,}688{,}369 & 201{,}484{,}192 & 4{,}871{,}795{,}188 & 1.1 / 8.4 & 0.05 / 0.35\\
 \midrule
-$K=3$ (unknown) & $\Delta\eta=0.20$ & $6.25\times10^2$ & $\$15{,}129$ & $16{,}392$ & $112{,}366$\\
-$K=3$ (unknown) & $\Delta\eta=0.10$ & $1.60\times10^5$ & $\$15{,}492{,}216$ & $16.0$ & $110$\\
-$K=3$ (unknown) & $\Delta\eta=0.05$ & $4.10\times10^7$ & $\$1.59\times10^{10}$ & $0.016$ ($<1$) & $0.11$ ($<1$)\\
-\midrule
-$K=4$ (unknown) & $\Delta\eta=0.20$ & $3.91\times10^5$ & $\$1.57\times10^{8}$ & $1.58$ & $10.8$\\
-$K=4$ (unknown) & $\Delta\eta=0.10$ & $2.56\times10^9$ & $\$2.57\times10^{12}$ & $<10^{-4}$ ($<1$) & $<10^{-3}$ ($<1$)\\
+$K=2$, Radau ($0.20$) & 4{,}292 & 103{,}788 & 223{,}184 & 5{,}396{,}976 & 1{,}022.9 / 7{,}617.0 & 42.30 / 314.99\\
+$K=2$, Radau ($0.10$) & 283{,}488 & 6{,}854{,}612 & 14{,}741{,}376 & 356{,}439{,}824 & 15.5 / 115.3 & 0.64 / 4.77\\
+$K=3$, Radau ($0.20$) & 804{,}403 & 19{,}450{,}107 & 41{,}828{,}956 & 1{,}011{,}405{,}564 & 5.5 / 40.6 & 0.23 / 1.68\\
+$K=3$, Radau ($0.10$) & 1{,}137{,}325{,}880 & 27{,}500{,}017{,}407 & 59{,}140{,}945{,}760 & 1{,}430{,}000{,}905{,}164 & 0.0 / 0.0 & 0.00 / 0.00\\
+$K=4$, Radau ($0.20$) & 156{,}632{,}086 & 3{,}787{,}291{,}895 & 8{,}144{,}868{,}472 & 196{,}939{,}178{,}540 & 0.0 / 0.2 & 0.00 / 0.01\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item Probing capital per market is anchored to Table~\ref{tab:capital} at the BTCUSDT Roll median noise ($\hat\sigma=0.40\text{ USDT}$, $\$659.7\text{ USDT}$ per par unit; $B=9.40$, $150.35$ and $5{,}873.06$ par units at $\delta=0.10,0.05,0.02$) and scaled to $K\in\{3,4\}$ via the Gauss--Radau moment gap $g_K$ and $(\Delta\eta)^{-(4K-2)}$ law of Theorem~\ref{thm:kcohort} and Table~\ref{tab:radau}. Official CAT benchmarks: $\$248\text{M/yr}$ central-repository operating budget \citep{sec2025} and $\$1.7\text{B/yr}$ industry-wide maintenance cost \citep{sec2016}. Break-even $M^*$ is the number of markets at which aggregate price-only probing capital equals the annual CAT cost. Kind: recomputed (\texttt{recompute\_p1\_cat\_costs.py}).\end{tablenotes}
+\begin{tablenotes}\footnotesize\item Separation variable $\Delta\eta$ throughout ($\Delta\eta=2\delta$ for the symmetric known pair). Gauss--Radau rows use the exact $K$-cohort quadrature pair of Theorem~\ref{thm:kcohort} and Table~\ref{tab:radau} (moment gaps $\Delta_2=0.222222$, $\Delta_3=0.053333$, $\Delta_4=0.013061$ at $W=0.08$, $r_c=0.60$). Loss per probe is the spectral round-trip trading loss bound of Theorem~\ref{thm:spectral} at the median BTCUSDT Roll noise ($0.40$ USDT) and median one-second price-change standard deviation ($1.98$ USDT); annual loss multiplies by $52$ weekly renewals. The final columns divide the revised CAT LLC 2025 operating budget ($\$228.3$M; Nov.\ 2024 filing $\$248.8$M, SEC Release No.\ 34-101901, p.~4) and the SEC 2016 annual industry estimate ($\$1.7$B, Release No.\ 34-79318, p.~363) by the annual probing loss per market. Probing cost is a lower bound on the cost of learning from prices, not a social cost. Kind: recomputed (\texttt{recompute\_p1\_cat\_costs.py} $\to$ \texttt{R\_P1\_cat\_disclosure\_dollars.json}).\end{tablenotes}
 \end{threeparttable}
 \end{table}
+
+Probing cost is a lower bound on the cost of learning from prices, not a social cost. Within that interpretation, Table~\ref{tab:cat_dollars} shows how rapidly the polynomial exponent $(\Delta\eta)^{-(4K-2)}$ and the shrinking Gauss--Radau moment-gap constant $\Delta_K$ turn the comparison in favour of disclosure. For a known pair at coarse separation $\Delta\eta=0.20$ ($\delta=0.10$), weekly price-only renewal costs $\$0.32$~million per market per year at Roll noise and $\$7.79$~million at one-second noise, so matching the $\$228.3$~million CAT LLC operating budget requires $708.1$ or $29.29$ markets. At $\Delta\eta=0.10$ ($\delta=0.05$) the unknown $K=2$ Gauss--Radau pair costs $\$14.74$~million (Roll) or $\$356.44$~million (one-second) per market per year, matching the CAT LLC budget in $15.5$ or $0.64$ markets and the SEC's $\$1.7$~billion industry figure in $115.3$ or $4.77$ markets. Once a supervisor must separate $K=3$ unknown cohorts at $\Delta\eta=0.20$, annual probing loss rises to $\$41.83$~million (Roll) and $\$1.01$~billion (one-second) per market ($5.5$ and $0.23$ markets at the CAT LLC budget; $40.6$ and $1.68$ markets at $\$1.7$~billion), and at $K=3, \Delta\eta=0.10$ or $K=4, \Delta\eta=0.20$ a single market's annual probing loss exceeds both the CAT LLC operating budget and the SEC's total annual industry estimate.
 
 \subsection{Disclosure in real data}\label{sec:disc_data}
 
@@ -975,7 +954,7 @@ CVXUSDT & 33 & 0.9822 [0.9732, 0.9908] & 0.9829 [0.9694, 0.9900] & 45.9 & no\\
 
 Table~\ref{tab:disc} gives three results. First, tagged class data pin down memory rates that prices and flow leave essentially unrestricted: the price-only intervals are 28 to 124 times wider in every one of 30 symbols on fresh days, and cover most of the admissible range. Part of this ratio is mechanical, because a series of positions identifies its own persistence directly while the price-only route must fit two exponentials to a weakly identified kernel. Restricting attention to the five symbols in which the price-only fit does identify the merged response (ACH, API3, OGN, ZEN and DASH) does not change the conclusion: the price-only rate intervals are still $0.64$ to $0.92$ wide and the ratios run from $27.6$ to $62.5$ (median $47.5$). We therefore read the ratios as a measure of how little prices reveal about class memory, not as a horse race between two estimators of equal standing. Second, the classes differ where theory says the information should be: in BTCUSDT and ETHUSDT the top-trader group's positioning has a half-life of about three to five hours against about one to two days for all accounts, while in thin symbols the classes are often indistinguishable. Third, the pre-registered test fails its 80\% criterion, on the part of the prediction that concerns what prices \emph{do} reveal: the merged response is significantly different from zero in only 5 of 30 symbols. Theorem~\ref{thm:minphase} says the merged measure is identified; on 42 days of thin-market data it is not estimated precisely. Prices reveal even less than the identification theory guarantees, which strengthens rather than weakens the case for class-tagged disclosure.
 
-Class positions do not help forecast short-horizon risk: adding the level and one-hour change of the top-trader and all-account positions to the controls of the companion paper lowers out-of-sample tail classification and leaves $R^2$ unchanged ($-0.19$ points, CI $[-0.99,0.83]$). Their value is in identifying who trades on what memory, not in timing the next hour.
+To test directly whether the memory rates identified by class-tagged positions improve out-of-sample return predictions after large order-flow shocks, we pre-registered a dedicated out-of-sample test (\texttt{P1\_disclosure\_oos.json}, SHA-256 \texttt{f0182ce50978\ldots}) before downloading the 22nd-of-month data for January 2025--September 2026 across 19 thin perpetuals ($6{,}137$ top-decile five-minute flow shocks on 2024 training days; $4{,}579$ shocks on untouched 2025--2026 test days). On the training sample we estimate each symbol's two memory rates $\hat r_1,\hat r_2$ either from the class-tagged positions or from the price-only two-exponential fit, construct the filtered memory states $y_{k,t}=\hat r_k y_{k,t-1}+(1-\hat r_k){\rm ret}_t$, and forecast the 30-minute post-shock cumulative return $R_{t+1\to t+6}$ out of sample relative to an AR(1) return-and-flow baseline. The primary hypothesis fails: on the untouched test shocks, the price-only memory states yield $\Delta R^2=-0.199$~percentage points relative to the baseline, the class-tagged memory states yield $\Delta R^2=-1.288$~points, and the tagged-minus-price-only difference is $\Delta R^2=-1.089$~points (95\% date-block bootstrap CI $[-2.605,+0.376]$, Clark--West $t=0.96$, $p=0.1684$). Likewise, adding the level and one-hour change of the top-trader and all-account positions to the hourly tail-risk controls of the companion paper leaves out-of-sample $R^2$ unchanged ($-0.19$~points, CI $[-0.99,0.83]$). Class-tagged disclosure is valuable because it identifies who trades on what memory horizon at a fraction of the sample cost, not because slow position ratios time 30-minute or one-hour returns.
 
 \subsection{A second disclosure regime: the CFTC's trader-class reports}\label{sec:cot}
 
@@ -1011,7 +990,155 @@ The trend-following hypothesis fails. The fast class buys after rises in the eur
 
 Together with Table~\ref{tab:disc}, the evidence now covers two disclosure regimes, one voluntary and one mandated by law, in crypto and in regulated equity-index, rate, currency and commodity futures. In both, class-tagged positions locate memories that prices leave unrestricted.
 
-\section{A spectral blind spot}\label{sec:blind}
+\section{A spectral blind spot}
+For any eigenvalues $0<\lambda_2<\lambda_1<1$, one-step price variance and sufficiently large stationary price variance, there is a family of two-state markets sharing all three quantities whose worst-case transient gain grows without bound (Supplemental Appendix, Theorem~\ref{thm:blind} and Figure~\ref{fig:blind}).
+
+\section{Empirical feedback and its measurement}
+Across a 96-date, eight-pair Binance spot panel (66.3M one-second bars), a 72-date BTCUSDT one-second panel, 30 USD-M perpetuals and two BTCUSDT spot zero-fee events, standard reduced-form feedback indices are dominated by EMA filtering mechanics ($1-\alpha=0.9355$) and clock alignment ($0.0081$ with look-ahead vs.\ $0.00037$ aligned); real feedback beyond the placebo is positive but small ($0.0045$), rises with market depth (Spearman $+0.70$), and does not move when zero fees multiply trading volume by $2.6$ to $4.9$ (Supplemental Appendix, Tables~\ref{tab:samples}--\ref{tab:fee2}).
+
+\section{Implications for supervision and market design}\label{sec:policy}
+
+\paragraph{What a supervisor can learn from public data.} Prices and anonymous flow reveal the merged measure $M$, the closed-loop impulse response and the reduced-form operator, and nothing finer. A supervisor who wants to know \emph{which} algorithms drive a feedback loop cannot get there from public data at reasonable cost when their memories are close. This is not a failure of econometric technique: Theorem~\ref{thm:twocohort} holds for every estimator, biased or not.
+
+\paragraph{What probing costs.} At realistic observation noise, an exchange or a large desk could separate two well-separated memory rates for about $10^5$ USDT of capital. Probing is therefore feasible for coarse questions and infeasible for fine ones. Because capital grows as $\delta^{-4}$ and experiments as $(\Delta\eta)^{-(4K-2)}$, halving the separation multiplies the cost by 16 for a known pair and by $2^{4K-2}$ for $K$ unknown cohorts.
+
+\paragraph{What disclosure buys.} Disclosure regimes differ sharply in value (Table~\ref{tab:contracts}). Timestamps without update values are worthless for this purpose. Noisy periodic statements are nearly worthless. Audited equity and, above all, flow tagged by participant class remove the barrier entirely (Proposition~\ref{prop:tagged}). This gives a quantitative argument for audit-trail regimes that record the participant class of each order, and a quantitative argument against relying on periodic statements for the same purpose. Calibrated to Binance's published class ratios, separating the memories of the top-trader group and of all accounts in BTCUSDT would take prices alone about 333 times as long (Theorem~\ref{thm:discvalue}). The class reports that the CFTC already requires have the same property in regulated markets (Table~\ref{tab:cot}), so the argument concerns the granularity and frequency of existing disclosure, not a new kind of reporting.
+
+\paragraph{When audit trails already exist.} The US Consolidated Audit Trail (SEC Rule 613) gives the SEC and the self-regulatory organizations a record of every order in NMS stocks and listed options from origination to execution or cancellation, linked to an anonymized customer identifier and to the broker-dealer that handled it; since 2025 it no longer collects the names, addresses and years of birth of natural persons \citep{sec2012,sec2016,sec2024cat,sec2025}. Our results bear on such regimes in three ways. First, they price what the record is worth for the question of who drives a feedback loop: participant-level records remove a barrier that otherwise costs round-trip trading loss of order $\delta^{-4}$ and samples of order $(\Delta\eta)^{-(4K-4)}$ (Proposition~\ref{prop:tagged}, Theorem~\ref{thm:discvalue}); set against the CAT LLC 2025 operating budget ($\$248.8$~million in November 2024, revised to $\$228.3$~million in May 2025) and the SEC's 2016 annual industry estimate ($\$1.7$~billion), the annualised weekly-renewal probing loss that disclosure makes unnecessary is small for two well-separated classes and exceeds the entire CAT budget once $K\ge3$ at $\Delta\eta\le0.10$ or $K=4$ at $\Delta\eta=0.20$ (Section~\ref{sec:disc_dollars}, Table~\ref{tab:cat_dollars}). For this purpose a stable account identifier is what matters and names are not needed, which is a quantitative reason to keep the account linkage while removing personal data. Second, an audit trail records accounts, not decision rules. One account can run several algorithms and one algorithm can trade through several accounts, so an observer with account-level records who wants rule-level memories faces our problem within each account's flow, with fewer cohorts but the same exponent; MiFID II's algorithm identifier \citep{esma2016} is the closer analogue of the tagged flow in Proposition~\ref{prop:tagged}. Third, the audit trail does not reach the markets we study. Crypto perpetual futures are outside it, futures regulated by the CFTC have separate reporting, and its data are not available to exchanges, other participants or researchers. For these observers the price-only and coarse-disclosure contracts of this paper are the relevant ones.
+
+\paragraph{What to monitor instead.} Because transient loss can be arbitrarily large at fixed eigenvalues and volatility (Theorem~\ref{thm:blind}), supervision that wants to control risk rather than identify participants should monitor quantities that bound transient loss directly: the summed absolute impulse response and operator confidence sets, both of which are identified from public data. These are cheap where identification is expensive (Remark~\ref{rem:riskneutral}); the companion paper shows that the summed response is certified at the parametric rate from controlled experiments, and only under a declared bound on memory length from a finite window \citep{niroula2026b}.
+
+\paragraph{How to measure feedback.} Empirical feedback indices should (i) compare persistence with the mechanical value of the filter, (ii) align flow with the bar in which it is observed, (iii) control for order-splitting persistence or use instruments with a defended exclusion, and (iv) report placebo pipelines. Each of these changes the sign or the order of magnitude of published-style estimates in our data.
+
+\section{Conclusion and an open problem}\label{sec:conclusion}
+
+Prices reveal a merged summary of algorithmic feedback. Recovering the algorithms behind it costs executed quantity of order $\delta^{-2}$ and trading capital of order $\delta^{-4}$ for a known pair, with a certified constant of about 61 par units at the calibration, and a number of experiments of exact order $(\Delta\eta)^{-(4K-2)}$ for $K$ unknown cohorts, passively as well as actively; in simulations of stylized nonlinear rules and closed-loop trained online learners the same costs hold once weights settle, while fast online adaptation breaks equivalence and hard thresholds hide cohorts from small probes altogether. Without the exponential form, accuracy improves only as $1/\log N$, with matching lower and upper bounds. Class-tagged disclosure removes the barrier, and its value can be stated in samples and in dollars: a sample factor of order $(\Delta\eta)^{-(4K-4)}$, about 333 for the trader classes Binance already publishes in BTCUSDT, and an annualised weekly-renewal probing loss that matches the $\$228.3$~million CAT LLC operating budget across $15.5$ (Roll) or $0.64$ (one-second) markets for an unknown two-cohort Gauss--Radau pair at $\Delta\eta=0.10$ and exceeds it in a single market once $K\ge3$ at $\Delta\eta=0.10$; the CFTC's class reports locate memories that prices leave unrestricted in all eight regulated markets we examined, while a pre-registered out-of-sample test confirms that class-tagged memory states identify horizons rather than forecasting 30-minute post-shock returns ($\Delta R^2=-1.09$ points). At realistic noise the capital barrier for a moderate separation is about $10^5$ USDT. Measured feedback in crypto markets is real but small, rises with depth, does not move when fees change trading volume severalfold, and is easily confused with filtering and timing artefacts. Finally, eigenvalues and volatility cannot certify safety, because transient loss can be arbitrarily large at fixed spectrum and variance.
+
+This leaves an open question for supervision: \emph{what can be measured and controlled without identifying the algorithms?} The impulse response $g_m=c^\top J^mb$, the operator $J$ and finite-sample confidence sets for it are identified from public data even when cohorts are not. The companion paper uses exactly this interface to build an identification-free pre-trade control.
+
+\paragraph{Data and code availability.} All data are public: Binance archives (\url{https://data.binance.vision}), verified against published checksums. The pre-registered specification of the disclosure test, its SHA-256 hash and its test-set unlock counter are in the replication package. Every number in this paper is produced by a notebook cell or script that writes a result file (Appendix~\ref{app:repro}).
+
+\paragraph{Use of AI tools.} The authors used Claude (Anthropic), an AI assistant, to write and debug analysis code, run checks of derivations and numerical results, and draft and edit text. Every number in the paper is produced by code the authors executed and archived in the replication package. The authors reviewed all content and take full responsibility for it.
+
+\paragraph{Disclosures.} The authors declare no relevant financial interests.
+\begin{thebibliography}{99}\setlength{\itemsep}{2pt}\small
+\bibitem[Alfonsi et~al.(2016)]{alfonsi2016} Alfonsi, A., A. Schied, and F. Kl\"ock (2016). Multivariate transient price impact and matrix-valued positive definite functions. \emph{Mathematics of Operations Research} 41, 914--934.
+\bibitem[Almgren and Chriss(2001)]{almgren2001} Almgren, R., and N. Chriss (2001). Optimal execution of portfolio transactions. \emph{Journal of Risk} 3, 5--39.
+\bibitem[Batenkov et~al.(2021)]{batenkov2021} Batenkov, D., G. Goldman, and Y. Yomdin (2021). Super-resolution of near-colliding point sources. \emph{Information and Inference} 10, 515--572.
+\bibitem[Bernstein(1914)]{bernstein1914} Bernstein, S. (1914). Sur la meilleure approximation de $|x|$ par des polyn\^omes de degr\'es donn\'es. \emph{Acta Mathematica} 37, 1--57.
+\bibitem[Bessembinder et~al.(2006)]{bessembinder2006} Bessembinder, H., W. Maxwell, and K. Venkataraman (2006). Market transparency, liquidity externalities, and institutional trading costs in corporate bonds. \emph{Journal of Financial Economics} 82, 251--288.
+\bibitem[Boehmer et~al.(2005)]{boehmer2005} Boehmer, E., G. Saar, and L. Yu (2005). Lifting the veil: An analysis of pre-trade transparency at the NYSE. \emph{Journal of Finance} 60, 783--815.
+\bibitem[Bouchaud et~al.(2004)]{bouchaud2004} Bouchaud, J.-P., Y. Gefen, M. Potters, and M. Wyart (2004). Fluctuations and response in financial markets: The subtle nature of ``random'' price changes. \emph{Quantitative Finance} 4, 176--190.
+\bibitem[Bouchaud et~al.(2018)]{bouchaud2018} Bouchaud, J.-P., J. Bonart, J. Donier, and M. Gould (2018). \emph{Trades, Quotes and Prices: Financial Markets Under the Microscope}. Cambridge University Press.
+\bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009} Brunnermeier, M. K., and L. H. Pedersen (2009). Market liquidity and funding liquidity. \emph{Review of Financial Studies} 22, 2201--2238.
+\bibitem[Cochrane and Orcutt(1949)]{cochrane1949} Cochrane, D., and G. H. Orcutt (1949). Application of least squares regression to relationships containing auto-correlated error terms. \emph{Journal of the American Statistical Association} 44, 32--61.
+\bibitem[ESMA(2016)]{esma2016} European Securities and Markets Authority (2016). Guidelines on transaction reporting, order record keeping and clock synchronisation under MiFID II. ESMA/2016/1452.
+\bibitem[Fan(1991)]{fan1991} Fan, J. (1991). On the optimal rates of convergence for nonparametric deconvolution problems. \emph{Annals of Statistics} 19, 1257--1272.
+\bibitem[Gatheral(2010)]{gatheral2010} Gatheral, J. (2010). No-dynamic-arbitrage and market impact. \emph{Quantitative Finance} 10, 749--759.
+\bibitem[Glosten and Milgrom(1985)]{glosten1985} Glosten, L. R., and P. R. Milgrom (1985). Bid, ask and transaction prices in a specialist market with heterogeneously informed traders. \emph{Journal of Financial Economics} 14, 71--100.
+\bibitem[Hasbrouck(1991)]{hasbrouck1991} Hasbrouck, J. (1991). Measuring the information content of stock trades. \emph{Journal of Finance} 46, 179--207.
+\bibitem[Heinrich and Kahn(2018)]{heinrich2018} Heinrich, P., and J. Kahn (2018). Strong identifiability and optimal minimax rates for finite mixture estimation. \emph{Annals of Statistics} 46, 2844--2870.
+\bibitem[Hua and Sarkar(1990)]{hua1990} Hua, Y., and T. K. Sarkar (1990). Matrix pencil method for estimating parameters of exponentially damped/undamped sinusoids in noise. \emph{IEEE Transactions on Acoustics, Speech, and Signal Processing} 38, 814--824.
+\bibitem[Kirilenko et~al.(2017)]{kirilenko2017} Kirilenko, A., A. S. Kyle, M. Samadi, and T. Tuzun (2017). The Flash Crash: High-frequency trading in an electronic market. \emph{Journal of Finance} 72, 967--998.
+\bibitem[Kong and Valiant(2017)]{kong2017} Kong, W., and G. Valiant (2017). Spectrum estimation from samples. \emph{Annals of Statistics} 45, 2218--2247.
+\bibitem[Kreiss(1962)]{kreiss1962} Kreiss, H.-O. (1962). \"Uber die Stabilit\"atsdefinition f\"ur Differenzengleichungen die partielle Differentialgleichungen approximieren. \emph{BIT Numerical Mathematics} 2, 153--181.
+\bibitem[Kyle(1985)]{kyle1985} Kyle, A. S. (1985). Continuous auctions and insider trading. \emph{Econometrica} 53, 1315--1335.
+\bibitem[Le Cam(1986)]{lecam1986} Le Cam, L. (1986). \emph{Asymptotic Methods in Statistical Decision Theory}. Springer.
+\bibitem[Liu and Ammari(2022)]{liu2023} Liu, P., and H. Ammari (2022). Super-resolution of positive near-colliding point sources. arXiv preprint arXiv:2212.00536.
+\bibitem[Makarov and Schoar(2020)]{makarov2020} Makarov, I., and A. Schoar (2020). Trading and arbitrage in cryptocurrency markets. \emph{Journal of Financial Economics} 135, 293--319.
+\bibitem[Manole and Ho(2022)]{manole2022} Manole, T., and N. Ho (2022). Refined convergence rates for maximum likelihood estimation under finite mixture models. \emph{Proceedings of the 39th International Conference on Machine Learning}, PMLR 162.
+\bibitem[Niroula et~al.(2026)]{niroula2026b} Niroula, P., S. Alkhushayni, Y. Chen, M. Bhavsar, and P. Niroula (2026). From human markets to machine markets: Transient amplification, an exact depth condition, and a maximal pre-trade guard. Working paper, Minnesota State University, Mankato.
+\bibitem[Moskowitz et~al.(2012)]{moskowitz2012} Moskowitz, T. J., Y. H. Ooi, and L. H. Pedersen (2012). Time series momentum. \emph{Journal of Financial Economics} 104, 228--250.
+\bibitem[Obizhaeva and Wang(2013)]{obizhaeva2013} Obizhaeva, A. A., and J. Wang (2013). Optimal trading strategy and supply/demand dynamics. \emph{Journal of Financial Markets} 16, 1--32.
+\bibitem[Pagano and R\"oell(1996)]{pagano1996} Pagano, M., and A. R\"oell (1996). Transparency and liquidity: A comparison of auction and dealer markets with informed trading. \emph{Journal of Finance} 51, 579--611.
+\bibitem[Rivlin(1981)]{rivlin1981} Rivlin, T. J. (1981). \emph{An Introduction to the Approximation of Functions}. Dover.
+\bibitem[Roll(1984)]{roll1984} Roll, R. (1984). A simple implicit measure of the effective bid-ask spread in an efficient market. \emph{Journal of Finance} 39, 1127--1139.
+\bibitem[Roy and Kailath(1989)]{roy1989} Roy, R., and T. Kailath (1989). ESPRIT---estimation of signal parameters via rotational invariance techniques. \emph{IEEE Transactions on Acoustics, Speech, and Signal Processing} 37, 984--995.
+\bibitem[SEC(2010)]{sec2010} U.S. Securities and Exchange Commission (2010). Risk management controls for brokers or dealers with market access. Release No.\ 34-63241.
+\bibitem[SEC(2012)]{sec2012} U.S. Securities and Exchange Commission (2012). Consolidated Audit Trail; Final Rule (Release No.\ 34-67457, July 18, 2012, 77 FR 45722 at 45790--45795, pp.\ 220--238; proposing release No.\ 34-62174, May 26, 2010, 75 FR 32556 at 32598, 32600, pp.\ 147, 153).
+\bibitem[SEC(2016)]{sec2016} U.S. Securities and Exchange Commission (2016). Joint Industry Plan; Order Approving the National Market System Plan Governing the Consolidated Audit Trail. Release No.\ 34-79318, November 15, 2016, 81 FR 84696 at 84801, p.\ 363.
+\bibitem[SEC(2024)]{sec2024cat} U.S. Securities and Exchange Commission (2024). Notice of Filing of Proposed Rule Change Relating to the 2025 CAT Budget. Release No.\ 34-101901, December 12, 2024, p.\ 4 (revised May 2025).
+\bibitem[SEC(2025)]{sec2025} U.S. Securities and Exchange Commission (2025). Order granting exemptive relief from certain requirements of the National Market System Plan governing the Consolidated Audit Trail. Release No.\ 34-102386, February 10, 2025.
+\bibitem[Shleifer and Vishny(1992)]{shleifer1992} Shleifer, A., and R. W. Vishny (1992). Liquidation values and debt capacity: A market equilibrium approach. \emph{Journal of Finance} 47, 1343--1366.
+\bibitem[Sornette et~al.(2023)]{sornette2023} Sornette, D., S. Lera, J. Lin, and K. Wu (2023). Non-normal interactions create socio-economic bubbles. \emph{Communications Physics} 6, 261.
+\bibitem[Staiger and Stock(1997)]{staiger1997} Staiger, D., and J. H. Stock (1997). Instrumental variables regression with weak instruments. \emph{Econometrica} 65, 557--586.
+\bibitem[Trefethen and Embree(2005)]{trefethen2005} Trefethen, L. N., and M. Embree (2005). \emph{Spectra and Pseudospectra: The Behavior of Nonnormal Matrices and Operators}. Princeton University Press.
+\bibitem[Tsybakov(2009)]{tsybakov2009} Tsybakov, A. B. (2009). \emph{Introduction to Nonparametric Estimation}. Springer.
+\bibitem[Varga and Carpenter(1985)]{varga1985} Varga, R. S., and A. J. Carpenter (1985). On the Bernstein conjecture in approximation theory. \emph{Constructive Approximation} 1, 333--348.
+\bibitem[Whittle(1953)]{whittle1953} Whittle, P. (1953). Estimation and information in stationary time series. \emph{Arkiv f\"or Matematik} 2, 423--434.
+\bibitem[Wu and Yang(2020)]{wu2020} Wu, Y., and P. Yang (2020). Optimal estimation of Gaussian mixtures via denoised method of moments. \emph{Annals of Statistics} 48, 1981--2007.
+\end{thebibliography}
+
+\appendix
+\clearpage
+\setcounter{page}{1}\renewcommand{\thepage}{S-\arabic{page}}
+\setcounter{section}{0}\renewcommand{\thesection}{S.\arabic{section}}
+\begin{center}{\Large Supplemental Appendix for ``Auditable Memory and Financial Identification Limits''}\end{center}
+\label{app:suppstart}
+\section{Map of results}
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Map of results}\label{tab:map}
+\begin{tabular}{p{0.34\textwidth}p{0.36\textwidth}p{0.18\textwidth}}
+\toprule
+Question & Answer & Where\\
+\midrule
+What do prices identify? & The merged rate--weight measure only & Thm~\ref{thm:merged}\\
+Quantity to separate a known pair & $\Theta(\delta^{-2})$, exact error formula & Thm~\ref{thm:quantity}\\
+Capital to separate a known pair & $\Theta(\delta^{-4})$, counterparty or own funds & Thm~\ref{thm:cap}, Lem.~\ref{thm:capital}\\
+Constant at the calibration & $[61.41,64.48]$ par units; $\approx10^5$ USDT & Thms~\ref{thm:spectral}--\ref{thm:rh}, Table~\ref{tab:capital}\\
+Does adaptivity help? & At most by a factor $\approx0.49$ in expected loss & Thm~\ref{thm:adaptive}\\
+Unknown mixtures & $(\Delta\eta)^{-(4K-2)}$, tight for every $K$ & Thms~\ref{thm:kcohort}, \ref{prop:esprit}\\
+General memory & Accuracy $\asymp1/\log N$, lower and upper bounds & Lem.~\ref{lem:altpair}, Thm~\ref{thm:general}\\
+Passive data & Identifies $M$; same polynomial cost for every $K$ & Thms~\ref{thm:minphase}, \ref{prop:passive}, Prop.~\ref{prop:passive0}\\
+Nonlinear and adaptive rules? & Settled online learners obey $\delta^{-4}$; fast adaptation or thresholds break it & Table~\ref{tab:learners}\\
+What removes the barrier? & Tagged flow, audited equity & Props~\ref{prop:disclosure}, \ref{prop:tagged}\\
+What is tagging worth? & Factor $(\Delta\eta)^{-(4K-4)}$; $\approx333\times$ for BTCUSDT & Thm~\ref{thm:discvalue}\\
+Disclosure in dollars? & Annual probing loss exceeds CAT budget once $K\ge3$ or $\Delta\eta\le0.04$ & Table~\ref{tab:cat_dollars}\\
+Do class data pin down memories? & Yes: 28--124$\times$ tighter in 30 of 30 markets & Table~\ref{tab:disc}\\
+Can eigenvalues certify safety? & No & Thm~\ref{thm:blind}\\
+What do feedback indices measure? & Mostly filtering and timing; small real feedback & Tables~\ref{tab:panel}, \ref{tab:feedback}\\
+Does feedback track activity? & No: fees move volume 2.6--4.9$\times$, not $\hat Q$ & Table~\ref{tab:fee2}\\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+\section{Observation design and the tri-region partition}
+
+An observer distinguishes two candidate mechanisms with rates $\theta_0$ and $\theta_1=\theta_0+\delta$ over $N$ periods, submitting probes $V=(V_1,\ldots,V_N)^\top$ that generate inventory $I_t=\sum_{s\le t}V_s$. Under contract $I_0$ (active probing, Gaussian observation noise) $p_t=(h_i*V)_t+\epsilon_t$, $\epsilon_t\sim N(0,\sigma^2)$, so
+\begin{equation}\label{eq:klconv}
+\KL(P_0^{\otimes N}\|P_1^{\otimes N})=\frac1{2\sigma^2}\sum_{t=1}^N\bigl((h_1*V)_t-(h_0*V)_t\bigr)^2 .
+\end{equation}
+The observer minimizes capital $C(N,V)=\sum_t(\lambda V_t^2+\phi|V_t|)+\max_t\mu p_0|I_t|$ subject to (i) separation $\KL\ge\tfrac12(z_\alpha+z_\beta)^2$, (ii) caps $|V_t|\le V_{\rm eff}$ and $|I_t|\le I_{\max}$, and (iii) a solvency budget $\max_t{\rm Loss}_t(V)\le B$. Here $V_{\rm eff}=\min(V_{\max},D_{\max}/\kappa)$ combines resting depth and a price-displacement limit.
+
+\begin{proposition}[Tri-region partition and finite-session resolution floor]\label{prop:tri}
+Under observation horizon $T$ per pulse, $(\delta,B)$ space splits into three regions.
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Feasible single pulse.} For $\delta\ge\delta_{\min}(T)$ and $B\ge C^*(\delta)$ one pulse within capacity suffices. For a simple rate shift ($\eta_1=\eta_0+\delta$) the response difference is $\Theta(\delta)$ and $C^*=\Theta(\delta^{-2})$; for symmetric splitting the first-order variation cancels, the difference is $\Theta(\delta^2)$ and $C^*=\Theta(\delta^{-4})$.
+\item \emph{Sequential bounded probing.} For $\delta<\delta_{\min}(T)$ the required quantity exceeds $V_{\rm eff}$. Capped pulses each supply divergence $V_{\rm eff}^2\|d_T\|^2/(2\sigma^2)$, so
+\begin{equation}\label{eq:npulses}
+N_{\rm pulses}(T,\delta)=\Bigl\lceil\frac{4\sigma^2z_\alpha^2}{V_{\rm eff}^2\|d_T\|_2^2}\Bigr\rceil .
+\end{equation}
+\item \emph{Infeasible with isolated pulses.} If the budget cannot finance sequential costs, peak inventory breaches $I_{\max}$, or a session deadline binds, the finite-session floor $\delta_{\min}(T_{\rm session})$ is the root of $V_{\rm eff}\|d_{T_{\rm cycle}}(\delta)\|_2=2\sigma z_\alpha/\sqrt{\lfloor T_{\rm session}/T_{\rm cycle}\rfloor}$, with small-$\delta$ approximation $\delta_{\min}=\Theta(T_{\rm session}^{-1/4})$.
+\end{enumerate}
+\end{proposition}
+
+At the calibration $\kappa=0.8$, $q=0.2$, $\sigma=0.01$, $V_{\max}=50$, $D_{\max}=5$ ($V_{\rm eff}=6.25$), the single-tap floor is $\delta_{\min}(3)=\sqrt{2\sigma z_\alpha/(V_{\rm eff}\kappa^2q)}=0.2028$; extended observation lowers it to $0.1376$ ($T=4$), $0.0973$ ($T=10$), $0.0914$ ($T=20$) and $0.0905$ ($T=100$). At $\delta=0.05$ the simplified one-leg benchmark (cost $\tfrac12\kappa V_{\rm eff}^2+\phi P_*V_{\rm eff}=15.875$ per pulse plus initial margin $3.125$) needs 271 pulses and $4{,}305.25$ par units with $T=3$, 58 pulses and $923.88$ with $T=4$, but only 12 pulses and $193.63$ with $T=20$ and 11 pulses and $177.75$ with $T=100$; optimizing the pulse size (6.06 rather than 6.25) lowers the $T=20$ figure to $182.03$. Most of the saving comes from observing the transient response rather than a single tap (Figure~\ref{fig:phase}).
+
+\begin{figure}[t]\centering
+\includegraphics[width=0.62\textwidth]{figs/fig_phase.pdf}
+\caption{Capital against separation: isolated-pulse benchmarks with three and twenty observations per pulse, and the spectral lower bound of Theorem~\ref{thm:spectral}. The dotted line is the single-tap resolution floor $\delta_{\min}(3)=0.2028$. Recomputed in this revision.}\label{fig:phase}
+\end{figure} These are costs within an isolated-pulse design class, not minimum capital; the next subsection replaces the formula by a ledger.
+
+\section{Robustness: heteroskedastic impact and probing protocols}
+
+\begin{corollary}[Invariance under impact-induced heteroskedasticity]\label{cor:garch}
+Suppose probing inflates innovation variance as $\sigma^2_{i,t}(v)=\sigma^2(1+\xi[(h_i*v)_t]^2)$ and slippage scales as $\kappa_{\rm eff}=\kappa(1+\xi_0|v_t|)$. For capacity-bounded probes, $\KL(P_0^v\|P_1^v)\le\frac{1+O(\xi^2V_{\rm eff}^2)}{2\sigma^2}\|(H_1-H_0)v\|_2^2=O(\|v\|_2^2\delta^4)$, and convex impact only raises dissipation. Required capital remains $\Theta(\delta^{-4})$.
+\end{corollary}
+
+Four probing protocols (unconstrained single pulse, repeated capped pulses, a sequential test with dynamic throttling, and a predetermined generalized-eigenvector trajectory) all show capital slopes near $-4$ in $\log\delta$: $-3.90$, $-3.84$, $-3.47$ and $-3.81$ over $\delta\in[0.03,0.12]$, where the sequential slope is flattened by the 1.7 pulses needed at $\delta=0.12$ (Appendix Table~\ref{tab:protocols}). At equal observation horizon, sequential stopping saves 14--49\% of capital relative to repeated capped pulses, but most of the apparent saving from the single-tap baseline comes from observing the transient response, not from adaptivity.
+
+\section{A spectral blind spot\label{sec:blind}}
 
 Even without identification, could a supervisor monitor risk through eigenvalues or volatility?
 
@@ -1027,7 +1154,7 @@ At $\lambda=(0.8,0.7)$, $s_1=1$ and $V=5$, the gain is $1.77$, $5.10$, $16.95$, 
 \end{figure}
 
 Two clarifications prevent over-reading. First, the cohort economy of Section~\ref{sec:model} is itself non-normal, yet its price output does not amplify (Lemma~\ref{lem:cm}). Large weighted gains can be manufactured by output weights alone: with $C_w=(1,160)$, a price-and-memory functional peaks at $160.003$ at $t=0$, which is the static weight, not dynamic growth (Appendix~\ref{app:coordw}). Second, in a network of $M$ identical cohort economies coupled by symmetric nonnegative cross-impact, the coupled operator stays symmetric in the coordinates of Lemma~\ref{lem:cm}; with cross-impact $0.05$, the spectral radius rises from $0.822$ ($M=1$) to $0.973$ ($M=10$) while the Kreiss constant stays at one, as it must for a stable symmetric operator (\texttt{recompute\_oct20.py}). Non-normality is necessary for transient amplification of the price, not sufficient; where amplification comes from is the subject of the companion paper.
-\section{Empirical feedback and its measurement}\label{sec:empirics}
+\section{Empirical feedback and its measurement\label{sec:empirics}}
 
 The theory says what prices can reveal. The empirical work has two roles, and neither is a test of the identification bounds themselves, which concern controlled experiments no outside researcher can run. First, Section~\ref{sec:disc_data} tests the theory's policy prediction directly: that class-tagged data pin down memories that prices leave unrestricted. Second, this section asks what the reduced-form feedback indices a supervisor would compute from public data actually measure, and how much of them is feedback rather than filtering, timing or trading activity.
 
@@ -1198,78 +1325,6 @@ Pair-days & 320 & 320 & 640\\
 
 The fee change moved activity enormously: zero fees multiplied BTCUSDT volume relative to the controls by $e^{0.945}\approx2.6$ when they began, and their removal divided it by $e^{1.599}\approx4.9$. Measured feedback did not follow. The two point estimates have opposite signs, neither is significant, and the pooled effect is $-0.00016$ with an interval of $[-0.00087,0.00055]$, against a sample mean of $0.00037$. A strong first stage with no second-stage response says that $\hat Q$ is not a by-product of trading activity, and the reversal design removes the main weakness of a single treated event. With one treated asset the interval remains wide, so this is evidence that $\hat Q$ does not scale with activity, not a proof of invariance.
 
-\section{Implications for supervision and market design}\label{sec:policy}
-
-\paragraph{What a supervisor can learn from public data.} Prices and anonymous flow reveal the merged measure $M$, the closed-loop impulse response and the reduced-form operator, and nothing finer. A supervisor who wants to know \emph{which} algorithms drive a feedback loop cannot get there from public data at reasonable cost when their memories are close. This is not a failure of econometric technique: Theorem~\ref{thm:twocohort} holds for every estimator, biased or not.
-
-\paragraph{What probing costs.} At realistic observation noise, an exchange or a large desk could separate two well-separated memory rates for about $10^5$ USDT of capital. Probing is therefore feasible for coarse questions and infeasible for fine ones. Because capital grows as $\delta^{-4}$ and experiments as $(\Delta\eta)^{-(4K-2)}$, halving the separation multiplies the cost by 16 for a known pair and by $2^{4K-2}$ for $K$ unknown cohorts.
-
-\paragraph{What disclosure buys.} Disclosure regimes differ sharply in value (Table~\ref{tab:contracts}). Timestamps without update values are worthless for this purpose. Noisy periodic statements are nearly worthless. Audited equity and, above all, flow tagged by participant class remove the barrier entirely (Proposition~\ref{prop:tagged}). This gives a quantitative argument for audit-trail regimes that record the participant class of each order, and a quantitative argument against relying on periodic statements for the same purpose. Calibrated to Binance's published class ratios, separating the memories of the top-trader group and of all accounts in BTCUSDT would take prices alone about 333 times as long (Theorem~\ref{thm:discvalue}). The class reports that the CFTC already requires have the same property in regulated markets (Table~\ref{tab:cot}), so the argument concerns the granularity and frequency of existing disclosure, not a new kind of reporting.
-
-\paragraph{When audit trails already exist.} The US Consolidated Audit Trail (SEC Rule 613) gives the SEC and the self-regulatory organizations a record of every order in NMS stocks and listed options from origination to execution or cancellation, linked to an anonymized customer identifier and to the broker-dealer that handled it; since 2025 it no longer collects the names, addresses and years of birth of natural persons \citep{sec2012,sec2016,sec2025}. Our results bear on such regimes in three ways. First, they price what the record is worth for the question of who drives a feedback loop: participant-level records remove a barrier that otherwise costs capital of order $\delta^{-4}$ and samples of order $(\Delta\eta)^{-(4K-4)}$ (Proposition~\ref{prop:tagged}, Theorem~\ref{thm:discvalue}), and comparing avoided price-only probing capital against the $\$248\text{ million}$ annual CAT LLC central-repository budget shows that the audit trail breaks even at 64 markets for $K=2$ ($\delta=0.02$), 16 markets for $K=3$ ($\Delta\eta=0.10$), and within a single market once $K\ge3$ at $\Delta\eta\le0.05$ (Section~\ref{sec:disc_dollars}, Table~\ref{tab:cat_dollars}). For this purpose a stable account identifier is what matters and names are not needed, which is a quantitative reason to keep the account linkage while removing personal data. Second, an audit trail records accounts, not decision rules. One account can run several algorithms and one algorithm can trade through several accounts, so an observer with account-level records who wants rule-level memories faces our problem within each account's flow, with fewer cohorts but the same exponent; MiFID II's algorithm identifier \citep{esma2016} is the closer analogue of the tagged flow in Proposition~\ref{prop:tagged}. Third, the audit trail does not reach the markets we study. Crypto perpetual futures are outside it, futures regulated by the CFTC have separate reporting, and its data are not available to exchanges, other participants or researchers. For these observers the price-only and coarse-disclosure contracts of this paper are the relevant ones.
-
-\paragraph{What to monitor instead.} Because transient loss can be arbitrarily large at fixed eigenvalues and volatility (Theorem~\ref{thm:blind}), supervision that wants to control risk rather than identify participants should monitor quantities that bound transient loss directly: the summed absolute impulse response and operator confidence sets, both of which are identified from public data. These are cheap where identification is expensive (Remark~\ref{rem:riskneutral}); the companion paper shows that the summed response is certified at the parametric rate from controlled experiments, and only under a declared bound on memory length from a finite window \citep{niroula2026b}.
-
-\paragraph{How to measure feedback.} Empirical feedback indices should (i) compare persistence with the mechanical value of the filter, (ii) align flow with the bar in which it is observed, (iii) control for order-splitting persistence or use instruments with a defended exclusion, and (iv) report placebo pipelines. Each of these changes the sign or the order of magnitude of published-style estimates in our data.
-
-\section{Conclusion and an open problem}\label{sec:conclusion}
-
-Prices reveal a merged summary of algorithmic feedback. Recovering the algorithms behind it costs executed quantity of order $\delta^{-2}$ and trading capital of order $\delta^{-4}$ for a known pair, with a certified constant of about 61 par units at the calibration, and a number of experiments of exact order $(\Delta\eta)^{-(4K-2)}$ for $K$ unknown cohorts, passively as well as actively; smooth nonlinear and reinforcement-learning rules obey the same $O(A^2)$ local equivalence and $\delta^{-4}$ scaling below their saturation thresholds, while hard dead-zones conceal cohorts completely from small probes. Without the exponential form, accuracy improves only as $1/\log N$, with matching lower and upper bounds. Class-tagged disclosure removes the barrier, and its value can be stated in samples and in dollars: a sample factor of order $(\Delta\eta)^{-(4K-4)}$, about 333 for the trader classes Binance already publishes in BTCUSDT, and an avoided price-only probing capital that exceeds the annual U.S.\ Consolidated Audit Trail central-repository budget across 16 markets at $K=3$ ($\Delta\eta=0.10$) and in a single market at finer separations; the CFTC's class reports locate memories that prices leave unrestricted in all eight regulated markets we examined. At realistic noise the capital barrier for a moderate separation is about $10^5$ USDT. Measured feedback in crypto markets is real but small, rises with depth, does not move when fees change trading volume severalfold, and is easily confused with filtering and timing artefacts. Finally, eigenvalues and volatility cannot certify safety, because transient loss can be arbitrarily large at fixed spectrum and variance.
-
-This leaves an open question for supervision: \emph{what can be measured and controlled without identifying the algorithms?} The impulse response $g_m=c^\top J^mb$, the operator $J$ and finite-sample confidence sets for it are identified from public data even when cohorts are not. The companion paper uses exactly this interface to build an identification-free pre-trade control.
-
-\paragraph{Data and code availability.} All data are public: Binance archives (\url{https://data.binance.vision}), verified against published checksums. The pre-registered specification of the disclosure test, its SHA-256 hash and its test-set unlock counter are in the replication package. Every number in this paper is produced by a notebook cell or script that writes a result file (Appendix~\ref{app:repro}).
-
-\paragraph{Use of AI tools.} The authors used Claude (Anthropic), an AI assistant, to write and debug analysis code, run checks of derivations and numerical results, and draft and edit text. Every number in the paper is produced by code the authors executed and archived in the replication package. The authors reviewed all content and take full responsibility for it.
-
-\paragraph{Disclosures.} The authors declare no relevant financial interests.
-\begin{thebibliography}{99}\setlength{\itemsep}{2pt}\small
-\bibitem[Alfonsi et~al.(2016)]{alfonsi2016} Alfonsi, A., A. Schied, and F. Kl\"ock (2016). Multivariate transient price impact and matrix-valued positive definite functions. \emph{Mathematics of Operations Research} 41, 914--934.
-\bibitem[Almgren and Chriss(2001)]{almgren2001} Almgren, R., and N. Chriss (2001). Optimal execution of portfolio transactions. \emph{Journal of Risk} 3, 5--39.
-\bibitem[Batenkov et~al.(2021)]{batenkov2021} Batenkov, D., G. Goldman, and Y. Yomdin (2021). Super-resolution of near-colliding point sources. \emph{Information and Inference} 10, 515--572.
-\bibitem[Bernstein(1914)]{bernstein1914} Bernstein, S. (1914). Sur la meilleure approximation de $|x|$ par des polyn\^omes de degr\'es donn\'es. \emph{Acta Mathematica} 37, 1--57.
-\bibitem[Bessembinder et~al.(2006)]{bessembinder2006} Bessembinder, H., W. Maxwell, and K. Venkataraman (2006). Market transparency, liquidity externalities, and institutional trading costs in corporate bonds. \emph{Journal of Financial Economics} 82, 251--288.
-\bibitem[Boehmer et~al.(2005)]{boehmer2005} Boehmer, E., G. Saar, and L. Yu (2005). Lifting the veil: An analysis of pre-trade transparency at the NYSE. \emph{Journal of Finance} 60, 783--815.
-\bibitem[Bouchaud et~al.(2004)]{bouchaud2004} Bouchaud, J.-P., Y. Gefen, M. Potters, and M. Wyart (2004). Fluctuations and response in financial markets: The subtle nature of ``random'' price changes. \emph{Quantitative Finance} 4, 176--190.
-\bibitem[Bouchaud et~al.(2018)]{bouchaud2018} Bouchaud, J.-P., J. Bonart, J. Donier, and M. Gould (2018). \emph{Trades, Quotes and Prices: Financial Markets Under the Microscope}. Cambridge University Press.
-\bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009} Brunnermeier, M. K., and L. H. Pedersen (2009). Market liquidity and funding liquidity. \emph{Review of Financial Studies} 22, 2201--2238.
-\bibitem[Cochrane and Orcutt(1949)]{cochrane1949} Cochrane, D., and G. H. Orcutt (1949). Application of least squares regression to relationships containing auto-correlated error terms. \emph{Journal of the American Statistical Association} 44, 32--61.
-\bibitem[ESMA(2016)]{esma2016} European Securities and Markets Authority (2016). Guidelines on transaction reporting, order record keeping and clock synchronisation under MiFID II. ESMA/2016/1452.
-\bibitem[Fan(1991)]{fan1991} Fan, J. (1991). On the optimal rates of convergence for nonparametric deconvolution problems. \emph{Annals of Statistics} 19, 1257--1272.
-\bibitem[Gatheral(2010)]{gatheral2010} Gatheral, J. (2010). No-dynamic-arbitrage and market impact. \emph{Quantitative Finance} 10, 749--759.
-\bibitem[Glosten and Milgrom(1985)]{glosten1985} Glosten, L. R., and P. R. Milgrom (1985). Bid, ask and transaction prices in a specialist market with heterogeneously informed traders. \emph{Journal of Financial Economics} 14, 71--100.
-\bibitem[Hasbrouck(1991)]{hasbrouck1991} Hasbrouck, J. (1991). Measuring the information content of stock trades. \emph{Journal of Finance} 46, 179--207.
-\bibitem[Hua and Sarkar(1990)]{hua1990} Hua, Y., and T. K. Sarkar (1990). Matrix pencil method for estimating parameters of exponentially damped/undamped sinusoids in noise. \emph{IEEE Transactions on Acoustics, Speech, and Signal Processing} 38, 814--824.
-\bibitem[Kirilenko et~al.(2017)]{kirilenko2017} Kirilenko, A., A. S. Kyle, M. Samadi, and T. Tuzun (2017). The Flash Crash: High-frequency trading in an electronic market. \emph{Journal of Finance} 72, 967--998.
-\bibitem[Kong and Valiant(2017)]{kong2017} Kong, W., and G. Valiant (2017). Spectrum estimation from samples. \emph{Annals of Statistics} 45, 2218--2247.
-\bibitem[Kreiss(1962)]{kreiss1962} Kreiss, H.-O. (1962). \"Uber die Stabilit\"atsdefinition f\"ur Differenzengleichungen die partielle Differentialgleichungen approximieren. \emph{BIT Numerical Mathematics} 2, 153--181.
-\bibitem[Kyle(1985)]{kyle1985} Kyle, A. S. (1985). Continuous auctions and insider trading. \emph{Econometrica} 53, 1315--1335.
-\bibitem[Le Cam(1986)]{lecam1986} Le Cam, L. (1986). \emph{Asymptotic Methods in Statistical Decision Theory}. Springer.
-\bibitem[Liu and Ammari(2022)]{liu2023} Liu, P., and H. Ammari (2022). Super-resolution of positive near-colliding point sources. arXiv preprint arXiv:2212.00536.
-\bibitem[Makarov and Schoar(2020)]{makarov2020} Makarov, I., and A. Schoar (2020). Trading and arbitrage in cryptocurrency markets. \emph{Journal of Financial Economics} 135, 293--319.
-\bibitem[Manole and Ho(2022)]{manole2022} Manole, T., and N. Ho (2022). Refined convergence rates for maximum likelihood estimation under finite mixture models. \emph{Proceedings of the 39th International Conference on Machine Learning}, PMLR 162.
-\bibitem[Niroula et~al.(2026)]{niroula2026b} Niroula, P., S. Alkhushayni, Y. Chen, M. Bhavsar, and P. Niroula (2026). From human markets to machine markets: Transient amplification, an exact depth condition, and a maximal pre-trade guard. Working paper, Minnesota State University, Mankato.
-\bibitem[Moskowitz et~al.(2012)]{moskowitz2012} Moskowitz, T. J., Y. H. Ooi, and L. H. Pedersen (2012). Time series momentum. \emph{Journal of Financial Economics} 104, 228--250.
-\bibitem[Obizhaeva and Wang(2013)]{obizhaeva2013} Obizhaeva, A. A., and J. Wang (2013). Optimal trading strategy and supply/demand dynamics. \emph{Journal of Financial Markets} 16, 1--32.
-\bibitem[Pagano and R\"oell(1996)]{pagano1996} Pagano, M., and A. R\"oell (1996). Transparency and liquidity: A comparison of auction and dealer markets with informed trading. \emph{Journal of Finance} 51, 579--611.
-\bibitem[Rivlin(1981)]{rivlin1981} Rivlin, T. J. (1981). \emph{An Introduction to the Approximation of Functions}. Dover.
-\bibitem[Roll(1984)]{roll1984} Roll, R. (1984). A simple implicit measure of the effective bid-ask spread in an efficient market. \emph{Journal of Finance} 39, 1127--1139.
-\bibitem[Roy and Kailath(1989)]{roy1989} Roy, R., and T. Kailath (1989). ESPRIT---estimation of signal parameters via rotational invariance techniques. \emph{IEEE Transactions on Acoustics, Speech, and Signal Processing} 37, 984--995.
-\bibitem[SEC(2010)]{sec2010} U.S. Securities and Exchange Commission (2010). Risk management controls for brokers or dealers with market access. Release No.\ 34-63241.
-\bibitem[SEC(2012)]{sec2012} U.S. Securities and Exchange Commission (2012). Consolidated Audit Trail. Release No.\ 34-67457 (Rule 613).
-\bibitem[SEC(2016)]{sec2016} U.S. Securities and Exchange Commission (2016). Joint Industry Plan; Order Approving the National Market System Plan Governing the Consolidated Audit Trail. Release No.\ 34-79318, November 15, 2016.
-\bibitem[SEC(2025)]{sec2025} U.S. Securities and Exchange Commission (2025). Order granting exemptive relief from certain requirements of the National Market System Plan governing the Consolidated Audit Trail. Release No.\ 34-102386, February 10, 2025.
-\bibitem[Shleifer and Vishny(1992)]{shleifer1992} Shleifer, A., and R. W. Vishny (1992). Liquidation values and debt capacity: A market equilibrium approach. \emph{Journal of Finance} 47, 1343--1366.
-\bibitem[Sornette et~al.(2023)]{sornette2023} Sornette, D., S. Lera, J. Lin, and K. Wu (2023). Non-normal interactions create socio-economic bubbles. \emph{Communications Physics} 6, 261.
-\bibitem[Staiger and Stock(1997)]{staiger1997} Staiger, D., and J. H. Stock (1997). Instrumental variables regression with weak instruments. \emph{Econometrica} 65, 557--586.
-\bibitem[Trefethen and Embree(2005)]{trefethen2005} Trefethen, L. N., and M. Embree (2005). \emph{Spectra and Pseudospectra: The Behavior of Nonnormal Matrices and Operators}. Princeton University Press.
-\bibitem[Tsybakov(2009)]{tsybakov2009} Tsybakov, A. B. (2009). \emph{Introduction to Nonparametric Estimation}. Springer.
-\bibitem[Varga and Carpenter(1985)]{varga1985} Varga, R. S., and A. J. Carpenter (1985). On the Bernstein conjecture in approximation theory. \emph{Constructive Approximation} 1, 333--348.
-\bibitem[Whittle(1953)]{whittle1953} Whittle, P. (1953). Estimation and information in stationary time series. \emph{Arkiv f\"or Matematik} 2, 423--434.
-\bibitem[Wu and Yang(2020)]{wu2020} Wu, Y., and P. Yang (2020). Optimal estimation of Gaussian mixtures via denoised method of moments. \emph{Annals of Statistics} 48, 1981--2007.
-\end{thebibliography}
-
-\appendix
 \section{Proofs}\label{app:proofs}
 
 \paragraph{Lemma~\ref{lem:micro}.} (i) For $v_{t+1}=v_t+\zeta_{t+1}$ and $r_t=v_t+\nu_t$, the steady-state prior variance $P$ solves $P=P\sigma_\nu^2/(P+\sigma_\nu^2)+\sigma_\zeta^2$, i.e.\ $P^2-\sigma_\zeta^2P-\sigma_\zeta^2\sigma_\nu^2=0$, whose positive root is $P=\bigl(\sigma_\zeta^2+\sqrt{\sigma_\zeta^4+4\sigma_\zeta^2\sigma_\nu^2}\bigr)/2$. The gain is $\eta=P/(P+\sigma_\nu^2)\in(0,1)$, which simplifies to \eqref{eq:kgain}, and the update $\hat v_{t+1}=\hat v_t+\eta(r_t-\hat v_t)$ has the stated form. (ii) $\nabla_\theta\tfrac12H(x_t-\theta)^2=-H(x_t-\theta)$, so $\theta_{t+1}=(1-\gamma)\theta_t+\alpha H(x_t-\theta_t)=(1-\eta)\theta_t+\eta qx_t$ with $\eta=\gamma+\alpha H$ and $q=\alpha H/\eta$.
@@ -1376,10 +1431,6 @@ $\hat Q,\ \hat S$ & reduced-form loop gain and persistence indices\\
 \bottomrule
 \end{longtable}
 
-\clearpage
-\setcounter{page}{1}\renewcommand{\thepage}{S-\arabic{page}}
-\begin{center}{\Large Supplemental Appendix for ``Auditable Memory and Financial Identification Limits''}\end{center}
-\label{app:suppstart}
 \section{Internet appendix}\label{app:ia}
 
 \subsection{A finite-window price-surveillance bound}
@@ -1502,8 +1553,9 @@ Basis-trade signature; real-data Cochrane--Orcutt & Part 13: \texttt{R6}, \textt
 Feedback across 30 perpetuals & Part 4: \texttt{X3\_T6\_cross\_section} & real data\\
 Theorem~\ref{thm:rh} full bound (Table~\ref{tab:rh}), direct minimization & \texttt{hardening/rh\_bound.py}, \texttt{rh\_check.py} $\to$ \texttt{R\_P1\_rh\_explicit.json} & recomputed\\
 Minimal dimension at $a=0$; Toeplitz sections; passive slopes for $K\le4$; IV determinant & \texttt{hardening/p1\_checks.py} $\to$ \texttt{R\_P1\_hardening\_checks.json} & recomputed\\
-Nonlinear and adaptive learners (Table~\ref{tab:learners}, Figure~\ref{fig:learners}) & \texttt{recompute\_p1\_learners.py} $\to$ \texttt{R\_P1\_learners.json} & recomputed\\
-Disclosure in dollars vs.\ SEC CAT costs (Table~\ref{tab:cat_dollars}) & \texttt{recompute\_p1\_cat\_costs.py} $\to$ \texttt{R\_P1\_cat\_disclosure\_dollars.json} & recomputed\\
+Stylized nonlinear and trained online rules (Table~\ref{tab:learners}, Figure~\ref{fig:learners}) & \texttt{recompute\_\allowbreak p1\_\allowbreak learners.py} $\to$ \texttt{R\_P1\_\allowbreak learners.json}; \texttt{P1\_\allowbreak trained\_\allowbreak learners.json} (3e8bf30c\ldots) & recomputed\\
+Disclosure in dollars (Table~\ref{tab:cat_dollars}) & \texttt{recompute\_\allowbreak p1\_\allowbreak cat\_\allowbreak costs.py} $\to$ \texttt{R\_P1\_\allowbreak cat\_\allowbreak disclosure\_\allowbreak dollars.json} & recomputed\\
+Out-of-sample post-shock return test (Section~\ref{sec:disc_data}) & \texttt{recompute\_\allowbreak prereg\_\allowbreak oct21\_\allowbreak 22nd.py} $\to$ \texttt{R\_P1\_\allowbreak disclosure\_\allowbreak oos.json}; \texttt{P1\_\allowbreak disclosure\_\allowbreak oos.json} (f0182ce5\ldots) & real data\\
 \bottomrule
 \end{longtable}
 

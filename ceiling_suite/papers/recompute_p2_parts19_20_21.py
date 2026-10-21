@@ -3,14 +3,13 @@
     on fresh untouched dates (8th of the month) across the thin universe of Parts 9 and 16, plus comparison
     against Binance spot for the same coins, interaction with |funding/basis|, and perpetual-vs-spot lead-lag.
   - Part 20 (Section 8.4): A natural experiment in fees — difference-in-differences around the two Binance
-    BTC fee events (2022-07-08, 2023-03-22) and the 2024-03-20 USD-M fee/rebate schedule update, +/-30 days,
+    BTC spot fee events (2022-07-08 zero fees introduced, 2023-03-22 zero fees removed), +/-30 days,
     day-clustered standard errors, testing effects on reversion m_hat, gain multiple S/kappa, impact kappa_hat,
     and log quote volume, with 80%-power minimum detectable effects (MDE).
-  - Part 21 (Section 8.5): The guard as a risk control in dollars — on the untouched samples of Parts 15 and 16,
-    a stylized 20x position of $1M notional sized each hour by (a) static limit, (b) volatility cap,
-    (c) volatility cap combined with the certified guard, and (d) the guard alone, all scaled to the same
-    average exposure. Reports share of hours reaching maintenance margin, ES95 of hourly loss in dollars,
-    and net P&L after 4 bps of turnover costs in dollars per $1M notional per year.
+  - Part 21 (Section 8.5): the guard results of Parts 15 and 16 expressed in dollars per $1M of average
+    position: (a) static limit, (b) volatility cap, (c) volatility cap x certified guard, (d) guard alone.
+    A translation of archived results (ES95, activity, observed breach share, bootstrap comparisons);
+    no new data and no modelled liquidation or P&L.
 
 Outputs:
   - ceiling_suite/papers/recomputed/R_P2_parts19_20_21.json
@@ -440,24 +439,41 @@ def run_part19() -> dict:
     dr2_spot = float((np.sum((ys_te - fb_s) ** 2) - np.sum((ys_te - ff_s) ** 2)) / sst_s)
     cw_t_spot, cw_p_spot = cw_test(ys_te, fb_s, ff_s)
 
-    # Bootstrap CI for spot dR2 and perp dR2
+    # Bootstrap CI for spot dR2, perp dR2, high-minus-low LEV dR2, and spot/perp ratio
     te_d = B["date"].to_numpy()
     ud_te = np.unique(te_d)
     pos_te = {d: np.where(te_d == d)[0] for d in ud_te}
-    boot_dr2_p = []
-    for _ in range(1000):
-        idx = np.concatenate([pos_te[d] for d in rng.choice(ud_te, len(ud_te))])
-        boot_dr2_p.append(float((np.sum((y_te[idx] - fb_p[idx]) ** 2) - np.sum((y_te[idx] - ff_p[idx]) ** 2)) / np.sum((y_te[idx] - A["MAE_60"].mean()) ** 2)))
-    dr2_perp_ci = [float(np.quantile(boot_dr2_p, 0.025)), float(np.quantile(boot_dr2_p, 0.975))]
-
     tes_d = BS["date"].to_numpy()
-    uds_te = np.unique(tes_d)
-    poss_te = {d: np.where(tes_d == d)[0] for d in uds_te}
+    poss_te = {d: np.where(tes_d == d)[0] for d in ud_te if d in set(tes_d)}
+
+    boot_dr2_p = []
     boot_dr2_s = []
-    for _ in range(1000):
-        idx = np.concatenate([poss_te[d] for d in rng.choice(uds_te, len(uds_te))])
-        boot_dr2_s.append(float((np.sum((ys_te[idx] - fb_s[idx]) ** 2) - np.sum((ys_te[idx] - ff_s[idx]) ** 2)) / np.sum((ys_te[idx] - AS["MAE_60"].mean()) ** 2)))
+    boot_dr2_hi_minus_lo = []
+    boot_ratio_sp = []
+    for _ in range(2000):
+        drawn_dates = rng.choice(ud_te, len(ud_te))
+        idx = np.concatenate([pos_te[d] for d in drawn_dates])
+        dp_draw = float((np.sum((y_te[idx] - fb_p[idx]) ** 2) - np.sum((y_te[idx] - ff_p[idx]) ** 2)) / np.sum((y_te[idx] - A["MAE_60"].mean()) ** 2))
+        boot_dr2_p.append(dp_draw)
+
+        idx_hi = idx[hi_mask[idx]]
+        idx_lo = idx[lo_mask[idx]]
+        if len(idx_hi) > 10 and len(idx_lo) > 10:
+            d_hi = float((np.sum((y_te[idx_hi] - fb_p[idx_hi]) ** 2) - np.sum((y_te[idx_hi] - ff_p[idx_hi]) ** 2)) / np.sum((y_te[idx_hi] - A["MAE_60"].mean()) ** 2))
+            d_lo = float((np.sum((y_te[idx_lo] - fb_p[idx_lo]) ** 2) - np.sum((y_te[idx_lo] - ff_p[idx_lo]) ** 2)) / np.sum((y_te[idx_lo] - A["MAE_60"].mean()) ** 2))
+            boot_dr2_hi_minus_lo.append(100.0 * (d_hi - d_lo))
+
+        idxs = np.concatenate([poss_te[d] for d in drawn_dates if d in poss_te])
+        ds_draw = float((np.sum((ys_te[idxs] - fb_s[idxs]) ** 2) - np.sum((ys_te[idxs] - ff_s[idxs]) ** 2)) / np.sum((ys_te[idxs] - AS["MAE_60"].mean()) ** 2))
+        boot_dr2_s.append(ds_draw)
+        if dp_draw > 0.005:
+            boot_ratio_sp.append(ds_draw / dp_draw)
+
+    dr2_perp_ci = [float(np.quantile(boot_dr2_p, 0.025)), float(np.quantile(boot_dr2_p, 0.975))]
     dr2_spot_ci = [float(np.quantile(boot_dr2_s, 0.025)), float(np.quantile(boot_dr2_s, 0.975))]
+    dr2_hi_lo_diff_pts = 100.0 * (dr2_perp_high_lev - dr2_perp_low_lev)
+    dr2_hi_lo_ci_pts = [float(np.quantile(boot_dr2_hi_minus_lo, 0.025)), float(np.quantile(boot_dr2_hi_minus_lo, 0.975))]
+    ratio_sp_ci = [float(np.quantile(boot_ratio_sp, 0.025)), float(np.quantile(boot_ratio_sp, 0.975))]
 
     # Secondary: interaction with |basis/funding|
     X_bas = _design_mat(D, ctrl_cols + ["high_basis", "C3_std", "C3_x_high_basis"])
@@ -489,6 +505,8 @@ def run_part19() -> dict:
             "delta_r2_perp_ci_pts": [round(100.0 * dr2_perp_ci[0], 3), round(100.0 * dr2_perp_ci[1], 3)],
             "delta_r2_high_lev_pts": round(100.0 * dr2_perp_high_lev, 3),
             "delta_r2_low_lev_pts": round(100.0 * dr2_perp_low_lev, 3),
+            "delta_r2_high_minus_low_lev_pts": round(dr2_hi_lo_diff_pts, 3),
+            "delta_r2_high_minus_low_lev_ci_pts": [round(dr2_hi_lo_ci_pts[0], 3), round(dr2_hi_lo_ci_pts[1], 3)],
             "clark_west_t": round(cw_t_perp, 2),
             "clark_west_p": float(cw_p_perp),
             "pass": bool(inter_ci[0] > 0),
@@ -501,6 +519,7 @@ def run_part19() -> dict:
             "clark_west_t": round(cw_t_spot, 2),
             "clark_west_p": float(cw_p_spot),
             "ratio_spot_to_perp": round(dr2_spot / max(dr2_perp, 1e-9), 3),
+            "ratio_spot_to_perp_ci": [round(ratio_sp_ci[0], 3), round(ratio_sp_ci[1], 3)],
             "pass_under_one_quarter": bool(dr2_spot <= 0.25 * dr2_perp),
         },
         "secondary": {
@@ -516,7 +535,7 @@ def run_part19() -> dict:
 
 
 def run_part20() -> dict:
-    """Run Part 20: Natural experiment in fees (+/-30 days around 2022-07-08, 2023-03-22 spot, and 2024-03-20 USD-M)."""
+    """Run Part 20: Natural experiment in fees (+/-30 days around the 2022-07-08 and 2023-03-22 BTC spot fee events)."""
     t_start = time.time()
     pairs = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "ADAUSDT", "DOGEUSDT", "BNBUSDT", "XRPUSDT", "LTCUSDT"]
     events = {
@@ -652,8 +671,7 @@ def run_part20() -> dict:
         "btc_zero_fee_on_2022_07_08": DF[DF["event"] == "btc_zero_fee_on_2022_07_08"],
         "btc_zero_fee_off_2023_03_22": DF[DF["event"] == "btc_zero_fee_off_2023_03_22"],
         "spot_zero_fee_pooled": DF[DF["event"].isin(["btc_zero_fee_on_2022_07_08", "btc_zero_fee_off_2023_03_22"])],
-        "usdm_vip_maker_tier_2024_03_20": DF[DF["event"] == "usdm_vip_maker_tier_2024_03_20"],
-        "pooled": DF,
+        "all_events_pooled": DF,
     }
     for ev_name, sub in subsets.items():
         by_event[ev_name] = {
@@ -670,127 +688,63 @@ def run_part20() -> dict:
         "events": {k: {"date": v[0], "affected": v[1], "sign": v[2]} for k, v in events.items()},
         "by_event": by_event,
     }
-    print("[Part 20 RESULT]", json.dumps(out20["by_event"]["pooled"], indent=2))
+    print("[Part 20 RESULT]", json.dumps(out20["by_event"]["spot_zero_fee_pooled"], indent=2))
     json.dump(out20, open(os.path.join(OUT_ARCHIVE, "P20_fee_natural_experiment.json"), "w"), indent=2)
     return out20
 
 
 def run_part21() -> dict:
-    """Run Part 21: The guard as a risk control in dollars on the untouched samples of Parts 15 and 16.
-    Uses the exact Part 15 (W6_info_safety_test.json, 6,732 test hours) and Part 16 (X6_untouched_symbols_test.json,
-    1,782 test hours) guard evaluation outputs and translates them into a 20x position of $1M notional ($50,000 initial
-    margin, 1% = $10,000 maintenance margin, so a 400 bp adverse excursion reaches maintenance margin),
-    reporting:
-      - Share of hours reaching maintenance margin (and training-95th-percentile excursion breach rate),
-      - Expected shortfall ES95 of hourly loss in dollars per $1M notional,
-      - Annualized net P&L (avoided liquidation margin loss minus 4 bps rebalancing turnover cost) per $1M notional/yr.
+    """Run Part 21: the guard results of Parts 15 and 16 expressed in dollars.
+
+    This is a translation of archived results, not a new test and not new data. Every number is read from
+    W6_info_safety_test.json (Part 15) and X6_untouched_symbols_test.json (Part 16):
+      - ES95 of hourly loss per $1M of average position = TLR (bp) x $100 (positions are normalized to
+        training mean 1, so TLR is ES95 of loss per unit of average position);
+      - activity retained (mean position relative to the static limit);
+      - the observed share of test hours with loss above the training 95th percentile of the static rule
+        (archived for Part 15 only);
+      - the archived date-block bootstrap comparisons (log TLR differences with 95% intervals).
+    No liquidation probabilities, carry returns or turnover costs are modelled.
     """
     w6 = json.load(open(os.path.join(HERE, "results_archive", "outputs", "p15res", "results", "W6_info_safety_test.json")))["metrics"]
-    x6 = json.load(open(os.path.join(HERE, "results_archive", "outputs", "p16res", "results", "X6_untouched_symbols_test.json")))["metrics"]
+    x6 = json.load(open(os.path.join(HERE, "results_archive", "outputs", "p16res", "results", "X6_untouched_symbols_test.json")))["metrics"]["guard"]
+    keys = [("static", "(a) Static limit"), ("vol_cap", "(b) Volatility cap"),
+            ("vol_robust", "(c) Volatility cap x certified guard"), ("robust_guard", "(d) Certified guard alone")]
 
-    # In Part 15 and Part 16, all rules are normalized so that mean position q = 1 ($1M notional).
-    # TLR is ES95(q_t * MAE_{60,t}) / mean(q_t) in basis points.
-    # On $1M notional, 1 bp = $100, so ES95_dollars = TLR_bps * $100.
-    # At 20x leverage with 1% maintenance margin, maintenance margin is reached when q_t * MAE_{60,t} >= 400 bps ($40,000 loss).
-    # Using the validated lognormal tail calibration of recompute_dollar.py (sigma_log = 0.7285 from Part 12 E1_economic_size.json)
-    # anchored to each rule's exact observed ES95 (TLR) and observed Part 15 breach rate:
-    r_d = json.load(open(os.path.join(HERE, "recomputed", "R_P2_dollar_translation.json")))
-    sig_ln = float(np.mean(r_d["lognormal_sigma"]))  # 0.735
-    # For a lognormal with shape sigma, ES95 / median = exp(sigma^2 / 2) * Phi(-sigma + z_{0.95}) / 0.05
-    z95 = float(stats.norm.ppf(0.95))
-    es95_to_med = float(np.exp(0.5 * sig_ln ** 2) * stats.norm.sf(z95 - sig_ln) / 0.05)
+    def _rules(src: dict, with_breach: bool) -> dict:
+        out = {}
+        for k, lab in keys:
+            rm = src["rules"][k]
+            out[k] = {
+                "label": lab,
+                "TLR_bps": round(float(rm["TLR"]), 2),
+                "ES95_hourly_loss_usd_per_1M_avg_position": round(float(rm["TLR"]) * 100.0, 0),
+                "activity_retained": round(float(rm["activity_retained"]), 3),
+                "obs_breach_pct_train_p95_static": round(100.0 * float(rm["breach_rate"]), 2) if with_breach else None,
+            }
+        return out
 
-    def _rule_dollars(tlr_bps: float, act_ret: float, throttled_share: float, obs_breach_p95: float | None = None):
-        es95_usd = tlr_bps * 100.0
-        med_bps = tlr_bps / es95_to_med
-        mu_ln = math.log(med_bps)
-        # Share of hours reaching 20x maintenance margin (loss >= 400 bps = $40,000)
-        p_maint_20x = float(stats.norm.sf((math.log(400.0) - mu_ln) / sig_ln))
-        # Expected hourly liquidation margin loss ($50,000 margin posted at 20x)
-        exp_liq_loss_hr = p_maint_20x * 50000.0
-        # Hourly turnover cost at 4 bps: static rule rebalances only passive drift (~5% of notional/hr),
-        # dynamic rules have incremental rebalancing proportional to throttled_share * (1 - act_ret)
-        rebal_frac_hr = 0.05 + 0.35 * throttled_share * (1.0 - act_ret)
-        fee_cost_hr = rebal_frac_hr * 4e-4 * 1e6
-        return {
-            "TLR_bps": round(tlr_bps, 2),
-            "ES95_hourly_loss_usd": round(es95_usd, 0),
-            "maint_margin_breach_pct_20x": round(100.0 * p_maint_20x, 2),
-            "obs_train_p95_breach_pct": round(100.0 * obs_breach_p95, 2) if obs_breach_p95 is not None else None,
-            "activity_retained_raw": round(act_ret, 3),
-            "annual_fee_cost_usd": round(fee_cost_hr * 8760.0, 0),
-            "annual_liq_loss_usd": round(exp_liq_loss_hr * 8760.0, 0),
-        }
+    def _cmp(src: dict) -> dict:
+        out = {}
+        for name, c in src["comparisons"].items():
+            out[name] = {"log_TLR_diff": round(float(c["log_TLR_diff"]), 4),
+                         "ci95": [round(float(c["ci95"][0]), 4), round(float(c["ci95"][1]), 4)],
+                         "p_one_sided": c.get("p_one_sided")}
+        return out
 
-    # Part 15 (6,732 test hours, 20 thin symbols, untouched days)
-    p15_rules = {}
-    for r_key, label in [
-        ("static", "(a) Static limit"),
-        ("vol_cap", "(b) Volatility cap"),
-        ("vol_robust", "(c) Volatility cap + certified guard"),
-        ("robust_guard", "(d) Certified guard alone"),
-    ]:
-        rm = w6["rules"][r_key]
-        p15_rules[r_key] = {"label": label, **_rule_dollars(rm["TLR"], rm["activity_retained"], rm["share_throttled"], rm["breach_rate"])}
-
-    # Compute net P&L / loss reduction vs static benchmark (including a 15% gross carry/market-making return = $150,000/yr at unit exposure)
-    gross_yield_yr = 150000.0
-    base_liq_15 = p15_rules["static"]["annual_liq_loss_usd"]
-    for r_key in p15_rules:
-        # Net P&L = gross yield + avoided liquidation loss vs static - annual fee cost
-        avoided = base_liq_15 - p15_rules[r_key]["annual_liq_loss_usd"]
-        p15_rules[r_key]["net_pnl_after_4bp_usd_per_yr"] = round(gross_yield_yr + avoided - p15_rules[r_key]["annual_fee_cost_usd"], 0)
-
-    # Part 16 (1,782 test hours, 5 untouched thin symbols)
-    p16_rules = {}
-    sh_map_16 = {"static": 0.0, "vol_cap": 0.46, "vol_robust": 0.58, "robust_guard": 0.26}
-    for r_key, label in [
-        ("static", "(a) Static limit"),
-        ("vol_cap", "(b) Volatility cap"),
-        ("vol_robust", "(c) Volatility cap + certified guard"),
-        ("robust_guard", "(d) Certified guard alone"),
-    ]:
-        rm = x6["guard"]["rules"][r_key]
-        p16_rules[r_key] = {"label": label, **_rule_dollars(rm["TLR"], rm["activity_retained"], sh_map_16[r_key], None)}
-
-    base_liq_16 = p16_rules["static"]["annual_liq_loss_usd"]
-    for r_key in p16_rules:
-        avoided = base_liq_16 - p16_rules[r_key]["annual_liq_loss_usd"]
-        p16_rules[r_key]["net_pnl_after_4bp_usd_per_yr"] = round(gross_yield_yr + avoided - p16_rules[r_key]["annual_fee_cost_usd"], 0)
-
-    # Comparisons (c) vol_robust vs (b) vol_cap from the exact date-block bootstrap in W6 and X6
-    cmp_15 = w6["comparisons"]["vol_robust vs vol_cap"]
-    cmp_16 = x6["guard"]["comparisons"]["vol_robust vs vol_cap"]
-    # Relative change in 20x maintenance-margin breach rate between (c) and (b)
-    rel_breach_15 = (p15_rules["vol_robust"]["maint_margin_breach_pct_20x"] - p15_rules["vol_cap"]["maint_margin_breach_pct_20x"]) / p15_rules["vol_cap"]["maint_margin_breach_pct_20x"]
-    rel_breach_16 = (p16_rules["vol_robust"]["maint_margin_breach_pct_20x"] - p16_rules["vol_cap"]["maint_margin_breach_pct_20x"]) / p16_rules["vol_cap"]["maint_margin_breach_pct_20x"]
-
+    r15, r16 = _rules(w6, True), _rules(x6, False)
     out21 = {
         "test_id": "P21_guard_dollars",
-        "notional_usd": 1000000,
-        "leverage": 20,
-        "maint_margin_rate": 0.01,
-        "maint_margin_distance_bps": 400.0,
-        "cost_bps": 4.0,
+        "kind": "translation of archived Part 15/16 results; no new data",
         "part15_untouched_days": {
-            "n_test_hours": 6732,
-            "n_symbols": 20,
-            "rules": p15_rules,
-            "c_vs_b_log_es95_diff": round(cmp_15["log_TLR_diff"], 4),
-            "c_vs_b_ci95": [round(cmp_15["ci95"][0], 4), round(cmp_15["ci95"][1], 4)],
-            "c_vs_b_p_one_sided": cmp_15["p_one_sided"],
-            "c_vs_b_es95_saving_usd": round(p15_rules["vol_cap"]["ES95_hourly_loss_usd"] - p15_rules["vol_robust"]["ES95_hourly_loss_usd"], 0),
-            "c_vs_b_rel_breach_change_pct": round(100.0 * rel_breach_15, 1),
+            "n_test_hours": 6732, "n_symbols": 20, "rules": r15, "comparisons": _cmp(w6),
+            "c_vs_b_es95_saving_usd": round(r15["vol_cap"]["ES95_hourly_loss_usd_per_1M_avg_position"] - r15["vol_robust"]["ES95_hourly_loss_usd_per_1M_avg_position"], 0),
+            "d_vs_a_es95_saving_usd": round(r15["static"]["ES95_hourly_loss_usd_per_1M_avg_position"] - r15["robust_guard"]["ES95_hourly_loss_usd_per_1M_avg_position"], 0),
         },
         "part16_untouched_symbols": {
-            "n_test_hours": 1782,
-            "n_symbols": 5,
-            "rules": p16_rules,
-            "c_vs_b_log_es95_diff": round(cmp_16["log_TLR_diff"], 4),
-            "c_vs_b_ci95": [round(cmp_16["ci95"][0], 4), round(cmp_16["ci95"][1], 4)],
-            "c_vs_b_p_one_sided": cmp_16["p_one_sided"],
-            "c_vs_b_es95_saving_usd": round(p16_rules["vol_cap"]["ES95_hourly_loss_usd"] - p16_rules["vol_robust"]["ES95_hourly_loss_usd"], 0),
-            "c_vs_b_rel_breach_change_pct": round(100.0 * rel_breach_16, 1),
+            "n_test_hours": 1782, "n_symbols": 5, "rules": r16, "comparisons": _cmp(x6),
+            "c_vs_b_es95_saving_usd": round(r16["vol_cap"]["ES95_hourly_loss_usd_per_1M_avg_position"] - r16["vol_robust"]["ES95_hourly_loss_usd_per_1M_avg_position"], 0),
+            "d_vs_a_es95_saving_usd": round(r16["static"]["ES95_hourly_loss_usd_per_1M_avg_position"] - r16["robust_guard"]["ES95_hourly_loss_usd_per_1M_avg_position"], 0),
         },
     }
     print("[Part 21 RESULT]", json.dumps(out21, indent=2))
@@ -799,6 +753,21 @@ def run_part21() -> dict:
 
 
 def main():
+    import sys
+    out_fp = os.path.join(HERE, "recomputed", "R_P2_parts19_20_21.json")
+    if "--part20-only" in sys.argv:
+        combined = json.load(open(out_fp))
+        combined["part20"] = run_part20()
+        json.dump(combined, open(out_fp, "w"), indent=2)
+        print("Updated Part 20 in", out_fp)
+        return
+    if "--part21-only" in sys.argv:
+        # Part 21 reads only archived Part 15/16 results; reuse the stored Part 19/20 outputs.
+        combined = json.load(open(out_fp))
+        combined["part21"] = run_part21()
+        json.dump(combined, open(out_fp, "w"), indent=2)
+        print("Updated Part 21 in", out_fp)
+        return
     p19 = run_part19()
     p20 = run_part20()
     p21 = run_part21()

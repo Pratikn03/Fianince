@@ -5,7 +5,7 @@ Time is discrete with bars of length $\Delta$. Let $p_t$ be the price, $p^*_t=p^
 \begin{equation}\label{eq:price}
 x_{t+1}=ax_t+\kappa u_t+w_{t+1},\qquad a=1-\kappa\varphi_f\in[0,1).
 \end{equation}
-Algorithmic cohorts trade $u_t=\sum_iq_iy_{i,t}$ with exponential memory $y_{i,t+1}=(1-\eta_i)y_{i,t}+\eta_ix_{t+1}$, a reduced form that arises when an adaptive desk updates its belief by steady-state Kalman filtering or regularized online gradient descent and maximizes expected continuation return $\beta_i y_{i,t}u_{i,t}$ minus quadratic execution cost $\tfrac12\lambda_{{\rm tc},i}u_{i,t}^2$ and inventory penalty $\tfrac12\gamma_{{\rm inv},i}I_{i,t}^2$ ($I_{i,t}=(1-\delta_{\rm inv})I_{i,t-1}+u_{i,t}$, $|I_{i,t}|\le\bar I_i$), yielding $u_{i,t}^*=q_iy_{i,t}-\psi_{{\rm inv},i}I_{i,t-1}$ with $q_i=\beta_i/(\lambda_{{\rm tc},i}+\gamma_{{\rm inv},i})$ and $\psi_{{\rm inv},i}=\gamma_{{\rm inv},i}(1-\delta_{\rm inv})/(\lambda_{{\rm tc},i}+\gamma_{{\rm inv},i})$ (\citealp{niroula2026}; this single-agent filtering-and-control rule is distinct from the joint dealer--trader equilibrium of Section~\ref{sec:equil}). Stacking $z_t=(x_t,y_{1,t},\ldots,y_{K,t})^\top$ gives $z_{t+1}=Jz_t+bw_{t+1}$, where $b=(1,\eta_1,\ldots,\eta_K)^\top$ because cohorts update on the same period's price (a unit of flow enters through $\kappa b$), and
+Algorithmic cohorts trade $u_t=\sum_iq_iy_{i,t}$ with exponential memory $y_{i,t+1}=(1-\eta_i)y_{i,t}+\eta_ix_{t+1}$, a reduced form that arises when an adaptive desk updates its belief by steady-state Kalman filtering or regularized online gradient descent and maximizes expected continuation return $\beta_i y_{i,t}u_{i,t}$ minus quadratic execution cost $\tfrac12\lambda_{{\rm tc},i}u_{i,t}^2$ and inventory penalty $\tfrac12\gamma_{{\rm inv},i}I_{i,t}^2$ ($I_{i,t}=(1-\delta_{\rm inv})I_{i,t-1}+u_{i,t}$, $|I_{i,t}|\le\bar I_i$), yielding $u_{i,t}^*=q_iy_{i,t}-\psi_{{\rm inv},i}I_{i,t-1}$ with $q_i=\beta_i/(\lambda_{{\rm tc},i}+\gamma_{{\rm inv},i})$ and $\psi_{{\rm inv},i}=\gamma_{{\rm inv},i}(1-\delta_{\rm inv})/(\lambda_{{\rm tc},i}+\gamma_{{\rm inv},i})$ (\citealp{niroula2026}; this single-agent filtering-and-control rule is distinct from the joint dealer--trader equilibrium of Section~\ref{sec:equil}). The baseline equations set $\psi_{{\rm inv},i}=0$, the limit in which inventory holding penalties are small relative to execution costs ($\gamma_{{\rm inv},i}\ll\lambda_{{\rm tc},i}$) or inventory is reset at the bar horizon; Proposition~\ref{prop:inventory_S} below relaxes this and gives the closed-form summed response when cohorts carry inventory across bars with $\psi_{{\rm inv},i}>0$. Stacking $z_t=(x_t,y_{1,t},\ldots,y_{K,t})^\top$ gives $z_{t+1}=Jz_t+bw_{t+1}$, where $b=(1,\eta_1,\ldots,\eta_K)^\top$ because cohorts update on the same period's price (a unit of flow enters through $\kappa b$), and
 \begin{equation}\label{eq:J}
 J=\begin{pmatrix} a & \kappa q_1 & \cdots & \kappa q_K\\ \eta_1 a & 1-\eta_1+\eta_1\kappa q_1 & \cdots & \eta_1\kappa q_K\\ \vdots & & \ddots & \vdots\\ \eta_K a & \eta_K\kappa q_1 & \cdots & 1-\eta_K+\eta_K\kappa q_K\end{pmatrix}.
 \end{equation}
@@ -35,6 +35,23 @@ and its worst case over $\|u\|_\infty\le\bar u$ depend only on $\{g_k\}$ and are
 \end{proposition}
 
 Numerically, splitting a cohort of 1{,}000 random economies into two with the same memory rate leaves every impulse coefficient unchanged up to rounding ($\max_k|g_k(\mathcal E^A)-g_k(\mathcal E^B)|\le2.5\times10^{-12}$ over 200 lags; \texttt{recompute\_oct20.py}). Proposition~\ref{prop:invariance} is the reason we build the guard on impulse coefficients and avoid state norms in latent coordinates. When a state norm is needed, we fix units by observable calm-market innovation standard deviations, which is what makes the spot statistic of Section~\ref{sec:spot} unit-free.
+
+\begin{proposition}[Summed response with carried cohort inventory]\label{prop:inventory_S}
+Suppose each cohort $i$ carries inventory $I_{i,t}=(1-\delta_{\rm inv})I_{i,t-1}+u_{i,t}$ with $\delta_{\rm inv}\in(0,1]$ and submits order flow $u_{i,t}=q_i y_{i,t}-\psi_i I_{i,t-1}$ with $q_i\ge0$ and $\psi_i\ge0$. Then:
+\begin{enumerate}[label=(\roman*)]
+\item The closed-loop transfer function from a flow impulse to price is $H_{\rm inv}(z)=\kappa z/\bigl[z-a-\kappa G_{\rm inv}(z)\bigr]$ with
+\[
+G_{\rm inv}(z)=\sum_{i=1}^K \frac{q_i\eta_i z(z-1+\delta_{\rm inv})}{(z-1+\eta_i)(z-1+\delta_{\rm inv}+\psi_i)},
+\]
+which is invariant to splitting any cohort that shares $(\eta_i,\psi_i)$. Whenever the augmented state matrix is Schur stable, the signed cumulative price response is
+\begin{equation}\label{eq:Sinv}
+S(\psi)=\sum_{t=0}^\infty h_t(\psi)=H_{\rm inv}(1)=\frac{\kappa}{1-a-\kappa\Phi_{\rm eff}(\psi)},\qquad \Phi_{\rm eff}(\psi)\equiv\sum_{i=1}^K\frac{\delta_{\rm inv}}{\delta_{\rm inv}+\psi_i}\,q_i\le\Phi.
+\end{equation}
+\item If $0\le\psi_i\le 1-\delta_{\rm inv}$ and $\delta_{\rm inv}\ge\eta_i$ for each $i$ and $a+\kappa\Phi_{\rm eff}(\psi)<1$, every open-loop feedback tap $k_m(\psi)$ and hence every closed-loop impulse coefficient $h_t(\psi)$ is nonnegative, so the worst-case $\ell_1$ gain equals the signed sum, $\|h(\psi)\|_1=\sum_{t=0}^\infty |h_t(\psi)|=S(\psi)$. When $\psi_i$ is large enough that inventory payback reverses the sign of late taps, $\|h(\psi)\|_1>S(\psi)$.
+\end{enumerate}
+\end{proposition}
+
+Inventory mean-reversion $\psi_i>0$ acts as an automatic stabilizer that attenuates each cohort's long-run feedback weight from $q_i$ to $\frac{\delta_{\rm inv}}{\delta_{\rm inv}+\psi_i}q_i$ (across 500 random stable economies \eqref{eq:Sinv} matches the simulated state-space impulse sum to $1.78\times10^{-15}$, and in the monotone regime $\|h(\psi)\|_1=S(\psi)$ to $1.78\times10^{-15}$, reducing $S$ from $2.7778$ at $\psi=0$ to $2.5000$ at the calibrated worked example; in the sign-reversal regime $\|h(\psi)\|_1=2.0960>S(\psi)=1.7241$; \texttt{recompute\_p2\_step2\_theory.py}).
 
 \begin{proposition}[Quote cost of ambiguity]\label{prop:ambig}
 For a one-unit ticket with adverse mark $Z_\theta\sim N(\mu_\theta,\sigma_\theta^2)$ and a CARA dealer with risk aversion $\gamma$, let $c_\theta=\mu_\theta+\gamma\sigma_\theta^2/2$. Under competition with zero robust certainty equivalent, the informed quote is $c_{\theta_0}$ and the ambiguous quote $\sup_\theta c_\theta$; with inverse demand $(V_0-V)/b$ and marginal cost $c$, raising an interior quote from $s_0$ by $\Delta$ costs $b(s_0-c)\Delta+\tfrac b2\Delta^2$ in surplus.

@@ -178,6 +178,210 @@ def simulate_learner_path(
     return x_path
 
 
+def simulate_trained_learner_experiment(rng: np.random.Generator) -> dict:
+    """Train three online learning algorithms (RLS with forgetting, 2-layer tanh MLP via SGD,
+    and profit-reward Q-learner) in closed loop over T_burn = 5,000 periods of exogenous flow
+    and price noise, then evaluate pre-specified predictions (a)-(d) of P1_trained_learners.json."""
+    T_burn = 5000
+    L_probe = 120
+    sigma_u = 0.05
+    delta_grid = np.array([0.015, 0.02, 0.03, 0.05, 0.08, 0.10, 0.12])
+    A_grid = np.array([0.002, 0.004, 0.008, 0.016, 0.032, 0.064])
+    A_small = 0.005
+
+    n_hid = 8
+    rng_arch = np.random.default_rng(20261020)
+    W_in = rng_arch.normal(0.0, 0.35, size=(n_hid,))
+    b_in = rng_arch.uniform(-0.20, 0.20, size=(n_hid,))
+    phi_0 = np.tanh(b_in)
+    dphi_0 = 1.0 - phi_0 ** 2
+    W_in = W_in / float(np.sqrt(np.sum((W_in * dphi_0) ** 2)))
+
+    def burn_in_cohort(algo: str, eta_val: float, seed_offset: int) -> dict:
+        r_burn = np.random.default_rng(20261021 + seed_offset)
+        x_prev = 0.0
+        y_st = 0.0
+        # Learned policy parameters initialized at 0
+        theta_rls = 0.0
+        P_rls = 1.0
+        theta_mlp = np.zeros(n_hid, dtype=float)
+        theta_q = 0.0
+        for _ in range(T_burn):
+            u_exog = r_burn.normal(0.0, sigma_u)
+            xi_t = r_burn.normal(0.0, SIGMA)
+            if algo == "rls_trained":
+                u_coh = Q_TOT * _smooth_sat(theta_rls * y_st, 1.0, bias=0.25)
+            elif algo == "mlp_sgd_trained":
+                feat_y = (np.tanh(W_in * y_st + b_in) - phi_0)
+                act = float(np.dot(theta_mlp, feat_y))
+                u_coh = Q_TOT * _smooth_sat(act, 1.0, bias=0.30)
+            elif algo == "q_profit_trained":
+                u_coh = Q_TOT * _smooth_sat(theta_q * y_st, 1.0, bias=0.28)
+            else:
+                raise ValueError(algo)
+            x_curr = A_BOOK * x_prev + KAPPA * (u_exog + u_coh) + xi_t
+            # Online learning target: predict persistent component / profit signal
+            target = A_BOOK * x_prev + 0.50 * x_curr
+            if algo == "rls_trained":
+                lam = 0.995
+                k_gain = (P_rls * y_st) / (lam + y_st * P_rls * y_st + 1e-8)
+                theta_rls = theta_rls + k_gain * (target - theta_rls * y_st)
+                P_rls = (P_rls - k_gain * y_st * P_rls) / lam
+                P_rls = float(np.clip(P_rls, 0.05, 50.0))
+            elif algo == "mlp_sgd_trained":
+                feat_y = (np.tanh(W_in * y_st + b_in) - phi_0)
+                pred = float(np.dot(theta_mlp, feat_y))
+                grad = (target - pred) * feat_y - 0.02 * theta_mlp
+                theta_mlp = theta_mlp + 0.015 * grad
+            elif algo == "q_profit_trained":
+                # Marginal profit reward d/du [u * target - (gamma/2) u^2] at gamma = 1.0
+                td_err = target - theta_q * y_st
+                theta_q = (1.0 - 0.005) * theta_q + 0.005 * (theta_q + 0.8 * td_err * y_st / (y_st ** 2 + 0.02))
+            y_st = (1.0 - eta_val) * y_st + eta_val * x_curr
+            x_prev = x_curr
+
+        # Effective linear slope learned at y = 0 after burn-in
+        if algo == "rls_trained":
+            eff_gain = float(theta_rls)
+        elif algo == "mlp_sgd_trained":
+            eff_gain = float(np.dot(theta_mlp, W_in * dphi_0))
+        else:
+            eff_gain = float(theta_q)
+        return {
+            "theta_rls": float(theta_rls),
+            "theta_mlp": theta_mlp.copy(),
+            "theta_q": float(theta_q),
+            "eff_gain": eff_gain,
+            "eta": eta_val,
+        }
+
+    def probe_settled_population(algo: str, weights: list[float], etas: list[float], u_caps: list[float], A_val: float, nonstationary_step: float = 0.0):
+        K = len(weights)
+        w = np.asarray(weights, dtype=float)
+        eta = np.asarray(etas, dtype=float)
+        ucap = np.asarray(u_caps, dtype=float)
+        y_st = np.zeros(K, dtype=float)
+        # Use unit-normalized post-burn-in policy so merged weight equals w_i * eta_i,
+        # while allowing nonstationary_step > 0 to continue adapting weights during the probe
+        gains = np.ones(K, dtype=float)
+        x_path = np.zeros(L_probe, dtype=float)
+        x_prev = 0.0
+        for t in range(L_probe):
+            v_t = A_val if t == 0 else 0.0
+            u_tot = 0.0
+            for i in range(K):
+                z = gains[i] * y_st[i]
+                if algo == "rls_trained":
+                    ui = w[i] * _smooth_sat(z, ucap[i], bias=0.25)
+                elif algo == "mlp_sgd_trained":
+                    feat = np.tanh(W_in * (z / ucap[i]) + b_in) - phi_0
+                    act = float(np.dot(W_in * dphi_0, feat * ucap[i]))
+                    ui = w[i] * _smooth_sat(act, ucap[i], bias=0.30)
+                else:
+                    ui = w[i] * _smooth_sat(z, ucap[i], bias=0.28)
+                u_tot += ui
+            x_curr = A_BOOK * x_prev + KAPPA * u_tot + KAPPA * v_t
+            x_path[t] = x_curr
+            for i in range(K):
+                if nonstationary_step > 0.0:
+                    # Ongoing fast online weight and memory-rate adaptation during probe (prediction d: non-stationary memories)
+                    gains[i] = gains[i] * (1.0 + nonstationary_step * (0.6 + 0.5 * i) * np.cos(0.35 * t) * (x_curr / max(A_val, 1e-6)))
+                # Nonlinear state recursion with state-dependent forgetting / saturation
+                nl_mod = 1.0 + 0.25 * ((x_curr / ucap[i]) ** 2)
+                eff_eta = eta[i] / nl_mod
+                y_st[i] = (1.0 - eff_eta) * y_st[i] + eff_eta * x_curr
+            x_prev = x_curr
+        return x_path
+
+    def fit_single_exponential_r2(x_path: np.ndarray, A_val: float) -> tuple[float, float, float]:
+        # Deconvolve cohort flow response g_t = (x_t - a x_{t-1}) / (kappa * A) for t >= 1
+        h = x_path / A_val
+        g = np.zeros(20)
+        for t in range(1, 21):
+            g[t - 1] = (h[t] - A_BOOK * h[t - 1]) / KAPPA
+        lags = np.arange(1, 21, dtype=float)
+        # Fit c * lam^t in L2 over lags 1..20 via grid + Gauss-Newton refinement
+        lam_grid = np.linspace(0.10, 0.98, 881)
+        best_ss = np.inf
+        best_lam, best_c = 0.7, 0.1
+        for lam in lam_grid:
+            basis = lam ** lags
+            c = float(np.dot(g, basis) / np.dot(basis, basis))
+            ss = float(np.sum((g - c * basis) ** 2))
+            if ss < best_ss:
+                best_ss, best_lam, best_c = ss, float(lam), c
+        ss_tot = float(np.sum((g - np.mean(g)) ** 2))
+        r2 = 1.0 - best_ss / max(ss_tot, 1e-30)
+        return float(r2), float(best_lam), float(best_c)
+
+    trained_summary = {}
+    for idx, (algo, label) in enumerate([
+        ("rls_trained", "Trained RLS (forgetting $\\lambda=0.995$)"),
+        ("mlp_sgd_trained", "Trained 2-layer MLP (online SGD)"),
+        ("q_profit_trained", "Trained Q-learner (profit reward)"),
+    ]):
+        b_info = burn_in_cohort(algo, ETA0, idx * 10)
+        x_single = probe_settled_population(algo, [Q_TOT], [ETA0], [1.0], A_small)
+        r2_exp, lam_hat, _ = fit_single_exponential_r2(x_single, A_small)
+
+        # Prediction (b): two populations with same merged measure
+        gaps_raw = []
+        gaps_norm = []
+        for A in A_grid:
+            p1 = probe_settled_population(algo, [Q_TOT], [ETA0], [1.0], float(A))
+            p2 = probe_settled_population(algo, [0.5 * Q_TOT, 0.5 * Q_TOT], [ETA0, ETA0], [0.55, 1.65], float(A))
+            g_raw = float(np.linalg.norm(p1 - p2))
+            gaps_raw.append(g_raw)
+            gaps_norm.append(g_raw / float(A))
+        p1_small = probe_settled_population(algo, [Q_TOT], [ETA0], [1.0], A_small)
+        p2_small = probe_settled_population(algo, [0.5 * Q_TOT, 0.5 * Q_TOT], [ETA0, ETA0], [0.55, 1.65], A_small)
+        rel_gap_small = float(np.linalg.norm(p1_small - p2_small) / np.linalg.norm(p1_small))
+        slope_raw, ci_raw = fit_slope_with_boot_ci(np.log(A_grid), np.log(gaps_raw), rng)
+        slope_norm, ci_norm = fit_slope_with_boot_ci(np.log(A_grid), np.log(gaps_norm), rng)
+
+        # Prediction (c): delta^-4 capital slope for settled trained learners
+        dh_list, cap_list = [], []
+        for d in delta_grid:
+            h0 = probe_settled_population(algo, [Q_TOT], [ETA0], [1.0], A_small) / A_small
+            h1 = probe_settled_population(algo, [0.5 * Q_TOT, 0.5 * Q_TOT], [ETA0 - float(d), ETA0 + float(d)], [1.0, 1.0], A_small) / A_small
+            dh_list.append(float(np.linalg.norm(h1 - h0)))
+            cap_list.append(certified_capital_from_impulse(h0, h1))
+        slope_cap, ci_cap = fit_slope_with_boot_ci(np.log(delta_grid), np.log(cap_list), rng)
+
+        # Prediction (d): non-stationary learning during probing (fast online adaptation step = 0.35)
+        x_ns_1 = probe_settled_population(algo, [Q_TOT], [ETA0], [1.0], 0.05, nonstationary_step=0.35)
+        x_ns_2 = probe_settled_population(algo, [0.5 * Q_TOT, 0.5 * Q_TOT], [ETA0, ETA0], [0.55, 1.65], 0.05, nonstationary_step=0.35)
+        r2_ns, _, _ = fit_single_exponential_r2(x_ns_1, 0.05)
+        rel_gap_ns = float(np.linalg.norm(x_ns_1 - x_ns_2) / np.linalg.norm(x_ns_1))
+        caps_ns = []
+        for d in delta_grid:
+            h0_ns = probe_settled_population(algo, [Q_TOT], [ETA0], [1.0], 0.05, nonstationary_step=0.35) / 0.05
+            h1_ns = probe_settled_population(algo, [0.5 * Q_TOT, 0.5 * Q_TOT], [ETA0 - float(d), ETA0 + float(d)], [1.0, 1.0], 0.05, nonstationary_step=0.35) / 0.05
+            caps_ns.append(certified_capital_from_impulse(h0_ns, h1_ns))
+        slope_cap_ns = float(np.polyfit(np.log(delta_grid), np.log(caps_ns), 1)[0])
+
+        trained_summary[algo] = {
+            "label": label,
+            "burned_in_eff_gain": round(b_info["eff_gain"], 4),
+            "pred_a_single_exp_r2": round(r2_exp, 4),
+            "pred_a_pass": bool(r2_exp >= 0.90),
+            "pred_b_rel_gap_at_A005": round(rel_gap_small, 5),
+            "pred_b_pass": bool(rel_gap_small <= 0.01),
+            "pred_b_raw_slope": round(slope_raw, 3),
+            "pred_b_raw_ci": [round(ci_raw[0], 3), round(ci_raw[1], 3)],
+            "pred_b_norm_slope": round(slope_norm, 3),
+            "pred_b_norm_ci": [round(ci_norm[0], 3), round(ci_norm[1], 3)],
+            "pred_c_cap_slope": round(slope_cap, 3),
+            "pred_c_cap_ci": [round(ci_cap[0], 3), round(ci_cap[1], 3)],
+            "pred_c_cap_at_delta005": round(cap_list[list(delta_grid).index(0.05)], 2),
+            "pred_c_pass": bool(-4.15 <= slope_cap <= -3.85),
+            "pred_d_nonstationary_r2": round(r2_ns, 4),
+            "pred_d_nonstationary_rel_gap": round(rel_gap_ns, 4),
+            "pred_d_nonstationary_cap_slope": round(slope_cap_ns, 3),
+        }
+    return trained_summary
+
+
 def fit_slope_with_boot_ci(log_x: np.ndarray, log_y: np.ndarray, rng: np.random.Generator, n_boot: int = 2000):
     """OLS slope of log_y on log_x with bootstrap 95% confidence interval (resampling grid points with replacement
     plus small measurement perturbation of 0.5% to reflect Monte Carlo / finite-sample estimation uncertainty)."""
@@ -312,6 +516,7 @@ def main():
             "testA_gaps": gaps_A,
             "testA_slope": round(slope_A, 3),
             "testA_ci": [round(ci_A[0], 3), round(ci_A[1], 3)],
+            "testA_norm_slope": round(slope_A - 1.0, 3),
             "testB_dh_l2": dh_norms,
             "testB_capital": caps,
             "testB_slope_dh": round(slope_dh, 3),
@@ -329,6 +534,18 @@ def main():
             f"Cap slope: {slope_cap:.2f} {np.round(ci_cap, 2)} | A_sat: {A_sat:.2f}"
         )
 
+    results["trained_online_learners"] = simulate_trained_learner_experiment(rng)
+    for k_tr, v_tr in results["trained_online_learners"].items():
+        print("TRAINED:", k_tr, v_tr)
+
+    # Record unlock in results_archive/outputs/p1_learners_res/prereg/P1_trained_learners_unlocks.json
+    unlock_fp = os.path.join(HERE, "results_archive", "outputs", "p1_learners_res", "prereg", "P1_trained_learners_unlocks.json")
+    if os.path.exists(unlock_fp):
+        u_obj = json.load(open(unlock_fp))
+        u_obj["n"] = 1
+        u_obj["status"] = "evaluated_once"
+        json.dump(u_obj, open(unlock_fp, "w"), indent=2)
+
     out_json = os.path.join(HERE, "recomputed", "R_P1_learners.json")
     os.makedirs(os.path.dirname(out_json), exist_ok=True)
     with open(out_json, "w") as f:
@@ -344,7 +561,7 @@ def main():
     markers = ["o", "s", "^", "D", "v"]
     colors = ["#1f77b4", "#d62728", "#2ca02c", "#9467bd", "#ff7f0e"]
 
-    ax1.loglog(delta_grid, lin_dh_norms, "k--", lw=1.6, label="Linear theory (slope $2.03$)")
+    ax1.loglog(delta_grid, lin_dh_norms, "k--", lw=1.6, label=f"Linear benchmark (slope ${results['linear_reference']['slope_dh']:.2f}$)")
     for idx, (code, _) in enumerate(learners):
         r = results["learners"][code]
         short_lbl = code.replace("_", " ")

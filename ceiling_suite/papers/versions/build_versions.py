@@ -21,11 +21,8 @@ P2_BODY = ["p2_theory1.tex", "p2_t6.tex", "p2_infosafety.tex", "p2_guard.tex", "
 
 # ---------------- Paper 2, Journal of Finance format ----------------
 front = rd(f"{P2}/p2_front.tex")
-front = front.replace("\\usepackage[margin=1in]{geometry}", "\\usepackage[left=1in,right=1in,top=1.5in,bottom=1.5in]{geometry}")
+front = front.replace("\\usepackage[margin=1in]{geometry}", "\\usepackage[margin=1in]{geometry}")
 front = front.replace("\\doublespacing", "\\onehalfspacing")
-a = front.index("\\begin{abstract}"); b = front.index("\\end{abstract}")
-JF_ABS = ("\\begin{abstract}\n\\noindent " + 'Eigenvalues and volatility do not bound the losses a market produces before settling. We show that cumulative transient risk equals long-run impact divided by reversion net of momentum, that a pre-trade guard on this summed response is the largest safe admission rule for bounded shocks, and that certifying it is cheaper than identifying the traders: experiments certify it at the parametric rate, and the guard is minimax-optimal in lost capacity. In pre-registered tests the statistic forecasts adverse excursions beyond volatility in thin Binance books, including untouched days and symbols, more weakly in thin US stocks, not on Bybit or Coinbase; on untouched dates its spot gain is $15.2\\%$ of its perpetual gain and $2.2\\times$ larger in high-leverage hours; around three fee events zero fees lower impact by $18.3\\%$ while leaving reversion unchanged; and on a $\\$1\\text{M}$ $20\\times$ position the certified guard saves $\\$398$--$\\$2{,}557$/hr in $\\mathrm{ES}_{95}$ beyond a volatility cap.' + "\n")
-front = front[:a] + JF_ABS + front[b:]
 front = front.replace("\\newpage\n\\setcounter{page}{1}\n\\tableofcontents\n\\newpage", "\\newpage\n\\setcounter{page}{1}")
 app = rd(f"{P2}/p2_appendix.tex")
 i_ia = app.index("\\section{Additional material}\\label{app:ia}")
@@ -114,7 +111,11 @@ ia_extra += "\\section{Simulation tests of the information-safety results}\n" + 
 body = body[:_s0] + body[_s1:]
 body = body.replace("(Table~\\ref{tab:simtests})", "(Internet Appendix, Table~\\ref{tab:simtests})")
 mv("\\subsection{Post-hoc checks on opened data (Part 18)}\\label{sec:p18}", "\\FloatBarrier", "Post-hoc checks on opened data (Part 18)",
-   "\\subsection{Post-hoc checks on opened data (Part 18)}\\label{sec:p18}\nPost-hoc checks on samples already opened, an order-splitting placebo on the Binance samples of Parts 9 and 16 and three more guard controls (a certified peak-response guard, a participation cap and a margin-style rule) on Parts 15 and 16, are reported in the Internet Appendix.\n\n")
+   "\\subsection{Post-hoc checks on opened data (Part 18)}\\label{sec:p18}\nPost-hoc checks on samples already opened, an order-splitting placebo on the Binance samples of Parts 9 and 16 and three more guard controls (a certified peak-response guard, a participation cap and a margin-style rule) on Parts 15 and 16, are reported in the Internet Appendix (Table~\\ref{tab:p18}).\n\n")
+mv("\\subsection{Three analyses specified in advance, not deposited (Parts 19--21)}\\label{sec:p1921}",
+   "\\subsection{Pre-registered test of the liquidation mechanism (Part 22)}\\label{sec:p22}",
+   "Analyses specified in advance, not deposited (Parts 19--21)",
+   "\\subsection{Three analyses specified in advance, not deposited (Parts 19--21)}\\label{sec:p1921}\\label{sec:p19}\\label{sec:p20}\\label{sec:p21}\nThree further analyses were specified in an earlier draft before their data were downloaded but were not hash-registered; the Internet Appendix reports their full tables (Tables~\\ref{tab:p19}--\\ref{tab:p21}). In Part 19 (19 thin symbols on the 8th of each month), Primary 1---the interaction of $\\hat C_3$ with high open-interest-to-depth leverage (${\\rm LEV}\\ge16.77$)---fails ($-0.18$~bp, 95\\% CI $[-3.02,+3.73]$); post hoc, $\\hat C_3$ already contains $\\hat\\kappa$, so high-${\\rm LEV}$ hours have larger variance in $\\hat C_3$ ($\\Delta R^2=+8.172$ vs.\\ $+3.678$ points; difference $+4.495$ points, 95\\% CI $[-1.094,+11.663]$), while the matched spot gain is $15.2\\%$ of the perpetual gain ($+0.987$ vs.\\ $+6.495$ points, Clark--West $t=4.96$, ratio 95\\% CI $[-0.015,+0.308]$, exploratory). In Part 20 (BTCUSDT spot zero-fee introduction and removal), the primary reversion ($\\hat m=-0.00120$, $p=0.590$, 80\\% MDE $31.9\\%$) and gain-multiple ($\\widehat{S/\\tilde\\kappa}=-26.88$, $p=0.362$, MDE $52.0\\%$) hypotheses are not supported, while spot impact falls $18.3\\%$ ($\\hat\\kappa=-0.2432$, $t=-3.86$, $p=0.0002$, exploratory, single treated pair; $+0.0082$, $p=0.887$ when pooling a third VIP maker-fee date), consistent with Proposition~\\ref{prop:equil}(v). In Part 21, the guard alone lowers hourly $\\mathrm{ES}_{95}$ per \\$1M of position by \\$3{,}045 ($p=0.0025$) and \\$10{,}518 ($p=0.004$) against a static limit, while adding it to a volatility cap lowers $\\mathrm{ES}_{95}$ by \\$398 ($p=0.196$) and \\$2{,}557 ($p=0.036$, Holm $p=0.07$), neither significant.\n\n")
 _f0 = body.index("\\begin{figure}[p]\\centering\n\\includegraphics[height=0.62\\textheight]{figs/fig_forest.pdf}") if "height=0.62" in body else body.index("\\begin{figure}[p]\\centering\n\\includegraphics[width=0.78\\textwidth]{figs/fig_forest.pdf}")
 _f1 = body.index("\\end{figure}", _f0) + len("\\end{figure}")
 ia_extra += "\\section{Every out-of-sample forecasting evaluation}\n" + body[_f0:_f1].replace("height=0.62\\textheight", "height=0.85\\textheight") + "\n"
@@ -150,6 +151,22 @@ mvblk("\\begin{figure}[t]\\centering\n\\includegraphics[width=0.6\\textwidth]{fi
 body = body.replace("Figure~\\ref{fig:t6} illustrates the four cases.", "Internet Appendix Figure~\\ref{fig:t6} illustrates the four cases.")
 mvblk("\\begin{remark}[Counterexamples to an exact one-period condition]", "\\end{remark}", "Counterexamples to an exact one-period condition",
       "Two explicit counterexamples, one with all channels reinforcing and $C_3=-0.00024$ but a peak of $1.092\\kappa$ at lag 60, are in the Internet Appendix (Remark~\\ref{rem:counter}). ")
+for tlab, tsec in [
+    ("tab:certvsid", "Certification vs.\\ identification sample complexity table"),
+    ("tab:discsim", "Disclosure value across cohort memory rates table"),
+    ("tab:d2", "Validation of the 30-second depth snapshots"),
+    ("tab:fixedgrid", "Depletion on a fixed price grid table"),
+    ("tab:p15", "Pre-registered test on untouched days table (Part 15)"),
+    ("tab:p16", "Pre-registered test on untouched symbols table (Part 16)"),
+    ("tab:p22", "Pre-registered liquidation mechanism table (Part 22)"),
+    ("tab:p23", "Pre-registered multi-hour guard capacity table (Part 23)"),
+]:
+    _l0 = body.index("\\label{" + tlab + "}")
+    _t0 = body.rfind("\\begin{table}", 0, _l0)
+    _t1 = body.index("\\end{table}", _l0) + len("\\end{table}")
+    ia_extra += "\\section{" + tsec + "}\n" + body[_t0:_t1] + "\n"
+    body = body[:_t0] + body[_t1:]
+    body = body.replace("Table~\\ref{" + tlab + "}", "Internet Appendix Table~\\ref{" + tlab + "}")
 # proofs and notation to the Internet Appendix
 _p0 = app_main.index("\\section{Proofs}\\label{app:proofs}")
 ia_extra = app_main[_p0:] + ia_extra
@@ -163,29 +180,45 @@ print("Paper2_JF pages:", n2, "| main ends before IA page label:", m.group(1) if
 
 # ---------------- Paper 1, Quantitative Economics format ----------------
 f1 = rd(f"{P1}/p1_front.tex")
-f1 = re.sub(r"\\usepackage\[[^\]]*\]\{geometry\}", "\\\\usepackage[margin=1.25in]{geometry}", f1)
+f1 = re.sub(r"\\usepackage\[[^\]]*\]\{geometry\}", "\\\\usepackage[margin=1.1in]{geometry}", f1)
+f1 = f1.replace("\\doublespacing", "\\onehalfspacing")
 f1 = f1.replace("\\begin{document}", "\\usepackage{etoolbox}\\AtBeginEnvironment{tabular}{\\scriptsize}\\setlength{\\tabcolsep}{3pt}\\sloppy\n\\begin{document}", 1)
-if "\\doublespacing" not in f1:
-    f1 = f1.replace("\\begin{document}", "\\doublespacing\n\\begin{document}", 1)
-a = f1.index("\\begin{abstract}"); b = f1.index("\\end{abstract}")
-QE_ABS = ("\\begin{abstract}\n\\noindent When trading algorithms condition on recent prices, price formation is a closed-loop system. We ask what an "
-          "outside observer can learn about the algorithms from market data, and at what cost. In a linear cohort model, prices identify "
-          "only a merged rate--weight measure. Separating two memory rates $\\delta$ apart costs executed quantity of order $\\delta^{-2}$ and "
-          "trading capital of order $\\delta^{-4}$, with explicit constants, and five nonlinear and reinforcement-learning rules follow the same "
-          "$O(A^2)$ local gap and $\\delta^{-4}$ scaling below their saturation thresholds; separating $K$ unknown cohorts costs $(\\Delta\\eta)^{-(4K-2)}$ "
-          "experiments, a rate attained by Prony's method; with general completely monotone memory the minimax accuracy is only of order "
-          "$1/\\log N$. Class-tagged disclosure removes the barrier, reduces the sample requirement by a factor of order "
-          "$(\\Delta\\eta)^{-(4K-4)}$, and breaks even against U.S.\\ Consolidated Audit Trail operating costs at 16 markets for $K=3$ ($\\Delta\\eta=0.10$). "
-          "In data, trader-class positions published by Binance and, in a pre-registered test, by the CFTC for "
-          "eight regulated futures markets pin down memories that prices leave unrestricted.\n")
-f1 = f1[:a] + QE_ABS + f1[b:]
+f1 = f1.replace("\\newpage\n\\setcounter{page}{1}\n\\tableofcontents\n\\newpage", "\\newpage\n\\setcounter{page}{1}")
+_mp1_0 = f1.index("\\begin{table}[t]\\centering\\small\n\\begin{threeparttable}\n\\caption{Map of results}")
+_mp1_1 = f1.index("\\end{table}", _mp1_0) + len("\\end{table}")
+supp_extra1 = "\\section{Map of results}\n" + f1[_mp1_0:_mp1_1] + "\n"
+f1 = f1[:_mp1_0] + f1[_mp1_1:]
 app1 = rd(f"{P1}/p1_appendix.tex")
-i1 = app1.index("\\section{Internet appendix}\\label{app:ia}")
-main1, supp1 = app1[:i1], app1[i1:].replace("\\end{document}", "")
+i1_proofs = app1.index("\\section{Proofs}\\label{app:proofs}")
+main1 = app1[:i1_proofs]
+supp1 = app1[i1_proofs:].replace("\\end{document}", "")
 SUP = ("\\clearpage\n\\setcounter{page}{1}\\renewcommand{\\thepage}{S-\\arabic{page}}\n"
+       "\\setcounter{section}{0}\\renewcommand{\\thesection}{S.\\arabic{section}}\n"
        "\\begin{center}{\\Large Supplemental Appendix for ``Auditable Memory and Financial Identification Limits''}\\end{center}\n\\label{app:suppstart}\n")
 body1 = "".join(rd(f"{P1}/{f}") for f in ["p1_ident.tex", "p1_account.tex", "p1_mixture.tex", "p1_disclosure.tex", "p1_empirics.tex"])
-tex1 = f1 + body1 + main1 + SUP + supp1 + "\n\\end{document}\n"
+def mv1(start, end, supp_title, pointer):
+    global body1, supp_extra1
+    i0 = body1.index(start); i1 = body1.index(end, i0 + len(start))
+    blk = body1[i0:i1]
+    supp_extra1 += "\\section{" + supp_title + "}" + blk[len(start):]
+    body1 = body1[:i0] + pointer + body1[i1:]
+mv1("\\subsection{Observation design and the tri-region partition}",
+    "\\subsection{Account-level capital and the gap to the lower bound}",
+    "Observation design and the tri-region partition",
+    "\\subsection{Observation design and the tri-region partition}\nUnder observation horizon $T$ per pulse, $(\\delta,B)$ space splits into three regions: a feasible single-pulse region ($C^*=\\Theta(\\delta^{-4})$ for symmetric splitting), a sequential bounded-probing region where each capped pulse supplies divergence $V_{\\rm eff}^2\\|d_T\\|_2^2/(2\\sigma^2)$, and an infeasible region below the finite-session resolution floor $\\delta_{\\min}=\\Theta(T_{\\rm session}^{-1/4})$ (Supplemental Appendix, Proposition~\\ref{prop:tri} and Figure~\\ref{fig:phase}).\n\n")
+mv1("\\subsection{Robustness: heteroskedastic impact and probing protocols}",
+    "\\subsection{From par units to Bitcoin dollars}\\label{sec:dollars}",
+    "Robustness: heteroskedastic impact and probing protocols",
+    "\\subsection{Robustness: heteroskedastic impact and probing protocols}\nProbing-induced heteroskedasticity and convex impact leave the $\\delta^{-4}$ capital order unchanged (Supplemental Appendix, Corollary~\\ref{cor:garch}), and four simulated probing protocols all exhibit log--log capital slopes near $-4$ (Table~\\ref{tab:protocols}).\n\n")
+mv1("\\section{A spectral blind spot}\\label{sec:blind}",
+    "\\section{Empirical feedback and its measurement}\\label{sec:empirics}",
+    "A spectral blind spot\\label{sec:blind}",
+    "\\section{A spectral blind spot}\nFor any eigenvalues $0<\\lambda_2<\\lambda_1<1$, one-step price variance and sufficiently large stationary price variance, there is a family of two-state markets sharing all three quantities whose worst-case transient gain grows without bound (Supplemental Appendix, Theorem~\\ref{thm:blind} and Figure~\\ref{fig:blind}).\n\n")
+mv1("\\section{Empirical feedback and its measurement}\\label{sec:empirics}",
+    "\\section{Implications for supervision and market design}\\label{sec:policy}",
+    "Empirical feedback and its measurement\\label{sec:empirics}",
+    "\\section{Empirical feedback and its measurement}\nAcross a 96-date, eight-pair Binance spot panel (66.3M one-second bars), a 72-date BTCUSDT one-second panel, 30 USD-M perpetuals and two BTCUSDT spot zero-fee events, standard reduced-form feedback indices are dominated by EMA filtering mechanics ($1-\\alpha=0.9355$) and clock alignment ($0.0081$ with look-ahead vs.\\ $0.00037$ aligned); real feedback beyond the placebo is positive but small ($0.0045$), rises with market depth (Spearman $+0.70$), and does not move when zero fees multiply trading volume by $2.6$ to $4.9$ (Supplemental Appendix, Tables~\\ref{tab:samples}--\\ref{tab:fee2}).\n\n")
+tex1 = f1 + body1 + main1 + SUP + supp_extra1 + supp1 + "\n\\end{document}\n"
 n1, bad1 = build(tex1, "Paper1_QE")
 aux = open(f"{OUT}/Paper1_QE.aux").read()
 m = re.search(r"\\newlabel\{app:suppstart\}\{\{[^}]*\}\{([^}]*)\}", aux)
