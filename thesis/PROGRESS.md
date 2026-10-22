@@ -108,3 +108,30 @@ Open issues: the mathematical targets and future-data tests remain separate;
 this infrastructure repair does not establish them. The later uncommitted
 quadrature script and result were preserved in a local backup before restoring
 the committed A1 diagnostics, which pass their provenance verifier.
+
+## A2 — 2026-10-22
+Status: done
+What changed: `thesis/ch4_paper3.tex`, `thesis/checks/check_multiasset.py`, `thesis/checks/prereg/multiasset.json`, `thesis/checks/R_multiasset.json`, `thesis/checks/export_multiasset_numbers.py`, `thesis/checks/multiasset_numbers.tex`, `thesis/appA_status.tex`.
+Result: Proved sharp positive cross-impact comparison bound (Proposition `prop:multiasset_positive`), $\sup_t \|x_t\|_\infty \le \bar{w} \|(I - G)^{-1} \mathcal{K}\|_\infty$, where $G = A + \mathcal{K} \sum_i \bar{Q}_i S_i$. The proof uses a componentwise comparison principle on the positive resolvent supersolution $z = \bar{w} (I - G)^{-1} \mathcal{K} \mathbf{1} \ge 0$, showing by induction that $|x_t| \le z$ and $|y_{i,t}| \le z$ at all times for arbitrary sector-bounded and time-varying agents. Sharpness is established by the positive linear stationary instance with maximal constant shock $w_t \equiv \bar{w}\mathbf{1}$, whose state converges to $z$. Preregistered numerical test on 128 random instances passed in 128 of 128 cases (`R_multiasset.json`), with normalized bound violation $\le 10^{-10}$ and linear sharpness residual $\le 10^{-8}$.
+Checks: build ok; verify ok (multiasset numbers verified); reproduce ok; ruff ok; lean ok.
+Open issues: Full Mathlib formalization of infinite-dimensional positive resolvent series remains an open formalization target.
+
+## A3 — 2026-10-22
+Status: done
+What changed: `thesis/ch4_paper3.tex`, `thesis/checks/check_strategic.py`, `thesis/checks/R_strategic.json`, `thesis/appA_status.tex`, `thesis/ch1_intro.tex`, `thesis/ch5_conclusion.tex`, `research_extension/current_manuscript_lean_20261008/CurrentProofs/ThesisStrategic.lean`.
+Result: Refuted Conjecture `conj:strategic` on the existence of a pure Nash equilibrium under a discontinuous admission threshold (Remark `rem:strategic_counterexample`). In the one-agent benchmark with step admission $A(q) = 1$ for $q \le 1/2$ and $A(q) = 0$ for $q > 1/2$, every admissible weight has a strictly profitable deviation, so no pure Nash equilibrium exists. The exact rational diagnostics were checked across 17 grid points (`R_strategic.json`), and the non-existence of a maximizer was verified and mechanized in Lean 4 without axioms beyond standard foundations (`CurrentMM.thesis_strategic_no_equilibrium`). Open problem updated in Chapter 5 to regularized/smooth admission guards.
+Checks: build ok; verify ok; reproduce ok; ruff ok; lean ok.
+Open issues: Existence under continuous / smoothed pre-trade admission rules remains an open problem.
+
+## L1 — 2026-10-22
+Status: done
+What changed: `research_extension/current_manuscript_lean_20261008/CurrentProofs/ThesisSafety.lean`, `research_extension/current_manuscript_lean_20261008/CurrentProofs/ThesisStrategic.lean`, `CurrentProofs.lean`, `AxiomAudit.lean`, `verify_formalization.py`, `formal_verification_receipt.json`, `appA_status.tex`.
+Result: Formalized the core new results of Chapter 4 in Lean 4 + Mathlib:
+1. `CurrentMM.thesis_sector_finite_box`: finite-horizon robust safety induction for signed, time-varying sector-bounded agents (`thm:sector`);
+2. `CurrentMM.thesis_sector_radius`: closed-form invariant box radius formula;
+3. `CurrentMM.thesis_weight_drift` and `CurrentMM.thesis_lifetime_sensitivity`: certificate lifetime bounds under bounded learning rates (Corollary `thm:lifetime`);
+4. `CurrentMM.thesis_bias_from_tail`, `CurrentMM.thesis_interval_half_width`, and `CurrentMM.thesis_variance_radius`: deterministic bias/variance arithmetic for linear question certificates (`thm:dich`(i));
+5. `CurrentMM.thesis_strategic_profitable_deviation` and `CurrentMM.thesis_strategic_no_equilibrium`: refutation of pure Nash equilibrium for discontinuous admission (`conj:strategic`).
+Total named declarations in project increased to 459 (from 445). All 459 declarations pass strict kernel check with standard axioms only (`propext`, `Classical.choice`, `Quot.sound`) and 0 sorry / 0 admit.
+Checks: build ok; verify ok; reproduce ok; ruff ok; lean ok (`lake build` and `lake env lean AxiomAudit.lean` pass).
+Open issues: General-measure integration and non-atomic bounds remain external to Lean.

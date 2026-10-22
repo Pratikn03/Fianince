@@ -2,7 +2,7 @@
 
 This chapter is the third paper of the thesis and the candidate's own work. It places the results of Chapters~\ref{ch:p1} and~\ref{ch:p2} in one framework, proves when a question about a market's unknown agents is cheap or impossible to certify, and extends the safety results to agents that are nonlinear and keep learning. Results proved here are marked \Proved{}; results proved in Chapters~\ref{ch:p1}--\ref{ch:p2} are marked accordingly; the open technical target and the conjecture are marked as such.
 
-\begin{quote}\small\textbf{Summary.} Regulators ask to know which algorithms trade in a market; we ask which questions about those algorithms can be answered from market data at all, and at what cost. Every question an outside observer can ask is a functional of the agents' merged measure of memory rates and weights, observed through noisy moments. For linear questions we bound the number of experiments needed to certify the answer by its coefficient energy at a truncation depth set by its tail at long memory, give a finite-depth obstruction in terms of best polynomial approximation, and show that questions singular at infinite memory cannot be certified without a memory bound. Safety is such a question: it depends on the agents only through their total feedback weight and is certified at the parametric rate up to a logarithm, whereas identifying the agents costs polynomially or logarithmically more. The summed-gain guard remains safe for agents whose rules are nonlinear and whose memories and weights change over time, given only a bound on their total sensitivity, and when agents keep learning a certificate lasts for its safety margin divided by their learning speed. The matching lower bound and the behaviour of the guard under strategic agents are left open.\end{quote}
+\begin{quote}\small\textbf{Summary.} Regulators ask to know which algorithms trade in a market; we ask which questions about those algorithms can be answered from market data at all, and at what cost. Every question an outside observer can ask is a functional of the agents' merged measure of memory rates and weights, observed through noisy moments. For linear questions we bound the number of experiments needed to certify the answer by its coefficient energy at a truncation depth set by its tail at long memory, give a finite-depth obstruction in terms of best polynomial approximation, and show that questions singular at infinite memory cannot be certified without a memory bound. Safety is such a question: it depends on the agents only through their total feedback weight and is certified at the parametric rate up to a logarithm, whereas identifying the agents costs polynomially or logarithmically more. The summed-gain guard remains safe for agents whose rules are nonlinear and whose memories and weights change over time, given only a bound on their total sensitivity, and when agents keep learning a certificate lasts for its safety margin divided by their learning speed. The uniform matching lower bound is refuted as stated; a repaired bound remains open. A discontinuous guard can fail to admit a strategic equilibrium.\end{quote}
 
 \section{Markets with adaptive agents}\label{sec:fw_model}
 
@@ -176,25 +176,51 @@ Let $x_t\in\R^d$ evolve as $x_{t+1}=Ax_t+\mathcal K\bigl(\sum_iQ_i(t)\varphi_{i,
 The proof of Theorem~\ref{thm:sector} goes through with absolute values replaced by the sup norm and scalars by induced sup norms: each component of $y_{i,t}$ is a convex combination of its past value and the corresponding component of $x_t$.
 \end{proof}
 
-The multi-asset bound is conservative, because induced norms ignore cancellation across assets; a sharp version for positive cross-impact structures, matching the leader--satellite analysis of Chapter~\ref{ch:p2}, is a \Target{}.
+The induced-norm bound discards the pattern of cross-impact. For positive cross-impact, the following comparison gives the sharper replacement. Its proof is written here; formal and preregistered numerical validation remain outstanding, so its target status is retained.
+
+\begin{proposition}[Positive cross-impact comparison]\label{prop:multiasset_positive}
+Assume the economy starts at rest, $A,\mathcal K,\overline Q_i$ are entrywise non-negative, $|Q_i(t)|\le\overline Q_i$ entrywise, and $|\varphi_{i,t}(y)|\le S_i|y|$ for a non-negative diagonal matrix $S_i$. Memory matrices $R_i(t)$ are diagonal with entries in $[0,1)$. Put $G=A+\mathcal K\sum_i\overline Q_i S_i$. If $\rho(G)<1$, then for every $\|w_t\|_\infty\le\bar w$,
+\[
+\sup_t\|x_t\|_\infty\le
+\bar w\,\bigl\|(I-G)^{-1}\mathcal K\bigr\|_\infty.
+\]
+This bound is sharp over the stated class. \hfill\Target
+\end{proposition}
+
+\begin{proof}
+The Neumann series $\sum_{j\ge0}G^j=(I-G)^{-1}$ has non-negative entries. Write $\mathbf1$ for the vector of ones and set $z=\bar w(I-G)^{-1}\mathcal K\mathbf1\ge0$. Then $Gz+\bar w\mathcal K\mathbf1=z$. Suppose $|x_t|\le z$ and $|y_{i,t}|\le z$ componentwise. The plant and the sector bounds give
+\[
+|x_{t+1}|\le A z+\mathcal K\Bigl(\sum_i\overline Q_i S_i z+\bar w\mathbf1\Bigr)=z.
+\]
+Each next memory coordinate is a convex combination of its previous value and the corresponding next state coordinate, so its absolute value is also bounded by the corresponding coordinate of $z$. Induction from rest proves the componentwise bound for all times. Because the resolvent times $\mathcal K$ is non-negative, its induced sup norm is its maximum row sum, and $\|z\|_\infty$ equals the displayed bound.
+
+For sharpness, choose $R_i(t)=0$, $Q_i(t)=\overline Q_i$, $\varphi_{i,t}(y)=S_i y$, and $w_t=\bar w\mathbf1$. The state then satisfies $x_{t+1}=Gx_t+\bar w\mathcal K\mathbf1$, so from rest $x_t=\bar w\sum_{j<t}G^j\mathcal K\mathbf1$ increases componentwise to $z$. Its supremum norm therefore approaches the bound. Sharpness means a supremum over the admitted model class, not attainment at a finite time in every economy.
+\end{proof}
+
+\paragraph{Registered numerical validation.}
+\input{checks/multiasset_numbers}
+The specification and its hash were pushed before the seeded instances were generated, and the unlock counter was advanced before the single opening. The joint primary required both componentwise enclosure for nonlinear, time-varying cohorts and convergence to the bound in the maximal positive linear instance. It passed in \MultiassetPassed{} of \MultiassetCases{} registered random instances. The generated matrices, tolerances and diagnostics are recorded in \texttt{checks/R\_multiasset.json}. This is numerical evidence under the registered construction; it does not prove the result for every matrix or replace the outstanding Lean formalization of the positive resolvent and sharpness steps.
 
 \section{Certificates expire: learning agents}\label{sec:bl_learning}
 
 Theorem~\ref{thm:sector} allows weights to change, provided they stay below their bounds. When agents learn, the bounds themselves are the issue: a certificate issued today says nothing about weights next month. The theorem turns this into a computable lifetime.
 
 \begin{corollary}[Certificate lifetime]\label{thm:lifetime}
-Suppose a certificate at time $0$ establishes $|q_i(0)|\le q_i^+$ for each cohort, and the guard's loss budget is met for every total sensitivity up to $\Phi_{\max}$, that is $\kappa\bar w/(1-a-\kappa\Phi_{\max})$ times the position equals the budget. If each weight changes by at most $\gamma_i$ per period, $|q_i(t+1)-q_i(t)|\le\gamma_i$, then the guard remains safe for at least
+Suppose a certificate at time $0$ establishes $|q_i(0)|\le q_i^+$ for each cohort, and the guard's loss budget is met for every total sensitivity up to $\Phi_{\max}$, that is $\kappa\bar w/(1-a-\kappa\Phi_{\max})$ times the position equals the budget. If each weight changes by at most $\gamma_i$ per period, $|q_i(t+1)-q_i(t)|\le\gamma_i$, and $\sum_iq_i^+s_i\le\Phi_{\max}$ with $\sum_i\gamma_is_i>0$, then the guard remains safe for at least
 \[
 T_{\rm valid}=\Bigl\lfloor\frac{\Phi_{\max}-\sum_iq_i^+s_i}{\sum_i\gamma_is_i}\Bigr\rfloor
 \]
-periods, whatever the agents' memories and rules within the sector bounds. \hfill\Proved
+periods under the sector bounds. \hfill\Proved
 \end{corollary}
 
 \begin{proof}
 On $[0,T_{\rm valid}]$, $|q_i(t)|\le q_i^++\gamma_iT_{\rm valid}=:\bar q_i$ and $\sum_i\bar q_is_i\le\Phi_{\max}$. Theorem~\ref{thm:sector} applies on that horizon, since its induction uses only periods up to the current one.
 \end{proof}
 
-The lifetime is the certificate's safety margin divided by the agents' speed of learning. It cannot be lengthened in general: if all weights rise at their maximal rates and then stay at the resulting level, the economy after $T_{\rm valid}$ periods is the linear economy at $\Phi_{\max}$, whose worst-case loss under persistent shocks approaches the budget. Two policy consequences follow. Recertification frequency should be set by how fast the agents in a market adapt, not by the calendar; and a market whose agents learn faster needs either more frequent certificates or a larger safety margin, a trade-off the formula prices.
+The lifetime is the certificate's safety margin divided by the agents' speed of learning. This is a guaranteed lower bound, not a claim that loss first crosses the budget at this time. Realized safety can last much longer if learning slows, changes sign, or stops below the sensitivity budget. When $\sum_i\gamma_i s_i=0$, the sensitivity envelope does not grow and the same certificate remains valid for every horizon under the stated sector and plant assumptions; the displayed quotient is not used. If the initial sensitivity bound already exceeds $\Phi_{\max}$, this argument supplies no valid initial certificate. Recertification frequency can therefore be based on the certified sensitivity margin and the learning-speed bound, while additional information about the realized learning path may justify a longer horizon.
+
+\paragraph{Formal scope.}
+The finite-cohort, finite-horizon safety induction is checked by \nolinkurl{CurrentMM.thesis_sector_safety}. The drift, floor and sensitivity calculations are checked by \nolinkurl{CurrentMM.thesis_lifetime_envelope} and its helper lemmas. The deterministic certification arithmetic is checked by \nolinkurl{CurrentMM.thesis_variance_radius} and \nolinkurl{CurrentMM.thesis_interval_half_width}; the new bias lemma covers finite positive atomic measures. These declarations do not formalize Gaussian coverage, a general-measure integration theorem, the matching lower bound, or the sharp positive cross-impact proposition. The coverage register records these boundaries separately.
 
 \paragraph{Identification under learning, by contrast.} Chapter~\ref{ch:p1}, Section~\ref{p1:sec:learners}, shows that trained online learners obey the same $\delta^{-4}$ law for separating memory rates when the competing populations' weights match, and that populations whose learned weights differ are told apart by those weights instead. Learning therefore leaves identification as hard as before while making certification only perishable, not harder per renewal.
 
@@ -212,8 +238,18 @@ A guard changes the environment it certifies. If agents learn that the operator 
 Suppose each cohort chooses its weight $q_i\in[0,\bar q_i]$ to maximize expected trading profit net of a convex cost, given an admission rule that throttles the dealer's position when certified total sensitivity exceeds $\Phi_{\max}$, and given the equilibrium reversion supplied by dealers (Proposition~\ref{p2:prop:equil}). Then (i) an equilibrium exists; (ii) in every equilibrium the guard is safe; and (iii) equilibrium total sensitivity is weakly lower than without the guard. \hfill\Conj
 \end{conjecture}
 
-The conjecture is plausible because the guard makes high sensitivity costly to the agents that create it, through lower admitted liquidity. It can fail if agents can hide sensitivity from the certificate, for example by trading only in states the reset experiments do not visit; this is the reason the conjecture is stated with a certificate of the total sensitivity rather than of the summed response at the current state. A proof would combine Theorem~\ref{thm:sector}, which makes safety depend only on $\bar\Phi$, with a fixed-point argument on the agents' weights.
+\begin{remark}[Counterexample to existence under a discontinuous guard]\label{rem:strategic_counterexample}
+Part (i) of the conjecture is false under the stated assumptions. Consider one cohort with $q\in[0,1]$, a perfect certificate $\Phi=q$, and admitted dealer position $I(q)=1$ for $q\le1/2$ and $I(q)=0$ for $q>1/2$. This is an admission rule that throttles above the certified threshold. Let expected trading profit, as a function of weight and admitted position, be
+\[
+\pi(q,I)=(1-I)(1-q),\qquad c(q)=0.
+\]
+The profit primitive is continuous in $(q,I)$ and the zero cost is convex. After composition with the guard, utility is zero at $q\le1/2$ and equals $1-q$ at $q>1/2$. If $q\le1/2$, the admissible deviation $q'=3/4$ strictly increases utility. If $q>1/2$, the admissible deviation $q'=(q+1/2)/2$ lies strictly between $1/2$ and $q$ and also strictly increases utility. Thus no weight maximizes utility: the one-player game has no pure equilibrium despite its compact strategy set, convex cost, and exact sensitivity certificate.
+
+Randomization does not restore existence. Utility is strictly below $1/2$ everywhere, so its expectation under any probability distribution is strictly below $1/2$; a pure weight sufficiently close to the threshold from above earns more. The universal profitable-deviation statement and nonexistence of a pure maximizer are formalized as \nolinkurl{CurrentMM.thesis_strategic_profitable_deviation} and \nolinkurl{CurrentMM.thesis_strategic_no_equilibrium}. The probability-integral step for arbitrary mixed strategies is a written argument, not part of those Lean declarations. Exact rational diagnostics are recorded separately in \texttt{checks/R\_strategic.json}.
+
+The failure concerns equilibrium existence, not the safety invariant. For example take $a=0$, $\kappa=1/4$, and $\bar w=1$. On admitted profiles $q\le1/2$, unit position loss is bounded by $2/7$; on throttled profiles the position is zero. Every admitted decision therefore respects this budget, although the agents' game has no equilibrium. A revised strategic theorem needs assumptions that rule out the best-response discontinuity. Convex cost alone also supplies no ordering of equilibrium sensitivity with and without a guard; that comparative-static claim remains open under suitable additional payoff restrictions.
+\end{remark}
 
 \section{What the framework does not cover}\label{sec:fw_scope}
 
-The framework is linear in the observable layer and assumes the reset contract for its sharpest statements. Sections~\ref{sec:bl_robust} and~\ref{sec:bl_learning} extend the safety results to sector-bounded nonlinear and to learning agents; agents who change their behaviour in response to the guard are open (Conjecture~\ref{conj:strategic}). Passive observational data are slower but obey the same polynomial order for identification (Theorem~\ref{p1:prop:passive}); a finite-sample theory of certification from observational order-book data, with dependence and non-stationarity, is not developed here, and the empirical certificates of Chapter~\ref{ch:p2} are bootstrap diagnostics rather than guarantees.
+The framework is linear in the observable layer and assumes the reset contract for its sharpest statements. Sections~\ref{sec:bl_robust} and~\ref{sec:bl_learning} extend the safety results to sector-bounded nonlinear and to learning agents; strategic equilibrium existence fails without additional assumptions (Remark~\ref{rem:strategic_counterexample}); existence for suitably regularized guards remains open. Passive observational data are slower but obey the same polynomial order for identification (Theorem~\ref{p1:prop:passive}); a finite-sample theory of certification from observational order-book data, with dependence and non-stationarity, is not developed here, and the empirical certificates of Chapter~\ref{ch:p2} are bootstrap diagnostics rather than guarantees.
