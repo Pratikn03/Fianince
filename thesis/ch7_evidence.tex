@@ -1,0 +1,36 @@
+\chapter{An evidence program for the thesis}\label{ch:evidence}
+
+The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's own predictions. This chapter states what that evidence establishes for the thesis as a whole, what it does not, and two tests designed to test the thesis directly. Both tests are specified here and have not been run.
+
+\section{What the existing evidence establishes}\label{sec:ev_existing}
+
+\paragraph{Prices do not reveal the agents.} In 30 Binance perpetuals, trader-class positions pin down memory rates 28 to 124 times more precisely than prices and flow, and in a pre-registered test the CFTC's trader-class reports do the same in all eight regulated futures markets examined (Sections~\ref{p1:sec:disc_data} and~\ref{p1:sec:cot}). This is the identification half of the thesis in data: the merged measure leaves class memories essentially unrestricted.
+
+\paragraph{The safety statistic carries information.} In thin Binance books, six-hour estimates of the amplification margin forecast the size of the next hour's adverse excursion out of sample in every pre-registered forecasting test, beyond a full volatility-forecasting baseline and VPIN; the effect is about a fifth as large in thin US stocks, negligible on Bybit and absent on Coinbase (Section~\ref{p2:sec:thin} and Table~\ref{p2:tab:alltests}).
+
+\paragraph{What it does not establish.} The forecasting result is reduced form. Tests of a leverage or liquidation mechanism fail (Section~\ref{p2:sec:p22}), and the follow-up that points to slow reversion is close to a check of how the statistic is built (Section~\ref{p2:sec:p25}). As a risk control, the certified guard improves on a static limit but not, at matched exposure, on a volatility cap (Section~\ref{p2:sec:p24}). None of the existing tests checks the thesis's central claim directly: that the certificate computed without identification gets safety right while identification fails.
+
+\section{Test E1: the certificate against ground truth}\label{sec:ev_e1}
+
+\paragraph{Idea.} Where agents' classes are disclosed, the total sensitivity can be computed twice: once from prices and aggregate flow alone, as a certificate, and once by summing class-level estimates, $\hat\Phi_{\rm class}=\sum_c\hat w_c/(1-\hat r_c)$, as the disclosed benchmark. The thesis predicts that the two agree within their intervals, while the class memories themselves are not recoverable from prices, which Chapter~\ref{ch:p1} has already shown for the same markets.
+
+\paragraph{Design.} Markets: the eight CFTC markets of Section~\ref{p1:sec:cot} (weekly) and the 30 Binance perpetuals of Section~\ref{p1:sec:disc_data} (five-minute), on dates not used before. Certificate: the delta-method interval for $\Phi$ from the price-and-flow response kernel with a declared memory bound, as in Chapter~\ref{ch:p2}. Benchmark: the class-composed $\hat\Phi_{\rm class}$ with a block-bootstrap interval. Primary 1: the two intervals overlap in at least 75\% of markets. Primary 2: in the same markets, the price-only intervals for the individual class memories are at least ten times wider than the class-based ones. Caveat registered in advance: disclosed classes need not exhaust the agents, so disagreement can mean either that the certificate is wrong or that unclassified agents matter; the test reports which classes account for the gap.
+
+\pendbox{E1}{Specification to be written, hashed and pushed to the public repository on its own before any test data are downloaded; results reported whatever they show.}
+
+\section{Test E2: a prospective test of the mechanism}\label{sec:ev_e2}
+
+\paragraph{Idea.} Every pre-registered test so far used archived data. A prospective test removes any doubt about the order of registration and data: the data do not exist when the specification is written. Binance publishes forced liquidations on a public market-data stream, at most one per symbol each second, so the stream is a sample of liquidations rather than the full record, and its history is not archived publicly. Recording the stream after registration gives liquidation data no one could have seen; the sampling is the same in every hour and is stated as a limitation in advance.
+
+\paragraph{Design.} Record the forced-liquidation stream and order-book depth for the thin perpetuals of Chapter~\ref{ch:p2} for at least three months after the specification is pushed. Primary 1: six-hour $\hat C_3$ forecasts next-hour sampled liquidation volume beyond the volatility, impact and lagged-liquidation baseline. Primary 2: adding realized next-hour liquidation volume to the excursion model removes at least half of $\hat C_3$'s forecasting gain. Either outcome is informative: a pass identifies the channel that the open-interest proxy of Part~22 could not; a fail, with direct liquidation data, closes it.
+
+\pendbox{E2}{Recording infrastructure, specification and power calculation to be completed and the specification pushed before recording starts.}
+
+\section{Rules for every new test}\label{sec:ev_rules}
+
+\begin{enumerate}
+\item The specification, its hash and an unlock counter are pushed to the public repository in a commit of their own, so the platform records when they became public, before any test data are downloaded or recorded.
+\item Each test has at most two primaries with a pre-stated pass rule and a pre-stated correction across them.
+\item A failed primary is reported as failed. An explanation found afterwards is labelled post hoc, and any test that follows from it is labelled as registered after the failure.
+\item Every number in the thesis is produced by code that writes a result file, and an automated check compares the printed numbers with those files.
+\end{enumerate}

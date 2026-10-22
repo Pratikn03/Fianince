@@ -1,0 +1,95 @@
+\documentclass[11pt,oneside]{report}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs,threeparttable,graphicx,setspace,enumitem,longtable,array}
+\usepackage{xcolor}
+\usepackage{etoolbox}
+\usepackage{placeins}
+\AtBeginEnvironment{tabular}{\footnotesize}
+\usepackage[authoryear,round]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
+\onehalfspacing
+\emergencystretch=2em
+\setcounter{tocdepth}{1}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\KL}{D_{\mathrm{KL}}}
+\newcommand{\lab}[1]{\textsc{[#1]}}
+
+% status tags used in the new chapters
+\newcommand{\tagbox}[2]{\fcolorbox{#1}{#1!7}{\textsf{\scriptsize #2}}}
+\newcommand{\Proved}{\tagbox{green!45!black}{PROVED IN THIS THESIS}}
+\newcommand{\ProvedIn}[1]{\tagbox{green!45!black}{PROVED IN #1}}
+\newcommand{\Target}{\tagbox{blue!70!black}{TARGET: STATEMENT FIXED, PROOF TO BE WRITTEN}}
+\newcommand{\Conj}{\tagbox{orange!85!black}{CONJECTURE}}
+\newcommand{\Pending}{\tagbox{red!70!black}{PENDING DATA}}
+\newcommand{\pendbox}[2]{\par\medskip\noindent\fcolorbox{red!70!black}{red!4}{\parbox{0.96\linewidth}{\small\textbf{\color{red!70!black}Pending --- #1.} #2}}\par\medskip}
+
+% each chapter's references appear as a section at the end of that chapter
+\renewcommand{\bibsection}{\section*{References}}
+
+\begin{document}
+\pagenumbering{roman}
+\begin{titlepage}
+\centering
+\vspace*{1.2in}
+{\LARGE\bfseries Certify, Don't Identify\par}
+\vspace{0.4cm}
+{\Large Safety and Identification in Markets and Other\\ Feedback Systems with Adaptive Agents\par}
+\vspace{1.2cm}
+{\large Pratik Niroula\par}
+\vspace{0.3cm}
+{\normalsize Department of Computer Information Science, Minnesota State University, Mankato\par}
+\vspace{1.2cm}
+{\normalsize Thesis blueprint, October 2026\par}
+\vfill
+\noindent\fcolorbox{black!60}{black!3}{\parbox{0.92\textwidth}{\small
+\textbf{What this document is.} The intended final form of a thesis built on two finished papers, which appear as Chapters~\ref{ch:p1} and~\ref{ch:p2}. Chapters~\ref{ch:intro}, \ref{ch:framework}, \ref{ch:beyondlinear}, \ref{ch:beyondmarkets}, \ref{ch:evidence} and~\ref{ch:conclusion} are new. Every result in the new chapters carries a tag: \Proved{} (with its proof), \ProvedIn{CH.~3/4} (proved in a paper chapter), \Target{} (the statement the thesis will prove, with a proof plan), \Conj{}, or \Pending{} (an empirical test specified but not yet run). No number in the new chapters is invented; Appendix~\ref{app:status} lists the status of every main result.}}
+\end{titlepage}
+
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+Markets, power grids, vehicle platoons and, increasingly, markets of trading algorithms are feedback systems in which many adaptive agents respond to a shared state that their own actions move. Regulators and operators often respond by asking to know who is inside the system. This thesis asks whether that knowledge is needed for safety, and answers that it generally is not. In the closed-loop markets studied here, prices reveal the agents only through a merged measure of their memories and weights; separating two agents whose memory rates differ by $\delta$ costs trading capital of order $\delta^{-4}$, separating $K$ unknown agents costs a number of experiments of order $(\Delta\eta)^{-(4K-2)}$, and with general memory the accuracy of any method improves only as $1/\log N$. Safety, by contrast, depends on the agents only through one number, the summed price response, which is certified at the parametric rate $\sigma^2\epsilon^{-2}\log(1/\epsilon)$ whatever their number and spacing, provided memory is bounded, and cannot be certified at all without such a bound. A pre-trade guard built on the certificate is the largest safe admission rule and is minimax-optimal in lost capacity up to a logarithmic factor. The thesis organises these results under one framework in which every question an operator can ask is a functional of the agents' merged measure, and its cost is set by how the functional behaves as memory becomes long. It extends the safety results to sector-bounded nonlinear agents and to agents that keep learning, for which a certificate has a computable lifetime, and it maps the framework to platoon string stability and grid frequency control. In data, trader-class disclosures from Binance and the CFTC pin down memories that prices leave unrestricted, and in pre-registered tests the summed-response statistic forecasts adverse price excursions in thin crypto books and, more weakly, in thin US stocks; tests of a leverage or liquidation mechanism fail.
+
+\chapter*{Statement of co-authorship}
+\addcontentsline{toc}{chapter}{Statement of co-authorship}
+Chapter~\ref{ch:p1} reproduces the paper \emph{Auditable Memory and Financial Identification Limits in Electronic Limit Order Books}, joint with Prashant Niroula. Chapter~\ref{ch:p2} reproduces the paper \emph{From Human Markets to Machine Markets: Transient Amplification, an Exact Depth Condition, and a Maximal Pre-Trade Guard}, joint with Suboh Alkhushayni, Yuhao Chen, Mansi Bhavsar and Prashant Niroula. \textit{[To be completed with the co-authors: the candidate's contribution to each chapter, and permission to include the papers.]} Chapters~\ref{ch:intro}, \ref{ch:framework} and~\ref{ch:beyondlinear}--\ref{ch:conclusion} are the candidate's own work.
+
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+
+\input{ch1_intro}
+\input{ch2_framework}
+\input{ch3_paper1}
+\renewcommand{\arraystretch}{1}
+\input{ch4_paper2}
+\renewcommand{\arraystretch}{1}
+\input{ch5_beyond_linear}
+\input{ch6_beyond_markets}
+\input{ch7_evidence}
+\input{ch8_conclusion}
+
+\appendix
+\input{appA_status}
+
+\chapter*{Bibliography for Chapters~1, 2 and 5--8}
+\addcontentsline{toc}{chapter}{Bibliography for Chapters 1, 2 and 5--8}
+\begingroup
+\renewcommand{\bibsection}{}
+\input{bib_new}
+\endgroup
+
+\end{document}

@@ -1,0 +1,95 @@
+\chapter{Certification versus identification: a framework}\label{ch:framework}
+
+This chapter states the common framework of the thesis. It defines the systems studied, treats every question an operator can ask as a functional of one object, the agents' merged measure, and asks what each question costs to answer from data. Section~\ref{sec:fw_dich} gives the main result: for linear questions the cost of certification is controlled by how the question behaves at long memory. Parts of it are proved here; the matching lower bound is the thesis's main open technical target. Chapters~\ref{ch:p1} and~\ref{ch:p2} supply the special cases.
+
+\section{Feedback systems with adaptive agents}\label{sec:fw_model}
+
+\begin{definition}[Cohort economy]\label{def:cohort}
+A state $x_t\in\R$ (a price displacement, a frequency deviation, a spacing error) evolves as
+\begin{equation}\label{eq:fw_plant}
+x_{t+1}=a\,x_t+\kappa\,(u_t+w_{t+1}),\qquad u_t=\sum_{i=1}^K q_i\,\varphi_i(y_{i,t}),\qquad y_{i,t}=r_i\,y_{i,t-1}+(1-r_i)\,x_t,
+\end{equation}
+with persistence $a\in[0,1)$, impact $\kappa>0$, exogenous shocks $w_t$, and $K$ cohorts of agents with weights $q_i\ge0$, memory rates $r_i\in[0,1)$ and response rules $\varphi_i$. The economy is \emph{linear} when $\varphi_i(y)=y$ for all $i$.
+\end{definition}
+
+The exponential state $y_{i,t}$ is the reduced form of steady-state Kalman filtering and of regularized online gradient descent (Lemma~\ref{p1:lem:micro}); Chapter~\ref{ch:beyondlinear} relaxes linearity and stationarity. In the linear economy the aggregate response is a linear filter of past states,
+\[
+u_t=\sum_{m\ge0}k_m\,x_{t-m},\qquad k_m=\int r^m\,dM(r),\qquad M=\sum_{i=1}^K q_i(1-r_i)\,\delta_{r_i},
+\]
+so the agents enter the observable dynamics only through the \emph{merged measure} $M$, a positive measure on $[0,1)$, and through its moments $k_m$. Cohorts that share a memory rate are indistinguishable, whatever their identities (Theorem~\ref{p1:thm:merged}). We write $\mathcal M(\bar r,B)$ for the positive measures on $[0,\bar r]$ of total mass at most $B$; $\bar r<1$ is a \emph{memory bound}.
+
+\section{Questions are functionals of the merged measure}\label{sec:fw_questions}
+
+Every question an outside observer can answer from the observable dynamics is a functional $F$ of $M$ (and of the known plant parameters $a,\kappa$). Three families matter.
+
+\paragraph{Identification.} $F(M)=M$ itself, in a metric such as the Wasserstein distance $W_1$, or the atoms $(r_i,q_i)$ when $M$ has $K$ atoms. Chapter~\ref{ch:p1} studies these.
+
+\paragraph{Safety.} For bounded shocks $|w_t|\le\bar w$, the worst-case transient loss of a position $I$ is $|I|\,\bar w\,\|h\|_1$, where $h$ is the closed-loop impulse response, and a pre-trade guard on $\|h\|_1$ admits every safe action and no unsafe one (Lemma~\ref{p2:thm:guard}). In the linear economy with $a\ge0$ all $h_t$ are non-negative, so $\|h\|_1$ equals the summed response
+\begin{equation}\label{eq:fw_S}
+S(M)=\frac{\kappa}{1-a-\kappa\,\Phi(M)},\qquad \Phi(M)=\sum_{m\ge0}k_m=\int\frac{dM(r)}{1-r}=\sum_i q_i ,
+\end{equation}
+whenever $a+\kappa\Phi<1$ (Theorem~\ref{p2:thm:sum}). Safety therefore depends on the agents only through one linear functional of $M$, the total feedback weight $\Phi$.
+
+\paragraph{Other operational questions.} The response at a given lag, $k_m=\int r^m dM$; the discounted feedback $\int (1-\beta r)^{-1}dM$; the peak of the impulse response. The first two are linear in $M$; the peak is not, and a guard built on it admits unsafe actions (Chapter~\ref{ch:p2}).
+
+\section{Observation contracts and the cost of a question}\label{sec:fw_contracts}
+
+\begin{assumption}[Reset contract]\label{ass:reset}
+The observer can run $N$ independent reset experiments. Each returns the first $L$ aggregate response taps with independent Gaussian noise, $\hat k_m=k_m+\sigma\xi_m$, $\xi_m\sim N(0,1)$, $m=0,\dots,L-1$.
+\end{assumption}
+
+This is the controlled-probe contract with observed aggregate flow (contract $I_1$ of Chapter~\ref{ch:p1}). Chapter~\ref{ch:p2} works with the closed-loop taps $h_t$ instead; for the summed response the two contracts give the same rate (Theorem~\ref{p2:thm:certcost}). Correlated tap noise, passive data and tagged disclosure are other contracts, treated in Chapters~\ref{ch:p1} and~\ref{ch:p2}.
+
+\begin{definition}[Cost of certification]\label{def:ncert}
+For a functional $F$, a class $\mathcal M$, accuracy $\epsilon>0$ and level $1-\alpha$, $N_{\rm cert}(\epsilon;F,\mathcal M)$ is the smallest $N$ for which some interval built from the data has half-width at most $\epsilon$ and covers $F(M)$ with probability at least $1-\alpha$ for every $M\in\mathcal M$.
+\end{definition}
+
+\section{The certification--identification dichotomy}\label{sec:fw_dich}
+
+Consider a linear question $F_g(M)=\int g\,dM$, where $g(r)=\sum_{t\ge0}a_t r^t$ converges absolutely on $[0,\bar r]$. Two numbers describe how hard it is. Its \emph{tail at depth} $T$ and its \emph{coefficient energy} are
+\[
+\tau_g(T)=B\sup_{0\le r\le\bar r}\Bigl|\sum_{t\ge T}a_t r^t\Bigr|,\qquad A_g(T)=\sum_{t<T}a_t^2,
+\]
+and its \emph{truncation depth} is $T_g(\epsilon)=\min\{T\ge1:\tau_g(T)\le\epsilon/2\}$. We also write $E_T(g)=\min_{\deg p<T}\max_{[0,\bar r]}|g-p|$ for the error of the best polynomial approximation of degree below $T$.
+
+\begin{theorem}[Certification of linear questions]\label{thm:dich}
+Under Assumption~\ref{ass:reset} with $L\ge T_g(\epsilon)$, and with $z=z_{1-\alpha/2}$:
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Upper bound.} $N_{\rm cert}(\epsilon;F_g,\mathcal M(\bar r,B))\le\bigl\lceil4z^2\sigma^2A_g(T_g(\epsilon))\,\epsilon^{-2}\bigr\rceil$. \hfill\Proved
+\item \emph{Truncation is necessary.} For every $T$ there are $M,M'\in\mathcal M(\bar r,B)$ whose first $T$ taps coincide and with $|F_g(M)-F_g(M')|\ge2B\,E_T(g)$. Hence any certificate that uses only the first $T$ taps has worst-case half-width at least $B\,E_T(g)$. \hfill\Proved
+\item \emph{Long memory makes certification impossible.} Without a memory bound, that is on the positive measures on $[0,1)$ of mass at most $B$, if $\limsup_{r\uparrow1}|g(r)|\sqrt{1-r}=\infty$ then for every level $1-\alpha$ with $\alpha<1/4$ no finite $N$ certifies $F_g$ to any finite accuracy. \hfill\Proved
+\item \emph{Matching lower bound.} For $g$ in a regular class (coefficients of eventually constant sign and at most polynomial growth), $N_{\rm cert}(\epsilon;F_g,\mathcal M(\bar r,B))\ge c\,\sigma^2A_g(c'\,T_g(\epsilon))\,\epsilon^{-2}$ for constants $c,c'>0$ depending only on $(\bar r,B,\alpha)$. \hfill\Target
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Proof of (i)--(iii)]
+(i) Let $\bar k_t$ be the average of the $N$ replicates of tap $t$ and $T=T_g(\epsilon)$. The estimator $\hat F=\sum_{t<T}a_t\bar k_t$ has mean $\sum_{t<T}a_tk_t$ and variance $\sigma^2A_g(T)/N$. Its bias is $|\sum_{t\ge T}a_tk_t|=|\int\sum_{t\ge T}a_tr^t\,dM(r)|\le\tau_g(T)\le\epsilon/2$ for every $M\in\mathcal M(\bar r,B)$. The interval $\hat F\pm(\epsilon/2+z\sigma\sqrt{A_g(T)/N})$ therefore covers $F_g(M)$ with probability at least $1-\alpha$, and its half-width is at most $\epsilon$ once $z\sigma\sqrt{A_g(T)/N}\le\epsilon/2$.
+
+(ii) By duality for best uniform approximation, $E_T(g)=\max\{\int g\,d\nu\}$ over signed measures $\nu$ on $[0,\bar r]$ with total variation at most one that annihilate every polynomial of degree below $T$. Take a maximizer and write $\nu=\nu^+-\nu^-$. Orthogonality to constants gives $\nu^+([0,\bar r])=\nu^-([0,\bar r])=:c\le1/2$. Set $M=(B/c)\nu^+$ and $M'=(B/c)\nu^-$: both lie in $\mathcal M(\bar r,B)$, their first $T$ moments coincide, and $F_g(M)-F_g(M')=(B/c)E_T(g)\ge2B\,E_T(g)$. Two measures that produce identical data cannot both be covered by an interval of half-width below half their distance.
+
+(iii) Compare $M_0=0$ with $M_1=c\,\delta_r$. Under $M_1$ the taps are $k_t=c\,r^t$, so the Kullback--Leibler divergence between the two data distributions over any number of taps is at most $Nc^2/(2\sigma^2(1-r^2))$. Choose $c=\sigma\sqrt{(1-r^2)/N}$, which is at most $B$ for $r$ near one; the divergence is then at most $1/2$, so by Pinsker's inequality the total variation distance between the two data distributions is at most $1/2$. The functional differs by $c\,|g(r)|=\sigma\sqrt{(1-r^2)/N}\,|g(r)|\ge\sigma\sqrt{(1-r)/N}\,|g(r)|$, which is unbounded along a sequence $r\uparrow1$ by assumption. Suppose an interval of half-width $\epsilon$ covered $F_g$ with probability at least $1-\alpha$ under both economies. Once the two values differ by more than $2\epsilon$, the event that the interval contains $F_g(M_0)$ has probability at least $1-\alpha$ under $M_0$ and at most $\alpha$ under $M_1$, so the total variation distance is at least $1-2\alpha>1/2$, a contradiction.
+\end{proof}
+
+\paragraph{What the theorem says.} The cost of answering a linear question is governed by its behaviour at long memory. If its power-series tail decays geometrically on $[0,\bar r]$, the truncation depth grows like $\log(1/\epsilon)$ and the cost is parametric up to that factor. If the question is singular at infinite memory, faster than $(1-r)^{-1/2}$, no memory bound means no certificate. The number of agents and the spacing of their memories do not enter.
+
+\begin{corollary}[The rates of this thesis as cases of one picture]\label{cor:cases}
+\begin{enumerate}[label=(\alph*)]
+\item \emph{Safety with a memory bound.} For $\Phi$, $a_t\equiv1$, so $A_\Phi(T)=T$ and $\tau_\Phi(T)=B\bar r^T/(1-\bar r)$. Part (i) gives $N_{\rm cert}=O\bigl(\sigma^2\epsilon^{-2}\log(1/\epsilon)/\log(1/\bar r)\bigr)$, and $S=\kappa/(1-a-\kappa\Phi)$ is certified by mapping the interval through this monotone function. This is the rate of Theorem~\ref{p2:thm:certcost}, which Theorem~\ref{p2:thm:robustguard} shows is optimal up to the logarithm for the guard. \hfill\ProvedIn{CH.~4}
+\item \emph{Safety without a memory bound.} $g(r)=(1-r)^{-1}$ satisfies the condition of (iii): no finite number of experiments certifies the risk, as Theorem~\ref{p2:thm:window}(iii) shows for finite windows. \hfill\ProvedIn{CH.~4}
+\item \emph{A single response tap.} For $g(r)=r^m$, $A_g=1$ and the cost is exactly parametric. \hfill\Proved
+\item \emph{Identifying $K$ cohorts.} Recovering the atoms is not a linear question. It requires moments up to order $2K-1$ to be resolved against moment-matched alternatives whose higher moments differ by $O((\Delta\eta)^{2K-1})$, which costs $(\Delta\eta)^{-(4K-2)}$ experiments (Theorems~\ref{p1:thm:kcohort} and~\ref{p1:prop:esprit}). \hfill\ProvedIn{CH.~3}
+\item \emph{Identifying a general memory measure.} Recovering $M$ in $W_1$ means certifying $F_g$ uniformly over all $1$-Lipschitz $g$. Their best approximations by degree-$T$ polynomials improve only as $1/T$, and the coefficients of those polynomials grow geometrically in $T$, so by part (i) accuracy improves only logarithmically in $N$: the rate $1/\log N$ of Theorem~\ref{p1:thm:general}. \hfill\ProvedIn{CH.~3}
+\end{enumerate}
+\end{corollary}
+
+The link in (e) between coefficient growth and the logarithmic rate is a heuristic reading of Chapter~\ref{ch:p1}'s proof, not a separate result; making it a corollary of part (iv) is part of the target.
+
+\paragraph{Proof plan for part (iv).} The lower bound combines the two mechanisms above. Truncation (part (ii)) shows that depth $T_g(\epsilon)$ is needed; the noise argument of part (iii) shows that each of the first $T$ taps must be resolved to precision of order $\epsilon/\sqrt{A_g(T)}$ in the direction of the coefficient vector $(a_0,\dots,a_{T-1})$. The step that remains is a construction of moment-matched pairs whose tap differences lie close to that direction, using the Gauss and Gauss--Radau quadrature pairs of Theorem~\ref{p1:thm:kcohort} as building blocks, followed by a Le Cam two-point bound. The regularity condition on $g$ is what makes the direction attainable by positive measures.
+
+\section{Disclosure changes the contract, not the question}\label{sec:fw_disclosure}
+
+Disclosure regimes are observation contracts. Class-tagged flow reveals each class's own moments, which turns identification into an ordinary estimation problem and is worth a factor $(\Delta\eta)^{-(4K-4)}$ in samples (Theorem~\ref{p1:thm:discvalue}). For safety the value of disclosure is different: it raises safe capacity exactly when it rules out the extremal compatible economy, and it is worth most when memory is long, where Theorem~\ref{thm:dich}(iii) says public data certify nothing (Theorem~\ref{p2:thm:disclosure}). Supervision that wants safety should therefore ask for the disclosures that bound memory or reveal $\Phi$, not for identities.
+
+\section{What the framework does not cover}\label{sec:fw_scope}
+
+The framework is linear in the observable layer and assumes the reset contract for its sharpest statements. Chapter~\ref{ch:beyondlinear} extends the safety results to sector-bounded nonlinear and to learning agents; agents who change their behaviour in response to the guard are open (Conjecture~\ref{conj:strategic}). Passive observational data are slower but obey the same polynomial order for identification (Theorem~\ref{p1:prop:passive}); a finite-sample theory of certification from observational order-book data, with dependence and non-stationarity, is not developed here, and the empirical certificates of Chapter~\ref{ch:p2} are bootstrap diagnostics rather than guarantees.
