@@ -100,6 +100,37 @@ jobs:
           { grep -E "TEXT DIFFERS" suite.log || true; } | while read -r line; do echo "::warning::${line}"; done
           grep -E "done: all checks passed" suite.log
 
+  thesis-validation:
+    name: Thesis Build and Registered Result Provenance
+    needs: [lint, lean-formal-audit]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install thesis build dependencies
+        run: |
+          python -m pip install numpy
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended \
+            texlive-latex-extra texlive-fonts-recommended lmodern poppler-utils
+      - name: Verify committed result provenance without reopening registered tests
+        run: python3 thesis/verify_thesis_numbers.py
+      - name: Build thesis
+        run: sh thesis/build_thesis.sh
+      - name: Build single-source stand-alone Paper 3 draft
+        run: python3 paper3/build_paper3.py
+      - name: Upload thesis and status report
+        uses: actions/upload-artifact@v4
+        with:
+          name: thesis-review
+          path: |
+            thesis/thesis.pdf
+            thesis/PROGRESS.md
+            paper3/paper3.pdf
+            paper3/build_receipt.json
+
   test-matrix:
     name: Pytest Suite (${{ matrix.os }}, Python ${{ matrix.python-version }})
     needs: [lint]

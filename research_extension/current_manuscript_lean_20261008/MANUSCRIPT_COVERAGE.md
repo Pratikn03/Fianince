@@ -31,3 +31,17 @@ S21 includes kernel-checked algebraic subresults, a known-family inversion bound
 | Conditional Bounded-Shock Forward Solvency of the Real-Time Resolvent Guard | Complete formal proof of exact double-entry mark-to-market step equity update (`dealer_step_equity_update`), norm-ball sufficiency for next-step margin solvency (`resolvent_guard_norm_ball_sufficiency`, `kreiss_resolvent_guard_solvency_invariance`), exact Signed-Shock Counterexample CE-15 (`signed_shock_counterexample_ce15_theorem`), multi-step recursive forward solvency (`resolvent_guard_multistep_recursive_solvency`), strictly positive cumulative shock risk at `alpha = 0` (`resolvent_guard_cumulative_positive_at_zero_alpha`), exact `(1 + 0.005)` Tier-2 maintenance-margin equivalence between Equations IA.39 and IA.40 (`resolvent_guard_maintenance_margin_tier2_consistency`), cumulative-over-step guard domination with post-fill inventory `abs_I_post_fill = abs_I_next + fill_qty` and positive net fill margin surcharge `C_fill = (mu * p_mid - half_spread) * fill_qty >= 0` at `mu = 0.005, p_mid = 100, half_spread = 0.02` (`resolvent_guard_post_hedge_and_fill_margin_accounting`), and non-anticipative guard action invariance (`non_anticipative_guard_action_invariance`). | |
 
 The finite-window quantity gate is also fully proved (`exact_scalar_window_budget`, `positive_window_gain_cap`, `finite_window_minimum_cap`, `actual_carried_monetary_output`, `actual_monetary_coordinate_invariance`, `actual_monetary_prefix_gate`).
+
+## Thesis additions (2026-10-22)
+
+These entries are separate from the historical manuscript coverage counts.
+
+| Thesis result | Kernel-checked scope | Boundary |
+| --- | --- | --- |
+| `thm:sector` | `thesis_sector_safety`: actual scalar plant, finite cohorts/horizon, signed time-varying weights and sector responses, convex memories. | Tightness is not newly mechanized. |
+| `thm:lifetime` | `thesis_weight_drift`, `thesis_lifetime_floor`, `thesis_lifetime_envelope`: drift, floor and sensitivity. | Positive total drift and nonnegative initial margin. No first-passage sharpness. |
+| `thm:dich(i)` | `thesis_bias_from_tail`, `thesis_variance_radius`, `thesis_interval_half_width`. | Finite atomic bias and deterministic arithmetic only; general integration, Gaussian coverage and part (iv) excluded. |
+
+The strategic counterexample is separate: `thesis_strategic_profitable_deviation` and `thesis_strategic_no_equilibrium` prove nonexistence of a pure maximizer in the stated one-cohort threshold game. The mixed-strategy extension is written mathematics only.
+
+Current thesis integration strict audit: 459 named mathematical declarations, including the thesis additions. This is a declaration count, not a claim of full manuscript or empirical completion.

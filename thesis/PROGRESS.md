@@ -108,3 +108,122 @@ Open issues: the mathematical targets and future-data tests remain separate;
 this infrastructure repair does not establish them. The later uncommitted
 quadrature script and result were preserved in a local backup before restoring
 the committed A1 diagnostics, which pass their provenance verifier.
+
+## Continued completion in isolated checkout — 2026-10-22
+
+The current three-paper finance/theory structure is retained. The pasted older
+instructions also list grid/platoon work; that differs from Claude's current
+`ANTIGRAVITY_THESIS_TASKS.md`. A scope clarification was requested while the
+common finance/theory work continued. No engineering chapters were invented or
+silently claimed complete.
+
+Another process replaced the registered multi-asset runner and raw case archive
+in the shared checkout. Both replacement files were preserved in the incident
+backup; they are not registered evidence. Work moved to the managed checkout
+`/Users/pratik_n/.codex/worktrees/thesis-completion/Machine_Markets_Master_Release`
+on `codex/thesis-completion-20261022`. The primary checkout's other edits were
+left intact. See `checks/multiasset_artifact_incident.json` for the observed
+original stdout, archive loss and recovery registration. The original opened
+study was not rerun. Its missing archive is a documented limitation, not repaired
+by substituting an unregistered result.
+
+## A3 (pasted list) / A2 (current task file) — 2026-10-22
+Status: partial
+What changed: `ch4_paper3.tex`, status registers, `checks/check_multiasset_recovery.py`,
+`checks/prereg/multiasset_recovery.*`, `checks/R_multiasset_recovery.json`,
+`checks/export_multiasset_numbers.py`, `checks/multiasset_numbers.tex`,
+`verify_thesis_numbers.py`.
+Result: A written positive-system comparison proves the sharp resolvent bound
+and its supremum sharpness over the model class, including coordinatewise sector
+and memory bounds. The separately registered follow-up after archive loss passed
+all 128 newly generated instances against the pre-stated joint enclosure and
+sharpness rule. The pushed spec/hash/zero counter preceded generation; the
+counter is now one. The theorem remains a target because the complete positive
+resolvent and limiting sharpness arguments are not mechanized. No target was
+promoted merely because a simulation passed.
+Checks: build ok; verify ok; reproduce ok; ruff ok; lean partial (matrix result).
+Open issues: complete the matrix/spectral formalization. The first study's
+original case archive remains unavailable and its replacement is not evidence.
+
+## A5 (pasted list) / A3 (current task file) — 2026-10-22
+Status: done
+What changed: `ch4_paper3.tex`, `ch1_intro.tex`, `ch5_conclusion.tex`,
+`appA_status.tex`, `checks/check_strategic.py`, `checks/R_strategic.json`,
+`CurrentProofs/ThesisStrategic.lean` and the formal coverage register.
+Result: A single-agent threshold-admission game has a profitable admissible
+deviation at every weight, despite a compact strategy interval, continuous
+primitive profits, convex zero cost and an exact certificate. This refutes the
+existence part of the abstract conjecture as stated. The example does not assert
+failure for every economically restricted P&L model. The pure profitable-deviation
+and nonexistence results compile in Lean; the extension to arbitrary randomized
+strategies is a written integral argument only. The safety invariant still
+controls every admitted profile. Refuted claims now have an explicit refuted
+status rather than an unqualified conjecture/target tag.
+Checks: build ok; verify ok; reproduce ok; ruff ok; lean ok locally.
+Open issues: stronger payoff restrictions, regularized admission and the proposed
+comparative static require their own theorem. CI status is recorded separately.
+
+## L1 — 2026-10-22
+Status: partial
+What changed: `CurrentProofs/ThesisSafety.lean`, `CurrentProofs.lean`,
+`AxiomAudit.lean`, named declarations, type/audit receipts and
+`MANUSCRIPT_COVERAGE.*` in the existing Lean project.
+Result: Kernel-checked actual-plant finite-horizon safety with finitely many
+signed sector-bounded cohorts; convex memory updates; cumulative absolute-weight
+drift; weighted-sensitivity and natural-floor lifetime calculations; finite
+positive atomic bias bounds; and deterministic variance/radius arithmetic. The
+project's strict audit covers 459 named declarations with only the standard
+Lean foundations. This count includes the historical paper declarations and
+14 thesis additions, not 459 manuscript theorems. The lifetime text now handles
+zero total drift and invalid initial margins explicitly and no longer claims
+an exact first-passage time. A test that assumed every project declaration belonged
+to the older paper now derives the paper subset from the separate thesis mapping;
+the co-authored paper's declaration count was not inflated.
+Checks: build ok; verify ok; reproduce ok; ruff ok; lean ok locally; CI pending.
+Open issues: general-measure integration and Gaussian coverage are not newly
+formalized. Matrix-resolvent sharpness and the A1 lower bound remain outside the
+new Lean coverage. The requested fully integrated CI acceptance is tracked below.
+
+## B2 — recorder preparation — 2026-10-22
+Status: partial
+What changed: `evidence/E2_recorder.py`, pinned recorder requirements,
+`evidence/E2_accessibility.json`, evidence README, software tests and E2 status text.
+Result: The documented routed endpoint accepted a direct headers-only WebSocket
+handshake. Zero market messages were read or recorded. The recorder provides
+compressed daily/reconnection chunks, closed-chunk checksums, gap/connectivity
+logs, exclusive study locking, a storage guard, explicit access-denial stopping
+and checks for a pushed, hashed specification and unchanged code. Synthetic
+software tests verify rotation/checksums, non-overwriting reconnect chunks and
+malformed-message handling. No live collector is running and no E2 result is
+claimed. The pinned live WebSocket collection loop has not been tested against
+an opened empirical stream.
+Checks: software tests ok; ruff ok; handshake check ok; empirical test not run.
+Open issues: access terms, complete E2 study specification and power/inference,
+registration push, at least three months of prospective collection and analysis.
+E1 and the learning-agent study are also not run or claimed complete.
+
+## C1/C3/C4 — draft integration — 2026-10-22
+Status: partial
+What changed: abstract and status text, proof-scope explanations,
+`paper3/build_paper3.py`, front matter, generated stand-alone draft/receipt,
+new thesis CI job and result provenance verifier.
+Result: The thesis abstract is below the requested word limit. Uniform lower-bound
+and equilibrium-existence failures are distinguished from open repaired targets.
+The stand-alone Paper 3 is generated from the authoritative chapter, resolves
+companion references against freshly built canonical papers, moves the shared
+proof blocks to an appendix and records source/PDF hashes. Its abstract is
+138 words. The output is a review draft with targets/pending evidence, not a
+submission-ready journal paper. A new CI job verifies committed result provenance
+without reopening studies, builds the thesis and the stand-alone draft, and
+uploads them for review.
+Checks: local builds and source/provenance checks pass; final PDF QA and CI
+results are recorded in the final validation receipt.
+Open issues: C2 publisher-by-publisher bibliography verification is incomplete
+(some publisher/metadata access attempts were blocked or rate limited); DOIs
+were not invented. Existing inherited layout warnings mean C3 is not fully closed.
+The supplied highest-ceiling definition is not met while theory/formal boundaries
+and E1/E2/learning-agent evidence remain outstanding.
+
+Human tasks still required: co-author contribution statements and permission for
+the reproduced paper chapters (Chapters 2 and 3 in this layout), journal choices,
+and thesis submission decisions. No messages or submissions were sent to others.
