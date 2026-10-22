@@ -6,15 +6,15 @@ This document provides an explicit, item-by-item audit of what is formalized in 
 
 | Project | Toolchain & Setup | Declarations | Axioms | Scope |
 |---|---|---|---|---|
-| [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) | Lean 4.34.1 + Mathlib (`d13f23b7`) | **443** named theorems across 33 modules in `CurrentProofs/` | `propext`, `Classical.choice`, `Quot.sound` (`0 sorry`) | Primary formalization over `ℝ` (`MeasureTheory`, `Matrix`, `EuclideanSpace`, `InformationTheory.klDiv`, `IsGreatest`, `sSup`). |
-| [`lean_proofs/`](lean_proofs/) | Plain Lean 4.34.1 (no Mathlib, over `Rat`) | **164** named theorems across 14 modules in `Proofs/` | Standard axioms (`0 sorry`) | Exact rational arithmetic, polynomial identities, and numerical witness checks (`decide +kernel`, `grind`). |
+| [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) | Lean 4.34.1 + Mathlib (`d13f23b7`) | **445** named theorems across 33 modules in `CurrentProofs/` | `propext`, `Classical.choice`, `Quot.sound` (`0 sorry`) | Primary formalization over `ℝ` (`MeasureTheory`, `Matrix`, `EuclideanSpace`, `InformationTheory.klDiv`, `IsGreatest`, `sSup`). |
+| [`lean_proofs/`](lean_proofs/) | Plain Lean 4.34.1 (no Mathlib, over `Rat`) | **166** named theorems across 14 modules in `Proofs/` (401 audited declarations in `MachineMarkets`) | Standard axioms (`0 sorry`) | Exact rational arithmetic, polynomial identities, and numerical witness checks (`decide +kernel`, `grind`). |
 | [`research_extension/mechanism_formal_v1/`](research_extension/mechanism_formal_v1/) | Plain Lean 4.29.1 | **26** named theorems | Standard axioms (`0 sorry`) | Finite-game exact arithmetic checks (`decide +kernel`) for a worked disclosure example. |
 
 ---
 
 ## Classification Tags
 
-Every numbered formal environment in **Paper 2** (26 items) and **Paper 1** (26 items) of the October 2026 hardened manuscripts is tagged below as one of:
+Every numbered formal environment in **Paper 2** (28 items) and **Paper 1** (26 items) of the October 2026 hardened manuscripts is tagged below as one of:
 
 - **`full`**: The Lean theorem in `CurrentProofs/` formalizes the mathematical objects and full statement of the manuscript (e.g., probability measures `Measure Ω` and Bochner integrals, `IsGreatest` over admissible sets/paths, inductive bounds on the state-space recursion `actualCohortImpulse`, or `sSup` monotonicity over compatible sets `Θ_O' ⊆ Θ_O`).
 - **`conditional`**: The Lean theorem proves the substantive mathematical conclusion while taking an external analytical theorem or statistical concentration step as an explicit hypothesis (e.g., taking Spijker's constant `hSpijker` in `kreiss_bilateral_radius`, taking the residual moment-cone representation on `[0,1)` in `p2_thm_window`(iii), or proving the inductive state-space decay $0 \le h_t \le \kappa\bar\lambda^t$ and geometric tail sum in `p2_thm_certcost`(i) while leaving the Gaussian concentration/Pinsker step separate).
@@ -22,7 +22,7 @@ Every numbered formal environment in **Paper 2** (26 items) and **Paper 1** (26 
 
 ---
 
-> **October 2026 hardening.** Declarations prefixed `is_` are in `CurrentProofs/InfoSafetyExtensions.lean` (47 theorems).
+> **October 2026 hardening.** Declarations prefixed `is_` are in `CurrentProofs/InfoSafetyExtensions.lean` (49 theorems).
 > Tags for results unchanged by the revision are carried over from the October 20 audit after checking that the cited
 > declarations still exist; tags for new or restated results were assigned in this revision. Tags for Paper 1 rows whose
 > Lean core in `CeilingSuitePaper1.lean` takes scalar parameters are `arithmetic`, even where an earlier version of this file
@@ -30,12 +30,13 @@ Every numbered formal environment in **Paper 2** (26 items) and **Paper 1** (26 
 > Paper 2 as `prop:ambig`), `prop:mech` (now an inline equation); Paper 2 `prop:blind`, `lem:cm` (cited from Paper 1),
 > `prop:bridge` (now a sentence), and the five Section 4 results, which are parts of `thm:peak`.
 
-## Paper 2 Coverage Table (`ceiling_suite/paper2/`, 26 Environments)
+## Paper 2 Coverage Table (`ceiling_suite/paper2/`, 28 Environments)
 
 | # | Label | Environment & Title | Source File | Lean declarations (`CurrentProofs/`) | Tag | What is proved in Lean |
 |---|---|---|---|---|---|---|
 | 1 | `prop:jury` | Proposition: Stability with one cohort | `p2_theory1.tex` | `p2_prop_jury_one_cohort`, `one_cohort_jury_stability_iff` | **`full`** | Necessary and sufficient Jury conditions for the 2×2 one-cohort operator. |
 | 2 | `prop:invariance` | Proposition: Input–output invariance | `p2_theory1.tex` | `p2_prop_input_output_invariance`, `actual_monetary_coordinate_invariance` | **`full`** | Invariance of $C(TJT^{-1})^t(Tz)=CJ^tz$ under linear equivalences. |
+| 2b | `prop:inventory_S` | Proposition: Summed response with carried cohort inventory | `p2_theory1.tex` | `p2_prop_inventory_S` | **`arithmetic`** | Effective long-run feedback attenuation $\Phi_{\mathrm{eff}}=(\delta/(\delta+\psi))\Phi\le\Phi$ and $S(\psi)\le S(0)$ over $\mathbb{R}$ (`InfoSafetyExtensions.lean`) and calibrated rational witness (`CeilingSuitePaper2.lean`); full state-space transfer function and nonnegativity threshold $\psi_i\le 1-\delta_{\mathrm{inv}}, \delta_{\mathrm{inv}}\ge\eta_i$ are proved on paper (`p2_appendix.tex`). |
 | 3 | `prop:ambig` | Proposition: Quote cost of ambiguity | `p2_theory1.tex` | `p2_prop_ambig_quote_cost`, `gaussian_cara_certainty_equivalent`, `robust_quote_iff` | **`full`** | Gaussian CARA certainty equivalent, robust quote and surplus loss. (Paper 1's duplicate was removed; this is now the only statement.) |
 | 4 | `thm:radius` | Theorem: Safe radius, Kreiss bounds, failure of the spectral radius | `p2_theory1.tex` | `p2_thm_radius_kreiss`, `exact_safe_radius_isGreatest`, `kreiss_bilateral_radius`, `defective_exact_radius_tendsto_zero` | **`conditional`** | (i), (iii) full; (ii) upper Kreiss bound takes Spijker's constant as hypothesis `hSpijker`. |
 | 5 | `prop:multi` | Proposition: Directed cross-impact shrinks the safe radius | `p2_theory1.tex` | `p2_prop_multi_venue_cross_impact`, `cross_impact_exact_radius_contraction` | **`full`** | Entrywise power monotonicity and safe-radius contraction. |
@@ -55,6 +56,7 @@ Every numbered formal environment in **Paper 2** (26 items) and **Paper 1** (26 
 | 19 | `prop:venue` | Proposition: Venue mode | `p2_guard.tex` | `is_Dv_convex`, `is_unsafe_between`, `is_worst_corner`, `is_venue_example`, `is_venue_example_box` | **`full`** | Convexity, unsafe set is an interval, worst corner of the box, and the two-component example. |
 | 20 | `thm:venuebb` | Theorem: What branch and bound certifies | `p2_guard.tex` | `is_classify_safe_sound`, `is_classify_unsafe_sound`, `is_robustSafeSet_closed`, `is_largest_safe_exists` | **`conditional`** | Soundness of both classifications and existence of the largest safe level are full, given the floating-point enclosure property (Rump 2010) as hypothesis `hencl`. |
 | 21 | `thm:forward` | Theorem: Conditional bounded-shock forward solvency | `p2_guard.tex` | `p2_thm_forward_solvency`, `is_buffer_after_step`, `is_scenario` | **`full`** | One-step buffer inequality and the Section 6 scenario numbers. |
+| 21b | `prop:driftguard` | Proposition: Uniformly safe guard under interval-bounded unknown hidden drift | `p2_guard.tex` | `p2_prop_driftguard` | **`arithmetic`** | Capacity-cost identity $\alpha^*-\alpha^*_{\mathrm{drift}}=\alpha^*\frac{|I|\bar y_0}{\mathcal B+|I|\bar y_0}$ over $\mathbb{R}$ (`InfoSafetyExtensions.lean`) and calibrated rational witness (`CeilingSuitePaper2.lean`); the $\ell_\infty$ drift envelope $\sup_{\|y_0\|_\infty\le\bar y_0}\sum_{t\ge 1}|e_x^\top J(\alpha)^t z_0|=(a|x_0|+\alpha\kappa\Phi\bar y_0)/(1-a-\alpha\kappa\Phi)$ and interval characterization are proved on paper (`p2_appendix.tex`). |
 | 22 | `prop:dominance` | Proposition: When an eigenvalue rule admits an uncertified level | `p2_guard.tex` | `p2_prop_dominance_guard_vs_eigenvalue` | **`full`** | Margin deficit identity. |
 | 23 | `prop:lucas` | Proposition: Strategic re-optimization reinforces the guard | `p2_guard.tex` | `p2_prop_lucas_reinforces_guard`, `tracking_gain_unit_interval` | **`conditional`** | (i) Riccati monotonicity full; (ii) the renewal-coupling monotonicity of every finite-horizon sum (new in this revision) is proved on paper and checked numerically, not formalized. |
 | 24 | `thm:disclosure` | Theorem: Decision value of disclosure | `p2_disclosure.tex` | `p2_thm_disclosure`, `is_disclosure_monotone`, `is_disclosure_strict`, `is_intersection_admits_more` | **`conditional`** | (i)–(iv) full; (v) the intersection of two certificates admits at least as much as either (full); the delta-method standard error is not formalized. |
