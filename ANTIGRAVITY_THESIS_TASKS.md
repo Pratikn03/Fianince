@@ -1,7 +1,7 @@
 # Thesis completion tasks — instructions for an AI coding agent
 
 You are working in the repository `Pratikn03/fianince`. Your job is to complete the open items of the thesis
-**"Certify, Don't Identify: Safety and Identification in Markets with Adaptive Trading Agents"**
+**"From Human Markets to Machine Markets — Certify, Don't Identify: Safety and Identification in Markets with Adaptive Trading Agents"**
 (`thesis/thesis.pdf`), a three-paper thesis: Paper 1 (Chapter 2), Paper 2 (Chapter 3) and Paper 3 (Chapter 4), with an
 introduction (Chapter 1) and a conclusion (Chapter 5). **The thesis stays at three papers and stays in finance and
 theory: do not add chapters on power grids, vehicles or other engineering domains.** Read this whole file before starting. Do the tasks in the order of Section 4. After every
