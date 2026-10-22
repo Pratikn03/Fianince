@@ -32,3 +32,8 @@ import CurrentProofs.SpectralCapital
 import CurrentProofs.CeilingSuitePaper1
 import CurrentProofs.CeilingSuitePaper2
 import CurrentProofs.InfoSafetyExtensions
+
+import CurrentProofs.ThesisSafety
+import CurrentProofs.ThesisStrategic
+
+import CurrentProofs.ThesisMeasure

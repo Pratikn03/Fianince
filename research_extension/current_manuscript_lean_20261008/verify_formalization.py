@@ -57,6 +57,7 @@ def main():
     body_dir = ROOT / "research_extension/gap_closure_20261006/publication_completion"
     manuscript_paths = [ROOT / "paper/Machine_Markets_JF_Submission.tex"] + [body_dir / (s + ".tex")
         for s in ["resource_frontier", "capital_frontier", "trader_capital_frontier", "natural_excitation_boundary"]]
+    manuscript_paths.append(ROOT / "thesis/ch4_paper3.tex")
     source_hashes = {str(p.relative_to(ROOT)): sha(p) for p in manuscript_paths}
     lean_hashes = {str(p.relative_to(HERE)): sha(p) for p in sorted((HERE / "CurrentProofs").glob("*.lean"))}
     for name in ["CurrentProofs.lean", "AxiomAudit.lean", "lakefile.toml", "lake-manifest.json", "lean-toolchain"]:
