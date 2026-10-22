@@ -1,8 +1,10 @@
 # Thesis completion tasks — instructions for an AI coding agent
 
 You are working in the repository `Pratikn03/fianince`. Your job is to complete the open items of the thesis
-**"Certify, Don't Identify: Safety and Identification in Markets and Other Feedback Systems with Adaptive Agents"**
-(`thesis/thesis.pdf`). Read this whole file before starting. Do the tasks in the order of Section 4. After every
+**"Certify, Don't Identify: Safety and Identification in Markets with Adaptive Trading Agents"**
+(`thesis/thesis.pdf`), a three-paper thesis: Paper 1 (Chapter 2), Paper 2 (Chapter 3) and Paper 3 (Chapter 4), with an
+introduction (Chapter 1) and a conclusion (Chapter 5). **The thesis stays at three papers and stays in finance and
+theory: do not add chapters on power grids, vehicles or other engineering domains.** Read this whole file before starting. Do the tasks in the order of Section 4. After every
 task, run the checks in Section 3 and report in the format of Section 6.
 
 ---
@@ -11,9 +13,9 @@ task, run the checks in Section 3 and report in the format of Section 6.
 
 | What | Path |
 |---|---|
-| Thesis sources (new chapters) | `thesis/ch1_intro.tex`, `ch2_framework.tex`, `ch5_beyond_linear.tex`, `ch6_beyond_markets.tex`, `ch7_evidence.tex`, `ch8_conclusion.tex`, `appA_status.tex`, `bib_new.tex` |
+| Thesis sources written for the thesis | `thesis/ch1_intro.tex`, `ch4_paper3.tex` (Paper 3), `ch5_conclusion.tex` (includes the evidence program), `appA_status.tex`, `bib_new.tex` |
 | Thesis main file | `thesis/thesis.tex` |
-| Chapters 3 and 4 | generated from the papers by `thesis/make_chapters.py`; **never edit `ch3_paper1.tex` or `ch4_paper2.tex` by hand** |
+| Chapters 2 and 3 (Papers 1 and 2) | generated from the papers by `thesis/make_chapters.py`; **never edit `ch2_paper1.tex` or `ch3_paper2.tex` by hand** |
 | Paper 1 sources | `ceiling_suite/papers/paper1/p1_*.tex` (assembled by `ceiling_suite/papers/build_p1.sh`) |
 | Paper 2 sources | `ceiling_suite/papers/paper2/p2_*.tex` (assembled by `ceiling_suite/papers/build_p2.sh`) |
 | Journal versions | `ceiling_suite/papers/versions/build_versions.py` → `Paper1_QE.pdf`, `Paper2_JF.pdf` |
@@ -38,7 +40,7 @@ Status tags used in the thesis (macros in `thesis/thesis.tex`): `\Proved`, `\Pro
    is written in the thesis, (b) a numerical check script confirms the statement on random instances, and (c) where
    the statement is finite-dimensional or algebraic, a Lean 4 proof compiles (Section 4, task L1). If a proof
    attempt fails, **do not weaken the statement silently**: keep the tag, write what was proved, and add the gap
-   to Chapter 8's open problems.
+   to the open problems in `ch5_conclusion.tex`.
 3. **Pre-registration protocol for every empirical or simulation test.**
    - Write the specification JSON (hypotheses, data, dates, primaries, pass rules, correction, code version).
    - Compute its SHA-256, create an unlock counter file set to 0.
@@ -51,7 +53,7 @@ Status tags used in the thesis (macros in `thesis/thesis.tex`): `\Proved`, `\Pro
 5. **Data access.** Use only data you are allowed to access from your location. Do not use VPNs, proxies or
    other means to get around geographic restrictions or terms of service. If a source is unavailable, use the
    fallback named in the task and say so.
-6. **Co-authored chapters.** Chapters 3 and 4 are papers with co-authors. Change their sources only to fix a
+6. **Co-authored chapters.** Chapters 2 and 3 are papers with co-authors. Change their sources only to fix a
    documented error; record every such change in `thesis/CHANGELOG.md` with the reason.
 7. **Git.** Pull before you start (`git pull --ff-only origin main`); another session also pushes to `main`.
    Make small commits with clear messages. Never force-push. Never rewrite history.
@@ -82,12 +84,12 @@ checks, except where marked *parallel*.
 
 ### Part A — Theory (highest value)
 
-#### A1. The matching lower bound — Theorem `thm:dich`(iv) in `ch2_framework.tex`
+#### A1. The matching lower bound — Theorem `thm:dich`(iv) in `ch4_paper3.tex`
 - **Goal.** Prove: for `g(r) = Σ a_t r^t` with coefficients of eventually constant sign and at most polynomial
   growth, `N_cert(ε) ≥ c σ² A_g(c′ T_g(ε)) ε⁻²` under the reset contract (Assumption `ass:reset`).
 - **Plan given in the thesis.** Combine (1) truncation necessity (part (ii), already proved) with (2) a Le Cam
   two-point bound in which the two economies are moment-matched up to order `T−1` (Gauss vs Gauss–Radau
-  quadrature pairs of Chapter 3, Theorem `p1:thm:kcohort`) and their tap differences align with the coefficient
+  quadrature pairs of Chapter 2, Theorem `p1:thm:kcohort`) and their tap differences align with the coefficient
   vector `(a_0,…,a_{T−1})`.
 - **Steps.**
   1. Write the proof in a new subsection "Proof of part (iv)" after the existing proof.
@@ -99,28 +101,13 @@ checks, except where marked *parallel*.
 - **Acceptance.** Proof written; script passes; tag changed only per Rule 2; Corollary `cor:cases`(e) updated if
   the logarithmic rate now follows formally.
 
-#### A2. Sign-aware grid bound — Chapter 6, Section `sec:bm_grid` (*parallel with A1*)
-- **Goal.** Replace `|q_i|` by a bound that lets supporting devices (negative weights) tighten the frequency bound.
-- **Hint.** Split cohorts into amplifying (`q_i ≥ 0`) and supporting (`q_i < 0`) and use a comparison with the
-  positive system for the amplifying part plus a contraction argument for the supporting part; or prove a
-  counterexample showing the `|q_i|` bound is tight.
-- **Acceptance.** Theorem with proof and a simulation check (`thesis/checks/check_grid_sign.py`), or a
-  counterexample written as a remark. Update the status register in `appA_status.tex`.
-
-#### A3. Sharp multi-asset bound — Proposition `prop:multiasset` (*parallel*)
+#### A2. Sharp multi-asset bound — Proposition `prop:multiasset` (*parallel with A1*)
 - **Goal.** For positive cross-impact (all entries of `A`, `K`, `Q_i` non-negative), prove the sharp bound
-  `sup_t ||x_t||_∞ ≤ w̄ ||(I − A − K Σ Q̄_i S_i)^{-1} K||_∞` (spectral radius below one), which is the multi-asset
+  `sup_t ||x_t||_∞ ≤ w̄ ||(I − A − K Σ Q̄_i S_i)^{-1} K||_∞` (spectral radius below one), the multi-asset
   analogue of `S`.
 - **Acceptance.** Proof (comparison principle for positive systems), numerical check, tag updated.
 
-#### A4. String stability — Proposition `prop:platoon` in Chapter 6
-- **Goal.** Prove certification of the ℓ1 string-stability margin `1 − ||γ||₁` at rate `O(σ² ε⁻² log(1/ε))` under
-  `|γ_t| ≤ C r̄^t`, and impossibility without such a bound.
-- **Hint.** `||γ||₁` is 1-Lipschitz in each tap; use the truncation argument of `thm:dich`(i) with absolute
-  values, and part (iii) for impossibility.
-- **Acceptance.** Proof + check script + tag updated.
-
-#### A5. Strategic agents — Conjecture `conj:strategic` in Chapter 5
+#### A3. Strategic agents — Conjecture `conj:strategic` in `ch4_paper3.tex`
 - **Goal.** Prove existence of a guard-consistent equilibrium and safety of the guard in every equilibrium, or
   find a counterexample.
 - **Steps.** Formalize the agents' problem (choose `q_i ∈ [0, q̄_i]` to maximize expected profit minus a convex
@@ -140,8 +127,8 @@ checks, except where marked *parallel*.
 
 ### Part B — Evidence (do the pre-registration commits first, then wait for data)
 
-#### B1. Test E1: certificate against ground truth — Chapter 7, Section `sec:ev_e1`
-- **Data.** CFTC Commitments of Traders (public CFTC reports) for the eight markets of Chapter 3, Section
+#### B1. Test E1: certificate against ground truth — Chapter 5, Section `sec:ev_e1`
+- **Data.** CFTC Commitments of Traders (public CFTC reports) for the eight markets of Chapter 2, Section
   `p1:sec:cot`; Binance USD-M `metrics` files (public `data.binance.vision`) for the 30 perpetuals of Section
   `p1:sec:disc_data`. Use dates **not used by any earlier part** (check `results_archive` manifests).
 - **Primaries (from the thesis).** P1: the price-only certificate interval for `Φ` overlaps the class-composed
@@ -150,7 +137,7 @@ checks, except where marked *parallel*.
 - **Steps.** Spec → hash → push alone (Rule 3) → download → run once → `thesis/evidence/E1_results.json` →
   replace the `\pendbox{E1}` with a paragraph and one table → add numbers to `verify_thesis_numbers.py`.
 
-#### B2. Test E2: prospective mechanism test — Section `sec:ev_e2`
+#### B2. Test E2: prospective mechanism test — Chapter 5, Section `sec:ev_e2`
 - **Preferred data.** Binance's public forced-liquidation stream (at most one liquidation per symbol per second,
   so a sample), recorded after the specification is pushed, for at least three months, with order-book depth from
   `data.binance.vision`. **First check that the stream is accessible from your location. If it is not, do not use
@@ -165,20 +152,8 @@ checks, except where marked *parallel*.
   logs gaps), spec in `thesis/evidence/prereg/`, results JSON, updated Section `sec:ev_e2`, and the same text
   added to Paper 2's tests section as a new Part with its own subsection.
 
-#### B3. Grid test — Chapter 6, `\pendbox{grid test}` (*parallel*)
-- **Data.** Publicly available sub-second grid frequency recordings with documented imbalance events (find a source
-  whose licence allows research use; record the licence in `DATA_PROVENANCE.md`).
-- **Primary.** Realized frequency nadirs after events do not exceed the certified bound `w̄ κ/(1 − a − κΦ̂⁺)` in at
-  least 95% of events, where `Φ̂⁺` is certified on training events only.
-
-#### B4. Platoon test — Chapter 6, `\pendbox{platoon test}` (*parallel*)
-- **Data.** The OpenACC database of car-following experiments with commercial adaptive cruise control
-  (Makridis et al., 2021); confirm access terms first.
-- **Primary.** The certified ℓ1 margin classifies each tested configuration as string stable or unstable in
-  agreement with the conclusions reported for the same experiments, in at least 80% of configurations.
-
-#### B5. Multi-agent learning simulation — Chapter 6, `\pendbox{multi-agent simulation}` (*parallel*)
-- **Design.** Reinforcement-learning trading agents in the price model of Chapter 4; certify at time 0; let agents
+#### B3. Multi-agent learning simulation — `ch4_paper3.tex`, Section `sec:bl_ai` (*parallel*)
+- **Design.** Reinforcement-learning trading agents in the price model of Chapter 3; certify at time 0; let agents
   keep learning at rates `γ ∈ {0.001, 0.003, 0.01, 0.03}`; measure when the realized worst-case loss first exceeds
   the budget.
 - **Primary.** Realized certificate lifetime is at least the bound of Corollary `thm:lifetime` in every run, and
@@ -188,14 +163,21 @@ checks, except where marked *parallel*.
 
 #### C1. Update the thesis
 - Replace every resolved `\pendbox` and `\Target` per Rules 1–2; update `appA_status.tex`, the status table in
-  `ch1_intro.tex`, the abstract and Chapter 8's open problems. Keep the abstract under 400 words.
+  `ch1_intro.tex`, the abstract and the open problems in `ch5_conclusion.tex`. Keep the abstract under 400 words.
 #### C2. Verify the bibliography of the new chapters
 - Check every entry in `thesis/bib_new.tex` against the publisher's page (authors, year, volume, issue, pages).
   Fix errors. Add DOIs.
 #### C3. Final consistency pass
-- Every theorem referenced in Chapters 1, 2, 5–8 exists and says what the reference claims.
+- Every theorem referenced in Chapters 1, 4 and 5 exists and says what the reference claims.
 - No sentence claims more than its tag allows.
 - `sh thesis/build_thesis.sh` gives no warnings other than float-placement notes.
+
+#### C4. Paper 3 as a stand-alone journal paper (after A1)
+- Build `paper3/` from `thesis/ch4_paper3.tex`: its own title page, abstract (about 150 words), introduction
+  that summarizes Papers 1 and 2 in one paragraph each and cites them, the theory sections, proofs in an appendix,
+  and its own references. Target: Operations Research, Mathematics of Operations Research or Management Science.
+- Keep `thesis/ch4_paper3.tex` as the single source of the shared text (generate the paper from it, as
+  `make_chapters.py` does in the other direction), so the two never drift apart.
 
 ### Part D — Human tasks (the agent must not do these; list them in the report)
 - Co-authorship statement in `thesis/thesis.tex` (needs the co-authors).
@@ -208,12 +190,12 @@ checks, except where marked *parallel*.
 
 The thesis reaches its ceiling when all of the following hold:
 1. `thm:dich`(iv) proved (or its strongest provable version proved and the rest stated as an open problem).
-2. At least one of A2–A5 proved.
+2. A2 or A3 proved (or A3 settled by a counterexample).
 3. L1 formalized and passing CI.
 4. E1 run and reported (pass or fail).
 5. E2 run and reported (pass or fail).
-6. At least one of B3–B5 run and reported.
-7. All checks of Section 3 pass on `main`.
+6. B3 run and reported.
+7. The thesis still has exactly three papers, and all checks of Section 3 pass on `main`.
 
 A pass on E1 and E2 is not required for "done"; honest reporting is.
 

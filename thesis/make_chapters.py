@@ -88,14 +88,14 @@ def chapterize(src, prefix, chap_label, title, preface, figdir, companion_key, o
 
 
 def main():
-    for d, sub in (("ch3figs", "paper1"), ("ch4figs", "paper2")):
+    for d, sub in (("p1figs", "paper1"), ("p2figs", "paper2")):
         os.makedirs(os.path.join(HERE, d), exist_ok=True)
         for f in os.listdir(os.path.join(REPO, sub, "figs")):
             shutil.copy(os.path.join(REPO, sub, "figs", f), os.path.join(HERE, d, f))
-    pre1 = ("This chapter reproduces the paper \\emph{Auditable Memory and Financial Identification Limits in Electronic Limit Order Books}, "
+    pre1 = ("This chapter, the first paper of the thesis, reproduces the paper \\emph{Auditable Memory and Financial Identification Limits in Electronic Limit Order Books}, "
             "joint with Prashant Niroula. It establishes the identification half of the thesis: what prices reveal about the agents of a closed-loop market, "
-            "and what it costs to learn more. Its notation is its own; Appendix~\\ref{app:status} maps it to the notation of Chapter~\\ref{ch:framework}.")
-    pre2 = ("This chapter reproduces the paper \\emph{From Human Markets to Machine Markets: Transient Amplification, an Exact Depth Condition, and a Maximal Pre-Trade Guard}, "
+            "and what it costs to learn more. Its notation is its own; Appendix~\\ref{app:status} maps it to the notation of Chapter~\\ref{ch:p3}.")
+    pre2 = ("This chapter, the second paper of the thesis, reproduces the paper \\emph{From Human Markets to Machine Markets: Transient Amplification, an Exact Depth Condition, and a Maximal Pre-Trade Guard}, "
             "joint with Suboh Alkhushayni, Yuhao Chen, Mansi Bhavsar and Prashant Niroula. It establishes the safety half of the thesis: "
             "what certifies a safe trading decision when the agents cannot be identified, and what that certificate costs.")
     rep1 = [("which the companion paper analyses \\citep{niroula2026b}", "which Chapter~\\ref{ch:p2} analyses"),
@@ -103,12 +103,12 @@ def main():
     rep2 = [("which the companion paper \\citep{niroula2026} shows", "which Chapter~\\ref{ch:p1} shows"),
             ("as the companion paper shows \\citep{niroula2026}", "as Chapter~\\ref{ch:p1} shows")]
     ch3 = chapterize(os.path.join(REPO, "paper1", "paper1.tex"), "p1:", "ch:p1",
-                     "Auditable memory and identification limits", pre1, "ch3figs", "niroula2026b", "ch:p2", rep1)
+                     "Auditable memory and identification limits", pre1, "p1figs", "niroula2026b", "ch:p2", rep1)
     ch4 = chapterize(os.path.join(REPO, "paper2", "paper2.tex"), "p2:", "ch:p2",
-                     "Safety without identification: transient amplification and a maximal pre-trade guard", pre2, "ch4figs", "niroula2026", "ch:p1", rep2)
-    open(os.path.join(HERE, "ch3_paper1.tex"), "w").write(ch3)
-    open(os.path.join(HERE, "ch4_paper2.tex"), "w").write(ch4)
-    for name, t in (("ch3", ch3), ("ch4", ch4)):
+                     "Safety without identification: transient amplification and a maximal pre-trade guard", pre2, "p2figs", "niroula2026", "ch:p1", rep2)
+    open(os.path.join(HERE, "ch2_paper1.tex"), "w").write(ch3)
+    open(os.path.join(HERE, "ch3_paper2.tex"), "w").write(ch4)
+    for name, t in (("paper1", ch3), ("paper2", ch4)):
         left = re.findall(r"niroula2026b?|companion", t)
         print(name, len(t) // 1000, "k chars; leftover companion refs:", len(left))
 

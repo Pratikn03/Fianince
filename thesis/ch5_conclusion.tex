@@ -1,8 +1,14 @@
-\chapter{An evidence program for the thesis}\label{ch:evidence}
+\chapter{Conclusion and open problems}\label{ch:conclusion}
 
-The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's own predictions. This chapter states what that evidence establishes for the thesis as a whole, what it does not, and two tests designed to test the thesis directly. Both tests are specified here and have not been run.
+This thesis asked whether safety in a market with adaptive agents requires knowing who the agents are. For the markets studied here, it does not. Prices reveal the agents only through a merged measure of their memories and weights, and recovering the agents from that measure costs trading capital of order $\delta^{-4}$, experiments of order $(\Delta\eta)^{-(4K-2)}$, and with general memory an accuracy that improves only logarithmically (Chapter~\ref{ch:p1}). Safety depends on the agents only through their total feedback weight, which is certified at the parametric rate under a memory bound and cannot be certified without one; a guard built on that certificate is the largest safe admission rule (Chapter~\ref{ch:p2}). The theory of Chapter~\ref{ch:p3} places these results in one picture, in which the cost of a question is set by its behaviour at long memory, and shows that the safety bound needs only the agents' total sensitivity, even when their rules are nonlinear and their memories and weights change, and that learning makes certificates perishable at a computable rate. In data, disclosed trader classes reveal what prices do not, and the safety statistic forecasts adverse excursions in thin books, while the mechanism behind that forecast remains unidentified.
 
-\section{What the existing evidence establishes}\label{sec:ev_existing}
+The policy message is direct. Supervisors who want to control transient risk should ask for the information that certifies safety, a bound on memory and on total sensitivity, renewed as often as the agents learn, rather than for the identities of the agents. Identity-based regimes may serve other purposes, such as enforcement and attribution, but this thesis shows they are neither necessary nor efficient for safety.
+
+\section{Evidence that would settle the thesis}\label{sec:evidence}
+
+The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's own predictions. This section states what that evidence establishes for the thesis as a whole, what it does not, and two tests designed to test the thesis directly. Both tests are specified here and have not been run.
+
+\subsection{What the existing evidence establishes}\label{sec:ev_existing}
 
 \paragraph{Prices do not reveal the agents.} In 30 Binance perpetuals, trader-class positions pin down memory rates 28 to 124 times more precisely than prices and flow, and in a pre-registered test the CFTC's trader-class reports do the same in all eight regulated futures markets examined (Sections~\ref{p1:sec:disc_data} and~\ref{p1:sec:cot}). This is the identification half of the thesis in data: the merged measure leaves class memories essentially unrestricted.
 
@@ -10,7 +16,7 @@ The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's ow
 
 \paragraph{What it does not establish.} The forecasting result is reduced form. Tests of a leverage or liquidation mechanism fail (Section~\ref{p2:sec:p22}), and the follow-up that points to slow reversion is close to a check of how the statistic is built (Section~\ref{p2:sec:p25}). As a risk control, the certified guard improves on a static limit but not, at matched exposure, on a volatility cap (Section~\ref{p2:sec:p24}). None of the existing tests checks the thesis's central claim directly: that the certificate computed without identification gets safety right while identification fails.
 
-\section{Test E1: the certificate against ground truth}\label{sec:ev_e1}
+\subsection{Test E1: the certificate against ground truth}\label{sec:ev_e1}
 
 \paragraph{Idea.} Where agents' classes are disclosed, the total sensitivity can be computed twice: once from prices and aggregate flow alone, as a certificate, and once by summing class-level estimates, $\hat\Phi_{\rm class}=\sum_c\hat w_c/(1-\hat r_c)$, as the disclosed benchmark. The thesis predicts that the two agree within their intervals, while the class memories themselves are not recoverable from prices, which Chapter~\ref{ch:p1} has already shown for the same markets.
 
@@ -18,7 +24,7 @@ The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's ow
 
 \pendbox{E1}{Specification to be written, hashed and pushed to the public repository on its own before any test data are downloaded; results reported whatever they show.}
 
-\section{Test E2: a prospective test of the mechanism}\label{sec:ev_e2}
+\subsection{Test E2: a prospective test of the mechanism}\label{sec:ev_e2}
 
 \paragraph{Idea.} Every pre-registered test so far used archived data. A prospective test removes any doubt about the order of registration and data: the data do not exist when the specification is written. Binance publishes forced liquidations on a public market-data stream, at most one per symbol each second, so the stream is a sample of liquidations rather than the full record, and its history is not archived publicly. Recording the stream after registration gives liquidation data no one could have seen; the sampling is the same in every hour and is stated as a limitation in advance.
 
@@ -26,11 +32,22 @@ The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's ow
 
 \pendbox{E2}{Recording infrastructure, specification and power calculation to be completed and the specification pushed before recording starts.}
 
-\section{Rules for every new test}\label{sec:ev_rules}
+\subsection{Rules for every new test}\label{sec:ev_rules}
 
 \begin{enumerate}
 \item The specification, its hash and an unlock counter are pushed to the public repository in a commit of their own, so the platform records when they became public, before any test data are downloaded or recorded.
 \item Each test has at most two primaries with a pre-stated pass rule and a pre-stated correction across them.
 \item A failed primary is reported as failed. An explanation found afterwards is labelled post hoc, and any test that follows from it is labelled as registered after the failure.
 \item Every number in the thesis is produced by code that writes a result file, and an automated check compares the printed numbers with those files.
+\end{enumerate}
+
+\section{Open problems}
+
+\begin{enumerate}
+\item \emph{The matching lower bound.} Prove Theorem~\ref{thm:dich}(iv), so that the cost of every regular linear question is known up to constants, and extend the dichotomy to non-linear questions such as the peak response.
+\item \emph{Minimal disclosure for safety.} Characterize the least informative disclosure under which a given safety question becomes certifiable from finite data. Theorem~\ref{thm:dich}(iii) says a memory bound is necessary for the summed response; is it sufficient in a sense that can be made operational?
+\item \emph{Strategic agents.} Prove or refute Conjecture~\ref{conj:strategic}.
+\item \emph{Observational certification.} Develop finite-sample certificates from observational order-book data with dependence and non-stationarity, replacing the bootstrap diagnostics of Chapter~\ref{ch:p2}.
+\item \emph{Sharp multi-asset bounds.} Replace the induced-norm bound of Proposition~\ref{prop:multiasset} with a sharp bound for positive cross-impact.
+\item \emph{The mechanism of thin-book risk.} Run Tests E1 and E2 of Section~\ref{sec:evidence}.
 \end{enumerate}
