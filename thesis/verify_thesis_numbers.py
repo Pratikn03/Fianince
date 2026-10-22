@@ -55,3 +55,21 @@ for row in sr['rows']:
 assert Fraction(sr['admitted_loss_budget']) == Fraction(1,4)/(1-Fraction(1,4)*Fraction(1,2))
 assert sr['all_deviations_profitable'] is True
 print('Strategic counterexample result checks: PASS')
+
+# Verify that status claims name actual audited declarations and current sources.
+formal = ROOT.parent/'research_extension/current_manuscript_lean_20261008'
+receipt = json.loads((formal/'formal_verification_receipt.json').read_text())
+assert receipt['status'] == 'NAMED_PROOFS_BUILD_AND_STRICT_AXIOM_AUDIT_PASS'
+named = {x['name'] for x in json.loads((formal/'named_declarations.json').read_text())}
+typed = {x['name'] for x in json.loads((formal/'checked_theorem_types.json').read_text())}
+coverage = json.loads((formal/'MANUSCRIPT_COVERAGE.json').read_text())
+registered_names = {name for row in coverage['thesis_results'] for name in row['lean_declarations']}
+assert registered_names <= named & typed
+assert receipt['named_theorems'] == len(named)
+assert receipt['full_manuscript_formalization_complete'] is False
+assert set(receipt['observed_axioms']) <= {'propext','Classical.choice','Quot.sound'}
+for source, expected in receipt['formal_source_sha256'].items():
+    assert hashlib.sha256((formal/source).read_bytes()).hexdigest() == expected, source
+for source, expected in receipt['manuscript_source_sha256'].items():
+    assert hashlib.sha256((ROOT.parent/source).read_bytes()).hexdigest() == expected, source
+print('Thesis proof-status/source provenance check: PASS')

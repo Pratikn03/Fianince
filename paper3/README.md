@@ -8,8 +8,8 @@ only in `frontmatter.tex`; never hand-edit the generated `paper3.tex`.
 
 `build_receipt.json` records the authoritative source, front matter, bibliography,
 generated TeX and PDF hashes, abstract word count and resolved cross-references.
-The builder rejects a source change during generation. The numerical macros
-remain generated from the registered recovery result in the thesis checks folder.
+The builder rejects a source change during generation. The numerical macros are generated from the registered recovery result and
+inlined into the generated TeX; that TeX has no external source-input dependency.
 
 This is a working draft. A1 needs a repaired lower-bound statement, matrix
 formalization remains scoped, prospective evidence is pending, and bibliography

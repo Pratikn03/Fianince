@@ -35,3 +35,5 @@ import CurrentProofs.InfoSafetyExtensions
 
 import CurrentProofs.ThesisSafety
 import CurrentProofs.ThesisStrategic
+
+import CurrentProofs.ThesisMeasure

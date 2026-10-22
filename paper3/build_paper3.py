@@ -60,7 +60,8 @@ def main():
         proofs.append('\\subsection{Proof for result~\\ref{'+label+'}}\\label{app:paper3proof'+str(index)+'}\n'+m[0])
         return '\\paragraph{Proof.} See Appendix~\\ref{app:paper3proof'+str(index)+'}.\n'
     body = re.sub(r'\\begin\{proof\}(?:\[[^\]]*\])?.*?\\end\{proof\}',move_proof,body,flags=re.S)
-    body = body.replace('\\input{checks/multiasset_numbers}','\\input{../thesis/checks/multiasset_numbers}')
+    numerical_macros = ROOT/'thesis/checks/multiasset_numbers.tex'
+    body = body.replace('\\input{checks/multiasset_numbers}', numerical_macros.read_text())
     if re.search(r'\\(?:ref|eqref)\{(?:p1:|p2:|ch:)',body):
         raise ValueError('Unresolved cross-document reference')
     template_hash = sha(ROOT/'thesis/thesis.tex')
@@ -75,11 +76,25 @@ def main():
     bib = bib.replace('\\end{thebibliography}',companions+'\\end{thebibliography}')
     front = (HERE/'frontmatter.tex').read_text()
     tex = preamble+'\\begin{document}\n'+front+'\n'+body+'\n\\appendix\n\\section{Proofs}\n'+'\n'.join(proofs)+'\n'+bib+'\n\\end{document}\n'
+    if re.search(r'\\(?:input|include)\{', tex):
+        raise RuntimeError('Stand-alone TeX still has an external input dependency')
     (HERE/'paper3.tex').write_text('% GENERATED: edit thesis/ch4_paper3.tex or paper3/frontmatter.tex.\n'+tex)
     for _ in range(3):
         r = subprocess.run(['pdflatex','-interaction=nonstopmode','-halt-on-error','paper3.tex'],cwd=HERE,capture_output=True,text=True)
         if r.returncode:
             print(r.stdout[-5000:]);raise SystemExit(r.returncode)
+    # Prove the generated submission source is independent of the repository.
+    with tempfile.TemporaryDirectory(prefix='paper3-standalone-check-') as isolated:
+        isolated = Path(isolated)
+        shutil.copy2(HERE/'paper3.tex', isolated/'paper3.tex')
+        for _ in range(3):
+            check = subprocess.run(['pdflatex','-interaction=nonstopmode','-halt-on-error','paper3.tex'],
+                                   cwd=isolated,capture_output=True,text=True)
+            if check.returncode:
+                print(check.stdout[-5000:]);raise SystemExit(check.returncode)
+        isolated_log = (isolated/'paper3.log').read_text()
+        if 'undefined references' in isolated_log:
+            raise RuntimeError('Standalone source has unresolved references')
     log = (HERE/'paper3.log').read_text()
     if 'undefined references' in log or 'Citation' in log and 'undefined' in log:
         raise ValueError('Unresolved references in stand-alone paper')
@@ -89,7 +104,7 @@ def main():
     if sha(ROOT/'thesis/thesis.tex') != template_hash:
         raise RuntimeError('Thesis template changed during generation')
     receipt={'source_sha256':source_hash,'thesis_template_sha256':template_hash,'frontmatter_sha256':sha(HERE/'frontmatter.tex'),
-             'bibliography_sha256':sha(ROOT/'thesis/bib_new.tex'),'generated_tex_sha256':sha(HERE/'paper3.tex'),
+             'bibliography_sha256':sha(ROOT/'thesis/bib_new.tex'),'numerical_macros_sha256':sha(numerical_macros),'self_contained_tex':True,'isolated_tex_compile':'PASS','generated_tex_sha256':sha(HERE/'paper3.tex'),
              'pdf_sha256':sha(HERE/'paper3.pdf'),'proof_blocks':len(proofs),
              'abstract_words':len(abstract.split()),'external_references':used,
              'status':'review_draft_with_targets_and_pending_evidence_not_submission_ready'}

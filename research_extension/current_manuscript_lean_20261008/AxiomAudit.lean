@@ -420,6 +420,7 @@ run_cmd do
   `CurrentMM.actual_positive_anchor_execution_cost_positive,
   `CurrentMM.actual_positive_anchor_trader_energy_bound,
   `CurrentMM.actual_positive_anchor_impulse_dissipates,
+  `CurrentMM.thesis_general_measure_bias,
   `CurrentMM.thesis_memory_box,
   `CurrentMM.thesis_sector_flow_bound,
   `CurrentMM.thesis_sector_finite_box,

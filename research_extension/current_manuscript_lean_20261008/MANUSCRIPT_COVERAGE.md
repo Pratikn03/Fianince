@@ -40,8 +40,10 @@ These entries are separate from the historical manuscript coverage counts.
 | --- | --- | --- |
 | `thm:sector` | `thesis_sector_safety`: actual scalar plant, finite cohorts/horizon, signed time-varying weights and sector responses, convex memories. | Tightness is not newly mechanized. |
 | `thm:lifetime` | `thesis_weight_drift`, `thesis_lifetime_floor`, `thesis_lifetime_envelope`: drift, floor and sensitivity. | Positive total drift and nonnegative initial margin. No first-passage sharpness. |
-| `thm:dich(i)` | `thesis_bias_from_tail`, `thesis_variance_radius`, `thesis_interval_half_width`. | Finite atomic bias and deterministic arithmetic only; general integration, Gaussian coverage and part (iv) excluded. |
+| `thm:dich(i)` | `thesis_bias_from_tail`, `thesis_general_measure_bias`, `thesis_variance_radius`, `thesis_interval_half_width`. | Finite positive measure with explicit integrability/tail hypotheses; Gaussian probability, derivation of analytic hypotheses and part (iv) excluded. |
 
 The strategic counterexample is separate: `thesis_strategic_profitable_deviation` and `thesis_strategic_no_equilibrium` prove nonexistence of a pure maximizer in the stated one-cohort threshold game. The mixed-strategy extension is written mathematics only.
 
-Current thesis integration strict audit: 459 named mathematical declarations, including the thesis additions. This is a declaration count, not a claim of full manuscript or empirical completion.
+Current thesis integration strict audit: 460 named mathematical declarations, including the thesis additions. This is a declaration count, not a claim of full manuscript or empirical completion.
+
+General finite-measure bias is now also checked by `CurrentMM.thesis_general_measure_bias` in `ThesisMeasure.lean`: integrable target and approximant, finite positive measure, mass bound and an almost-everywhere tail bound imply the bias bound. Gaussian coverage and the derivation of analytic tail/integrability hypotheses are outside that deterministic statement.

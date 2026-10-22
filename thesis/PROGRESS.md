@@ -227,3 +227,26 @@ and E1/E2/learning-agent evidence remain outstanding.
 Human tasks still required: co-author contribution statements and permission for
 the reproduced paper chapters (Chapters 2 and 3 in this layout), journal choices,
 and thesis submission decisions. No messages or submissions were sent to others.
+
+## L1 — general finite-measure bias closure — 2026-10-22
+Status: partial
+What changed: `CurrentProofs/ThesisMeasure.lean`, the root imports, typed/audit
+receipts, coverage register, shared chapter formal-scope paragraph, stand-alone
+source builder and proof-status provenance checks.
+Result: `CurrentMM.thesis_general_measure_bias` now proves the integral bias bound
+for any finite positive real measure, assuming integrability of the target and
+approximant, a mass bound and an almost-everywhere tail bound. This supersedes
+the earlier finite-atomic-only boundary. All requested L1 deterministic components
+now compile locally: finite-horizon safety, the lifetime calculations, general
+finite-measure bias and interval-radius arithmetic. The full strict audit covers
+460 project declarations, including 15 thesis additions. This does not newly
+prove Gaussian coverage, derive the analytic convergence/integrability assumptions,
+prove the A1 lower bound, or mechanize matrix sharpness. The generated stand-alone
+TeX now inlines its generated numerical macros and has no external source-input
+dependency.
+Checks: local Lean build/strict audit ok; thesis/Paper 3 builds ok; provenance,
+Ruff and targeted tests ok. Final CI acceptance is the live check state on draft
+PR #2; this entry is recorded before dispatch of the integral-lemma commit.
+Open issues: final CI observation, the stated probability/analytic boundaries,
+other theorem targets and future empirical studies. No claim of highest-ceiling
+completion follows from the declaration count.
