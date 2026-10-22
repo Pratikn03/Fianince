@@ -133,8 +133,12 @@ for lab, key, val in [("P2 inventory S_with_inv", "2.5000", p2_step2["inventory_
 
 # Paper 1 checks (learners, CAT dollars, disclosure OOS, disclosure state OOS)
 t_p1 = open(os.path.join(TEX1, "p1_mixture.tex")).read() + open(os.path.join(TEX1, "p1_disclosure.tex")).read()
-for lab, key, val in [("P1 learners R2_exp", "0.9448", p1_lrn["trained_online_learners"]["rls_trained"]["pred_a_single_exp_r2"]),
-                      ("P1 learners fast gap", "5.31", 100 * p1_lrn["trained_online_learners"]["rls_trained"]["pred_d_nonstationary_rel_gap"]),
+_hl = json.load(open(os.path.join(RECOMP, "R_P1_trained_learners_hardened.json")))["regime_evaluations"]
+_hr = lambda reg, rule: next(r for r in _hl if r["regime"] == reg and r["rule_kind"] == rule)
+for lab, key, val in [("P1 trained RLS cap slope", "-4.014", _hr("Regime1a_Unnormalized_Frozen_SharedStream", "rls_trained")["testB_capital_slope"]),
+                      ("P1 trained Q cap slope", "-3.973", _hr("Regime1a_Unnormalized_Frozen_SharedStream", "tabular_bellman_q_trained")["testB_capital_slope"]),
+                      ("P1 indep RLS cap slope", "-1.75", _hr("Regime1b_Unnormalized_Frozen_IndepStreams", "rls_trained")["testB_capital_slope"]),
+                      ("P1 indep Q cap slope", "-0.38", _hr("Regime1b_Unnormalized_Frozen_IndepStreams", "tabular_bellman_q_trained")["testB_capital_slope"]),
                       ("P1 CAT K2 Radau 0.10 roll", "14{,}741{,}376", p1_cat["rows"][4]["annual_loss_weekly_roll_usd"]),
                       ("P1 CAT K3 Radau 0.20 1s", "1{,}011{,}405{,}564", p1_cat["rows"][5]["annual_loss_weekly_1s_usd"]),
                       ("P1 disc OOS delta_r2", "-1.089", p1_oos["delta_r2_tagged_vs_price_only_pts"]),
