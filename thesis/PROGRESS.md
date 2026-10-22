@@ -88,3 +88,23 @@ is made that the thesis meets the supplied definition of done.
 
 Human tasks still required: agree the co-authorship statement, obtain co-author
 permission to include the papers, and decide journals and thesis submission.
+
+## Validation gate repair — 2026-10-22
+Status: done
+What changed: `ceiling_suite/papers/reproduce_clean.sh`,
+`checks/reproduction_text_extraction.json`.
+Result: The strict PDF comparator now tries both standard reading order and
+layout-preserving text extraction. The underlying comparator is unchanged:
+token counts, complete word/number multisets, and bounded local reordering must
+still match. Across all four PDF targets at least one extraction mode passes;
+changing a printed number is rejected in both modes for every target. This
+repairs the platform-dependent joined fragments around tall inline formulas
+without editing the co-authored papers or waiving mismatches. Full clean
+reproduction now ends with `done: all checks passed`, including the 28 unit
+tests, every archived numerical comparison, all four PDFs and the 76-number
+ledger. This entry supersedes the earlier failed local reproduction status.
+Checks: build ok; verify ok; reproduce ok; ruff ok; lean n.a. for this repair.
+Open issues: the mathematical targets and future-data tests remain separate;
+this infrastructure repair does not establish them. The later uncommitted
+quadrature script and result were preserved in a local backup before restoring
+the committed A1 diagnostics, which pass their provenance verifier.
