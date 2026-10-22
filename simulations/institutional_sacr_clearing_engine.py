@@ -346,13 +346,14 @@ def run_institutional_clearing_simulation(
         "conclusion": "Pseudospectral Kreiss radius enforcement (Theorem M5) reduces secondary liquidation contagion across clearing members from catastrophic levels under naive margining to 0.0% (95% CI [0.00%, 0.37%]), mathematically verifying systemic solvency preservation in live banking clearing networks."
     }
     
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT_FILE.write_text(json.dumps(output_data, indent=2))
-    
-    SECONDARY_FILE.parent.mkdir(parents=True, exist_ok=True)
-    SECONDARY_FILE.write_text(json.dumps(output_data, indent=2))
-    
-    print(f"\nExecution finished in {time.time() - t0:.2f}s. Saved to {OUTPUT_FILE}")
+    if n_replications >= 500:
+        OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+        OUTPUT_FILE.write_text(json.dumps(output_data, indent=2))
+        
+        SECONDARY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        SECONDARY_FILE.parent.mkdir(parents=True, exist_ok=True)
+        SECONDARY_FILE.write_text(json.dumps(output_data, indent=2))
+        print(f"\nExecution finished in {time.time() - t0:.2f}s. Saved to {OUTPUT_FILE}")
     return output_data
 
 
