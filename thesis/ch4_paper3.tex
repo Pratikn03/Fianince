@@ -2,7 +2,7 @@
 
 This chapter is the third paper of the thesis and the candidate's own work. It places the results of Chapters~\ref{ch:p1} and~\ref{ch:p2} in one framework, proves when a question about a market's unknown agents is cheap or impossible to certify, and extends the safety results to agents that are nonlinear and keep learning. Results proved here are marked \Proved{}; results proved in Chapters~\ref{ch:p1}--\ref{ch:p2} are marked accordingly; the open technical target and the conjecture are marked as such.
 
-\begin{quote}\small\textbf{Summary.} Regulators ask to know which algorithms trade in a market; we ask which questions about those algorithms can be answered from market data at all, and at what cost. Every question an outside observer can ask is a functional of the agents' merged measure of memory rates and weights, observed through noisy moments. For linear questions we bound the number of experiments needed to certify the answer by its coefficient energy at a truncation depth set by its tail at long memory, show that this truncation is necessary, and show that questions singular at infinite memory cannot be certified without a memory bound. Safety is such a question: it depends on the agents only through their total feedback weight and is certified at the parametric rate up to a logarithm, whereas identifying the agents costs polynomially or logarithmically more. The summed-gain guard remains safe for agents whose rules are nonlinear and whose memories and weights change over time, given only a bound on their total sensitivity, and when agents keep learning a certificate lasts for its safety margin divided by their learning speed. The matching lower bound and the behaviour of the guard under strategic agents are left open.\end{quote}
+\begin{quote}\small\textbf{Summary.} Regulators ask to know which algorithms trade in a market; we ask which questions about those algorithms can be answered from market data at all, and at what cost. Every question an outside observer can ask is a functional of the agents' merged measure of memory rates and weights, observed through noisy moments. For linear questions we bound the number of experiments needed to certify the answer by its coefficient energy at a truncation depth set by its tail at long memory, give a finite-depth obstruction in terms of best polynomial approximation, and show that questions singular at infinite memory cannot be certified without a memory bound. Safety is such a question: it depends on the agents only through their total feedback weight and is certified at the parametric rate up to a logarithm, whereas identifying the agents costs polynomially or logarithmically more. The summed-gain guard remains safe for agents whose rules are nonlinear and whose memories and weights change over time, given only a bound on their total sensitivity, and when agents keep learning a certificate lasts for its safety margin divided by their learning speed. The matching lower bound and the behaviour of the guard under strategic agents are left open.\end{quote}
 
 \section{Markets with adaptive agents}\label{sec:fw_model}
 
@@ -72,7 +72,7 @@ Under Assumption~\ref{ass:reset} with $L\ge T_g(\epsilon)$, and with $z=z_{1-\al
 (iii) Compare $M_0=0$ with $M_1=c\,\delta_r$. Under $M_1$ the taps are $k_t=c\,r^t$, so the Kullback--Leibler divergence between the two data distributions over any number of taps is at most $Nc^2/(2\sigma^2(1-r^2))$. Choose $c=\sigma\sqrt{(1-r^2)/N}$, which is at most $B$ for $r$ near one; the divergence is then at most $1/2$, so by Pinsker's inequality the total variation distance between the two data distributions is at most $1/2$. The functional differs by $c\,|g(r)|=\sigma\sqrt{(1-r^2)/N}\,|g(r)|\ge\sigma\sqrt{(1-r)/N}\,|g(r)|$, which is unbounded along a sequence $r\uparrow1$ by assumption. Suppose an interval of half-width $\epsilon$ covered $F_g$ with probability at least $1-\alpha$ under both economies. Once the two values differ by more than $2\epsilon$, the event that the interval contains $F_g(M_0)$ has probability at least $1-\alpha$ under $M_0$ and at most $\alpha$ under $M_1$, so the total variation distance is at least $1-2\alpha>1/2$, a contradiction.
 \end{proof}
 
-\paragraph{What the theorem says.} The cost of answering a linear question is governed by its behaviour at long memory. If its power-series tail decays geometrically on $[0,\bar r]$, the truncation depth grows like $\log(1/\epsilon)$ and the cost is parametric up to that factor. If the question is singular at infinite memory, faster than $(1-r)^{-1/2}$, no memory bound means no certificate. The number of agents and the spacing of their memories do not enter.
+\paragraph{What the theorem says.} The upper bound for answering a linear question is controlled by its Taylor coefficients and their tail; finite-depth ambiguity is controlled separately by best polynomial approximation. If its power-series tail decays geometrically on $[0,\bar r]$, the truncation depth grows like $\log(1/\epsilon)$ and the cost is parametric up to that factor. If the question is singular at infinite memory, faster than $(1-r)^{-1/2}$, no memory bound means no certificate. The number of agents and the spacing of their memories do not enter.
 
 \begin{corollary}[The rates of this thesis as cases of one picture]\label{cor:cases}
 \begin{enumerate}[label=(\alph*)]
@@ -86,7 +86,48 @@ Under Assumption~\ref{ass:reset} with $L\ge T_g(\epsilon)$, and with $z=z_{1-\al
 
 The link in (e) between coefficient growth and the logarithmic rate is a heuristic reading of Chapter~\ref{ch:p1}'s proof, not a separate result; making it a corollary of part (iv) is part of the target.
 
-\paragraph{Proof plan for part (iv).} The lower bound combines the two mechanisms above. Truncation (part (ii)) shows that depth $T_g(\epsilon)$ is needed; the noise argument of part (iii) shows that each of the first $T$ taps must be resolved to precision of order $\epsilon/\sqrt{A_g(T)}$ in the direction of the coefficient vector $(a_0,\dots,a_{T-1})$. The step that remains is a construction of moment-matched pairs whose tap differences lie close to that direction, using the Gauss and Gauss--Radau quadrature pairs of Theorem~\ref{p1:thm:kcohort} as building blocks, followed by a Le Cam two-point bound. The regularity condition on $g$ is what makes the direction attainable by positive measures.
+\subsection{Partial lower bound and the gap in part (iv)}\label{sec:dich_partial}
+
+Part (iv) remains a \Target{}. The following argument establishes only a parametric obstruction, with a constant depending on the functional. It does not establish the coefficient-energy factor, and has not been formalized in Lean.
+
+\paragraph{A fixed-atom lower bound.}
+Suppose $B>0$, $\sigma>0$, $\alpha<1/4$, and choose $r_*\in[0,\bar r]$ with $g(r_*)\ne0$. For sufficiently small $\epsilon$, any valid certificate must satisfy
+\[
+N_{\rm cert}(\epsilon;F_g,\mathcal M(\bar r,B))>
+\frac{\sigma^2(1-r_*^2)|g(r_*)|^2}{9\epsilon^2}.
+\]
+Indeed, put $\lambda=3\epsilon/|g(r_*)|$ and require $\lambda\le B/2$. The measures
+$M_0=(B/4)\delta_{r_*}$ and $M_1=(B/4+\lambda)\delta_{r_*}$ are admissible and their functional values differ by $3\epsilon$. For any observed depth $L$, their Gaussian experiment divergence obeys
+\[
+D_{\rm KL}(P_0^N\Vert P_1^N)
+=\frac{N\lambda^2}{2\sigma^2}\sum_{t<L}r_*^{2t}
+\le\frac{N\lambda^2}{2\sigma^2(1-r_*^2)}.
+\]
+If $N$ is no greater than the displayed lower bound, the divergence is at most $1/2$, and Pinsker's inequality gives total variation at most $1/2$. An interval of half-width at most $\epsilon$ cannot contain both functional values. Coverage at least $1-\alpha$ under both measures would therefore imply total variation at least $1-2\alpha>1/2$, a contradiction. The divergence bound is uniform in $L$.
+
+\paragraph{Why the proposed matching proof does not close the gap.}
+Taylor truncation gives an upper bound on best polynomial approximation error, $B E_T(g)\le\tau_g(T)$; it gives no reverse bound. Thus part (ii) does not show that every procedure needs Taylor depth $T_g(\epsilon)$. Furthermore, a Gauss/Gauss--Radau pair with $T$ nodes matches all moments through degree $2T-2$. For $t<T$, its tap difference is exactly zero, rather than a nonzero vector aligned with $(a_0,\ldots,a_{T-1})$. Positivity of the coefficients does not supply the missing construction. Finally, when $L>T$, a valid testing lower bound must control divergence from all observed taps, not just a selected prefix. The fixed-atom argument above does so, but does not yield $A_g(T_g(\epsilon))$.
+
+\paragraph{Counterexample to the uniform statement as written.}
+The constants in part (iv) are stated to depend only on $(\bar r,B,\alpha)$, uniformly over the regular coefficient class. This uniform claim fails. Fix $\bar r>0$, $B>0$, an accuracy $\epsilon_0>0$, and $\beta\in(0,1)$, and choose $\eta>0$ with $\eta/(1-\beta\bar r)<1/2$. For any positive integer $m$, define
+\[
+g_m(r)=\frac{\epsilon_0}{B}\left[(1-r/\bar r)^m+\frac{\eta}{1-\beta r}\right].
+\]
+Its coefficients are strictly positive beyond degree $m$ and have at most polynomial growth. On the support interval, $g_m$ is non-negative and bounded above by $(\epsilon_0/B)(1+\eta/(1-\beta\bar r))$. Thus every $F_{g_m}(M)$ lies in a known interval of length less than $3\epsilon_0/2$. That interval certifies the functional without any data, so $N_{\rm cert}\le1$ even if the definition requires a positive number of experiments.
+
+Yet $T_{g_m}(\epsilon_0)=m+1$. For every $1\le T\le m$, evaluating the polynomial tail at $r=\bar r$ gives
+\[
+\sum_{t=T}^m(-1)^t\binom mt=(-1)^T\binom{m-1}{T-1}.
+\]
+After adding the discounted tail, the reverse triangle inequality yields $\tau_{g_m}(T)\ge\epsilon_0(1-\eta/(1-\beta\bar r))>\epsilon_0/2$. At $T=m+1$ only the discounted tail remains and is below $\epsilon_0/2$. For any fixed $c'>0$, eventually $c'(m+1)>1$, so the coefficient energy includes the coefficient of $r$ and
+\[
+A_{g_m}(c'T_{g_m}(\epsilon_0))\epsilon_0^{-2}
+\ge B^{-2}(m/\bar r-\eta\beta)^2\longrightarrow\infty.
+\]
+For fixed $\sigma>0$ this contradicts any positive uniform constant $c$ in part (iv). The accuracy $\epsilon_0$ can be chosen arbitrarily small. This refutes the stated bound over the full regular class at a common accuracy; it does not refute an asymptotic statement with a functional-dependent accuracy threshold, nor the restricted all-non-negative coefficient case. A repaired statement must make its additional normalization or its functional dependence explicit. The original target is retained to show precisely what requires reformulation, rather than silently weakening it.
+
+\paragraph{Deterministic checks and remaining target.}
+The script \texttt{checks/check\_dich\_lower.py} records valid fixed-atom pairs for the safety, single-tap and discounted functionals, their functional gaps and divergences, and the exactness residuals of quadrature pairs in a JSON result file in the same directory. It checks the parametric scaling of the explicit testing budget. This scaling is a consequence of the construction, not independent evidence for a minimax matching rate. The script also evaluates the cancellation family above. No empirical or simulation test is performed. A reformulation of the uniform bound and the non-negative coefficient case remain open, as does the proposed deduction for Corollary~\ref{cor:cases}(e).
 
 \section{Disclosure changes the contract, not the question}\label{sec:fw_disclosure}
 
