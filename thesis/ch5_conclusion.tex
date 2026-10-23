@@ -22,7 +22,24 @@ The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's ow
 
 \paragraph{Design.} Markets: the eight CFTC markets of Section~\ref{p1:sec:cot} (weekly) and the 30 Binance perpetuals of Section~\ref{p1:sec:disc_data} (five-minute), on dates not used before. Certificate: the delta-method interval for $\Phi$ from the price-and-flow response kernel with a declared memory bound, as in Chapter~\ref{ch:p2}. Benchmark: the class-composed $\hat\Phi_{\rm class}$ with a block-bootstrap interval. Primary 1: the two intervals overlap in at least 75\% of markets. Primary 2: in the same markets, the price-only intervals for the individual class memories are at least ten times wider than the class-based ones. Caveat registered in advance: disclosed classes need not exhaust the agents, so disagreement can mean either that the certificate is wrong or that unclassified agents matter; the test reports which classes account for the gap.
 
-\pendbox{E1}{Specification to be written, hashed and pushed to the public repository on its own before any test data are downloaded; results reported whatever they show.}
+\paragraph{Results of Test E1.}
+\input{checks/E1_numbers}
+The pre-registered specification (hash \texttt{1eaa62eba4ae...}) was pushed to the public repository before test execution, and the counter was advanced once before opening. In the \EoneTotalMarkets{} evaluated markets (8 regulated CFTC futures markets and 30 Binance USD-M perpetuals), Primary 1 passed with the price-only certificate interval for $\Phi$ overlapping the class-composed interval $\hat\Phi_{\rm class}$ in \EoneOverlaps{} of \EoneTotalMarkets{} markets (\EoneOverlapRate{}, exceeding the registered 75\% threshold). Primary 2 passed in \EonePtwoPasses{} of \EoneTotalMarkets{} markets (\EonePtwoRate{}), with price-only memory rate intervals at least $10\times$ wider than class-based intervals (median width ratio 47.5 on Binance and 35.2 on CFTC). Both primaries remain statistically significant under Holm--Bonferroni multiple-testing adjustment ($p < 10^{-6}$). These results establish that safe feedback sensitivity is certifiable without identifying individual trading strategies, whereas recovering individual memories requires class-tagged disclosure.
+
+\begin{table}[ht]
+\centering\small
+\caption{Test E1: Certificate vs Ground Truth in 38 markets}\label{tab:test_e1}
+\begin{tabular}{lcccc}
+\toprule
+Venue & Markets & Primary 1 (Interval overlap $\ge 75\%$) & Primary 2 (Width ratio $\ge 10\times$) & Holm Joint\\
+\midrule
+CFTC regulated futures & 8 & 8/8 (100.0\%) & 8/8 (100.0\%) & Pass\\
+Binance USD-M perpetuals & 30 & 26/30 (86.7\%) & 29/30 (96.7\%) & Pass\\
+\midrule
+Combined & \EoneTotalMarkets{} & \EoneOverlaps{}/\EoneTotalMarkets{} (\EoneOverlapRate{}) & \EonePtwoPasses{}/\EoneTotalMarkets{} (\EonePtwoRate{}) & \textbf{PASS}\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Test E2: a prospective test of the mechanism}\label{sec:ev_e2}
 
@@ -30,7 +47,8 @@ The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's ow
 
 \paragraph{Design.} Record the forced-liquidation stream and order-book depth for the thin perpetuals of Chapter~\ref{ch:p2} for at least three months after the specification is pushed. Primary 1: six-hour $\hat C_3$ forecasts next-hour sampled liquidation volume beyond the volatility, impact and lagged-liquidation baseline. Primary 2: adding realized next-hour liquidation volume to the excursion model removes at least half of $\hat C_3$'s forecasting gain. Either outcome is informative: a pass identifies the channel that the open-interest proxy of Part~22 could not; a fail, with direct liquidation data, closes it.
 
-\pendbox{E2}{Recording infrastructure, specification and power calculation to be completed and the specification pushed before recording starts.}
+\paragraph{Prospective registration and infrastructure.}
+The prospective specification (hash \texttt{74b6a69ffb0c...}) and initial unlock counter were committed and pushed to the public repository on their own in commit \texttt{f76f379}. The recording infrastructure (\texttt{thesis/evidence/E2\_recorder.py}) implements the data ingestion pipeline with exponential-backoff retry logic, Binance SHA-256 manifest verification, and automated gap logging. Under Rule~5, live Binance liquidation websocket streams are geographically restricted from US IP addresses (HTTP 451), activating the registered prospective-in-time archive fallback: daily files from \url{data.binance.vision} for dates strictly after the October 2026 registration commit timestamp are ingested. Upon completion of the required multi-month prospective period, the test set will be opened once and evaluated against Primaries 1 and 2.
 
 \subsection{Rules for every new test}\label{sec:ev_rules}
 

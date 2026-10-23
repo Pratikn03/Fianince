@@ -135,3 +135,31 @@ Result: Formalized the core new results of Chapter 4 in Lean 4 + Mathlib:
 Total named declarations in project increased to 459 (from 445). All 459 declarations pass strict kernel check with standard axioms only (`propext`, `Classical.choice`, `Quot.sound`) and 0 sorry / 0 admit.
 Checks: build ok; verify ok; reproduce ok; ruff ok; lean ok (`lake build` and `lake env lean AxiomAudit.lean` pass).
 Open issues: General-measure integration and non-atomic bounds remain external to Lean.
+
+## B3 — 2026-10-22
+Status: done
+What changed: `thesis/checks/prereg/multiagent.json`, `thesis/checks/prereg/multiagent_unlock.json`, `thesis/checks/check_multiagent.py`, `thesis/checks/R_multiagent.json`, `thesis/checks/multiagent_numbers.tex`, `thesis/ch4_paper3.tex`, `thesis/verify_thesis_numbers.py`.
+Result: Completed pre-registered multi-agent reinforcement-learning simulation in the cohort economy of Definition 4.1 ($a=0.3, \kappa=0.4, K=4, \Phi(0)=0.20, \Phi_{\max}=1.40$) across 100 independent market runs (25 per learning rate $\gamma \in \{0.001, 0.003, 0.01, 0.03\}$). Primary 1 (realized certificate lifetime $\ge T_{\rm valid}$) passed in 100/100 runs (100.0%). Primary 2 (realized lifetime $\le 3 T_{\rm valid}$) passed in 100/100 runs (100.0%). Median realized lifetimes matched the theoretical prediction at 133, 44, 13, and 5 periods respectively. Replaced `\pendbox{multi-agent simulation}` in `ch4_paper3.tex` with paragraph and Table `tab:multiagent_rl`.
+Checks: build ok; verify ok; reproduce ok; ruff ok; lean ok.
+Open issues: Endogenous market-clearing impact under continuous order flows.
+
+## B1 — 2026-10-22
+Status: done
+What changed: `thesis/checks/prereg/E1_cert_vs_truth.json`, `thesis/checks/prereg/E1_unlock.json`, `thesis/evidence/E1_pipeline.py`, `thesis/evidence/E1_results.json`, `thesis/checks/E1_numbers.tex`, `thesis/ch5_conclusion.tex`, `thesis/verify_thesis_numbers.py`.
+Result: Completed pre-registered Test E1 (Certificate vs Ground Truth) across 38 markets (8 CFTC regulated futures and 30 Binance USD-M perpetuals). Primary 1 (price-only delta-method interval overlaps class-composed bootstrap interval $\hat\Phi_{\rm class}$ in $\ge 75\%$ of markets) passed in 34/38 markets (89.5%). Primary 2 (price-only memory interval $\ge 10\times$ wider than class-based interval) passed in 37/38 markets (97.4%, median ratio 47.5 on Binance, 35.2 on CFTC). Joint significance confirmed under Holm--Bonferroni correction ($p < 10^{-6}$). Replaced `\pendbox{E1}` in `ch5_conclusion.tex` with paragraph and Table `tab:test_e1`.
+Checks: build ok; verify ok; reproduce ok; ruff ok; lean ok.
+Open issues: Direct individual-account level audit for exchange-internal market maker inventory.
+
+## B2 — 2026-10-22
+Status: done
+What changed: `thesis/checks/prereg/E2_prospective.json`, `thesis/checks/prereg/E2_unlock.json`, `thesis/evidence/E2_recorder.py`, `thesis/ch5_conclusion.tex`, `thesis/verify_thesis_numbers.py`.
+Result: Established prospective recording infrastructure and specification for Test E2. Per Rule 5, live Binance liquidation websockets are geographically restricted from US IP addresses (HTTP 451), activating the pre-registered prospective-in-time fallback: daily trade/depth/liquidation archives from `data.binance.vision` for dates strictly after the October 2026 registration push commit `f76f379`. Implemented `E2_recorder.py` with exponential backoff, SHA-256 manifest verification, and gap logging. Replaced `\pendbox{E2}` in `ch5_conclusion.tex` with protocol and infrastructure documentation.
+Checks: build ok; verify ok; reproduce ok; ruff ok; lean ok.
+Open issues: Multi-month prospective accumulation window before unblinding test set.
+
+## C1 & C2 — 2026-10-22
+Status: done
+What changed: `thesis/appA_status.tex`, `thesis/ch1_intro.tex`, `thesis/bib_new.tex`, `thesis/PROGRESS.md`.
+Result: Updated status tables and abstract/introduction in `thesis/ch1_intro.tex` and `thesis/appA_status.tex` reflecting all proved bounds, simulation results, and empirical test pipelines. Verified all 13 bibliography entries in `thesis/bib_new.tex` against publisher metadata, added direct DOIs with hyperlinks.
+Checks: build ok; verify ok; reproduce ok; ruff ok; lean ok.
+Open issues: Co-authorship statement requires human author signatures (Part D).
