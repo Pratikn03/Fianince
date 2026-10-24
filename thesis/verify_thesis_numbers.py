@@ -3,7 +3,7 @@
 Inherited chapter numbers (Chapters 2-3) are checked by the paper verifier. This script checks the
 artifacts of Chapters 4-5: the A1 diagnostics, the modulus certificates for Theorem thm:dich(iv),
 the registered multi-asset and B3v2 results, the strategic counterexample, and the registration
-state of Tests E1v2 and E2. It does not certify inherited prose.
+state and results of Tests E1v2, D1, G1, V1 and E2, and the exploratory pilot. It does not certify inherited prose.
 """
 
 import hashlib
@@ -89,7 +89,7 @@ print('B3v2 simulation, table and text: PASS')
 for f in ('E1_pipeline.py', 'E1_results.json', 'E1_numbers.tex', 'check_multiagent.py', 'R_multiagent.json',
           'multiagent_numbers.tex'):
     assert (ROOT / 'withdrawn' / f).exists(), f
-assert 'E1_numbers' not in concl and 'Eone' not in concl.replace('E1v2', '')
+assert '\\input{checks/E1_numbers}' not in concl and '\\input{checks/E1v2_numbers}' in concl
 assert '\\label{sec:ev_withdrawn}' in concl
 print('Withdrawn results: PASS')
 
@@ -133,7 +133,34 @@ for tid, spec, keys in (("D1", "D1_tagging_scaling", ("d1_sha256", "e1v2_pipelin
              "e2_analysis_sha256": "e2_analysis.py", "v1_sha256": "v1_kraken_venue.py"}
     for k in keys:
         assert digest(ROOT / 'evidence' / files[k]) == js[k], (tid, k)
-    if json.loads((ROOT / f'checks/prereg/{tid}_unlock.json').read_text())['opens'] == 0:
+    c = json.loads((ROOT / f'checks/prereg/{tid}_unlock.json').read_text())
+    if c['opens'] == 0:
         assert not (ROOT / f'evidence/{tid}_results.json').exists()
+    else:
+        res = json.loads((ROOT / f'evidence/{tid}_results.json').read_text())
+        assert res['spec_sha256'] == digest(sp) == c['spec_sha256'], tid
+        assert f'\\input{{checks/{tid}_numbers}}' in concl, tid
     assert f'{tid}:' in concl
 print('Tests D1, G1, V1 registrations: PASS')
+
+# Results of D1, G1 and V1 reproduce from their files (D1 by its own check; G1 and V1 by recomputing verdict and numbers)
+sys.path.insert(0, str(ROOT / 'evidence'))
+subprocess.run([sys.executable, str(ROOT / 'evidence/d1_tagging_scaling.py'), '--check'], check=True)
+import g1_stress_guard as G1mod  # noqa: E402
+import v1_kraken_venue as V1mod  # noqa: E402
+g1res = json.loads((ROOT / 'evidence/G1_results.json').read_text())
+g1ev = g1res.get('evaluation', g1res)
+assert G1mod.numbers_tex(g1ev) == (ROOT / 'checks/G1_numbers.tex').read_text()
+assert g1ev['G1_pass'] == (max(g1ev['stress']['amp_vol']['ci']) < 0 and g1ev['p_holm'][0] < 0.05)
+assert g1ev['G2_pass'] == (max(g1ev['stress']['guard']['ci']) < 0 and g1ev['p_holm'][1] < 0.05)
+v1res = json.loads((ROOT / 'evidence/V1_results.json').read_text())
+assert V1mod.verdict(v1res['evaluation']) == v1res['verdict']
+assert V1mod.numbers_tex(v1res['evaluation'], v1res['verdict']) == (ROOT / 'checks/V1_numbers.tex').read_text()
+print('Tests D1, G1, V1: results reproduce from their files: PASS')
+
+# Chapter 5 extra numbers and the exploratory pilot (labelled exploratory, never confirmatory)
+subprocess.run([sys.executable, str(ROOT / 'checks/export_results_extra.py'), '--check'], check=True)
+pilot = json.loads((ROOT / 'evidence/pilot_after_e1v2_results.json').read_text())
+assert pilot['kind'].startswith('EXPLORATORY')
+assert '\\label{sec:ev_explore}' in concl and 'Nothing in this subsection is confirmatory evidence' in concl
+print('Exploration after the tests: labelled exploratory: PASS')

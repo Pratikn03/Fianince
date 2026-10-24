@@ -9,12 +9,15 @@ the displacement response, and its area is the summed response.
 Formula. With x_t = a x_{t-1} + kappa f_t and f_t = sum_m k_m x_{t-m} (Paper 2, Theorem sum), a unit displacement
 decays along h_0 = 1, h_{t+1} = a h_t + kappa sum_{m<=t} k_m h_{t-m}, and sum_t h_t = 1 / (1 - a - kappa Phi).
 Writing b_j for the cumulative altcoin response j minutes after a BTC shock and beta for its long-run plateau, the
-gap fraction is G_j = 1 - b_j / beta, and
+displacement j minutes after a shock e is x_j = (beta - b_j) e, so x_j / x_0 = h_j / h_0 and
 
-        stability margin   M = 1 - a - kappa Phi = 1 / sum_j G_j        (area under the catch-up gap curve)
+        sum_j x_j / x_0 = 1 / M,      M = 1 - a - kappa Phi        (Chapter 4, Proposition natural)
 
-so the market's own shocks certify the safety functional directly, without separating reversion from feedback or
-cohort from cohort; splitting G into exponential modes is the identification problem the theory says is hard.
+In the normalization used below, G_j = 1 - b_j / beta (the share of the long-run move still missing), the area
+A = sum_j G_j is the horizon-limited amplification per unit of long-run move, and M = (1 - p_0) / A with
+p_0 = b_0 / beta the share that passes through within the shock minute. A is what a position exposed to the lag
+loses in the worst case over the horizon; M is the stability margin. Splitting G into exponential modes is the
+identification problem the theory says is hard.
 
 Estimation (per symbol, pooled over days with day-demeaning; local projections; day bootstrap with weights):
     p^A_{t+j} - p^A_{t-1} = b_j r^B_t + controls (5 lags of r^B and of r^A) + e,  j = 0..90 minutes
@@ -169,7 +172,7 @@ def gap_quantities(b, plateau, horizon):
     Sa = G[:, :horizon].sum(1)
     tail = G[:, int(0.75 * horizon):horizon].mean(1)
     with np.errstate(divide="ignore", invalid="ignore"):
-        M = np.where(Sa > 0, 1 / Sa, np.nan)
+        M = np.where(Sa > 0, (1 - b[:, 0] / beta) / Sa, np.nan)    # M = (1 - p_0) / A
     return beta, G, Sa, M, tail
 
 

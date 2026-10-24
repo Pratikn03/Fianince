@@ -208,6 +208,47 @@ On the stable class $\sum_mk_m=\Phi\le B/(1-\bar r)$, so $a+\kappa\sum_{m<t}k_m<
 
 The ladder therefore has a rung below the parametric one. The peak in the cohort economy is known before any data arrive, yet a guard on it controls nothing; the summed response costs one logarithm more than a parametric question and is the quantity that loss depends on. The cheapest question is the wrong one, and the right one is only slightly more expensive. The locality and boundedness of the impulse-response recursion are checked in Lean (\nolinkurl{CurrentMM.thesis_peak_le_first}, \nolinkurl{CurrentMM.thesis_peak_locality}, \nolinkurl{CurrentMM.thesis_peak_monotone}).
 
+\section{Horizon-limited amplification and natural experiments}\label{sec:horizon}
+
+The summed response $S$ is expensive because of its tail: it needs a memory bound and costs a logarithm (Theorem~\ref{thm:philog}). A supervisor who cares about losses over a fixed horizon need not pay for the tail. And a market supplies its own reset experiments whenever an outside event moves fundamental value faster than the price can follow. Both observations were suggested by Mansi Bhavsar in comments on an earlier draft; this section makes them precise.
+
+Write $h_1,h_2,\dots$ for the impulse response of the linear economy, as in Section~\ref{sec:nonlinear}, and
+\[
+S_H=\sum_{s=1}^{H}h_s,\qquad \|h\|_{1,H}=\sum_{s=1}^{H}|h_s| .
+\]
+
+\begin{proposition}[Horizon-limited amplification]\label{prop:horizon}
+Let the linear economy start at rest, $x_0=0$ and $y_{i,0}=0$.
+\begin{enumerate}[label=(\roman*)]
+\item For shocks with $|w_t|\le\bar w$, $\max_{1\le t\le H}|x_t|\le\bar w\,\|h\|_{1,H}$, and some admissible shock sequence attains it. If $a\ge0$ and every $k_m\ge0$, then $\|h\|_{1,H}=S_H$.
+\item Suppose each of $N$ independent experiments returns $h_1,\dots,h_T$, $T\ge H$, with independent $N(0,\sigma^2)$ errors per tap (contract (O1) of Chapter~\ref{ch:p2}). Then $\hat S_H\pm z_{1-\alpha/2}\,\sigma\sqrt{H/N}$, with $\hat S_H$ the average over experiments of the summed first $H$ taps, covers $S_H$ with probability $1-\alpha$ for every economy, with no memory bound; half-width $\epsilon$ needs $N=\lceil z_{1-\alpha/2}^2\sigma^2H\epsilon^{-2}\rceil$ experiments.
+\item On the stable class of Corollary~\ref{cor:peak}, $S_H\uparrow S$ as $H\to\infty$ uniformly over $\mathcal M(\bar r,B)$. Without a memory bound, $\sup(S-S_H)=\infty$ over the stable economies for every $H$.
+\end{enumerate}
+\hfill\Proved
+\end{proposition}
+
+\begin{proof}
+(i) A shock $w_\tau$ moves $x_{\tau+s-1}$ by $h_sw_\tau$, so $x_t=\sum_{\tau=1}^th_{t-\tau+1}w_\tau$ and $|x_t|\le\bar w\sum_{s\le t}|h_s|\le\bar w\|h\|_{1,H}$ for $t\le H$. With $w_{H-s+1}=\bar w\,{\rm sign}(h_s)$ for $s\le H$, $x_H=\bar w\|h\|_{1,H}$. If $a\ge0$ and $k_m\ge0$, the recursion $h_{t+1}=ah_t+\kappa\sum_{m<t}k_mh_{t-m}$ with $h_1=\kappa>0$ keeps every $h_t\ge0$. (ii) The summed first $H$ taps of one experiment are Gaussian with mean $S_H$ and variance $H\sigma^2$, independently across experiments, so their average has standard deviation $\sigma\sqrt{H/N}$. (iii) Each $h_t$ is a polynomial in $k_0,\dots,k_{t-2}$, and each $k_m=\int r^m\,dM$ and $\Phi=\int(1-r)^{-1}dM$ is weak-* continuous on $\mathcal M(\bar r,B)$, because $r^m$ and $(1-r)^{-1}$ are continuous on $[0,\bar r]$; so $S_H$ and $S=\kappa/(1-a-\kappa\Phi)$ are continuous on the stable class, which is weak-* compact. There $h_t\ge0$ (Corollary~\ref{cor:peak}), so $S_H$ increases to $S$ pointwise, and Dini's theorem makes the convergence uniform. Without a memory bound, $S_H$ depends on $M$ only through $k_0,\dots,k_{H-2}$, and Theorem~\ref{p2:thm:window}(iii) gives stable economies with these moments and arbitrarily large $S$.
+\end{proof}
+
+Part (ii) is the parametric rate with no logarithm and no memory bound, because the horizon-limited question depends on finitely many observed taps (compare Proposition~\ref{prop:nonlinear}(b)). What a memory bound buys is part (iii), the passage from a horizon to forever. A supervisor whose capital is at risk over a known horizon, a margin period or a trading day, should certify $S_H$ for that horizon and leave $S$ to the theory of Section~\ref{sec:fw_dich}.
+
+\begin{proposition}[Natural experiments]\label{prop:natural}
+In the linear economy with $a+\kappa\Phi<1$, suppose an outside event at time $0$ moves the fundamental value so that the price is displaced by $x_0=d\neq0$, and adds no order flow, $w_t=0$ for $t\ge1$. Then:
+\begin{enumerate}[label=(\roman*)]
+\item $x_t=d\,h_{t+1}/\kappa$ for all $t\ge0$: the displacement follows the economy's own impulse response, started one step early;
+\item $\sum_{t\ge0}x_t/d=S/\kappa=1/M$, where $M=1-a-\kappa\Phi$ is the stability margin, and $\sum_{t<H}x_t/d=S_H/\kappa$;
+\item if the fundamental value moves by $\beta e$ and the price by a share $p_0\in[0,1)$ of that move within period $0$, so that $d=-(1-p_0)\beta e$, then the share of the long-run move still missing after $t$ periods, $G_t=1-b_t/\beta$ with $b_t$ the cumulative price move per unit of $e$, satisfies $\sum_{t\ge0}G_t=(1-p_0)/M$.
+\end{enumerate}
+\hfill\Proved
+\end{proposition}
+
+\begin{proof}
+(i) With $u_t=\sum_{m\ge0}k_mx_{t-m}$ and $x_t=0$ for $t<0$, $x_{t+1}=ax_t+\kappa\sum_{m=0}^tk_mx_{t-m}$. Set $g_t=x_t/d$, so $g_0=1$ and $g_{t+1}=ag_t+\kappa\sum_{m=0}^tk_mg_{t-m}$. The sequence $\hat g_t=h_{t+1}/\kappa$ has $\hat g_0=1$ and, from $h_{t+2}=ah_{t+1}+\kappa\sum_{m=0}^{t}k_mh_{t+1-m}$, the same recursion; the two sequences coincide. (ii) $\sum_th_t=S=\kappa/M$ by equation~\eqref{eq:fw_S}. (iii) $x_t=(b_t-\beta)e$ for $t\ge0$, so $G_t=(\beta-b_t)/\beta=(1-p_0)\,x_t/x_0$, and part (ii) gives the sum.
+\end{proof}
+
+The proposition turns an outside shock into a reset experiment. A small market whose fundamental value moves with a larger one (an altcoin with bitcoin, a stock with its index future) is displaced every time the larger market jumps; its catch-up path is $h$, its catch-up area over a horizon is $S_H/\kappa$, and the area over all horizons is the reciprocal of the stability margin. None of these requires separating reversion from feedback or one cohort from another: they are functionals of the response, which is what the theory says is cheap. Splitting the catch-up path into exponential modes is identification, which Chapter~\ref{ch:p1} says is not. Two things can break the correspondence, and both can be checked in data: an event that also moves the small market's order flow directly ($w_t\neq0$), and a small market that leads the large one. A catch-up path that changes sign, an overshoot, is impossible in the positive class of part (i) of Proposition~\ref{prop:horizon} and points to contrarian agents ($k_m<0$), which the cohort model of Definition~\ref{def:cohort} excludes. Section~\ref{sec:ev_explore} reports how far public data are from this contract.
+
 \section{Worked examples: how many experiments}\label{sec:examples}
 
 \input{checks/examples_table}
