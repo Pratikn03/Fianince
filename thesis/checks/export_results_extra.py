@@ -77,6 +77,43 @@ def build():
           f"\\newcommand{{\\PilotWithinSlope}}{{{f(s['median_slopes']['within_quarter_mean'], 2)}}}",
           f"\\newcommand{{\\PilotWithinIn}}{{{s['within_slope_in_P1_range']}}}",
           f"\\newcommand{{\\PilotAcrossIn}}{{{s['across_slope_in_P1_range']}}}"]
+    # Pilot 2 (every one-minute BTC move as a shock; exploratory)
+    q = json.loads((EV / "pilot2_natural_experiments_results.json").read_text())["summary"]
+    L += [f"\\newcommand{{\\PtwoPassThrough}}{{{100 * q['median_pass_through_0']:.0f}}}",
+          f"\\newcommand{{\\PtwoPreOK}}{{{q['placebo_pre_ci_covers_0']}}}",
+          f"\\newcommand{{\\PtwoReverseOK}}{{{q['placebo_reverse_ci_covers_0']}}}"]
+    # Pilot 2b (scheduled US macro releases at one second; exploratory)
+    b2 = json.loads((EV / "pilot2b_announcements_results.json").read_text())
+    sb, per = b2["summary"], b2["per_symbol"].values()
+    a120 = [v["A"]["120"] for v in per]
+    L += [f"\\newcommand{{\\PtwobEvents}}{{{len(b2['events'])}}}", f"\\newcommand{{\\PtwobSymbols}}{{{sb['n_symbols']}}}",
+          f"\\newcommand{{\\PtwobShare}}{{{100 * sb['median_p0']:.0f}}}", f"\\newcommand{{\\PtwobBeta}}{{{sb['median_beta']:.2f}}}",
+          f"\\newcommand{{\\PtwobPreOK}}{{{sb['placebo_pre_covers_zero']}}}",
+          f"\\newcommand{{\\PtwobPreSize}}{{{100 * sb['median_abs_pre_over_beta']:.1f}}}",
+          f"\\newcommand{{\\PtwobPseudo}}{{{100 * sb['median_pseudo_shock_sd_ratio']:.0f}}}",
+          f"\\newcommand{{\\PtwobNegArea}}{{{sb['overshoot_A120_negative']}}}",
+          f"\\newcommand{{\\PtwobNegAreaSig}}{{{sum(x['ci'][1] < 0 for x in a120)}}}",
+          f"\\newcommand{{\\PtwobOneSided}}{{{sb['certified_A120_below_60s']}}}",
+          f"\\newcommand{{\\PtwobTwoSided}}{{{sum(-60 < x['ci'][0] and x['ci'][1] < 60 for x in a120)}}}",
+          f"\\newcommand{{\\PtwobPosArea}}{{{sum(x['point'] > 0 for x in a120)}}}",
+          f"\\newcommand{{\\PtwobIdentified}}{{{sb['identified']}}}",
+          f"\\newcommand{{\\PtwobSlope}}{{{f(sb['median_width_slope'], 2)}}}"]
+    # Pilot 3 (horizon-matched price-only versus tagged half-lives; exploratory; transcribed Colab printout)
+    t3 = json.loads((EV / "pilot3_horizon_matched_results.json").read_text())
+    s3, rows3 = t3["summary"], t3["per_symbol"]
+    L += [f"\\newcommand{{\\PthreeTagHL}}{{{s3['median_tagged_half_life_h']:.1f}}}",
+          f"\\newcommand{{\\PthreeTagWidth}}{{{10 ** s3['median_tagged_width_log10']:.1f}}}",
+          f"\\newcommand{{\\PthreeHLtwelve}}{{{60 * s3['L12']['median_half_life_h']:.0f}}}",
+          f"\\newcommand{{\\PthreeShortTwelve}}{{{sum(r['L12']['half_life_h'] < 0.5 for r in rows3)}}}",
+          f"\\newcommand{{\\PthreeHLninetysix}}{{{s3['L96']['median_half_life_h']:.1f}}}",
+          f"\\newcommand{{\\PthreeNearninetysix}}{{{sum(0.5 <= r['L96']['half_life_h'] / r['tagged_half_life_h'] <= 2 for r in rows3)}}}",
+          f"\\newcommand{{\\PthreeRatioTwelve}}{{{s3['L12']['median_ratio_to_tagged']:.1f}}}",
+          f"\\newcommand{{\\PthreeRatioFortyeight}}{{{s3['L48']['median_ratio_to_tagged']:.1f}}}",
+          f"\\newcommand{{\\PthreeRatioNinetysix}}{{{s3['L96']['median_ratio_to_tagged']:.1f}}}",
+          f"\\newcommand{{\\PthreeTighter}}{{{min(sum(r[k]['width_ratio_to_tagged'] > 1 for r in rows3) for k in ('L12', 'L48', 'L96'))}}}",
+          f"\\newcommand{{\\PthreeMinRatio}}{{{min(r['L96']['width_ratio_to_tagged'] for r in rows3):.1f}}}",
+          f"\\newcommand{{\\PthreeBoundNinetysix}}{{{s3['L96']['reaches_bound']}}}",
+          f"\\newcommand{{\\PthreeBoundTwelve}}{{{s3['L12']['reaches_bound']}}}"]
     return "\n".join(L) + "\n"
 
 
