@@ -210,5 +210,8 @@ New work:
   stream is geo-blocked and the archive has no liquidation files.
 
 Checks: verify_thesis_numbers ok; check_modulus --check ok; B3v2 --check ok; ruff ok; local Lean
-compile ok; thesis build ok. Open: E1v2 run (Colab), E2 run (after 2027-02-02), co-authorship
+compile ok; thesis build ok; local clean reproduction ok (76 numbers, 0 mismatches). CI run
+https://github.com/Pratikn03/Fianince/actions/runs/40047369635: lint, Lean build and strict axiom
+audit (470 named declarations, standard axioms only), paper-suite reproduction and pytest all pass;
+the regenerated receipt was committed by CI (3cc5933). Open: E1v2 run (Colab), E2 run (after 2027-02-02), co-authorship
 statement, constants in Theorem thm:philog, nonlinear questions.
