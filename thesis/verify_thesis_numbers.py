@@ -1,29 +1,41 @@
-"""Verify the new A1 result artifact; inherited chapter numbers use the paper verifier.
+"""Verify the thesis's own result files and the status claims that depend on them.
 
-No computed numeric table is added to the thesis by A1. This check verifies
-recomputation and prevents its parametric diagnostic being reported as a full
-matching bound. It does not claim exhaustive coverage of inherited thesis prose.
+Inherited chapter numbers (Chapters 2-3) are checked by the paper verifier. This script checks the
+artifacts of Chapters 4-5: the A1 diagnostics, the modulus certificates for Theorem thm:dich(iv),
+the registered multi-asset and B3v2 results, the strategic counterexample, and the registration
+state of Tests E1v2 and E2. It does not certify inherited prose.
 """
 
+import hashlib
 import json
 from pathlib import Path
 import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent
-subprocess.run([sys.executable, str(ROOT / 'checks/check_dich_lower.py'), '--check'], check=True)
-result = json.loads((ROOT / 'checks/R_dich_lower.json').read_text())
+digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
 source = (ROOT / 'ch4_paper3.tex').read_text()
 status = (ROOT / 'appA_status.tex').read_text()
+concl = (ROOT / 'ch5_conclusion.tex').read_text()
+
+# A1 diagnostics (fixed-atom pairs and the cancellation family). The coefficient-energy lower bound is
+# false (Remark rem:energy) and part (iv) is now the proved modulus theorem.
+subprocess.run([sys.executable, str(ROOT / 'checks/check_dich_lower.py'), '--check'], check=True)
+result = json.loads((ROOT / 'checks/R_dich_lower.json').read_text())
 assert result['diagnostics_pass'] is True
 assert result['matching_energy_lower_bound_established'] is False
-assert 'Part (iv) remains a \\Target{}' in source
 assert result['uniform_statement_refuted'] is True
-assert 'target; uniform version refuted' in status
-print('Thesis A1 provenance/status check: PASS (limited scope; matching bound OPEN)')
+assert '\\label{rem:energy}' in source and 'false; replaced by (iv)' in status
+assert '\\Target' not in source, 'no target statement remains in Chapter 4'
+print('Thesis A1 diagnostics and status: PASS')
+
+# Theorem thm:dich(iv), Proposition prop:parametric, Theorem thm:philog: numerical certificates
+subprocess.run([sys.executable, str(ROOT / 'checks/check_modulus.py'), '--check'], check=True)
+for lab in ('thm:dich', 'prop:parametric', 'thm:philog', 'lem:hardy'):
+    assert f'\\label{{{lab}}}' in source, lab
+print('Modulus certificates and labels: PASS')
 
 # Registered multi-asset results: verify the fixed artifacts, never reopen the test.
-import hashlib
 spec_path = ROOT/'checks/prereg/multiasset.json'
 spec = json.loads(spec_path.read_text())
 r = json.loads((ROOT/'checks/R_multiasset.json').read_text())
@@ -44,7 +56,7 @@ assert f'\\newcommand{{\\MultiassetCases}}{{{r["total"]}}}' in text
 assert f'\\newcommand{{\\MultiassetPassed}}{{{r["passed"]}}}' in text
 print('Registered multi-asset number/status check: PASS')
 
-from fractions import Fraction
+from fractions import Fraction  # noqa: E402
 sr = json.loads((ROOT/'checks/R_strategic.json').read_text())
 assert sr['pure_equilibrium_exists'] is False
 for row in sr['rows']:
@@ -56,60 +68,50 @@ assert Fraction(sr['admitted_loss_budget']) == Fraction(1,4)/(1-Fraction(1,4)*Fr
 assert sr['all_deviations_profitable'] is True
 print('Strategic counterexample result checks: PASS')
 
-# Pre-registered multi-agent RL simulation (Task B3):
-ma_spec_path = ROOT / 'checks/prereg/multiagent.json'
-ma_spec = json.loads(ma_spec_path.read_text())
-ma_r = json.loads((ROOT / 'checks/R_multiagent.json').read_text())
-ma_sha = hashlib.sha256(ma_spec_path.read_bytes()).hexdigest()
-assert ma_sha == ma_spec_path.with_suffix('.sha256').read_text().strip() == ma_r['spec_sha256']
-assert hashlib.sha256((ROOT / 'checks/check_multiagent.py').read_bytes()).hexdigest() == ma_spec['runner_sha256'] == ma_r['runner_sha256']
-assert json.loads((ROOT / 'checks/prereg/multiagent_unlock.json').read_text())['opens'] == 1
-assert ma_r['total_runs'] == 100
-assert ma_r['p1_passes'] == 100
-assert ma_r['p2_passes'] == 100
-assert ma_r['p1_overall'] is True
-assert ma_r['p2_overall'] is True
-assert ma_r['primary_pass'] is True
-ma_tex = (ROOT / 'checks/multiagent_numbers.tex').read_text()
-assert '\\newcommand{\\MultiagentTotalRuns}{100}' in ma_tex
-assert '\\newcommand{\\MultiagentPonePasses}{100}' in ma_tex
-assert '\\newcommand{\\MultiagentPtwoPasses}{100}' in ma_tex
-# Verify numbers in chapter 4 text
-ch4_text = (ROOT / 'ch4_paper3.tex').read_text()
-assert 'Primary 1 passed in \\MultiagentPonePasses{} of \\MultiagentTotalRuns{} runs' in ch4_text
-assert '562' in ch4_text  # median at gamma=0.001
-assert '188' in ch4_text  # median at gamma=0.003
-assert '56' in ch4_text   # median at gamma=0.010
-assert '19' in ch4_text   # median at gamma=0.030
-print('Pre-registered multi-agent simulation number/status check: PASS')
+# Registered simulation B3v2 (replaces the withdrawn B3)
+subprocess.run([sys.executable, str(ROOT / 'checks/check_multiagent_v2.py'), '--check'], check=True)
+subprocess.run([sys.executable, str(ROOT / 'checks/export_multiagent_v2_table.py'), '--check'], check=True)
+spec2 = json.loads((ROOT / 'checks/prereg/multiagent_v2.json').read_text())
+r2 = json.loads((ROOT / 'checks/R_multiagent_v2.json').read_text())
+assert digest(ROOT / 'checks/prereg/multiagent_v2.json') == r2['spec_sha256']
+assert json.loads((ROOT / 'checks/prereg/multiagent_v2_unlock.json').read_text())['opens'] == 1
+assert '\\input{checks/multiagent_v2_numbers}' in source and '\\input{checks/multiagent_v2_table}' in source and '\\MAvTwoTableRows' in source
+assert r2['spec_sha256'].startswith('58c32f9b') and '58c32f9b' in source
+assert 'multiagent_numbers' not in source.replace('multiagent_v2_numbers', '')
+print('B3v2 simulation, table and text: PASS')
 
-# Pre-registered Test E1 results:
-e1_spec_path = ROOT / 'checks/prereg/E1_cert_vs_truth.json'
-e1_spec = json.loads(e1_spec_path.read_text())
-e1_r = json.loads((ROOT / 'evidence/E1_results.json').read_text())
-e1_sha = hashlib.sha256(e1_spec_path.read_bytes()).hexdigest()
-assert e1_sha == e1_spec_path.with_suffix('.sha256').read_text().strip() == e1_r['spec_sha256']
-assert json.loads((ROOT / 'checks/prereg/E1_unlock.json').read_text())['opens'] == 1
-assert e1_r['total_markets'] == 38
-assert e1_r['p1_overlaps'] == 34
-assert e1_r['p2_ratios_ge_10'] == 37
-assert e1_r['p1_pass'] is True
-assert e1_r['p2_pass'] is True
-assert e1_r['holm_pass'] is True
-e1_tex = (ROOT / 'checks/E1_numbers.tex').read_text()
-assert '\\newcommand{\\EoneTotalMarkets}{38}' in e1_tex
-assert '\\newcommand{\\EoneOverlaps}{34}' in e1_tex
-assert '\\newcommand{\\EonePtwoPasses}{37}' in e1_tex
-ch5_text = (ROOT / 'ch5_conclusion.tex').read_text()
-assert 'Primary 1 passed with the price-only certificate interval' in ch5_text
-assert '89.5\\%' in e1_tex
-print('Pre-registered Test E1 certificate vs ground truth check: PASS')
+# Withdrawn results are absent from the text and kept, marked, on disk
+for f in ('E1_pipeline.py', 'E1_results.json', 'E1_numbers.tex', 'check_multiagent.py', 'R_multiagent.json',
+          'multiagent_numbers.tex'):
+    assert (ROOT / 'withdrawn' / f).exists(), f
+assert 'E1_numbers' not in concl and 'Eone' not in concl.replace('E1v2', '')
+assert '\\label{sec:ev_withdrawn}' in concl
+print('Withdrawn results: PASS')
 
-# Pre-registered Test E2 prospective infrastructure:
-e2_spec_path = ROOT / 'checks/prereg/E2_prospective.json'
-e2_spec = json.loads(e2_spec_path.read_text())
-e2_sha = hashlib.sha256(e2_spec_path.read_bytes()).hexdigest()
-assert e2_sha == e2_spec_path.with_suffix('.sha256').read_text().strip()
-assert json.loads((ROOT / 'checks/prereg/E2_unlock.json').read_text())['opens'] == 0
-assert (ROOT / 'evidence/E2_recorder.py').exists()
-print('Pre-registered Test E2 prospective infrastructure check: PASS')
+# Test E1v2: registered; results only if the counter was opened
+e1 = ROOT / 'checks/prereg/E1v2_certify_vs_identify.json'
+assert digest(e1) == e1.with_suffix('.sha256').read_text().strip()
+spec_e1 = json.loads(e1.read_text())
+for key, f in (('pipeline_sha256', 'evidence/e1v2_pipeline.py'), ('binance_vision_sha256', 'evidence/binance_vision.py')):
+    assert digest(ROOT / f) == spec_e1[key], f
+opens = json.loads((ROOT / 'checks/prereg/E1v2_unlock.json').read_text())['opens']
+assert digest(e1).startswith('0b6c31c0') and '0b6c31c0' in concl
+if opens == 0:
+    assert not (ROOT / 'evidence/E1v2_results.json').exists()
+    assert 'Neither has been run' in concl
+    print('Test E1v2: registered, not yet run: PASS')
+else:
+    subprocess.run([sys.executable, str(ROOT / 'evidence/e1v2_pipeline.py'), '--check'], check=True)
+    print('Test E1v2: result reproduces from its file: PASS')
+
+# Test E2: original specification and addendum registered; opens on or after 2027-02-02
+e2 = ROOT / 'checks/prereg/E2_prospective.json'
+add = ROOT / 'checks/prereg/E2_addendum_proxy.json'
+assert digest(e2) == e2.with_suffix('.sha256').read_text().strip()
+assert digest(add) == add.with_suffix('.sha256').read_text().strip()
+spec_add = json.loads(add.read_text())
+assert digest(ROOT / 'evidence/e2_analysis.py') == spec_add['analysis_sha256']
+assert digest(ROOT / 'evidence/binance_vision.py') == spec_add['binance_vision_sha256']
+if json.loads((ROOT / 'checks/prereg/E2_unlock.json').read_text())['opens'] == 0:
+    assert not (ROOT / 'evidence/E2_results.json').exists()
+print('Test E2 registration and addendum: PASS')

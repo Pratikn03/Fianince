@@ -163,3 +163,52 @@ What changed: `thesis/appA_status.tex`, `thesis/ch1_intro.tex`, `thesis/bib_new.
 Result: Updated status tables and abstract/introduction in `thesis/ch1_intro.tex` and `thesis/appA_status.tex` reflecting all proved bounds, simulation results, and empirical test pipelines. Verified all 13 bibliography entries in `thesis/bib_new.tex` against publisher metadata, added direct DOIs with hyperlinks.
 Checks: build ok; verify ok; reproduce ok; ruff ok; lean ok.
 Open issues: Co-authorship statement requires human author signatures (Part D).
+
+## Corrections, theory, Lean and registered tests — 2026-10-24
+Status: done (E1v2 and E2 registered, not yet run)
+
+Corrections to the entries above:
+- **B1 (E1) is withdrawn.** `E1_pipeline.py` estimated nothing from fresh data: it read archived
+  results, hard-coded the CFTC certificate interval, used an invented ±25% class interval and one
+  constant class value for every Binance symbol, reused Paper 1's width ratios for Primary 2, and
+  printed a Holm p-value it never computed. The reported 34/38 and 37/38 are not results. Files moved
+  to `thesis/withdrawn/` with a README; the text is removed from Chapter 5, which now has a
+  "Withdrawn results" section.
+- **B3 is withdrawn.** Its weight step was a positive clipped quantity at every period, so the
+  "realized lifetime" was fixed by construction and could not test the bound; the table (562/188/56/19)
+  and this file (133/44/13/5) also disagreed. Files moved to `thesis/withdrawn/`.
+- **A2's Lean claim was not true** ("lean ok" with no Lean declaration for the proposition). It is now
+  formalized (below).
+- The pytest failure came from the declaration count (445 in the text, 459 declarations). Counts are
+  now 470 everywhere they are tested.
+
+New work:
+- **Theorem thm:dich(iv)** (proved): exact cost of every linear question. Modulus of continuity
+  omega_L, dual form min_c {delta ||c|| + B psi(g - p_c)} (Sion), omega_L(0) = 2B E_L(g), lower bound
+  omega_L(2 z_{1-a} sigma / sqrt N) <= 2 eps for any valid interval (exact Gaussian TV), affine interval
+  attaining it with z_{1-a/2}; sandwich N_omega(eps) <= N_cert <= N_omega(eps / lambda_a).
+- **Proposition prop:parametric** (proved): parametric iff the kernel's coefficients are in l^2.
+- **Theorem thm:philog + Lemma lem:hardy** (proved): for Phi, omega_L(delta) ≍ delta sqrt(log 1/delta),
+  so N_cert(Phi) ≍ sigma^2 eps^-2 log(1/eps); the logarithm is necessary (two-constants theorem and a
+  harmonic-measure bound). The false coefficient-energy target is Remark rem:energy.
+- `checks/check_modulus.py`, `checks/R_modulus.json`: primal/dual certificates (rigorous brackets,
+  relative gap <= 4e-4), parametric versus log growth, omega_L(0) = 2B E_L(g). numpy/scipy-only check.
+- **Lean** `CurrentProofs/ThesisMultiAsset.lean` (7 theorems): multi-asset componentwise comparison
+  for nonlinear time-varying sector-bounded cohorts, all times, and the finite-time sharpness step.
+  Compiled locally against Mathlib d13f23b7 with targeted imports (no warnings); registered in
+  CurrentProofs.lean, AxiomAudit.lean, named_declarations.json and the coverage files.
+- **Lean** `CurrentProofs/ThesisModulus.lean` (4 theorems): deterministic half of thm:dich(iv) for
+  finite atomic measures (tap identity, Cauchy-Schwarz, weak duality, affine-interval bias).
+  Compiled locally. Total named declarations: 470. The full
+  `lake build` and axiom audit run in CI.
+- **B3v2** registered (be1a36b, spec 58c32f9b…), run once (91c3e11): P1 200/200 (check), P2 passed
+  98/100. Chapter 4 table generated from the result file.
+- **E1v2** registered (2c34fc1, spec 0b6c31c0…) with pipeline, download module, freshness scan and
+  Colab notebook; tested on synthetic archives. Not run: data must be downloaded in Colab.
+- **E2 addendum** registered (3bef4d3, spec ad2f69e0…) with analysis and notebook; refuses to run
+  before 2027-02-02. Liquidation volume replaced by an open-interest deleveraging proxy because the
+  stream is geo-blocked and the archive has no liquidation files.
+
+Checks: verify_thesis_numbers ok; check_modulus --check ok; B3v2 --check ok; ruff ok; local Lean
+compile ok; thesis build ok. Open: E1v2 run (Colab), E2 run (after 2027-02-02), co-authorship
+statement, constants in Theorem thm:philog, nonlinear questions.

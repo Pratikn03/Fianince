@@ -1,6 +1,6 @@
 # Current manuscript Lean coverage
 
-Current coverage reconciliation (2026-10-21): 445 named declarations are subject to the strict build/axiom audit. All 23 manuscript environments have mappings: 20 retain their existing kernel-result mappings (not a new independent semantic certification), 2 have kernel cores plus external dependencies (S13, S20), and 1 has subresults with an outstanding estimator-level obligation (S21). There is no claim of 23/23 complete Lean-only formalization. See root `COVERAGE.md` for the complete Paper 1 (29 items) and Paper 2 (28 items) `full` / `conditional` / `arithmetic` audit table.
+Current coverage reconciliation (2026-10-24): 470 named declarations are subject to the strict build/axiom audit (445 for the manuscript environments below and 25 thesis additions listed at the end). All 23 manuscript environments have mappings: 20 retain their existing kernel-result mappings (not a new independent semantic certification), 2 have kernel cores plus external dependencies (S13, S20), and 1 has subresults with an outstanding estimator-level obligation (S21). There is no claim of 23/23 complete Lean-only formalization. See root `COVERAGE.md` for the complete Paper 1 (29 items) and Paper 2 (28 items) `full` / `conditional` / `arithmetic` audit table.
 
 S21 includes kernel-checked algebraic subresults, a known-family inversion bound, and local Prony conditioning evidence. The Vandermonde coefficients use the true eta_1 and eta_2; their perturbation bound is not an error bound for estimated poles. A uniform finite-sample guarantee for the fully parameter-blind nonlinear estimator remains unproved. S13 retains the explicit general-dimensional hSpijker hypothesis. S20 uses an external 1,800-interval Decimal certificate; its full numerical sweep is not checked by the Lean kernel.
 
@@ -32,7 +32,7 @@ S21 includes kernel-checked algebraic subresults, a known-family inversion bound
 
 The finite-window quantity gate is also fully proved (`exact_scalar_window_budget`, `positive_window_gain_cap`, `finite_window_minimum_cap`, `actual_carried_monetary_output`, `actual_monetary_coordinate_invariance`, `actual_monetary_prefix_gate`).
 
-## Thesis additions (2026-10-22)
+## Thesis additions (2026-10-22, multi-asset entry 2026-10-24)
 
 These entries are separate from the historical manuscript coverage counts.
 
@@ -41,5 +41,7 @@ These entries are separate from the historical manuscript coverage counts.
 | `thm:sector` | `thesis_sector_safety`: actual scalar plant, finite cohorts/horizon, signed time-varying weights and sector responses, convex memories. | Tightness is not newly mechanized. |
 | `thm:lifetime` | `thesis_weight_drift`, `thesis_lifetime_floor`, `thesis_lifetime_envelope`: drift, floor and sensitivity. | Positive total drift and nonnegative initial margin. No first-passage sharpness. |
 | `thm:dich(i)` | `thesis_bias_from_tail`, `thesis_variance_radius`, `thesis_interval_half_width`. | Finite atomic bias and deterministic arithmetic only; general integration, Gaussian coverage and part (iv) excluded. |
+| `thm:dich(iv)`, deterministic half | `thesis_modulus_tap_identity`, `thesis_modulus_cs`, `thesis_modulus_weak_duality`, `thesis_modulus_affine_bias`: for finite positive atomic measures, the answer minus the coefficient-weighted taps equals the integrated residual; weak duality `F(M1) - F(M0) <= B(U+V) + R D`; the affine interval's bias is at most `B(U+V)/2`. | Sion's minimax step, the Gaussian lower bound, general measures and Theorem `thm:philog` are written proofs. |
+| `prop:multiasset_positive` | `thesis_multiasset_comparison`, `thesis_multiasset_supnorm`, `thesis_ma_step`, `thesis_ma_flow_bound`, `thesis_ma_matvec_abs`, `thesis_ma_memory_box`: componentwise bound by any non-negative supersolution for d assets, finitely many nonlinear time-varying sector-bounded cohorts with entrywise weight bounds, all times. `thesis_multiasset_linear_monotone`: the maximal positive linear economy increases from rest and stays below every supersolution. | Existence of the resolvent supersolution from rho(G) < 1 (Neumann series) and convergence of the maximal economy to it are written proofs. |
 
 The strategic counterexample is separate: `thesis_strategic_profitable_deviation` and `thesis_strategic_no_equilibrium` prove nonexistence of a pure maximizer in the stated one-cohort threshold game. The mixed-strategy extension is written mathematics only.

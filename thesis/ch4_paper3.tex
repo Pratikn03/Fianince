@@ -1,8 +1,8 @@
 \chapter{Certify, don't identify: a theory of safety without identification}\label{ch:p3}
 
-This chapter is the third paper of the thesis and the candidate's own work. It places the results of Chapters~\ref{ch:p1} and~\ref{ch:p2} in one framework, proves when a question about a market's unknown agents is cheap or impossible to certify, and extends the safety results to agents that are nonlinear and keep learning. Results proved here are marked \Proved{}; results proved in Chapters~\ref{ch:p1}--\ref{ch:p2} are marked accordingly; the open technical target and the conjecture are marked as such.
+This chapter is the third paper of the thesis and the candidate's own work. It places the results of Chapters~\ref{ch:p1} and~\ref{ch:p2} in one framework, proves when a question about a market's unknown agents is cheap or impossible to certify, and extends the safety results to agents that are nonlinear and keep learning. Results proved here are marked \Proved{}; results proved in Chapters~\ref{ch:p1}--\ref{ch:p2} are marked accordingly; the conjecture is marked as such.
 
-\begin{quote}\small\textbf{Summary.} Regulators ask to know which algorithms trade in a market; we ask which questions about those algorithms can be answered from market data at all, and at what cost. Every question an outside observer can ask is a functional of the agents' merged measure of memory rates and weights, observed through noisy moments. For linear questions we bound the number of experiments needed to certify the answer by its coefficient energy at a truncation depth set by its tail at long memory, give a finite-depth obstruction in terms of best polynomial approximation, and show that questions singular at infinite memory cannot be certified without a memory bound. Safety is such a question: it depends on the agents only through their total feedback weight and is certified at the parametric rate up to a logarithm, whereas identifying the agents costs polynomially or logarithmically more. The summed-gain guard remains safe for agents whose rules are nonlinear and whose memories and weights change over time, given only a bound on their total sensitivity, and when agents keep learning a certificate lasts for its safety margin divided by their learning speed. The uniform matching lower bound is refuted as stated; a repaired bound remains open. A discontinuous guard can fail to admit a strategic equilibrium.\end{quote}
+\begin{quote}\small\textbf{Summary.} Regulators ask to know which algorithms trade in a market; we ask which questions about those algorithms can be answered from market data at all, and at what cost. Every question an outside observer can ask is a functional of the agents' merged measure of memory rates and weights, observed through noisy moments. For linear questions we determine the number of experiments needed to certify the answer, up to a constant factor in accuracy, by a modulus of continuity whose dual is a problem of polynomial approximation with penalized coefficients. A question is certifiable at the parametric rate exactly when its kernel has square-summable power-series coefficients; questions singular at infinite memory cannot be certified without a memory bound. Safety depends on the agents only through their total feedback weight, which sits on the boundary: it costs exactly $\sigma^2\epsilon^{-2}\log(1/\epsilon)$ experiments, and the logarithm cannot be removed, whereas identifying the agents costs polynomially or logarithmically more. The summed-gain guard remains safe for agents whose rules are nonlinear and whose memories and weights change over time, given only a bound on their total sensitivity, and when agents keep learning a certificate lasts for its safety margin divided by their learning speed. The safety bound extends to several assets with positive cross-impact, sharply. A discontinuous guard can fail to admit a strategic equilibrium.\end{quote}
 
 \section{Markets with adaptive agents}\label{sec:fw_model}
 
@@ -48,86 +48,127 @@ For a functional $F$, a class $\mathcal M$, accuracy $\epsilon>0$ and level $1-\
 
 \section{The certification--identification dichotomy}\label{sec:fw_dich}
 
-Consider a linear question $F_g(M)=\int g\,dM$, where $g(r)=\sum_{t\ge0}a_t r^t$ converges absolutely on $[0,\bar r]$. Two numbers describe how hard it is. Its \emph{tail at depth} $T$ and its \emph{coefficient energy} are
+Consider a linear question $F_g(M)=\int g\,dM$, where $g$ is continuous on $[0,\bar r]$; in the examples $g(r)=\sum_{t\ge0}a_t r^t$ converges absolutely there. Write $k_L(M)=(k_0,\dots,k_{L-1})$ for the first $L$ taps and $p_c(r)=\sum_{t<L}c_tr^t$ for the polynomial with coefficient vector $c\in\R^L$. Truncating the Taylor series gives a first measure of how hard the question is. Its \emph{tail at depth} $T$ and its \emph{coefficient energy} are
 \[
 \tau_g(T)=B\sup_{0\le r\le\bar r}\Bigl|\sum_{t\ge T}a_t r^t\Bigr|,\qquad A_g(T)=\sum_{t<T}a_t^2,
 \]
-and its \emph{truncation depth} is $T_g(\epsilon)=\min\{T\ge1:\tau_g(T)\le\epsilon/2\}$. We also write $E_T(g)=\min_{\deg p<T}\max_{[0,\bar r]}|g-p|$ for the error of the best polynomial approximation of degree below $T$.
+and its \emph{truncation depth} is $T_g(\epsilon)=\min\{T\ge1:\tau_g(T)\le\epsilon/2\}$; $E_T(g)=\min_{\deg p<T}\max_{[0,\bar r]}|g-p|$ is the error of the best polynomial approximation of degree below $T$. The quantity that decides the cost exactly is the \emph{modulus of continuity} of the question with respect to the observed taps,
+\[
+\omega_L(\delta)=\sup\bigl\{F_g(M_1)-F_g(M_0):\ M_0,M_1\in\mathcal M(\bar r,B),\ \|k_L(M_1)-k_L(M_0)\|_2\le\delta\bigr\},
+\]
+the largest difference in the answer between two economies whose observable taps differ by at most $\delta$. For a function $h$ on $[0,\bar r]$ put $\psi(h)=(\sup h)_++(-\inf h)_+$; $\psi(h)\ge\|h\|_\infty$, with equality when $h$ changes sign.
 
 \begin{theorem}[Certification of linear questions]\label{thm:dich}
-Under Assumption~\ref{ass:reset} with $L\ge T_g(\epsilon)$, and with $z=z_{1-\alpha/2}$:
+Under Assumption~\ref{ass:reset}, with $z_\beta$ the standard normal $\beta$-quantile and $\alpha\in(0,1/2)$:
 \begin{enumerate}[label=(\roman*)]
-\item \emph{Upper bound.} $N_{\rm cert}(\epsilon;F_g,\mathcal M(\bar r,B))\le\bigl\lceil4z^2\sigma^2A_g(T_g(\epsilon))\,\epsilon^{-2}\bigr\rceil$. \hfill\Proved
+\item \emph{Upper bound.} If $L\ge T_g(\epsilon)$, then $N_{\rm cert}(\epsilon;F_g,\mathcal M(\bar r,B))\le\bigl\lceil4z_{1-\alpha/2}^2\sigma^2A_g(T_g(\epsilon))\,\epsilon^{-2}\bigr\rceil$. \hfill\Proved
 \item \emph{Truncation is necessary.} For every $T$ there are $M,M'\in\mathcal M(\bar r,B)$ whose first $T$ taps coincide and with $|F_g(M)-F_g(M')|\ge2B\,E_T(g)$. Hence any certificate that uses only the first $T$ taps has worst-case half-width at least $B\,E_T(g)$. \hfill\Proved
 \item \emph{Long memory makes certification impossible.} Without a memory bound, that is on the positive measures on $[0,1)$ of mass at most $B$, if $\limsup_{r\uparrow1}|g(r)|\sqrt{1-r}=\infty$ then for every level $1-\alpha$ with $\alpha<1/4$ no finite $N$ certifies $F_g$ to any finite accuracy. \hfill\Proved
-\item \emph{Matching lower bound.} For $g$ in a regular class (coefficients of eventually constant sign and at most polynomial growth), $N_{\rm cert}(\epsilon;F_g,\mathcal M(\bar r,B))\ge c\,\sigma^2A_g(c'\,T_g(\epsilon))\,\epsilon^{-2}$ for constants $c,c'>0$ depending only on $(\bar r,B,\alpha)$. \hfill\Target
+\item \emph{Exact cost.} For every depth $L$, the modulus has the dual form
+\[
+\omega_L(\delta)=\min_{c\in\R^L}\bigl\{\delta\|c\|_2+B\,\psi(g-p_c)\bigr\}\qquad(\delta>0),
+\]
+and $\omega_L(0)=2B\,E_L(g)$. If $N$ experiments certify $F_g$ to half-width $\epsilon$ at level $1-\alpha$, then $\omega_L(2z_{1-\alpha}\sigma/\sqrt N)\le2\epsilon$. Conversely, if $\omega_L(2z_{1-\alpha/2}\sigma/\sqrt N)\le2\epsilon$, an affine interval $\sum_tc_t\bar k_t+b\pm\epsilon$ certifies $F_g$ with $N$ experiments. Writing $N_\omega(\epsilon)=\min\{N:\omega_L(2z_{1-\alpha}\sigma/\sqrt N)\le2\epsilon\}$ and $\lambda_\alpha=z_{1-\alpha/2}/z_{1-\alpha}$,
+\[
+N_\omega(\epsilon)\;\le\;N_{\rm cert}(\epsilon;F_g,\mathcal M(\bar r,B))\;\le\;N_\omega(\epsilon/\lambda_\alpha).
+\]
+\hfill\Proved
 \end{enumerate}
 \end{theorem}
 
+Part (iv) replaces the matching lower bound in terms of coefficient energy that earlier drafts stated as a target. That statement is false (Remark~\ref{rem:energy}); the modulus is the right quantity, and it determines the cost of every linear question up to the factor $\lambda_\alpha$ in accuracy ($\lambda_{0.05}\approx1.19$). The structure of part (iv), a modulus that governs both a lower bound and an affine interval, is the classical theory of estimating a linear functional over a convex class \citep{t:ibragimov1984,t:donoho1994}. What is specific to markets is the dual form: the cost of a question about the agents is the value of a problem of polynomial approximation of $g$ in which the polynomial's coefficients are penalized, because each coefficient multiplies a noisy tap.
+
 \begin{proof}[Proof of (i)--(iii)]
-(i) Let $\bar k_t$ be the average of the $N$ replicates of tap $t$ and $T=T_g(\epsilon)$. The estimator $\hat F=\sum_{t<T}a_t\bar k_t$ has mean $\sum_{t<T}a_tk_t$ and variance $\sigma^2A_g(T)/N$. Its bias is $|\sum_{t\ge T}a_tk_t|=|\int\sum_{t\ge T}a_tr^t\,dM(r)|\le\tau_g(T)\le\epsilon/2$ for every $M\in\mathcal M(\bar r,B)$. The interval $\hat F\pm(\epsilon/2+z\sigma\sqrt{A_g(T)/N})$ therefore covers $F_g(M)$ with probability at least $1-\alpha$, and its half-width is at most $\epsilon$ once $z\sigma\sqrt{A_g(T)/N}\le\epsilon/2$.
+(i) Let $\bar k_t$ be the average of the $N$ replicates of tap $t$ and $T=T_g(\epsilon)$. The estimator $\hat F=\sum_{t<T}a_t\bar k_t$ has mean $\sum_{t<T}a_tk_t$ and variance $\sigma^2A_g(T)/N$. Its bias is $|\sum_{t\ge T}a_tk_t|=|\int\sum_{t\ge T}a_tr^t\,dM(r)|\le\tau_g(T)\le\epsilon/2$ for every $M\in\mathcal M(\bar r,B)$. The interval $\hat F\pm(\epsilon/2+z_{1-\alpha/2}\sigma\sqrt{A_g(T)/N})$ therefore covers $F_g(M)$ with probability at least $1-\alpha$, and its half-width is at most $\epsilon$ once $z_{1-\alpha/2}\sigma\sqrt{A_g(T)/N}\le\epsilon/2$.
 
 (ii) By duality for best uniform approximation, $E_T(g)=\max\{\int g\,d\nu\}$ over signed measures $\nu$ on $[0,\bar r]$ with total variation at most one that annihilate every polynomial of degree below $T$. Take a maximizer and write $\nu=\nu^+-\nu^-$. Orthogonality to constants gives $\nu^+([0,\bar r])=\nu^-([0,\bar r])=:c\le1/2$. Set $M=(B/c)\nu^+$ and $M'=(B/c)\nu^-$: both lie in $\mathcal M(\bar r,B)$, their first $T$ moments coincide, and $F_g(M)-F_g(M')=(B/c)E_T(g)\ge2B\,E_T(g)$. Two measures that produce identical data cannot both be covered by an interval of half-width below half their distance.
 
 (iii) Compare $M_0=0$ with $M_1=c\,\delta_r$. Under $M_1$ the taps are $k_t=c\,r^t$, so the Kullback--Leibler divergence between the two data distributions over any number of taps is at most $Nc^2/(2\sigma^2(1-r^2))$. Choose $c=\sigma\sqrt{(1-r^2)/N}$, which is at most $B$ for $r$ near one; the divergence is then at most $1/2$, so by Pinsker's inequality the total variation distance between the two data distributions is at most $1/2$. The functional differs by $c\,|g(r)|=\sigma\sqrt{(1-r^2)/N}\,|g(r)|\ge\sigma\sqrt{(1-r)/N}\,|g(r)|$, which is unbounded along a sequence $r\uparrow1$ by assumption. Suppose an interval of half-width $\epsilon$ covered $F_g$ with probability at least $1-\alpha$ under both economies. Once the two values differ by more than $2\epsilon$, the event that the interval contains $F_g(M_0)$ has probability at least $1-\alpha$ under $M_0$ and at most $\alpha$ under $M_1$, so the total variation distance is at least $1-2\alpha>1/2$, a contradiction.
 \end{proof}
 
-\paragraph{What the theorem says.} The upper bound for answering a linear question is controlled by its Taylor coefficients and their tail; finite-depth ambiguity is controlled separately by best polynomial approximation. If its power-series tail decays geometrically on $[0,\bar r]$, the truncation depth grows like $\log(1/\epsilon)$ and the cost is parametric up to that factor. If the question is singular at infinite memory, faster than $(1-r)^{-1/2}$, no memory bound means no certificate. The number of agents and the spacing of their memories do not enter.
+\begin{proof}[Proof of (iv)]
+\emph{Duality.} For any $c\in\R^L$ and any admissible pair, with $h=g-p_c$,
+\[
+F_g(M_1)-F_g(M_0)=\int h\,dM_1-\int h\,dM_0+\langle c,k_L(M_1)-k_L(M_0)\rangle\le B\psi(h)+\delta\|c\|_2,
+\]
+because $\int h\,dM_1\le B(\sup h)_+$ and $-\int h\,dM_0\le B(-\inf h)_+$ for measures of mass at most $B$. So $\omega_L(\delta)$ is at most the minimum. For the reverse inequality write $\mu=(M_0,M_1)$ and
+\[
+\Lambda(\mu,c)=\int h\,d(M_1-M_0)+\delta\|c\|_2,\qquad h=g-p_c .
+\]
+Since $\inf_c\{\delta\|c\|_2-\langle c,v\rangle\}$ equals $0$ if $\|v\|_2\le\delta$ and $-\infty$ otherwise, $\omega_L(\delta)=\sup_\mu\inf_c\Lambda(\mu,c)$. The set $\mathcal M(\bar r,B)^2$ is convex and compact in the weak-$*$ topology, $\Lambda$ is affine and weak-$*$ continuous in $\mu$ (because $h$ is continuous) and convex and continuous in $c$, so Sion's minimax theorem \citep{t:sion1958} gives $\omega_L(\delta)=\inf_c\sup_\mu\Lambda(\mu,c)$. The inner supremum is $B\psi(g-p_c)+\delta\|c\|_2$, attained by putting mass $B$ at a maximizer of $h$ (if $\sup h>0$) and at a minimizer (if $\inf h<0$). For $\delta>0$ the objective is convex, continuous and coercive in $c$, so the infimum is a minimum. At $\delta=0$ the same argument gives $\omega_L(0)=\inf_c B\psi(g-p_c)$; since adding a constant to $p_c$ can make $g-p_c$ change sign and then $\psi=\sup-\inf$, the infimum is $B$ times the smallest oscillation of $g-p$, that is $2B\,E_L(g)$, which is part (ii) with equality.
+
+\emph{Lower bound.} The averages $\bar k=(\bar k_0,\dots,\bar k_{L-1})$ are sufficient and distributed as $N(k_L(M),(\sigma^2/N)I_L)$, so the total variation distance between the data distributions of two economies is $2\Phi_{\mathcal N}(\sqrt N\|\Delta k\|_2/(2\sigma))-1$, with $\Phi_{\mathcal N}$ the normal distribution function. Take an admissible pair with $\|k_L(M_1)-k_L(M_0)\|_2<2z_{1-\alpha}\sigma/\sqrt N$; the distance is then below $1-2\alpha$. If the two answers differed by more than $2\epsilon$, an interval of half-width $\epsilon$ covering each with probability $1-\alpha$ would separate the two data distributions with total variation at least $1-2\alpha$, as in (iii). Hence $\omega_L(t)\le2\epsilon$ for every $t<2z_{1-\alpha}\sigma/\sqrt N$. The modulus is concave (the admissible pairs form a convex set and the constraint is a norm), finite and nondecreasing, hence continuous on $(0,\infty)$, so $\omega_L(2z_{1-\alpha}\sigma/\sqrt N)\le2\epsilon$.
+
+\emph{Upper bound.} Put $\delta=2z_{1-\alpha/2}\sigma/\sqrt N$, let $c$ attain the minimum in the dual form and $h=g-p_c$. The interval $\sum_tc_t\bar k_t+b\pm\epsilon$ with $b=B[(\sup h)_+-(-\inf h)_+]/2$ has bias at most $B\psi(h)/2$ for every economy, by the bounds in the duality step, and its noise is normal with standard deviation $\sigma\|c\|_2/\sqrt N$. It covers $F_g$ with probability at least $1-\alpha$ whenever $\epsilon\ge B\psi(h)/2+z_{1-\alpha/2}\sigma\|c\|_2/\sqrt N=\omega_L(\delta)/2$.
+
+\emph{Sandwich.} The left inequality restates the lower bound. Concavity and $\omega_L(0)\ge0$ give $\omega_L(\lambda t)\le\lambda\,\omega_L(t)$ for $\lambda\ge1$. If $\omega_L(2z_{1-\alpha}\sigma/\sqrt N)\le2\epsilon/\lambda_\alpha$, then $\omega_L(2z_{1-\alpha/2}\sigma/\sqrt N)\le2\epsilon$, and the upper bound applies.
+\end{proof}
+
+\paragraph{What the theorem says.} The cost of answering a linear question is the cost of approximating $g$, on the memory range $[0,\bar r]$, by a polynomial whose coefficients are cheap to estimate. Truncating the Taylor series is one such polynomial and gives part (i); it is often not the best one. Questions singular at infinite memory, faster than $(1-r)^{-1/2}$, cannot be certified without a memory bound (part (iii)). The number of agents and the spacing of their memories do not enter. Two consequences make the picture precise.
+
+\begin{proposition}[Which questions are parametric]\label{prop:parametric}
+Let $\omega_\infty(\delta)=\inf_L\omega_L(\delta)$, the modulus when enough taps are observed. Then $\sup_{0<\delta\le1}\omega_\infty(\delta)/\delta<\infty$, so that $N_{\rm cert}=O(\sigma^2\epsilon^{-2})$ for observation depths $L$ large enough, if and only if $g$ agrees on $[0,\bar r]$ with a power series $\sum_ta_tr^t$ whose coefficients are square summable. When $g$ is given by a power series on $[0,\bar r]$ with $\bar r>0$, this is the condition $\sum_ta_t^2<\infty$ on its Taylor coefficients. \hfill\Proved
+\end{proposition}
+
+\begin{proof}
+If $a\in\ell^2$, take $c=(a_0,\dots,a_{L-1})$: by Cauchy--Schwarz $\psi(g-p_c)\le2\sup_{r\le\bar r}|\sum_{t\ge L}a_tr^t|\le2\|a\|_2\,\bar r^L/\sqrt{1-\bar r^2}$, so $\omega_L(\delta)\le\delta\|a\|_2+2B\|a\|_2\bar r^L/\sqrt{1-\bar r^2}$ and $\omega_\infty(\delta)\le\delta\|a\|_2$. Conversely, suppose $\omega_\infty(\delta)\le C\delta$ for $\delta\in(0,1]$. For $\delta_n=1/n$ choose $L_n$ and $c^{(n)}\in\R^{L_n}$ with $\delta_n\|c^{(n)}\|_2+B\psi(g-p_{c^{(n)}})\le2C\delta_n$. Then $\|c^{(n)}\|_2\le2C$ and $\|g-p_{c^{(n)}}\|_\infty\le2C\delta_n/B\to0$. Padded with zeros, the $c^{(n)}$ are bounded in $\ell^2$, so a subsequence converges weakly to some $a\in\ell^2$. For each $r\in[0,\bar r]$ the sequence $(r^t)_t$ lies in $\ell^2$, hence $p_{c^{(n)}}(r)=\langle c^{(n)},(r^t)\rangle\to\sum_ta_tr^t$ along the subsequence, while $p_{c^{(n)}}(r)\to g(r)$. Uniqueness of power series that agree on an interval gives the last sentence.
+\end{proof}
+
+The square-summable power series are the restrictions to $[0,\bar r]$ of the Hardy space $H^2$ of the unit disc, whose functions grow at most like $(1-r)^{-1/2}$ as $r\uparrow1$. That is exactly the growth beyond which part (iii) rules out certification without a memory bound: below the threshold a memory bound makes a question parametric or nearly so, above it nothing helps.
+
+The single tap $g(r)=r^m$ and the discounted feedback $g(r)=(1-\beta r)^{-1}$ with $\beta<1$ have square-summable coefficients and are parametric. The total feedback $\Phi$, the quantity that safety depends on, has $a_t\equiv1$: it sits exactly on the boundary, and it pays exactly one logarithm.
+
+\begin{theorem}[The safety question costs exactly one logarithm]\label{thm:philog}
+Let $g(r)=1/(1-r)$, so that $F_g=\Phi$. There are constants $0<c\le C$ and $\delta_0\in(0,1)$, depending only on $(\bar r,B)$, such that for $\delta\le\delta_0$
+\[
+c\,\delta\sqrt{\log(1/\delta)}\;\le\;\omega_L(\delta)\quad\text{for every }L,\qquad
+\omega_L(\delta)\;\le\;C\,\delta\sqrt{\log(1/\delta)}\quad\text{for }L\ge\log(1/\delta)/\log(1/\bar r).
+\]
+Consequently $N_{\rm cert}(\epsilon;\Phi,\mathcal M(\bar r,B))\asymp\sigma^2\epsilon^{-2}\log(1/\epsilon)$ as $\epsilon\to0$, for deep enough observation, and the same holds for the summed response $S=\kappa/(1-a-\kappa\Phi)$ whenever $a+\kappa B/(1-\bar r)<1$. The logarithmic factor in the certification cost of Chapter~\ref{ch:p2} cannot be removed. \hfill\Proved
+\end{theorem}
+
+The lower bound rests on a lemma about polynomials: a polynomial that approximates $1/(1-r)$ closely on the memory range must have large coefficients, because $1/(1-z)$ has a pole at $z=1$ while a polynomial with coefficient norm $R$ grows at most like $R(1-|z|)^{-1/2}$ inside the disc.
+
+\begin{lemma}\label{lem:hardy}
+There is $K<\infty$ depending only on $\bar r$ such that for every polynomial $p(r)=\sum_{t<L}c_tr^t$ with $\|c\|_2\le R$,
+\[
+\log\frac1\eta\le K\max\{R^2,\,(1-\bar r)^{-1}\},\qquad \eta=\sup_{0\le r\le\bar r}\Bigl|\frac1{1-r}-p(r)\Bigr| .
+\]
+\end{lemma}
+
+\begin{proof}
+Put $e(z)=1/(1-z)-p(z)$, $E=[0,\bar r]$, $\rho_1=(1+\bar r)/2$ and $\rho_2=(3+\bar r)/4$. Let $s=\min\{1/(4R^2),(1-\bar r)/4\}$, $x=1-s$ and $\rho=1-s/2$, so that $\rho_1<x<\rho$ and $\rho\ge\rho_2$. By Cauchy--Schwarz $|p(z)|\le R(1-|z|^2)^{-1/2}\le R(1-|z|)^{-1/2}$ in the disc. At $z=x$ this is at most $R/\sqrt s\le1/(2s)$, so $|e(x)|\ge1/s-1/(2s)=1/(2s)$. On the circle $|z|=\rho$, $|e(z)|\le2/s+R\sqrt{2/s}\le3/s$. The function $\log|e|$ is subharmonic on the slit disc $D_\rho\setminus E$, at most $\log\eta$ on $E$ and at most $\log(3/s)$ on $|z|=\rho$, so by the two-constants theorem \citep[Theorem~4.3.7]{t:ransford1995}
+\[
+\log\frac1{2s}\le\log|e(x)|\le\varpi\log\eta+(1-\varpi)\log\frac3s,
+\]
+where $\varpi$ is the harmonic measure of $E$ in $D_\rho\setminus E$ seen from $x$. Rearranging, $\varpi\log(1/\eta)\le\log6$. To bound $\varpi$ from below, let $m_*>0$ be the minimum over $|z|=\rho_1$ of the harmonic measure of $E$ in $D_{\rho_2}\setminus E$; it is positive because a segment has positive capacity and the circle is a compact subset of the slit disc, and it depends only on $\bar r$. Harmonic measure of $E$ increases with the outer domain, so the harmonic measure in $D_\rho\setminus E$ is at least $m_*$ on $|z|=\rho_1$; it vanishes on $|z|=\rho$. The maximum principle on the annulus $\rho_1<|z|<\rho$ then gives $\varpi\ge m_*\log(\rho/x)/\log(\rho/\rho_1)\ge m_*s/(4\log(1/\rho_1))$, since $\log(\rho/x)\ge\log(1+s/2)\ge s/4$. Hence $\log(1/\eta)\le4\log6\,\log(1/\rho_1)/(m_*s)$, and $1/s=\max\{4R^2,4/(1-\bar r)\}$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:philog}]
+\emph{Upper bound.} Take $c=(1,\dots,1)$ of length $T=\lceil\log(1/\delta)/\log(1/\bar r)\rceil\le L$. Then $g-p_c=r^T/(1-r)$, so $\psi(g-p_c)\le\bar r^T/(1-\bar r)\le\delta/(1-\bar r)$ and $\omega_L(\delta)\le\delta\sqrt T+B\delta/(1-\bar r)\le C\delta\sqrt{\log(1/\delta)}$ for small $\delta$.
+
+\emph{Lower bound.} By part (iv) it suffices to bound $\delta\|c\|_2+B\psi(g-p_c)$ below for every $c$. Let $R=\|c\|_2$ and $\eta=\|g-p_c\|_\infty\le\psi(g-p_c)$. If $\eta\ge\delta\sqrt{\log(1/\delta)}$, the objective is at least $B\delta\sqrt{\log(1/\delta)}$. Otherwise $\eta<\sqrt\delta$, so $\log(1/\eta)>\frac12\log(1/\delta)$, and Lemma~\ref{lem:hardy} gives $K\max\{R^2,(1-\bar r)^{-1}\}>\frac12\log(1/\delta)$. Choose $\delta_0$ with $\log(1/\delta_0)\ge2K/(1-\bar r)$; then for $\delta\le\delta_0$ the maximum is $R^2$, so $R\ge\sqrt{\log(1/\delta)/(2K)}$ and the objective is at least $\delta\sqrt{\log(1/\delta)/(2K)}$. Hence $c=\min\{B,(2K)^{-1/2}\}$ works for every $L$.
+
+\emph{Cost.} By part (iv), $N$ certifies $\Phi$ to half-width $\epsilon$ only if $\omega_L(2z_{1-\alpha}\sigma/\sqrt N)\le2\epsilon$, which with the lower bound forces $N\ge c'\sigma^2\epsilon^{-2}\log(1/\epsilon)$ for small $\epsilon$; the upper bound and part (iv) give a matching $N\le C'\sigma^2\epsilon^{-2}\log(1/\epsilon)$. On $\mathcal M(\bar r,B)$, $\Phi\le B/(1-\bar r)$, and when $a+\kappa B/(1-\bar r)<1$ the map $\Phi\mapsto S$ is increasing with derivative $\kappa^2/(1-a-\kappa\Phi)^2$ bounded above and below, so intervals for $\Phi$ and for $S$ convert into each other with constant changes in accuracy.
+\end{proof}
 
 \begin{corollary}[The rates of this thesis as cases of one picture]\label{cor:cases}
 \begin{enumerate}[label=(\alph*)]
-\item \emph{Safety with a memory bound.} For $\Phi$, $a_t\equiv1$, so $A_\Phi(T)=T$ and $\tau_\Phi(T)=B\bar r^T/(1-\bar r)$. Part (i) gives $N_{\rm cert}=O\bigl(\sigma^2\epsilon^{-2}\log(1/\epsilon)/\log(1/\bar r)\bigr)$, and $S=\kappa/(1-a-\kappa\Phi)$ is certified by mapping the interval through this monotone function. This is the rate of Theorem~\ref{p2:thm:certcost}, which Theorem~\ref{p2:thm:robustguard} shows is optimal up to the logarithm for the guard. \hfill\ProvedIn{CH.~3}
+\item \emph{Safety with a memory bound.} $N_{\rm cert}(\epsilon;\Phi)\asymp\sigma^2\epsilon^{-2}\log(1/\epsilon)$, and the same for $S$ (Theorem~\ref{thm:philog}). Part (i) alone gives the upper bound $O(\sigma^2\epsilon^{-2}\log(1/\epsilon)/\log(1/\bar r))$, the rate of Theorem~\ref{p2:thm:certcost}; Theorem~\ref{thm:philog} shows that its logarithm is necessary. \hfill\Proved
 \item \emph{Safety without a memory bound.} $g(r)=(1-r)^{-1}$ satisfies the condition of (iii): no finite number of experiments certifies the risk, as Theorem~\ref{p2:thm:window}(iii) shows for finite windows. \hfill\ProvedIn{CH.~3}
-\item \emph{A single response tap.} For $g(r)=r^m$, $A_g=1$ and the cost is exactly parametric. \hfill\Proved
+\item \emph{A single response tap, and discounted feedback.} For $g(r)=r^m$, $\omega_L(\delta)\le\delta$; for $g(r)=(1-\beta r)^{-1}$ with $\beta<1$, $\omega_\infty(\delta)\le\delta/\sqrt{1-\beta^2}$. Both are parametric (Proposition~\ref{prop:parametric}). \hfill\Proved
 \item \emph{Identifying $K$ cohorts.} Recovering the atoms is not a linear question. It requires moments up to order $2K-1$ to be resolved against moment-matched alternatives whose higher moments differ by $O((\Delta\eta)^{2K-1})$, which costs $(\Delta\eta)^{-(4K-2)}$ experiments (Theorems~\ref{p1:thm:kcohort} and~\ref{p1:prop:esprit}). \hfill\ProvedIn{CH.~2}
-\item \emph{Identifying a general memory measure.} Recovering $M$ in $W_1$ means certifying $F_g$ uniformly over all $1$-Lipschitz $g$. Their best approximations by degree-$T$ polynomials improve only as $1/T$, and the coefficients of those polynomials grow geometrically in $T$, so by part (i) accuracy improves only logarithmically in $N$: the rate $1/\log N$ of Theorem~\ref{p1:thm:general}. \hfill\ProvedIn{CH.~2}
+\item \emph{Identifying a general memory measure.} Recovering $M$ in $W_1$ means certifying $F_g$ uniformly over all $1$-Lipschitz $g$. Their best approximations by degree-$T$ polynomials improve only as $1/T$, and the coefficients of those polynomials grow geometrically in $T$, so accuracy improves only logarithmically in $N$: the rate $1/\log N$ of Theorem~\ref{p1:thm:general}. \hfill\ProvedIn{CH.~2}
 \end{enumerate}
 \end{corollary}
 
-The link in (e) between coefficient growth and the logarithmic rate is a heuristic reading of Chapter~\ref{ch:p1}'s proof, not a separate result; making it a corollary of part (iv) is part of the target.
+The link in (e) between coefficient growth and the logarithmic rate is a heuristic reading of Chapter~\ref{ch:p1}'s proof through the dual form of part (iv), not a separate result here. The ladder is now exact at its first rungs: a single tap and any discounted feedback are parametric, the undiscounted total feedback that safety depends on costs exactly one extra logarithm, questions singular faster than $(1-r)^{-1/2}$ cannot be certified without a memory bound, and identification costs polynomially or logarithmically more.
 
-\subsection{Partial lower bound and the gap in part (iv)}\label{sec:dich_partial}
+\begin{remark}[Why coefficient energy is the wrong lower-bound quantity]\label{rem:energy}
+Earlier drafts stated, as a target, a lower bound $N_{\rm cert}\ge c\,\sigma^2A_g(c'T_g(\epsilon))\epsilon^{-2}$ with constants uniform over a regular coefficient class. It is false. Fix $\epsilon_0>0$, $\beta\in(0,1)$, $\eta>0$ with $\eta/(1-\beta\bar r)<1/2$, and set $g_m(r)=(\epsilon_0/B)[(1-r/\bar r)^m+\eta/(1-\beta r)]$. Its coefficients are eventually positive with polynomial growth; on $[0,\bar r]$ it takes values in an interval of length below $3\epsilon_0/(2B)$, so a constant polynomial gives $\psi(g_m-p_c)<3\epsilon_0/(2B)$ with $\|c\|_2$ bounded and the question is certified to accuracy $\epsilon_0$ with no data. Yet $T_{g_m}(\epsilon_0)=m+1$ and $A_{g_m}(c'T_{g_m}(\epsilon_0))\epsilon_0^{-2}\ge B^{-2}(m/\bar r-\eta\beta)^2\to\infty$, because the alternating binomial tail $\sum_{t=T}^m(-1)^t\binom mt=(-1)^T\binom{m-1}{T-1}$ keeps $\tau_{g_m}(T)>\epsilon_0/2$ for $T\le m$. Taylor coefficients can be large while a different polynomial approximates the question cheaply; part (iv) measures the cheapest one.
+\end{remark}
 
-Part (iv) remains a \Target{}. The following argument establishes only a parametric obstruction, with a constant depending on the functional. It does not establish the coefficient-energy factor, and has not been formalized in Lean.
-
-\paragraph{A fixed-atom lower bound.}
-Suppose $B>0$, $\sigma>0$, $\alpha<1/4$, and choose $r_*\in[0,\bar r]$ with $g(r_*)\ne0$. For sufficiently small $\epsilon$, any valid certificate must satisfy
-\[
-N_{\rm cert}(\epsilon;F_g,\mathcal M(\bar r,B))>
-\frac{\sigma^2(1-r_*^2)|g(r_*)|^2}{9\epsilon^2}.
-\]
-Indeed, put $\lambda=3\epsilon/|g(r_*)|$ and require $\lambda\le B/2$. The measures
-$M_0=(B/4)\delta_{r_*}$ and $M_1=(B/4+\lambda)\delta_{r_*}$ are admissible and their functional values differ by $3\epsilon$. For any observed depth $L$, their Gaussian experiment divergence obeys
-\[
-D_{\rm KL}(P_0^N\Vert P_1^N)
-=\frac{N\lambda^2}{2\sigma^2}\sum_{t<L}r_*^{2t}
-\le\frac{N\lambda^2}{2\sigma^2(1-r_*^2)}.
-\]
-If $N$ is no greater than the displayed lower bound, the divergence is at most $1/2$, and Pinsker's inequality gives total variation at most $1/2$. An interval of half-width at most $\epsilon$ cannot contain both functional values. Coverage at least $1-\alpha$ under both measures would therefore imply total variation at least $1-2\alpha>1/2$, a contradiction. The divergence bound is uniform in $L$.
-
-\paragraph{Why the proposed matching proof does not close the gap.}
-Taylor truncation gives an upper bound on best polynomial approximation error, $B E_T(g)\le\tau_g(T)$; it gives no reverse bound. Thus part (ii) does not show that every procedure needs Taylor depth $T_g(\epsilon)$. Furthermore, a Gauss/Gauss--Radau pair with $T$ nodes matches all moments through degree $2T-2$. For $t<T$, its tap difference is exactly zero, rather than a nonzero vector aligned with $(a_0,\ldots,a_{T-1})$. Positivity of the coefficients does not supply the missing construction. Finally, when $L>T$, a valid testing lower bound must control divergence from all observed taps, not just a selected prefix. The fixed-atom argument above does so, but does not yield $A_g(T_g(\epsilon))$.
-
-\paragraph{Counterexample to the uniform statement as written.}
-The constants in part (iv) are stated to depend only on $(\bar r,B,\alpha)$, uniformly over the regular coefficient class. This uniform claim fails. Fix $\bar r>0$, $B>0$, an accuracy $\epsilon_0>0$, and $\beta\in(0,1)$, and choose $\eta>0$ with $\eta/(1-\beta\bar r)<1/2$. For any positive integer $m$, define
-\[
-g_m(r)=\frac{\epsilon_0}{B}\left[(1-r/\bar r)^m+\frac{\eta}{1-\beta r}\right].
-\]
-Its coefficients are strictly positive beyond degree $m$ and have at most polynomial growth. On the support interval, $g_m$ is non-negative and bounded above by $(\epsilon_0/B)(1+\eta/(1-\beta\bar r))$. Thus every $F_{g_m}(M)$ lies in a known interval of length less than $3\epsilon_0/2$. That interval certifies the functional without any data, so $N_{\rm cert}\le1$ even if the definition requires a positive number of experiments.
-
-Yet $T_{g_m}(\epsilon_0)=m+1$. For every $1\le T\le m$, evaluating the polynomial tail at $r=\bar r$ gives
-\[
-\sum_{t=T}^m(-1)^t\binom mt=(-1)^T\binom{m-1}{T-1}.
-\]
-After adding the discounted tail, the reverse triangle inequality yields $\tau_{g_m}(T)\ge\epsilon_0(1-\eta/(1-\beta\bar r))>\epsilon_0/2$. At $T=m+1$ only the discounted tail remains and is below $\epsilon_0/2$. For any fixed $c'>0$, eventually $c'(m+1)>1$, so the coefficient energy includes the coefficient of $r$ and
-\[
-A_{g_m}(c'T_{g_m}(\epsilon_0))\epsilon_0^{-2}
-\ge B^{-2}(m/\bar r-\eta\beta)^2\longrightarrow\infty.
-\]
-For fixed $\sigma>0$ this contradicts any positive uniform constant $c$ in part (iv). The accuracy $\epsilon_0$ can be chosen arbitrarily small. This refutes the stated bound over the full regular class at a common accuracy; it does not refute an asymptotic statement with a functional-dependent accuracy threshold, nor the restricted all-non-negative coefficient case. A repaired statement must make its additional normalization or its functional dependence explicit. The original target is retained to show precisely what requires reformulation, rather than silently weakening it.
-
-\paragraph{Deterministic checks and remaining target.}
-The script \texttt{checks/check\_dich\_lower.py} records valid fixed-atom pairs for the safety, single-tap and discounted functionals, their functional gaps and divergences, and the exactness residuals of quadrature pairs in a JSON result file in the same directory. It checks the parametric scaling of the explicit testing budget. This scaling is a consequence of the construction, not independent evidence for a minimax matching rate. The script also evaluates the cancellation family above. No empirical or simulation test is performed. A reformulation of the uniform bound and the non-negative coefficient case remain open, as does the proposed deduction for Corollary~\ref{cor:cases}(e).
+\paragraph{Numerical certificates.} The script \texttt{checks/check\_modulus.py} solves the primal (pairs of measures on a grid) and the dual (coefficient vectors) of part (iv) for the total feedback, for discounted feedback with $\beta=0.8$ and for the tap $r^3$, at $\bar r\in\{0.5,0.9\}$ and $\delta$ from $10^{-1}$ to $10^{-5}$, and stores both. Without any solver, the check rescales the stored measures to exact feasibility (a lower bound on $\omega_L$) and evaluates the stored coefficients over the whole interval with a curvature allowance between grid points (an upper bound, by weak duality). The brackets agree to a relative $4\times10^{-4}$ or better. Over four decades of $\delta$, $\omega_L(\delta)/\delta$ settles at the values $\|a\|_2$ of Proposition~\ref{prop:parametric} for the two parametric questions ($1/\sqrt{1-\beta^2}=5/3$ for the discounted question and $1$ for the tap) and keeps growing for $\Phi$ (from $6.6$ to $10.1$ at $\bar r=0.9$), while $\omega_L(\delta)/(\delta\sqrt{\log(1/\delta)})$ stays between $1.1$ and $4.4$. The check also verifies $\omega_L(0)=2B\,E_L(g)$ at small depths. These computations illustrate the theorems; they are not part of their proofs.
 
 \section{Disclosure changes the contract, not the question}\label{sec:fw_disclosure}
 
@@ -176,7 +217,7 @@ Let $x_t\in\R^d$ evolve as $x_{t+1}=Ax_t+\mathcal K\bigl(\sum_iQ_i(t)\varphi_{i,
 The proof of Theorem~\ref{thm:sector} goes through with absolute values replaced by the sup norm and scalars by induced sup norms: each component of $y_{i,t}$ is a convex combination of its past value and the corresponding component of $x_t$.
 \end{proof}
 
-The induced-norm bound discards the pattern of cross-impact. For positive cross-impact, the following comparison gives the sharper replacement. Its proof is written here; formal and preregistered numerical validation remain outstanding, so its target status is retained.
+The induced-norm bound discards the pattern of cross-impact. For positive cross-impact, the following comparison gives the sharp replacement.
 
 \begin{proposition}[Positive cross-impact comparison]\label{prop:multiasset_positive}
 Assume the economy starts at rest, $A,\mathcal K,\overline Q_i$ are entrywise non-negative, $|Q_i(t)|\le\overline Q_i$ entrywise, and $|\varphi_{i,t}(y)|\le S_i|y|$ for a non-negative diagonal matrix $S_i$. Memory matrices $R_i(t)$ are diagonal with entries in $[0,1)$. Put $G=A+\mathcal K\sum_i\overline Q_i S_i$. If $\rho(G)<1$, then for every $\|w_t\|_\infty\le\bar w$,
@@ -184,7 +225,7 @@ Assume the economy starts at rest, $A,\mathcal K,\overline Q_i$ are entrywise no
 \sup_t\|x_t\|_\infty\le
 \bar w\,\bigl\|(I-G)^{-1}\mathcal K\bigr\|_\infty.
 \]
-This bound is sharp over the stated class. \hfill\Target
+This bound is sharp over the stated class. \hfill\Proved
 \end{proposition}
 
 \begin{proof}
@@ -199,7 +240,7 @@ For sharpness, choose $R_i(t)=0$, $Q_i(t)=\overline Q_i$, $\varphi_{i,t}(y)=S_i 
 
 \paragraph{Registered numerical validation.}
 \input{checks/multiasset_numbers}
-The specification and its hash were pushed before the seeded instances were generated, and the unlock counter was advanced before the single opening. The joint primary required both componentwise enclosure for nonlinear, time-varying cohorts and convergence to the bound in the maximal positive linear instance. It passed in \MultiassetPassed{} of \MultiassetCases{} registered random instances. The generated matrices, tolerances and diagnostics are recorded in \texttt{checks/R\_multiasset.json}. This is numerical evidence under the registered construction; it does not prove the result for every matrix or replace the outstanding Lean formalization of the positive resolvent and sharpness steps.
+The specification and its hash were pushed before the seeded instances were generated, and the unlock counter was advanced before the single opening. The joint primary required both componentwise enclosure for nonlinear, time-varying cohorts and convergence to the bound in the maximal positive linear instance. It passed in \MultiassetPassed{} of \MultiassetCases{} registered random instances. The generated matrices, tolerances and diagnostics are recorded in \texttt{checks/R\_multiasset.json}. This is a numerical check of the proved statement under the registered construction, not evidence for it.
 
 \section{Certificates expire: learning agents}\label{sec:bl_learning}
 
@@ -220,7 +261,7 @@ On $[0,T_{\rm valid}]$, $|q_i(t)|\le q_i^++\gamma_iT_{\rm valid}=:\bar q_i$ and 
 The lifetime is the certificate's safety margin divided by the agents' speed of learning. This is a guaranteed lower bound, not a claim that loss first crosses the budget at this time. Realized safety can last much longer if learning slows, changes sign, or stops below the sensitivity budget. When $\sum_i\gamma_i s_i=0$, the sensitivity envelope does not grow and the same certificate remains valid for every horizon under the stated sector and plant assumptions; the displayed quotient is not used. If the initial sensitivity bound already exceeds $\Phi_{\max}$, this argument supplies no valid initial certificate. Recertification frequency can therefore be based on the certified sensitivity margin and the learning-speed bound, while additional information about the realized learning path may justify a longer horizon.
 
 \paragraph{Formal scope.}
-The finite-cohort, finite-horizon safety induction is checked by \nolinkurl{CurrentMM.thesis_sector_safety}. The drift, floor and sensitivity calculations are checked by \nolinkurl{CurrentMM.thesis_lifetime_envelope} and its helper lemmas. The deterministic certification arithmetic is checked by \nolinkurl{CurrentMM.thesis_variance_radius} and \nolinkurl{CurrentMM.thesis_interval_half_width}; the new bias lemma covers finite positive atomic measures. These declarations do not formalize Gaussian coverage, a general-measure integration theorem, the matching lower bound, or the sharp positive cross-impact proposition. The coverage register records these boundaries separately.
+The finite-cohort, finite-horizon safety induction is checked by \nolinkurl{CurrentMM.thesis_sector_safety}. The drift, floor and sensitivity calculations are checked by \nolinkurl{CurrentMM.thesis_lifetime_envelope} and its helper lemmas. The deterministic certification arithmetic is checked by \nolinkurl{CurrentMM.thesis_variance_radius} and \nolinkurl{CurrentMM.thesis_interval_half_width}; the new bias lemma covers finite positive atomic measures. For several assets, \nolinkurl{CurrentMM.thesis_multiasset_comparison} checks the comparison step of Proposition~\ref{prop:multiasset_positive} for any number of assets and cohorts, nonlinear time-varying sector-bounded responses, entrywise weight bounds and all times: every non-negative supersolution bounds every state and memory coordinate; \nolinkurl{CurrentMM.thesis_multiasset_linear_monotone} checks that the maximal positive linear economy rises from rest and stays below every supersolution. The Neumann series that produces the resolvent supersolution and the limit in the sharpness argument are written proofs. For finite atomic measures, \nolinkurl{CurrentMM.thesis_modulus_weak_duality} and \nolinkurl{CurrentMM.thesis_modulus_affine_bias} check the deterministic half of Theorem~\ref{thm:dich}(iv): the weak-duality bound on the modulus and the bias of the affine interval. These declarations do not formalize Gaussian coverage, a general-measure integration theorem, the minimax step and the lower bound of part (iv), or Theorem~\ref{thm:philog}, which rest on Sion's minimax theorem and on potential theory. The coverage register records these boundaries separately.
 
 \paragraph{Identification under learning, by contrast.} Chapter~\ref{ch:p1}, Section~\ref{p1:sec:learners}, shows that trained online learners obey the same $\delta^{-4}$ law for separating memory rates when the competing populations' weights match, and that populations whose learned weights differ are told apart by those weights instead. Learning therefore leaves identification as hard as before while making certification only perishable, not harder per renewal.
 
@@ -228,29 +269,26 @@ The finite-cohort, finite-horizon safety induction is checked by \nolinkurl{Curr
 
 Markets in which learning algorithms, including reinforcement-learning and language-model agents, trade with each other are where the results of this chapter matter most. Two of them apply directly. Certification of safety needs only a bound on total sensitivity (Theorem~\ref{thm:sector}); and the certificate lasts for its safety margin divided by the agents' learning speed (Corollary~\ref{thm:lifetime}). The second result gives a supervisory rule with no counterpart in identity-based regimes: recertify at a frequency set by how fast the agents update.
 
-\paragraph{Pre-registered multi-agent simulation.}
-\input{checks/multiagent_numbers}
-To test Corollary~\ref{thm:lifetime} in a population of adaptive traders, we pre-registered and ran a multi-agent reinforcement-learning simulation in the cohort economy of Definition~\ref{def:cohort} ($a = 0.3, \kappa = 0.4$, $K = 4$ cohorts with memory rates $r \in \{0.2, 0.5, 0.7, 0.85\}$ and unit sector bounds $s_i = 1$). Initial weights are $q_i(0) = 0.05$, giving initial sensitivity $\Phi(0) = 0.20$. The sensitivity budget is set to $\Phi_{\max} = 1.40$ (at which $a + \kappa \Phi_{\max} = 0.86 < 1$, ensuring stability), providing an initial sensitivity margin of $1.20$. Bounded flow shocks satisfy $|w_t| \le \bar{w} = 1.0$.
+\paragraph{A registered simulation with learning agents.}
+\input{checks/multiagent_v2_numbers}
+\input{checks/multiagent_v2_table}
+Corollary~\ref{thm:lifetime} is a guarantee, so a simulation cannot confirm it; what a simulation can show is whether it is informative when agents learn from their own trading. We registered one (specification hash \texttt{58c32f9b\ldots}, pushed with its runner in a commit of its own before the run). The economy is that of Definition~\ref{def:cohort} with $a=0.3$, $\kappa=0.4$ and four cohorts with memory rates $0.2,0.5,0.7,0.85$, each following the saturating momentum rule $\varphi(y)=\tanh y$ (sector bound $1$). Each cohort learns its weight online by a gradient step on its own trading profit, clipped to the declared learning rate $\gamma$, so weights rise or fall but never move by more than $\gamma$ per period. Weights start at $0.05$ (total sensitivity $0.2$), the budget is $\Phi_{\max}=1.4$ (so the loss budget is $\kappa\bar w/(1-a-\kappa\Phi_{\max})=2.86$ for $\bar w=1$), and $T_{\rm valid}=\lfloor1.2/(4\gamma)\rfloor$ is $300$, $100$, $30$ and $10$ periods for $\gamma=0.001,0.003,0.01,0.03$. Shocks are bounded by $\bar w$: in the adversarial regime they push in the direction of the price displacement nine times in ten; in the random regime they are uniform. There are 25 runs for each regime and learning rate, each lasting five lifetimes.
 
-Each cohort updates its weight online via policy gradient steps on trading profit, with the period-by-period weight change bounded by a declared learning rate $\gamma \in \{0.001, 0.003, 0.01, 0.03\}$, so $|q_i(t+1) - q_i(t)| \le \gamma$ holds strictly at every period. The theoretical certificate lifetime is $T_{\rm valid}(\gamma) = \lfloor (\Phi_{\max} - \sum_i q_i(0) s_i) / (4\gamma) \rfloor = \lfloor 1.20 / (4\gamma) \rfloor$, evaluating to $300, 100, 30$, and $10$ periods respectively.
-
-The specification and runner hash were registered on the public repository before test execution, and the counter was advanced once before opening the seeded instances. The primary hypotheses required that: (P1) realized certificate lifetime $T_{\rm realized}$ is at least $T_{\rm valid}$ in all runs; and (P2) $T_{\rm realized} \le 3 T_{\rm valid}$ in at least 75\% of runs. Across \MultiagentTotalRuns{} independent runs (25 per learning rate), Primary 1 passed in \MultiagentPonePasses{} of \MultiagentTotalRuns{} runs (\MultiagentPoneRate{}), and Primary 2 passed in \MultiagentPtwoPasses{} of \MultiagentTotalRuns{} runs (\MultiagentPtwoRate{}). The median realized lifetimes were $562$ periods at $\gamma = 0.001$ ($1.87 \times T_{\rm valid}$), $188$ periods at $\gamma = 0.003$ ($1.88 \times T_{\rm valid}$), $56$ periods at $\gamma = 0.01$ ($1.87 \times T_{\rm valid}$), and $19$ periods at $\gamma = 0.03$ ($1.90 \times T_{\rm valid}$). The realized lifetime tracks the theoretical rate inversely with $\gamma$, confirming that safety margins price recertification intervals under adaptive learning.
+The registered check (P1) held in \MAvTwoPonePasses{} of \MAvTwoRuns{} runs: up to $T_{\rm valid}$ every price path stayed within the loss budget and total sensitivity within $\Phi_{\max}$, as the corollary guarantees. The informative primary (P2) asked whether learning actually exhausts the sensitivity budget within three lifetimes in at least half of the adversarial runs. It \MAvTwoPtwoVerdict{}: it did in \MAvTwoPtwoHits{} of \MAvTwoAdvRuns{} runs. Table~\ref{tab:multiagent_v2} shows that under adversarial shocks the budget is exhausted after 1.3 to 1.8 lifetimes, and the realized loss first exceeds its budget after four to five. So the lifetime bound is close to tight when trend-following pays, and a certificate that is not renewed does eventually admit losses beyond its budget. Under random shocks trend-following loses money on average, weights decay towards zero and no run comes near the budget: there the bound is conservative, because it charges every period for the fastest possible learning.
 
 \begin{table}[ht]
 \centering\small
-\caption{Pre-registered multi-agent RL simulation results (Corollary~\ref{thm:lifetime})}\label{tab:multiagent_rl}
-\begin{tabular}{lcccccc}
+\begin{threeparttable}
+\caption{Registered simulation with learning agents: certificate lifetime and realized loss}\label{tab:multiagent_v2}
+\begin{tabular}{lccccccc}
 \toprule
-Learning rate $\gamma$ & $T_{\rm valid}$ & Min realized & Median & Max realized & P1 ($\ge T_{\rm valid}$) & P2 ($\le 3 T_{\rm valid}$)\\
+Shocks & $\gamma$ & $T_{\rm valid}$ & Budget exhausted & Median time & Loss breached & Median time & Median margin\\
 \midrule
-$0.001$ & $300$ & $559$ & $562$ & $567$ & 25/25 (100\%) & 25/25 (100\%)\\
-$0.003$ & $100$ & $185$ & $188$ & $192$ & 25/25 (100\%) & 25/25 (100\%)\\
-$0.010$ & $30$  & $54$  & $56$  & $58$  & 25/25 (100\%) & 25/25 (100\%)\\
-$0.030$ & $10$  & $18$  & $19$  & $20$  & 25/25 (100\%) & 25/25 (100\%)\\
-\midrule
-Overall & --- & --- & --- & --- & \MultiagentPonePasses{}/\MultiagentTotalRuns{} (\MultiagentPoneRate{}) & \MultiagentPtwoPasses{}/\MultiagentTotalRuns{} (\MultiagentPtwoRate{})\\
+\MAvTwoTableRows
 \bottomrule
 \end{tabular}
+\begin{tablenotes}\footnotesize\item 25 runs per row, horizon $5T_{\rm valid}$. ``Budget exhausted'': runs in which total sensitivity exceeds $\Phi_{\max}$; ``Loss breached'': runs in which $|x_t|$ exceeds the loss budget. Median times are in units of $T_{\rm valid}$, over the runs in which the event occurs. ``Median margin'': loss budget divided by the largest $|x_t|$ up to $T_{\rm valid}$. Source: \texttt{checks/R\_multiagent\_v2.json}. An earlier simulation, whose weight updates could only increase and so could not test anything, is withdrawn (Chapter~\ref{ch:conclusion}).\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 \section{Agents who respond to the guard}\label{sec:bl_strategic}
