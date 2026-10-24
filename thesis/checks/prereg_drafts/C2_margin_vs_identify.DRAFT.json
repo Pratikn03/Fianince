@@ -1,0 +1,31 @@
+{
+ "test": "C2_margin_vs_identify",
+ "status": "DRAFT - not registered. Registration = copy to checks/prereg/C2_margin_vs_identify.json with the two hashes filled, write its .sha256 and C2_unlock.json (opens 0), and push in a commit of its own before any C2 data are downloaded.",
+ "designed_after": "Tests E1v2 and D1 (both reported as they came out) and the exploratory pilot on their spent days (thesis Chapter 5, Exploration after the tests). The pilot chose the displacement kernel, the EWMA span and the corrected identification criterion; none of these choices can be tested on the pilot's data.",
+ "pipeline": "thesis/evidence/c2_margin_vs_identify.py",
+ "c2_sha256": "<filled at registration>",
+ "binance_vision_sha256": "<filled at registration>",
+ "question": "On symbols never used in this project, can public data decide the theory's safety question (the sign of the margin 1 - a - kappa*Phi) where they cannot identify the agents' memories?",
+ "universe_rule": "Binance USD-M USDT perpetuals in the public archive whose symbol string appears in no text file of the repository; klines on 2025-01-04 and 2026-09-23; 30 drawn in a seeded random order (seed 20261101); written to C2_universe.json before any data are downloaded",
+ "dates_rule": "the 4th, 5th, 18th, 19th and 23rd of every month from 2025-01-01 to 2026-09-30 (105 dates)",
+ "estimators": {
+  "marks": "five-minute marks of one-minute klines (E1v2 alignment)",
+  "price": "ret_t = kappa flow_t + beta x_{t-1}, x = p - EWMA(p, span 12 bars), pooled with day-demeaning",
+  "kernel": "flow_t = sum_{m=1..12} k_m x_{t-m}; Phi = sum k_m",
+  "margin": "M = -beta - kappa Phi; decided if its 95% day-bootstrap interval excludes zero",
+  "memories": "two exponentials fitted to the 12-tap return kernel (E1v2), rates in [0, 0.99]; identified if the interval of r_slow - r_fast excludes zero and no rate interval reaches 0.005 or 0.985",
+  "bootstrap": "day bootstrap, 200 draws, seed 20261101 + 101 x symbol index"
+ },
+ "primary_1": "the margin is decided in at least 75% of evaluable symbols, one-sided binomial p (null 1/2) below 0.05",
+ "primary_2": "b = #(decided, not identified) exceeds c = #(identified, not decided) and the exact one-sided McNemar p = P(Bin(b + c, 1/2) >= b) is below 0.05",
+ "correction": "Holm across the two primaries at 0.05",
+ "evaluable": "at least 30 valid days; void if fewer than 20 symbols are evaluable",
+ "secondary": [
+  "decisions with the feedback term removed and their agreement with the primary decision",
+  "number of symbols with negative (contrarian) feedback",
+  "safe and unsafe counts"
+ ],
+ "what_is_mechanical": "In the pilot the decision rests mainly on the reversion term: with feedback removed the decision was the same in 28 of 30 symbols. A pass shows that the safety question is decidable from public data while the memories are not; it does not show that the feedback term is measured precisely.",
+ "prior_information": "Pilot on the 30 E1v2 symbols (spent days): margin decided in 29 of 30, memories identified in 0 of 30. The prediction is therefore expected to pass if the pilot generalizes to new symbols; its risk is in new symbols with weaker reversion or noisier flow.",
+ "opening_rule": "The pipeline refuses to run unless the committed specification matches its hash and the counter is 0; it sets the counter to 1, fixes the universe, downloads and evaluates once. Results, numbers, universe, counter and download log are committed together."
+}
