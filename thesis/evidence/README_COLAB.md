@@ -3,6 +3,16 @@
 All five tests are registered: their specifications were pushed to `main` in commits of their own
 before any of their data were downloaded. Each runs **once**. Whatever the result, push it.
 
+## Easiest: everything in one run
+
+Open `thesis/evidence/ALL_TESTS_One_Run.ipynb` in Colab (File → Open notebook → GitHub →
+`Pratikn03/Fianince`), add the `GITHUB_TOKEN` secret, and run its four cells. It runs E1v2, D1, G1 and V1
+one after another (about 3–5 hours), pushes each finished test to GitHub straight away, and downloads
+`all_test_results.zip` at the end. If Colab disconnects, open it again and run the four cells again:
+counters, downloads and finished results are kept on Drive (`MyDrive/thesis_tests`), so finished tests
+are skipped, an interrupted one resumes, and nothing is opened twice. Use either this notebook or the
+individual ones below, not both.
+
 ## Test E1v2 — certify versus identify (run now)
 
 1. Open <https://colab.research.google.com>, choose **File → Open notebook → GitHub**, paste
