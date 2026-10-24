@@ -1,0 +1,65 @@
+{
+  "test": "B3v2_learning_agents_certificate_lifetime",
+  "supersedes": "multiagent.json (B3), withdrawn 2026-10-24: its weight updates were monotone by construction, so the realized lifetime could not fall below the bound and measured only the construction.",
+  "runner": "thesis/checks/check_multiagent_v2.py",
+  "runner_sha256": "47725b337b913f16ceb3f8ec9058b3e355dc729aa0ea4b12d9c05273d38e7b46",
+  "context": "Registered simulation of learning trading agents in the cohort economy of Definition def:cohort, checking Corollary thm:lifetime and asking whether the lifetime bound is informative when agents learn from their own profits.",
+  "a": 0.3,
+  "kappa": 0.4,
+  "r": [
+    0.2,
+    0.5,
+    0.7,
+    0.85
+  ],
+  "s": [
+    1.0,
+    1.0,
+    1.0,
+    1.0
+  ],
+  "q0": [
+    0.05,
+    0.05,
+    0.05,
+    0.05
+  ],
+  "Phi_max": 1.4,
+  "wbar": 1.0,
+  "gammas": [
+    0.001,
+    0.003,
+    0.01,
+    0.03
+  ],
+  "rule": "phi_i(y)=tanh(y) for every cohort (sector bound s_i=1)",
+  "learning": "q_i(t+1)=clip(q_i(t)+clip(eta*phi_i(y_{i,t})*(x_{t+1}-x_t),-gamma,gamma),0,q_cap)",
+  "eta": 1.0,
+  "q_cap": 2.0,
+  "p_adv": 0.9,
+  "regimes": [
+    "adversarial",
+    "random"
+  ],
+  "shocks": {
+    "adversarial": "w_{t+1}=wbar*sign(x_t) (sign(0)=+1) with probability p_adv, else Uniform[-wbar,wbar]",
+    "random": "Uniform[-wbar,wbar]"
+  },
+  "horizon_multiple": 5,
+  "reps": 25,
+  "seed": 20261024,
+  "tolerance": 1e-09,
+  "T_valid": "floor((Phi_max-sum_i q0_i s_i)/sum_i gamma s_i): 300, 100, 30, 10",
+  "Z_budget": "kappa*wbar/(1-|a|-kappa*Phi_max) = 2.857142857...",
+  "primary_1": "Implementation check (guaranteed by Corollary thm:lifetime, reported as a check, not as evidence): in every one of the 200 runs, max_{t<=T_valid}|x_t| <= Z_budget, max_{t<=T_valid} sum_i|q_i(t)|s_i <= Phi_max, and every weight step is at most gamma.",
+  "primary_2": "Informative: in the adversarial regime (100 runs pooled over the four learning rates), the first time total sensitivity exceeds Phi_max is at most 3*T_valid in at least 50% of runs.",
+  "p2_threshold": 0.5,
+  "correction": "P1 is a deterministic check and carries no error rate; P2 is the only inferential primary, so no multiplicity correction is applied.",
+  "descriptive": [
+    "distribution of T_cross/T_valid and T_breach/T_valid by regime and learning rate",
+    "conservativeness Z_budget/max_{t<=T_valid}|x_t|",
+    "final total sensitivity"
+  ],
+  "development": "The runner was smoke-tested on development seed 1 with one repetition and horizon multiple 1; no outcome was printed or inspected.",
+  "opening_rule": "The specification, its hash and an unlock counter at 0 are committed and pushed to origin/main in a commit of their own. The runner refuses to start unless the committed specification matches origin/main and the counter is 0; it sets the counter to 1 and runs once."
+}
