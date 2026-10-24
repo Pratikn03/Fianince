@@ -42,3 +42,5 @@ import CurrentProofs.ThesisMultiAsset
 import CurrentProofs.ThesisModulus
 
 import CurrentProofs.ThesisPeak
+
+import CurrentProofs.ThesisNatural
