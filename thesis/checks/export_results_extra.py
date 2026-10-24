@@ -114,6 +114,25 @@ def build():
           f"\\newcommand{{\\PthreeMinRatio}}{{{min(r['L96']['width_ratio_to_tagged'] for r in rows3):.1f}}}",
           f"\\newcommand{{\\PthreeBoundNinetysix}}{{{s3['L96']['reaches_bound']}}}",
           f"\\newcommand{{\\PthreeBoundTwelve}}{{{s3['L12']['reaches_bound']}}}"]
+    # Test C2 (registered): numbers beyond those its pipeline writes
+    c2 = json.loads((EV / "C2_results.json").read_text()); ce = c2["evaluation"]; sc = ce["secondary"]
+    hm = [v["horizon_matched"] for v in c2["per_symbol"].values() if v.get("horizon_matched", {}).get("evaluable")]
+    tg = [t for h in hm for t in h["tagged"].values()]
+    rj_ci_below = sum(np.isfinite(t.get("r_jackknife_ci", [np.nan, np.nan])[1]) and t["r_jackknife_ci"][1] < 1 for t in tg)
+    L += [f"\\newcommand{{\\CtwoPholmOne}}{{{ce['p_holm'][0]:.3f}}}",
+          "\\newcommand{\\CtwoPtwoP}{%s\\times10^{%d}}" % (f"{ce['p_holm'][1]:.0e}".split("e")[0], int(f"{ce['p_holm'][1]:.0e}".split("e")[1])),
+          "\\newcommand{\\CtwoPthreeP}{%s\\times10^{%d}}" % (f"{ce['p_holm'][2]:.0e}".split("e")[0], int(f"{ce['p_holm'][2]:.0e}".split("e")[1])),
+          f"\\newcommand{{\\CtwoSafe}}{{{sc['safe']}}}", f"\\newcommand{{\\CtwoUnsafe}}{{{sc['unsafe']}}}",
+          f"\\newcommand{{\\CtwoSameNoFb}}{{{sc['same_decision_without_feedback']}}}",
+          f"\\newcommand{{\\CtwoFbNeg}}{{{sc['feedback_negative']}}}",
+          f"\\newcommand{{\\CtwoRatio}}{{{sc['P3_median_width_ratio']:.1f}}}",
+          f"\\newcommand{{\\CtwoMinRatio}}{{{min(h['width_ratio'] for h in hm):.1f}}}",
+          f"\\newcommand{{\\CtwoBound}}{{{sc['P3_price_only_reaches_bound']}}}",
+          f"\\newcommand{{\\CtwoPOhl}}{{{sc['P3_median_price_only_half_life_h']:.1f}}}",
+          f"\\newcommand{{\\CtwoTagR}}{{{np.nanmedian([t['r'] for t in tg]):.3f}}}",
+          f"\\newcommand{{\\CtwoTagHL}}{{{np.nanmedian([t['half_life_h'] for t in tg]):.1f}}}",
+          f"\\newcommand{{\\CtwoJackR}}{{{sc['P3_median_tagged_r_jackknife']:.4f}}}",
+          f"\\newcommand{{\\CtwoJackBelow}}{{{rj_ci_below}}}", f"\\newcommand{{\\CtwoClassFits}}{{{len(tg)}}}"]
     return "\n".join(L) + "\n"
 
 

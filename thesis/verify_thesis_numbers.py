@@ -158,6 +158,21 @@ assert V1mod.verdict(v1res['evaluation']) == v1res['verdict']
 assert V1mod.numbers_tex(v1res['evaluation'], v1res['verdict']) == (ROOT / 'checks/V1_numbers.tex').read_text()
 print('Tests D1, G1, V1: results reproduce from their files: PASS')
 
+# Test C2: registration, counter, and the evaluation recomputed from its per-symbol results
+import c2_margin_vs_identify as C2mod  # noqa: E402
+c2spec = ROOT / 'checks/prereg/C2_margin_vs_identify.json'
+c2c = json.loads((ROOT / 'checks/prereg/C2_unlock.json').read_text())
+c2res = json.loads((ROOT / 'evidence/C2_results.json').read_text())
+assert c2c['opens'] == 1 and c2res['spec_sha256'] == digest(c2spec) == c2c['spec_sha256']
+assert (ROOT / 'checks/prereg/C2_margin_vs_identify.sha256').read_text().strip() == digest(c2spec)
+assert json.loads(c2spec.read_text())['c2_sha256'] == digest(ROOT / 'evidence/c2_margin_vs_identify.py')
+re_ev = C2mod.evaluate(c2res['per_symbol'])
+for k in ('decided', 'identified', 'mcnemar_b', 'mcnemar_c', 'P1_pass', 'P2_pass', 'P3_tagged_tighter', 'P3_pass'):
+    assert re_ev[k] == c2res['evaluation'][k], ('C2', k)
+assert C2mod.numbers_tex(c2res['evaluation']) == (ROOT / 'checks/C2_numbers.tex').read_text()
+assert '\\input{checks/C2_numbers}' in concl and 'C2:' in concl
+print('Test C2: registration and results reproduce from their files: PASS')
+
 # Chapter 5 extra numbers and the exploratory pilot (labelled exploratory, never confirmatory)
 subprocess.run([sys.executable, str(ROOT / 'checks/export_results_extra.py'), '--check'], check=True)
 pilot = json.loads((ROOT / 'evidence/pilot_after_e1v2_results.json').read_text())
