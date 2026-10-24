@@ -1,0 +1,38 @@
+{
+ "test": "C2_margin_vs_identify",
+ "status": "REGISTERED. Approved by the author on 2026-10-24 (chat). Pushed in a commit of its own, before any C2 data were downloaded and before the universe was drawn.",
+ "designed_after": "Tests E1v2 and D1 (both reported as they came out) and the exploratory pilot on their spent days (thesis Chapter 5, Exploration after the tests). The pilot chose the displacement kernel, the EWMA span and the corrected identification criterion; none of these choices can be tested on the pilot's data.",
+ "pipeline": "thesis/evidence/c2_margin_vs_identify.py",
+ "c2_sha256": "c7981a8bcae2c9841bb390759127fd5c57ca7562d600cfc318bcaa7d4955cd1d",
+ "binance_vision_sha256": "e01051c93387e25bef0aa35b1dda912d3d3da984ee6032f9a3a8c8bcbcf770f4",
+ "question": "On symbols never used in this project, can public data decide the theory's safety question (the sign of the margin 1 - a - kappa*Phi) where they cannot identify the agents' memories?",
+ "universe_rule": "Binance USD-M USDT perpetuals in the public archive whose symbol string appears in no text file of the repository; klines on 2025-01-04 and 2026-09-23; 30 drawn in a seeded random order (seed 20261101); written to C2_universe.json before any data are downloaded",
+ "dates_rule": "the 4th, 5th, 18th, 19th and 23rd of every month from 2025-01-01 to 2026-09-30 (105 dates)",
+ "estimators": {
+  "marks": "five-minute marks of one-minute klines (E1v2 alignment)",
+  "price": "ret_t = kappa flow_t + beta x_{t-1}, x = p - EWMA(p, span 12 bars), pooled with day-demeaning",
+  "kernel": "flow_t = sum_{m=1..12} k_m x_{t-m}; Phi = sum k_m",
+  "margin": "M = -beta - kappa Phi; decided if its 95% day-bootstrap interval excludes zero",
+  "memories": "two exponentials fitted to the 12-tap return kernel (E1v2), rates in [0, 0.99]; identified if the interval of r_slow - r_fast excludes zero and no rate interval reaches 0.005 or 0.985",
+  "bootstrap": "day bootstrap, 200 draws, seed 20261101 + 101 x symbol index"
+ },
+ "primary_1": "the margin is decided in at least 75% of evaluable symbols, one-sided binomial p (null 1/2) below 0.05",
+ "primary_2": "b = #(decided, not identified) exceeds c = #(identified, not decided) and the exact one-sided McNemar p = P(Bin(b + c, 1/2) >= b) is below 0.05",
+ "primary_3": "horizon-matched disclosure (added after Pilot 3): width of the 95% day-bootstrap interval of log10 half-life, class-tagged (mean over top_position, top_account, all_accounts; n_t = r n_{t-1} + w ret_t, n = (R-1)/(R+1)) below the price-only slow memory from a 96-lag (eight-hour) return kernel with two exponentials and rates in [0, 0.9995], in at least 75% of symbols with 30 valid tagged days; one-sided binomial p (null 1/2) below 0.05; void if fewer than 20 such symbols",
+ "correction": "Holm across the three primaries at 0.05",
+ "evaluable": "at least 30 valid days; void if fewer than 20 symbols are evaluable",
+ "secondary": [
+  "decisions with the feedback term removed and their agreement with the primary decision",
+  "number of symbols with negative (contrarian) feedback",
+  "safe and unsafe counts",
+  "P3: median width ratio, count with ratio >= 3, count whose price-only slow-rate interval reaches 0.005 or 0.999, median price-only and tagged half-lives",
+  "P3: median jackknife-corrected tagged rate, and the number of symbols whose price-only half-life interval overlaps a jackknife-corrected tagged interval"
+ ],
+ "what_is_mechanical": "In the pilot the decision rests mainly on the reversion term: with feedback removed the decision was the same in 28 of 30 symbols. A pass shows that the safety question is decidable from public data while the memories are not; it does not show that the feedback term is measured precisely.",
+ "prior_information": "Pilot on the 30 E1v2 symbols (spent days): margin decided in 29 of 30, memories identified in 0 of 30. The prediction is therefore expected to pass if the pilot generalizes to new symbols; its risk is in new symbols with weaker reversion or noisier flow.",
+ "opening_rule": "The pipeline refuses to run unless the committed specification matches its hash and the counter is 0; it sets the counter to 1, fixes the universe, downloads and evaluates once. Results, numbers, universe, counter and download log are committed together.",
+ "what_primary_3_does_not_show": "The tagged series is the persistence of class positioning, not class order flow; a pass shows that positioning data restrict a persistence parameter that prices leave unbounded at a matched horizon, not that the two estimate one object. Within-day demeaning biases the tagged rate down (Nickell; about (1 + r)/T to (1 + 3r)/T per day), so tagged half-lives are understated; this does not affect the width comparison. A split-panel jackknife (Dhaene and Jochmans 2015: twice the full-day rate minus the mean of the half-day rates) is reported as a registered secondary, with the count of symbols whose price-only half-life interval overlaps a jackknife-corrected tagged interval; it does not enter Primary 3.",
+ "prior_information_primary_3": "Pilot 3 on the 30 E1v2 symbols (spent days): tagged tighter in 30 of 30 at 12, 48 and 96 lags; median ratio 7.5 at 96 lags; price-only reaches a bound in 25 of 30.",
+ "notebook": "thesis/evidence/C2_Margin_vs_Identify.ipynb",
+ "registered_utc": "2026-10-24T22:56:43.988833+00:00"
+}
