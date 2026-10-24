@@ -297,7 +297,7 @@ def evaluate(per):
     p3 = float(stats.binom.sf(t3 - 1, n3, 0.5)) if n3 >= MIN_SYMBOLS else 1.0
     adj = holm([p1, p2, p3]); need = math.ceil(SHARE * n)
     out.update({"threshold_count": need, "decided": dec, "identified": sum(v["identified"] for v in ev.values()),
-                "mcnemar_b": b, "mcnemar_c": c, "p_raw": [p1, p2], "p_holm": adj,
+                "mcnemar_b": b, "mcnemar_c": c, "p_raw": [p1, p2, p3], "p_holm": adj,
                 "P1_pass": bool(dec >= need and adj[0] < ALPHA), "P2_pass": bool(b > c and adj[1] < ALPHA),
                 "P3_evaluable": n3, "P3_threshold_count": need3, "P3_tagged_tighter": t3,
                 "P3_void": n3 < MIN_SYMBOLS,
@@ -315,7 +315,7 @@ def evaluate(per):
                               "P3_median_price_only_half_life_h": float(np.median([h["price_only"]["half_life_h"] for h in hm])) if hm else None,
                               "P3_median_tagged_half_life_h": float(np.median([np.median([c["half_life_h"] for c in h["tagged"].values()])
                                                                                for h in hm])) if hm else None,
-                              "P3_median_tagged_r_jackknife": float(np.median([np.median([c.get("r_jackknife", np.nan) for c in h["tagged"].values()])
+                              "P3_median_tagged_r_jackknife": float(np.nanmedian([np.nanmedian([c.get("r_jackknife", np.nan) for c in h["tagged"].values()])
                                                                                for h in hm])) if hm else None,
                               "P3_price_only_overlaps_jackknife_tagged": sum(
                                   any(np.isfinite(c.get("log10_hl_jackknife_ci", [np.nan])[0]) and
@@ -383,7 +383,10 @@ def run(cache_dir=None, threads=16, resume=False, skip_gate=False, symbols=None,
         days = [st for _, st in sorted(frames.get(s, []), key=lambda t: t[0])]
         per[s] = symbol_eval(days, j) if len(days) >= MIN_DAYS else {"n_days": len(days), "excluded": "fewer than 30 valid days"}
         if "M" in per[s]:
-            print(f"  {s}: days={len(days)} margin={per[s]['sign']} identified={per[s]['identified']}", flush=True)
+            hm = per[s]["horizon_matched"]
+            p3 = (f"tagged_tighter={hm['tagged_tighter']} ratio={hm['width_ratio']:.1f}" if hm.get("evaluable")
+                  else f"P3 not evaluable ({hm.get('n_tag_days', 0)} tagged days)")
+            print(f"  {s}: days={len(days)} margin={per[s]['sign']} identified={per[s]['identified']} {p3}", flush=True)
     res = {"test": "C2", "spec_sha256": sha, "registration_commit": reg, "run_utc": datetime.now(timezone.utc).isoformat(),
            "symbols": syms, "dates": ds, "per_symbol": per, "evaluation": evaluate(per)}
     RESULT.write_text(json.dumps(res, indent=1, default=float) + "\n")
