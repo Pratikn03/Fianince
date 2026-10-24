@@ -33,7 +33,7 @@
 | 21 | `theorem` | `prop:passive` | Passive cost | `p1_mixture.tex:250` | `CurrentMM.p1_thm_passive_cost` (L544) | `MachineMarkets.p1_prop_passive_cost` (L189) |
 | 22 | `proposition` | `prop:tagged` | Tagged flow removes the barrier | `p1_disclosure.tex:38` | `CurrentMM.p1_prop_tagged_flow_removes_barrier, CurrentMM.is_iv_det_pos` (L565) | `MachineMarkets.p1_prop_tagged_flow_ident` (L195) |
 | 23 | `theorem` | `thm:discvalue` | Value of class-tagged disclosure | `p1_disclosure.tex:56` | `CurrentMM.p1_thm_discvalue_ratio` (L574) | `MachineMarkets.p1_thm_disclosure_value` (L203) |
-| 24 | `theorem` | `thm:blind` | Spectral blindness | `p1_disclosure.tex:194` | `CurrentMM.p1_thm_blind_spectral_blindness` (L590) | `MachineMarkets.p1_thm_spectral_blindness` (L211) |
+| 24 | `theorem` | `thm:blind` | Spectral blindness | `p1_disclosure.tex:196` | `CurrentMM.p1_thm_blind_spectral_blindness` (L590) | `MachineMarkets.p1_thm_spectral_blindness` (L211) |
 | 25 | `theorem` | `thm:abstain` | Finite-window abstention | `p1_appendix.tex:160` | `CurrentMM.p1_thm_abstain_finite_window` (L640) | `MachineMarkets.p1_thm_abstain_finite_window` (L228) |
 | 26 | `proposition` | `prop:passive0` | Passive distinction with zero controlled quantity | `p1_appendix.tex:176` | `CurrentMM.p1_prop_passive0_three_step_blocks` (L254) | `MachineMarkets.p1_prop_passive0_distinction` (L79) |
 
