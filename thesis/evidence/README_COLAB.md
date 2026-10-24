@@ -1,6 +1,6 @@
 # Running the registered tests in Google Colab
 
-Both tests are registered: their specifications were pushed to `main` in commits of their own
+All five tests are registered: their specifications were pushed to `main` in commits of their own
 before any of their data were downloaded. Each runs **once**. Whatever the result, push it.
 
 ## Test E1v2 — certify versus identify (run now)
@@ -29,6 +29,22 @@ The thesis text for E1 is then written from those files; `verify_thesis_numbers.
 Same steps with `thesis/evidence/E2_Prospective_Analysis.ipynb`. The analysis refuses to run before
 2027-02-02, when the archive holds every date of the window (2026-10-24 to 2027-01-31). It downloads
 about 6,000 files (klines, order-book depth, metrics) for 20 symbols; expect 40–90 minutes.
+
+## Tests D1, G1 and V1 (run now, any order)
+
+Same steps as E1v2, with these notebooks (each needs `GITHUB_TOKEN` to push, or downloads a zip):
+
+| Notebook | What it tests | Downloads | Time |
+|---|---|---|---|
+| `D1_Tagging_Scaling.ipynb` | whether class tagging restores the parametric rate as days are added | ~3,500 Binance files | 30–60 min |
+| `G1_Stress_Guard.ipynb` | whether the summed-response guard beats a volatility limit in stress hours | ~13,000 Binance files (klines, depth, metrics) | 45–90 min |
+| `V1_Kraken_Venue.ipynb` | the thin-book effect on Kraken spot, a venue never used before | Kraken public API, ~1 request per second | 1–2 h |
+
+Cell 2 of each must print the specification hash and a commit, and the counter at 0. Cell 3 opens the test.
+If Colab disconnects after cell 3 has started, open the notebook again, run cell 1, skip cell 2, set
+`RESUME = True` in cell 3 and run it: downloads are cached on Drive and the counter is not reset.
+V1 asks Kraken for daily candles and trades only; no account or key is needed. If Kraken refuses
+requests from Colab (an HTTP 403 or a Cloudflare page), stop and report it; do not route around it.
 
 ## If something goes wrong
 

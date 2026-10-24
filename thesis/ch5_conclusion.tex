@@ -6,7 +6,7 @@ The policy message is direct. Supervisors who want to control transient risk sho
 
 \section{Evidence that would settle the thesis}\label{sec:evidence}
 
-The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's own predictions. This section states what that evidence establishes for the thesis as a whole, what it does not, and two tests designed to test the thesis directly. Both are registered: each specification was pushed to the public repository in a commit of its own before any of its data were downloaded. Neither has been run.
+The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's own predictions. This section states what that evidence establishes for the thesis as a whole, what it does not, and two tests designed to test the thesis directly. Five tests are registered: each specification was pushed to the public repository in a commit of its own before any of its data were downloaded. None has been run.
 
 \subsection{What the existing evidence establishes}\label{sec:ev_existing}
 
@@ -32,6 +32,16 @@ The empirical work of Chapters~\ref{ch:p1} and~\ref{ch:p2} tests each paper's ow
 
 \paragraph{Status.} The analysis code and its notebook are committed with the addendum and refuse to run before 2 February 2027.
 
+\subsection{Three further registered tests}\label{sec:ev_more}
+
+Three gaps in the existing evidence have tests registered on 24 October 2026, each pushed in a commit of its own before any of its data were downloaded, each with code and a notebook that opens it once.
+
+\paragraph{D1: does tagging restore the parametric rate as data grow?} Theorem~\ref{p1:thm:discvalue} predicts that class-tagged data make memory an ordinary estimation problem, while prices and flow alone leave it far harder. No public data tag order flow by trader at the level Proposition~\ref{p1:prop:tagged} assumes, so the test uses the same class-level positions as Chapter~\ref{ch:p1} and checks a new prediction, the scaling, on new days: 30 perpetuals on 58 untouched dates, nested subsamples of 14, 28 and all days. Primary~1: the class-tagged interval width falls with a slope between $-0.75$ and $-0.25$ in $\log n$; Primary~2: the advantage of tagging grows, with slope at least $0.2$; each in at least 75\% of symbols, Holm-corrected. Part of each is mechanical, and the specification says which outcomes would be informative.
+
+\paragraph{G1: does the guard beat a volatility limit in stress hours?} Chapter~\ref{ch:p2} finds no advantage over a volatility limit at matched exposure over all hours. The theory concerns worst-case loss, so G1 asks the question in stress hours, those whose six-hour volatility is in the top decile of the symbol's training distribution, on 52 untouched dates for the 20 thin perpetuals. Primary~1: the amplification-adjusted volatility limit has a lower tail-loss ratio than the plain volatility limit; Primary~2: the summed-response guard does; Holm-corrected.
+
+\paragraph{V1: the thin-book effect on a new venue.} The thin-book forecasting result is large on Binance, small in US stocks and absent on Coinbase. A thin-book explanation predicts an effect in the thinnest pairs of any venue; an explanation specific to leveraged perpetuals predicts none on spot. V1 tests the depth-free statistic on Kraken spot, a venue never used in this project, with the universe fixed from training-period candles and Chapter~\ref{ch:p2}'s Coinbase design: Primary~1 asks for an out-of-sample forecasting gain in thin pairs, and Primary~2, tested only if Primary~1 passes, for a gain over an order-splitting placebo. The reading of each outcome is registered with it.
+
 \subsection{Withdrawn results}\label{sec:ev_withdrawn}
 
 Two results reported in an earlier draft of this thesis are withdrawn. The first was presented as a run of Test~E1 in 38 markets. It did not estimate anything from fresh data: it read results archived from earlier tests and used hard-coded and invented intervals, and its design compared quantities in different units. The specification it ran under is superseded by the one above, and none of its numbers appears in this thesis. The second was a simulation of learning agents whose weights, by construction, could only increase; its ``realized lifetimes'' measured that construction and could not have fallen below the bound they were said to test. Section~\ref{sec:bl_ai} replaces it with a registered simulation in which weights follow the agents' trading profits. The code and output of both are kept in the repository, marked as withdrawn, so that the record is complete.
@@ -49,10 +59,10 @@ Two results reported in an earlier draft of this thesis are withdrawn. The first
 \section{Open problems}
 
 \begin{enumerate}
-\item \emph{Nonlinear questions.} Theorem~\ref{thm:dich}(iv) gives the exact cost of every linear question. Extend it to questions that are not linear in the merged measure, beginning with the peak of the impulse response, and make the link to the $1/\log N$ rate of identification (Corollary~\ref{cor:cases}(e)) a theorem rather than a reading of Chapter~\ref{ch:p1}'s proof.
-\item \emph{Constants.} Theorem~\ref{thm:philog} fixes the order $\sigma^2\epsilon^{-2}\log(1/\epsilon)$ of the cost of certifying safety but not its constant, which depends on a harmonic measure; compute it, or the limit of $\omega_L(\delta)/(\delta\sqrt{\log(1/\delta)})$, as a function of the memory bound.
+\item \emph{Nonlinear questions.} Theorem~\ref{thm:dich}(iv) gives the exact cost of every linear question, and Proposition~\ref{prop:nonlinear} settles questions that depend on finitely many taps, such as the peak. Extend the exact theory to questions that depend nonlinearly on infinitely many taps, and make the link to the $1/\log N$ rate of identification (Corollary~\ref{cor:cases}(e)) a theorem rather than a reading of Chapter~\ref{ch:p1}'s proof.
+\item \emph{Constants.} Theorem~\ref{thm:philog} gives explicit constants, but its lower constant is far below its upper one ($\PhilogLowB$ against $\PhilogUpB$ at $\bar r=0.9$). Find the limit of $\omega_L(\delta)/(\delta\sqrt{\log(1/\delta)})$; the computed brackets sit near the upper constant.
 \item \emph{Minimal disclosure for safety.} Characterize the least informative disclosure under which a given safety question becomes certifiable from finite data. Theorem~\ref{thm:dich}(iii) says a memory bound is necessary for the summed response; is it sufficient in a sense that can be made operational?
 \item \emph{Strategic agents.} Remark~\ref{rem:strategic_counterexample} refutes existence under a discontinuous admission rule. Determine sufficient assumptions for existence under a regularized guard and for the claimed comparison of equilibrium sensitivity.
 \item \emph{Observational certification.} Develop finite-sample certificates from observational order-book data with dependence and non-stationarity, replacing the bootstrap diagnostics of Chapter~\ref{ch:p2}; Test~E1 measures how far passive data are from the reset contract of Theorem~\ref{thm:dich}.
-\item \emph{The mechanism of thin-book risk.} Run Tests E1 and E2 of Section~\ref{sec:evidence}.
+\item \emph{The evidence.} Run Tests E1, E2, D1, G1 and V1 of Section~\ref{sec:evidence}.
 \end{enumerate}

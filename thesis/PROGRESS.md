@@ -215,3 +215,30 @@ https://github.com/Pratikn03/Fianince/actions/runs/40047369635: lint, Lean build
 audit (470 named declarations, standard axioms only), paper-suite reproduction and pytest all pass;
 the regenerated receipt was committed by CI (3cc5933). Open: E1v2 run (Colab), E2 run (after 2027-02-02), co-authorship
 statement, constants in Theorem thm:philog, nonlinear questions.
+
+## Theory, papers, Lean and three new registered tests — 2026-10-24 (second session)
+Status: done; D1, G1, V1 registered, not yet run
+
+- **Theorem thm:philog** now has explicit constants: Lemma lem:hardy's harmonic-measure bound is made
+  explicit by an annulus comparison through the Joukowski map (K = 8 log 6 sqrt(1-rbar) log rho_*,
+  rho_* = (1+sqrt(1-rbar))^2/rbar); lower constant min{B,(2K)^-1/2}, upper (log 1/rbar)^-1/2.
+  `checks/export_philog_constants.py` computes them and checks the explicit upper bound against every
+  computed bracket.
+- **Nonlinear questions** (Section sec:nonlinear): Proposition prop:nonlinear (lower bound for any
+  functional; finitely dependent Lipschitz questions are parametric) and Corollary cor:peak (in the
+  cohort economy the peak equals kappa on the stable class: known without data, uninformative about
+  loss). Lean: `ThesisPeak.lean` (3 theorems: bounded by the first response, locality, monotonicity),
+  compiled locally. Named declarations: 473.
+- **Worked examples** (Section sec:examples) from `checks/check_examples.py` / `R_examples.json`:
+  certified lower bounds and affine-interval counts against the Taylor interval.
+- **Related work** section for Chapter 4.
+- **Paper 1**: Theorem thm:uniformw1 (merged memory distribution at rate N^{-1/(4K-2)} without
+  separation; weights not recoverable as rates collide), abstract and introduction updated, the failed
+  fresh-day part reframed as a failure (the earlier "strengthens the case" reading removed).
+- **Paper 2**: Theorem thm:certcost(iv), the logarithm is necessary under contract (O1), with proof in
+  the appendix (closed loop to open loop by Young's inequality, then the modulus argument).
+  Abstract, introduction, guard and conclusion wording updated. Delivered PDFs refreshed.
+- **Registered** (each pushed alone before data): D1 tagging scaling (13d431e), G1 stress-hour guard
+  (228fcb1), V1 Kraken venue (f8ad9ab). Pipelines tested end to end on synthetic archives and a fake
+  Kraken API. Notebooks keep the unlock counter on Drive so a disconnect cannot reopen a test; the
+  E1v2 and E2 notebooks were updated the same way (notebooks are not hashed).

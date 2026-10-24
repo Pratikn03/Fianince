@@ -33,6 +33,11 @@ print('Thesis A1 diagnostics and status: PASS')
 subprocess.run([sys.executable, str(ROOT / 'checks/check_modulus.py'), '--check'], check=True)
 for lab in ('thm:dich', 'prop:parametric', 'thm:philog', 'lem:hardy'):
     assert f'\\label{{{lab}}}' in source, lab
+subprocess.run([sys.executable, str(ROOT / 'checks/export_philog_constants.py'), '--check'], check=True)
+subprocess.run([sys.executable, str(ROOT / 'checks/check_examples.py')], check=True)
+for lab in ('prop:nonlinear', 'cor:peak', 'sec:examples', 'sec:fw_literature'):
+    assert f'\\label{{{lab}}}' in source, lab
+assert '\\input{checks/philog_constants}' in source and '\\input{checks/examples_table}' in source
 print('Modulus certificates and labels: PASS')
 
 # Registered multi-asset results: verify the fixed artifacts, never reopen the test.
@@ -98,7 +103,7 @@ opens = json.loads((ROOT / 'checks/prereg/E1v2_unlock.json').read_text())['opens
 assert digest(e1).startswith('0b6c31c0') and '0b6c31c0' in concl
 if opens == 0:
     assert not (ROOT / 'evidence/E1v2_results.json').exists()
-    assert 'Neither has been run' in concl
+    assert 'None has been run' in concl
     print('Test E1v2: registered, not yet run: PASS')
 else:
     subprocess.run([sys.executable, str(ROOT / 'evidence/e1v2_pipeline.py'), '--check'], check=True)
@@ -115,3 +120,20 @@ assert digest(ROOT / 'evidence/binance_vision.py') == spec_add['binance_vision_s
 if json.loads((ROOT / 'checks/prereg/E2_unlock.json').read_text())['opens'] == 0:
     assert not (ROOT / 'evidence/E2_results.json').exists()
 print('Test E2 registration and addendum: PASS')
+
+# Tests D1, G1, V1: registered before data; results only after the single opening
+for tid, spec, keys in (("D1", "D1_tagging_scaling", ("d1_sha256", "e1v2_pipeline_sha256", "binance_vision_sha256")),
+                        ("G1", "G1_stress_guard", ("g1_sha256", "e2_analysis_sha256", "binance_vision_sha256")),
+                        ("V1", "V1_kraken_venue", ("v1_sha256",))):
+    sp = ROOT / f'checks/prereg/{spec}.json'
+    assert digest(sp) == sp.with_suffix('.sha256').read_text().strip(), tid
+    js = json.loads(sp.read_text())
+    files = {"d1_sha256": "d1_tagging_scaling.py", "e1v2_pipeline_sha256": "e1v2_pipeline.py",
+             "binance_vision_sha256": "binance_vision.py", "g1_sha256": "g1_stress_guard.py",
+             "e2_analysis_sha256": "e2_analysis.py", "v1_sha256": "v1_kraken_venue.py"}
+    for k in keys:
+        assert digest(ROOT / 'evidence' / files[k]) == js[k], (tid, k)
+    if json.loads((ROOT / f'checks/prereg/{tid}_unlock.json').read_text())['opens'] == 0:
+        assert not (ROOT / f'evidence/{tid}_results.json').exists()
+    assert f'{tid}:' in concl
+print('Tests D1, G1, V1 registrations: PASS')
