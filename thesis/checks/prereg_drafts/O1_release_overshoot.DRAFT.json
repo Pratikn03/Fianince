@@ -1,0 +1,32 @@
+{
+ "test": "O1_release_overshoot",
+ "status": "DRAFT - not registered. Registration = copy to checks/prereg/O1_release_overshoot.json with the three hashes filled, write its .sha256 and O1_unlock.json (opens 0), and push in a commit of its own before any O1 data are downloaded.",
+ "designed_after": "Exploratory Pilot 2b on the 56 releases of January 2025 to October 2026 (thesis Chapter 5, Exploration after the tests): placebos passed; a median 94% of the long-run response within ten seconds; A_120 negative in 26 of 30 symbols, interval below zero in 2.",
+ "pipeline": "thesis/evidence/o1_release_overshoot.py (download and per-symbol estimator from thesis/evidence/pilot2b_announcements.py, unchanged)",
+ "o1_sha256": "<filled at registration>",
+ "pilot2b_sha256": "<filled at registration>",
+ "binance_vision_sha256": "<filled at registration>",
+ "question": "After scheduled US macro releases, does the response of small perpetuals to bitcoin's release-second move overshoot its long-run level, pooled across symbols with the shared releases respected?",
+ "releases": "Every CPI and Employment Situation release (8:30 a.m. ET) and every FOMC statement (2:00 p.m. ET) in 2022-2024: 36 + 36 + 24 = 96 events on 95 dates (2024-06-12 carries CPI and FOMC). Sources: https://www.bls.gov/schedule/2022/home.htm, https://www.bls.gov/schedule/2023/home.htm, https://www.bls.gov/schedule/2024/home.htm, https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm (no unscheduled meetings or notation votes in these years).",
+ "symbols": "The 30 USD-M perpetuals of Pilot 2b; evaluable with at least 40 usable releases; void if fewer than 15 evaluable.",
+ "freshness": "The pilot used only 2025-2026 releases. Several 2022-2024 release dates appear in earlier data manifests of this project for other questions (bitcoin and major coins, one-minute data); no one-second release-window response of these 30 perpetuals has been computed.",
+ "estimator": "Per symbol, the pilot's local projections: shock = bitcoin spot log price change from 1 s before to 10 s after the release; response b_j for j = 0..900 s with later bitcoin moves controlled; beta = mean b_j over 600-900 s; G_j = 1 - b_j/beta; A_H = sum of G_j over j = 10..9+H (seconds). Pooled Abar_H = mean over evaluable symbols.",
+ "bootstrap": "Joint event bootstrap: 2,000 draws, seed 20261102; each draw resamples the release list with replacement and applies the same weights to every symbol.",
+ "validity": [
+  "V1: pooled pre-release drift (mean over symbols of the slope of p^A(tau-1)-p^A(tau-301) on the shock, divided by beta) has a 95% joint-bootstrap interval covering zero",
+  "V2: median over symbols of sd(bitcoin 11-second move at pseudo-events 20 minutes before) / sd(at releases) below 0.5",
+  "The test is void if either fails."
+ ],
+ "primary": "Overshoot: one-sided upper 95% joint-bootstrap bound of Abar_120 below zero (p < 0.05).",
+ "secondary": [
+  "Abar_30, Abar_60, Abar_300 with intervals",
+  "Abar_120 by release type",
+  "symbols with A_120 < 0, and with per-symbol interval below zero",
+  "symbols with two-sided |A_120| < 60 s",
+  "median share through at 10 s; median beta",
+  "symbols with identified memories (pilot rule)"
+ ],
+ "what_is_not_shown": "Last-trade prices right after a release can be pushed by aggressive orders at the ask or bid; a pass shows a pooled transient response above the long-run level, not its mechanism.",
+ "prior_information": "Pilot 2b point estimates (2025-2026 releases): pooled Abar_120 = -20.9 s; per-symbol A_120 negative in 26 of 30 but interval below zero in only 2. The pilot did not compute a joint-bootstrap interval, so how often the pooled prediction would pass on new releases is unknown.",
+ "opening_rule": "The pipeline refuses to run unless the committed specification matches its hash and the counter is 0; it sets the counter to 1, downloads and evaluates once. Results, numbers, counter and download log are committed together."
+}
