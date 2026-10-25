@@ -25,7 +25,7 @@
 ### 2.1 Lean 4 Formalization Inventory
 - **Primary Real-Analysis Formalization (`research_extension/current_manuscript_lean_20261008/`)**:
   - Toolchain: `leanprover/lean4:v4.34.1` + Mathlib (`d13f23b7`).
-  - **481 named declarations** across 40 modules (445 manuscript, 36 thesis) in `CurrentProofs/`.
+  - **485 named declarations** across 41 modules (445 manuscript, 40 thesis) in `CurrentProofs/`.
   - Strict axiom audit (`AxiomAudit.lean` and `verify_formalization.py`): `0 sorry`, `0 admit`, `0 native_decide`, standard foundations only (`propext`, `Classical.choice`, `Quot.sound`).
   - Explicit machine-readable flag in `formal_verification_receipt.json`: `"complete": false` (passing Lean compilation certifies the formal declarations under their stated hypotheses, not complete semantic formalization of every manuscript theorem).
 - **Constructive Rational Formalization (`lean_proofs/`)**:
