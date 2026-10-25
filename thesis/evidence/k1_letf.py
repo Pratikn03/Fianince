@@ -12,7 +12,7 @@ stocks with larger disclosed rebalancing intensity, and whether the certified ma
 
 Pipeline (each step writes a file and is safe to rerun):
   universe(...)            N-PORT fund net assets + Alpaca daily bars -> K1_universe.json (before any intraday data)
-  fetch_windows(...)       Alpaca SIP trades in two windows per day -> minute bars (13:30-14:00 and 15:30-16:00 ET)
+  fetch_windows(...)       Alpaca SIP trades in two windows per day -> minute bars (13:00-14:00 and 15:00-16:00 ET)
   unit_stats(...)          per stock and window: Phi (Primary 1), margin (Primary 2), secondaries
   evaluate(...)            Spearman tests across stocks, Holm, secondaries -> K1_results.json
   simulate_panel(...)      synthetic panel with a known rebalancing share, for the null and power calibration
@@ -31,12 +31,12 @@ import numpy as np
 import pandas as pd
 
 NY = "America/New_York"
-SAMPLE = ("2026-01-02", "2026-06-30")                 # trading days, full sessions only
-PRE = ("2025-10-01", "2025-12-31")                    # pre-period: candidate pool and control matching
-REPORTS = ("2025-12-31", "2026-06-30")                # N-PORT report dates used for net assets
-WINDOWS = {"control": (240, 270), "close": (360, 390)}   # minutes after 09:30: 13:30-14:00 and 15:30-16:00
-MIN_DV_POOL = 5e8                                      # candidate stocks: median daily dollar volume >= $500M (pre-period)
-MIN_LAMBDA_DOLLARS = 1e8                               # treated: disclosed intensity Lambda_u >= $100M per unit return
+SAMPLE = ("2025-07-01", "2026-06-30")                 # trading days, full sessions only (12 months)
+PRE = ("2025-04-01", "2025-06-30")                    # pre-period: candidate pool and control matching
+REPORTS = ("2025-06-30", "2026-06-30")                # N-PORT report dates used for net assets
+WINDOWS = {"control": (210, 270), "close": (330, 390)}   # minutes after 09:30: 13:00-14:00 and 15:00-16:00
+MIN_DV_POOL = 2e8                                      # candidate stocks: median daily dollar volume >= $200M (pre-period)
+MIN_LAMBDA_DOLLARS = 5e7                               # treated: disclosed intensity Lambda_u >= $50M per unit return
 N_CONTROLS = 2                                         # matched controls per treated stock
 FLOW_LAGS, CERT_LAGS = 5, 12
 N_PERM, SEED = 20000, 20261026
@@ -336,48 +336,75 @@ def assemble(bars_by_day, daily_raw, daily_split):
 
 
 # --------------------------------------------------------------------------------------------- estimation
-def _ols(X, y):
+WLEN = {w: hi - lo for w, (lo, hi) in WINDOWS.items()}
+
+
+def _ols(X, y, se=False):
     ok = np.all(np.isfinite(X), 1) & np.isfinite(y)
     if ok.sum() < X.shape[1] + 10:
-        return np.full(X.shape[1], np.nan), 0
-    return np.linalg.lstsq(X[ok], y[ok], rcond=None)[0], int(ok.sum())
+        nan = np.full(X.shape[1], np.nan)
+        return (nan, 0, nan) if se else (nan, 0)
+    Xo, yo = X[ok], y[ok]
+    b = np.linalg.lstsq(Xo, yo, rcond=None)[0]
+    if not se:
+        return b, int(ok.sum())
+    e = yo - Xo @ b
+    s2 = e @ e / (len(yo) - X.shape[1])
+    return b, int(ok.sum()), np.sqrt(np.diag(s2 * np.linalg.pinv(Xo.T @ Xo)))
 
 
-def _lags(a, k, day):
-    """a lagged by k within the same day (NaN across days)."""
-    z = np.r_[np.full(k, np.nan), a[:-k]]
-    same = np.r_[np.full(k, False), day[k:] == day[:-k]]
-    return np.where(same, z, np.nan)
+def _shift(M, k):
+    """Columns shifted right by k within each row (day); NaN where the lag falls before the window."""
+    out = np.full_like(M, np.nan)
+    out[:, k:] = M[:, :-k]
+    return out
 
 
-def window_stats(panel, window, norm, state="day"):
+def matrices(panel, window):
+    """Days x minutes matrices of one window: log price (bp, carried forward within the day), flow, previous close (bp)."""
+    w = panel[panel["window"] == window]
+    lo, hi = WINDOWS[window]
+    P = w.pivot_table(index="date", columns="minute", values="px", aggfunc="last").reindex(columns=range(lo, hi))
+    F = w.pivot_table(index="date", columns="minute", values="f", aggfunc="sum").reindex(index=P.index, columns=range(lo, hi))
+    pc = w.groupby("date")["prev_close"].first().reindex(P.index)
+    lp = 1e4 * np.log(P.ffill(axis=1).to_numpy(float))
+    return lp, F.fillna(0.0).to_numpy(float), 1e4 * np.log(pc.to_numpy(float))[:, None], list(P.index)
+
+
+def window_stats(mats, norm, state="day", rows=None):
     """Phi (flow response to x_{t-1} with five lagged flows, Primary 1) and the certificate (Primary 2) in one window.
-    state 'day': x = 1e4 log(p / previous close); 'ema': x = p - EMA_12(p) within the window (first 12 minutes dropped)."""
-    w = panel[panel["window"] == window].sort_values(["date", "minute"])
-    day = w["date"].to_numpy()
-    p = 1e4 * np.log(w.groupby("date")["px"].ffill().to_numpy(float))
+    state 'day': x = log price - log previous close; 'ema': x = p - EMA_12(p) within the window (first 12 minutes dropped).
+    `rows`: boolean mask of days to use."""
+    lp, F, pc, _ = mats
+    if rows is not None:
+        lp, F, pc = lp[rows], F[rows], pc[rows]
+    f = F / norm
     if state == "day":
-        x = p - 1e4 * np.log(w["prev_close"].to_numpy(float))
+        x = lp - pc
     else:
-        ema = pd.Series(p).groupby(day).transform(lambda s: s.ewm(span=12, adjust=False).mean()).to_numpy()
-        x = p - ema
-        first = pd.Series(np.arange(len(w))).groupby(day).transform(lambda s: s - s.min()).to_numpy()
-        x = np.where(first >= 12, x, np.nan)
-    f = w["f"].to_numpy(float) / norm
-    r = p - _lags(p, 1, day)
-    x1 = _lags(x, 1, day)
-    one = np.ones(len(w))
-    c1, n1 = _ols(np.column_stack([one, x1] + [_lags(f, j, day) for j in range(1, FLOW_LAGS + 1)]), f)
-    cp, _ = _ols(np.column_stack([one, f, x1]), r)
-    ck, _ = _ols(np.column_stack([one] + [_lags(x, m, day) for m in range(1, CERT_LAGS + 1)]), f)
-    kappa, beta, Phi = cp[1], cp[2], np.nansum(ck[1:]) if np.isfinite(ck).all() else np.nan
-    return {"phi": float(c1[1]), "n": n1, "kappa": float(kappa), "beta": float(beta), "Phi_cert": float(Phi),
+        ema = np.empty_like(lp)
+        ema[:, 0] = lp[:, 0]
+        a = 2 / 13
+        for j in range(1, lp.shape[1]):
+            ema[:, j] = np.where(np.isfinite(ema[:, j - 1]), ema[:, j - 1] + a * (lp[:, j] - ema[:, j - 1]), lp[:, j])
+        x = lp - ema
+        x[:, :12] = np.nan
+    r = lp - _shift(lp, 1)
+    x1 = _shift(x, 1)
+    v = lambda M: M.ravel()
+    one = np.ones(f.size)
+    c1, n1, se1 = _ols(np.column_stack([one, v(x1)] + [v(_shift(f, j)) for j in range(1, FLOW_LAGS + 1)]), v(f), se=True)
+    cp, _ = _ols(np.column_stack([one, v(f), v(x1)]), v(r))
+    ck, _ = _ols(np.column_stack([one] + [v(_shift(x, m)) for m in range(1, CERT_LAGS + 1)]), v(f))
+    kappa, beta = cp[1], cp[2]
+    Phi = float(np.sum(ck[1:])) if np.isfinite(ck).all() else np.nan
+    return {"phi": float(c1[1]), "phi_se": float(se1[1]), "n": n1, "kappa": float(kappa), "beta": float(beta), "Phi_cert": Phi,
             "margin": float(-beta - kappa * Phi)}
 
 
 def auction_slope(panel):
-    """Secondary S3: slope of the closing-auction return 1e4 log(close / last 15:59 price) on the day displacement at 15:59."""
-    w = panel[(panel["window"] == "close")].sort_values(["date", "minute"]).groupby("date").last()
+    """Secondary S3: slope of the closing-auction return 1e4 log(close / last pre-close price) on the day displacement then."""
+    w = panel[(panel["window"] == "close")].sort_values(["date", "minute"]).dropna(subset=["px"]).groupby("date").last()
     y = 1e4 * np.log(w["close"] / w["px"])
     x = 1e4 * np.log(w["px"] / w["prev_close"])
     c, _ = _ols(np.column_stack([np.ones(len(w)), x.to_numpy()]), y.to_numpy())
@@ -388,13 +415,20 @@ def unit_stats(panel, valid_days):
     """All per-stock statistics on the stock's valid days. norm = median per-minute dollar volume over both windows."""
     pn = panel[panel["date"].isin(valid_days)]
     norm = float(np.median(pn["v"]))
-    s = {w: window_stats(pn, w, norm) for w in WINDOWS}
-    e = {w: window_stats(pn, w, norm, state="ema") for w in WINDOWS}
-    big = pn.groupby("date").apply(lambda d: abs(np.log(d["px"].dropna().iloc[-1] / d["prev_close"].iloc[0])), include_groups=False)
-    pb = pn[pn["date"].isin(big[big >= big.median()].index)]
-    sb = {w: window_stats(pb, w, norm) for w in WINDOWS}
+    M = {w: matrices(pn, w) for w in WINDOWS}
+    s = {w: window_stats(M[w], norm) for w in WINDOWS}
+    e = {w: window_stats(M[w], norm, state="ema") for w in WINDOWS}
+    lp, _, pc, days = M["close"]
+    last = np.array([row[np.isfinite(row)][-1] if np.isfinite(row).any() else np.nan for row in lp])
+    move = np.abs(last - pc[:, 0])
+    big = {w: move >= np.nanmedian(move) for w in WINDOWS}
+    if M["control"][3] != days:
+        mv = pd.Series(move, index=days)
+        big["control"] = mv.reindex(M["control"][3]).to_numpy() >= np.nanmedian(move)
+    sb = {w: window_stats(M[w], norm, rows=big[w]) for w in WINDOWS}
     return {"days": int(pn["date"].nunique()), "norm": norm, "minute_dollar_volume": norm,
-            "dPhi": s["close"]["phi"] - s["control"]["phi"], "dM": s["close"]["margin"] - s["control"]["margin"],
+            "dPhi": s["close"]["phi"] - s["control"]["phi"],
+            "dPhi_se": float(np.hypot(s["close"]["phi_se"], s["control"]["phi_se"])), "dM": s["close"]["margin"] - s["control"]["margin"],
             "dM_ema": e["close"]["margin"] - e["control"]["margin"], "dPhi_ema": e["close"]["phi"] - e["control"]["phi"],
             "dPhi_bigdays": sb["close"]["phi"] - sb["control"]["phi"], "auction_slope": auction_slope(pn),
             "windows": s, "windows_ema": e}
@@ -419,6 +453,22 @@ def perm_test(a, b, sign, n=N_PERM, seed=SEED):
     return obs, p
 
 
+def wslope_test(y, lam, se, sign, n=N_PERM, seed=SEED):
+    """One-sided permutation test of the precision-weighted least-squares slope of y on lambda (weights 1/se^2),
+    shuffling lambda across stocks. Returns (slope, p)."""
+    y, lam, w = np.asarray(y, float), np.asarray(lam, float), 1 / np.asarray(se, float) ** 2
+    if np.nanstd(lam) == 0:
+        return float("nan"), 1.0
+
+    def slope(l):
+        lm, ym = np.sum(w * l) / w.sum(), np.sum(w * y) / w.sum()
+        return np.sum(w * (l - lm) * (y - ym)) / np.sum(w * (l - lm) ** 2)
+    rng = np.random.default_rng(seed)
+    obs = slope(lam)
+    null = np.array([slope(rng.permutation(lam)) for _ in range(n)])
+    return float(obs), float((np.sum(sign * null >= sign * obs) + 1) / (n + 1))
+
+
 def holm(ps, alpha=0.05):
     order = np.argsort(ps)
     passed, ok = [False] * len(ps), True
@@ -437,8 +487,10 @@ def evaluate(stats, units, min_day_share=0.8, n_days=None):
     r1, p1 = perm_test(dphi, lam, +1); r2, p2 = perm_test(dm, lam, -1)
     passed = holm([p1, p2])
     tr = [s for s in keep if units[s]["role"] == "treated"]
-    share = {s: stats[s]["dPhi"] * stats[s]["minute_dollar_volume"] * 30 / (units[s]["Lambda"] * 1e-4) for s in tr}
+    share = {s: stats[s]["dPhi"] * stats[s]["minute_dollar_volume"] * WLEN["close"] / (units[s]["Lambda"] * 1e-4) for s in tr}
+    se = np.array([stats[s]["dPhi_se"] for s in keep])
     sec = {
+        "W_weighted_slope_dPhi": dict(zip(["slope", "p"], wslope_test(dphi, lam, se, +1))),
         "S1_visible_share_of_disclosed_rebalancing": {"median": float(np.median(list(share.values()))) if share else None,
                                                       "by_stock": share},
         "S2_default_monitor_ema12": dict(zip(["rho", "p"], perm_test([stats[s]["dM_ema"] for s in keep], lam, -1))),
@@ -460,11 +512,11 @@ def evaluate(stats, units, min_day_share=0.8, n_days=None):
 
 
 # --------------------------------------------------------------------------------------------- synthetic calibration
-def simulate_panel(n_treated=25, n_controls=50, days=120, share=0.0, seed=0, vol_confound=True):
+def simulate_panel(n_treated=35, n_controls=70, days=250, share=0.0, seed=0, vol_confound=True):
     """Synthetic minute paths for both windows. Every stock has ordinary trend following with a stock-specific response
     to the day displacement (same in both windows), autocorrelated flow (order splitting, stronger near the close for all
     stocks), price impact and noise. Treated stocks have disclosed intensity lambda (lognormal); a fraction `share` of
-    their rebalancing, lambda * ADV * R, is executed in continuous trading spread evenly over the last 30 minutes. With
+    their rebalancing, lambda * ADV * R, is executed in continuous trading spread evenly over the close window. With
     vol_confound, high-lambda stocks are also more volatile and have stronger ordinary feedback at all times."""
     rng = np.random.default_rng(seed)
     n = n_treated + n_controls
@@ -485,23 +537,23 @@ def simulate_panel(n_treated=25, n_controls=50, days=120, share=0.0, seed=0, vol
         keep = {}
         for m in range(390):
             x = logp - base
-            close_win = m >= 360
-            reb = share * lam[i] * 390 * x * 1e-4 / 30 if close_win else 0.0
+            close_win = m >= WINDOWS["close"][0]
+            reb = share * lam[i] * 390 * x * 1e-4 / WLEN["close"] if close_win else 0.0
             f = (0.45 if close_win else 0.3) * f_prev + phi0[i] * x + reb + 0.8 * rng.normal(size=days)
             logp = logp + kappa[i] * f - 0.002 * x + vol[i] * rng.normal(size=days)
             f_prev = f
-            if 240 <= m < 270 or close_win:
+            if WINDOWS["control"][0] <= m < WINDOWS["control"][1] or close_win:
                 keep[m] = (np.exp(logp / 1e4), f * mv, mv * np.exp(rng.normal(0, 0.3, days)))
         auction = np.exp((logp + rng.normal(0, 3, days)) / 1e4)
         dates = np.array([f"D{d:03d}" for d in range(days)])
-        df = pd.concat([pd.DataFrame({"date": dates, "window": "close" if m >= 360 else "control", "minute": m, "px": v[0],
+        df = pd.concat([pd.DataFrame({"date": dates, "window": "close" if m >= WINDOWS["close"][0] else "control", "minute": m, "px": v[0],
                                       "f": v[1], "v": v[2], "n": 1, "prev_close": 100.0, "close": auction})
                         for m, v in keep.items()], ignore_index=True)
         panels[sym] = df
     return panels, units
 
 
-def calibrate(seeds_null=range(20), seeds_power=range(10), shares=(0.1, 0.25, 0.5), days=120, n_perm=2000):
+def calibrate(seeds_null=range(20), seeds_power=range(10), shares=(0.1, 0.25, 0.5), days=250, n_perm=2000):
     """Rejection rates of the two primaries under the null (no rebalancing in continuous trading, but volatility and
     ordinary feedback correlated with lambda, and stronger order splitting near the close) and under power alternatives."""
     global N_PERM
