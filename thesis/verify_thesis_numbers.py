@@ -248,6 +248,25 @@ else:
     assert s1c['opens'] in (0, 1) and 'S1: does the margin measure fragility? (registered, not yet run)' in concl
 print('Test S1: registration and pipeline hashes: PASS')
 
+# Tests R1 and H1: registered before their data; pipeline hashes, counters and the text's status
+for name, specf, keys, counter, res, para in (
+        ('R1', 'R1_absresp', (('r1_sha256', 'r1_absresp.py'), ('s1_sha256', 's1_fragility.py'), ('c3_sha256', 'c3_margin_more_days.py'),
+                              ('c2_sha256', 'c2_margin_vs_identify.py'), ('pilot4_sha256', 'pilot4_curve_and_risk.py'),
+                              ('binance_vision_sha256', 'binance_vision.py')), 'R1_unlock', 'R1_results', 'R1: does the absolute response measure risk? (registered, not yet run)'),
+        ('H1', 'H1_hyperliquid', (('h1_sha256', 'h1_hyperliquid.py'), ('c3_sha256', 'c3_margin_more_days.py'),
+                                  ('c2_sha256', 'c2_margin_vs_identify.py'), ('pilot4_sha256', 'pilot4_curve_and_risk.py')),
+         'H1_unlock', 'H1_results', 'H1: real agents (prospective, opens 10 December 2026)')):
+    sp = ROOT / f'checks/prereg/{specf}.json'; sj = json.loads(sp.read_text())
+    assert (ROOT / f'checks/prereg/{specf}.sha256').read_text().strip() == digest(sp), name
+    for key, f in keys:
+        assert sj[key] == digest(ROOT / 'evidence' / f), (name, key)
+    cj = json.loads((ROOT / f'checks/prereg/{counter}.json').read_text())
+    if (ROOT / f'evidence/{res}.json').exists():
+        assert cj['opens'] == 1 and json.loads((ROOT / f'evidence/{res}.json').read_text())['spec_sha256'] == digest(sp), name
+    else:
+        assert cj['opens'] in (0, 1) and para in concl, name
+    print(f'Test {name}: registration and pipeline hashes: PASS')
+
 # Chapter 5 extra numbers and the exploratory pilot (labelled exploratory, never confirmatory)
 subprocess.run([sys.executable, str(ROOT / 'checks/export_results_extra.py'), '--check'], check=True)
 pilot = json.loads((ROOT / 'evidence/pilot_after_e1v2_results.json').read_text())
