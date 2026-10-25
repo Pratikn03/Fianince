@@ -170,6 +170,23 @@ def build():
           "\\newcommand{\\PfourTrvSixty}{%s}" % f(rk["60"]["log_rv"]["panel_M"]["t"]["M_rk"], 1)]
     oos = [rk[w][y]["oos_M"]["delta_r2_pct"] for w in ("20", "60") for y in ("log_mae", "log_rv")]
     L += ["\\newcommand{\\PfourOosLo}{%s}\\newcommand{\\PfourOosHi}{%s}" % (f(min(oos), 1), f(max(oos), 1))]
+    # Pilots 4b, 5 and 6 (exploratory)
+    b4 = json.loads((EV / "pilot4b_pooled_risk_results.json").read_text())["variants"]
+    t4 = [v["clark_west_t"] for v in b4.values()]; g4 = [v["delta_r2_pct"] for v in b4.values()]
+    L += ["\\newcommand{\\PfourbTlo}{%.1f}\\newcommand{\\PfourbThi}{%.1f}" % (min(t4), max(t4)),
+          "\\newcommand{\\PfourbGlo}{%.2f}\\newcommand{\\PfourbGhi}{%.2f}" % (min(g4), max(g4)),
+          "\\newcommand{\\PfourbNeg}{%d}" % sum(v["coef_X"] < 0 for v in b4.values())]
+    v5 = json.loads((EV / "pilot5_hourly_risk_results.json").read_text())
+    p5 = v5["variants"]
+    L += ["\\newcommand{\\PfiveSymbols}{%d}\\newcommand{\\PfiveBlocks}{%s}" % (v5["n_symbols"], f"{v5['n_blocks']:,}".replace(",", "{,}")),
+          "\\newcommand{\\PfiveTmaeW}{%.2f}\\newcommand{\\PfiveTmaeR}{%.2f}" % (p5["log_mae|M_winsorized"]["clark_west_t_by_date"], p5["log_mae|M_rank"]["clark_west_t_by_date"]),
+          "\\newcommand{\\PfiveTrvW}{%.2f}" % p5["log_rv|M_winsorized"]["clark_west_t_by_date"],
+          "\\newcommand{\\PfiveG}{%.2f}" % p5["log_mae|M_winsorized"]["delta_r2_pct"]]
+    s6 = json.loads((EV / "pilot6_quarterly_results.json").read_text())["summary"]
+    L += ["\\newcommand{\\PsixSymbols}{%d}\\newcommand{\\PsixSQ}{%d}" % (s6["n_symbols"], s6["symbol_quarters"]),
+          "\\newcommand{\\PsixDecided}{%d}\\newcommand{\\PsixUnsafe}{%d}" % (s6["decided"], s6["decided_unsafe"]),
+          "\\newcommand{\\PsixEvery}{%d}\\newcommand{\\PsixHet}{%d}\\newcommand{\\PsixDisjoint}{%d}" % (
+              s6["symbols_decided_every_quarter"], s6["symbols_heterogeneous_p05"], s6["symbols_with_disjoint_decided_quarters"])]
     return "\n".join(L) + "\n"
 
 
