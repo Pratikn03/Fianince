@@ -1,0 +1,31 @@
+# DISABLED BY DEFAULT. To enable unattended collection for Test H1, the repository owner copies this file to
+# .github/workflows/h1_collector.yml. It runs the registered collector for 5 h 50 min every 6 hours on GitHub's
+# runners and uploads the recorded files as a workflow artifact (kept 90 days); nothing is committed to the repository.
+# Merging the artifacts with the Colab files on Drive needs a merge step (Recorder._merge per hourly file), which is
+# not written yet: enable this only together with that step.
+name: H1 collector
+on:
+  schedule:
+    - cron: "3 */6 * * *"
+  workflow_dispatch: {}
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install websockets numpy pandas scipy
+      - name: Restore universe (first run draws it)
+        uses: actions/cache@v4
+        with: {path: h1_state, key: h1-universe-v1}
+      - name: Collect
+        run: |
+          mkdir -p h1_state h1_out
+          cp h1_state/H1_universe.json h1_out/ 2>/dev/null || true
+          cd thesis/evidence
+          python -c "import asyncio, h1_hyperliquid as C; asyncio.run(C.collect('../../h1_out', hours=5.8))"
+          cp ../../h1_out/H1_universe.json ../../h1_state/
+      - uses: actions/upload-artifact@v4
+        with: {name: "h1-${{ github.run_id }}", path: h1_out, retention-days: 90}

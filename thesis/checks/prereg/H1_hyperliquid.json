@@ -1,0 +1,40 @@
+{
+ "test": "H1_hyperliquid",
+ "status": "REGISTERED (prospective). Requested by the author on 2026-10-25 ('lets aim for this one ... build full colab'). Pushed in a commit of its own before any Hyperliquid trade was recorded and before the universe was drawn; the data do not exist at registration.",
+ "designed_after": "Tests C2, C3, F1 (registered) and the exploratory Pilot 7; Test S1 registered and not yet run. No Hyperliquid data have been used anywhere in this project.",
+ "pipeline": "thesis/evidence/h1_hyperliquid.py (collector, data rules, estimators, evaluation), with c3_margin_more_days.py, c2_margin_vs_identify.py and pilot4_curve_and_risk.py unchanged",
+ "h1_sha256": "6abc8ca59ad297bf1ff962fc5efc1a99d7093a7aa502871a779e9bd6b5c4211a",
+ "c3_sha256": "5c8d7b83a9d27cbdecf3dfe3c1f8ce0873bca87e23fc88aa62a6597b116e37c5",
+ "c2_sha256": "c7981a8bcae2c9841bb390759127fd5c57ca7562d600cfc318bcaa7d4955cd1d",
+ "pilot4_sha256": "c8e65f81fd189b607ee727a87c913ee91255e7cfeee66b32cedc4687733cfa09",
+ "question": "Do real trading accounts have distinct memories that their own records reveal and that prices and anonymous order flow do not?",
+ "data_source": "Hyperliquid public WebSocket wss://api.hyperliquid.xyz/ws, channel 'trades', whose messages carry users = [buyer, seller] wallet addresses; universe from the public info endpoint (metaAndAssetCtxs)",
+ "universe_rule": "at the first start of the collector: perpetuals ranked 11 to 40 by 24-hour notional volume (dayNtlVlm), ASCII alphanumeric names, not delisted; written to H1_universe.json before any trade is saved; reused on every restart",
+ "collection": "every trade on the universe recorded with time, aggressor side, price, size, buyer, seller, trade id, to hourly gzip files; seconds of live connection per UTC minute recorded; restarts merge and deduplicate (time, tid); overlapping collectors take the maximum coverage per minute",
+ "valid_day": "UTC day with live connection for at least 95% of the day and C3's valid-day rule on one-minute last-trade prices and signed taker notional",
+ "evaluable_coin": "at least 30 valid days",
+ "opening_rule": "the analysis opens at the first run on or after 2026-12-10 at which at least 20 coins are evaluable (counted from coverage and the valid-day rule only), and on 2027-01-31 in any case; void if fewer than 20 evaluable coins then. thesis/checks/prereg/H1_unlock.json must read opens = 0; the analysis runs once",
+ "price_only": "C3's estimators, unchanged: margin decided if its 95% day-bootstrap interval excludes zero; price-only identification by C2's corrected criterion",
+ "tagged": "for each of the 10 accounts with the largest traded notional on valid days: dP_{k+1} = c + (r-1) P_k + w x_k + e on five-minute bars of valid days, P the cumulative net base size bought, x C3's displacement computed continuously across consecutive collected days and sampled at the last minute of each bar; 200-draw day-block bootstrap (seed 20261108); a coin is tag-identified if two top-10 accounts have disjoint 95% intervals for r, each inside (0, 1)",
+ "primary_1": "the coin is tag-identified in at least 75% of evaluable coins; one-sided binomial p (null 1/2) below 0.05",
+ "primary_2": "b = #(tag-identified, price-only not identified) exceeds c = #(price-only identified, not tag-identified); exact one-sided McNemar p below 0.05",
+ "correction": "Holm across the two primaries at 0.05",
+ "secondary": [
+  "notional-weighted share of top accounts that are contrarian (w interval below zero) and momentum (above zero)",
+  "margin decided, safe and unsafe counts on a new venue",
+  "median ratio of interval widths in log half-life: price-only slow rate against the slowest stationary top account",
+  "median number of top accounts with an interval for r inside (0,1)",
+  "on the valid day with the largest median adverse excursion, the behaviour of contrarian and momentum accounts (descriptive)"
+ ],
+ "readings": {
+  "both_pass": "real agents differ in memory, their records reveal it, and prices do not: the identification theory's central prediction holds against real agents, not proxies",
+  "P1_fails": "top accounts are not distinguishable by memory even with their own records at this horizon; the theory's identification problem is not the binding one for these markets",
+  "P2_fails": "prices identify what the records identify; the predicted gap does not appear"
+ },
+ "limits_stated_in_advance": [
+  "wallet addresses are accounts, not firms or algorithms; one agent can use several addresses and one address can run several strategies",
+  "positions are reconstructed from trades during collection only; the unknown starting position is absorbed by the intercept",
+  "Hyperliquid is one venue with its own participant mix; the market maker vault and liquidations are ordinary accounts in these data"
+ ],
+ "registered_utc": "2026-10-25T06:23:56.495926+00:00"
+}
