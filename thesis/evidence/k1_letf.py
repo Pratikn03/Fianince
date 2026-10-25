@@ -471,7 +471,8 @@ def simulate_panel(n_treated=25, n_controls=50, days=120, share=0.0, seed=0, vol
     lam = np.r_[np.exp(rng.normal(np.log(0.15), 1.0, n_treated)), np.zeros(n_controls)]
     vol = 6.0 * (1 + (np.log1p(10 * lam) if vol_confound else 0)) * np.exp(rng.normal(0, 0.2, n))   # bp per minute
     kappa = np.exp(rng.normal(np.log(3.0), 0.3, n))                                                 # bp per unit flow
-    phi0 = 4e-4 * (1 + (2 * lam if vol_confound else 0)) * np.exp(rng.normal(0, 0.3, n))            # ordinary feedback
+    phi0 = 1e-4 * (1 + (np.log1p(lam) if vol_confound else 0)) * np.exp(rng.normal(0, 0.3, n))      # ordinary feedback
+    phi0 = np.minimum(phi0, 0.4 * 0.002 * (1 - 0.45) / kappa)        # keep every stock's own loop stable (margin > 0)
     units, panels = {}, {}
     for i in range(n):
         sym = f"S{i:03d}"
