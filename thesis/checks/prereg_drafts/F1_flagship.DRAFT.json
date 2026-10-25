@@ -1,0 +1,29 @@
+{
+ "test": "F1_flagship",
+ "status": "DRAFT",
+ "designed_after": "Tests C2 and C3 (registered; C3 passed both primaries) and the exploratory Pilots 4 and 4b on C3's spent symbols. Pilot 4: margin decided in 17, 19, 20, 20 and 23 of 25 symbols with 30, 60, 120, 240 and all days, memories identified in at most 2; per-symbol growth of the standardized margin in only 11 of 25 (drift), so that prediction is not registered. Pilot 4b: pooled out-of-sample forecasts of next-day risk from the 20-day margin passed in all four pre-declared variants (Clark-West t 3.6 to 4.9 without date clustering; R^2 gains 0.17 to 0.37 points; negative coefficients).",
+ "pipeline": "thesis/evidence/f1_flagship.py (with c3_margin_more_days.py, c2_margin_vs_identify.py and pilot4_curve_and_risk.py, unchanged)",
+ "f1_sha256": "<filled at registration>",
+ "c3_sha256": "<filled at registration>",
+ "c2_sha256": "<filled at registration>",
+ "pilot4_sha256": "<filled at registration>",
+ "binance_vision_sha256": "<filled at registration>",
+ "question": "On symbols never used, is the safety question decided where the agents are not identified, and does the certified quantity forecast risk out of sample?",
+ "universe_rule": "Binance USD-M USDT perpetuals in the public archive whose symbol string appears in no text file of the repository (excluding every symbol of E1v2, D1, the pilots, C2 and C3); klines on 2025-01-04 and 2026-09-23; 30 drawn in a seeded random order (seed 20261105); written to F1_universe.json before any data are downloaded",
+ "dates_rule": "every day from 2025-01-01 to 2026-09-30 whose day of the month is not divisible by 3 (430 dates)",
+ "valid_day": "C3's: at least half of the 287 five-minute returns non-zero and taker flow not identically zero; a symbol is evaluable with at least 200 valid days; void if fewer than 20 evaluable",
+ "estimators": "C3's margin and identification estimators, unchanged",
+ "primary_1": "the margin is decided in at least 75% of evaluable symbols, one-sided binomial p (null 1/2) below 0.05",
+ "primary_2": "b = #(decided, not identified) exceeds c = #(identified, not decided), exact one-sided McNemar p below 0.05",
+ "primary_3": "the margin estimated on the previous 20 valid days, winsorized at the 5th and 95th percentiles of the training data, forecasts the next valid day's log(1 + maximum adverse excursion in bp) beyond log(1 + RV) of the previous day and of the trailing 20 days: symbol fixed effects and pooled slopes fitted on the first 60% of each symbol's rolling observations, forecasts on the remaining 40%; holds if the pooled coefficient on the margin is negative and the one-sided Clark-West test, with loss differentials averaged within each calendar date before the t-statistic, has p below 0.05",
+ "correction": "Holm across the three primaries at 0.05",
+ "secondary": [
+  "the forecast for realized variance and with the margin's within-symbol rank",
+  "the learning curve: decided and identified counts on the first 60, 120, 240 and all valid days; slope of log|z| on log n",
+  "the decision on the first 105 valid days",
+  "the decision without feedback, contrarian count, safe and unsafe counts"
+ ],
+ "what_is_mechanical": "In C2 and C3 the decision rested mainly on the reversion term, and in Pilot 4 the risk signal came from the reversion part of the margin. A pass of P1-P2 shows that the safety question is decidable from public data while the agents are not identified; a pass of P3 shows that the certified quantity carries out-of-sample information about next-day risk beyond volatility, not that the feedback term does.",
+ "prior_information": "Pilot 4b's t-statistics were computed without date clustering and are therefore optimistic; the registered test clusters by date. The effect sizes in the pilot were small (R^2 gains below half a point).",
+ "opening_rule": "The pipeline refuses to run unless the committed specification matches its hash and the counter is 0; it sets the counter to 1, fixes the universe, downloads and evaluates once. Results, numbers, universe, counter and download log are committed together."
+}
