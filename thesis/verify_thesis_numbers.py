@@ -314,3 +314,14 @@ pilot = json.loads((ROOT / 'evidence/pilot_after_e1v2_results.json').read_text()
 assert pilot['kind'].startswith('EXPLORATORY')
 assert '\\label{sec:ev_explore}' in concl and 'Nothing in this subsection is confirmatory evidence' in concl
 print('Exploration after the tests: labelled exploratory: PASS')
+
+# Section "Agents who game the monitor": the printed macros are regenerated from the result file
+import importlib.util as _ilu
+_spec = _ilu.spec_from_file_location("antigaming_check", ROOT / "checks/antigaming_numeric_check.py")
+_ag = _ilu.module_from_spec(_spec); _spec.loader.exec_module(_ag)
+_agres = json.loads((ROOT / "checks/antigaming_numeric_check.json").read_text())
+assert _ag.numbers_tex(_agres) == (ROOT / "checks/antigaming_numbers.tex").read_text(), "antigaming macros differ from their result file"
+assert _agres["part2_throttle_equilibrium"]["M_equilibrium"] > _agres["part2_throttle_equilibrium"]["M_min"]
+assert "\\input{checks/antigaming_numbers}" in (ROOT / "ch4_paper3.tex").read_text()
+print("Agents who game the monitor: numbers reproduce from their file: PASS")
+

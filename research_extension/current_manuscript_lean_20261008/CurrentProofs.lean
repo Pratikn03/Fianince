@@ -52,3 +52,4 @@ import CurrentProofs.ThesisPassiveMulti
 import CurrentProofs.ThesisHidden
 import CurrentProofs.ThesisPooled
 import CurrentProofs.ThesisMonoculture
+import CurrentProofs.ThesisAntiGaming

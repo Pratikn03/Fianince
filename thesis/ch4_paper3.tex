@@ -629,6 +629,52 @@ Randomization does not restore existence. Utility is strictly below $1/2$ everyw
 The failure concerns equilibrium existence, not the safety invariant. For example take $a=0$, $\kappa=1/4$, and $\bar w=1$. On admitted profiles $q\le1/2$, unit position loss is bounded by $2/7$; on throttled profiles the position is zero. Every admitted decision therefore respects this budget, although the agents' game has no equilibrium. A revised strategic theorem needs assumptions that rule out the best-response discontinuity. Convex cost alone also supplies no ordering of equilibrium sensitivity with and without a guard; that comparative-static claim remains open under suitable additional payoff restrictions.
 \end{remark}
 
+\section{Agents who game the monitor}\label{sec:bl_gaming}
+
+\input{checks/antigaming_numbers}
+A monitor invites gaming, and the first objection to any supervisory instrument for AI agents is that the agents will learn to defeat it. Two questions are separate: whether agents can make the certificate report a safety the market does not have, and whether strategic agents can defeat an admission rule that acts on the certificate. The first has a sharp answer, because in a closed loop the only flow that can move the feedback estimate is flow that responds to prices, which is feedback.
+
+\begin{theorem}[What gaming can and cannot do to the certificate]\label{thm:nogaming}
+Consider the economy of Theorem~\ref{thm:pooled} with the flow
+\[
+f_{t+1}=\sum_{m<L}k_m x_{t-m}+w_{t+1}+\nu_{t+1},
+\]
+where the kernel $k$ is the sum of the agents' responses, chosen strategically (in response to the monitor, to one another or to anything else) but fixed during the certification window, and $\nu$ is any further flow, independent and identically distributed over time with finite variance and independent of $w$, of the price noise and of past displacements: noise or wash trades, executed decoy orders, flow timed by anything other than past prices.
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Flow that is not feedback cannot bias the certificate.} $\hat M\to M=1-a-\kappa\sum_mk_m$ in probability whatever the variance of $\nu$, and the bound $V_{\rm pool}\le4C_{p,\gamma}M$ of Theorem~\ref{thm:pooled}(ii) holds with the same constant: injected flow neither biases the certificate nor, to first order, slows it beyond that bound.
+\item \emph{Moving the certificate requires moving the margin.} An agent whose response lies within the window's memory changes the probability limit of $\hat M$ by exactly $-\kappa$ times its long-run response, which is its change to the true margin: the only way to make the certificate report more safety is to make the market more stable.
+\item \emph{Two routes remain, and both are disclosure problems.} A response whose memory exceeds the bound can make the market unstable without trace in any finite record (Theorem~\ref{thm:hidden}), so the disclosed memory bound must be enforced by audit of the agent's own records. A response that changes after certification is covered only through its speed: if each sensitivity moves by at most $\gamma_i$ per period, the certificate stays valid for the lifetime of Corollary~\ref{thm:lifetime}, and recertifying more often leaves no gap; an unbounded switch at a chosen time is not prevented by any certificate computed from past data.
+\end{enumerate}
+\hfill\Proved
+\end{theorem}
+
+\begin{proof}
+(i) Adding $\nu$ adds a term to the flow innovation that, like $w$, is independent of the regressors of the flow equation (past displacements), and leaves the price equation's error $\varepsilon_{t+1}$ independent of the period's flow and of the past. Both regressions therefore keep regressors uncorrelated with their errors, which is all the proof of Theorem~\ref{thm:pooled}(ii) uses for consistency and asymptotic normality; its variance bound is a ratio of innovation variances to $\sigma^2$, which now includes $\kappa^2\operatorname{Var}\nu$ in both, so it depends on the memory structure through $C_{p,\gamma}$ and not on the innovation variances. (ii) The probability limit of $(\hat\kappa,\hat\beta,\hat k)$ is $(\kappa,-(1-a),k)$, and $k$ is the sum of the agents' kernels, so an agent's kernel enters $\operatorname{plim}\hat M$ through $-\kappa\sum_m k^{(i)}_m$ exactly as it enters $M$. (iii) Theorem~\ref{thm:hidden} and Corollary~\ref{thm:lifetime}.
+\end{proof}
+
+In simulation ($a=0.9$, $\kappa=0.5$, twelve lags, 200 replications of 5{,}000 periods) the pooled estimate tracks the true margin when it should and fails where the theorem says it can: \AGbaseEst{} against a true margin of \AGbaseTrue{} in the baseline; \AGnoiseEst{} with injected noise flow three times the size of the ordinary flow innovation, with a standard deviation \AGnoiseSdRatio{} times the baseline's; \AGcontraEst{} against \AGcontraTrue{} when a contrarian agent within the window's memory is added; but \AGslowEst{} against a true \AGslowTrue{} when a slow momentum agent with memory rate $0.995$ is added instead, an overstatement of safety by a factor of three through the one route of part~(iii) (\texttt{checks/antigaming\_numeric\_check.py}).
+
+The second question concerns the admission rule. Remark~\ref{rem:strategic_counterexample} showed that a throttle that switches off at a threshold can leave the agents' game without an equilibrium. A continuous throttle with a buffer removes the problem and makes safety a property of every strategy profile.
+
+\begin{proposition}[A continuous throttle]\label{prop:throttle}
+Agents $i=1,\dots,n$ choose intensities $q_i\in[0,\bar q_i]$, with $Q=\sum_iq_i$. The monitor admits a fraction $\alpha\in[0,1]$ of their flow, $\alpha=g(M)$, where $M=1-a-\kappa\alpha Q$ is the margin of the admitted loop and $g$ is continuous, non-decreasing, valued in $[0,1]$, and zero at or below a buffer $M_{\min}>0$.
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Admission is well defined.} For every $Q\ge0$ there is a unique admission $\alpha(Q)$; it is continuous and non-increasing in $Q$.
+\item \emph{Safe in every profile.} $M\ge\min(M_{\min},1-a)$ for every profile, and whenever admission is positive, $M>M_{\min}$ and the admitted feedback satisfies $\kappa\alpha Q<1-a-M_{\min}$, however aggressively the agents choose.
+\item \emph{Equilibrium.} If each agent's payoff is continuous in the profile, as for $u_i=\alpha(Q)\pi_i(q_i)-c_i(q_i)$ with continuous $\pi_i$ and $c_i$, a mixed-strategy equilibrium exists, and a pure one if each payoff is also quasi-concave in the agent's own intensity. Every equilibrium is safe by (ii).
+\item \emph{With a certificate.} If the monitor uses a lower confidence bound $\hat M_{\rm lo}$ valid with probability $1-\gamma$ in place of $M$, the conclusions of (ii) hold with probability at least $1-\gamma$.
+\end{enumerate}
+\hfill\Proved
+\end{proposition}
+
+\begin{proof}
+(i) For fixed $Q$, $h(\alpha)=\alpha-g(1-a-\kappa\alpha Q)$ is continuous and strictly increasing, since $g$ is non-decreasing and the margin falls with $\alpha$; $h(0)\le0\le h(1)$, so it has exactly one root. For $Q'>Q$, $h_{Q'}\ge h_Q$ pointwise, so the root falls; and the unique root of a jointly continuous family that is strictly increasing in $\alpha$ is continuous in the parameter. (ii) If $\alpha>0$ then $g(M)>0$, so $M>M_{\min}$, and $\kappa\alpha Q=1-a-M$; if $\alpha=0$ then $M=1-a$. (iii) Strategy sets are compact intervals and payoffs are continuous, so a mixed equilibrium exists \citep{t:glicksberg1952}; with quasi-concavity in own strategies, a pure one \citep{t:debreu1952,t:fan1952}. (iv) On the event that the bound covers, $M\ge\hat M_{\rm lo}$, and positive admission requires $\hat M_{\rm lo}>M_{\min}$.
+\end{proof}
+
+The proposition settles parts (i) and (ii) of Conjecture~\ref{conj:strategic} for continuous throttles; part (iii), whether equilibrium sensitivity is lower with the guard than without it, remains open, but part (ii) caps admitted feedback whatever the agents choose. In an example with five agents whose profits are quadratic in intensity, the market without a throttle settles at a margin of \AGnoThrM{}, unstable; with a linear throttle between margins $0.02$ and $0.10$, best responses converge to an equilibrium (largest gain from a deviation on a fine grid \AGthrGain{}) in which the agents still trade aggressively but only a fraction \AGthrAlpha{} of their flow is admitted, and the margin is \AGthrM{}, above the buffer. The existence and uniqueness of admission, the safety bound, the margin floor and the cap on admitted feedback are checked in Lean (\nolinkurl{CurrentMM.thesis_throttle_fixed_point_exists}, \nolinkurl{CurrentMM.thesis_throttle_fixed_point_unique}, \nolinkurl{CurrentMM.thesis_throttle_safe}, \nolinkurl{CurrentMM.thesis_throttle_margin_floor}, \nolinkurl{CurrentMM.thesis_throttle_cap}).
+
+Together the two results locate what supervision of AI agents must secure. Gaming the certificate within the memory bound is impossible, because the only flow that moves it is genuine feedback; gaming the admission rule is impossible when the rule is continuous and keeps a buffer. What remains is to make the memory bound and the speed of change enforceable, which is an audit of each agent's own records, a parametric problem (Chapter~\ref{ch:p1}), and much cheaper than identifying the agents from the market.
+
 \section{Relation to the statistics of functionals}\label{sec:fw_literature}
 
 The certification problem of this chapter is an instance of estimating a functional of an unknown measure from indirect, noisy observations, and three literatures meet in it.
