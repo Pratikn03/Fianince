@@ -1,0 +1,36 @@
+{
+ "test": "R1_absresp",
+ "status": "REGISTERED. Requested by the author on 2026-10-25 ('lets aim for this one ... build full colab'). Pushed in a commit of its own before any R1 data were downloaded and before the universe was drawn; the universe can be drawn only after Test S1's universe is committed.",
+ "designed_after": "F1's failed Primary 3 (margin forecast of next-day MAE, t = 1.51), the exploratory Pilot 7 (IV elasticity of log MAE on log S = -0.13, se 0.03; 2025-10-10 Spearman(margin, MAE) = +0.48), and Theorem thm:absresp. S1 registered, not yet run; its results unseen.",
+ "pipeline": "thesis/evidence/r1_absresp.py, with s1_fragility.py (data loading, pooled forecast, stress-day rule), c3_margin_more_days.py, c2_margin_vs_identify.py, pilot4_curve_and_risk.py and binance_vision.py unchanged",
+ "r1_sha256": "73d14d908dcbda277338e636721f66f2a0b37659855d1600f969ca1bae3d3b9b",
+ "s1_sha256": "1382f9706cf1b86647623566fb9d0038ad90a63c6dc7429d2ffda1452028bbed",
+ "c3_sha256": "5c8d7b83a9d27cbdecf3dfe3c1f8ce0873bca87e23fc88aa62a6597b116e37c5",
+ "c2_sha256": "c7981a8bcae2c9841bb390759127fd5c57ca7562d600cfc318bcaa7d4955cd1d",
+ "pilot4_sha256": "c8e65f81fd189b607ee727a87c913ee91255e7cfeee66b32cedc4687733cfa09",
+ "binance_vision_sha256": "e01051c93387e25bef0aa35b1dda912d3d3da984ee6032f9a3a8c8bcbcf770f4",
+ "question": "Does the horizon-limited absolute response Psi_H, which bounds worst-case loss for signed (contrarian) kernels, measure risk where the margin did not?",
+ "universe_rule": "ASCII alphanumeric Binance USD-M USDT perpetuals absent from every text file of the repository at the time of drawing, which must be after S1_universe.json is committed (enforced by the gate); klines on 2025-01-04 and 2026-09-23; 40 drawn in a seeded random order (seed 20261109); written to R1_universe.json before any data are downloaded",
+ "dates_rule": "every calendar day from 2025-01-01 to 2026-09-30",
+ "valid_day": "C3's rule; evaluable symbol: at least 200 valid days; void if fewer than 20 evaluable",
+ "estimates": "from the 20 valid days before t within 30 calendar days: C3's price equation (kappa, beta) and 12-lag flow kernel k; h_1 = kappa, h_{n+1} = (1+beta) h_n + kappa sum_m k_m h_{n-m}; Psi_H = sum_{n<=H}|h_n|, H = 12; ex-ante shock = mean daily standard deviation of five-minute taker flow over the 20 days; instrument = log Psi_H from days t-40..t-21",
+ "primary_1": "2SLS, symbol fixed effects, next-day log(1+MAE) on log Psi_H instrumented by its lag, controlling for the log ex-ante shock, standard errors clustered by date: elasticity positive with one-sided p < 0.05",
+ "primary_2": "F1's pooled out-of-sample design with log Psi_H (winsorized) as regressor for next-day log(1+MAE): coefficient positive and one-sided Clark-West p (differentials averaged within dates) < 0.05",
+ "primary_3": "Primary 2 with the winsorized margin added to both models: coefficient on log Psi_H positive and p < 0.05",
+ "correction": "Holm across the three primaries at 0.05",
+ "secondary": [
+  "P1 and P2 for log(1+RV)",
+  "P1 with log S = log(kappa/M) (Pilot 7's regression on new symbols) and with log|S_H|",
+  "P1 in symbols with negative and with positive median kappa*Phi; log S in momentum symbols",
+  "H = 6 and 24",
+  "S1's stress-day rule: mean partial Spearman between log Psi_H and log(1+MAE)",
+  "median Psi_H/|S_H|"
+ ],
+ "readings": {
+  "all_pass": "the certified worst-case-loss measure forecasts losses beyond volatility and beyond the margin: certification from public data is informative about risk once the right functional is certified",
+  "P1_fails": "losses do not scale with the estimated absolute response; the linear closed-loop model does not describe the size of daily moves in these markets",
+  "P2_passes_P3_fails": "the information in Psi_H is shared with the margin"
+ },
+ "opening_rule": "thesis/checks/prereg/R1_unlock.json must read opens = 0; the notebook keeps the counter and the universe on Drive; resume=True continues an opened run",
+ "registered_utc": "2026-10-25T06:33:37.986798+00:00"
+}
