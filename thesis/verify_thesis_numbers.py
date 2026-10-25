@@ -173,6 +173,23 @@ assert C2mod.numbers_tex(c2res['evaluation']) == (ROOT / 'checks/C2_numbers.tex'
 assert '\\input{checks/C2_numbers}' in concl and 'C2:' in concl
 print('Test C2: registration and results reproduce from their files: PASS')
 
+# Test O1: registration, counter, verdict and numbers recomputed from its result file
+import o1_release_overshoot as O1mod  # noqa: E402
+o1spec = ROOT / 'checks/prereg/O1_release_overshoot.json'
+o1c = json.loads((ROOT / 'checks/prereg/O1_unlock.json').read_text())
+o1res = json.loads((ROOT / 'evidence/O1_results.json').read_text())
+assert o1c['opens'] == 1 and o1res['spec_sha256'] == digest(o1spec) == o1c['spec_sha256']
+assert (ROOT / 'checks/prereg/O1_release_overshoot.sha256').read_text().strip() == digest(o1spec)
+o1j = json.loads(o1spec.read_text())
+assert o1j['o1_sha256'] == digest(ROOT / 'evidence/o1_release_overshoot.py')
+assert o1j['pilot2b_sha256'] == digest(ROOT / 'evidence/pilot2b_announcements.py')
+pr = o1res['primary']; va = o1res['validity']
+assert pr['pass'] == (va['V1_ok'] and va['V2_ok'] and pr['upper95_one_sided'] < 0)
+assert abs(pr['Abar_120'] - sum(v['A']['120'] for v in o1res['per_symbol'].values()) / len(o1res['per_symbol'])) < 1e-9
+assert O1mod.numbers_tex(o1res) == (ROOT / 'checks/O1_numbers.tex').read_text()
+assert '\\input{checks/O1_numbers}' in concl and 'O1:' in concl
+print('Test O1: registration and results reproduce from their files: PASS')
+
 # Chapter 5 extra numbers and the exploratory pilot (labelled exploratory, never confirmatory)
 subprocess.run([sys.executable, str(ROOT / 'checks/export_results_extra.py'), '--check'], check=True)
 pilot = json.loads((ROOT / 'evidence/pilot_after_e1v2_results.json').read_text())

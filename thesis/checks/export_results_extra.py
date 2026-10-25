@@ -135,6 +135,18 @@ def build():
           f"\\newcommand{{\\CtwoTagHL}}{{{np.nanmedian([t['half_life_h'] for t in tg]):.1f}}}",
           f"\\newcommand{{\\CtwoJackR}}{{{sc['P3_median_tagged_r_jackknife']:.4f}}}",
           f"\\newcommand{{\\CtwoJackBelow}}{{{rj_ci_below}}}", f"\\newcommand{{\\CtwoClassFits}}{{{len(tg)}}}"]
+    # Test O1 (registered): numbers beyond those its pipeline writes
+    o1 = json.loads((EV / "O1_results.json").read_text()); so = o1["secondary"]; ci120 = o1["pooled_A_ci"]["120"]
+    L += [f"\\newcommand{{\\OoneCI}}{{[{ci120[0]:.0f},{ci120[1]:.0f}]}}",
+          f"\\newcommand{{\\OoneNeg}}{{{so['symbols_A120_negative']}}}",
+          f"\\newcommand{{\\OoneNegSig}}{{{so['symbols_A120_ci_below_zero']}}}",
+          f"\\newcommand{{\\OoneTwoSided}}{{{so['symbols_two_sided_certified_60s']}}}",
+          f"\\newcommand{{\\OoneShare}}{{{100 * so['median_share_at_10s']:.0f}}}",
+          f"\\newcommand{{\\OoneBeta}}{{{so['median_beta']:.2f}}}",
+          f"\\newcommand{{\\OoneIdentified}}{{{so['identified']}}}",
+          f"\\newcommand{{\\OonePre}}{{{f(o1['validity']['V1_pooled_pre_over_beta'], 3)}}}",
+          f"\\newcommand{{\\OonePreCI}}{{[{f(o1['validity']['V1_ci'][0], 2)},{f(o1['validity']['V1_ci'][1], 2)}]}}",
+          f"\\newcommand{{\\OonePseudo}}{{{100 * o1['validity']['V2_median_pseudo_shock_sd_ratio']:.0f}}}"]
     return "\n".join(L) + "\n"
 
 
