@@ -170,17 +170,28 @@ class HFBackend:
         for i, q in enumerate(reqs):
             groups.setdefault(float(q["temperature"]), []).append(i)
         for temp, idx in groups.items():
-            for s in range(0, len(idx), self.bs):
+            s = 0
+            while s < len(idx):
                 chunk = idx[s:s + self.bs]
                 self.torch.manual_seed(int(reqs[chunk[0]]["seed"]) % (2 ** 31))
                 enc = self.tok([self._text(reqs[i]) for i in chunk], return_tensors="pt", padding=True).to("cuda")
                 kw = dict(max_new_tokens=self.mnt, pad_token_id=self.tok.pad_token_id)
                 kw.update(dict(do_sample=True, temperature=temp, top_p=0.95) if temp > 0 else dict(do_sample=False))
-                with self.torch.no_grad():
-                    gen = self.model.generate(**enc, **kw)
+                try:
+                    with self.torch.no_grad():
+                        gen = self.model.generate(**enc, **kw)
+                except self.torch.cuda.OutOfMemoryError:
+                    # a large model leaves little room for the batch: halve the batch for good and retry this chunk
+                    del enc; self.torch.cuda.empty_cache()
+                    if self.bs == 1:
+                        raise
+                    self.bs = max(1, self.bs // 2)
+                    print(f"[HFBackend] out of GPU memory: batch size now {self.bs}")
+                    continue
                 texts = self.tok.batch_decode(gen[:, enc["input_ids"].shape[1]:], skip_special_tokens=True)
                 for i, t in zip(chunk, texts):
                     out[i] = t
+                s += len(chunk)
         return out
 
 
