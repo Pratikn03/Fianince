@@ -17,10 +17,13 @@ Pipeline (each step writes a file and is safe to rerun):
   evaluate(...)            Spearman tests across stocks, Holm, secondaries -> K1_results.json
   simulate_panel(...)      synthetic panel with a known rebalancing share, for the null and power calibration
 """
+import hashlib
 import io
 import json
 import re
+import subprocess
 import time
+from datetime import datetime, timezone
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -31,6 +34,13 @@ import numpy as np
 import pandas as pd
 
 NY = "America/New_York"
+HERE = Path(__file__).resolve().parent
+ROOT = HERE.parents[1]
+SPEC = ROOT / "thesis/checks/prereg/K1_letf.json"
+COUNTER = SPEC.with_name("K1_unlock.json")
+RESULT, NUMBERS = HERE / "K1_results.json", ROOT / "thesis/checks/K1_numbers.tex"
+NPORT_QUARTERS = ["2025q3", "2025q4", "2026q1", "2026q2", "2026q3"]
+NPORT_URL = "https://www.sec.gov/files/dera/data/form-n-port-data-sets/{q}_nport.zip"
 SAMPLE = ("2025-07-01", "2026-06-30")                 # trading days, full sessions only (12 months)
 PRE = ("2025-04-01", "2025-06-30")                    # pre-period: candidate pool and control matching
 REPORTS = ("2025-06-30", "2026-06-30")                # N-PORT report dates used for net assets
@@ -578,3 +588,131 @@ def calibrate(seeds_null=range(20), seeds_power=range(10), shares=(0.1, 0.25, 0.
     finally:
         N_PERM = old
     return out
+
+
+# --------------------------------------------------------------------------------------------- registered run
+def gate():
+    """The specification is committed, its hash matches, and this file is the registered pipeline."""
+    assert SPEC.exists(), "Test K1 is not registered"
+    sha = hashlib.sha256(SPEC.read_bytes()).hexdigest()
+    assert sha == SPEC.with_suffix(".sha256").read_text().strip(), "specification hash mismatch"
+    spec = json.loads(SPEC.read_text())
+    assert hashlib.sha256(Path(__file__).read_bytes()).hexdigest() == spec["k1_sha256"], "k1_letf.py changed after registration"
+    reg = subprocess.check_output(["git", "log", "-1", "--format=%H", "--", str(SPEC.relative_to(ROOT))], cwd=ROOT, text=True).strip()
+    assert reg, "the specification is not committed"
+    return spec, sha, reg
+
+
+def download_nport(out_dir, user_agent, log=print):
+    """The five quarterly N-PORT data sets (about 0.4 GB each), cached in out_dir/nport."""
+    d = Path(out_dir) / "nport"
+    d.mkdir(parents=True, exist_ok=True)
+    paths = []
+    for q in NPORT_QUARTERS:
+        f = d / f"{q}_nport.zip"
+        if not f.exists() or f.stat().st_size < 1e8:
+            log(f"downloading {q} ...")
+            req = urllib.request.Request(NPORT_URL.format(q=q), headers={"User-Agent": user_agent})
+            with urllib.request.urlopen(req, timeout=600) as r, open(f.with_suffix(".part"), "wb") as w:
+                while True:
+                    b = r.read(1 << 22)
+                    if not b:
+                        break
+                    w.write(b)
+            f.with_suffix(".part").rename(f)
+        paths.append(str(f))
+    return paths
+
+
+def lock_universe(out_dir):
+    """Freeze K1_universe.json before any trades are downloaded: records its hash; later steps check it."""
+    u = Path(out_dir) / "K1_universe.json"
+    lock = Path(out_dir) / "K1_universe.lock"
+    h = hashlib.sha256(u.read_bytes()).hexdigest()
+    if lock.exists():
+        assert lock.read_text().strip() == h, "K1_universe.json changed after it was frozen"
+    else:
+        lock.write_text(h + "\n")
+    return h
+
+
+def collect(api, out_dir, log=print, report_every=200):
+    """Download both windows for every unit and sample day (resumable), and the daily bars for previous closes."""
+    lock_universe(out_dir)
+    U = json.loads((Path(out_dir) / "K1_universe.json").read_text())
+    syms, days = sorted(U["units"]), U["days"]
+    jobs = [(s, d) for s in syms for d in days]
+    t0, done = time.time(), 0
+    for i, (s, d) in enumerate(jobs, 1):
+        js = Path(out_dir) / "trades" / s / f"{d}.json"
+        if js.exists():
+            continue
+        fetch_windows(api, s, d, Path(out_dir) / "trades")
+        done += 1
+        if done % report_every == 0:
+            el = (time.time() - t0) / 60
+            log(f"  {i}/{len(jobs)} stock-days  {el:.0f} min this session, about {el / done * (len(jobs) - i):.0f} min left")
+    dd = Path(out_dir) / "daily"
+    dd.mkdir(exist_ok=True)
+    start = (pd.Timestamp(SAMPLE[0]) - pd.Timedelta(days=10)).strftime("%Y-%m-%d")
+    for adj in ("raw", "split"):
+        f = dd / f"daily_{adj}.parquet"
+        if not f.exists():
+            bars = api.daily(syms, start, SAMPLE[1], adjustment=adj)
+            pd.concat({k: v[["c", "v"]] for k, v in bars.items()}, names=["symbol", "date"]).to_parquet(f)
+    status = [json.loads((Path(out_dir) / "trades" / s / f"{d}.json").read_text()) for s, d in jobs
+              if (Path(out_dir) / "trades" / s / f"{d}.json").exists()]
+    ok = sum(st.get("ok", False) for st in status)
+    log(f"collected {len(status)}/{len(jobs)} stock-days, {ok} valid")
+    return {"jobs": len(jobs), "collected": len(status), "valid": ok}
+
+
+def run(out_dir, counter=COUNTER, log=print):
+    """The registered analysis. Runs once: refuses if the counter is not 0 or the collection is incomplete."""
+    spec, sha, reg = gate()
+    uh = lock_universe(out_dir)
+    U = json.loads((Path(out_dir) / "K1_universe.json").read_text())
+    syms, days = sorted(U["units"]), U["days"]
+    missing = [(s, d) for s in syms for d in days if not (Path(out_dir) / "trades" / s / f"{d}.json").exists()]
+    assert not missing, f"collection incomplete: {len(missing)} stock-days missing; run the collection cell again"
+    c = json.loads(Path(counter).read_text())
+    assert c["opens"] == 0, "Test K1 was already opened; it runs once"
+    Path(counter).write_text(json.dumps({"opens": 1, "spec_sha256": sha, "registration_commit": reg, "universe_sha256": uh,
+                                         "opened_utc": datetime.now(timezone.utc).isoformat()}, indent=2) + "\n")
+    raw = pd.read_parquet(Path(out_dir) / "daily" / "daily_raw.parquet")
+    spl = pd.read_parquet(Path(out_dir) / "daily" / "daily_split.parquet")
+    stats = {}
+    for s in syms:
+        valid, bars = [], {}
+        for d in days:
+            st = json.loads((Path(out_dir) / "trades" / s / f"{d}.json").read_text())
+            if st.get("ok"):
+                valid.append(d)
+                bars[d] = pd.read_parquet(Path(out_dir) / "trades" / s / f"{d}.parquet")
+        if s not in raw.index.get_level_values(0) or len(valid) < 0.8 * len(days):
+            log(f"  {s}: {len(valid)} valid days, excluded")
+            continue
+        panel = assemble(bars, raw.loc[s], spl.loc[s])
+        if panel is None:
+            continue
+        stats[s] = unit_stats(panel, sorted(panel["date"].unique()))
+        log(f"  {s}: {stats[s]['days']} days, dPhi {stats[s]['dPhi']:.2e}")
+    ev = evaluate(stats, U["units"], n_days=len(days))
+    res = {"test": "K1", "spec_sha256": sha, "registration_commit": reg, "universe_sha256": uh,
+           "run_utc": datetime.now(timezone.utc).isoformat(), "evaluation": ev, "per_stock": stats}
+    for path in (Path(out_dir) / RESULT.name, RESULT):
+        path.write_text(json.dumps(res, indent=1, default=float) + "\n")
+    for path in (Path(out_dir) / NUMBERS.name, NUMBERS):
+        path.write_text(numbers_tex(ev))
+    log(json.dumps({k: ev[k] for k in ("n_units", "n_treated", "primary_1", "primary_2")}, indent=1, default=float))
+    return res
+
+
+def numbers_tex(e):
+    v = lambda k: "passed" if e[k]["passed_holm"] else "failed"
+    s1 = e["secondary"]["S1_visible_share_of_disclosed_rebalancing"]["median"]
+    return "\n".join(["% generated by k1_letf.py; do not edit",
+                      "\\newcommand{\\KoneUnits}{%d}\\newcommand{\\KoneTreated}{%d}" % (e["n_units"], e["n_treated"]),
+                      "\\newcommand{\\KonePonep}{%.4f}\\newcommand{\\KonePtwop}{%.4f}" % (e["primary_1"]["p"], e["primary_2"]["p"]),
+                      "\\newcommand{\\KoneShare}{%.2f}" % (s1 if s1 is not None else float("nan")),
+                      f"\\newcommand{{\\KonePone}}{{{v('primary_1')}}}\\newcommand{{\\KonePtwo}}{{{v('primary_2')}}}"]) + "\n"
