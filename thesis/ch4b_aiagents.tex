@@ -1,0 +1,54 @@
+\chapter{AI agents in the loop: supervising the market, not the models}\label{ch:ai}
+
+Supervisors are now asking how markets and banks should be governed when trading and other decisions are delegated to AI agents. In October 2026 the Financial Stability Board issued sound practices for AI adoption that centre on governance inside each firm, risk-based triggers for human approval before an agent acts, and concentration risk from shared vendors \citep{t:fsb2026}; US banking agencies asked banks how they monitor and audit their agents and how they would shut them down \citep{t:reuters2026}; and the Bank for International Settlements warned that institutions using similar models, data or decision rules may act at the same time and amplify price moves, and that supervisors should look beyond individual institutions to common exposures \citep{t:bis2026}. The instruments on the table act on one firm or one agent at a time. The risk that the last warning names is a property of the loop that many agents form with prices. This chapter applies the thesis's central result to that gap: the stability of the loop can be certified from public data without inspecting any agent, and the one thing the certificate needs from the agents' owners is a bound on their memory.
+
+\section{What the theory already says about AI agents}\label{sec:ai_map}
+
+Four results of the earlier chapters apply to AI agents as they stand.
+
+\paragraph{Their internals are not needed, and cannot be learned from the market.} Identifying the agents from market data costs a number of observations that grows polynomially in the inverse of their similarity (Chapter~\ref{ch:p1}), and passive observation does not help (Theorem~\ref{p1:prop:passive}). An AI agent is harder to identify than the exponential-memory cohorts of the theorems, not easier: its rule is high-dimensional, it changes when the model is updated, and, in the Financial Stability Board's words, it does not reason like a human.
+
+\paragraph{Nonlinear and changing agents are covered.} The robust bound of Section~\ref{sec:bl_robust} holds for agents whose rules are nonlinear and whose memories and weights change over time, given a bound on their total sensitivity, and when agents keep learning a certificate lasts for its margin divided by their learning speed (Corollary~\ref{thm:lifetime}). These are the properties that distinguish an AI agent from a fixed algorithm.
+
+\paragraph{The system-level quantity is certifiable from public data.} The margin is decided from prices and anonymous flow with a record of order $1/M$, for any number of cohorts with finite memory, uniformly as the margin vanishes, and for the pooled estimator used in practice (Theorems~\ref{thm:passivemulti}, \ref{thm:uniformcert} and~\ref{thm:pooled}).
+
+\paragraph{The owners must disclose a memory bound.} Without one, no passive certificate exists: a slow momentum cohort can make a market unstable without leaving a trace in a finite record (Theorem~\ref{thm:hidden}).
+
+\section{Monoculture}\label{sec:ai_mono}
+
+Agents built on one model and fed the same data respond alike. In the cohort model they share a memory rate, so they merge into a single cohort whose weight is the sum of theirs (Theorem~\ref{p1:thm:merged}). The next proposition makes the consequence for stability explicit.
+
+\begin{proposition}[Monoculture]\label{prop:monoculture}
+Let $N$ agents trade on a market with persistence $a$ and impact $\kappa$. A share $s\in[0,1]$ of them run a common model with response $q_D$; the others have mean response $\bar q$.
+\begin{enumerate}[label=(\roman*)]
+\item The margin is linear in the adoption share: $M(s)=M(0)-s\,\kappa N(q_D-\bar q)$, with $M(0)=1-a-\kappa N\bar q$.
+\item If $q_D>\bar q$ and $M(0)>0$, the market is stable for $s<s^*$ and unstable for $s>s^*$, where $s^*=M(0)/(\kappa N(q_D-\bar q))$.
+\item The adopters form one cohort of the merged measure: adoption lowers the number of distinct cohorts, which makes identification easier, while it lowers the margin, which makes certification urgent.
+\item If each adopter's decisions carry noise of variance $\sigma^2$ and adopters of one model share it, the adopters' noise contributes variance $(sN)^2\sigma^2$ rather than $sN\sigma^2$: correlated decisions enlarge the shocks that the loop amplifies by a factor equal to the number of adopters.
+\end{enumerate}
+\hfill\Proved
+\end{proposition}
+
+\begin{proof}
+(i) The total feedback is $\Phi=N((1-s)\bar q+sq_D)$ and $M=1-a-\kappa\Phi$. (ii) $M(s)$ is affine and decreasing in $s$ with zero at $s^*$. (iii) Agents with a common model have a common memory rate, and cohorts with a common rate merge (Theorem~\ref{p1:thm:merged}). (iv) The sum of $n$ copies of one noise has variance $n^2\sigma^2$; the sum of $n$ independent ones has variance $n\sigma^2$.
+\end{proof}
+
+Part~(ii) is static: it freezes the other agents. When they learn, they respond to the price path that the adopters create, and the threshold can move. Whether it moves up, because the others learn to trade against the adopters, or down, because they learn to follow them, is a question about learning dynamics that the proposition does not answer; Test~B1 answers it in simulation. The linear threshold, the sign changes and the noise identity are checked in Lean (\nolinkurl{CurrentMM.thesis_mono_margin}, \nolinkurl{CurrentMM.thesis_mono_threshold}, \nolinkurl{CurrentMM.thesis_mono_below}, \nolinkurl{CurrentMM.thesis_mono_above}, \nolinkurl{CurrentMM.thesis_mono_common_noise}).
+
+\section{A two-number disclosure and a loop-level trigger}\label{sec:ai_policy}
+
+The results suggest a supervisory instrument with two parts.
+
+\paragraph{What deployers disclose.} The owner of an AI trading agent discloses two numbers: a bound $s_i$ on the agent's sensitivity to the price displacement (the sector constant of Assumption~\ref{ass:sector}) and a bound $\bar r_i$ on its memory, the longest horizon over which its response depends on past prices. Neither reveals the model, its data or its strategy. The sum of the sensitivity bounds certifies safety by itself through the robust bound of Section~\ref{sec:bl_robust}, conservatively; the memory bound is what makes the public-data certificate possible (Theorem~\ref{thm:hidden}) and what the disclosed estimator of Test~B1 uses.
+
+\paragraph{What the supervisor computes.} From public prices and anonymous flow the supervisor estimates the margin daily on a rolling window, with the pooled estimator augmented by the disclosed memory bound, and acts on two signals: the loss of the certificate that the margin exceeds a buffer, and a projected time to the boundary, the current margin divided by its recent rate of decline. A pause or a review is triggered by the loop, not by any one firm. Firm-level kill switches stop one agent; a trigger on the margin addresses the risk that many agents create together.
+
+\paragraph{How it maps onto current guidance.} The Financial Stability Board's practice on human oversight asks for risk-based triggers before an agent acts; the trigger here is a market-level input to those triggers. Its practice on third-party dependencies asks firms to oversee concentration on vendors; Proposition~\ref{prop:monoculture} says what that concentration does to stability and at what adoption share it becomes dangerous. The US agencies' question of how a bank would shut its agents down has a market-level counterpart: when should all of them slow down?
+
+\section{Test B1: learning agents and a vendor model}\label{sec:ai_b1}
+
+\input{ch4b_b1_results}
+
+\section{What this chapter does not show}\label{sec:ai_limits}
+
+The agents of Test~B1 are simple learning rules and a fixed momentum product, not language-model agents or the systems banks deploy; adoption is imposed rather than chosen; the observer sees the true displacement rather than a moving-average proxy; and the warning rules and the crisis definition were chosen in an exploratory pilot before registration. The empirical chapters show that the certificate behaves as the theory says in real crypto markets, but those markets were far from the boundary and nothing in their data says which traders are AI agents. The chapter therefore offers a framework and an instrument with simulated evidence, not evidence about AI agents in real markets; Test~H1, with participant-level data, is the first step toward the latter.

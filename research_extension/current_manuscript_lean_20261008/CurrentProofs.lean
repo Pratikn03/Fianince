@@ -51,3 +51,4 @@ import CurrentProofs.ThesisDrift
 import CurrentProofs.ThesisPassiveMulti
 import CurrentProofs.ThesisHidden
 import CurrentProofs.ThesisPooled
+import CurrentProofs.ThesisMonoculture
