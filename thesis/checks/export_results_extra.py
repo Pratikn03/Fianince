@@ -156,6 +156,20 @@ def build():
           f"\\newcommand{{\\CthreeSameNoFb}}{{{s3c['same_decision_without_feedback']}}}",
           f"\\newcommand{{\\CthreeFbNeg}}{{{s3c['feedback_negative']}}}",
           f"\\newcommand{{\\CthreeSafe}}{{{s3c['safe']}}}", f"\\newcommand{{\\CthreeDays}}{{{s3c['median_valid_days']:.0f}}}"]
+    # Pilot 4 (exploratory): learning curve and margin-predicts-risk on the spent C3 symbols
+    p4 = json.loads((EV / "pilot4_curve_and_risk_results.json").read_text()); s4 = p4["summary"]; cv = s4["curve"]
+    L += ["\\newcommand{\\PfourSymbols}{%d}" % s4["n_symbols"]]
+    for k, name in (("30", "Thirty"), ("60", "Sixty"), ("120", "OneTwenty"), ("240", "TwoForty"), ("all", "All")):
+        L += ["\\newcommand{\\PfourDec%s}{%d}\\newcommand{\\PfourId%s}{%d}" % (name, cv[k]["decided"], name, cv[k]["identified"])]
+    zs = [c["z_slope"] for c in p4["curves"].values()]
+    L += ["\\newcommand{\\PfourSlopePos}{%d}" % sum(z > 0 for z in zs),
+          "\\newcommand{\\PfourSlope}{%s}" % f(float(np.median(zs)), 2)]
+    rk = s4["risk"]
+    L += ["\\newcommand{\\PfourTrv}{%s}" % f(rk["20"]["log_rv"]["panel_M"]["t"]["M_rk"], 1),
+          "\\newcommand{\\PfourTmae}{%s}" % f(rk["20"]["log_mae"]["panel_M"]["t"]["M_rk"], 1),
+          "\\newcommand{\\PfourTrvSixty}{%s}" % f(rk["60"]["log_rv"]["panel_M"]["t"]["M_rk"], 1)]
+    oos = [rk[w][y]["oos_M"]["delta_r2_pct"] for w in ("20", "60") for y in ("log_mae", "log_rv")]
+    L += ["\\newcommand{\\PfourOosLo}{%s}\\newcommand{\\PfourOosHi}{%s}" % (f(min(oos), 1), f(max(oos), 1))]
     return "\n".join(L) + "\n"
 
 
