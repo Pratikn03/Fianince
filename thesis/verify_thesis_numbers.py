@@ -205,6 +205,35 @@ assert C3mod.numbers_tex(c3res['evaluation']) == (ROOT / 'checks/C3_numbers.tex'
 assert '\\input{checks/C3_numbers}' in concl and 'C3:' in concl
 print('Test C3: registration and results reproduce from their files: PASS')
 
+# Test F1: registration, addendum A1, counter, and the evaluation recomputed from its per-symbol results
+import f1_flagship as F1mod  # noqa: E402
+from scipy import stats as _st  # noqa: E402
+f1spec = ROOT / 'checks/prereg/F1_flagship.json'
+f1c = json.loads((ROOT / 'checks/prereg/F1_unlock.json').read_text())
+f1res = json.loads((ROOT / 'evidence/F1_results.json').read_text())
+assert f1c['opens'] == 1 and f1res['spec_sha256'] == digest(f1spec) == f1c['spec_sha256']
+assert (ROOT / 'checks/prereg/F1_flagship.sha256').read_text().strip() == digest(f1spec)
+f1j = json.loads(f1spec.read_text())
+for key, f in (('f1_sha256', 'f1_flagship.py'), ('c3_sha256', 'c3_margin_more_days.py'), ('c2_sha256', 'c2_margin_vs_identify.py'),
+               ('pilot4_sha256', 'pilot4_curve_and_risk.py'), ('binance_vision_sha256', 'binance_vision.py')):
+    assert f1j[key] == digest(ROOT / 'evidence' / f), ('F1', key)
+a1 = ROOT / 'checks/prereg/F1_addendum_A1.json'; a1j = json.loads(a1.read_text())
+assert (ROOT / 'checks/prereg/F1_addendum_A1.sha256').read_text().strip() == digest(a1)
+assert a1j['f1_spec_sha256'] == digest(f1spec) and a1j['f1_addendum_sha256'] == digest(ROOT / 'evidence/f1_addendum.py')
+assert all(sym.isascii() for sym in f1res['symbols']) and len(f1res['symbols']) == 30
+fe = f1res['evaluation']; ev1 = {k: v for k, v in f1res['per_symbol'].items() if v.get('n_days', 0) >= 200 and 'M' in v}
+dec1 = sum(v['decided'] for v in ev1.values()); b1 = sum(v['decided'] and not v['identified'] for v in ev1.values())
+c1 = sum(v['identified'] and not v['decided'] for v in ev1.values())
+assert (len(ev1), dec1, b1, c1) == (fe['n_evaluable'], fe['decided'], fe['mcnemar_b'], fe['mcnemar_c'])
+assert abs(float(_st.binom.sf(dec1 - 1, len(ev1), 0.5)) - fe['p_raw'][0]) < 1e-12
+assert abs(float(_st.binom.sf(b1 - 1, b1 + c1, 0.5)) - fe['p_raw'][1]) < 1e-12
+assert fe['P1_pass'] == (dec1 >= fe['threshold_count'] and fe['p_holm'][0] < 0.05)
+assert fe['P2_pass'] == (b1 > c1 and fe['p_holm'][1] < 0.05)
+assert fe['P3_pass'] == (fe['p_holm'][2] < 0.05 and fe['risk']['coef_X'] < 0) and fe['risk']['p'] == fe['p_raw'][2]
+assert F1mod.numbers_tex(fe) == (ROOT / 'checks/F1_numbers.tex').read_text()
+assert '\\input{checks/F1_numbers}' in concl and 'F1:' in concl
+print('Test F1: registration, addendum and results reproduce from their files: PASS')
+
 # Chapter 5 extra numbers and the exploratory pilot (labelled exploratory, never confirmatory)
 subprocess.run([sys.executable, str(ROOT / 'checks/export_results_extra.py'), '--check'], check=True)
 pilot = json.loads((ROOT / 'evidence/pilot_after_e1v2_results.json').read_text())

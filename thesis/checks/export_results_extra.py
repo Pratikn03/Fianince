@@ -200,6 +200,22 @@ def build():
           "\\newcommand{\\DriftW}{%.0f}" % ((1.96 * s_ / d_) ** (2 / 3)),
           "\\newcommand{\\DriftFloor}{%.3f}" % (3 * (1.96 * s_) ** (2 / 3) * d_ ** (1 / 3) + d_),
           "\\newcommand{\\DriftFloorLow}{%.3f}" % ((d_ * s_ ** 2 / 12) ** (1 / 3))]
+    # Test F1 (registered)
+    f1 = json.loads((EV / "F1_results.json").read_text()); fe = f1["evaluation"]; fs = fe["secondary"]; rk = fe["risk"]
+    sci = lambda x: "%s\\times10^{%d}" % (f"{x:.0e}".split("e")[0], int(f"{x:.0e}".split("e")[1]))
+    L += [f"\\newcommand{{\\FoneDrawn}}{{{len(f1['symbols'])}}}",
+          f"\\newcommand{{\\FoneExcluded}}{{{sum('excluded' in v for v in f1['per_symbol'].values())}}}",
+          "\\newcommand{\\FonePoneP}{%s}\\newcommand{\\FonePtwoP}{%s}" % (sci(fe["p_holm"][0]), sci(fe["p_holm"][1])),
+          "\\newcommand{\\FoneRiskP}{%.3f}\\newcommand{\\FoneRiskGain}{%.2f}" % (rk["p"], rk["delta_r2_pct"]),
+          "\\newcommand{\\FoneRiskDates}{%d}\\newcommand{\\FoneRiskCoef}{%.2f}" % (rk["n_test_dates"], rk["coef_X"]),
+          "\\newcommand{\\FoneDays}{%.0f}" % float(np.median([v["n_days"] for v in f1["per_symbol"].values() if "excluded" not in v])),
+          "\\newcommand{\\FoneRvT}{%.2f}\\newcommand{\\FoneRvP}{%.3f}\\newcommand{\\FoneRvRankT}{%.2f}" % (
+              fs["risk_rv_winsorized"]["clark_west_t_by_date"], fs["risk_rv_winsorized"]["p"], fs["risk_rv_rank"]["clark_west_t_by_date"]),
+          "\\newcommand{\\FoneMaeRankT}{%.2f}" % fs["risk_mae_rank"]["clark_west_t_by_date"],
+          f"\\newcommand{{\\FoneSameNoFb}}{{{fs['same_decision_without_feedback']}}}\\newcommand{{\\FoneFbNeg}}{{{fs['feedback_negative']}}}",
+          f"\\newcommand{{\\FoneFirst}}{{{fs['decided_first_105_days']}}}\\newcommand{{\\FoneSlopePos}}{{{fs['z_slope_positive']}}}",
+          "\\newcommand{\\FoneCurve}{%d, %d, %d and %d}" % tuple(fs["curve"][k]["decided"] for k in ("60", "120", "240", "all")),
+          "\\newcommand{\\FoneCurveId}{%d, %d, %d and %d}" % tuple(fs["curve"][k]["identified"] for k in ("60", "120", "240", "all"))]
     return "\n".join(L) + "\n"
 
 
