@@ -479,18 +479,19 @@ def holm(ps, alpha=0.05):
 
 
 def evaluate(stats, units, min_day_share=0.8, n_days=None):
-    """Primary 1: Spearman(dPhi, lambda) > 0. Primary 2: Spearman(dM, lambda) < 0. One-sided permutation tests, Holm."""
+    """Primary 1: precision-weighted slope of dPhi on lambda > 0. Primary 2: Spearman(dM, lambda) < 0. One-sided
+    permutation tests (lambda shuffled across stocks), Holm."""
     keep = [s for s in stats if s in units and np.isfinite(stats[s]["dPhi"]) and np.isfinite(stats[s]["dM"])
             and (n_days is None or stats[s]["days"] >= min_day_share * n_days)]
     lam = np.array([units[s]["lambda"] for s in keep])
     dphi = np.array([stats[s]["dPhi"] for s in keep]); dm = np.array([stats[s]["dM"] for s in keep])
-    r1, p1 = perm_test(dphi, lam, +1); r2, p2 = perm_test(dm, lam, -1)
+    se = np.array([stats[s]["dPhi_se"] for s in keep])
+    r1, p1 = wslope_test(dphi, lam, se, +1); r2, p2 = perm_test(dm, lam, -1)
     passed = holm([p1, p2])
     tr = [s for s in keep if units[s]["role"] == "treated"]
     share = {s: stats[s]["dPhi"] * stats[s]["minute_dollar_volume"] * WLEN["close"] / (units[s]["Lambda"] * 1e-4) for s in tr}
-    se = np.array([stats[s]["dPhi_se"] for s in keep])
     sec = {
-        "W_weighted_slope_dPhi": dict(zip(["slope", "p"], wslope_test(dphi, lam, se, +1))),
+        "S0_rank_test_dPhi": dict(zip(["rho", "p"], perm_test(dphi, lam, +1))),
         "S1_visible_share_of_disclosed_rebalancing": {"median": float(np.median(list(share.values()))) if share else None,
                                                       "by_stock": share},
         "S2_default_monitor_ema12": dict(zip(["rho", "p"], perm_test([stats[s]["dM_ema"] for s in keep], lam, -1))),
@@ -506,7 +507,7 @@ def evaluate(stats, units, min_day_share=0.8, n_days=None):
             "controls": float(np.median([stats[s]["dPhi"] for s in keep if units[s]["role"] == "control"]))},
     }
     return {"n_units": len(keep), "n_treated": len(tr),
-            "primary_1": {"rho": r1, "p": p1, "passed_holm": passed[0]},
+            "primary_1": {"weighted_slope": r1, "p": p1, "passed_holm": passed[0]},
             "primary_2": {"rho": r2, "p": p2, "passed_holm": passed[1]},
             "secondary": sec, "units_used": keep}
 
@@ -553,7 +554,7 @@ def simulate_panel(n_treated=35, n_controls=70, days=250, share=0.0, seed=0, vol
     return panels, units
 
 
-def calibrate(seeds_null=range(20), seeds_power=range(10), shares=(0.1, 0.25, 0.5), days=250, n_perm=2000):
+def calibrate(seeds_null=range(20), seeds_power=range(10), shares=(0.1, 0.25, 0.5), days=250, n_perm=1000):
     """Rejection rates of the two primaries under the null (no rebalancing in continuous trading, but volatility and
     ordinary feedback correlated with lambda, and stronger order splitting near the close) and under power alternatives."""
     global N_PERM
@@ -564,6 +565,7 @@ def calibrate(seeds_null=range(20), seeds_power=range(10), shares=(0.1, 0.25, 0.
             pan, un = simulate_panel(days=days, share=0.0, seed=seed)
             res = evaluate({s: unit_stats(p, p["date"].unique()) for s, p in pan.items()}, un)
             out["null"].append({"seed": seed, "p1": res["primary_1"]["p"], "p2": res["primary_2"]["p"],
+                                "p_rank": res["secondary"]["S0_rank_test_dPhi"]["p"],
                                 "pass1": res["primary_1"]["passed_holm"], "pass2": res["primary_2"]["passed_holm"]})
         for sh in shares:
             for seed in seeds_power:
@@ -571,6 +573,7 @@ def calibrate(seeds_null=range(20), seeds_power=range(10), shares=(0.1, 0.25, 0.
                 res = evaluate({s: unit_stats(p, p["date"].unique()) for s, p in pan.items()}, un)
                 out["power"][str(sh)].append({"seed": 1000 + seed, "p1": res["primary_1"]["p"], "p2": res["primary_2"]["p"],
                                               "pass1": res["primary_1"]["passed_holm"], "pass2": res["primary_2"]["passed_holm"],
+                                              "p_rank": res["secondary"]["S0_rank_test_dPhi"]["p"],
                                               "S1_median_share": res["secondary"]["S1_visible_share_of_disclosed_rebalancing"]["median"]})
     finally:
         N_PERM = old
