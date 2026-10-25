@@ -216,6 +216,16 @@ def build():
           f"\\newcommand{{\\FoneFirst}}{{{fs['decided_first_105_days']}}}\\newcommand{{\\FoneSlopePos}}{{{fs['z_slope_positive']}}}",
           "\\newcommand{\\FoneCurve}{%d, %d, %d and %d}" % tuple(fs["curve"][k]["decided"] for k in ("60", "120", "240", "all")),
           "\\newcommand{\\FoneCurveId}{%d, %d, %d and %d}" % tuple(fs["curve"][k]["identified"] for k in ("60", "120", "240", "all"))]
+    # Pilot 7 (exploratory): effect size and the 2025-10-10 stress day on C3's spent symbols
+    p7 = json.loads((EV / "pilot7_results.json").read_text()); assert p7["kind"].startswith("EXPLORATORY")
+    sz, s7 = p7["size"], p7["stress"]["2025-10-10"]
+    L += ["\\newcommand{\\PsevenN}{%d}\\newcommand{\\PsevenFS}{%.2f}" % (sz["n_kept"], sz["mae"]["first_stage_r2"]),
+          "\\newcommand{\\PsevenMae}{%.2f}\\newcommand{\\PsevenMaeSE}{%.2f}\\newcommand{\\PsevenMaeOLS}{%.2f}" % (
+              sz["mae"]["elasticity_iv"], sz["mae"]["se_iv"], sz["mae"]["elasticity_ols"]),
+          "\\newcommand{\\PsevenRv}{%.2f}\\newcommand{\\PsevenRvSE}{%.2f}\\newcommand{\\PsevenRvOLS}{%.2f}" % (
+              sz["rv"]["elasticity_iv"], sz["rv"]["se_iv"], sz["rv"]["elasticity_ols"]),
+          "\\newcommand{\\PsevenStressN}{%d}\\newcommand{\\PsevenRho}{%.2f}\\newcommand{\\PsevenPct}{%.0f}" % (
+              s7["n_symbols"], s7["spearman_margin_vs_mae"], 100 * s7["percentile_of_pre_stress_median"])]
     return "\n".join(L) + "\n"
 
 

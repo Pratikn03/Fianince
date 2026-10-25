@@ -234,6 +234,20 @@ assert F1mod.numbers_tex(fe) == (ROOT / 'checks/F1_numbers.tex').read_text()
 assert '\\input{checks/F1_numbers}' in concl and 'F1:' in concl
 print('Test F1: registration, addendum and results reproduce from their files: PASS')
 
+# Test S1: registered before its data; until its result is committed, the counter must still be at 0 or 1 and the
+# pipeline must match the registered hashes
+s1spec = ROOT / 'checks/prereg/S1_fragility.json'; s1j = json.loads(s1spec.read_text())
+assert (ROOT / 'checks/prereg/S1_fragility.sha256').read_text().strip() == digest(s1spec)
+for key, f in (('s1_sha256', 's1_fragility.py'), ('c3_sha256', 'c3_margin_more_days.py'), ('c2_sha256', 'c2_margin_vs_identify.py'),
+               ('pilot4_sha256', 'pilot4_curve_and_risk.py'), ('binance_vision_sha256', 'binance_vision.py')):
+    assert s1j[key] == digest(ROOT / 'evidence' / f), ('S1', key)
+s1c = json.loads((ROOT / 'checks/prereg/S1_unlock.json').read_text())
+if (ROOT / 'evidence/S1_results.json').exists():
+    assert s1c['opens'] == 1 and json.loads((ROOT / 'evidence/S1_results.json').read_text())['spec_sha256'] == digest(s1spec)
+else:
+    assert s1c['opens'] in (0, 1) and 'S1: does the margin measure fragility? (registered, not yet run)' in concl
+print('Test S1: registration and pipeline hashes: PASS')
+
 # Chapter 5 extra numbers and the exploratory pilot (labelled exploratory, never confirmatory)
 subprocess.run([sys.executable, str(ROOT / 'checks/export_results_extra.py'), '--check'], check=True)
 pilot = json.loads((ROOT / 'evidence/pilot_after_e1v2_results.json').read_text())
