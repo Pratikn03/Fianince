@@ -1,0 +1,43 @@
+{
+ "test": "K1_letf",
+ "status": "DRAFT FOR THE AUTHOR'S APPROVAL. Not registered: no hash, no counter, and no data of the sample period (trades, minute bars or fund filings) has been downloaded or analysed. Registration requires the author's explicit approval, then a commit of its own with the hash and K1_unlock.json at 0, before step 1 is run.",
+ "question": "In a real market, does the feedback certified from anonymous, tick-rule-signed trades track a feedback whose size is publicly disclosed? A leveraged or inverse ETF with daily leverage L and net assets A must trade A*L*(L-1)*R dollars in the direction of its underlying's return R since the previous close; for single-stock funds the hedge is traded in the stock itself, so each stock's disclosed rebalancing intensity is lambda_u = sum_funds A*L*(L-1) / ADV_u.",
+ "why_single_stocks": "Index funds (TQQQ, SOXL) hedge largely in futures and swaps, so the rebalancing need not appear in the ETF underlying's trades, and one index gives no cross-section; single-stock funds give a cross-section in which lambda varies by orders of magnitude and the hedge must trade the stock.",
+ "pipeline": "thesis/evidence/k1_letf.py (sha256 recorded at registration)",
+ "data": {
+  "funds": "SEC Form N-PORT data sets 2026q1, 2026q2, 2026q3 (SUBMISSION, FUND_REPORTED_INFO): series name, series id, net assets, report date; reports dated 2025-12-31 to 2026-06-30, latest amendment; net assets averaged over a fund's reports",
+  "trades": "Alpaca market-data API, consolidated (SIP) trades, two windows per full trading day: 13:30-14:00 ET (control) and 15:30-16:00 ET (close), excluding the 16:00 closing cross and trades with conditions O Q M 6 5 T U Z 4 W C N R 7 V P H L 9",
+  "daily": "Alpaca SIP daily bars, raw and split-adjusted (previous close; split days dropped; ADV)",
+  "sample": "full trading days 2026-01-02 to 2026-06-30; pre-period 2025-10-01 to 2025-12-31 for the pool and control matching"
+ },
+ "universe_rule": "Pool: active NYSE/NASDAQ/AMEX common stocks (names without ETF, fund, trust, shares, index, notes, warrants, units, rights, depositary, preferred) with median pre-period daily dollar volume >= $500M. Funds: N-PORT series whose name states a daily leveraged or inverse multiple (parse_leverage: numeric 'NX', Bull/Long positive, Bear/Short/Inverse negative, Ultra 2, UltraPro 3, inverse without multiple -1; L = 1 and income, option, buffer funds excluded) and names exactly one pool stock by ticker or company name and no index or sector (match_underlying). Treated: pool stocks with Lambda_u = sum A*L*(L-1) >= $100M per unit return. Controls: for each treated stock, largest Lambda first, the 2 nearest untreated pool stocks by standardized log median dollar volume and log daily volatility in the pre-period, without replacement; lambda = 0. The author may reject a fund-name match on reading it, with a written reason, only in step 1 and before any trades are downloaded; the universe file is then frozen.",
+ "inclusion": "a window-day is valid if >= 90% of its 30 minutes have a trade; a stock enters if both windows are valid on >= 80% of sample days",
+ "construction": "minute bars: last price, tick-rule signed dollar flow (sign carried over zero ticks, within the window), dollar volume; f = signed flow / the stock's median per-minute dollar volume over both windows; x = 1e4*log(price / previous close); r = 1e4 * one-minute log return, within window-day",
+ "primary_1": "Detection. Per stock and window, phi from f_t = a + phi*x_{t-1} + sum_{j=1..5} rho_j f_{t-j} + e (pooled over valid days, lags within day); dPhi_u = phi(close) - phi(control). Spearman correlation of dPhi_u with lambda_u across included stocks positive, one-sided permutation p < 0.05 (20,000 permutations, seed 20261026).",
+ "primary_2": "The margin. Per stock and window, the certificate M = -beta - kappa*sum_{m=1..12} k_m from r_t = c + kappa f_t + beta x_{t-1} and f_t = c' + sum k_m x_{t-m}; dM_u = M(close) - M(control). Spearman correlation of dM_u with lambda_u negative, one-sided permutation p < 0.05.",
+ "correction": "Holm across the two primaries at 0.05",
+ "secondary": [
+  "S1 visible share: dPhi_u * minute dollar volume * 30 / (Lambda_u * 1e-4), median over treated stocks (share of disclosed rebalancing traded in continuous trading in the last 30 minutes); expected between 0 and 1",
+  "S2 the default monitor (x = p - EMA_12 within the window): Spearman of its dM and dPhi with lambda; the memory-bound theorem predicts it sees less, because rebalancing responds to the day's return, a state older than its memory",
+  "S3 closing auction: slope of 1e4*log(close / last 15:59 price) on the 15:59 day displacement, Spearman with lambda positive (rebalancing executed in the closing cross; price only)",
+  "S4 lambda from bull funds only and from bear funds only",
+  "S5 days with absolute day return at or above the stock's median",
+  "S6 median dPhi of treated stocks and of matched controls"
+ ],
+ "reading_stated_in_advance": {
+  "both_pass": "the certificate, computed without identifying anyone, tracks a feedback whose size is known from disclosures, across stocks",
+  "P1_passes_P2_fails": "the feedback is detected in anonymous flow but the margin is too noisy in 30-minute windows to rank stocks",
+  "both_fail_S3_passes": "the rebalancing is executed mainly in the closing auction, outside the continuous trades the certificate uses; K1 then cannot validate the certificate, it does not refute it",
+  "both_fail_S3_fails": "no trace of disclosed rebalancing in these windows; reported as a failure of K1"
+ },
+ "limits_stated_in_advance": [
+  "much rebalancing may execute in the closing auction or be hedged by dealers with other instruments; the primaries see continuous trading only",
+  "net assets are quarter-end values; flows within a quarter are ignored, and creations and redemptions of the funds may offset part of the rebalancing (Lambda is gross demand)",
+  "high-lambda stocks are retail-heavy and volatile; controls are matched on volume and volatility and the close-minus-13:30 difference removes responses constant through the afternoon, but not closing-specific behaviour correlated with lambda; a pass is evidence that the certificate tracks disclosed feedback, not proof that the funds are its only source",
+  "tick-rule signing",
+  "tickers active at the universe date only (survivorship)",
+  "intraday momentum near the close is known (Baltussen, Da, Lammers and Martens, JFE 2021); K1's contribution is the anonymous certificate's agreement with a disclosed feedback size, not the existence of the pattern"
+ ],
+ "designed_after": "No data of the sample period. Synthetic calibration only (K1_null_calibration.json): see the summary filled in at registration.",
+ "runs": "step 4 (evaluate) runs once; K1_unlock.json counts runs"
+}
