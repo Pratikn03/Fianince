@@ -187,6 +187,19 @@ def build():
           "\\newcommand{\\PsixDecided}{%d}\\newcommand{\\PsixUnsafe}{%d}" % (s6["decided"], s6["decided_unsafe"]),
           "\\newcommand{\\PsixEvery}{%d}\\newcommand{\\PsixHet}{%d}\\newcommand{\\PsixDisjoint}{%d}" % (
               s6["symbols_decided_every_quarter"], s6["symbols_heterogeneous_p05"], s6["symbols_with_disjoint_decided_quarters"])]
+    # Calibration of Proposition drift from Pilot 6 (per-day noise and quarter-to-quarter drift, medians over symbols)
+    q6 = json.loads((EV / "pilot6_quarterly_results.json").read_text())["per_symbol"]
+    sd_, dd_ = [], []
+    for v in q6.values():
+        qs = [v["quarters"][k] for k in sorted(v["quarters"])]
+        if len(qs) >= 3:
+            sd_.append(float(np.median([q["se"] * np.sqrt(q["n"]) for q in qs])))
+            dd_.append(float(np.median(np.abs(np.diff([q["M"] for q in qs])))) / 61)
+    s_, d_ = float(np.median(sd_)), float(np.median(dd_))
+    L += ["\\newcommand{\\DriftS}{%.3f}\\newcommand{\\DriftD}{%.5f}" % (s_, d_),
+          "\\newcommand{\\DriftW}{%.0f}" % ((1.96 * s_ / d_) ** (2 / 3)),
+          "\\newcommand{\\DriftFloor}{%.3f}" % (3 * (1.96 * s_) ** (2 / 3) * d_ ** (1 / 3) + d_),
+          "\\newcommand{\\DriftFloorLow}{%.3f}" % ((d_ * s_ ** 2 / 12) ** (1 / 3))]
     return "\n".join(L) + "\n"
 
 
