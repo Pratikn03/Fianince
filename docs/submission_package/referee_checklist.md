@@ -22,7 +22,7 @@
 | `p2_prop_twoworld`| Prop: Separation of Identification vs Safety | **Full** | `InfoSafetyExtensions.lean`| 0 sorry, 0 unapproved |
 | `p2_prop_equil`| Prop: Equilibrium Depth & Risk Rebate | **Full** | `Microfoundations.lean` | 0 sorry, 0 unapproved |
 
-- **Total Lean 4 Declarations:** 485 named declarations across 41 modules (445 manuscript, 40 thesis).
+- **Total Lean 4 Declarations:** 490 named declarations across 42 modules (445 manuscript, 45 thesis).
 - **Transitive Axiom Footprint:** Strictly standard Lean 4 axioms (`propext`, `Classical.choice`, `Quot.sound`). Zero `sorry`, zero unapproved axioms.
 
 ---

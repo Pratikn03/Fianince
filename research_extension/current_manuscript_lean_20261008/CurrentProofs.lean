@@ -46,3 +46,4 @@ import CurrentProofs.ThesisPeak
 import CurrentProofs.ThesisNatural
 import CurrentProofs.ThesisOvershoot
 import CurrentProofs.ThesisPassive
+import CurrentProofs.ThesisSigned
