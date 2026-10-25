@@ -257,6 +257,15 @@ def build():
               rs["n_contrarian_symbols"], rs["n_momentum_symbols"], rs["median_ratio_Psi_to_abs_SH"]),
           "\\newcommand{\\RoneHsix}{%.2f}\\newcommand{\\RoneHtwentyfour}{%.2f}\\newcommand{\\RoneStressRho}{%.2f}" % (
               el("size_H6"), el("size_H24"), rs["stress_partial_spearman"]["mean_rho"])]
+    # Test B1 (registered simulation): numbers beyond those its pipeline writes
+    b1 = json.loads((EV / "B1_results.json").read_text())["evaluation"]["secondary"]
+    fa, ml = b1["false_alarms"], b1["median_leads"]
+    L += ["\\newcommand{\\BoneFAdiscLost}{%d}\\newcommand{\\BoneFAdiscBuf}{%d}\\newcommand{\\BoneFAdiscTtz}{%d}" % (
+              fa["disc_lost"], fa["disc_buffer"], fa["disc_t2z"]),
+          "\\newcommand{\\BoneLeadFast}{%.1f}\\newcommand{\\BoneLeadSlow}{%.1f}" % (ml["fast_std_t2z"], ml["slow_std_t2z"]),
+          "\\newcommand{\\BoneLostLead}{%.0f}\\newcommand{\\BoneBufStdSlow}{%.0f}\\newcommand{\\BoneBufDiscSlow}{%.0f}" % (
+              ml["slow_std_lost"], ml["slow_std_buffer"], ml["slow_disc_buffer"]),
+          "\\newcommand{\\BoneTrack}{%.2f}" % b1["median_tracking_error"]]
     # Numerical check of Theorem thm:pooled (simulated; not evidence)
     po = json.loads((HERE / "pooled_estimator_numeric_check.json").read_text()); rr = [r["T_var_over_M"] for r in po["runs"]]
     L += ["\\newcommand{\\PooledKappa}{%g}\\newcommand{\\PooledSeps}{%g}" % (po["kappa"], po["s_eps"]),

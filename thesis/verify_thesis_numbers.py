@@ -261,6 +261,21 @@ else:
     assert s1c['opens'] in (0, 1) and 'S1: does the margin measure fragility? (registered, not yet run)' in concl
 print('Test S1: registration and pipeline hashes: PASS')
 
+# Test B1 (registered simulation): registration, counter, and the evaluation recomputed from its runs
+import b1_ailoop as B1mod  # noqa: E402
+b1spec = ROOT / 'checks/prereg/B1_ailoop.json'; b1j = json.loads(b1spec.read_text())
+assert (ROOT / 'checks/prereg/B1_ailoop.sha256').read_text().strip() == digest(b1spec)
+assert b1j['b1_sha256'] == digest(ROOT / 'evidence/b1_ailoop.py') and b1j['sim_sha256'] == digest(ROOT / 'evidence/ailoop_sim.py')
+b1c = json.loads((ROOT / 'checks/prereg/B1_unlock.json').read_text())
+if (ROOT / 'evidence/B1_results.json').exists():
+    b1r = json.loads((ROOT / 'evidence/B1_results.json').read_text())
+    assert b1c['opens'] == 1 and b1r['spec_sha256'] == digest(b1spec) == b1c['spec_sha256'] and b1r['seeds'] == [1001, 1100]
+    re_b1 = B1mod.evaluate(b1r['runs'])
+    for k in ('P1', 'P2', 'P3', 'P4'):
+        assert re_b1[k]['pass'] == b1r['evaluation'][k]['pass'], ('B1', k)
+    assert B1mod.numbers_tex(b1r['evaluation']) == (ROOT / 'checks/B1_numbers.tex').read_text()
+print('Test B1: registration and results reproduce from their files: PASS')
+
 # Tests R1 and H1: registered before their data; pipeline hashes, counters and the text's status
 for name, specf, keys, counter, res, para in (
         ('R1', 'R1_absresp', (('r1_sha256', 'r1_absresp.py'), ('s1_sha256', 's1_fragility.py'), ('c3_sha256', 'c3_margin_more_days.py'),
