@@ -1,0 +1,33 @@
+{
+ "test": "H2_cascade",
+ "status": "REGISTERED. Requested by the author on 2026-10-25 ('okay build h2'). Pushed in a commit of its own before any of its data were analysed: the H1 collector has been recording trades since 2026-10-25, and no analysis of them has been run by anyone.",
+ "designed_after": "No market data. Designed on H1's synthetic market only: with hour-of-day controls the margin decline appeared before large-excursion hours in a market whose feedback never changes (18 of 21 coins), so controls are matched on prior volatility; in ten further null simulations (seeds 11-20) the sign test on the whole margin decline rejected at 5% in 3 of 10 and on the feedback term in 0 of 10, so Primary 1 uses the feedback term; Primary 2 passed in 0 of 10 (H2_null_calibration.json, h2_null_calibration.py).",
+ "pipeline": "thesis/evidence/h2_cascade.py with h1_hyperliquid.py, c3_margin_more_days.py, c2_margin_vs_identify.py and pilot4_curve_and_risk.py unchanged",
+ "h2_sha256": "51e907db886d5c57d85bc3fbbbd568d308e7a37cde6aa23c7cc343267f8fdaf5",
+ "h1_sha256": "6abc8ca59ad297bf1ff962fc5efc1a99d7093a7aa502871a779e9bd6b5c4211a",
+ "c3_sha256": "5c8d7b83a9d27cbdecf3dfe3c1f8ce0873bca87e23fc88aa62a6597b116e37c5",
+ "c2_sha256": "c7981a8bcae2c9841bb390759127fd5c57ca7562d600cfc318bcaa7d4955cd1d",
+ "pilot4_sha256": "c8e65f81fd189b607ee727a87c913ee91255e7cfeee66b32cedc4687733cfa09",
+ "question": "In a live market, does the feedback term of the stability margin, certified from public prices and anonymous flow, rise in the hours before crash hours more than before calm hours with the same prior volatility, and does the margin's decline forecast the size of the next hour's excursion beyond volatility?",
+ "data": "the trades recorded by Test H1's collector (H1_universe.json, coverage files, H1's valid-day rule); public fields only (time, aggressor side, price, size)",
+ "opening_rule": "with H1: the first run on or after 2026-12-10 at which at least 20 coins are evaluable (H1's data gate), and on 2027-01-31 in any case; void if fewer than 20 evaluable coins; thesis/checks/prereg/H2_unlock.json must read opens = 0; the analysis runs once",
+ "construction": "five-minute bars (log price at the bar's last minute, return, signed taker notional), displacement x = p - EMA_12(p) over runs of consecutive valid bars; rolling 288-bar margin M = -beta - kappa*sum_{m=1..12} k_m from r = c + kappa f + beta x_{-1} and f = c' + sum k_m x_{-m} (at least 90% complete rows); D(h) = M(b_h - 72) - M(b_h); R(h) = kappa*Phi(b_h) - kappa*Phi(b_h - 72); excursion of hour h = largest move against any position on one-minute prices",
+ "crash_hours": "per coin, hours above the 99th percentile of excursion (with D and R defined), largest first, at least six hours apart; controls: the five hours closest in standardized log(1 + realized variance) over the previous 6 and 24 hours among hours with excursion below the coin's median, at least six hours from any hour above the 99th percentile",
+ "primary_1": "feedback rises before crash hours: per coin with a crash hour, score = mean R(crash) - mean R(controls); positive in more coins than not, exact one-sided sign test p < 0.05",
+ "primary_2": "the margin decline D forecasts log(1 + excursion) beyond a baseline of log(1 + realized variance) over 1, 6 and 24 hours, log(1 + previous excursion), hour-of-day and coin indicators; D winsorized at training 1st/99th percentiles; pooled OLS on each coin's first half of hours, evaluated on the second half; training coefficient on D positive, one-sided Clark-West p < 0.05 with date-averaged differentials, and the 500-draw date-block bootstrap 95% interval (seed 20261109) of the out-of-sample R^2 gain above zero",
+ "correction": "Holm across the two primaries at 0.05",
+ "secondary": [
+  "P1's comparison for the whole margin decline D",
+  "12-hour window",
+  "downward and upward crash hours separately",
+  "margin level before crash hours and controls; share of crash hours with a negative margin",
+  "AUC of R for crash hours against controls"
+ ],
+ "limits_stated_in_advance": [
+  "crash hours are defined from prices; they are not identified as liquidation cascades from account data",
+  "one venue over about two months",
+  "the rolling 24-hour estimates are noisy; a failure may reflect estimation noise rather than absence of the effect",
+  "the null calibration used a synthetic market whose feedback is constant; it shows the tests do not reject without a change in feedback there, not that they have power"
+ ],
+ "registered_utc": "2026-10-25T18:55:29.078335+00:00"
+}
