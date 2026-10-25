@@ -1,7 +1,7 @@
 \documentclass[12pt]{article}
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools}
-\usepackage{booktabs,threeparttable,setspace,enumitem,array}
+\usepackage{booktabs,threeparttable,setspace,enumitem,array,longtable,graphicx}
 \usepackage[authoryear,round]{natbib}
 \usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black]{hyperref}
 \usepackage{xcolor}
@@ -20,10 +20,12 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\E}{\mathbb{E}}
 
-% Every empirical number below is generated from a committed result file by the thesis pipeline.
-\makeatletter\def\input@path{{../../../thesis/}}\makeatother
+% Every empirical number below is generated from a committed result file by the thesis pipeline
+% (thesis/checks/*.tex) or, for the exploratory robustness section, by robustness.py in this folder.
+\makeatletter\def\input@path{{./}{../../../thesis/}}\makeatother
 \input{checks/E1v2_numbers}\input{checks/D1_numbers}\input{checks/G1_numbers}\input{checks/V1_numbers}
-\input{checks/C2_numbers}\input{checks/O1_numbers}\input{checks/C3_numbers}\input{checks/F1_numbers}\input{checks/S1_numbers}\input{checks/R1_numbers}\input{checks/results_extra}
+\input{checks/C2_numbers}\input{checks/O1_numbers}\input{checks/C3_numbers}\input{checks/F1_numbers}
+\input{checks/S1_numbers}\input{checks/R1_numbers}\input{checks/results_extra}\input{robustness_numbers}
 
 \title{Identify or Certify?\\ What Public Market Data Reveal About Algorithmic Feedback}
 \author{Pratik Niroula\thanks{Department of Computer Information Science, Minnesota State University, Mankato. \texttt{pratik.niroula@mnsu.edu}.}
@@ -34,52 +36,87 @@
 \maketitle
 
 \begin{abstract}
-\noindent Regulators ask to know which algorithms are trading. We ask which questions about those algorithms market data can answer, and at what cost. In a closed-loop model in which cohorts of algorithms respond to prices with exponential memory, every question an outside observer can ask is a functional of the merged measure of the cohorts' memory rates and weights. Identifying the cohorts is expensive: separating $K$ cohorts whose memory rates are $\Delta\eta$ apart needs a number of observations of order $(\Delta\eta)^{-(4K-2)}$, from controlled experiments and from passive data alike. Certifying the market's safety is cheap: it depends on the cohorts only through one linear functional, the stability margin $M=1-a-\kappa\Phi$, and from passive data deciding its sign takes a record of length of order $1/M$: we prove lower and upper bounds of that order for one closed-loop root and for any number of cohorts with finite memory. The two costs are unrelated: one depends on how similar the agents are, the other on how close the market is to instability. Three tests registered before their data were downloaded, each on 25 to 30 crypto perpetual futures never used before, support the dichotomy: the margin was decided, always on the safe side, in \CtwoDecided{} of \CtwoSymbols{}, \CthreeDecided{} of \CthreeSymbols{} and \FoneDecided{} of \FoneSymbols{} markets, while the cohorts were identified in at most one per test. The certificate is informative about turbulence but not about crashes: on \SoneSymbols{} further new markets it forecast next-day variance beyond the Hawkes branching ratio, as registered ($t=\SoneHawkesT$), while registered forecasts of adverse and extreme moves failed and it did not rank which markets fell furthest on the worst days; on \RoneSymbols{} more, losses scaled with the estimated closed-loop response at about half the predicted rate. With contrarian agents, which dominate these data, the theory predicts exactly this: the margin certifies stability, but it stops measuring worst-case loss. We prove that the quantity that does, the horizon-limited absolute response, is certified from passive data at the parametric rate, that the cost of order $1/M$ holds uniformly as the margin vanishes, and that without a bound on the agents' memory no passive certificate exists at all.
+\noindent Regulators ask to know which algorithms are trading. We ask which questions about those algorithms market data can answer, and at what cost. In a closed-loop model in which cohorts of algorithms respond to prices with exponential memory, every question an outside observer can ask is a functional of the merged measure of the cohorts' memory rates and weights. Identifying the cohorts is expensive: separating $K$ cohorts whose memory rates are $\Delta\eta$ apart needs a number of observations of order $(\Delta\eta)^{-(4K-2)}$, from experiments and from passive data alike. Certifying the market's stability is cheap: it depends on the cohorts only through the stability margin $M=1-a-\kappa\Phi$, and from passive data deciding its sign takes a record of length of order $1/M$, with matching lower and upper bounds that hold for any number of cohorts with finite memory, uniformly as the margin vanishes, and, for fixed economies, for the price-and-flow estimator used in practice. Without a bound on the agents' memory no passive certificate exists: a slow momentum cohort can hide instability from any finite record. Tests registered before their data were downloaded, on disjoint sets of crypto perpetual futures never used before, support the dichotomy: the margin was decided, always on the safe side, in \CtwoDecided{} of \CtwoSymbols{}, \CthreeDecided{} of \CthreeSymbols{} and \FoneDecided{} of \FoneSymbols{} markets while the cohorts were identified in at most one per test, and on \SoneSymbols{} further markets the margin forecast next-day variance beyond the Hawkes branching ratio. It did not forecast adverse or extreme moves and did not rank damage on the worst days. Public data certify how close a market is to instability and how turbulent it will be; they do not say where a crash will land.
 \end{abstract}
 
-\medskip\noindent\textbf{Keywords:} algorithmic trading, identification, certification, closed-loop markets, unit roots, pre-registration.\quad\textbf{JEL:} G14, G18, C12, C22.
+\medskip\noindent\textbf{Keywords:} algorithmic trading, identification, certification, closed-loop markets, unit roots, disclosure, pre-registration.\quad\textbf{JEL:} G14, G18, C12, C22.
 
 \newpage
 \section{Introduction}\label{sec:intro}
 
-When trading algorithms condition on recent prices and their orders move prices, price formation is a feedback system. Regulators increasingly respond by asking to know which algorithms are trading: MiFID~II requires firms to flag algorithmic orders and identify the algorithm responsible, and the US Consolidated Audit Trail links orders to customers. The premise is that knowing the agents is the route to knowing whether the market is safe. This paper shows that, for a supervisor who only sees market data, the two questions have very different costs, and that the cheap one is the one that matters for safety.
+When trading algorithms condition on recent prices and their orders move prices, price formation is a feedback system. Supervisors have responded by asking to know which algorithms are trading. Under MiFID~II, investment firms in the European Union must flag algorithmic orders and identify the algorithm responsible for each; the US Consolidated Audit Trail links every order in listed equities and options to an anonymized customer. The premise is that knowing the agents is the route to knowing whether the market is safe. This paper separates the two questions and shows that, for an observer who sees only market data, they have very different costs. The cheap one is the one that matters for stability.
 
-We work with a linear closed-loop model in which $K$ cohorts of algorithms track the price displacement with exponential memory, the reduced form of steady-state Kalman filtering and of regularized online learning, and trade on it with weights that may be positive (momentum) or negative (contrarian). The agents enter the observable dynamics only through a merged measure of memory rates and weights (Section~\ref{sec:model}). Every question about them is a functional of that measure, and we sort questions by their cost.
+We work with a linear closed-loop model. The displacement of the price from its fundamental value reverts at a known rate and is pushed by order flow with a known impact; $K$ cohorts of algorithms track the displacement with exponential memory, the reduced form of steady-state Kalman filtering and of regularized online learning, and trade on it with weights that may be positive (momentum) or negative (contrarian). In this model the agents enter the observable dynamics only through a merged measure of memory rates and weights. Every question an outside observer can ask is a functional of that measure, and the questions differ sharply in cost.
 
-\paragraph{Identification is expensive.} Separating two cohorts whose memory rates differ by $\delta$ needs $\Omega(\delta^{-4})$ observations, and separating $K$ cohorts spaced $\Delta\eta$ apart needs $\Omega((\Delta\eta)^{-(4K-2)})$, whether the observer runs controlled experiments or watches passively (Section~\ref{sec:identify}). These bounds are attained.
+\paragraph{Identification is expensive.} Two cohorts whose memory rates differ by $\delta$ produce price responses that differ at order $\delta^2$, so separating them needs $\Omega(\delta^{-4})$ observations; separating $K$ cohorts spaced $\Delta\eta$ apart needs $\Omega((\Delta\eta)^{-(4K-2)})$. These bounds are attained, and they hold whether the observer runs controlled experiments or watches the market passively (Section~\ref{sec:identify}).
 
-\paragraph{Certification is cheap.} Safety depends on the agents only through their total feedback weight $\Phi$, and the market is stable exactly when the margin $M=1-a-\kappa\Phi$ is positive. From reset experiments, certifying $\Phi$ costs $\sigma^2\epsilon^{-2}\log(1/\epsilon)$ and no less. From passive data, deciding the sign of $M$ is a unit-root problem: we prove that it needs a record of length of order $1/M$, with lower and upper bounds of that order, first for one closed-loop root and then for any number of cohorts whose memory is finite (Theorems~\ref{thm:passive} and~\ref{thm:multi}). The number and similarity of the cohorts do not enter.
+\paragraph{Certification is cheap.} Stability depends on the agents only through their total feedback weight $\Phi$, and the closed loop is stable when the margin $M=1-a-\kappa\Phi$ is positive. Deciding the sign of $M$ from a passive record is the problem of rejecting a unit root. We prove that it needs a record of length of order $1/M$, with matching lower and upper bounds, first for one closed-loop root (Theorem~\ref{thm:passive}), then for any number of cohorts with finite memory (Theorem~\ref{thm:multi}), uniformly as the margin vanishes (Theorem~\ref{thm:uniform}), and for the estimator that pools a price-impact regression with a flow regression, which is the estimator used in practice (Theorem~\ref{thm:pooled}). The number and similarity of the cohorts do not enter. Together with the identification bounds this gives the paper's central result (Theorem~\ref{thm:dichotomy}): the cost of identification is set by how similar the agents are, the cost of certification by how close the market is to instability, and for a market at a fixed margin the ratio of the two grows without bound as the agents become similar.
 
-\paragraph{The dichotomy.} Together, the cost of identification is set by how similar the agents are and the cost of certification by how close the market is to the boundary, and for a market at a fixed margin the ratio of the two grows without bound as the agents become similar (Theorem~\ref{thm:dichotomy}). A supervisor can know that a market is stable long before it can know who trades in it.
+\paragraph{What disclosure must supply.} Certification needs one thing that prices cannot provide: a bound on memory. We show that without it no passive certificate exists at all (Theorem~\ref{thm:hidden}). A momentum cohort that trades on long averages of the price contributes little to each period's response and a great deal to the total feedback, so it can make a market unstable without leaving a trace in any finite record; in simulation, a standard unit-root certificate certified such an unsafe market as safe in \UniformUnsafeRate\% of replications. The policy implication is specific. A supervisor who wants stability needs disclosures that bound how slowly the largest participants trade, not their identities.
 
-\paragraph{Evidence.} We test the dichotomy on public Binance data with three tests whose specifications, code hashes and universe rules were pushed to a public repository in commits of their own before any of their data were downloaded, each run once (Section~\ref{sec:evidence}). On three disjoint sets of perpetual futures never used before, the margin was decided in \CtwoDecided{} of \CtwoSymbols{} (one short of the registered threshold), \CthreeDecided{} of \CthreeSymbols{} and \FoneDecided{} of \FoneSymbols{} markets, always on the safe side, while the memories were identified in \CtwoIdentified{}, \CthreeIdentified{} and \FoneIdentified{}. Markets in which the decision was reached but the agents were not identified outnumbered the reverse by \CtwoB{} to \CtwoC{}, \CthreeB{} to \CthreeC{} and \FoneB{} to \FoneC{}. Class-level positioning data, the closest public analogue of tagged disclosure, restricted a persistence parameter that prices could not bound in \CtwoPthreeTighter{} of \CtwoPthreeSymbols{} markets.
+\paragraph{What the margin measures.} The margin decides stability. When some agents are contrarian it does not bound worst-case loss, because the impulse response can oscillate; the quantity that does is the horizon-limited absolute response, which we show is certified from passive data at the parametric rate (Theorem~\ref{thm:absresp}).
 
-\paragraph{What the certificate is not.} The margin certifies distance from instability. It is not a forecast of the next crash. A registered test of whether the 20-day margin forecasts the next day's largest adverse move failed (Clark--West $t=\FoneRiskT$, $p=\FoneRiskP$). A later registered test on \SoneSymbols{} new markets found that it does forecast next-day realized variance, beyond the Hawkes branching ratio ($t=\SoneHawkesT$), but not extreme moves, and that it does not rank damage on market-wide stress days. A third registered test found that the size of the estimated closed-loop response does scale with next-day losses within markets, at about half the rate the linear theory predicts, but that beyond recent volatility it forecasts smaller losses, not larger. With contrarian agents, which the estimates suggest are common, the summed response no longer bounds worst-case loss (Proposition~\ref{prop:signed}); we prove that the quantity that does is certified from passive data at the parametric rate, although at a one-hour horizon the data do not yet distinguish the two. Safety in the sense of stability is certifiable from prices without identifying anyone; turbulence is partly forecastable from the same certificate; crashes are not.
+\paragraph{Evidence.} We test these predictions on public Binance data with tests whose specifications, code hashes and universe rules were pushed to a public repository in commits of their own before any of their data were downloaded, each run once, and each on perpetual futures that appear in no earlier part of the project (Section~\ref{sec:evidence}). Three results stand out.
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Certification without identification.} On three disjoint sets of new markets the margin was decided in \CtwoDecided{} of \CtwoSymbols{} (one short of the registered threshold, with 105 days), \CthreeDecided{} of \CthreeSymbols{} and \FoneDecided{} of \FoneSymbols{} (with 430 days), always on the safe side, while the memories were identified in at most one market per test. Markets decided but not identified outnumbered the reverse by \CtwoB{} to \CtwoC{}, \CthreeB{} to \CthreeC{} and \FoneB{} to \FoneC{}.
+\item \emph{The certificate forecasts turbulence.} On \SoneSymbols{} further markets, a lower margin forecast higher next-day realized variance out of sample (Clark--West $t=\SoneRvT$), and it did so beyond the branching ratio of a Hawkes model of trade arrivals, the standard measure of self-excitation in markets ($t=\SoneHawkesT$); the branching ratio alone did not ($t=\SoneNhatRvT$).
+\item \emph{It does not forecast crashes.} Registered forecasts of next-day adverse moves (F1) and extreme moves (S1) from the margin failed, and on the 20 worst market-wide days the prior margin did not rank which markets fell furthest. On \RoneSymbols{} more markets, losses scaled with the estimated closed-loop response at about half the predicted rate, but beyond recent volatility a larger response forecast smaller losses, not larger.
+\end{enumerate}
+Of the twenty-three registered primary hypotheses tested in the project, eleven passed and twelve failed; we report all of them (Table~\ref{tab:registered}).
 
-\paragraph{Related literature.} The identification bounds belong to the theory of super-resolution and mixture estimation \citep{heinrich2018,wu2020}; their market form, with the costs in executed quantity and capital, is in the companion paper \citep{niroula2026a}. The cost of a linear question is governed by a modulus of continuity, as in the classical theory of estimating linear functionals \citep{ibragimov1984,donoho1994}; what is specific to markets is that the safety functional sits exactly on the boundary of the parametric class. Passive certification is a unit-root problem, and we use the limit theory of \citet{mannwald1943} and \citet{phillips2007}; the impossibility of certifying markets close to the boundary from short records is the reason unit-root tests have little power near unity \citep{ers1996}. The closest empirical measure of self-excitation in markets is the branching ratio of Hawkes models of order arrivals \citep{filimonov2012,hardiman2013}, which estimates how much trading is triggered by trading; our margin measures the price feedback loop instead, and in a registered head-to-head comparison the margin forecast next-day variance while the branching ratio did not (Section~\ref{sec:s1}). On algorithmic trading and fragility, \citet{brunnermeier2009} and \citet{kirilenko2017} study how feedback and liquidity interact in stress; \citet{budish2015} study market design responses.
+\paragraph{Contribution.} The paper makes three contributions. The first is conceptual: it separates identification from certification as questions about the same closed-loop market, and shows that their costs are governed by different features of the market. The second is theoretical: a complete passive theory of certifying stability, with sharp rates, uniformity, the estimator used in practice, and an impossibility result that says exactly what disclosure must add. The third is empirical and methodological: a sequence of tests, each registered before its data existed in the analyst's hands, on markets never used before, whose failures are reported with the same weight as its successes.
 
-\paragraph{What we do not claim.} The bounds hold for the stated linear model and observation contracts. They are not limits on what participant-level records can reveal; with such records identification becomes ordinary estimation \citep{niroula2026a}. The empirical margin is estimated from a reduced form whose relation to the structural model rests on the model's linearity and on the stationarity of the margin over the estimation window; we report where these assumptions strain.
+\paragraph{What we do not claim.} The bounds hold for the stated linear model and observation contracts. They are not limits on what participant-level records can reveal; with such records identification becomes ordinary estimation \citep{niroula2026a}. The empirical margin is estimated from a reduced form whose relation to the model rests on linearity, on the exogeneity of each period's flow to the period's price noise, on a moving-average proxy for the fundamental value, and on the stationarity of the margin over the estimation window; we say where each strains. Every certified market was far from the boundary, so the evidence shows that public data can certify stability, not that they detect a market approaching instability.
 
-\section{Model}\label{sec:model}
+Section~\ref{sec:lit} places the paper in the literature. Section~\ref{sec:model} sets out the model and the observation contracts. Section~\ref{sec:identify} states the identification bounds, Section~\ref{sec:certify} the certification theory, and Section~\ref{sec:memory} the results on memory, uniformity and worst-case loss. Section~\ref{sec:evidence} reports the evidence, Section~\ref{sec:robust} exploratory robustness, and Section~\ref{sec:discussion} the implications. Proofs not given in the text are in Appendix~\ref{app:proofs}; the registration record is in Appendix~\ref{app:registry}.
+
+\section{Related literature}\label{sec:lit}
+
+\paragraph{Price formation and feedback.} The model is a closed-loop version of the linear price-impact tradition that starts with \citet{kyle1985}. Order flow moves prices with an impact coefficient, and the information content of trades is measured by the dynamic response of prices to flow \citep{hasbrouck1991}. The propagator view of \citet{bouchaud2004} treats the price as a linear filter of past order flow and emphasizes that flow is itself persistent. In our model flow is persistent because algorithms respond to past prices, and the feedback loop is what makes stability a question at all. \citet{brunnermeier2009} show how funding constraints turn price moves into forced trades, and \citet{kirilenko2017} document how high-frequency traders' inventory management amplified the 2010 Flash Crash. \citet{kirilenko2013} survey the supervisory problems algorithmic trading creates; \citet{budish2015} study a market design response to speed competition. We take the feedback loop as given and ask what an observer can learn about it.
+
+\paragraph{Self-excitation.} The closest empirical measure of feedback in markets is the branching ratio of a Hawkes model of order arrivals, which estimates the share of events triggered by earlier events \citep{filimonov2012,hardiman2013,bacry2015}. A branching ratio close to one has been read as a market close to criticality. The branching ratio describes the arrival of trades; the margin describes the price feedback loop, and the two can move independently. In a registered head-to-head comparison the margin forecast next-day variance and the branching ratio did not (Section~\ref{sec:s1}).
+
+\paragraph{Identification of mixtures.} Recovering the cohorts from the merged measure is a problem of estimating a finite mixture from its moments, closely related to super-resolution. Rates of the form $(\Delta)^{-(4K-2)}$ for separating $K$ closely spaced components appear in the theory of strong identifiability \citep{heinrich2018}, of moment methods \citep{wu2020}, and of super-resolution under sparsity \citep{donoho1992super}. The companion paper \citep{niroula2026a} proves the market form of these bounds and translates them into executed quantity and trading capital.
+
+\paragraph{Linear functionals and certification.} The cost of certifying a linear functional of an unknown measure from noisy linear observations is governed by a modulus of continuity \citep{ibragimov1984,donoho1994}. What is specific to markets is that the stability functional, the total feedback weight, sits exactly on the boundary of the class that can be certified at the parametric rate, and pays one logarithm \citep{niroula2026thesis}.
+
+\paragraph{Unit roots.} Passive certification is the problem of rejecting a unit root. We use the limit theory of \citet{mannwald1943}, \citet{phillips1987}, \citet{chanwei1987} and \citet{phillips2007}, the uniform theory of \citet{mikusheva2007,mikusheva2012}, and the augmented regression of \citet{dickeyfuller1979} and \citet{saiddickey1984}. That unit-root tests have little power when the root is near one \citep{ers1996}, and no power against all stationary alternatives \citep{blough1992,faust1996,potscher2002}, are classical. Our contributions here are the market form: the dependence of the cost on the margin and on the root structure that the agents' memories create, the pooled estimator, and the identification of slow momentum cohorts as the economic content of the impossibility.
+
+\paragraph{Credibility of empirical finance.} \citet{harvey2016} and \citet{harvey2017} argue that the multiplicity of tests in finance demands higher evidentiary standards and pre-specification. Our tests follow that advice literally: each specification was made public before its data were downloaded, each test was run once, and the results, including twelve failed primaries, are reported as they came out.
+
+\section{Model and observation contracts}\label{sec:model}
+
+\subsection{The closed-loop economy}
 
 The displacement of the price from its fundamental value, $x_t$, evolves as
 \begin{equation}\label{eq:plant}
 x_{t+1}=a\,x_t+\kappa\,(u_t+w_{t+1}),\qquad u_t=\sum_{i=1}^Kq_i\,y_{i,t},\qquad y_{i,t}=r_i\,y_{i,t-1}+(1-r_i)\,x_t,
 \end{equation}
-with persistence $a\in[0,1)$, impact $\kappa>0$, shocks $w_t$, and $K$ cohorts with weights $q_i\in\R$ and memory rates $r_i\in[0,1)$; a cohort with $q_i<0$ is contrarian. The aggregate response is a linear filter of past displacements,
+with persistence $a\in[0,1)$, impact $\kappa>0$, exogenous order-flow shocks $w_t$, and $K$ cohorts with weights $q_i\in\R$ and memory rates $r_i\in[0,1)$. The state $y_{i,t}$ is cohort $i$'s estimate of the displacement; exponential smoothing is the steady state of a Kalman filter for a persistent signal in noise and the fixed point of online gradient descent with $L_2$ regularization \citep{niroula2026a}. A cohort with $q_i>0$ buys when the price is below its estimate of value and amplifies moves through the loop; a cohort with $q_i<0$ trades against the move.
+
+The aggregate response is a linear filter of past displacements,
 \[
 u_t=\sum_{m\ge0}k_m\,x_{t-m},\qquad k_m=\int r^m\,dQ(r),\qquad Q=\sum_{i=1}^Kq_i(1-r_i)\,\delta_{r_i},
 \]
-so the agents enter only through the \emph{merged measure} $Q$: cohorts that share a memory rate are indistinguishable whatever their identities. The total feedback weight is $\Phi=\sum_mk_m=\int(1-r)^{-1}dQ(r)=\sum_iq_i$, and the closed-loop polynomial $f(z)=1-az-\kappa z\sum_mk_mz^m$ has $f(1)=1-a-\kappa\Phi$.
+so the agents enter the observable dynamics only through the \emph{merged measure} $Q$: cohorts that share a memory rate are indistinguishable whatever their identities. The total feedback weight is $\Phi=\sum_mk_m=\int(1-r)^{-1}dQ(r)=\sum_iq_i$, and the closed-loop polynomial $f(z)=1-az-\kappa z\sum_mk_mz^m$ has $f(1)=1-a-\kappa\Phi$.
 
-\begin{definition}[Stability margin]\label{def:margin}
-The \emph{stability margin} is $M=1-a-\kappa\Phi$. When every $q_i\ge0$ (the positive class), the closed loop is stable if and only if $M>0$, every tap of the impulse response $h$ is non-negative, and the worst-case transient loss of a position $I$ under shocks bounded by $\bar w$ is $|I|\bar w\|h\|_1=|I|\bar w\,S$ with
-\[
-S=\sum_th_t=\frac{\kappa}{1-a-\kappa\Phi}=\frac{\kappa}{M}.
-\]
+\begin{definition}[Stability margin and summed response]\label{def:margin}
+The \emph{stability margin} is $M=1-a-\kappa\Phi=f(1)$. The \emph{impulse response} $h_t$ is the effect on $x_{t-1}$ of a unit flow shock at time zero; the \emph{summed response} is $S=\sum_th_t=\kappa/M$ when the sum converges.
 \end{definition}
 
-Safety in the positive class is therefore a question about one linear functional of $Q$, while identification asks for $Q$ itself. We compare the two under two observation contracts: \emph{reset experiments}, in which an observer can restart the market from rest, apply a probe and read noisy responses; and \emph{passive data}, in which the observer only watches the market run. The first is the contract of a supervisor with market access; the second is the contract of anyone with public data.
+In the positive class (every $q_i\ge0$), every tap of $h$ is non-negative, the closed loop is stable if and only if $M>0$, and the worst-case displacement caused by shocks bounded by $\bar w$ is $\bar w\|h\|_1=\bar wS$. Stability, and in the positive class worst-case loss, are therefore questions about one linear functional of $Q$, while identification asks for $Q$ itself. With signed weights a stable loop can have an oscillating response, $\|h\|_1$ can exceed $|S|$ by an unbounded factor, and stability and worst-case loss come apart (Section~\ref{sec:signed}).
+
+\subsection{Observation contracts}
+
+We compare questions under two observation contracts. Under \emph{reset experiments}, an observer can restart the market from rest, apply a probe and read the noisy response; this is the contract of a supervisor with market access or a firm that can trade. Under \emph{passive data}, the observer only watches the market run and records prices and, when available, anonymous signed order flow; this is the contract of anyone with public data. A third contract, \emph{tagged disclosure}, gives the observer each class's own flow or positions; it turns identification into ordinary estimation and is the subject of the companion paper.
+
+\subsection{From the model to the estimator}\label{sec:reduced}
+
+The tests estimate two regressions per market and pool their sufficient statistics over days. With $x_t$ the log price minus its exponential moving average on five-minute marks and $f_t$ signed taker notional,
+\begin{equation}\label{eq:reduced}
+x_{t+1}-x_t=\kappa f_{t+1}+\beta x_t+\varepsilon_{t+1},\qquad f_{t+1}=\sum_{m<L}k_mx_{t-m}+w_{t+1},
+\end{equation}
+with $L=12$ lags, so that $\beta=a-1$ and the margin is $M=-\beta-\kappa\Phi$. The mapping from~\eqref{eq:plant} to~\eqref{eq:reduced} needs three assumptions, each of which can fail. The kernel must be well approximated by twelve lags (one hour); Theorem~\ref{thm:hidden} shows what is lost when it is not. The price noise $\varepsilon_{t+1}$ must be independent of the period's flow, the usual identifying assumption of impact regressions; in five-minute bars the two can be simultaneous. And the moving-average displacement must stand in for the distance from fundamental value; when the fundamental moves, the proxy confounds reversion with tracking.
 
 \section{Identification is expensive}\label{sec:identify}
 
@@ -92,15 +129,15 @@ Let $a$ and $\kappa$ be known.
 \end{enumerate}
 \end{theorem}
 
-The bounds are proved in \citet{niroula2026a}, which also translates them into executed quantity of order $\delta^{-2}$ and trading capital of order $\delta^{-4}$ for a known pair. The point for this paper is part~(iii): watching instead of probing does not make identification cheaper. The bounds do not depend on how close the market is to instability.
+Part~(i) is the reason identification is hard. The response to a probe depends on the moments $k_m=\int r^mdQ$, and two measures with the same first moments produce responses that agree to high order; part~(ii) quantifies how high. The companion paper translates the bounds into the executed quantity, of order $\delta^{-2}$, and trading capital, of order $\delta^{-4}$, that a probing supervisor would need for a known pair, and shows that settled online learners trained in the closed loop obey the same scaling. The point for this paper is part~(iii): watching instead of probing does not make identification cheaper, and nothing in the bounds depends on how close the market is to instability.
 
 \section{Certification is cheap}\label{sec:certify}
 
 \subsection{Reset experiments}
 
-Under the reset contract, a linear question $F_g(Q)=\int g\,dQ$ over measures supported on $[0,\bar r]$ with mass at most $B$ costs a number of experiments set by a modulus of continuity whose dual is a problem of polynomial approximation with penalized coefficients, and it is parametric exactly when $g$ has square-summable power-series coefficients \citep[Chapter~4]{niroula2026thesis}. The total feedback $\Phi$ has $g(r)=1/(1-r)$, whose coefficients are all one: it sits on the boundary.
+Under the reset contract, a linear question $F_g(Q)=\int g\,dQ$ over measures on $[0,\bar r]$ with mass at most $B$ costs a number of experiments set by a modulus of continuity whose dual is a problem of polynomial approximation with penalized coefficients; it is parametric exactly when $g$ has square-summable power-series coefficients \citep[Chapter~4]{niroula2026thesis}. The total feedback $\Phi$ has $g(r)=1/(1-r)$, whose coefficients are all one: it sits on the boundary.
 
-\begin{theorem}[The safety question costs one logarithm; \citealp{niroula2026thesis}]\label{thm:philog}
+\begin{theorem}[The stability question costs one logarithm; \citealp{niroula2026thesis}]\label{thm:philog}
 Under the reset contract, with memory bound $\bar r<1$, certifying $\Phi$, and $S$ whenever $a+\kappa B/(1-\bar r)<1$, to half-width $\epsilon$ needs $N\asymp\sigma^2\epsilon^{-2}\log(1/\epsilon)$ experiments as $\epsilon\to0$, and the logarithm cannot be removed. Without a memory bound, no finite number of experiments certifies $\Phi$ to any finite accuracy.
 \end{theorem}
 
@@ -112,11 +149,9 @@ In the positive class with $M>0$ and $\epsilon\in(0,1/2]$, certifying $S$ to rel
 $S$ is increasing in $\Phi$ on $\Phi<(1-a)/\kappa$. If $|\Phi'-\Phi|\le\epsilon M/(2\kappa)$ then $M'=1-a-\kappa\Phi'\ge M(1-\epsilon/2)$ and $|S'-S|/S=\kappa|\Phi'-\Phi|/M'\le\epsilon$. Conversely $|S'-S|\le\epsilon S$ gives $\kappa|\Phi'-\Phi|\le\epsilon M'\le\epsilon(M+\kappa|\Phi'-\Phi|)$, so $\kappa|\Phi'-\Phi|\le2\epsilon M$. Substitute into Theorem~\ref{thm:philog}.
 \end{proof}
 
-The economics of the problem, how close the market is to instability, enters the cost of certification and only of certification.
+The corollary answers the objection that the closed loop is a reparametrization of a known moment problem. For identification it is. For stability it is not: the loop turns a linear question about $\Phi$ into a question about $S$ whose cost grows as the market nears the boundary. The economics of the problem, how close the market is to instability, enters the cost of certification and only of certification.
 
-\subsection{Passive data}
-
-Public data are passive. Deciding the sign of the margin from them is the problem of rejecting a unit root.
+\subsection{Passive data: one root}
 
 \begin{theorem}[Passive certification, one root]\label{thm:passive}
 Observe $x_{t+1}=a\,x_t+\kappa\sum_{m\ge0}k_mx_{t-m}+\kappa w_{t+1}$ with independent $N(0,s^2)$ shocks for $t<T$, from $x_0=0$.
@@ -125,6 +160,10 @@ Observe $x_{t+1}=a\,x_t+\kappa\sum_{m\ge0}k_mx_{t-m}+\kappa w_{t+1}$ with indepe
 \item In these economies $x_{t+1}=\rho x_t+\kappa w_{t+1}$ with $\rho=1-M$. For fixed $\rho\in(-1,1)$, $\sqrt T(\hat M-M)\to N(0,M(2-M))$ for the least-squares $\hat M=1-\hat\rho$; along $M_T\to0$ with $TM_T\to\infty$, $(T/2M_T)^{1/2}(\hat M-M_T)\to N(0,1)$. The studentized interval decides the sign with asymptotic error at most $\alpha$ once $TM>2z_{1-\alpha/2}^2$.
 \end{enumerate}
 \end{theorem}
+
+Part~(i) is the reason unit-root tests have little power when $T(1-\rho)$ is small \citep{ers1996}: a market close to the boundary cannot be certified from a short record, whoever its agents are.
+
+\subsection{Passive data: several cohorts}
 
 \begin{theorem}[Passive certification, several cohorts]\label{thm:multi}
 Let the kernel vanish beyond $L\ge2$ lags, with any signs, and write the economy as $x_{t+1}=\sum_{i<L}\phi_ix_{t-i}+e_{t+1}$ with $e_t$ independent $N(0,\sigma^2)$ and $x_t=0$ for $t\le0$, so that $f(z)=1-\sum_{i<L}\phi_iz^{i+1}$ and $M=f(1)$. Suppose $f(z)=(1-\rho z)g(z)$ with $g$ real, $g(0)=1$, of degree $p=L-1$ and without zeros in $|z|\le1+\gamma$, $\gamma>0$. Then $g(1)>0$, $M=(1-\rho)g(1)$, and:
@@ -138,23 +177,68 @@ so the studentized interval has half-width below $M$ once $T>z_{1-\alpha/2}^2C_{
 \end{enumerate}
 \end{theorem}
 
-The proofs are in Appendix~\ref{app:proofs}. The constant in part~(ii) is crude: in numerical checks with $p=2$ and $\rho$ up to $0.99$, $V/M$ is within 15\% of $2g(1)$, so that the upper bound needs $T$ of order $2z^2g(1)/M$ and the lower bound $(1-2\alpha)^2g(1)/M$, matching in their dependence on both $g(1)$ and $M$. Section~\ref{sec:memory} shows that the passive bounds need a memory bound and hold uniformly as $M\to0$; the pooled price-and-flow estimator used in our tests is not covered.
+The constant in part~(ii) is crude. In numerical checks with $p=2$ and $\rho$ up to $0.99$, $V/M$ is within 15\% of $2g(1)$, so that the upper bound needs $T$ of order $2z^2g(1)/M$ and the lower bound $(1-2\alpha)^2g(1)/M$: they match in their dependence on both $g(1)$ and $M$. The key step of the proof is a lower bound on the variance of the displacement that remains after projecting on its recent changes: whatever polynomial in the lag operator is applied, its value at frequency zero is one, and the spectrum of the displacement concentrates there like $1/\delta$, $\delta=1-\rho$.
+
+\subsection{The estimator used in practice}
+
+The estimator of the tests pools the price-impact regression and the flow regression in~\eqref{eq:reduced}. It certifies at the same order.
+
+\begin{theorem}[The pooled price-and-flow estimator]\label{thm:pooled}
+Observe $(x_t,f_t)$ generated by~\eqref{eq:reduced} with finite memory, $w_t\sim N(0,s_w^2)$ and $\varepsilon_t\sim N(0,s_\varepsilon^2)$ independent of each other and over time, $\kappa>0$, $x_t=0$ for $t\le0$, and $f$ as in Theorem~\ref{thm:multi}. Let $\hat M=-\hat\beta-\hat\kappa\sum_m\hat k_m$ with $(\hat\kappa,\hat\beta)$ and $\hat k$ the least-squares estimates of the two equations.
+\begin{enumerate}[label=(\roman*)]
+\item For $\mu\in(0,1]$, two economies with one cohort of memory rate zero, the same $a$ and $\kappa$, and margins $\pm\mu$ have divergence at most $2T\mu(1+R)$ over $T$ observations of $(x_t,f_t)$, with $R=s_\varepsilon^2/(\kappa^2s_w^2)$; deciding the sign with error at most $\alpha<1/2$ needs $T\ge(1-2\alpha)^2/(\mu(1+R))$.
+\item For $\rho\in[0,1)$, $\sqrt T(\hat M-M)\to N(0,V_{\rm pool})$ with $V_{\rm pool}\le4C_{p,\gamma}M$.
+\end{enumerate}
+\end{theorem}
+
+Observing the flow changes the constant, not the order. The proof (Appendix~\ref{app:proofs}) writes $\hat M-M$ as the error of a price-equation coefficient on the level of the displacement plus $\kappa$ times the error of the summed flow kernel, and shows that each is the coefficient on the level in a regression whose other regressors are stationary, so each inherits the variance bound of Theorem~\ref{thm:multi}. In simulation $T\,{\rm Var}(\hat M)/M$ was between \PooledRatioLo{} and \PooledRatioHi{} as $\rho$ ranged from $0.9$ to $0.99$.
+
+\subsection{The dichotomy}
 
 \begin{theorem}[Identify or certify]\label{thm:dichotomy}
-Under the passive contract, separating $K$ cohorts whose memory rates are $\Delta\eta$ apart needs a record of length $\Omega((\Delta\eta)^{-(4K-2)})$ whatever the margin, while deciding the safety of a market with finite memory at margin $M$ needs a record of length of order $1/M$ whatever the cohorts' spacing, with constants depending only on the memory length and the root gap. For a market at a fixed margin, the ratio of the two costs grows without bound as the cohorts become similar.
+Under the passive contract, separating $K$ cohorts whose memory rates are $\Delta\eta$ apart needs a record of length $\Omega((\Delta\eta)^{-(4K-2)})$ whatever the margin, while deciding the stability of a market with finite memory at margin $M$ needs a record of length of order $1/M$ whatever the cohorts' spacing, with constants depending only on the memory length and the root gap, and the same order holds for the pooled estimator. For a market at a fixed margin, the ratio of the two costs grows without bound as the cohorts become similar.
 \end{theorem}
 
 \begin{proof}
-Theorem~\ref{thm:identify}(iii) and Theorem~\ref{thm:multi}; the latter's constants do not involve the memory rates of the cohorts beyond the root gap of $g$, and its bounds do not involve $\Delta\eta$.
+Theorem~\ref{thm:identify}(iii) and Theorems~\ref{thm:multi} and~\ref{thm:pooled}; the latter's constants do not involve the cohorts' memory rates beyond the root gap of $g$, and their bounds do not involve $\Delta\eta$.
 \end{proof}
 
 \subsection{A drifting margin}
 
-Estimated margins drift over months in our data while their sign stays put. If each day gives an unbiased reading $m_t=M_t+e_t$ with noise $N(0,s^2)$ and the margin moves by at most $d$ per day, averaging the last $W$ readings has bias at most $d(W+1)/2$ and standard deviation $s/\sqrt W$; the best window is $W^*=(zs/d)^{2/3}$, and no procedure, using any history, can certify margins below a floor of order $(s^2d)^{1/3}$ \citep[Proposition~4.7.4]{niroula2026thesis}. Calibrated to quarter-by-quarter estimates on 27 spent markets, the best window is about \DriftW{} days, close to one quarter.
+Estimated margins drift over months while their sign stays put. If each day gives an unbiased reading $m_t=M_t+e_t$ with noise $N(0,s^2)$ and the margin moves by at most $d$ per day, averaging the last $W$ readings has bias at most $d(W+1)/2$ and standard deviation $s/\sqrt W$; the best window is $W^*=(zs/d)^{2/3}$, and no procedure, using any history, can certify margins below a floor of order $(s^2d)^{1/3}$ \citep[Proposition~4.7.4]{niroula2026thesis}. Calibrated to quarter-by-quarter estimates on \PsixSymbols{} spent markets, the best window is about \DriftW{} days, close to one quarter, and the floor lies between \DriftFloorLow{} and \DriftFloor{}.
 
-\section{Contrarian agents and what the margin measures}\label{sec:signed}
+\section{Memory, uniformity, and what the margin measures}\label{sec:memory}
 
-The positive class assumes every agent follows the price. Our data say otherwise: the estimated feedback term $\kappa\Phi$ was negative in \CtwoFbNeg{} of \CtwoSymbols{}, \CthreeFbNeg{} of \CthreeSymbols{} and \FoneFbNeg{} of \FoneSymbols{} markets in the three tests.
+\subsection{The price of memory}
+
+\begin{theorem}[Hidden slow feedback]\label{thm:hidden}
+Let $\mathcal E_0$ be the passive economy with one cohort of memory rate zero and margin $c\in(0,1]$, and let $\mathcal E_r$ add a momentum cohort with memory rate $r<1$ and weight $(c+\mu)/\kappa$, so that its margin is $-\mu<0$. Over $T$ observations from rest, the divergence between them is at most $(c+\mu)^2(1-r)^2T^3/(2c)$. Hence, for every $T$ and every procedure, $\sup_{r<1}\Pr_{\mathcal E_r}(\text{certify safe})\ge\Pr_{\mathcal E_0}(\text{certify safe})$: without a memory bound, passive certification has power at most its size, however safe the market. With memory bound $\bar r$, deciding the sign with error at most $\alpha$ needs $T\ge\big(2(1-2\alpha)\sqrt c/((c+\mu)(1-\bar r))\big)^{2/3}$.
+\end{theorem}
+
+\begin{proof}
+The conditional means differ by $D_t=(c+\mu)(1-r)\sum_{m\le t}r^mx_{t-m}$; by Cauchy--Schwarz and $\E_0x_s^2\le\sigma^2/c$, $\E_0D_t^2\le(c+\mu)^2(1-r)^2(t+1)^2\sigma^2/c$, and summing over $t<T$ gives the bound. Pinsker's inequality gives the rest.
+\end{proof}
+
+The theorem is the market form of the observation that unit-root tests have power no greater than size against all stationary processes \citep{blough1992,faust1996,potscher2002}. Its economic content is specific. In simulation with $c=\mu=\UniformC$ and $T=\UniformT$, an augmented Dickey--Fuller certificate certified the safe economy in \UniformSafeRate\% of replications and the unsafe economy with memory rate $0.999$ in \UniformUnsafeRate\%. The same argument applies when the flow is observed, because the slow cohort's contribution to each period's flow is of order $1-r$. What disclosure must supply for stability is therefore a bound on how slowly the largest participants trade.
+
+\subsection{Uniformity}
+
+\begin{theorem}[Uniform certification with finite memory]\label{thm:uniform}
+On the finite-memory economies of Theorem~\ref{thm:multi} with $\rho\in[0,1]$ and $g$ in a compact set with root gap $\gamma$, the augmented Dickey--Fuller certificate at level $\alpha$ has size tending to $\alpha$ uniformly on the boundary $M=0$, tends to zero for every fixed explosive economy, and for every $\epsilon>0$ certifies stability with probability at least $1-\epsilon$, uniformly, once $TM/g(1)\ge C_\epsilon$. With Theorem~\ref{thm:multi}(i), the record length needed is of order $g(1)/M$ uniformly as $M\to0$.
+\end{theorem}
+
+\begin{proof}
+With $\theta=T(1-\rho)=TM/g(1)$, the $t$-statistic converges to the local-to-unity functional $\tau_\theta$ of an Ornstein--Uhlenbeck process \citep{phillips1987,chanwei1987}, uniformly in $\theta\ge0$ and in the nuisance \citep{mikusheva2007,mikusheva2012}; $\tau_0$ is the Dickey--Fuller law and $\tau_\theta\to-\infty$ as $\theta\to\infty$.
+\end{proof}
+
+\begin{figure}[ht]\centering
+\includegraphics[width=0.72\textwidth]{fig_uniform_power.pdf}
+\caption{Simulated success of the augmented Dickey--Fuller certificate at the 5\% level as a function of $\theta=TM/g(1)$, for two root structures of $g$ and two record lengths. The curves collapse onto one, as Theorem~\ref{thm:uniform} says: the margin matters only through $TM/g(1)$. 300 replications per point.}\label{fig:uniform}
+\end{figure}
+
+In simulation (Figure~\ref{fig:uniform}) the certification rate depended on the margin only through $TM/g(1)$: across two choices of $g$ and $T\in\{500,2000\}$ it was \UniformPowerZero--\UniformPowerZeroHi\% at $\theta=0$, \UniformPowerTenLo--\UniformPowerTenHi\% at $\theta=10$ and at least \UniformPowerForty\% at $\theta=40$.
+
+\subsection{Contrarian agents and worst-case loss}\label{sec:signed}
 
 \begin{proposition}[Contrarian agents]\label{prop:signed}
 Allow signed weights, so that the merged measure is signed with total variation at most $B$.
@@ -169,31 +253,7 @@ Allow signed weights, so that the merged measure is signed with total variation 
 (ii) With memory rate zero, $k_0=q$ and $h_{t+1}=(a+\kappa q)h_t$ with $h_1=\kappa$; sum the geometric series. Parts (i) and (iii) are proved in \citet[Proposition~4.9.1]{niroula2026thesis}.
 \end{proof}
 
-The margin is the right statistic for whether a market is stable, in either class. It is the right statistic for worst-case loss only in the positive class. In markets where contrarian feedback is common, a low margin can coexist with an oscillating response whose absolute size the margin does not bound, and a high margin with large losses. Section~\ref{sec:evidence} shows that this is what the data look like.
-
-\section{The price of memory, uniformity, and what to certify instead}\label{sec:memory}
-
-\begin{theorem}[Hidden slow feedback]\label{thm:hidden}
-Let $\mathcal E_0$ be the passive economy with one cohort of memory rate zero and margin $c\in(0,1]$, and let $\mathcal E_r$ add a momentum cohort with memory rate $r<1$ and weight $(c+\mu)/\kappa$, so that its margin is $-\mu<0$. Over $T$ observations from rest, the divergence between them is at most $(c+\mu)^2(1-r)^2T^3/(2c)$. Hence, for every $T$ and every procedure, $\sup_{r<1}\Pr_{\mathcal E_r}(\text{certify safe})\ge\Pr_{\mathcal E_0}(\text{certify safe})$: without a memory bound, passive certification has power at most its size, however safe the market. With memory bound $\bar r$, deciding the sign with error at most $\alpha$ needs $T\ge\big(2(1-2\alpha)\sqrt c/((c+\mu)(1-\bar r))\big)^{2/3}$.
-\end{theorem}
-
-\begin{proof}
-The conditional means differ by $D_t=(c+\mu)(1-r)\sum_{m\le t}r^mx_{t-m}$; by Cauchy--Schwarz and $\E_0x_s^2\le\sigma^2/c$, $\E_0D_t^2\le(c+\mu)^2(1-r)^2(t+1)^2\sigma^2/c$, and summing over $t<T$ gives the bound. Pinsker's inequality gives the rest.
-\end{proof}
-
-The theorem is the market form of the observation that unit-root tests have power no greater than size against all stationary processes \citep{blough1992,faust1996,potscher2002}. Its economic content is specific: a slow momentum cohort, trading on long averages of the price, adds little to each period's response and a great deal to total feedback, so it can make a market unstable without leaving a trace in a finite record. In simulation with $c=\mu=\UniformC$ and $T=\UniformT$, an augmented Dickey--Fuller certificate certified the safe economy in \UniformSafeRate\% of replications and the unsafe economy with memory rate $0.999$ in \UniformUnsafeRate\%. What disclosure must supply for safety is therefore not the agents' identities but a bound on how slowly the largest of them trade.
-
-\begin{theorem}[Uniform certification with finite memory]\label{thm:uniform}
-On the finite-memory economies of Theorem~\ref{thm:multi} with $\rho\in[0,1]$ and $g$ in a compact set with root gap $\gamma$, the augmented Dickey--Fuller certificate at level $\alpha$ has size tending to $\alpha$ uniformly on the boundary $M=0$, tends to zero for every fixed explosive economy, and for every $\epsilon>0$ certifies safety with probability at least $1-\epsilon$, uniformly, once $TM/g(1)\ge C_\epsilon$. With Theorem~\ref{thm:multi}(i), the record length needed is of order $g(1)/M$ uniformly as $M\to0$.
-\end{theorem}
-
-\begin{proof}
-With $\theta=T(1-\rho)=TM/g(1)$, the $t$-statistic converges to the local-to-unity functional $\tau_\theta$ of an Ornstein--Uhlenbeck process \citep{phillips1987,chanwei1987}, uniformly in $\theta\ge0$ and in the nuisance \citep{mikusheva2007,mikusheva2012}; $\tau_0$ is the Dickey--Fuller law and $\tau_\theta\to-\infty$ as $\theta\to\infty$.
-\end{proof}
-
-In simulation the certification rate depends on the margin only through $TM/g(1)$: across two choices of $g$ and $T\in\{500,2000\}$ it was \UniformPowerZero--\UniformPowerZeroHi\% at $\theta=0$, \UniformPowerTenLo--\UniformPowerTenHi\% at $\theta=10$ and at least \UniformPowerForty\% at $\theta=40$.
-
-The margin decides stability; with contrarian agents it does not bound loss. The horizon-limited absolute response does: with $\psi_j$ the coefficients of $1/f$, a shock sequence of $k$ innovation standard deviations moves the displacement by at most $k\sigma\Psi_H$ within $H$ periods, $\Psi_H=\sum_{j<H}|\psi_j|$, and some sequence attains it.
+With $\psi_j$ the coefficients of $1/f$, a shock sequence of $k$ innovation standard deviations moves the displacement by at most $k\sigma\Psi_H$ within $H$ periods, $\Psi_H=\sum_{j<H}|\psi_j|$, and some sequence attains it.
 
 \begin{theorem}[Passive certificate of worst-case loss]\label{thm:absresp}
 On a compact set of stationary finite-memory economies with signed kernels, the interval $\Psi_H(\hat\phi)\pm G_H(\chi^2_{L,1-\alpha}\lambda_{\max}(\hat\Sigma)/T)^{1/2}$, with $G_H$ a Lipschitz constant of $\Psi_H$ and $\hat\Sigma$ the estimated covariance of the least-squares coefficients, covers $\Psi_H$ with probability at least $1-\alpha+o(1)$ uniformly; its half-width is of order $T^{-1/2}$, and no interval does better than order $T^{-1/2}$. The summed response $1/M$ can understate $\Psi_\infty$ by an unbounded factor.
@@ -203,15 +263,54 @@ On a compact set of stationary finite-memory economies with signed kernels, the 
 Uniform asymptotic normality of $\hat\phi$ on compact sets of stationary autoregressions \citep{mannwald1943,mikusheva2007}, the polynomial dependence of each $\psi_j$ on $\phi$, and $\big||u|-|v|\big|\le|u-v|$ give the upper bound. For the lower bound, $\Psi_H=\sum_{j<H}\rho^j$ in the memory-zero economies is strictly increasing with derivative at least one, and roots $\rho$ and $\rho+\delta T^{-1/2}$ have divergence bounded in $T$.
 \end{proof}
 
-In a simulated contrarian economy the interval covered $\Psi_H$ in \UniformCover\% of replications, and the summed response understated it by \UniformUnderstate\%.
+In a simulated contrarian economy the interval covered $\Psi_H$ in \UniformCover\% of replications, and the summed response understated it by \UniformUnderstate\%. The margin is the right statistic for whether a market is stable, in either class; it is the right statistic for worst-case loss only in the positive class.
 
 \section{Evidence}\label{sec:evidence}
 
-\subsection{Design}
+\subsection{Data and design}
 
-All tests use Binance USD-M perpetual futures from the public archive (\texttt{data.binance.vision}), one-minute klines with taker-buy volume, aggregated to five-minute marks. On each valid day the margin is estimated from two regressions whose sufficient statistics are pooled over days: five-minute returns on signed taker flow and the lagged displacement from an exponential moving average, which give $\kappa$ and the reversion $-\beta=1-a$; and flow on twelve lags of the displacement, which gives the kernel. The margin is $\hat M=-\hat\beta-\hat\kappa\hat\Phi$, decided if its 95\% day-bootstrap interval excludes zero. The memories are identified if a two-exponential fit to the return kernel separates two rates with a bootstrap interval excluding zero and neither rate's interval touching a bound of the fit.
+All tests use Binance USD-M perpetual futures from the exchange's public archive (\texttt{data.binance.vision}): one-minute klines with taker-buy volume, which give the last price and the signed taker notional of each minute, aggregated to five-minute marks. A day is valid if at least half of its five-minute returns are non-zero and its flow is not identically zero; a market is evaluable with at least 200 valid days. On each valid day the sufficient statistics of the two regressions in~\eqref{eq:reduced} are computed and pooled over days, and the margin is $\hat M=-\hat\beta-\hat\kappa\hat\Phi$, decided if its 95\% day-bootstrap interval (200 draws) excludes zero. The memories are identified if a two-exponential fit to the return kernel separates two rates with a bootstrap interval excluding zero and neither rate's interval touching a bound of the fit.
 
-Each test's specification, the hashes of its code, its universe rule and its seed were pushed to a public repository in a commit of their own before any of its data were downloaded, and a counter that the code increments on opening prevents a second run. Universes are drawn from symbols that appear in no file of the repository, so every test uses markets never used before. Results are reported as they came out, and explanations found afterwards are labelled post hoc.
+Each test's specification, the hashes of its code, its universe rule and its seed were pushed to a public repository in a commit of their own before any of its data were downloaded (Appendix~\ref{app:registry}). The code refuses to run if any hash differs or the specification is not committed, and a counter that the code increments on opening prevents a second run. Universes are drawn in a seeded random order from symbols that appear in no file of the repository, so every test uses markets never used before. Results are reported as they came out, and explanations found afterwards are labelled post hoc. Table~\ref{tab:registered} lists every registered primary hypothesis of the project and its result.
+
+\begin{table}[p]\centering\footnotesize
+\begin{threeparttable}
+\caption{Every registered primary hypothesis and its result}\label{tab:registered}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.52\textwidth}>{\raggedright\arraybackslash}p{0.32\textwidth}}
+\toprule
+Test & Primary hypothesis & Result\\
+\midrule
+E1 & 1. Certifying the summed response is at least 10 times more precise than separating memories & failed: \EonePone{} of \EoneSymbols{} symbols (\EoneNeed{} needed)\\
+ & 2. Price-only memory intervals are at least 10 times wider than class-tagged ones & passed: \EonePtwo{} of \EoneSymbols{}\\
+D1 & 1. Class-tagged interval width falls with slope in $[-0.75,-0.25]$ & failed: \DonePone{} of \DoneSymbols{} (\DoneNeed{} needed)\\
+ & 2. The advantage of tagging grows with the sample & passed: \DonePtwo{} of \DoneSymbols{}\\
+G1 & 1. Amplification-adjusted volatility limit beats a volatility limit in stress hours & failed: identical rules ($\theta=\GoneTheta$)\\
+ & 2. The summed-response guard beats a volatility limit in stress hours & failed: tail-loss ratio \GoneGuardPct{} higher\\
+V1 & 1. The depth-free statistic forecasts excursions in thin Kraken pairs & failed: $\Delta R^2=\VoneDeltaRtwo$ points\\
+ & 2. It beats an order-splitting placebo & not tested\\
+O1 & After scheduled US macro releases, small perpetuals overshoot & failed: $\bar A_{120}=\OoneAbar$ s, interval \OoneCI{}\\
+C2 & 1. The margin is decided in at least 75\% of 30 new markets & failed: \CtwoDecided{} of \CtwoSymbols{} (\CtwoNeed{} needed)\\
+ & 2. Decided but not identified outnumbers identified but not decided & passed: \CtwoB{} against \CtwoC{}\\
+ & 3. At a matched horizon, class-tagged persistence is tighter than price-only memory & passed: \CtwoPthreeTighter{} of \CtwoPthreeSymbols{} (\CtwoPthreeNeed{} needed)\\
+C3 & 1. With 430 days, the margin is decided in at least 75\% of new markets & passed: \CthreeDecided{} of \CthreeSymbols{} (\CthreeNeed{} needed)\\
+ & 2. Decided but not identified outnumbers the reverse & passed: \CthreeB{} against \CthreeC{}\\
+F1 & 1. The margin is decided in at least 75\% of new markets & passed: \FoneDecided{} of \FoneSymbols{} (\FoneNeed{} needed)\\
+ & 2. Decided but not identified outnumbers the reverse & passed: \FoneB{} against \FoneC{}\\
+ & 3. The 20-day margin forecasts the next day's largest adverse move & failed: $t=\FoneRiskT$, $p=\FoneRiskP$\\
+S1 & 1. On stress days, markets with a lower prior margin are hit harder & failed: mean partial correlation \SoneRho{}\\
+ & 2. A lower margin forecasts next-day realized variance & passed: $t=\SoneRvT$\\
+ & 3. It does so beyond the Hawkes branching ratio & passed: $t=\SoneHawkesT$\\
+ & 4. A lower margin forecasts next-day extreme moves & failed: $t=\SoneTailT$, Holm $p=\SoneTailPholm$\\
+R1 & 1. Next-day adverse moves rise with the absolute response $\Psi_H$ & passed: elasticity \RoneElast{} (\RoneElastSE)\\
+ & 2. $\Psi_H$ forecasts adverse moves, positive coefficient & failed: coefficient \RoneFcCoef{}\\
+ & 3. It does so beyond the margin & failed: coefficient \RoneBeyondCoef{}\\
+H1 & 1. Real accounts have distinct memories their records reveal & prospective; opens 10 December 2026\\
+ & 2. Prices and anonymous flow do not reveal them & prospective; opens 10 December 2026\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Holm's correction across the primaries of each test (a fixed sequence for V1). E1, D1 and the first part of the project used other designs, reported in the companion thesis. Sources: the committed result files of each test, checked against their registered specification hashes by the project's verification script.\end{tablenotes}
+\end{threeparttable}
+\end{table}
 
 \subsection{Certification without identification}
 
@@ -230,50 +329,94 @@ Margin decided (registered threshold) & \CtwoDecided{} (\CtwoNeed{}) & \CthreeDe
 Memories identified & \CtwoIdentified{} & \CthreeIdentified{} & \FoneIdentified{}\\
 Decided, not identified : identified, not decided & \CtwoB{} : \CtwoC{} & \CthreeB{} : \CthreeC{} & \FoneB{} : \FoneC{}\\
 Same decision without the feedback term & \CtwoSameNoFb{} & \CthreeSameNoFb{} & \FoneSameNoFb{}\\
-Primary 1 (margin decided in $\ge75\%$) & failed & passed & passed\\
-Primary 2 (McNemar) & passed & passed & passed\\
+Feedback term negative (contrarian) & \CtwoFbNeg{} & \CthreeFbNeg{} & \FoneFbNeg{}\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item C2 used 105 dates; C3 and F1 used 430 dates from January 2025 to September 2026 and C3's valid-day rule (at least half of five-minute returns non-zero; at least 200 valid days). Markets with fewer valid days were excluded under that rule. Holm correction across each test's primaries.\end{tablenotes}
+\begin{tablenotes}\footnotesize\item C2 used 105 dates; C3 and F1 used 430 dates from January 2025 to September 2026 and C3's valid-day rule. Markets with fewer than 200 valid days were excluded under that rule.\end{tablenotes}
 \end{threeparttable}
 \end{table}
 
-Table~\ref{tab:tests} gives the result. With 105 days per market the margin was decided in \CtwoDecided{} of \CtwoSymbols{}, one short of the threshold; with 430 days, in \CthreeDecided{} of \CthreeSymbols{} and \FoneDecided{} of \FoneSymbols{}, and on the first 105 days of C3's markets in \CthreeFirst{}: the decision comes with the length of the record, as Theorem~\ref{thm:passive} predicts. Every decided margin was on the safe side. The memories were identified in at most one market per test. Quarter by quarter, in an exploratory analysis of 169 symbol-quarters, the margin was decided in \PsixDecided{}, never on the unsafe side.
+\begin{figure}[ht]\centering
+\includegraphics[width=0.72\textwidth]{fig_learning_curve.pdf}
+\caption{Test F1, registered secondary: share of the \FoneSymbols{} evaluable new markets in which the margin was decided and in which the memories were identified, using the first 60, 120 and 240 valid days and all of them.}\label{fig:curve}
+\end{figure}
 
-Two qualifications matter. The decision rests mainly on reversion: without the feedback term it was the same in most markets, so these data certify that the markets are far from the boundary without measuring the feedback precisely. And the theory's prediction that the standardized margin grows like the square root of the record holds across markets but not market by market, because the margin drifts.
+Table~\ref{tab:tests} and Figure~\ref{fig:curve} give the result. With 105 days per market the margin was decided in \CtwoDecided{} of \CtwoSymbols{}, one short of the threshold; with 430 days, in \CthreeDecided{} of \CthreeSymbols{} and \FoneDecided{} of \FoneSymbols{}, and on the first 105 days of C3's markets in \CthreeFirst{}: the decision comes with the length of the record, as Theorem~\ref{thm:passive} predicts. Every decided margin was on the safe side, and the memories were identified in at most one market per test. Quarter by quarter, in an exploratory analysis of \PsixSQ{} symbol-quarters, the margin was decided in \PsixDecided{}, never on the unsafe side.
+
+Two qualifications matter. The decision rests mainly on reversion: without the feedback term it was the same in most markets, so these data certify that the markets are far from the boundary without measuring the feedback precisely. And the prediction that the standardized margin grows like the square root of the record holds across markets but not market by market, because the margin drifts; the drift calibration above puts most of these markets between the two ends of the drift floor.
 
 \subsection{Disclosure}
 
-Binance publishes five-minute long/short positioning ratios for a top-trader class and for all accounts. In C2 a registered primary compared the width of the interval for the class persistence rate with that of the price-only slow memory from a kernel matched to the class horizon (eight hours). The class interval was narrower in \CtwoPthreeTighter{} of \CtwoPthreeSymbols{} markets, by a median factor of \CtwoRatio{} (smallest \CtwoMinRatio{}), and the price-only interval reached a bound of the fit in most. A registered secondary qualifies what this measures: corrected for the downward bias of day-demeaned regressions, the median class persistence was \CtwoJackR{} per five minutes, and below one in only \CtwoJackBelow{} of \CtwoClassFits{} class fits. Positioning data restrict a persistence parameter that prices cannot bound; whether it reflects learning memory or slow turnover of positions, these data do not say.
+Binance publishes five-minute long/short positioning ratios for a top-trader class and for all accounts. In C2 a registered primary compared the width of the interval for the class persistence rate with that of the price-only slow memory from a kernel matched to the class horizon (eight hours). The class interval was narrower in \CtwoPthreeTighter{} of \CtwoPthreeSymbols{} markets, by a median factor of \CtwoRatio{} (smallest \CtwoMinRatio{}). A registered secondary qualifies what this measures: corrected for the downward bias of day-demeaned regressions, the median class persistence was \CtwoJackR{} per five minutes, and below one in only \CtwoJackBelow{} of \CtwoClassFits{} class fits. Positioning data restrict a persistence parameter that prices cannot bound; whether it reflects learning memory or slow turnover of positions, these data do not say. Test H1 below is designed to answer that with participant-level data.
 
-\subsection{The certificate and risk}
+\subsection{The certificate and risk}\label{sec:s1}
 
-In F1, a third registered primary asked whether the margin estimated on the previous 20 valid days forecasts the next valid day's largest adverse move out of sample, beyond realized variance, in a pooled model with symbol fixed effects and Clark--West loss differentials averaged within dates. The coefficient had the predicted sign (\FoneRiskCoef{}), but the test failed ($t=\FoneRiskT$, $p=\FoneRiskP$). For next-day realized variance, a registered secondary, the same design gave $t=\FoneRvT$ ($p=\FoneRvP$).
+\paragraph{F1.} A third registered primary of F1 asked whether the margin estimated on the previous 20 valid days forecasts the next valid day's largest adverse move out of sample, beyond realized variance, in a pooled model with symbol fixed effects and Clark--West loss differentials averaged within dates. The coefficient had the predicted sign (\FoneRiskCoef{}), but the test failed ($t=\FoneRiskT$, $p=\FoneRiskP$). For next-day realized variance, a registered secondary, the same design gave $t=\FoneRvT$.
 
-Two exploratory analyses on spent markets point the same way. In \PsevenN{} symbol-days, the elasticity of the next day's log adverse move with respect to $\log\hat S$, instrumented by its lag, was \PsevenMae{} (standard error \PsevenMaeSE{}), and of log variance \PsevenRv{} (\PsevenRvSE{}), against $1$ and $2$ in the positive class. On 10 October 2025, the day with the largest median adverse move, the Spearman correlation across \PsevenStressN{} markets between the prior margin and the day's adverse move was $+\PsevenRho$. Post hoc, we first read this as Proposition~\ref{prop:signed} at work; Test R1 (Section~\ref{sec:r1}) later found a positive elasticity for $S$ on new markets with a shock control that excludes the estimated impact, which Pilot~7's control included, so the sign is more likely a property of that specification.
+\paragraph{S1.} Test S1 was registered on 25 October 2026 on \SoneDrawn{} further markets and every day from January 2025 to September 2026 (\SoneSymbols{} evaluable). Two of its four primaries passed. A lower margin forecast higher next-day realized variance out of sample (coefficient \SoneRvCoef{}, Clark--West $t=\SoneRvT$, Holm-adjusted $p=\SoneRvP$, gain \SoneRvGain{} points of $R^2$ on \SoneDates{} test dates), and the forecast was unchanged when the branching ratio of a Hawkes model of trade arrivals, estimated by the INAR approximation of \citet{kirchner2016}, was added to both models ($t=\SoneHawkesT$); the branching ratio alone did not forecast variance ($t=\SoneNhatRvT$). Two failed. On the 20 worst market-wide days the prior margin did not rank which markets were hit hardest (mean partial rank correlation \SoneRho{}), and the forecast of next-day extreme moves fell short ($t=\SoneTailT$, Holm $p=\SoneTailPholm$). As a secondary, the branching ratio did rank stress-day damage, but with the sign opposite to the criticality reading: markets with a higher prior branching ratio had smaller adverse moves (mean partial correlation \SoneNhatStressRho{}).
 
-\subsection{A registered test of fragility}\label{sec:s1}
+\paragraph{R1.} Test R1, registered the same day on \RoneDrawn{} further markets (\RoneSymbols{} evaluable, none shared with S1), asked whether the estimated absolute response $\Psi_H$ of Theorem~\ref{thm:absresp}, with $H$ one hour, does what the margin did not. Within markets the next day's log adverse move rose with log $\Psi_H$, instrumented by its lag and controlling for shock size: elasticity \RoneElast{} (standard error \RoneElastSE{}), positive as predicted, about half the theory's value of one; for variance the elasticity was \RoneRv{} against two. Out of sample and beyond recent volatility, however, a larger $\Psi_H$ forecast a smaller adverse move (coefficient \RoneFcCoef{}), so the two registered forecasting primaries, which required a positive coefficient, failed. The data do not separate $\Psi_H$ from the summed response: at a one-hour horizon the estimated responses rarely change sign (median $\Psi_H/|S_H|=\RoneRatio$), the elasticity is the same in contrarian and momentum markets (\RoneContr{} and \RoneMom), and $S=\kappa/M$ itself has elasticity \RoneLogS{}.
 
-Test S1 was registered on 25 October 2026, before the exploratory results above were seen, on \SoneDrawn{} further markets and every day from January 2025 to September 2026 (\SoneSymbols{} evaluable). Two of its four primaries passed. A lower margin forecast higher next-day realized variance out of sample (coefficient \SoneRvCoef{}, Clark--West $t=\SoneRvT$, Holm-adjusted $p=\SoneRvP$, gain \SoneRvGain{} points of $R^2$ on \SoneDates{} test dates), and the forecast was unchanged when the branching ratio of a Hawkes model of trade arrivals \citep{filimonov2012,hardiman2013}, estimated by the INAR approximation of \citet{kirchner2016}, was added to both models ($t=\SoneHawkesT$); the branching ratio alone did not forecast variance ($t=\SoneNhatRvT$). Two failed. On the 20 worst market-wide days the prior margin did not rank which markets were hit hardest (mean partial rank correlation \SoneRho{}), and the forecast of next-day extreme moves fell short ($t=\SoneTailT$, Holm $p=\SoneTailPholm$). The margin carries information about the coming day's turbulence that the standard measure of self-excitation does not; it does not say where a crash will land.
-
-\subsection{What to certify instead}\label{sec:r1}
-
-Test R1, registered on 25 October 2026 on \RoneDrawn{} further markets (\RoneSymbols{} evaluable, none shared with S1), asked whether the estimated absolute response $\Psi_H$ of Theorem~\ref{thm:absresp}, with $H$ one hour, does what the margin did not. Within markets the next day's log adverse move rose with log $\Psi_H$, instrumented by its lag and controlling for shock size: elasticity \RoneElast{} (standard error \RoneElastSE{}), positive as predicted, about half the theory's value of one; for variance the elasticity was \RoneRv{} against two. Out of sample and beyond recent volatility, however, a larger $\Psi_H$ forecast a smaller adverse move (coefficient \RoneFcCoef{}), so the two registered forecasting primaries, which required a positive coefficient, failed. The data do not separate $\Psi_H$ from the summed response: at a one-hour horizon the estimated responses rarely change sign (median $\Psi_H/|S_H|=\RoneRatio$), the elasticity is the same in contrarian and momentum markets (\RoneContr{} and \RoneMom), and $S=\kappa/M$ itself has elasticity \RoneLogS{}.
+\paragraph{Reading.} The certificate measures how close a market is to instability, and in these data it carries information about the coming day's turbulence that the standard measure of self-excitation does not. It does not tell where a crash will land, and the size of the estimated response, though it scales with losses, adds nothing in the predicted direction once recent volatility is known.
 
 \subsection{Real agents}\label{sec:h1}
 
-H1 is prospective and uses participant-level data. Hyperliquid, a perpetual-futures exchange whose order book runs on a public blockchain, publishes every trade with the buyer's and the seller's wallet address; H1 was registered before any of its data existed, records every trade in 30 markets, and opens once at least 20 markets have 30 days of near-complete recording. For the ten largest accounts in each market it estimates each account's memory from its own position and asks whether two accounts have distinguishable memories in at least 75\% of markets, and whether prices and anonymous flow fail to separate memories where the accounts' records succeed. It is the first test of the identification theory against real agents rather than proxies.
+H1 is prospective and uses participant-level data. Hyperliquid, a perpetual-futures exchange whose order book runs on a public blockchain, publishes every trade with the buyer's and the seller's wallet address. H1 was registered before any of its data existed; a collector records every trade in 30 markets, ranked 11 to 40 by volume when collection started, and the analysis opens once at least 20 markets have 30 days of near-complete recording. For the ten largest accounts in each market it estimates each account's memory, the persistence of its position, and its response to the displacement, and asks whether two accounts have distinguishable memories in at least 75\% of markets, and whether prices and anonymous flow fail to separate memories where the accounts' own records succeed. It is the first test of the identification theory against real agents rather than proxies. Its limits were stated at registration: addresses are accounts, not firms or algorithms, and positions are reconstructed only from the start of collection.
+
+\section{Robustness (exploratory)}\label{sec:robust}
+
+The analyses in this section were chosen after the registered results were known and are not confirmatory. They use the committed data rows of S1 and R1.
+
+\begin{table}[ht]
+\centering\small
+\begin{threeparttable}
+\caption{Exploratory robustness of S1's variance forecast and R1's size elasticity}\label{tab:robust}
+\begin{tabular}{lrr@{\hspace{2.5em}}lrr}
+\toprule
+\multicolumn{3}{c}{S1: margin forecasts next-day variance} & \multicolumn{3}{c}{R1: elasticity of adverse move}\\
+Variant & coef. & $t$ & Variant & elasticity & s.e.\\
+\midrule
+Registered & \RobSBaseC & \RobSBaseT & Registered & \RobRBaseE & \RobRBaseSE\\
+Clustered by week & \RobSWeekC & \RobSWeekT & With volatility controls & \RobRVolE & \RobRVolSE\\
+Clustered by market & \RobSSymC & \RobSSymT & 2025 only & \RobRYrAE & \RobRYrASE\\
+Training share 50\% & \RobSTrFiftyC & \RobSTrFiftyT & 2026 only & \RobRYrBE & \RobRYrBSE\\
+Training share 70\% & \RobSTrSeventyC & \RobSTrSeventyT & Impact $\hat\kappa$ alone & \RobRKappaE & \RobRKappaSE\\
+Winsorized at 1/99\% & \RobSWinsC & \RobSWinsT & $\log S$, shock control & \RobRSShockE & \RobRSShockSE\\
+2025 only & \RobSYrAC & \RobSYrAT & $\log S$, Pilot~7's control & \RobRSPsevenE & \RobRSPsevenSE\\
+2026 only & \RobSYrBC & \RobSYrBT & & & \\
+Without October 2025 & \RobSNoOctC & \RobSNoOctT & & & \\
+High-volatility markets & \RobSHiVolC & \RobSHiVolT & & & \\
+Low-volatility markets & \RobSLoVolC & \RobSLoVolT & & & \\
+Leave one market out ($t$ range) & & \RobSLooMin--\RobSLooMax & Leave one market out (range) & \multicolumn{2}{r}{\RobRLooMin--\RobRLooMax}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Left: S1's pooled out-of-sample forecast of next-day $\log(1+\mathrm{RV})$ from the winsorized 20-day margin, Clark--West $t$ with differentials averaged within the clustering unit (dates unless stated). Right: R1's 2SLS elasticity of next-day $\log(1+\mathrm{MAE})$, instrumented by the lagged-window estimate, standard errors clustered by date. Pilot~7's control multiplies the flow shock by the estimated impact.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{figure}[ht]\centering
+\includegraphics[width=0.72\textwidth]{fig_robustness.pdf}
+\caption{Exploratory robustness of S1's registered variance forecast: Clark--West $t$-statistics under alternative clustering, training shares, winsorization, subperiods and subsamples, and the range when any one market is removed.}\label{fig:robust}
+\end{figure}
+
+Table~\ref{tab:robust} and Figure~\ref{fig:robust} give two different pictures. S1's variance forecast is stable: the $t$-statistic stays between \RobSYrAT{} and \RobSWinsT{} across clustering units, training shares, winsorization, calendar years, the exclusion of October 2025, volatility halves, and the removal of any single market. R1's elasticity is not. It was \RobRYrAE{} in 2025 and \RobRYrBE{} in 2026, it fell to \RobRVolE{} with recent volatility in the regression, and the estimated impact $\hat\kappa$ alone, the first tap of the response, had elasticity \RobRKappaE{}: the registered result mostly says that days of higher estimated impact are followed by larger moves. The same rows also settle the sign of Pilot~7: with the control Pilot~7 used, which multiplies the shock by the estimated impact, the elasticity of $S$ is \RobRSPsevenE{}; with the shock alone it is \RobRSShockE{}. The negative sign was a property of that specification, not of contrarian agents.
 
 \section{Discussion}\label{sec:discussion}
 
-The results separate two supervisory questions that are often run together. Whether a market is stable can be certified from public data, at a cost set by the market's distance from instability, without identifying any agent. Who is trading cannot be learned from market data at any comparable cost, and that is what disclosure is for. A supervisor whose goal is stability should therefore estimate the margin, ask for disclosures that bound memory or reveal total feedback, and treat identification as a separate, expensive task with its own justification.
+\paragraph{For supervisors.} The results separate two questions that are often run together. Whether a market is stable can be certified from public data, at a cost set by its distance from instability, without identifying any agent; who is trading cannot be learned from market data at any comparable cost. Three practical implications follow. First, a supervisor who cares about stability should estimate the margin, with the pooled estimator and a window matched to the drift of the market, and treat identification as a separate task with its own justification. Second, disclosure has a precise role in certification: it must bound the memory of the largest participants, because without such a bound no passive certificate exists (Theorem~\ref{thm:hidden}). Requirements that reveal identities without bounding memory do not help stability supervision. Third, the margin should not be read as a crash indicator. In our data it forecast turbulence and did not rank damage on the worst days.
 
-Three limits are stated plainly. First, certification as proved here concerns stability. In the markets we study, where contrarian feedback is common, stability is far from worst-case loss: the registered risk forecast failed, and the exploratory crash-day evidence went the wrong way. Worst-case loss over a horizon is certifiable from passive data through the absolute response (Theorem~\ref{thm:absresp}), but not from the margin, and whether that certificate forecasts losses is the subject of a registered test. Second, every certified market was far from the boundary; the evidence does not show that the procedure detects a market approaching instability. Third, the passive theorems need a memory bound, which Theorem~\ref{thm:hidden} shows cannot be dropped, and the estimator in the tests pools a price and a flow equation that the theorems do not cover.
+\paragraph{For research.} The tests used one venue and one asset class, and every certified market was far from the boundary. Two open questions matter most. The first is whether the margin falls before genuine near-boundary episodes; this needs events that the present sample does not contain, or a market designed to be near the boundary. The second is whether real agents' memories are distinct and invisible to prices, which H1 answers with participant-level data. On the theory side, the uniform result for geometric memory and for the pooled estimator's nuisance parameters remain open, as does the gap between the moving-average displacement and the distance from fundamental value.
 
-\paragraph{Acknowledgements and disclosure.} Code, proofs and text were drafted with the assistance of Claude (Anthropic), an AI system; the authors checked and are responsible for all content. Arithmetic steps of the proofs are checked in Lean~4 with Mathlib (modules \texttt{ThesisPassiveMulti}, \texttt{ThesisHidden} and companions). Specifications, code, results and the checks that regenerate every number in this paper are in the public repository \url{https://github.com/Pratikn03/Fianince}.
+\paragraph{Limits.} The model is linear and its agents respond to one state. Real algorithms use many signals, change their parameters, and trade across venues. The companion thesis shows that the stability bound survives nonlinear rules and time-varying agents given a bound on their total sensitivity, but our estimators and tests use the linear form. The exogeneity of contemporaneous flow to price noise is an assumption of the pooled estimator that five-minute data can violate.
+
+\section{Conclusion}
+
+A supervisor with public data can learn how close a market is to feedback instability, at a cost set by that distance, without learning who trades in it; learning who trades costs polynomially more and does not get cheaper by watching. The one input prices cannot supply is a bound on how slowly the largest participants trade. In crypto perpetual futures the certificate behaves as the theory says for stability and forecasts the coming day's turbulence beyond the standard measure of self-excitation; it does not forecast crashes. Every one of these statements rests on tests whose design was public before their data were.
+
+\paragraph{Acknowledgements and disclosure.} Code, proofs and text were drafted with the assistance of Claude (Anthropic), an AI system; the authors checked and are responsible for all content. Arithmetic steps of the proofs are checked in Lean~4 with Mathlib (modules \texttt{ThesisPassiveMulti}, \texttt{ThesisHidden}, \texttt{ThesisPooled} and companions). Specifications, code, results and the checks that regenerate every number in this paper are in the public repository \url{https://github.com/Pratikn03/Fianince}.
 
 \appendix
-\section{Proofs of Theorems~\ref{thm:passive} and~\ref{thm:multi}}\label{app:proofs}
+\section{Proofs}\label{app:proofs}
 
 \paragraph{Theorem~\ref{thm:passive}.} (i) Both economies are $x_{t+1}=\rho_jx_t+e_{t+1}$ with $e_{t+1}\sim N(0,\kappa^2s^2)$, $\rho_0=1-\mu$, $\rho_1=1+\mu$. The divergence is $\tfrac12(2\mu)^2\sum_{t<T}v_t$ with $v_0=0$, $v_{t+1}=\rho_0^2v_t+1$, so $v_t\le1/(1-\rho_0^2)\le1/\mu$ and the divergence is at most $2T\mu$. By Pinsker's inequality the total variation distance is at most $(T\mu)^{1/2}$, while a procedure with error at most $\alpha$ under both separates them with total variation at least $1-2\alpha$. (ii) For fixed $|\rho|<1$, $\sqrt T(\hat\rho-\rho)\to N(0,1-\rho^2)$ \citep{mannwald1943} and $1-\rho^2=M(2-M)$. Along $\rho_T=1-M_T$ with $M_T\to0$, $TM_T\to\infty$, \citet{phillips2007} give $(T/2M_T)^{1/2}(\hat\rho-\rho_T)\to N(0,1)$; since $\hat M/M_T\to1$ in probability, the studentized interval has asymptotic coverage $1-\alpha$ and excludes zero once $M>z_{1-\alpha/2}(2M/T)^{1/2}$.
 
@@ -285,28 +428,64 @@ Three limits are stated plainly. First, certification as proved here concerns st
 \]
 Let $H(\lambda)=h(e^{-i\lambda})$ and $I$ the integral. Since $\delta^2+\lambda^2\le1+\pi^2$, $\int|H|^2\le(1+\pi^2)I$; by Cauchy--Schwarz $\max|H|^2\le(p+1)\int|H|^2/(2\pi)$, and by Bernstein's inequality $\max|H'|\le p\max|H|$, so $\max|H'|\le pB\sqrt I$ with $B^2=(p+1)(1+\pi^2)/(2\pi)$. With $r=\min(\pi,1/(2pB\sqrt I))$, $|H|\ge1/2$ on $|\lambda|\le r$, so $I\ge\arctan(r/\delta)/(2\delta)$. If $r\ge\delta$ this is at least $\pi/(8\delta)$; otherwise $r=1/(2pB\sqrt I)<\delta$ and $I>1/(4p^2B^2\delta^2)$. Hence $I\ge c/\delta$ with $c=1/(4p^2B^2)$, $\tau^2\ge\sigma^2c/(2\pi G^2\delta)$, and with $\delta=M/g(1)$, $V=\sigma^2/\tau^2\le4p^2(p+1)(1+\pi^2)G^2M/g(1)$. Finally $g(z)=\prod_j(1-z/r_j)$ with $|r_j|\ge1+\gamma$ gives $G\le2^p$ and $g(1)\ge(\gamma/(1+\gamma))^p$.
 
+\paragraph{Theorem~\ref{thm:pooled}.} (i) With one cohort of memory rate zero, $f_{t+1}=qx_t+w_{t+1}$ and $x_{t+1}=ax_t+\kappa f_{t+1}+\varepsilon_{t+1}$. The conditional density of $(f_{t+1},x_{t+1})$ factorizes into the flow equation and the price equation given the flow, and the second is the same under both economies, so the divergence is $\sum_{t<T}\E_+(q_+-q_-)^2x_t^2/(2s_w^2)$ with $|q_+-q_-|=2\mu/\kappa$. Under the safe economy $x_{t+1}=(1-\mu)x_t+\kappa w_{t+1}+\varepsilon_{t+1}$, so $\E_+x_t^2\le\sigma^2/\mu$ with $\sigma^2=\kappa^2s_w^2+s_\varepsilon^2$, and the divergence is at most $2T\mu(1+R)$. (ii) Write $\hat M-M=-(\hat\beta+\hat\kappa\Phi+M)-\hat\kappa(\hat\Phi-\Phi)$. Both regressions are equations of a stationary Gaussian vector autoregression whose regressors are uncorrelated with their errors, so the estimators are jointly asymptotically normal and $\hat\kappa\to\kappa$. In the flow equation, reparametrized with $x_t$ and $p$ lagged differences, the coefficient on $x_t$ is $\Phi$, so $\hat\Phi$ has asymptotic variance $s_w^2/\tau^2$ with $\tau^2$ as above, and $\kappa^2s_w^2/\tau^2\le2\pi G^2\delta/c$. In the price equation, with $\tilde w_{t+1}=f_{t+1}-\Phi x_t$, the regression on $(f_{t+1},x_t)$ is a reparametrization of that on $(\tilde w_{t+1},x_t)$ in which the coefficient on $x_t$ is $-M$; since $\tilde w_{t+1}$ lies in the span of $w_{t+1}$ and the lagged differences and $w_{t+1}$ is independent of them and of $x_t$, the residual variance of $x_t$ after projection on $\tilde w_{t+1}$ is at least $\tau^2$, and $\hat\beta+\hat\kappa\Phi+M$ has asymptotic variance at most $s_\varepsilon^2/\tau^2\le2\pi G^2\delta/c$. By $(u+v)^2\le2u^2+2v^2$, $V_{\rm pool}\le8\pi G^2\delta/c=4\cdot2\pi G^2M/(c\,g(1))\le4C_{p,\gamma}M$.
+
+\paragraph{Theorems~\ref{thm:hidden}, \ref{thm:uniform} and~\ref{thm:absresp}.} The proofs in the text are complete up to the cited limit theory. For Theorem~\ref{thm:hidden}, under $\mathcal E_0$, $\E_0x_s^2\le\sigma^2/(1-(1-c)^2)\le\sigma^2/c$, and $\sum_{t<T}(t+1)^2\le T^3$; Pinsker's inequality gives $\mathrm{TV}\le(\mathrm{KL}/2)^{1/2}$, which tends to zero as $r\uparrow1$ for fixed $T$, and a procedure with error at most $\alpha$ under both economies needs $2(1-2\alpha)^2\le\mathrm{KL}$. The arithmetic steps of all five proofs are checked in Lean~4 (Appendix~\ref{app:registry}).
+
+\section{Registration record}\label{app:registry}
+
+\begin{table}[ht]
+\centering\footnotesize
+\begin{threeparttable}
+\caption{Registration of the tests reported in Section~\ref{sec:evidence}}\label{tab:registry}
+\begin{tabular}{llll}
+\toprule
+Test & Specification SHA-256 (first 12) & Registration commit & Opened\\
+\midrule
+C2 & \texttt{aca63504f2ed} & \texttt{4a20531} & 2026-10-24\\
+C3 & \texttt{9a4548277fb1} & \texttt{f8916b6} & 2026-10-25\\
+F1 & \texttt{f6320484b223} & \texttt{b2e78b6} & 2026-10-25\\
+S1 & \texttt{5dc805bb820c} & \texttt{b43f5b0} & 2026-10-25\\
+R1 & \texttt{c597bbd7b1a4} & \texttt{68bbb75} & 2026-10-25\\
+H1 & \texttt{833b1993b2f2} & \texttt{a7a00df} & opens from 2026-12-10\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Specifications are in \texttt{thesis/checks/prereg/} of the repository, with their hashes and counters. Each test's code verifies the specification hash and the hashes of every pipeline file before running and increments the counter on opening. F1's addendum A1, which restricted the universe filter to ASCII symbol names after a symbol written in Chinese characters stopped the first run before any data were downloaded, was registered in a commit of its own before the run resumed.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
 \begin{thebibliography}{99}
+\bibitem[Bacry et~al.(2015)]{bacry2015} Bacry, E., Mastromatteo, I. and Muzy, J.-F. (2015). Hawkes processes in finance. \emph{Market Microstructure and Liquidity} 1(1), 1550005.
 \bibitem[Blough(1992)]{blough1992} Blough, S.~R. (1992). The relationship between power and level for generic unit root tests in finite samples. \emph{Journal of Applied Econometrics} 7(3), 295--308.
+\bibitem[Bouchaud et~al.(2004)]{bouchaud2004} Bouchaud, J.-P., Gefen, Y., Potters, M. and Wyart, M. (2004). Fluctuations and response in financial markets: The subtle nature of `random' price changes. \emph{Quantitative Finance} 4(2), 176--190.
 \bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009} Brunnermeier, M.~K. and Pedersen, L.~H. (2009). Market liquidity and funding liquidity. \emph{Review of Financial Studies} 22(6), 2201--2238.
 \bibitem[Budish et~al.(2015)]{budish2015} Budish, E., Cramton, P. and Shim, J. (2015). The high-frequency trading arms race: Frequent batch auctions as a market design response. \emph{Quarterly Journal of Economics} 130(4), 1547--1621.
 \bibitem[Chan and Wei(1987)]{chanwei1987} Chan, N.~H. and Wei, C.~Z. (1987). Asymptotic inference for nearly nonstationary AR(1) processes. \emph{Annals of Statistics} 15(3), 1050--1063.
+\bibitem[Dickey and Fuller(1979)]{dickeyfuller1979} Dickey, D.~A. and Fuller, W.~A. (1979). Distribution of the estimators for autoregressive time series with a unit root. \emph{Journal of the American Statistical Association} 74(366), 427--431.
+\bibitem[Donoho(1992)]{donoho1992super} Donoho, D.~L. (1992). Superresolution via sparsity constraints. \emph{SIAM Journal on Mathematical Analysis} 23(5), 1309--1331.
 \bibitem[Donoho(1994)]{donoho1994} Donoho, D.~L. (1994). Statistical estimation and optimal recovery. \emph{Annals of Statistics} 22(1), 238--270.
 \bibitem[Elliott et~al.(1996)]{ers1996} Elliott, G., Rothenberg, T.~J. and Stock, J.~H. (1996). Efficient tests for an autoregressive unit root. \emph{Econometrica} 64(4), 813--836.
 \bibitem[Faust(1996)]{faust1996} Faust, J. (1996). Near observational equivalence and theoretical size problems with unit root tests. \emph{Econometric Theory} 12(4), 724--731.
 \bibitem[Filimonov and Sornette(2012)]{filimonov2012} Filimonov, V. and Sornette, D. (2012). Quantifying reflexivity in financial markets: Toward a prediction of flash crashes. \emph{Physical Review E} 85(5), 056108.
 \bibitem[Hardiman et~al.(2013)]{hardiman2013} Hardiman, S.~J., Bercot, N. and Bouchaud, J.-P. (2013). Critical reflexivity in financial markets: A Hawkes process analysis. \emph{European Physical Journal B} 86, 442.
+\bibitem[Harvey(2017)]{harvey2017} Harvey, C.~R. (2017). Presidential address: The scientific outlook in financial economics. \emph{Journal of Finance} 72(4), 1399--1440.
+\bibitem[Harvey et~al.(2016)]{harvey2016} Harvey, C.~R., Liu, Y. and Zhu, H. (2016). \ldots and the cross-section of expected returns. \emph{Review of Financial Studies} 29(1), 5--68.
+\bibitem[Hasbrouck(1991)]{hasbrouck1991} Hasbrouck, J. (1991). Measuring the information content of stock trades. \emph{Journal of Finance} 46(1), 179--207.
 \bibitem[Heinrich and Kahn(2018)]{heinrich2018} Heinrich, P. and Kahn, J. (2018). Strong identifiability and optimal minimax rates for finite mixture estimation. \emph{Annals of Statistics} 46(6A), 2844--2870.
 \bibitem[Ibragimov and Has'minskii(1984)]{ibragimov1984} Ibragimov, I.~A. and Has'minskii, R.~Z. (1984). On the nonparametric estimation of a value of a linear functional in Gaussian white noise. \emph{Theory of Probability and Its Applications} 29(1), 18--32.
 \bibitem[Kirchner(2016)]{kirchner2016} Kirchner, M. (2016). Hawkes and INAR($\infty$) processes. \emph{Stochastic Processes and their Applications} 126(8), 2494--2525.
+\bibitem[Kirilenko and Lo(2013)]{kirilenko2013} Kirilenko, A.~A. and Lo, A.~W. (2013). Moore's law versus Murphy's law: Algorithmic trading and its discontents. \emph{Journal of Economic Perspectives} 27(2), 51--72.
 \bibitem[Kirilenko et~al.(2017)]{kirilenko2017} Kirilenko, A., Kyle, A.~S., Samadi, M. and Tuzun, T. (2017). The Flash Crash: High-frequency trading in an electronic market. \emph{Journal of Finance} 72(3), 967--998.
+\bibitem[Kyle(1985)]{kyle1985} Kyle, A.~S. (1985). Continuous auctions and insider trading. \emph{Econometrica} 53(6), 1315--1335.
 \bibitem[Mann and Wald(1943)]{mannwald1943} Mann, H.~B. and Wald, A. (1943). On the statistical treatment of linear stochastic difference equations. \emph{Econometrica} 11(3/4), 173--220.
 \bibitem[Mikusheva(2007)]{mikusheva2007} Mikusheva, A. (2007). Uniform inference in autoregressive models. \emph{Econometrica} 75(5), 1411--1452.
 \bibitem[Mikusheva(2012)]{mikusheva2012} Mikusheva, A. (2012). One-dimensional inference in autoregressive models with the potential presence of a unit root. \emph{Econometrica} 80(1), 173--212.
 \bibitem[Niroula and Niroula(2026a)]{niroula2026a} Niroula, P. and Niroula, P. (2026a). Auditable memory and financial identification limits in electronic limit order books. Working paper.
 \bibitem[Niroula(2026b)]{niroula2026thesis} Niroula, P. (2026b). From human markets to machine markets. Certify, don't identify: safety and identification in markets with adaptive trading agents. Thesis draft, Minnesota State University, Mankato.
-\bibitem[Phillips and Magdalinos(2007)]{phillips2007} Phillips, P.~C.~B. and Magdalinos, T. (2007). Limit theory for moderate deviations from a unit root. \emph{Journal of Econometrics} 136(1), 115--130.
 \bibitem[Phillips(1987)]{phillips1987} Phillips, P.~C.~B. (1987). Towards a unified asymptotic theory for autoregression. \emph{Biometrika} 74(3), 535--547.
+\bibitem[Phillips and Magdalinos(2007)]{phillips2007} Phillips, P.~C.~B. and Magdalinos, T. (2007). Limit theory for moderate deviations from a unit root. \emph{Journal of Econometrics} 136(1), 115--130.
 \bibitem[P\"otscher(2002)]{potscher2002} P\"otscher, B.~M. (2002). Lower risk bounds and properties of confidence sets for ill-posed estimation problems with applications to spectral density and persistence estimation, unit roots, and estimation of long memory parameters. \emph{Econometrica} 70(3), 1035--1065.
+\bibitem[Said and Dickey(1984)]{saiddickey1984} Said, S.~E. and Dickey, D.~A. (1984). Testing for unit roots in autoregressive-moving average models of unknown order. \emph{Biometrika} 71(3), 599--607.
 \bibitem[Wu and Yang(2020)]{wu2020} Wu, Y. and Yang, P. (2020). Optimal estimation of Gaussian mixtures via denoised method of moments. \emph{Annals of Statistics} 48(4), 1981--2007.
 \end{thebibliography}
 
