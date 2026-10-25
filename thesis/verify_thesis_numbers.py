@@ -276,6 +276,31 @@ if (ROOT / 'evidence/B1_results.json').exists():
     assert B1mod.numbers_tex(b1r['evaluation']) == (ROOT / 'checks/B1_numbers.tex').read_text()
 print('Test B1: registration and results reproduce from their files: PASS')
 
+import importlib.util as _ilu0  # noqa: E402
+# Test B2 (registered, language-model desks): registration, counter, the evaluation recomputed from its runs, and the text
+import b2_llm as B2mod  # noqa: E402
+b2spec = ROOT / 'checks/prereg/B2_llm.json'; b2j = json.loads(b2spec.read_text())
+assert (ROOT / 'checks/prereg/B2_llm.sha256').read_text().strip() == digest(b2spec)
+for _k, _f in (('b2_sha256', 'b2_llm.py'), ('llm_sha256', 'llm_ailoop.py'), ('sim_sha256', 'ailoop_sim.py'), ('b1_sha256', 'b1_ailoop.py')):
+    assert b2j[_k] == digest(ROOT / 'evidence' / _f), ('B2 pipeline changed', _f)
+b2c = json.loads((ROOT / 'checks/prereg/B2_unlock.json').read_text())
+if (ROOT / 'evidence/B2_results.json').exists():
+    b2r = json.loads((ROOT / 'evidence/B2_results.json').read_text())
+    assert b2c['opens'] == 1 and b2r['spec_sha256'] == digest(b2spec) == b2c['spec_sha256']
+    _m = b2r['meta']
+    re_b2 = B2mod.evaluate(b2r['runs'], b2r['twins'], _m['parse_failures'] / _m['llm_calls'] > 0.05)
+    for k in ('P1', 'P2', 'P3', 'P4'):
+        assert re_b2[k]['pass'] == b2r['evaluation'][k]['pass'], ('B2', k)
+    assert B2mod.numbers_tex(b2r['evaluation'], _m) == (ROOT / 'checks/B2_numbers.tex').read_text()
+    _spec2 = _ilu0.spec_from_file_location("b2_extra", ROOT / "checks/b2_extra_numbers.py")
+    _b2x = _ilu0.module_from_spec(_spec2); _spec2.loader.exec_module(_b2x)
+    assert _b2x.numbers_tex(b2r) == (ROOT / 'checks/B2_extra.tex').read_text(), 'B2 extra macros differ from the result file'
+    _ai = (ROOT / 'ch4b_aiagents.tex').read_text()
+    assert '\\input{checks/B2_numbers}' in _ai and '\\input{checks/B2_extra}' in _ai and 'pending' not in _ai.split('sec:ai_b2')[1].split('sec:ai_limits')[0]
+else:
+    assert b2c['opens'] == 0
+print('Test B2: registration and results reproduce from their files: PASS')
+
 # Tests R1 and H1: registered before their data; pipeline hashes, counters and the text's status
 for name, specf, keys, counter, res, para in (
         ('R1', 'R1_absresp', (('r1_sha256', 'r1_absresp.py'), ('s1_sha256', 's1_fragility.py'), ('c3_sha256', 'c3_margin_more_days.py'),
