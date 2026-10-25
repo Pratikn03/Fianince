@@ -243,7 +243,20 @@ for key, f in (('s1_sha256', 's1_fragility.py'), ('c3_sha256', 'c3_margin_more_d
     assert s1j[key] == digest(ROOT / 'evidence' / f), ('S1', key)
 s1c = json.loads((ROOT / 'checks/prereg/S1_unlock.json').read_text())
 if (ROOT / 'evidence/S1_results.json').exists():
-    assert s1c['opens'] == 1 and json.loads((ROOT / 'evidence/S1_results.json').read_text())['spec_sha256'] == digest(s1spec)
+    import pandas as _pd  # noqa: E402
+    import s1_fragility as S1mod  # noqa: E402
+    s1res = json.loads((ROOT / 'evidence/S1_results.json').read_text())
+    assert s1c['opens'] == 1 and s1res['spec_sha256'] == digest(s1spec) == s1c['spec_sha256']
+    assert s1res['registration_commit'] == s1c['registration_commit']
+    s1u = json.loads((ROOT / 'evidence/S1_universe.json').read_text()); assert s1u['symbols'] == s1res['symbols'] and s1u['seed'] == 20261107
+    s1e = s1res['evaluation']
+    re_s1 = S1mod.evaluate(_pd.read_csv(ROOT / 'evidence/S1_rows.csv.gz'), s1e['n_evaluable'])   # rows saved at 6 significant digits
+    for k in ('stress_days', 'P1_pass', 'P2_pass', 'P3_pass', 'P4_pass'):
+        assert re_s1[k] == s1e[k], ('S1', k)
+    assert all(abs(a - b) < 0.005 for a, b in zip(re_s1['p_raw'], s1e['p_raw']))
+    assert s1e['n_evaluable'] == sum('excluded' not in v for v in s1res['per_symbol'].values())
+    assert S1mod.numbers_tex(s1e) == (ROOT / 'checks/S1_numbers.tex').read_text()
+    assert '\\input{checks/S1_numbers}' in concl and 'S1: does the margin measure fragility?' in concl
 else:
     assert s1c['opens'] in (0, 1) and 'S1: does the margin measure fragility? (registered, not yet run)' in concl
 print('Test S1: registration and pipeline hashes: PASS')

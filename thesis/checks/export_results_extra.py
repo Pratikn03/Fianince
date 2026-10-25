@@ -226,6 +226,21 @@ def build():
               sz["rv"]["elasticity_iv"], sz["rv"]["se_iv"], sz["rv"]["elasticity_ols"]),
           "\\newcommand{\\PsevenStressN}{%d}\\newcommand{\\PsevenRho}{%.2f}\\newcommand{\\PsevenPct}{%.0f}" % (
               s7["n_symbols"], s7["spearman_margin_vs_mae"], 100 * s7["percentile_of_pre_stress_median"])]
+    # Test S1 (registered): numbers beyond those its pipeline writes
+    s1 = json.loads((EV / "S1_results.json").read_text()); se = s1["evaluation"]; ss = se["secondary"]
+    L += [f"\\newcommand{{\\SoneDrawn}}{{{len(s1['symbols'])}}}\\newcommand{{\\SoneExcluded}}{{{sum('excluded' in v for v in s1['per_symbol'].values())}}}",
+          "\\newcommand{\\SoneRvCoef}{%.2f}\\newcommand{\\SoneRvGain}{%.2f}\\newcommand{\\SoneDates}{%d}" % (
+              se["P2"]["coef_X"], se["P2"]["delta_r2_pct"], se["P2"]["n_test_dates"]),
+          "\\newcommand{\\SoneRvP}{%s}\\newcommand{\\SoneHawkesP}{%s}\\newcommand{\\SoneTailP}{%.3f}\\newcommand{\\SoneTailPholm}{%.2f}" % (
+              sci(se["p_holm"][1]), sci(se["p_holm"][2]), se["p_raw"][3], se["p_holm"][3]),
+          "\\newcommand{\\SoneMaeT}{%.2f}\\newcommand{\\SoneMaeP}{%.4f}" % (ss["mae_forecast"]["clark_west_t_by_date"], ss["mae_forecast"]["p"]),
+          "\\newcommand{\\SoneNhatRvT}{%.2f}\\newcommand{\\SoneMedianNhat}{%.2f}" % (ss["n_hat_alone_rv"]["clark_west_t_by_date"], ss["median_n_hat"]),
+          "\\newcommand{\\SoneNhatStressRho}{%.2f}\\newcommand{\\SoneNhatStressT}{%.2f}\\newcommand{\\SoneNhatStressNeg}{%d}" % (
+              ss["stress_branching_ratio"]["mean_rho"], ss["stress_branching_ratio"]["t"], ss["stress_branching_ratio"]["n_negative"]),
+          "\\newcommand{\\SoneOctRho}{%.2f}\\newcommand{\\SoneMarginPct}{%.0f}\\newcommand{\\SoneNegWin}{%.1f}" % (
+              ss["stress_2025_10_10"]["rho"], 100 * ss["median_margin_percentile_on_stress_days"], 100 * ss["share_windows_negative_margin"]),
+          "\\newcommand{\\SoneRankRvT}{%.2f}\\newcommand{\\SoneRankTailT}{%.2f}" % (
+              ss["P2_rank"]["clark_west_t_by_date"], ss["P4_rank"]["clark_west_t_by_date"])]
     # Numerical illustrations of Section sec:uniform (simulated economies; not evidence)
     un = json.loads((HERE / "uniform_certification_numeric_check.json").read_text())
     hd = un["hidden"]; h999 = hd["by_memory_rate"]["0.999"]; pw = un["uniform_power"]; ab = un["absresp"]
