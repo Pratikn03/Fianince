@@ -77,6 +77,7 @@ class LConfig:
     lags: int = 12
     boot: int = 100
     temperature: float = 0.7
+    prompt: str = "v1"              # v1: pilot 1 (ends with the current stance); v2: evidence last, no stance echo
 
 
 @dataclass
@@ -94,6 +95,24 @@ SCENARIOS = {"control": dict(s_max=0.0), "fast": dict(r_D=0.9), "slow": dict(r_D
 
 def make_markets(scenarios, seeds):
     return [Market(scenario=s, seed=sd, **SCENARIOS[s]) for sd in seeds for s in scenarios]
+
+
+def user_text(variant, d, closes, vol, ac, ks, pnls, k, header=""):
+    """The daily report. v1 (pilot 1) ends with "Your current stance is k", which a small model simply copies; v2 puts
+    the desk's own record first and the market evidence last and does not restate the current stance."""
+    mk = ("Daily closing prices, oldest first: " + ", ".join(f"{c:.1f}" for c in closes) + ".\n"
+          f"Yesterday's five-minute price changes: volatility {vol:.2f}, correlation of each change with the next {ac:+.2f}.")
+    if variant == "v1":
+        own = ("Your stance and profit on each of the last days, oldest first: "
+               + ", ".join(f"{int(a):+d} ({1000 * b:+.0f} dollars)" for a, b in zip(ks, pnls)) + ".")
+        return (f"Day {d} has closed. {header}".rstrip() + f"\n{mk}\n{own}"
+                + f"\nYour current stance is {int(k):+d}. What is your stance for tomorrow?")
+    if variant == "v2":
+        n = len(ks)
+        own = "\n".join(f"- day {d - n + 1 + i}: stance {int(a):+d}, profit {1000 * b:+.0f} dollars" for i, (a, b) in enumerate(zip(ks, pnls)))
+        return (f"Day {d} has closed. {header}".rstrip() + f"\nYour recent results, oldest first:\n{own}\n"
+                f"Market:\n{mk}\nChoose your stance for tomorrow.")
+    raise ValueError(variant)
 
 
 # --------------------------------------------------------------------------------------------------------------- backends
@@ -261,19 +280,12 @@ class Sim:
         self.day += 1
 
     # ---- reports the desks read
-    def _market_lines(self, j):
+    def _market(self, j):
         d = self.day                                            # days completed
         closes = [100 + self.x[j, (dd + 1) * BARS] for dd in range(max(0, d - 10), d)]
-        seg = self.x[j, (d - 1) * BARS:d * BARS + 1]
-        dx = np.diff(seg)
+        dx = np.diff(self.x[j, (d - 1) * BARS:d * BARS + 1])
         ac = float(np.corrcoef(dx[:-1], dx[1:])[0, 1]) if dx.std() > 0 else 0.0
-        return ("Daily closing prices, oldest first: " + ", ".join(f"{c:.1f}" for c in closes) + ".\n"
-                f"Yesterday's five-minute price changes: volatility {dx.std():.2f}, "
-                f"correlation of each change with the next {ac:+.2f}.")
-
-    def _own_lines(self, ks, pnls):
-        return ("Your stance and profit on each of the last days, oldest first: "
-                + ", ".join(f"{int(k):+d} ({1000 * p:+.0f} dollars)" for k, p in zip(ks, pnls)) + ".")
+        return closes, float(dx.std()), ac
 
     def requests(self):
         """One request per desk that has not adopted the vendor model by the end of the day just completed, and one per
@@ -282,23 +294,22 @@ class Sim:
         tend = d * BARS
         reqs = []
         for j, m in enumerate(self.markets):
-            mk = self._market_lines(j)
+            closes, vol, ac = self._market(j)
+            pv = getattr(cfg, "prompt", "v1")
             lo = max(0, d - 5)
             for i in range(self.N):
                 if tend >= self.t_adopt[j, i]:
                     continue
                 sysm = PERSONAS[i % len(PERSONAS)] + " " + COMMON
-                user = (f"Day {d} has closed.\n{mk}\n" + self._own_lines(self.k_hist[j, i, lo:d], self.pnl_hist[j, i, lo:d])
-                        + f"\nYour current stance is {int(self.k[j, i]):+d}. What is your stance for tomorrow?")
+                user = user_text(pv, d, closes, vol, ac, self.k_hist[j, i, lo:d], self.pnl_hist[j, i, lo:d], self.k[j, i])
                 reqs.append({"who": ("desk", j, i), "system": sysm, "user": user, "temperature": cfg.temperature,
                              "seed": (m.seed * 1000003 + d * 1009 + i) % (2 ** 31),
                              "obs": {"k": int(self.k[j, i]), "pnl_last": float(self.pnl_hist[j, i, d - 1])}})
             if m.vendor == "llm" and tend >= self.t0:
                 users = int((self.t_adopt[j] <= tend).sum())
                 per_user = self.vendor_pnl[j, lo:d]                     # the profit of one user of the product
-                user = (f"Day {d} has closed. {users} of {self.N} trading desks in this market now use your product.\n{mk}\n"
-                        + self._own_lines(self.kD_hist[j, lo:d], per_user)
-                        + f"\nYour current stance is {int(self.kD[j]):+d}. What is your stance for tomorrow?")
+                user = user_text(pv, d, closes, vol, ac, self.kD_hist[j, lo:d], per_user, self.kD[j],
+                                 header=f"{users} of {self.N} trading desks in this market now use your product.")
                 reqs.append({"who": ("vendor", j, -1), "system": VENDOR_SYSTEM, "user": user, "temperature": 0.0,
                              "seed": (m.seed * 1000003 + d * 1009 + 999) % (2 ** 31),
                              "obs": {"k": int(self.kD[j]), "pnl_last": float(per_user[-1]) if len(per_user) else 0.0}})
@@ -446,42 +457,50 @@ def results(sim, backend_name, model, extra=None):
             "evaluation": evaluate_pilot(runs), "runs": runs, **(extra or {})}
 
 
+_CALM = dict(closes=[100.2, 99.8, 100.1, 100.0, 99.9], vol=0.60, ac=-0.30)
+_TREND = dict(closes=[100.5, 102.0, 104.1, 107.3, 111.8], vol=1.40, ac=+0.25)
+# expected: "down" / "up" = the stance should move strictly that way (a losing desk); "not_up" / "not_down" = a winning
+# desk should not move against the evidence. In every probe the right move differs from simply copying the stance.
 PROBES = [
-    ("Day 30 has closed.\nDaily closing prices, oldest first: 100.2, 99.8, 100.1, 100.0, 99.9.\nYesterday's five-minute price "
-     "changes: volatility 0.60, correlation of each change with the next -0.30.\nYour stance and profit on each of the last "
-     "days, oldest first: +2 (-150 dollars), +2 (-120 dollars), +2 (-170 dollars).\nYour current stance is +2. What is your "
-     "stance for tomorrow?", "losing while following moves in a reverting market"),
-    ("Day 30 has closed.\nDaily closing prices, oldest first: 100.2, 99.8, 100.1, 100.0, 99.9.\nYesterday's five-minute price "
-     "changes: volatility 0.60, correlation of each change with the next -0.30.\nYour stance and profit on each of the last "
-     "days, oldest first: -2 (+140 dollars), -2 (+160 dollars), -2 (+120 dollars).\nYour current stance is -2. What is your "
-     "stance for tomorrow?", "winning while trading against moves"),
-    ("Day 60 has closed.\nDaily closing prices, oldest first: 100.5, 102.0, 104.1, 107.3, 111.8.\nYesterday's five-minute price "
-     "changes: volatility 1.40, correlation of each change with the next +0.25.\nYour stance and profit on each of the last "
-     "days, oldest first: -2 (-300 dollars), -2 (-450 dollars), -2 (-700 dollars).\nYour current stance is -2. What is your "
-     "stance for tomorrow?", "losing against a strong trend"),
-    ("Day 60 has closed.\nDaily closing prices, oldest first: 100.5, 102.0, 104.1, 107.3, 111.8.\nYesterday's five-minute price "
-     "changes: volatility 1.40, correlation of each change with the next +0.25.\nYour stance and profit on each of the last "
-     "days, oldest first: +3 (+400 dollars), +3 (+600 dollars), +3 (+900 dollars).\nYour current stance is +3. What is your "
-     "stance for tomorrow?", "winning with a strong trend"),
+    dict(label="losing while following moves in a reverting market", ks=[2, 2, 2], pnls=[-.15, -.12, -.17], expected="down", **_CALM),
+    dict(label="losing big while following moves in a reverting market", ks=[4, 4, 4], pnls=[-.35, -.30, -.41], expected="down", **_CALM),
+    dict(label="losing against a strong trend", ks=[-2, -2, -2], pnls=[-.30, -.45, -.70], expected="up", **_TREND),
+    dict(label="losing big against a strong trend", ks=[-4, -4, -4], pnls=[-.60, -.90, -1.4], expected="up", **_TREND),
+    dict(label="winning while trading against moves", ks=[-2, -2, -2], pnls=[.14, .16, .12], expected="not_up", **_CALM),
+    dict(label="winning with a strong trend", ks=[3, 3, 3], pnls=[.40, .60, .90], expected="not_down", **_TREND),
 ]
 
 
-def probe(backend, temperature=0.0):
-    """Canned reports: does the model answer with an integer, and does its answer move with the evidence?"""
+def _moved(expected, k0, k):
+    return {"down": k < k0, "up": k > k0, "not_up": k <= k0, "not_down": k >= k0}[expected]
+
+
+def probe(backend, temperature=0.0, variant="v1", samples=1):
+    """Canned reports: does the model answer with an integer, and does its answer move with the evidence?
+    Score per probe: the share of replies that move the way the evidence says (see PROBES)."""
     out = []
-    for p, (user, label) in enumerate(PROBES):
+    for p, pb in enumerate(PROBES):
+        user = user_text(variant, 30, pb["closes"], pb["vol"], pb["ac"], pb["ks"], pb["pnls"], pb["ks"][-1])
         for i, persona in enumerate(PERSONAS):
-            out.append({"probe": label, "persona": i, "system": persona + " " + COMMON, "user": user,
-                        "temperature": temperature, "seed": 17 + p * 31 + i, "obs": {"k": 0, "pnl_last": 0.0}})
+            for s_ in range(samples):
+                out.append({"probe": pb["label"], "persona": i, "system": persona + " " + COMMON, "user": user,
+                            "temperature": temperature, "seed": 17 + p * 31 + i * 7 + s_ * 1013, "obs": {"k": 0, "pnl_last": 0.0}})
     texts = backend.decide(out)
     for q, t in zip(out, texts):
         q["reply"] = t; q["stance"] = parse_stance(t)
         del q["system"], q["user"], q["obs"]
     summary = {}
-    for label in dict.fromkeys(q["probe"] for q in out):
-        st = [q["stance"] for q in out if q["probe"] == label]
-        summary[label] = {"stances": st, "parsed": sum(s is not None for s in st)}
-    return {"summary": summary, "replies": out}
+    for pb in PROBES:
+        st = [q["stance"] for q in out if q["probe"] == pb["label"]]
+        ok = [s_ for s_ in st if s_ is not None]
+        summary[pb["label"]] = {"current": pb["ks"][-1], "expected": pb["expected"], "stances": st,
+                                "parsed": len(ok), "n": len(st),
+                                "right_way": float(np.mean([_moved(pb["expected"], pb["ks"][-1], k) for k in ok])) if ok else 0.0,
+                                "copied": float(np.mean([k == pb["ks"][-1] for k in ok])) if ok else 0.0}
+    n = sum(v["n"] for v in summary.values()); parsed = sum(v["parsed"] for v in summary.values())
+    passes = parsed / n >= 0.95 and all(v["right_way"] >= 0.6 for v in summary.values())
+    return {"variant": variant, "temperature": temperature, "summary": summary, "parse_rate": parsed / n,
+            "min_right_way": min(v["right_way"] for v in summary.values()), "passes": bool(passes), "replies": out}
 
 
 def pilot(backend, model, seeds=(301, 302, 303), scenarios=("control", "fast", "slow", "llmvendor"), days=120,
@@ -512,8 +531,11 @@ def selftest():
         res = results(sim, "mock", "mock")
         json.dumps(res, default=float)
         print(json.dumps(res["evaluation"], indent=1, default=float)[:1500])
-        pr = probe(be)
-        assert all(v["parsed"] == len(PERSONAS) for v in pr["summary"].values())
+        for v in ("v1", "v2"):
+            pr = probe(be, variant=v, temperature=0.7, samples=2)
+            assert pr["parse_rate"] == 1.0, pr
+        sim4 = pilot(be, "mock", seeds=(2,), days=25, cfg_kw=dict(window=5, prompt="v2"), log=lambda s: None)
+        print(sim4.requests()[0]["user"])
     print("llm_ailoop selftest: PASS")
 
 
