@@ -275,7 +275,20 @@ for name, specf, keys, counter, res, para in (
         assert sj[key] == digest(ROOT / 'evidence' / f), (name, key)
     cj = json.loads((ROOT / f'checks/prereg/{counter}.json').read_text())
     if (ROOT / f'evidence/{res}.json').exists():
-        assert cj['opens'] == 1 and json.loads((ROOT / f'evidence/{res}.json').read_text())['spec_sha256'] == digest(sp), name
+        rj = json.loads((ROOT / f'evidence/{res}.json').read_text())
+        assert cj['opens'] == 1 and rj['spec_sha256'] == digest(sp) == cj['spec_sha256'], name
+        assert rj['registration_commit'] == cj['registration_commit'], name
+        if name == 'R1':
+            import pandas as _pd  # noqa: E402
+            import r1_absresp as R1mod  # noqa: E402
+            s1syms = set(json.loads((ROOT / 'evidence/S1_universe.json').read_text())['symbols'])
+            assert not (set(rj['symbols']) & s1syms), 'R1 and S1 share symbols'
+            re_r1 = R1mod.evaluate(_pd.read_csv(ROOT / 'evidence/R1_rows.csv.gz'), rj['evaluation']['n_evaluable'])
+            for k in ('P1_pass', 'P2_pass', 'P3_pass'):
+                assert re_r1[k] == rj['evaluation'][k], ('R1', k)
+            assert all(abs(a - b) < 0.005 for a, b in zip(re_r1['p_raw'], rj['evaluation']['p_raw']))
+            assert R1mod.numbers_tex(rj['evaluation']) == (ROOT / 'checks/R1_numbers.tex').read_text()
+            assert '\\input{checks/R1_numbers}' in concl and 'R1: does the absolute response measure risk?' in concl
     else:
         assert cj['opens'] in (0, 1) and para in concl, name
     print(f'Test {name}: registration and pipeline hashes: PASS')

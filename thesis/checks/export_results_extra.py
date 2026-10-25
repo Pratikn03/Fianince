@@ -241,6 +241,22 @@ def build():
               ss["stress_2025_10_10"]["rho"], 100 * ss["median_margin_percentile_on_stress_days"], 100 * ss["share_windows_negative_margin"]),
           "\\newcommand{\\SoneRankRvT}{%.2f}\\newcommand{\\SoneRankTailT}{%.2f}" % (
               ss["P2_rank"]["clark_west_t_by_date"], ss["P4_rank"]["clark_west_t_by_date"])]
+    # Test R1 (registered): numbers beyond those its pipeline writes
+    r1 = json.loads((EV / "R1_results.json").read_text()); re_ = r1["evaluation"]; rs = re_["secondary"]
+    el = lambda k: rs[k]["elasticity"]
+    L += [f"\\newcommand{{\\RoneDrawn}}{{{len(r1['symbols'])}}}\\newcommand{{\\RoneExcluded}}{{{sum('excluded' in v for v in r1['per_symbol'].values())}}}",
+          "\\newcommand{\\RoneT}{%.1f}\\newcommand{\\RoneFS}{%.2f}\\newcommand{\\RoneOLS}{%.2f}" % (
+              re_["P1"]["t"], re_["P1"]["first_stage_r2"], re_["P1"]["elasticity_ols"]),
+          "\\newcommand{\\RoneFcCoef}{%.3f}\\newcommand{\\RoneBeyondCoef}{%.3f}\\newcommand{\\RoneGain}{%.2f}" % (
+              re_["P2"]["coef_X"], re_["P3"]["coef_X"], re_["P2"]["delta_r2_pct"]),
+          "\\newcommand{\\RoneRv}{%.2f}\\newcommand{\\RoneRvSE}{%.2f}\\newcommand{\\RoneLogS}{%.2f}\\newcommand{\\RoneLogSSE}{%.2f}" % (
+              el("rv_size"), rs["rv_size"]["se"], el("logS_size"), rs["logS_size"]["se"]),
+          "\\newcommand{\\RoneLogSH}{%.2f}\\newcommand{\\RoneContr}{%.2f}\\newcommand{\\RoneMom}{%.2f}" % (
+              el("logSH_size"), el("size_contrarian_symbols"), el("size_momentum_symbols")),
+          "\\newcommand{\\RoneNContr}{%d}\\newcommand{\\RoneNMom}{%d}\\newcommand{\\RoneRatio}{%.2f}" % (
+              rs["n_contrarian_symbols"], rs["n_momentum_symbols"], rs["median_ratio_Psi_to_abs_SH"]),
+          "\\newcommand{\\RoneHsix}{%.2f}\\newcommand{\\RoneHtwentyfour}{%.2f}\\newcommand{\\RoneStressRho}{%.2f}" % (
+              el("size_H6"), el("size_H24"), rs["stress_partial_spearman"]["mean_rho"])]
     # Numerical illustrations of Section sec:uniform (simulated economies; not evidence)
     un = json.loads((HERE / "uniform_certification_numeric_check.json").read_text())
     hd = un["hidden"]; h999 = hd["by_memory_rate"]["0.999"]; pw = un["uniform_power"]; ab = un["absresp"]
