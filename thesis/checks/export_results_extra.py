@@ -226,6 +226,20 @@ def build():
               sz["rv"]["elasticity_iv"], sz["rv"]["se_iv"], sz["rv"]["elasticity_ols"]),
           "\\newcommand{\\PsevenStressN}{%d}\\newcommand{\\PsevenRho}{%.2f}\\newcommand{\\PsevenPct}{%.0f}" % (
               s7["n_symbols"], s7["spearman_margin_vs_mae"], 100 * s7["percentile_of_pre_stress_median"])]
+    # Numerical illustrations of Section sec:uniform (simulated economies; not evidence)
+    un = json.loads((HERE / "uniform_certification_numeric_check.json").read_text())
+    hd = un["hidden"]; h999 = hd["by_memory_rate"]["0.999"]; pw = un["uniform_power"]; ab = un["absresp"]
+    at = lambda c: [v["rate_certified_safe"] for k, v in pw.items() if k.endswith(f"|c={c}")]
+    L += ["\\newcommand{\\UniformC}{%g}\\newcommand{\\UniformT}{%d}\\newcommand{\\UniformReps}{%d}" % (hd["c"], hd["T"], hd["reps"]),
+          "\\newcommand{\\UniformSafeRate}{%.0f}\\newcommand{\\UniformUnsafeRate}{%.0f}" % (
+              100 * h999["certified_safe_rate_safe_economy"], 100 * h999["certified_safe_rate_unsafe_economy"]),
+          "\\newcommand{\\UniformPowerZero}{%.0f}\\newcommand{\\UniformPowerZeroHi}{%.0f}" % (100 * min(at(0)), 100 * max(at(0))),
+          "\\newcommand{\\UniformPowerTenLo}{%.0f}\\newcommand{\\UniformPowerTenHi}{%.0f}" % (100 * min(at(10)), 100 * max(at(10))),
+          "\\newcommand{\\UniformPowerForty}{%.0f}" % (100 * min(at(40))),
+          "\\newcommand{\\UniformPsi}{%.2f}\\newcommand{\\UniformCover}{%.0f}\\newcommand{\\UniformHalfWidth}{%.2f}" % (
+              ab["Psi_H"], 100 * ab["coverage"], ab["median_half_width"]),
+          "\\newcommand{\\UniformS}{%.2f}\\newcommand{\\UniformUnderstate}{%.0f}" % (
+              ab["signed_sum_S"], 100 * (1 - ab["signed_sum_S"] / ab["Psi_H"]))]
     return "\n".join(L) + "\n"
 
 

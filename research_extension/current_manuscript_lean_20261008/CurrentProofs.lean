@@ -49,3 +49,4 @@ import CurrentProofs.ThesisPassive
 import CurrentProofs.ThesisSigned
 import CurrentProofs.ThesisDrift
 import CurrentProofs.ThesisPassiveMulti
+import CurrentProofs.ThesisHidden
