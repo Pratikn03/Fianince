@@ -1,0 +1,39 @@
+{
+ "test": "S1_fragility",
+ "status": "REGISTERED. Requested by the author on 2026-10-25 (chat: 'give me colab to run' for the near-boundary test). Pushed in a commit of its own, before any S1 data were downloaded and before the universe was drawn.",
+ "designed_after": "Tests C2, C3 and F1 (registered; the margin decided on the safe side in 22/30, 23/25 and 24/26 symbols) and F1's failed Primary 3 (next-day log MAE, Clark-West t = 1.51, p = 0.065) with its secondary for next-day log RV (t = 2.92, p = 0.002). Pilot 7 (effect size and one stress day on C3's spent symbols) had been sent but its results had not been seen by anyone when S1 was registered.",
+ "pipeline": "thesis/evidence/s1_fragility.py (with c3_margin_more_days.py, c2_margin_vs_identify.py, pilot4_curve_and_risk.py and binance_vision.py, unchanged)",
+ "s1_sha256": "1382f9706cf1b86647623566fb9d0038ad90a63c6dc7429d2ffda1452028bbed",
+ "c3_sha256": "5c8d7b83a9d27cbdecf3dfe3c1f8ce0873bca87e23fc88aa62a6597b116e37c5",
+ "c2_sha256": "c7981a8bcae2c9841bb390759127fd5c57ca7562d600cfc318bcaa7d4955cd1d",
+ "pilot4_sha256": "c8e65f81fd189b607ee727a87c913ee91255e7cfeee66b32cedc4687733cfa09",
+ "binance_vision_sha256": "e01051c93387e25bef0aa35b1dda912d3d3da984ee6032f9a3a8c8bcbcf770f4",
+ "question": "Does a lower certified margin mean more fragility (larger damage from a common shock, more variance, more extreme moves), and does the margin carry information beyond the Hawkes branching ratio?",
+ "universe_rule": "Binance USD-M USDT perpetuals in the public archive with an ASCII, alphanumeric symbol absent from every text file of the repository (so none of E1v2, D1, the pilots, C2, C3 or F1); klines on 2025-01-04 and 2026-09-23; 40 drawn in a seeded random order (seed 20261107); written to S1_universe.json before any market data are downloaded",
+ "dates_rule": "every calendar day from 2025-01-01 to 2026-09-30 (638 dates); one-minute klines only",
+ "valid_day": "C3's rule; evaluable symbol: at least 200 valid days; void if fewer than 20 evaluable symbols or fewer than 10 stress days",
+ "estimates": "for symbol s and day t, from the 20 valid days before t, used only if they lie within the previous 30 calendar days: C3's margin (point estimate, as in F1's forecast); the branching ratio n_hat = sum of the coefficients of the regression of the day-demeaned one-minute trade count on its 10 previous minutes, pooled over the 20 days (INAR(p) approximation of a Hawkes process); log(1+RV) of the previous valid day and of the trailing 20 days (mean RV). Outcomes on day t: log(1 + maximum adverse excursion in bp) and log(1 + RV in bp^2)",
+ "primary_1": "Market stress days: dates with rows for at least 20 symbols, ranked by the cross-sectional median of log(1+MAE); take the highest, then the next highest at least 7 calendar days from every day already taken, until 20. On each, the partial Spearman correlation across symbols between M and log(1+MAE) controlling for the two volatility terms. Holds if the mean correlation is negative with one-sided t-test (stress days as observations) p < 0.05",
+ "primary_2": "F1's pooled out-of-sample design (symbol fixed effects, pooled slopes on the two volatility terms, first 60% of each symbol's rows to fit, margin winsorized at the training 5th/95th percentiles, Clark-West differentials averaged within dates) for next-day log(1+RV). Holds if the coefficient on the margin is negative and one-sided p < 0.05",
+ "primary_3": "Primary 2 with n_hat (winsorized at its training 5th/95th percentiles) added to both the restricted and the full model. Holds if the margin's coefficient is negative and p < 0.05",
+ "primary_4": "Primary 2's design for the indicator that log(1+MAE) exceeds the symbol's training 95th percentile (linear probability model; Clark-West on Brier scores). Holds if the margin's coefficient is negative and p < 0.05",
+ "correction": "Holm across the four primaries at 0.05",
+ "secondary": [
+  "Primary 1 with n_hat as a further control, and with no controls",
+  "the branching ratio's own partial correlation on stress days",
+  "the stress day 2025-10-10 alone",
+  "percentile of the cross-sectional median margin on stress days among all dates; share of symbol-stress pairs with the margin below the symbol's median",
+  "Primaries 2-4 with the margin's within-symbol rank",
+  "next-day log(1+MAE) as in F1",
+  "n_hat alone in Primary 2's design",
+  "median n_hat; share of windows with a negative margin estimate"
+ ],
+ "readings": {
+  "all_pass": "the certified margin measures fragility beyond volatility and beyond the branching ratio: the thesis may claim the certificate is informative about danger, not only about distance from the boundary",
+  "P1_fails": "at a common shock, the margin does not rank which markets are hurt most; the certificate remains a statement about stability, not fragility",
+  "P2_passes_P3_fails": "the margin's variance information is shared with the branching ratio; it is a price-based route to a known quantity",
+  "P4_fails": "the margin does not forecast extreme moves; consistent with F1"
+ },
+ "opening_rule": "thesis/checks/prereg/S1_unlock.json must read opens = 0 before the run; the notebook copies it to Drive, sets it to 1 when the run starts, and resume=True continues an opened run without redrawing the universe",
+ "registered_utc": "2026-10-25T05:42:57.199466+00:00"
+}
