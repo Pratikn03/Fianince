@@ -49,7 +49,7 @@ All supporting scripts are self-contained and reproducible:
 
 ## 4. Formal Mechanization Audit (Lean 4 + Mathlib)
 
-- Lean declarations audited: **506 declarations** (445 manuscript, 61 thesis) in `research_extension/current_manuscript_lean_20261008/` and **401 declarations** in `lean_proofs/`.
+- Lean declarations audited: **510 declarations** (445 manuscript, 65 thesis) in `research_extension/current_manuscript_lean_20261008/` and **401 declarations** in `lean_proofs/`.
 - Lean axioms: Standard foundational axioms only (`propext`, `Classical.choice`, `Quot.sound`).
 - `sorry` count: **0**.
 - Coverage status: Accurately classified as `complete = false` (kernel verification of algebraic consequences, not complete manuscript formalization).

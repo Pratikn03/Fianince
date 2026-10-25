@@ -257,6 +257,10 @@ def build():
               rs["n_contrarian_symbols"], rs["n_momentum_symbols"], rs["median_ratio_Psi_to_abs_SH"]),
           "\\newcommand{\\RoneHsix}{%.2f}\\newcommand{\\RoneHtwentyfour}{%.2f}\\newcommand{\\RoneStressRho}{%.2f}" % (
               el("size_H6"), el("size_H24"), rs["stress_partial_spearman"]["mean_rho"])]
+    # Numerical check of Theorem thm:pooled (simulated; not evidence)
+    po = json.loads((HERE / "pooled_estimator_numeric_check.json").read_text()); rr = [r["T_var_over_M"] for r in po["runs"]]
+    L += ["\\newcommand{\\PooledKappa}{%g}\\newcommand{\\PooledSeps}{%g}" % (po["kappa"], po["s_eps"]),
+          "\\newcommand{\\PooledRatioLo}{%.2f}\\newcommand{\\PooledRatioHi}{%.2f}" % (min(rr), max(rr))]
     # Numerical illustrations of Section sec:uniform (simulated economies; not evidence)
     un = json.loads((HERE / "uniform_certification_numeric_check.json").read_text())
     hd = un["hidden"]; h999 = hd["by_memory_rate"]["0.999"]; pw = un["uniform_power"]; ab = un["absresp"]
