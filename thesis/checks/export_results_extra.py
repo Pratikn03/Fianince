@@ -147,6 +147,15 @@ def build():
           f"\\newcommand{{\\OonePre}}{{{f(o1['validity']['V1_pooled_pre_over_beta'], 3)}}}",
           f"\\newcommand{{\\OonePreCI}}{{[{f(o1['validity']['V1_ci'][0], 2)},{f(o1['validity']['V1_ci'][1], 2)}]}}",
           f"\\newcommand{{\\OonePseudo}}{{{100 * o1['validity']['V2_median_pseudo_shock_sd_ratio']:.0f}}}"]
+    # Test C3 (registered)
+    c3 = json.loads((EV / "C3_results.json").read_text()); e3 = c3["evaluation"]; s3c = e3["secondary"]
+    sci = lambda x: "%s\\times10^{%d}" % (f"{x:.0e}".split("e")[0], int(f"{x:.0e}".split("e")[1]))
+    L += [f"\\newcommand{{\\CthreeDrawn}}{{{len(c3['symbols'])}}}",
+          f"\\newcommand{{\\CthreeExcluded}}{{{sum('excluded' in v for v in c3['per_symbol'].values())}}}",
+          "\\newcommand{\\CthreePone}{%s}" % sci(e3["p_holm"][0]), "\\newcommand{\\CthreePtwo}{%s}" % sci(e3["p_holm"][1]),
+          f"\\newcommand{{\\CthreeSameNoFb}}{{{s3c['same_decision_without_feedback']}}}",
+          f"\\newcommand{{\\CthreeFbNeg}}{{{s3c['feedback_negative']}}}",
+          f"\\newcommand{{\\CthreeSafe}}{{{s3c['safe']}}}", f"\\newcommand{{\\CthreeDays}}{{{s3c['median_valid_days']:.0f}}}"]
     return "\n".join(L) + "\n"
 
 

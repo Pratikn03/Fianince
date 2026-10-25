@@ -190,6 +190,21 @@ assert O1mod.numbers_tex(o1res) == (ROOT / 'checks/O1_numbers.tex').read_text()
 assert '\\input{checks/O1_numbers}' in concl and 'O1:' in concl
 print('Test O1: registration and results reproduce from their files: PASS')
 
+# Test C3: registration, counter, and the evaluation recomputed from its per-symbol results
+import c3_margin_more_days as C3mod  # noqa: E402
+c3spec = ROOT / 'checks/prereg/C3_margin_more_days.json'
+c3c = json.loads((ROOT / 'checks/prereg/C3_unlock.json').read_text())
+c3res = json.loads((ROOT / 'evidence/C3_results.json').read_text())
+assert c3c['opens'] == 1 and c3res['spec_sha256'] == digest(c3spec) == c3c['spec_sha256']
+assert (ROOT / 'checks/prereg/C3_margin_more_days.sha256').read_text().strip() == digest(c3spec)
+assert json.loads(c3spec.read_text())['c3_sha256'] == digest(ROOT / 'evidence/c3_margin_more_days.py')
+re3 = C3mod.evaluate(c3res['per_symbol'])
+for k in ('n_evaluable', 'decided', 'identified', 'mcnemar_b', 'mcnemar_c', 'P1_pass', 'P2_pass'):
+    assert re3[k] == c3res['evaluation'][k], ('C3', k)
+assert C3mod.numbers_tex(c3res['evaluation']) == (ROOT / 'checks/C3_numbers.tex').read_text()
+assert '\\input{checks/C3_numbers}' in concl and 'C3:' in concl
+print('Test C3: registration and results reproduce from their files: PASS')
+
 # Chapter 5 extra numbers and the exploratory pilot (labelled exploratory, never confirmatory)
 subprocess.run([sys.executable, str(ROOT / 'checks/export_results_extra.py'), '--check'], check=True)
 pilot = json.loads((ROOT / 'evidence/pilot_after_e1v2_results.json').read_text())
