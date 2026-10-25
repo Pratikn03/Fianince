@@ -54,7 +54,8 @@ def chapterize(src, prefix, chap_label, title, preface, figdir, companion_key, o
     for a, b in replacements:
         tex = tex.replace(a, b)
     tex = tex.replace("\\citealp{" + companion_key + "}", other)
-    tex = re.sub(r"\\citep\[([^\]]*)\]\{" + re.escape(companion_key) + r"\}", "(" + other + ", \\1)", tex)
+    # a function replacement: in a string replacement re.sub would turn the "\\r" of "\\ref" into a carriage return
+    tex = re.sub(r"\\citep\[([^\]]*)\]\{" + re.escape(companion_key) + r"\}", lambda m: "(" + other + ", " + m.group(1) + ")", tex)
     tex = tex.replace("\\citep{" + companion_key + "}", "(" + other + ")")
     tex = tex.replace("\\citet{" + companion_key + "}", other)
     tex = tex.replace("the companion paper's", other + "'s").replace("The companion paper's", other + "'s")
@@ -107,7 +108,11 @@ def main():
     ch4 = chapterize(os.path.join(REPO, "paper2", "paper2.tex"), "p2:", "ch:p2",
                      "Safety without identification: transient amplification and a maximal pre-trade guard", pre2, "p2figs", "niroula2026", "ch:p1", rep2)
     open(os.path.join(HERE, "ch2_paper1.tex"), "w").write(ch3)
-    open(os.path.join(HERE, "ch3_paper2.tex"), "w").write(ch4)
+    # Paper 2 enters the thesis condensed: the full chapter is kept (not compiled) and condense_ch3.py builds
+    # ch3_paper2.tex from it, copying theorems, proofs and tables verbatim and replacing the rest by shorter text.
+    open(os.path.join(HERE, "ch3_paper2_full.tex"), "w").write(ch4)
+    import condense_ch3
+    condense_ch3.main(HERE)
     for name, t in (("paper1", ch3), ("paper2", ch4)):
         left = re.findall(r"niroula2026b?|companion", t)
         print(name, len(t) // 1000, "k chars; leftover companion refs:", len(left))
