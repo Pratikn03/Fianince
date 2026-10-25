@@ -1,0 +1,38 @@
+{
+ "test": "B2_llm",
+ "status": "REGISTERED. Requested by the author on 2026-10-25 ('yeah go ahead', approving the proposed Test B2). Pushed in a commit of its own before any of the registered seeds 2001-2015 were run with any model.",
+ "designed_after": "Three exploratory pilots, all committed (thesis/evidence/B2_pilot_results.json, B2_pilot_probe.json, B2_pilot2_screen.json, B2_pilot3_screen.json, B2_pilot3_results.json). Pilot 1 (Qwen2.5-1.5B, prompt v1, seeds 301-303): the model copied its stated stance in all 50,547 decisions. Pilot 2: screen of Qwen2.5 1.5B/3B/7B with prompts v1 and v2 under a rule fixed in advance (parse >= 95% and right-way share >= 0.6 in each of six canned reports); none passed (7B with v2 closest, worst report 0.58). Pilot 3: same rule and prompt v2; Qwen3-8B failed (worst 0.00), Qwen2.5-14B-Instruct passed (worst 0.75); the pilot rerun with 14B desks on seeds 301-302 (8 markets) gave crises later than with frozen desks in 4 of 4 fixed-product markets (by 12, 8, 6 and 1 days), no crisis in 2 of 2 language-model-product markets (the product switched itself from +5 to -3 for every user around day 30), standard time-to-zero warnings before all 4 crises (leads 8, 2, 18, 3 days) and none in 2 controls, and disclosed-estimator time-to-zero alarms in 2 of 2 controls.",
+ "pipeline": "thesis/evidence/b2_llm.py, llm_ailoop.py, ailoop_sim.py, b1_ailoop.py",
+ "b2_sha256": "a7e5892ff7456e01be254ffdcef4e7e353c010991c7181da24e54a7020b5ec70",
+ "llm_sha256": "61d1050f710049fd3a6a08bb5eee389dc1c0052399d4f93d8d0870fb9ef898b1",
+ "sim_sha256": "3902988614762d06dbc75bbf7dbd270718b4709bc7fc81522826bf9742594234",
+ "b1_sha256": "2349d520e8057473af97c14a9c8d4bb59d8bce784e22b9c804a68f399efadb3b",
+ "question": "With real language-model trading desks in Test B1's market, does the public-data certificate still warn before instability without false alarms, do the desks delay or hasten the crisis relative to frozen desks, and does a shared language-model product cause fewer crises than a fixed momentum product?",
+ "model": "Qwen/Qwen2.5-14B-Instruct (Hugging Face; the snapshot commit used is recorded in the results), 16-bit weights (bfloat16 where supported), transformers generate, max 4 new tokens, temperature 0.7, top-p 0.95 for desks; temperature 0 for the shared product; prompt v2 of llm_ailoop.user_text; a GPU with at least 39 GB so that no quantization is needed",
+ "markets": "seeds 2001-2015 for each of control (no adoption), fast (fixed momentum product, r_D 0.9), slow (r_D 0.995), llmvendor (one shared language-model product, r_D 0.9, starting at stance +5); 60 markets of 120 days, 50 desks starting at stance -1, adoption ramp to 80% between days 24 and 96, window 10 days, 12 lags, 100 day-bootstrap draws",
+ "frozen_twins": "the same 60 markets with every stance held at its starting value, run by the same code with no model calls",
+ "warning_rules": "Test B1's: lost (interval lower end <= 0), buffer (<= 0.1), time-to-zero (estimate falling over 5 days and estimate/(-slope) < 10 days); crisis day: first day whose largest |x| exceeds 10 standard deviations of x before adoption",
+ "primary_1": "specificity: the standard estimator's time-to-zero rule fires in at most 2 of the 15 control markets",
+ "primary_2": "early warning: over the fast and slow markets with a crisis, the standard time-to-zero rule fires before the crisis in at least 80% (one-sided binomial p against 1/2) with median lead at least 5 days (no warning before the crisis counts as lead 0)",
+ "primary_3": "language-model desks delay the crisis: over the 30 fast and slow markets, crisis day with language-model desks later than with frozen desks on the same seed (no crisis = day 120; ties dropped; exact one-sided sign test) and median paired delay (ties included) at least 3 days",
+ "primary_4": "shared language-model product versus fixed product: over the 15 seeds, the number of seeds where 'fast' has a crisis and 'llmvendor' has none exceeds the reverse, exact one-sided McNemar (binomial on discordant pairs) p < 0.05",
+ "correction": "Holm across primaries 2-4 at 0.05; primary 1 is a pass/fail criterion",
+ "validity": "a reply that contains no integer leaves the stance unchanged; if more than 5% of replies are unreadable every primary is reported as failed",
+ "running": "the counter is opened once; a disconnect may be resumed from the checkpoint written every 4 simulated days (sampled replies after a resume may differ from an uninterrupted run; it remains the single registered run)",
+ "secondary": [
+  "false alarms of every rule and estimator in the controls, and alarms in llmvendor markets without a crisis",
+  "median leads by scenario, rule and estimator",
+  "adoption share at the crisis against the static threshold (counts above and below), for language-model and frozen desks",
+  "crises of the frozen twins",
+  "day of the shared product's first stance change and its final stance",
+  "desk behaviour: change in |stance| after losses and after profits, share of days with a change",
+  "median tracking error"
+ ],
+ "limits_stated_in_advance": [
+  "a simulation: the desks are one open 14B model with eight personas, deciding once a simulated day from a short text report; not the systems firms deploy",
+  "the model was chosen by a screen after smaller models failed; the result applies to this model and prompt",
+  "adoption is exogenous and ramps linearly; the observer sees the true displacement",
+  "warning rules, crisis definition and the market are Test B1's, chosen in B1's pilot"
+ ],
+ "registered_utc": "2026-10-25T16:32:35.744651+00:00"
+}
