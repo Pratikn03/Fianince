@@ -1,0 +1,34 @@
+{
+ "test": "B3_diversity",
+ "status": "REGISTERED. Requested by the author on 2026-10-25 ('give me all b2, h3, b3 files to run'). Pushed in a commit of its own before any model was screened under this test and before any of its seeds were run.",
+ "designed_after": "Test B2's pilots (committed): in the 14B pilot a single shared language-model product switched itself from +5 to -3 for every user at once around day 30 and neither of its markets had a crisis. B3 has no pilot of its own; its market, warning rules and model screen are Test B1's and Test B2's.",
+ "pipeline": "thesis/evidence/b3_diversity.py, llm_ailoop.py, ailoop_sim.py, b1_ailoop.py",
+ "b3_sha256": "81c6d108b3c8bf720747faa15e31d4171d76fcceadd9c96e973f225371c648a4",
+ "llm_sha256": "61d1050f710049fd3a6a08bb5eee389dc1c0052399d4f93d8d0870fb9ef898b1",
+ "sim_sha256": "3902988614762d06dbc75bbf7dbd270718b4709bc7fc81522826bf9742594234",
+ "b1_sha256": "2349d520e8057473af97c14a9c8d4bb59d8bce784e22b9c804a68f399efadb3b",
+ "question": "When the adaptive agents of a market are AI trading products, does using three different language models instead of one shared model decorrelate their decisions, keep the market further from the stability boundary, and leave the public-data certificate specific?",
+ "models": "candidates in order Qwen/Qwen2.5-14B-Instruct, microsoft/phi-4, allenai/OLMo-2-1124-13B-Instruct, Qwen/Qwen3-14B, mistralai/Mistral-Nemo-Instruct-2407, 4-bit weights (bitsandbytes nf4), transformers; each screened with Test B2's rule (llm_ailoop.probe, prompt v2, temperature 0.7, 6 samples; parse >= 95% and right-way share >= 0.6 in every report); the first three that pass, at most one per family (Qwen, Phi, OLMo, Mistral); fewer than three: void. The screen runs inside the registered run, after the counter is opened.",
+ "markets": "seeds 3001-3030; per seed: control (no adoption), mono_1..3 (one product per market, run by model 1, 2 or 3, used by every adopter) and diverse (three products, one per model; adopters assigned in turn in order of adoption); 150 markets of 120 days, 50 desks held at stance -1, adoption ramp to 80% between days 24 and 96, products start at stance +5 with memory 0.9 per bar, decide once a day at temperature 0 from llm_ailoop's report (prompt v2); window 10 days, 12 lags, 100 bootstrap draws",
+ "decision_shock": "dF_d = sum_v users_v(d-1) * (theta_v(d) - theta_v(d-1)); S = variance of dF over days 25-119",
+ "primary_1": "diversity decorrelates decisions: S(diverse) < mean of S(mono_1..3) on the same seed, exact one-sided sign test over seeds (ties dropped) p < 0.05, and median ratio S(diverse)/mean S(mono) at most 0.5",
+ "primary_2": "diversity keeps the market further from the boundary: lowest daily true margin of the diverse market (days 24-119) exceeds the mean of the three mono markets' lowest margins on the same seed, exact one-sided sign test p < 0.05",
+ "primary_3": "the standard estimator's time-to-zero rule fires in at most 3 of the 30 control markets",
+ "correction": "Holm across primaries 1-2 at 0.05; primary 3 is a pass/fail criterion",
+ "validity": "fewer than three screened models, or more than 5% unreadable replies, makes every primary fail",
+ "secondary": [
+  "share of days on which two products of a diverse market change stance on the same day",
+  "first day each model leaves +5 and its final stance in mono markets",
+  "crises, true boundary crossings and median lowest margin by arm",
+  "warning leads before crises by arm",
+  "false alarms of every rule in the controls",
+  "stance paths of every product"
+ ],
+ "limits_stated_in_advance": [
+  "a simulation: desks are frozen and the only adaptive agents are the products; real deployments mix both",
+  "three open models of 12-15B parameters with 4-bit weights, deciding once a simulated day from a short report; not the systems firms deploy",
+  "all products read the same report, so diversity here is diversity of models only, not of data",
+  "temperature 0: within a model, decisions are deterministic given the report"
+ ],
+ "registered_utc": "2026-10-25T18:18:34.483263+00:00"
+}
