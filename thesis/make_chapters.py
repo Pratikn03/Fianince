@@ -88,6 +88,28 @@ def chapterize(src, prefix, chap_label, title, preface, figdir, companion_key, o
     return head + tex
 
 
+P1_EMPIRICS = r"""\section{Empirical feedback and its measurement}\label{p1:sec:empirics}
+
+The theory says what prices can reveal. The empirical work has two roles, and neither is a test of the identification bounds themselves, which concern controlled experiments no outside researcher can run. Section~\ref{p1:sec:disc_data} tests the theory's policy prediction, that class-tagged data pin down memories that prices leave unrestricted. This section asks what the reduced-form feedback indices a supervisor would compute from public data actually measure; the full tables are in the published version of the paper.
+
+Empirical work replaces the unobserved fundamental by a trailing exponential moving average. Under a martingale price the filtered state $x^{\rm EMA}$ is then an AR(1) with mechanical persistence $1-\alpha$, equal to $29/31\approx0.9355$ for a 300-second filter on ten-second bars, so measured persistence must be compared with that value, not with zero. With a VAR(1) in $(x^{\rm EMA},f)$, $f$ the signed flow, the loop gain is $\hat Q=\hat J_{12}\hat J_{21}/(1-\hat J_{22})$. Five findings follow, on a Binance spot panel of eight pairs on 96 dates in 2021--2024 (6.6 million ten-second transitions), on 72 days of one-second BTCUSDT data and on the 30 perpetuals of Chapter~\ref{ch:p2}. First, timing dominates: pairing the state with next-bar flow, a look-ahead, gives $\hat Q=0.0081$; aligning flow with the bar in which it is observed lowers it by more than an order of magnitude, to $0.00037$; raw returns give an interval that includes zero; and a placebo random walk reproduces the mechanical persistence ($0.9351$) with $\hat Q$ indistinguishable from zero. Second, feedback that the filter cannot produce is detectable but small: in BTCUSDT $\hat Q=0.0045$ [$0.0034$, $0.0056$] against a placebo of zero, while price persistence ($0.9364$) is almost entirely mechanical. Third, order splitting biases lagged-flow regressions (in simulation OLS never covers the truth, while Cochrane--Orcutt with the true autocorrelation, 2SLS and LIML have correct size), although at ten-second bars the residual serial correlation is negligible and controlling for 30 lags of flow lowers $\hat Q$ further. Fourth, measured feedback rises with depth across the 30 perpetuals (Spearman correlation with log depth $+0.70$). Fifth, when Binance set BTC spot fees to zero and later reinstated them, BTCUSDT volume rose by a factor of $2.6$ and then fell by a factor of $4.9$ relative to seven control pairs, while $\hat Q$ did not move (pooled effect $-0.00016$, interval $[-0.00087,0.00055]$). Measured feedback in crypto markets is real but small, is a feature of deep books, does not track trading activity, and is easily confused with filtering and timing artefacts.
+
+"""
+
+
+def condense_ch2(tex):
+    """Paper 1 enters the thesis whole except its section on reduced-form feedback indices, condensed to one page."""
+    a = tex.index("\\section{Empirical feedback and its measurement}\\label{p1:sec:empirics}")
+    b = tex.index("\\section{Implications for supervision and market design}")
+    tex = tex[:a] + P1_EMPIRICS + tex[b:]
+    for old in ("Tables~\\ref{p1:tab:panel}, \\ref{p1:tab:feedback}", "Table~\\ref{p1:tab:fee2}",
+                "Tables~\\ref{p1:tab:panel}, \\ref{p1:tab:assets}, \\ref{p1:tab:fee2}", "(Table~\\ref{p1:tab:feedback})",
+                "(Table~\\ref{p1:tab:iv})"):
+        assert old in tex, old
+        tex = tex.replace(old, "(Section~\\ref{p1:sec:empirics})" if old.startswith("(") else "Section~\\ref{p1:sec:empirics}")
+    return tex
+
+
 def main():
     for d, sub in (("p1figs", "paper1"), ("p2figs", "paper2")):
         os.makedirs(os.path.join(HERE, d), exist_ok=True)
@@ -107,7 +129,7 @@ def main():
                      "Auditable memory and identification limits", pre1, "p1figs", "niroula2026b", "ch:p2", rep1)
     ch4 = chapterize(os.path.join(REPO, "paper2", "paper2.tex"), "p2:", "ch:p2",
                      "Safety without identification: transient amplification and a maximal pre-trade guard", pre2, "p2figs", "niroula2026", "ch:p1", rep2)
-    open(os.path.join(HERE, "ch2_paper1.tex"), "w").write(ch3)
+    open(os.path.join(HERE, "ch2_paper1.tex"), "w").write(condense_ch2(ch3))
     # Paper 2 enters the thesis condensed: the full chapter is kept (not compiled) and condense_ch3.py builds
     # ch3_paper2.tex from it, copying theorems, proofs and tables verbatim and replacing the rest by shorter text.
     open(os.path.join(HERE, "ch3_paper2_full.tex"), "w").write(ch4)

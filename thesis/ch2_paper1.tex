@@ -76,8 +76,8 @@ What is tagging worth? & Factor $(\Delta\eta)^{-(4K-4)}$; $\approx333\times$ for
 Disclosure in dollars? & Annual probing loss exceeds CAT budget once $K\ge3$ or $\Delta\eta\le0.04$ & Table~\ref{p1:tab:cat_dollars}\\
 Do class data restrict class persistence? & Yes: 30 of 30, and 29 of 29 new markets (registered); whether it is memory is open & Table~\ref{p1:tab:disc}\\
 Can eigenvalues certify safety? & No & Thm~\ref{p1:thm:blind}\\
-What do feedback indices measure? & Mostly filtering and timing; small real feedback & Tables~\ref{p1:tab:panel}, \ref{p1:tab:feedback}\\
-Does feedback track activity? & No: fees move volume 2.6--4.9$\times$, not $\hat Q$ & Table~\ref{p1:tab:fee2}\\
+What do feedback indices measure? & Mostly filtering and timing; small real feedback & Section~\ref{p1:sec:empirics}\\
+Does feedback track activity? & No: fees move volume 2.6--4.9$\times$, not $\hat Q$ & Section~\ref{p1:sec:empirics}\\
 \bottomrule
 \end{longtable}}
 
@@ -1099,174 +1099,9 @@ At $\lambda=(0.8,0.7)$, $s_1=1$ and $V=5$, the gain is $1.77$, $5.10$, $16.95$, 
 Two clarifications prevent over-reading. First, the cohort economy of Section~\ref{p1:sec:model} is itself non-normal, yet its price output does not amplify (Lemma~\ref{p1:lem:cm}). Large weighted gains can be manufactured by output weights alone: with $C_w=(1,160)$, a price-and-memory functional peaks at $160.003$ at $t=0$, which is the static weight, not dynamic growth (Appendix~\ref{p1:app:coordw}). Second, in a network of $M$ identical cohort economies coupled by symmetric nonnegative cross-impact, the coupled operator stays symmetric in the coordinates of Lemma~\ref{p1:lem:cm}; with cross-impact $0.05$, the spectral radius rises from $0.822$ ($M=1$) to $0.973$ ($M=10$) while the Kreiss constant stays at one, as it must for a stable symmetric operator (\texttt{recompute\_oct20.py}). Non-normality is necessary for transient amplification of the price, not sufficient; where amplification comes from is the subject of Chapter~\ref{ch:p2}.
 \section{Empirical feedback and its measurement}\label{p1:sec:empirics}
 
-The theory says what prices can reveal. The empirical work has two roles, and neither is a test of the identification bounds themselves, which concern controlled experiments no outside researcher can run. First, Section~\ref{p1:sec:disc_data} tests the theory's policy prediction directly: that class-tagged data pin down memories that prices leave unrestricted. Second, this section asks what the reduced-form feedback indices a supervisor would compute from public data actually measure, and how much of them is feedback rather than filtering, timing or trading activity.
+The theory says what prices can reveal. The empirical work has two roles, and neither is a test of the identification bounds themselves, which concern controlled experiments no outside researcher can run. Section~\ref{p1:sec:disc_data} tests the theory's policy prediction, that class-tagged data pin down memories that prices leave unrestricted. This section asks what the reduced-form feedback indices a supervisor would compute from public data actually measure; the full tables are in the published version of the paper.
 
-\subsection{Estimand and filtering mechanics}
-
-In theory $x_t=p_t-p^*_t$ is the deviation from an unobserved fundamental. Empirical work replaces $p^*_t$ by a trailing filter. Let $p_b$ be a log price proxy on uniform bars of length $\Delta$ and $m_b=(1-\alpha)m_{b-1}+\alpha p_b$ an exponential moving average with $\alpha=2/(W/\Delta+1)$. The empirical state is
-\begin{equation}\label{p1:eq:ema}
-x^{\rm EMA}_b\equiv p_b-m_b=(1-\alpha)(p_b-m_{b-1})=\frac{1-\alpha}{1-(1-\alpha)L}\Delta p_b .
-\end{equation}
-
-Because $x^{\rm EMA}_{b+1}=(1-\alpha)(p_{b+1}-m_b)$, a martingale price gives
-\begin{equation}\label{p1:eq:mech}
-\E[x^{\rm EMA}_{b+1}\mid\mathcal F_b]=(1-\alpha)x^{\rm EMA}_b :
-\end{equation}
-the filtered state is an AR(1) with mechanical persistence $a_0=1-\alpha$, which equals $29/31\approx0.9355$ for $W=300$ seconds and $\Delta=10$ seconds.
-
-Let $f_t$ be signed flow. The empirical VAR(1)
-\begin{equation}\label{p1:eq:var}
-\begin{pmatrix}x^{\rm EMA}_{t+1}\\ f_{t+1}\end{pmatrix}=\begin{pmatrix}J_{11}&J_{12}\\ J_{21}&J_{22}\end{pmatrix}\begin{pmatrix}x^{\rm EMA}_t\\ f_t\end{pmatrix}+e_{t+1}
-\end{equation}
-has reduced-form coefficients, not authenticated impact or learner parameters. When denominators are nonzero we use the scale-invariant indices
-\begin{equation}\label{p1:eq:QS}
-\hat Q=\frac{\hat J_{12}\hat J_{21}}{1-\hat J_{22}},\qquad\hat S=\hat J_{11}+\hat Q,\qquad\hat L=\frac{\hat Q}{1-\hat J_{11}} .
-\end{equation}
-Equation~\eqref{p1:eq:mech} implies that $\hat J_{11}$ must be compared with $1-\alpha$, not with zero: persistence that a naive reading attributes to feedback can be pure filtering.
-
-\subsection{Data}
-
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Samples}\label{p1:tab:samples}
-\begin{tabular}{p{0.32\textwidth}p{0.25\textwidth}p{0.18\textwidth}l}
-\toprule
-Sample & Coverage & Size & Source\\
-\midrule
-Binance spot panel, 8 pairs & 96 dates, 2021--2024 & 66.3M one-second bars & Binance archive\\
-Binance spot fee-event windows, 8 pairs & $\pm20$ days around 2022-07-08 and 2023-03-22 & 640 pair-days & Binance archive\\
-Binance USD-M perpetuals, 30 symbols & 90 dates, 2023--2026 & 2{,}565 symbol-days & Binance archive\\
-Binance BTCUSDT one-second panel & 72 dates, 2021--2023 & 6.2M one-second bars & Binance archive\\
-Binance BTCUSDT noise-calibration days & January 10--20, 2023 & 11 days & Binance archive\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item Binance files are verified against the published SHA-256 checksums (every file used). Sampled dates are the 10th and 24th of each month.\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-\subsection{Clock alignment dominates reduced-form feedback}
-
-We estimate \eqref{p1:eq:var} on ten-second bars built from one-second Binance klines across a 96-date, eight-pair spot panel (the 10th and 24th of each month, 2021--2024) under three constructions (Table~\ref{p1:tab:panel}), and run the identical pipeline on a placebo random walk with each pair-day's volatility. Pairing the state with \emph{next-bar} flow (a look-ahead) gives $\hat Q=0.0081$; aligning flow with the bar in which it is observed lowers this by more than an order of magnitude, to $0.00037$; and replacing the EMA state by raw returns gives an interval that includes zero. Mean $\hat J_{11}$ under observed flow is $0.9203$, below the mechanical $0.9355$, and the placebo reproduces the mechanical value ($0.9351$) with $\hat Q$ indistinguishable from zero. 
-
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Multi-year Binance spot panel: reduced-form indices under three timing constructions}\label{p1:tab:panel}
-\setlength{\tabcolsep}{2.5pt}
-\renewcommand{\arraystretch}{1.1}
-\begin{tabular}{p{0.2\textwidth}ccccc}
-\toprule
-Construction & $\hat Q$ & Date interval & $\hat S$ & Date interval & $\hat Q>0$\\
-\midrule
-Forward-paired flow (look-ahead) & 0.0081424 & [0.0072965, 0.0089882] & 0.92074 & [0.91665, 0.92482] & 87.4\%\\
-Observed-flow EMA & 0.0003733 & [0.0002351, 0.0005116] & 0.92072 & [0.91640, 0.92504] & 62.4\%\\
-Observed, 30 flow lags & 0.0002580 & [0.0001415, 0.0003745] & 0.91738 & [0.91167, 0.92308] & 59.1\%\\
-Observed raw return & $-$0.0001555 & [$-$0.0003732, 0.0000622] & $-$0.04051 & [$-$0.05078, $-$0.03025] & 49.2\%\\
-Placebo random walk & 0.0000016 & [$-$0.0000020, 0.0000052] & 0.93510 & [0.93485, 0.93534] & 51.0\%\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item 768 study units (96 dates $\times$ 8 pairs), 6{,}634{,}752 ten-second transitions; equal-weight asset means within date, then date means with Student intervals. Mechanical persistence $29/31=0.93548$. \end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Asset means under forward-paired and observed flow}\label{p1:tab:assets}
-\begin{tabular}{lcccc}
-\toprule
-Pair & Forward-paired $\hat Q$ & Observed $\hat Q$ & $\hat Q_{30}$ & Observed $\hat S$\\
-\midrule
-BTC/USDT & 0.0141870 & 0.0006073 & 0.0004891 & 0.93464\\
-ETH/USDT & 0.0130885 & 0.0005675 & 0.0002549 & 0.93511\\
-SOL/USDT & 0.0087763 & 0.0002129 & 0.0001100 & 0.91966\\
-ADA/USDT & 0.0067465 & 0.0003928 & 0.0003546 & 0.91452\\
-DOGE/USDT & 0.0058956 & 0.0002464 & 0.0001432 & 0.92496\\
-BNB/USDT & 0.0057420 & 0.0004479 & 0.0002762 & 0.89533\\
-XRP/USDT & 0.0057034 & 0.0002249 & 0.0001508 & 0.92362\\
-LTC/USDT & 0.0049997 & 0.0002870 & 0.0002853 & 0.91792\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item 96 dates per pair. $\hat Q_{30}$ controls 30 ten-second bars of lagged flow. Placebo $|\hat Q|\le1.1\times10^{-5}$ for every pair. \end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-
-
-\subsection{Feedback beyond filtering mechanics}
-
-We re-estimate feedback on a separate sample and add a placebo. We use Binance BTCUSDT one-second klines on 72 sampled days in 2021--2023. The state $x_t$ is the log price deviation from its EMA (span 30 one-second bins), $f_t$ is next-second signed taker flow, and a VAR(1) gives $\hat Q$. Because the filter alone produces persistence, we run the identical pipeline on a placebo: a random walk with the same one-second volatility, independent of the real flow.
-
-\begin{table}[t]\centering
-\begin{threeparttable}
-\caption{Feedback beyond filtering mechanics (Binance BTCUSDT, 72 days, 2021--2023)}\label{p1:tab:feedback}
-\begin{tabular}{lcc}
-\toprule
- & Real prices & Placebo (independent random walk)\\
-\midrule
-Mean loop gain $\hat Q$ & 0.0045 & 0.0000009\\
-95\% CI (day bootstrap) & [0.0034, 0.0056] & [$-$0.0000006, 0.0000023]\\
-Mean price persistence $\hat J_{11}$ & 0.9364 & 0.9357\\
-Mechanical value $1-2/31$ & \multicolumn{2}{c}{0.9355}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item Placebo 95\% band across days: $[-0.0000095,0.0000156]$. This construction pairs the state with next-second flow; it is not comparable in level with the observed-flow ten-second index of Table~\ref{p1:tab:panel}.\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-Table~\ref{p1:tab:feedback} gives two findings. Feedback, in the sense of a loop gain the filter cannot produce, is detectable: the real $\hat Q$ lies far outside the placebo band. It is also small, and the price persistence that a naive reading would attribute to feedback is almost entirely mechanical ($0.9364$ against $0.9355$). Because this construction pairs the state with next-second flow, part of $\hat Q$ reflects the timing effect of Table~\ref{p1:tab:panel}; the placebo shows only that the filter does not produce it.
-
-\subsection{Order splitting and the estimation of feedback}
-
-Persistent order flow makes lagged-flow regressions inconsistent. Suppose flow follows $q_t=\gamma y_t+u_t$ with memory $y_t=(1-\eta)y_{t-1}+\eta\Delta p_{t-1}$, order splitting $u_t=\rho u_{t-1}+\nu_t$, and $\Delta p_t=\kappa q_t+\lambda z_t+e_t$ with an observed exogenous price shock $z_t$. Lagged returns are correlated with $u_{t-1}$, so OLS of flow on returns is biased even when $\gamma=0$. Quasi-differencing ($q_t-\rho q_{t-1}=\gamma(y_t-\rho y_{t-1})+\nu_t$) or instruments that move $y$ through prices but are independent of $u$ ($z_{t-1},z_{t-2},z_{t-3}$) restore consistency. We compare estimators over 500 replications with $\eta=0.3$ and $\rho=0.8$ (Table~\ref{p1:tab:iv}).
-
-\begin{table}[t]\centering
-\begin{threeparttable}
-\caption{Feedback estimators under order splitting (simulation, 500 replications)}\label{p1:tab:iv}
-\begin{tabular}{lcccc}
-\toprule
-Estimator & Coverage at $\gamma=0.2$ & Rejection at $\gamma=0$ & Bias & RMSE\\
-\midrule
-OLS & 0.000 & 1.000 & 0.892 & 0.893\\
-Cochrane--Orcutt, true $\rho$ & 0.944 & 0.054 & 0.001 & 0.039\\
-Cochrane--Orcutt, estimated $\rho$ & 0.916 & 0.080 & 0.002 & 0.043\\
-2SLS & 0.938 & 0.044 & $-$0.002 & 0.116\\
-LIML & 0.938 & 0.044 & $-$0.003 & 0.117\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item Newey--West standard errors (10 lags), $T=3{,}000$. Median first-stage $F=224$; a placebo instrument (future $z$) has $F=0.62$. Estimators outside 93--97\% coverage give invalid inference. \end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-OLS is badly biased. Cochrane--Orcutt with the true $\rho$, 2SLS and LIML have correct size and coverage; Cochrane--Orcutt with an estimated $\rho$ under-covers \citep{p1:cochrane1949,p1:staiger1997}. These are properties of estimators in a simulated market. On real data, a 2024 sub-panel of 192 spot units shows why the correction matters little at our bar length: with one VAR lag, the flow-equation residuals have essentially no first-order serial correlation (median $\hat\rho=-0.0002$), and Cochrane--Orcutt quasi-differencing moves the mean loop gain from $3.15\times10^{-4}$ to $3.21\times10^{-4}$ (Part 13, \texttt{R7}, post hoc). Order splitting shows up instead at longer lags, which the 30-lag control of Table~\ref{p1:tab:assets} addresses. A real-data instrumental-variables estimate needs an instrument whose exclusion can be defended, which we do not claim to have; funding-settlement times, for example, may affect order flow directly.
-
-Controlling for 30 ten-second bars of lagged flow lowers $\hat Q$ further (Table~\ref{p1:tab:assets}, column $\hat Q_{30}$), consistent with persistent order splitting.
-
-\subsection{Feedback across 30 perpetual markets}
-
-Chapter~\ref{ch:p2} estimates the same loop gain on one-minute bars of 30 Binance USD-M perpetuals spread across the liquidity ranking (2023--2024 training days). Measured feedback rises with depth: its Spearman correlation with log depth within 1\% of the mid is $+0.70$ [$0.41$, $0.87$], from about $0.012$ in BTCUSDT and ETHUSDT to $0.0016$ on average in the thinnest third, and the placebo pipeline gives $\hat Q\approx0$ for every symbol. Feedback in this reduced-form sense is a feature of deep, algorithmically traded books.
-
-\subsection{Two fee events}
-
-Binance set spot trading fees on BTC pairs to zero on July 8, 2022 and reinstated them on March 22, 2023. Each event changes the cost of trading BTCUSDT while leaving the seven other pairs unchanged, and the second reverses the first. For every pair and every day within 20 days of each event we compute daily quote volume and the observed-flow $\hat Q$, and estimate $Y_{it}=\alpha_i+\gamma_t+\beta\,{\rm ZeroFee}_{it}+e_{it}$ with pair and date fixed effects and date-clustered errors, separately for each event and pooled (Table~\ref{p1:tab:fee2}).
-
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Zero fees on BTCUSDT: activity and measured feedback}\label{p1:tab:fee2}
-\begin{tabular}{lccc}
-\toprule
- & Zero fees introduced & Zero fees removed & Pooled\\
- & (2022-07-08) & (2023-03-22) & \\
-\midrule
-Log quote volume, $\hat\beta$ & 0.945 (0.074) & 1.599 (0.080) & 1.272 (0.084)\\
-Observed-flow $\hat Q$, $\hat\beta$ & 0.00058 (0.00032) & $-$0.00091 (0.00060) & $-$0.00016 (0.00036)\\
-\quad $p$-value & 0.078 & 0.140 & 0.650\\
-Pair-days & 320 & 320 & 640\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item $\hat\beta$ is the effect of zero fees on BTCUSDT relative to seven control pairs; date-clustered standard errors in parentheses. For the second event ZeroFee equals one before March 22, 2023. \end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-The fee change moved activity enormously: zero fees multiplied BTCUSDT volume relative to the controls by $e^{0.945}\approx2.6$ when they began, and their removal divided it by $e^{1.599}\approx4.9$. Measured feedback did not follow. The two point estimates have opposite signs, neither is significant, and the pooled effect is $-0.00016$ with an interval of $[-0.00087,0.00055]$, against a sample mean of $0.00037$. A strong first stage with no second-stage response says that $\hat Q$ is not a by-product of trading activity, and the reversal design removes the main weakness of a single treated event. With one treated asset the interval remains wide, so this is evidence that $\hat Q$ does not scale with activity, not a proof of invariance.
+Empirical work replaces the unobserved fundamental by a trailing exponential moving average. Under a martingale price the filtered state $x^{\rm EMA}$ is then an AR(1) with mechanical persistence $1-\alpha$, equal to $29/31\approx0.9355$ for a 300-second filter on ten-second bars, so measured persistence must be compared with that value, not with zero. With a VAR(1) in $(x^{\rm EMA},f)$, $f$ the signed flow, the loop gain is $\hat Q=\hat J_{12}\hat J_{21}/(1-\hat J_{22})$. Five findings follow, on a Binance spot panel of eight pairs on 96 dates in 2021--2024 (6.6 million ten-second transitions), on 72 days of one-second BTCUSDT data and on the 30 perpetuals of Chapter~\ref{ch:p2}. First, timing dominates: pairing the state with next-bar flow, a look-ahead, gives $\hat Q=0.0081$; aligning flow with the bar in which it is observed lowers it by more than an order of magnitude, to $0.00037$; raw returns give an interval that includes zero; and a placebo random walk reproduces the mechanical persistence ($0.9351$) with $\hat Q$ indistinguishable from zero. Second, feedback that the filter cannot produce is detectable but small: in BTCUSDT $\hat Q=0.0045$ [$0.0034$, $0.0056$] against a placebo of zero, while price persistence ($0.9364$) is almost entirely mechanical. Third, order splitting biases lagged-flow regressions (in simulation OLS never covers the truth, while Cochrane--Orcutt with the true autocorrelation, 2SLS and LIML have correct size), although at ten-second bars the residual serial correlation is negligible and controlling for 30 lags of flow lowers $\hat Q$ further. Fourth, measured feedback rises with depth across the 30 perpetuals (Spearman correlation with log depth $+0.70$). Fifth, when Binance set BTC spot fees to zero and later reinstated them, BTCUSDT volume rose by a factor of $2.6$ and then fell by a factor of $4.9$ relative to seven control pairs, while $\hat Q$ did not move (pooled effect $-0.00016$, interval $[-0.00087,0.00055]$). Measured feedback in crypto markets is real but small, is a feature of deep books, does not track trading activity, and is easily confused with filtering and timing artefacts.
 
 \section{Implications for supervision and market design}\label{p1:sec:policy}
 
@@ -1555,8 +1390,8 @@ Passive slopes $-4.21$, $-5.93$ & \texttt{T3\_passive\_rate} & recomputed\\
 Tagged-flow slope 0.011 & \texttt{T4\_disclosure} & recomputed\\
 Spectral blindness gains & \texttt{T5\_spectral\_blindness} & recomputed\\
 Noise and capital grid (Table~\ref{p1:tab:capital}) & \texttt{P1.3-T1\_sigma\_obs} & real data\\
-Loop gain and placebo (Table~\ref{p1:tab:feedback}) & \texttt{P1.6-T1\_ema\_placebo} & real data\\
-Estimator table (Table~\ref{p1:tab:iv}) & \texttt{P1.5-T1}, \texttt{T2}, \texttt{T3} & recomputed\\
+Loop gain and placebo (Section~\ref{p1:sec:empirics}) & \texttt{P1.6-T1\_ema\_placebo} & real data\\
+Estimator table (Section~\ref{p1:sec:empirics}) & \texttt{P1.5-T1}, \texttt{T2}, \texttt{T3} & recomputed\\
 Data integrity (111 files) & \texttt{R2-T9\_data\_integrity} & audit\\
 Tables~\ref{p1:tab:ledger}, \ref{p1:tab:capbounds} (certified, feasible, adaptive columns) & \texttt{recompute\_p1\_capital.py} $\to$ \texttt{R\_P1\_capital\_ledger.json} & recomputed\\
 Table~\ref{p1:tab:contracts}; resolution floors; Table~\ref{p1:tab:protocols} & \texttt{recompute\_p1\_protocols.py} $\to$ \texttt{R\_P1\_protocols.json} & recomputed\\
@@ -1568,7 +1403,7 @@ Proof audit: $K_*$ bound and $d_2$ identity (Theorem~\ref{p1:thm:quantity}), mom
 Theorem~\ref{p1:prop:esprit}, Table~\ref{p1:tab:kupper} & \texttt{kcohort\_upper.py} $\to$ \texttt{R\_P1\_kcohort\_upper.json} & recomputed\\
 Lem.~\ref{p1:lem:altpair}, Thm~\ref{p1:thm:general}, Tab.~\ref{p1:tab:general} & \texttt{general\_minimax.py} & recomputed\\
 Theorem~\ref{p1:thm:discvalue} numbers & \texttt{disclosure\_value.py} $\to$ \texttt{R\_P1\_disclosure\_value.json} & recomputed\\
-Tables~\ref{p1:tab:panel}, \ref{p1:tab:assets}, \ref{p1:tab:fee2} & Part 8: \texttt{V2\_spot\_panel}, \texttt{V3\_fee\_events} & real data\\
+Section~\ref{p1:sec:empirics} & Part 8: \texttt{V2\_spot\_panel}, \texttt{V3\_fee\_events} & real data\\
 Table~\ref{p1:tab:disc}, top panel & Part 4: \texttt{X9\_disclosure\_metrics} & real data\\
 Table~\ref{p1:tab:disc}, bottom panel; class-position forecasts & Part 6: \texttt{Z6\_C\_identification}, \texttt{Z6\_secondary}; \texttt{P6\_fresh\_days.json} (65acda36\ldots) & real data\\
 Table~\ref{p1:tab:cot} & Part 11: \texttt{C3\_cot\_data}, \texttt{C4\_cot\_disclosure}; \texttt{P11\_cot.json} (6f1d6f35\ldots) & real data\\
