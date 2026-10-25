@@ -1,0 +1,30 @@
+{
+ "test": "C3_margin_more_days",
+ "status": "REGISTERED. Requested by the author on 2026-10-24 (chat: build the C3 notebook to run). Pushed in a commit of its own, before any C3 data were downloaded and before the universe was drawn.",
+ "designed_after": "Test C2 (registered, run once on 24 October 2026): Primary 1 failed by one symbol (margin decided in 22 of 30 with 105 days; 23 needed); Primary 2 passed (22 against 1). One C2 symbol (AGIXUSDT) had prices that did not move, which motivates the valid-day rule.",
+ "pipeline": "thesis/evidence/c3_margin_more_days.py (archive listing, repository scan and estimators from c2_margin_vs_identify.py, unchanged)",
+ "c3_sha256": "5c8d7b83a9d27cbdecf3dfe3c1f8ce0873bca87e23fc88aa62a6597b116e37c5",
+ "c2_sha256": "c7981a8bcae2c9841bb390759127fd5c57ca7562d600cfc318bcaa7d4955cd1d",
+ "binance_vision_sha256": "e01051c93387e25bef0aa35b1dda912d3d3da984ee6032f9a3a8c8bcbcf770f4",
+ "question": "With a sample long enough for the parametric rate to act, is the safety margin decided from public data in at least 75% of new symbols, while their memories remain unidentified?",
+ "universe_rule": "Binance USD-M USDT perpetuals in the public archive whose symbol string appears in no text file of the repository (excluding every symbol of E1v2, D1, the pilots and C2); klines on 2025-01-04 and 2026-09-23; 30 drawn in a seeded random order (seed 20261103); written to C3_universe.json before any data are downloaded",
+ "dates_rule": "every day from 2025-01-01 to 2026-09-30 whose day of the month is not divisible by 3 (430 dates)",
+ "valid_day": "at least half of the 287 five-minute returns non-zero and taker flow not identically zero",
+ "evaluable": "at least 200 valid days; void if fewer than 20 symbols are evaluable",
+ "estimators": "C2's, unchanged: margin M = -beta - kappa*Phi with the displacement kernel (12 lags, EWMA span 12), decided if the 95% day-bootstrap interval (200 draws, seed 20261103 + 101 j) excludes zero; memories identified if the interval of r_slow - r_fast excludes zero and no rate interval reaches 0.005 or 0.985",
+ "primary_1": "the margin is decided in at least 75% of evaluable symbols, one-sided binomial p (null 1/2) below 0.05",
+ "primary_2": "b = #(decided, not identified) exceeds c = #(identified, not decided) and the exact one-sided McNemar p is below 0.05",
+ "correction": "Holm across the two primaries at 0.05",
+ "secondary": [
+  "the decision on each symbol's first 105 valid days (C2's sample size)",
+  "the decision without the feedback term and its agreement with the primary decision",
+  "number of symbols with contrarian feedback",
+  "safe and unsafe counts",
+  "median number of valid days"
+ ],
+ "power": "From C2's per-symbol margins, projecting each symbol's z-statistic by the square root of the sample ratio: with 430 valid days the expected number decided out of 30 is 26.9 (P[at least 23] = 1.00); shrinking every effect by 20% for regression to the mean, 25.7 (1.00); by 40%, 23.5 (0.75). With 300 valid days the three figures are 26.0 (1.00), 24.5 (0.92) and 21.6 (0.32). New symbols may be noisier or closer to the boundary than C2's, which these figures do not capture.",
+ "what_is_mechanical": "In C2 the decision rested mainly on the reversion term (the same decision without feedback in 26 of 30). A pass shows that the safety question is decidable from public data with enough days while the memories are not; it does not show that the feedback term is measured precisely.",
+ "opening_rule": "The pipeline refuses to run unless the committed specification matches its hash and the counter is 0; it sets the counter to 1, fixes the universe, downloads and evaluates once. Results, numbers, universe, counter and download log are committed together.",
+ "notebook": "thesis/evidence/C3_Margin_More_Days.ipynb",
+ "registered_utc": "2026-10-25T00:56:17.327799+00:00"
+}
