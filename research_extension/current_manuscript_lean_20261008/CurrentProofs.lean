@@ -48,3 +48,4 @@ import CurrentProofs.ThesisOvershoot
 import CurrentProofs.ThesisPassive
 import CurrentProofs.ThesisSigned
 import CurrentProofs.ThesisDrift
+import CurrentProofs.ThesisPassiveMulti
