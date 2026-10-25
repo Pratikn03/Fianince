@@ -84,7 +84,7 @@ def build():
           f"\\newcommand{{\\PtwoReverseOK}}{{{q['placebo_reverse_ci_covers_0']}}}"]
     # Pilot 2b (scheduled US macro releases at one second; exploratory)
     b2 = json.loads((EV / "pilot2b_announcements_results.json").read_text())
-    sb, per = b2["summary"], b2["per_symbol"].values()
+    sb, per = b2["summary"], list(b2["per_symbol"].values())
     a120 = [v["A"]["120"] for v in per]
     L += [f"\\newcommand{{\\PtwobEvents}}{{{len(b2['events'])}}}", f"\\newcommand{{\\PtwobSymbols}}{{{sb['n_symbols']}}}",
           f"\\newcommand{{\\PtwobShare}}{{{100 * sb['median_p0']:.0f}}}", f"\\newcommand{{\\PtwobBeta}}{{{sb['median_beta']:.2f}}}",
@@ -97,7 +97,9 @@ def build():
           f"\\newcommand{{\\PtwobTwoSided}}{{{sum(-60 < x['ci'][0] and x['ci'][1] < 60 for x in a120)}}}",
           f"\\newcommand{{\\PtwobPosArea}}{{{sum(x['point'] > 0 for x in a120)}}}",
           f"\\newcommand{{\\PtwobIdentified}}{{{sb['identified']}}}",
-          f"\\newcommand{{\\PtwobSlope}}{{{f(sb['median_width_slope'], 2)}}}"]
+          f"\\newcommand{{\\PtwobSlope}}{{{f(sb['median_width_slope'], 2)}}}",
+          f"\\newcommand{{\\PtwobNegTotal}}{{{sum(v['A_inf'] < 0 for v in per)}}}",
+          f"\\newcommand{{\\PtwobNegTotalSig}}{{{sum(v['A_inf_ci'][1] < 0 for v in per)}}}"]
     # Pilot 3 (horizon-matched price-only versus tagged half-lives; exploratory; transcribed Colab printout)
     t3 = json.loads((EV / "pilot3_horizon_matched_results.json").read_text())
     s3, rows3 = t3["summary"], t3["per_symbol"]
