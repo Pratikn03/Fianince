@@ -140,7 +140,7 @@ class HFBackend:
     """transformers, batched greedy or sampled generation (left padding). Requests are grouped by temperature."""
     name = "hf"
 
-    def __init__(self, model, batch_size=96, max_new_tokens=4, dtype="float16"):
+    def __init__(self, model, batch_size=96, max_new_tokens=4, dtype="float16", quant4=False):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
         self.torch = torch
@@ -148,13 +148,21 @@ class HFBackend:
         self.tok.padding_side = "left"
         if self.tok.pad_token is None:
             self.tok.pad_token = self.tok.eos_token
-        self.model = AutoModelForCausalLM.from_pretrained(model, torch_dtype=getattr(torch, dtype), device_map="cuda")
+        if dtype == "auto":
+            dtype = "bfloat16" if torch.cuda.is_bf16_supported() else "float16"
+        kw = dict(torch_dtype=getattr(torch, dtype), device_map="cuda")
+        if quant4:                                              # 4-bit weights (bitsandbytes) so a 14B model fits on an L4
+            from transformers import BitsAndBytesConfig
+            kw["quantization_config"] = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
+                                                           bnb_4bit_compute_dtype=getattr(torch, dtype))
+        self.model = AutoModelForCausalLM.from_pretrained(model, **kw)
         self.model.eval()
         self.bs, self.mnt = batch_size, max_new_tokens
 
     def _text(self, q):
         msgs = [{"role": "system", "content": q["system"]}, {"role": "user", "content": q["user"]}]
-        return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)
+        # enable_thinking=False switches off Qwen3's reasoning block; other templates ignore the argument
+        return self.tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, enable_thinking=False)
 
     def decide(self, reqs):
         out = [None] * len(reqs)
@@ -190,7 +198,7 @@ class VLLMBackend:
         msgs = [[{"role": "system", "content": q["system"]}, {"role": "user", "content": q["user"]}] for q in reqs]
         sps = [self.SP(temperature=float(q["temperature"]), top_p=0.95 if q["temperature"] > 0 else 1.0,
                        max_tokens=self.mnt, seed=int(q["seed"]) % (2 ** 31)) for q in reqs]
-        res = self.llm.chat(msgs, sampling_params=sps, use_tqdm=False)
+        res = self.llm.chat(msgs, sampling_params=sps, use_tqdm=False, chat_template_kwargs={"enable_thinking": False})
         return [r.outputs[0].text for r in res]
 
 
