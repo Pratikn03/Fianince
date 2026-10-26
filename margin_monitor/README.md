@@ -1,7 +1,6 @@
 # margin-monitor
 
-Certify whether a market's trading loop is damping shocks or amplifying them, from **public prices and anonymous
-signed order flow**, without identifying any trader.
+Estimate a market feedback margin from **public prices and anonymous signed order flow**, without identifying any trader. The result is a model-dependent statistical diagnostic.
 
 Order flow moves the price, and traders (human or algorithmic) respond to how far the price has moved from its recent
 level. In the linear model this package estimates, the market's **stability margin** is
@@ -9,7 +8,7 @@ level. In the linear model this package estimates, the market's **stability marg
     M = reversion − feedback = −β − κ·Φ
 
 where `−β` is how fast the price displacement reverts, `κ` is price impact per unit of flow and `Φ` is the traders'
-total response to the displacement. `M > 0`: shocks die out. `M ≤ 0`: the loop amplifies them. Because `M` depends on
+total response to the displacement. Within the thesis's positive/dominant-root model class, the sign of `M` determines stability. A positive `M` alone does not rule out explosive negative or complex roots. This package does not verify that model class. Because `M` depends on
 the traders only through their *total* feedback, it can be certified from aggregate flow; nobody's identity, account
 or strategy is needed.
 
@@ -27,10 +26,10 @@ from margin_monitor import bars_from_trades, certify, rolling_margin, warnings, 
 
 bars = bars_from_trades(trades)          # columns time, price, size, side (+1/-1 or 'B'/'S')
 cert = certify(bars)                     # full-sample certificate with a day-block bootstrap interval
-print(cert.margin, cert.ci, cert.sign)   # e.g. 0.041 (0.029, 0.054) 'safe'
+print(cert.margin, cert.ci, cert.sign)   # e.g. 0.041 (0.029, 0.054) 'positive'
 
 roll = warnings(rolling_margin(bars, window="24h", step="1h"))
-admit = throttle(roll["lo"].iloc[-1])    # share of algorithmic flow to admit, 0..1
+response = throttle(roll["lo"].iloc[-1]) # response signal only; not a guaranteed controller
 ```
 
 Candles that report taker-buy volume (e.g. Binance klines) work too: `bars_from_klines`. From the shell:
@@ -46,13 +45,14 @@ Binance's public kline files.
 
 | function | output |
 |---|---|
-| `certify` | margin, block-bootstrap interval, reversion, feedback, κ, Φ, and a verdict: `safe` (interval above 0), `unsafe` (below 0) or `undecided` |
+| `certify` | margin, block-bootstrap interval, reversion, feedback, κ, Φ, and a margin sign: `positive` (interval above 0), `negative` (below 0) or `undecided`; `stability_conditions_verified` is false |
 | `rolling_margin` | the same on a rolling window, one row per step |
 | `warnings` | three rules: `lost` (lower bound ≤ 0), `buffer` (lower bound ≤ buffer), `t2z` (margin falling and projected to reach zero within a horizon) |
-| `throttle` | a continuous admission share: 0 at or below a buffer, 1 above a ceiling, linear between |
+| `throttle` | evaluate the response function g(m); missing/nonfinite margin gives zero |
+| `equilibrium_throttle` | solve the implicit static positive-loop admission equation from supplied coefficient bounds |
 
 A 24-hour window of 5-minute bars gives a wide interval (in the quickstart, roughly ±0.1 around the margin), so a
-throttle driven by the lower bound is conservative; longer windows trade speed for precision.
+response driven by the lower bound may be small; longer windows trade speed for precision. Bootstrap intervals are not finite-sample guarantees under arbitrary dependence or nonstationarity.
 
 ## Checked against known truth
 
@@ -78,14 +78,13 @@ noise added to the flow does not bias the estimate, the bar builders, gap handli
 Not cheaply, within the memory bound. The thesis shows (Theorem `thm:nogaming`) that flow injected independently of
 the past adds noise but no bias, and that moving the certificate within the memory bound requires actually moving the
 margin, i.e. changing behaviour in the direction the supervisor wants. What remains are the two limits above (slow
-memory and abrupt switches), which are matters for disclosure rules. Under the continuous `throttle`, the agents' game
-has an equilibrium and every strategy profile keeps the margin above the buffer (Proposition `prop:throttle`; the
-fixed-point, uniqueness and safety parts are also checked in Lean in the repository).
+memory and abrupt switches), which are matters for disclosure rules. The proposition concerns the implicit equation `alpha = g(reversion - alpha * feedback)`. Calling `throttle` on an earlier margin does not solve that equation or guarantee its buffer.
+
+For a static positive-feedback loop, `equilibrium_throttle(reversion_lower, feedback_upper)` solves the equation using simultaneous bounds for the proposed loop. For example, bounds 0.1 and 0.09 give admission about 0.470588 and admitted margin at least 0.057647. Feeding the previous margin 0.1 directly to `throttle` would admit everything and can leave margin 0.01 below the 0.02 buffer. The solver does not estimate these bounds or establish safety for signed feedback, hidden memory, changing strategies or delayed control.
 
 ## Status
 
-Version 0.1.0, research software. The registered empirical tests of the thesis are still running; the README will
-report their outcomes as they come in, whichever way they go.
+Version 0.2.0, research software. The `sign` values changed from `safe`/`unsafe` to `positive`/`negative` to distinguish margin estimation from stability verification. Completed thesis studies have mixed results: the margin is often decided while memories are unidentified, but the public-data guard did not outperform a volatility limit in G1, and several risk forecasts failed. Prospective studies remain pending; see `thesis/READINESS.md`.
 
 ## License
 

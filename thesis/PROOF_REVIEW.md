@@ -1,0 +1,22 @@
+# Mathematical scope and independent-review checklist
+
+Reviewed against the 26 October 2026 local revision. This is an assumption and proof-dependency audit, not an independent theorem certification or literature-wide novelty review. Written proofs remain attributed to the thesis. No open or conditional result is promoted here.
+
+| Result group | What has been checked locally | Conditions an independent reviewer must assess |
+|---|---|---|
+| Linear-question modulus/duality | Numerical primal/dual brackets and deterministic Lean cores; thesis verifier passes | Compactness, minimax exchange, observation contract, bias interval and lower-bound separation. The earlier uniform coefficient-energy target remains false/withdrawn. |
+| Parametric iff square-summable coefficients | Written weak-compactness argument inspected; example computations pass | Positive mass bound, nontrivial memory interval, power-series uniqueness and the order of infimum over depth and small-noise limit |
+| Logarithmic safety cost | Explicit constant/export checks and numerical brackets pass | Hardy/harmonic-measure lemma and its constants; transfer from open-loop taps to each paper's observation contract. Numerical evidence is not a proof of the asymptotic lower bound. |
+| Passive one-root and finite-memory rates | Variance/divergence arithmetic checked in Lean; numerical examples available | Positive/dominant root and stable nuisance roots with a gap; asymptotic rather than finite-sample intervals. Fixed-economy normal limits alone do not imply uniform local-to-unit-root coverage. |
+| Uniform finite-memory result | The statement explicitly relies on cited uniform limit theory | Verify that the cited results supply uniformity over the exact compact nuisance class and local parameter range used. This probabilistic bridge is not fully formalized. |
+| Pooled price/flow estimator | Algebraic variance/divergence steps and simulations checked | Price noise independent of contemporaneous flow, observable true displacement and fixed economy. Uniformity over pooled nuisance parameters remains open. |
+| Hidden slow feedback | Finite-window bounds and arithmetic checks pass | Initial-state and noise assumptions; impossibility over an unbounded-memory class does not turn a user-selected lag count into an audited real-world memory bound. |
+| Signed feedback and worst-case loss | Finite response/monotonicity checks; source states separate absolute-response quantity | A positive scalar margin alone does not exclude unstable negative/complex roots. Safety/solvency requires the full model and shock/balance-sheet conditions. |
+| Robust sectors, multiple assets, lifetime | Comparison/drift steps kernel checked under encoded bounds | Sensitivity, learning-speed, shock and initial-state bounds must apply to the deployed agents. No universal nonlinear-market guarantee follows. |
+| Anti-gaming | Scope narrowed to the linear stationary window and independent injected flow | IID finite-variance injection and a kernel fixed during estimation; not arbitrary adaptive manipulation or a guarantee on a finite noisy sample |
+| Continuous throttle | Existence, uniqueness and buffer steps kernel checked; new solver tested on a grid | Static implicit equation, positive feedback and simultaneous coefficient bounds; a lagged one-shot response is a different controller. Equilibrium claims also require the stated continuity/quasi-concavity conditions. |
+| Monoculture | Affine threshold and common-noise arithmetic kernel checked | Common model is modeled as common response/memory; different prompts, observations, fine-tunes and policies need not satisfy that premise. Shared noise is an assumption, not a measured universal correlation. |
+
+The source now distinguishes uniform displacement-only limits from fixed-economy pooled inference. It records that “proved” tags mean written proofs, not full Lean coverage or peer review. Remaining semantic and probabilistic obligations are retained rather than inferred from a declaration count.
+
+The current supervisory background was checked against the FSB's [15 October 2026 final practices](https://www.fsb.org/2026/10/fsb-finalises-sound-practices-for-the-responsible-adoption-of-artificial-intelligence-ai/) and the BIS [AI and financial-stability speech](https://www.bis.org/speeches/20261021-artificial-intelligence-monetary-policy-and-financial-stability). These sources motivate governance, oversight and common-dependency risk; they do not validate this thesis's proposed instrument.

@@ -6,7 +6,7 @@ This document provides an explicit, item-by-item audit of what is formalized in 
 
 | Project | Toolchain & Setup | Declarations | Axioms | Scope |
 |---|---|---|---|---|
-| [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) | Lean 4.34.1 + Mathlib (`d13f23b7`) | **445** named theorems across 33 modules in `CurrentProofs/` | `propext`, `Classical.choice`, `Quot.sound` (`0 sorry`) | Primary formalization over `ℝ` (`MeasureTheory`, `Matrix`, `EuclideanSpace`, `InformationTheory.klDiv`, `IsGreatest`, `sSup`). |
+| [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) | Lean 4.34.1 + Mathlib (`d13f23b7`) | **520** named theorems across 48 modules in `CurrentProofs/` | `propext`, `Classical.choice`, `Quot.sound` (`0 sorry`) | Primary formalization over `ℝ` (`MeasureTheory`, `Matrix`, `EuclideanSpace`, `InformationTheory.klDiv`, `IsGreatest`, `sSup`). |
 | [`lean_proofs/`](lean_proofs/) | Plain Lean 4.34.1 (no Mathlib, over `Rat`) | **166** named theorems across 14 modules in `Proofs/` (401 audited declarations in `MachineMarkets`) | Standard axioms (`0 sorry`) | Exact rational arithmetic, polynomial identities, and numerical witness checks (`decide +kernel`, `grind`). |
 | [`research_extension/mechanism_formal_v1/`](research_extension/mechanism_formal_v1/) | Plain Lean 4.29.1 | **26** named theorems | Standard axioms (`0 sorry`) | Finite-game exact arithmetic checks (`decide +kernel`) for a worked disclosure example. |
 
@@ -101,7 +101,7 @@ Every numbered formal environment in **Paper 2** (28 items) and **Paper 1** (26 
 ## Reproducing the Formal Verification Audit
 
 ```bash
-# 1. Verify the Mathlib formalization (443 named theorems, 0 sorry) and generate axiom_audit.jsonl:
+# 1. Verify the Mathlib formalization (520 named theorems, 0 sorry) and generate axiom_audit.jsonl:
 python3 research_extension/current_manuscript_lean_20261008/verify_formalization.py
 
 # 2. Verify the label-to-declaration mapping across Paper 1 and Paper 2:

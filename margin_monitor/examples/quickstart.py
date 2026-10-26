@@ -13,4 +13,4 @@ bars, _ = closed_loop(days=5, seed=1)
 roll = warnings(rolling_margin(bars, window="24h", step="1h"))
 last = roll.iloc[-1]
 print(f"rolling: {len(roll)} hourly certificates; latest {last['margin']:+.3f} [{last['lo']:+.3f}, {last['hi']:+.3f}], "
-      f"trend warning {bool(last['t2z'])}, admit {throttle(last['lo']):.2f} of algorithmic flow")
+      f"trend warning {bool(last['t2z'])}, response signal {throttle(last['lo']):.2f} (not a loop controller)")
