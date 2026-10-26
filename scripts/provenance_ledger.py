@@ -489,11 +489,6 @@ CLAIMS: list[Claim] = [
           "49.37",
           lambda: f"{f(J(f'{PROV}/hft_queue_priority_results.json')['microstructure_results']['toxic_loss_reduction_pct'], 2)}",
           f"{PROV}/hft_queue_priority_results.json"),
-    Claim("F10-alveo-u50-lut-utilization", "Sec. 9.4 Hardware Architecture", "AMD Alveo U50 post-route FPGA LUT resource utilization",
-          r"0.25\%",
-          "0.25",
-          lambda: f"{f(J(f'{PROV}/fpga_silicon_synthesis_report.json')['post_route_synthesis_report']['resource_utilization']['lut']['utilization_pct'], 2)}",
-          f"{PROV}/fpga_silicon_synthesis_report.json"),
     Claim("F11-equity-flash-crash-q-crisis", "Sec. 7.6 Historical Equity Flash Crash", "May 6 2010 E-mini crisis regime feedback sensitivity",
           r"\hat Q_{\text{crisis}} = \mathbf{0.8142}",
           "0.8142",
@@ -560,6 +555,7 @@ def _num_in(rel: str, printed: str, fmt=None) -> str:
 
 
 WITHDRAWN = [
+    ("F10 Alveo U50 post-route measurements", "fixed LUT, timing and power constants were not parsed from Vivado; physical measurements remain unverified"),
     ("2SLS / FI-2010 preliminary unverified claims", "superseded by Section 7 full empirical rebuild with 1-09-1-20.csv and FI-2010 pipeline"),
     ("Crypto panel regressions and sub-sample splits", "numbers not produced by any script"),
     ("Former Table 24 (dynamic Hankel empirics)", "no producing code or data"),

@@ -1,12 +1,12 @@
 # Machine Markets & AMIP RFC-001: Master Engineering Makefile
 # ==============================================================
-# Top-tier institutional build and reproduction harness.
+# Research build and reproduction harness.
 
 PYTHON ?= python3
 PYTEST ?= pytest
 LAKE ?= lake
 
-.PHONY: all help setup test test-fast lean bridge provenance benchmark data paper reproduce paper-suite docker-build docker-run clean
+.PHONY: all help setup test test-fast lean bridge provenance benchmark data paper reproduce paper-suite docker-build docker-run clean thesis-check thesis-build thesis-package
 
 all: reproduce
 
@@ -17,14 +17,14 @@ help:
 	@echo "Available Targets:"
 	@echo "  make reproduce      One-click end-to-end master reproduction and audit"
 	@echo "  make paper-suite    Clean end-to-end reproduction of the Oct 2026 papers (tests, results, LaTeX, ledger, Lean)"
-	@echo "  make test           Run complete pytest suite (548 tests)"
+	@echo "  make test           Run the repository pytest suite"
 	@echo "  make test-fast      Fast verification of theorem bridge and tests"
-	@echo "  make lean           Compile and audit all 170 Lean 4 formal proofs (0 sorry)"
+	@echo "  make lean           Compile and audit the companion plain-Lean package"
 	@echo "  make bridge         Verify mathematical theorem-to-code bridge"
-	@echo "  make provenance     Audit 63/63 empirical and structural provenance claims"
+	@echo "  make provenance     Check the retained empirical and structural provenance claims"
 	@echo "  make benchmark      Benchmark AMIP RFC-001 agentic_guard latency and sandbox"
 	@echo "  make data           Verify SHA-256 cryptographic hashes for empirical datasets"
-	@echo "  make paper          Compile LaTeX manuscripts and 95-page master volume"
+	@echo "  make paper          Compile the legacy manuscript outputs"
 	@echo "  make docker-build   Build isolated Ubuntu OCI container image"
 	@echo "  make docker-run     Execute reproduction inside Docker container"
 	@echo "  make clean          Remove caches, pyc, and compilation artifacts"
@@ -34,6 +34,18 @@ setup:
 	$(PYTHON) -m pip install --upgrade pip
 	$(PYTHON) -m pip install -r requirements-runtime.txt -r requirements-artifacts.txt
 	@echo "Environment setup complete."
+
+thesis-check:
+	$(PYTHON) thesis/verify_thesis_numbers.py
+	$(PYTHON) thesis/checks/check_b2_supplement.py --check
+	$(PYTHON) scripts/verify_thesis_release.py --pdf
+	PYTHONPATH=margin_monitor $(PYTHON) -m pytest margin_monitor/tests -q
+
+thesis-build:
+	THESIS_PYTHON="$(PYTHON)" sh thesis/build_thesis.sh
+
+thesis-package: thesis-check
+	$(PYTHON) scripts/package_thesis.py --seal --zip
 
 test:
 	PYTHONPATH=. $(PYTEST) tests/ -v

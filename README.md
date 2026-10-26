@@ -1,12 +1,24 @@
 # Machine Markets: Auditable Memory, Financial Identification Limits, and Pre-Trade Safety Under Feedback
 
 [![CI](https://github.com/Pratikn03/Fianince/actions/workflows/ci.yml/badge.svg)](https://github.com/Pratikn03/Fianince/actions/workflows/ci.yml)
-[![Lean 4](https://img.shields.io/badge/Lean_4-443_declarations_kernel--checked%3B_see_COVERAGE.md-blue.svg)](COVERAGE.md)
+[![Lean 4](https://img.shields.io/badge/Lean_4-520_declarations_kernel--checked%3B_see_COVERAGE.md-blue.svg)](COVERAGE.md)
 [![Pytest Suite](https://img.shields.io/badge/Pytest-Passing-brightgreen.svg)](tests/)
 
-> **Lean 4 Formalization Status**: 443 named theorems kernel-checked in [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) (`0 sorry`, standard axioms `propext`, `Classical.choice`, `Quot.sound`); see [`COVERAGE.md`](COVERAGE.md) for which paper statements are fully formalized (`full`), conditional on explicit analytical hypotheses (`conditional`), or algebraic/numerical checks (`arithmetic`). Every numbered environment of both papers is *mapped* to kernel-checked declarations; a mapping is not a claim that the paper statement is formalized in full. Of the 52 environments, 23 are tagged `full`, 18 `conditional` and 11 `arithmetic`.
+> **Lean 4 Formalization Status**: 520 named theorems kernel-checked in [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) (`0 sorry`, standard axioms `propext`, `Classical.choice`, `Quot.sound`); see [`COVERAGE.md`](COVERAGE.md) for which paper statements are fully formalized (`full`), conditional on explicit analytical hypotheses (`conditional`), or algebraic/numerical checks (`arithmetic`). Every numbered environment of both papers is *mapped* to kernel-checked declarations; a mapping is not a claim that the paper statement is formalized in full. Of the 54 environments, 23 are tagged `full`, 18 `conditional` and 13 `arithmetic`.
 
 ---
+
+## Current thesis and verification
+
+The current thesis is [`thesis/thesis.pdf`](thesis/thesis.pdf), with source [`thesis/thesis.tex`](thesis/thesis.tex). See [`thesis/READINESS.md`](thesis/READINESS.md) for completed work, limitations and submission blockers. The thesis includes the completed B2 language-model experiment (three primaries passed, the warning-lead primary failed); its exact model revision was not archived. Pending studies are not counted as results. The standalone [`margin_monitor`](margin_monitor/README.md) package reports a conditional margin sign, not an unrestricted stability or solvency verdict.
+
+```bash
+python thesis/verify_thesis_numbers.py
+python thesis/checks/check_b2_supplement.py --check
+python scripts/verify_thesis_release.py --pdf
+PYTHONPATH=margin_monitor pytest margin_monitor/tests -q
+sh thesis/build_thesis.sh
+```
 
 ## October 2026 Manuscripts (`ceiling_suite/`)
 
@@ -48,8 +60,8 @@ This repository contains the LaTeX sources, replication code, pre-registered not
 │   └── verify_ceiling_suite_lean_proofs.py         # Verifies the LaTeX label to Lean 4 declaration mapping
 │
 ├── research_extension/
-│   └── current_manuscript_lean_20261008/           # Primary Lean 4.34.1 + Mathlib formalization (443 theorems, 0 sorry)
-│       ├── CurrentProofs/                          # 33 Mathlib proof modules over ℝ (InfoSafetyExtensions.lean: Sections 5–8 and the hardening results)
+│   └── current_manuscript_lean_20261008/           # Primary Lean 4.34.1 + Mathlib formalization (520 theorems, 0 sorry)
+│       ├── CurrentProofs/                          # 48 Mathlib proof modules over ℝ (InfoSafetyExtensions.lean: Sections 5–8 and the hardening results)
 │       ├── AxiomAudit.lean                         # Kernel axiom auditor
 │       ├── axiom_audit.jsonl                       # Kernel-checked theorem types and axiom footprints
 │       └── verify_formalization.py                 # Builds Mathlib project and writes formal_verification_receipt.json

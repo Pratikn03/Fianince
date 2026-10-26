@@ -1,5 +1,16 @@
 # Thesis completion progress
 
+## Readiness hardening — 26 October 2026
+
+Status: local implementation and verification complete; independent review, human submission requirements and future studies remain open. See `READINESS.md` and `PROOF_REVIEW.md` for current authority; older entries below are historical and some were subsequently withdrawn.
+
+- Rebuilt the canonical 181-page thesis with completed B2 results after fixing the macro input order that prevented compilation. Build is atomic, fails on compiler/reference errors, and has zero overfull boxes. Representative title, theory, AI and status pages were rendered and inspected; underfull spacing diagnostics remain.
+- Added post hoc seed-level B2 sensitivity and explicit missing-revision disclosure, without changing any registered protocol or result. Protected 214 original experiment artifacts by SHA-256.
+- Reconciled 520 declaration counts and coverage labels. Fresh local Lean build and strict axiom audit passed for the final Chapter 4 source. Written-proof tags remain distinct from full formalization and peer review.
+- Corrected margin-monitor sign labels and added the static positive-loop fixed-point solver. Added regressions for invalid guard inputs, signed position capacity and complete audit hashes. FPGA measurement constants were withdrawn, including the retained provenance-ledger claim and its legacy integrated-manuscript table.
+- Local validation: thesis verifier and independent oracle passed; package tests 27 passed; final guard/gateway/hardware target 33 passed; isolated full suite 681 passed, 18 skipped before the additional arithmetic-failure regression (covered by the final targeted run). Ruff, diff checks and workflow syntax pass. Exact-commit GitHub CI is reported separately when available.
+- Review ZIP contains sources, canonical PDF, archived thesis evidence and checksums. The extracted package's verifier and package tests passed. Original B2 inference was not replayed; no future study was opened.
+
 ## A1 — 2026-10-22
 Status: partial
 

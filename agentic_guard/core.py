@@ -19,6 +19,7 @@ class AMIPState(str, Enum):
 
 class RejectionCode(str, Enum):
     NONE = "NONE"
+    INVALID_MARKET_STATE = "INVALID_MARKET_STATE"
     HALLUCINATION_PRICE_DEVIATION = "HALLUCINATION_PRICE_DEVIATION"
     HALLUCINATION_INVALID_QUANTITY = "HALLUCINATION_INVALID_QUANTITY"
     KREISS_RADIUS_EXCEEDED = "KREISS_RADIUS_EXCEEDED"
@@ -97,7 +98,15 @@ class AgenticGuard:
 
     def update_market_state(self, s_hat: float, s_lower: float, s_upper: float):
         """Update market-wide systemic feedback estimates from external streaming estimator."""
-        self._override_s_bounds = (float(s_hat), float(s_lower), float(s_upper))
+        try:
+            bounds = (float(s_hat), float(s_lower), float(s_upper))
+            if not np.isfinite(bounds).all() or not bounds[1] <= bounds[0] <= bounds[2]:
+                raise ValueError("feedback bounds must be finite and ordered lower <= estimate <= upper")
+        except (TypeError, ValueError):
+            # Latch abstention until a valid external update arrives; do not retain a stale green certificate.
+            self._override_s_bounds = (float("inf"),) * 3
+            raise ValueError("feedback bounds must be finite and ordered lower <= estimate <= upper") from None
+        self._override_s_bounds = bounds
 
     @property
     def s_hat(self) -> float:
@@ -113,10 +122,10 @@ class AgenticGuard:
 
     @property
     def current_state(self) -> AMIPState:
-        s_up = self.s_upper
-        if s_up >= 1.0:
+        _, _, s_up = self._compute_conic_certificate()
+        if not np.isfinite(s_up) or s_up >= 1.0:
             return AMIPState.RED
-        elif s_up >= 0.85:
+        elif s_up >= 0.95:
             return AMIPState.YELLOW
         return AMIPState.GREEN
 
@@ -171,6 +180,20 @@ class AgenticGuard:
         t0 = time.perf_counter_ns()
         self.intercepted_count += 1
 
+        # Numerical failures and invalid routing fields must never authorize an order.
+        if (not np.isfinite(current_mid) or current_mid <= 0
+                or not np.isfinite(order.price) or order.price <= 0
+                or order.side.upper() not in ("BUY", "SELL")
+                or order.order_type not in ("LIMIT", "MARKET", "PEGGED", "IOC")
+                or not np.isfinite([self.equity, self.inventory, self.kreiss_constant_J, self.buffer_ratio]).all()
+                or self.equity < 0 or self.kreiss_constant_J <= 0 or not 0 <= self.buffer_ratio <= 1
+                or not np.isfinite(self._compute_conic_certificate()).all()):
+            self.rejections_count += 1
+            return InterceptDecision(False, AMIPState.RED, RejectionCode.INVALID_MARKET_STATE,
+                                     "Invalid market, certificate, account, price or routing input; abstention required.",
+                                     self.s_hat, self.s_lower, self.s_upper, 0.0, 0.0,
+                                     (time.perf_counter_ns() - t0) / 1000.0)
+
         # ------------------------------------------------------------- Barrier 1: Semantic Hallucination Filter
         if order.order_qty <= 0 or not np.isfinite(order.order_qty):
             lat_us = (time.perf_counter_ns() - t0) / 1000.0
@@ -213,12 +236,20 @@ class AgenticGuard:
 
         s_hat, s_lower, s_upper = self._compute_conic_certificate()
         kreiss_radius = self.compute_kreiss_safe_radius(current_mid)
+        if (not np.isfinite([s_hat, s_lower, s_upper, kreiss_radius]).all()
+                or not s_lower <= s_hat <= s_upper):
+            self.rejections_count += 1
+            return InterceptDecision(False, AMIPState.RED, RejectionCode.INVALID_MARKET_STATE,
+                                     "Certificate arithmetic failed; abstention required.",
+                                     s_hat, s_lower, s_upper, 0.0, 0.0,
+                                     (time.perf_counter_ns() - t0) / 1000.0)
 
         # ------------------------------------------------------------- Barrier 3: Kreiss Solvency Radius Enforcement
         new_inv = self.inventory + signed_flow
         if abs(new_inv) > kreiss_radius:
             # Capacity exceeded
-            allowed_room = max(0.0, kreiss_radius - abs(self.inventory))
+            direction = 1.0 if order.side.upper() == "BUY" else -1.0
+            allowed_room = max(0.0, kreiss_radius - direction * self.inventory)
             if allowed_room <= 0.0:
                 lat_us = (time.perf_counter_ns() - t0) / 1000.0
                 self.rejections_count += 1

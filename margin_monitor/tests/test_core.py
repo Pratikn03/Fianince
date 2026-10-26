@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from margin_monitor import (add_displacement, bars_from_klines, bars_from_trades, certify, closed_loop, rolling_margin,
+from margin_monitor import (add_displacement, bars_from_klines, bars_from_trades, certify, closed_loop, equilibrium_throttle, rolling_margin,
                             throttle, warnings)
 
 
@@ -12,7 +12,8 @@ def test_certify_recovers_known_margin(phi, seed):
     c = certify(bars, n_boot=100)
     assert abs(c.margin - true_m) < 0.02
     assert c.ci[0] < true_m < c.ci[1]
-    assert c.sign == ("safe" if true_m > 0 else "unsafe")
+    assert c.sign == ("positive" if true_m > 0 else "negative")
+    assert c.stability_conditions_verified is False
 
 
 def test_noise_in_flow_does_not_bias():
@@ -59,3 +60,45 @@ def test_displacement_restarts_after_gap():
     bars, _ = closed_loop(days=2, seed=6)
     b = add_displacement(bars.drop(bars.index[100:200]))
     assert b["seg"].nunique() == 2 and b["x"].iloc[100:112].isna().all()
+
+
+def test_positive_margin_does_not_claim_stability_of_explosive_negative_root():
+    rng = np.random.default_rng(73)
+    n = 700
+    flow = rng.normal(size=n)
+    noise = rng.normal(scale=0.3, size=n)
+    x = np.zeros(n)
+    for t in range(1, n):
+        x[t] = -1.01 * x[t - 1] + 0.1 * flow[t] + noise[t]
+    bars = pd.DataFrame({"f": flow, "x": x, "r": np.r_[np.nan, np.diff(x)], "seg": 0},
+                        index=pd.date_range("2026-01-01", periods=n, freq="5min", tz="UTC"))
+    c = certify(bars, lags=1, block="1h", n_boot=100)
+    assert c.margin > 2 and c.ci[0] > 0
+    assert c.sign == "positive" and not c.stability_conditions_verified
+
+
+@pytest.mark.parametrize("reversion", [0.0, 0.01, 0.1, 0.5])
+@pytest.mark.parametrize("feedback", [0.0, 0.09, 1.0, 100.0])
+def test_equilibrium_throttle_solves_admitted_loop_and_preserves_buffer(reversion, feedback):
+    alpha = equilibrium_throttle(reversion, feedback)
+    margin = reversion - alpha * feedback
+    assert alpha == pytest.approx(throttle(margin), abs=1e-12)
+    assert margin >= min(0.02, reversion) - 1e-12
+
+
+def test_previous_margin_response_can_breach_buffer_but_fixed_point_does_not():
+    assert 0.1 - 0.09 * throttle(0.1) < 0.02
+    alpha = equilibrium_throttle(0.1, 0.09)
+    assert alpha == pytest.approx(0.47058823529411764)
+    assert 0.1 - 0.09 * alpha > 0.02
+
+
+def test_throttle_rejects_invalid_bounds_and_abstains_on_missing_margin():
+    assert throttle(float("nan")) == 0.0
+    assert throttle(float("inf")) == 0.0
+    with pytest.raises(ValueError):
+        throttle(0.1, m_min=0.1, m_max=0.1)
+    with pytest.raises(ValueError):
+        equilibrium_throttle(0.1, float("nan"))
+    with pytest.raises(ValueError):
+        equilibrium_throttle(0.1, -0.1)

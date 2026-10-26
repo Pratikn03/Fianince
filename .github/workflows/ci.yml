@@ -1,5 +1,8 @@
 name: Machine Markets & AMIP RFC-001 CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ main, master, paper2-information-safety ]
@@ -28,8 +31,6 @@ jobs:
   lean-formal-audit:
     name: Lean 4 Formal Mechanization Audit
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -71,21 +72,6 @@ jobs:
             research_extension/current_manuscript_lean_20261008/AxiomAudit.lean
             ceiling_suite/CEILING_SUITE_LEAN_PROOF_MANIFEST.json
             ceiling_suite/CEILING_SUITE_LEAN_PROOF_REPORT.md
-
-      # Keep the committed receipt in step with the kernel-checked build (best effort; main only).
-      - name: Commit regenerated audit files
-        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        continue-on-error: true
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          D=research_extension/current_manuscript_lean_20261008
-          git add $D/checked_theorem_types.json $D/axiom_audit.jsonl $D/named_declarations.json \
-                  $D/formal_verification_receipt.json $D/AxiomAudit.lean \
-                  ceiling_suite/CEILING_SUITE_LEAN_PROOF_MANIFEST.json ceiling_suite/CEILING_SUITE_LEAN_PROOF_REPORT.md
-          if git diff --cached --quiet; then echo "audit files unchanged"; exit 0; fi
-          git commit -m "CI: regenerate Lean audit receipt from the kernel-checked build [skip ci]"
-          git pull --rebase origin main && git push origin HEAD:main
 
   paper-suite:
     name: Paper Suite Clean Reproduction (tests, results, LaTeX, ledger)
@@ -211,4 +197,45 @@ jobs:
         with:
           name: Machine_Markets_JF_Submission
           path: paper/Machine_Markets_JF_Submission.pdf
+          if-no-files-found: error
+
+  thesis-release:
+    name: Thesis numbers, package regression tests and current PDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install thesis dependencies
+        run: |
+          pip install -r requirements-runtime.txt -r requirements-artifacts.txt pypdf
+          pip install --no-deps ./margin_monitor
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended lmodern poppler-utils
+      - name: Verify frozen evidence and thesis results without opening experiments
+        run: |
+          python thesis/verify_thesis_numbers.py
+          python thesis/checks/check_b2_supplement.py --check
+          python scripts/verify_thesis_release.py
+      - name: Run margin-monitor regressions
+        run: pytest margin_monitor/tests -q
+      - name: Verify committed PDF, then build and verify current sources
+        run: |
+          python scripts/verify_thesis_release.py --pdf
+          sh thesis/build_thesis.sh
+          python scripts/verify_thesis_release.py --pdf
+          python scripts/package_thesis.py --seal --zip
+      - name: Upload thesis and release checks
+        uses: actions/upload-artifact@v4
+        with:
+          name: thesis-release
+          path: |
+            thesis/thesis.pdf
+            thesis/checks/B2_supplement.json
+            thesis/checks/registered_artifacts_sha256.json
+            thesis/READINESS.md
+            thesis/SUBMISSION_MANIFEST.json
+            thesis/submission/Thesis_Review_Package_20261026.zip
+            thesis/submission/Thesis_Review_Package_20261026.zip.sha256
           if-no-files-found: error

@@ -107,6 +107,11 @@ def condense_ch2(tex):
                 "(Table~\\ref{p1:tab:iv})"):
         assert old in tex, old
         tex = tex.replace(old, "(Section~\\ref{p1:sec:empirics})" if old.startswith("(") else "Section~\\ref{p1:sec:empirics}")
+    # Thesis-only layout: preserve the equation while moving the long inline measure to a display.
+    measure = r"$\sum_iq_i\,\eta(s_i)\,\delta_{1-\eta(s_i)}$"
+    tex = tex.replace(measure, "\\[" + measure[1:-1] + "\\]")
+    tex = tex.replace(r"\setlength{\tabcolsep}{1.5pt}", r"\setlength{\tabcolsep}{1pt}")
+    tex = tex.replace(r"\multicolumn{7}{@{}l@{}}", r"\multicolumn{7}{@{}p{0.97\textwidth}@{}}")
     return tex
 
 

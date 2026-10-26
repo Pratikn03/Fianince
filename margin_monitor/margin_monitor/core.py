@@ -10,9 +10,10 @@ with r the bar return, f the signed flow, x = p - EMA(p) the displacement. The s
 
     M = -beta - kappa * sum_m k_m   ( = 1 - a - kappa * Phi )
 
-reversion (-beta) minus feedback (kappa * Phi). M > 0: shocks die out; M <= 0: the loop amplifies them. The margin
-depends on the traders only through their total feedback, so it can be certified without identifying anyone, provided
-their memory is bounded (here: L lags of bars); feedback with longer memory is invisible to any finite record.
+reversion (-beta) minus feedback (kappa * Phi). Its sign is a stability criterion only under the thesis's additional
+root/model assumptions. This package estimates the sign; it does not verify those assumptions or certify solvency.
+The margin depends on the traders only through their total feedback. Feedback with longer memory than the fitted
+lags can be missed, and the EMA displacement is a proxy for the theoretical state.
 
 Everything here is ordinary least squares on sufficient statistics with block-bootstrap intervals; no traders are
 identified and no account data are needed.
@@ -23,7 +24,7 @@ import numpy as np
 import pandas as pd
 
 __all__ = ["bars_from_trades", "bars_from_klines", "add_displacement", "Certificate", "certify", "rolling_margin",
-           "warnings", "throttle"]
+           "warnings", "throttle", "equilibrium_throttle"]
 
 
 # ------------------------------------------------------------------------------------------------------------- bars
@@ -86,6 +87,8 @@ def add_displacement(bars, span=12, max_gap=None):
 
 # ------------------------------------------------------------------------------------------------------------- estimation
 def _design(b, lags):
+    if not isinstance(lags, (int, np.integer)) or not 1 <= lags < len(b):
+        raise ValueError("lags must be a positive integer smaller than the number of bars")
     x = b["x"].to_numpy(); r = b["r"].to_numpy(); f = b["f"].to_numpy(float)
     seg = b["seg"].to_numpy()
     lag = lambda z, m: np.r_[np.full(m, np.nan), z[:-m]]
@@ -121,9 +124,10 @@ class Certificate:
     kappa: float
     phi: float
     decided: bool                 # interval excludes zero
-    sign: str                     # "safe", "unsafe" or "undecided"
+    sign: str                     # "positive", "negative" or "undecided" margin; not a stability verdict
     n_bars: int
     n_blocks: int
+    stability_conditions_verified: bool = False
 
     def to_dict(self):
         return asdict(self)
@@ -131,7 +135,11 @@ class Certificate:
 
 def certify(bars, lags=12, block="1D", n_boot=200, level=0.95, seed=0, span=12):
     """Certify the margin on all bars, with an interval from a bootstrap over blocks of time (default: days).
-    `bars` has columns p and f (see bars_from_trades / bars_from_klines), or already r and x."""
+    `bars` has columns p and f (see bars_from_trades / bars_from_klines), or already r, x and seg.
+    The sign is a bootstrap diagnostic, not a finite-sample or unrestricted stability guarantee.
+    """
+    if not 0 < level < 1 or not isinstance(n_boot, (int, np.integer)) or n_boot < 0:
+        raise ValueError("level must be in (0, 1) and n_boot a nonnegative integer")
     b = bars if {"r", "x", "seg"} <= set(bars.columns) else add_displacement(bars, span=span)
     Xp, yp, Xk, yk = _design(b, lags)
     blk = b.index.floor(block).asi8
@@ -152,7 +160,7 @@ def certify(bars, lags=12, block="1D", n_boot=200, level=0.95, seed=0, span=12):
     boots = boots[np.isfinite(boots)]
     a = (1 - level) / 2
     lo, hi = (np.quantile(boots, [a, 1 - a]) if len(boots) > 20 else (np.nan, np.nan))
-    sign = "safe" if lo > 0 else "unsafe" if hi < 0 else "undecided"
+    sign = "positive" if lo > 0 else "negative" if hi < 0 else "undecided"
     return Certificate(float(M), (float(lo), float(hi)), float(rev), float(fb), float(kap), float(phi),
                        bool(lo > 0 or hi < 0), sign, int(np.isfinite(yp).sum()), n)
 
@@ -212,8 +220,28 @@ def warnings(rolling, buffer=0.1, trend_steps=5, horizon=10):
 
 
 def throttle(margin_lo, m_min=0.02, m_max=0.10):
-    """A continuous admission rule: the share of algorithmic flow to admit given a lower bound on the margin; 0 at or
-    below the buffer m_min, 1 above m_max, linear between. A continuous rule with a buffer keeps every strategy profile
-    of the agents above the buffer and has equilibria; a rule that switches at a threshold can leave the agents' game
-    without one (thesis, Proposition prop:throttle and Remark rem:strategic_counterexample)."""
+    """Evaluate the linear response g(m), not a controller for the resulting loop.
+
+    An invalid margin admits zero. For a static positive-feedback loop, use equilibrium_throttle to solve the
+    implicit equation in Proposition prop:throttle. Applying g to a previous margin alone has no buffer guarantee.
+    """
+    if not np.isfinite([m_min, m_max]).all() or not 0 <= m_min < m_max:
+        raise ValueError("require finite thresholds with 0 <= m_min < m_max")
+    if not np.isfinite(margin_lo):
+        return 0.0
     return float(np.clip((margin_lo - m_min) / (m_max - m_min), 0.0, 1.0))
+
+
+def equilibrium_throttle(reversion_lower, feedback_upper, m_min=0.02, m_max=0.10):
+    """Solve alpha = g(reversion_lower - alpha * feedback_upper) for a static positive loop.
+
+    Inputs must bound reversion from below and total unthrottled positive feedback from above, simultaneously for
+    the proposed loop. Conditional on those bounds, the admitted margin is at least min(m_min, reversion_lower).
+    This does not estimate the bounds or cover delayed responses, hidden memory, or changing agent strategies.
+    """
+    throttle(0.0, m_min, m_max)  # validate response thresholds
+    if not np.isfinite([reversion_lower, feedback_upper]).all():
+        raise ValueError("reversion and feedback bounds must be finite")
+    if reversion_lower < 0 or feedback_upper < 0:
+        raise ValueError("require nonnegative reversion and positive-feedback bounds")
+    return float(np.clip((reversion_lower - m_min) / (m_max - m_min + feedback_upper), 0.0, 1.0))
