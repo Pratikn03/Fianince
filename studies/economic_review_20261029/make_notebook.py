@@ -23,7 +23,7 @@ interpreting results. Do not change a seed to select a favorable outcome.
 code('''import os, sys, subprocess
 from pathlib import Path
 REPOSITORY = "https://github.com/Pratikn03/Fianince.git"
-REF = "codex/economic-repair-experiments-20261029"  # or an immutable commit SHA
+REF = "19805d7ec6265691166456407902d63215747e51"  # reviewed immutable source commit
 local = os.environ.get("MM_LOCAL_REPO")  # optional local validation path
 REPO = Path(local) if local else Path("/content/machine-markets-economic-review")
 if not local:
