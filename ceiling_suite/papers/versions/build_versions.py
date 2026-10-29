@@ -1,9 +1,12 @@
 """Build journal-format versions from the working sources (run after every edit of the sources)."""
-import re, subprocess, os, shutil
+import re, subprocess, os, shutil, sys
+SOURCE_ONLY = "--source-only" in sys.argv
 _H = os.path.dirname(os.path.abspath(__file__))
 P1, P2, OUT = os.path.join(_H, "..", "paper1"), os.path.join(_H, "..", "paper2"), _H
 def build(tex, name):
     open(os.path.join(OUT, name + ".tex"), "w").write(tex)
+    if SOURCE_ONLY:
+        return None, ["source-only; PDF snapshot not rebuilt"]
     for _ in range(3):
         subprocess.run(["pdflatex", "-interaction=nonstopmode", name + ".tex"], cwd=OUT, capture_output=True)
     log = open(os.path.join(OUT, name + ".log"), errors="ignore").read()
@@ -185,7 +188,7 @@ app_main = app_main[:_p0]
 body = body.replace("\\includegraphics[width=0.78\\textwidth]{figs/fig_forest.pdf}", "\\includegraphics[height=0.62\\textheight]{figs/fig_forest.pdf}")
 tex2 = front + body + app_main + IA_HEAD + ia_extra + app_ia + "\n\\end{document}\n"
 n2, bad2 = build(tex2, "Paper2_JF")
-log = open(f"{OUT}/Paper2_JF.aux").read()
+log = "" if SOURCE_ONLY else open(f"{OUT}/Paper2_JF.aux").read()
 m = re.search(r"\\newlabel\{app:iastart\}\{\{[^}]*\}\{([^}]*)\}", log)
 print("Paper2_JF pages:", n2, "| main ends before IA page label:", m.group(1) if m else None, bad2)
 
@@ -231,6 +234,6 @@ mv1("\\section{Empirical feedback and its measurement}\\label{sec:empirics}",
     "\\section{Empirical feedback and its measurement}\nAcross a 96-date, eight-pair Binance spot panel (66.3M one-second bars), a 72-date BTCUSDT one-second panel, 30 USD-M perpetuals and two BTCUSDT spot zero-fee events, standard reduced-form feedback indices are dominated by EMA filtering mechanics ($1-\\alpha=0.9355$) and clock alignment ($0.0081$ with look-ahead vs.\\ $0.00037$ aligned); real feedback beyond the placebo is positive but small ($0.0045$), rises with market depth (Spearman $+0.70$), and does not move when zero fees multiply trading volume by $2.6$ to $4.9$ (Supplemental Appendix, Tables~\\ref{tab:samples}--\\ref{tab:fee2}).\n\n")
 tex1 = f1 + body1 + main1 + SUP + supp_extra1 + supp1 + "\n\\end{document}\n"
 n1, bad1 = build(tex1, "Paper1_QE")
-aux = open(f"{OUT}/Paper1_QE.aux").read()
+aux = "" if SOURCE_ONLY else open(f"{OUT}/Paper1_QE.aux").read()
 m = re.search(r"\\newlabel\{app:suppstart\}\{\{[^}]*\}\{([^}]*)\}", aux)
 print("Paper1_QE pages:", n1, "| supplement starts at page label:", m.group(1) if m else None, bad1)

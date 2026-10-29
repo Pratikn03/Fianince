@@ -1,10 +1,11 @@
 # Machine Markets: Auditable Memory, Financial Identification Limits, and Pre-Trade Safety Under Feedback
 
 [![CI](https://github.com/Pratikn03/Fianince/actions/workflows/ci.yml/badge.svg)](https://github.com/Pratikn03/Fianince/actions/workflows/ci.yml)
-[![Lean 4](https://img.shields.io/badge/Lean_4-443_declarations_kernel--checked%3B_see_COVERAGE.md-blue.svg)](COVERAGE.md)
-[![Pytest Suite](https://img.shields.io/badge/Pytest-Passing-brightgreen.svg)](tests/)
+[![Lean 4](https://img.shields.io/badge/Lean_4-recorded_receipt-blue.svg)](research_extension/current_manuscript_lean_20261008/formal_verification_receipt.json)
 
-> **Lean 4 Formalization Status**: 443 named theorems kernel-checked in [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) (`0 sorry`, standard axioms `propext`, `Classical.choice`, `Quot.sound`); see [`COVERAGE.md`](COVERAGE.md) for which paper statements are fully formalized (`full`), conditional on explicit analytical hypotheses (`conditional`), or algebraic/numerical checks (`arithmetic`). Every numbered environment of both papers is *mapped* to kernel-checked declarations; a mapping is not a claim that the paper statement is formalized in full. Of the 52 environments, 23 are tagged `full`, 18 `conditional` and 11 `arithmetic`.
+> **29 October review branch:** supported source corrections and exploratory experiments are documented in [the research plan](studies/economic_review_20261029/RESEARCH_PLAN.md). Start with [the Colab notebook](studies/economic_review_20261029/Economic_Review_Experiments.ipynb). The current modular sources are `ceiling_suite/papers/paper1/` and `ceiling_suite/papers/paper2/`; historical PDFs and registered results are snapshots, not evidence for revised statements.
+>
+> **Formalization boundary:** the committed 25 October receipt records 520 named theorems and explicitly reports `full_manuscript_formalization_complete: false`. It is a historical build receipt, not an independent rebuild in this branch. Existing name mappings do not establish semantic coverage of revised propositions. See [COVERAGE.md](COVERAGE.md) and the new [claim ledger](studies/economic_review_20261029/CLAIM_LEDGER.csv) for their distinct purposes.
 
 ---
 
@@ -48,7 +49,7 @@ This repository contains the LaTeX sources, replication code, pre-registered not
 │   └── verify_ceiling_suite_lean_proofs.py         # Verifies the LaTeX label to Lean 4 declaration mapping
 │
 ├── research_extension/
-│   └── current_manuscript_lean_20261008/           # Primary Lean 4.34.1 + Mathlib formalization (443 theorems, 0 sorry)
+│   └── current_manuscript_lean_20261008/           # Primary Lean 4.34.1 + Mathlib formalization (see recorded receipt and coverage boundary)
 │       ├── CurrentProofs/                          # 33 Mathlib proof modules over ℝ (InfoSafetyExtensions.lean: Sections 5–8 and the hardening results)
 │       ├── AxiomAudit.lean                         # Kernel axiom auditor
 │       ├── axiom_audit.jsonl                       # Kernel-checked theorem types and axiom footprints
@@ -68,6 +69,8 @@ python3 research_extension/current_manuscript_lean_20261008/verify_formalization
 
 # 2. Verify the label-to-declaration mapping across Paper 1 and Paper 2:
 python3 ceiling_suite/verify_ceiling_suite_lean_proofs.py
+# Optional strict gate (currently fails until missing/revised coverage is resolved):
+# python3 ceiling_suite/verify_ceiling_suite_lean_proofs.py --require-complete
 
 # 3. Run the Information-Safety unit tests and all data-free results (T01–T15):
 pytest ceiling_suite/papers/research_extension/information_safety/tests -q

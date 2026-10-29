@@ -2,6 +2,8 @@
 
 Lemma~\ref{thm:capital} gives the order but not the constant. This section computes what a trader actually needs under a calibrated linear-impact environment, then converts it to Bitcoin dollars.
 
+\paragraph{Numerical status.} The analytic inequalities below are conditional mathematical bounds. The displayed decimal optima and brackets are numerical evaluations, not independently outward-certified enclosures of the continuous frequency or angle extrema. A finite grid and a matching archived number do not establish that enclosure; rigorous optimization remains a separate verification obligation.
+
 \subsection{Observation design and the tri-region partition}
 
 An observer distinguishes two candidate mechanisms with rates $\theta_0$ and $\theta_1=\theta_0+\delta$ over $N$ periods, submitting probes $V=(V_1,\ldots,V_N)^\top$ that generate inventory $I_t=\sum_{s\le t}V_s$. Under contract $I_0$ (active probing, Gaussian observation noise) $p_t=(h_i*V)_t+\epsilon_t$, $\epsilon_t\sim N(0,\sigma^2)$, so
@@ -50,7 +52,7 @@ Generalized-eigenvector probe ($L=160$) & 64.86 & 0.0500 & 0.00 & 2.17 & 1.09 & 
 Fee-refined probe ($L=240$) & 64.48 & 0.0500 & 0.00 & --- & 1.30 & 240\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item The pulse designs place a pulse every 40 steps and close it 20 steps later; the fee-refined probe is re-optimized by sequential quadratic programming over $L=240$. The certified lower bound of Theorem~\ref{thm:spectral} is 61.41; the explicit constant of Lemma~\ref{thm:capital} is $4.9\times10^{-4}$.\end{tablenotes}
+\begin{tablenotes}\footnotesize\item The pulse designs place a pulse every 40 steps and close it 20 steps later; the fee-refined probe is re-optimized by sequential quadratic programming over $L=240$. The numerically evaluated lower bound of Theorem~\ref{thm:spectral} is 61.41; the explicit constant of Lemma~\ref{thm:capital} is $4.9\times10^{-4}$.\end{tablenotes}
 \end{threeparttable}
 \end{table}
 
@@ -73,7 +75,7 @@ g_i(\omega)=\mathrm{Re}\,\hat H_i(e^{i\omega})-\kappa/2>0\qquad\forall\omega\in[
 \begin{equation}\label{eq:Cdet}
 L_i(v)\;\ge\;4\sigma^2z_{1-\alpha}^2\inf_\omega\frac{g_i(\omega)}{|\Delta\hat H(e^{i\omega})|^2}\;\equiv\;C^*_{\rm det,quad}(\delta).
 \end{equation}
-\item \emph{Bracket.} At $\delta=0.05$, $C^*_{\rm det,quad}=61.14$ at $\omega^*=0.2526$; adding the unavoidable fee $\phi P_*\cdot2\sigma z/\sup_\omega|\Delta\hat H|$ gives the certified bound $C_{\rm det}\ge61.41$. A feasible 240-step sequence attains 64.48, so the fee-paying optimum lies in $[61.41,64.48]$.
+\item \emph{Bracket.} At $\delta=0.05$, $C^*_{\rm det,quad}=61.14$ at $\omega^*=0.2526$; adding the unavoidable fee $\phi P_*\cdot2\sigma z/\sup_\omega|\Delta\hat H|$ gives the numerical lower estimate $C_{\rm det}\ge61.41$. A feasible 240-step sequence attains 64.48, so the fee-paying optimum lies in $[61.41,64.48]$.
 \item \emph{Process noise.} Let the price also receive the innovations $w_t\sim N(0,\sigma_w^2)$ of \eqref{eq:price}, independent of observation noise $\nu_t\sim N(0,\sigma_\nu^2)$, so that from the reset state the observer sees $\tilde x_t=(h_i*v)_t+\kappa^{-1}(h_i*w)_t+\nu_t$, $t<T$. For the known pair of Theorem~\ref{thm:quantity}, put $\sigma_{\rm eff}^2=\sigma_\nu^2+\sigma_w^2/4$, $\bar M=1/(1-S)$ and $C_w=2\sigma_w^4\bar M^2K_*^2(\sigma_\nu^2+\sigma_w^2\bar M^2)/(\kappa^2\sigma_\nu^2\sigma_{\rm eff}^4)$. Every deterministic round trip whose test has errors $\alpha$ and $\beta$ under the two hypotheses satisfies
 \begin{equation}\label{eq:Cnoise}
 L_i(v)\;\ge\;2\sigma_{\rm eff}^2\bigl[{\rm kl}(\alpha,1-\beta)-C_wT\delta^4\bigr]_+\inf_\omega\frac{g_i(\omega)}{|\Delta\hat H(e^{i\omega})|^2},
@@ -98,7 +100,7 @@ where ${\rm kl}(\alpha,1-\beta)=\alpha\log\tfrac{\alpha}{1-\beta}+(1-\alpha)\log
 Hence adaptation can lower expected fee-free loss by at most the factor ${\rm kl}(\alpha,1-\beta)/(2z_{1-\alpha}^2)\approx0.4897$ at $\alpha=\beta=0.05$, and cannot alter the $\delta^{-4}$ order.
 \end{theorem}
 
-At $\delta=0.05$ the adaptive bound is $29.94$, or $30.22$ with the minimal fee. Pairing it with the feasible deterministic 64.48 gives a certified ratio of at least $0.464$. In 20{,}000 simulated sequential probability-ratio tests, which split the optimal probe into ten copies of equal information, mean loss was $39.5$ under $H_0$, between the two bounds, but losses vary with the stopping time: the 95th and 99th percentiles of required account capital were $91.7$ and $128.4$, and funding a trader with only the mean loss gives a 37.5\% insolvency rate before the test ends. Expected-loss savings are not solvency savings.
+At $\delta=0.05$ the adaptive bound is $29.94$, or $30.22$ with the minimal fee. Pairing it with the feasible deterministic 64.48 gives a numerical ratio of at least $0.464$. In 20{,}000 simulated sequential probability-ratio tests, which split the optimal probe into ten copies of equal information, mean loss was $39.5$ under $H_0$, between the two bounds, but losses vary with the stopping time: the 95th and 99th percentiles of required account capital were $91.7$ and $128.4$, and funding a trader with only the mean loss gives a 37.5\% insolvency rate before the test ends. Expected-loss savings are not solvency savings.
 
 \begin{table}[t]\centering\small
 \begin{threeparttable}
@@ -115,7 +117,7 @@ $\delta$ & $\omega^*$ & $C^*_{\rm det,quad}$ & $\delta^4C^*_{\rm det,quad}$ & Ce
 0.15 & 0.2331 & 0.73 & $3.67\times10^{-4}$ & 0.76 & 1.01 & 0.38\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item Calibration $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$, $\sigma=0.01$, $\alpha=0.05$. From \texttt{recompute\_theory.py} and \texttt{recompute\_p1\_capital.py}; the certified column adds the fee lower bound to the fee-free infimum; the feasible column is the best flat probe found over $L\le240$; the adaptive column adds the fee lower bound to the adaptive bound.\end{tablenotes}
+\begin{tablenotes}\footnotesize\item Calibration $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$, $\sigma=0.01$, $\alpha=0.05$. From \texttt{recompute\_theory.py} and \texttt{recompute\_p1\_capital.py}; the numerical-bound column adds the fee lower bound to the fee-free infimum; the feasible column is the best flat probe found over $L\le240$; the adaptive column adds the fee lower bound to the adaptive bound.\end{tablenotes}
 \end{threeparttable}
 \end{table}
 

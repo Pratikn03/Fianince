@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """
-Verify that every numbered mathematical environment (theorem, proposition, lemma, corollary, example) of the Ceiling
-Suite LaTeX manuscripts is mapped to kernel-checked Lean 4 declarations:
-- Paper 1 (`ceiling_suite/paper1/`): 26 formal environments
-- Paper 2 (`ceiling_suite/paper2/`): 26 formal environments
+Audit name mappings for current numbered mathematical environments.
+Missing and revised statements are explicitly reported; --require-complete
+fails when those obligations remain. This script does not rebuild Lean.
 A mapping is not semantic equivalence: what each declaration proves (full / conditional / arithmetic) is in COVERAGE.md.
 A label may map to several declarations; all must exist and pass the axiom audit.
 
@@ -16,6 +15,18 @@ from pathlib import Path
 import json
 import re
 import hashlib
+import sys
+
+# A retained label does not transfer semantic coverage to a revised statement.
+REVISED_LABELS = {"prop:driftguard", "thm:forward", "prop:inventory_S", "thm:minphase",
+                  "thm:window", "thm:certcost", "prop:esprit"}
+
+
+def unmapped_record(idx, paper, env):
+    return {"index": idx, "paper": paper, **env, "formalization_status": "UNMAPPED",
+            "mathlib_theorem": "UNMAPPED", "mathlib_file": "", "mathlib_line": None,
+            "axioms": [], "core_lean_theorem": "UNMAPPED", "core_lean_file": "",
+            "core_lean_line": None}
 
 SUITE_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SUITE_DIR.parent
@@ -163,8 +174,7 @@ def main():
     p1_envs = extract_envs(SUITE_DIR / "paper1", PAPER1_FILES)
     p2_envs = extract_envs(SUITE_DIR / "paper2", PAPER2_FILES)
 
-    assert len(p1_envs) == 26, f"Expected 26 environments in paper1, got {len(p1_envs)}"
-    assert len(p2_envs) == 28, f"Expected 28 environments in paper2, got {len(p2_envs)}"
+    assert p1_envs and p2_envs, "No manuscript environments extracted"
 
     mathlib_p1_path = MATHLIB_DIR / "CurrentProofs" / "CeilingSuitePaper1.lean"
     mathlib_p2_path = MATHLIB_DIR / "CurrentProofs" / "CeilingSuitePaper2.lean"
@@ -187,7 +197,9 @@ def main():
     records_p1 = []
     for idx, env in enumerate(p1_envs, 1):
         label = env["label"]
-        assert label in PAPER1_MAP, f"Missing mapping for Paper 1 {label}"
+        if label not in PAPER1_MAP:
+            records_p1.append(unmapped_record(idx, "Paper 1 (QE)", env))
+            continue
         m_list, c_list = (as_list(x) for x in PAPER1_MAP[label])
         for m_thm in m_list:
             assert m_thm in mathlib_p1, f"Missing {m_thm} in {mathlib_p1_path} or {ext_path}"
@@ -199,6 +211,7 @@ def main():
                 "index": idx,
                 "paper": "Paper 1 (QE)",
                 **env,
+                "formalization_status": "REQUIRES_SEMANTIC_REVIEW" if label in REVISED_LABELS else "NAME_MAPPING_ONLY",
                 "mathlib_theorem": ", ".join(f"CurrentMM.{m}" for m in m_list),
                 "mathlib_file": ", ".join(sorted({"CurrentProofs/InfoSafetyExtensions.lean" if m in ext_thms else "CurrentProofs/CeilingSuitePaper1.lean" for m in m_list})),
                 "mathlib_line": mathlib_p1[m_list[0]],
@@ -212,7 +225,9 @@ def main():
     records_p2 = []
     for idx, env in enumerate(p2_envs, 1):
         label = env["label"]
-        assert label in PAPER2_MAP, f"Missing mapping for Paper 2 {label}"
+        if label not in PAPER2_MAP:
+            records_p2.append(unmapped_record(idx, "Paper 2 (JF)", env))
+            continue
         m_list, c_list = (as_list(x) for x in PAPER2_MAP[label])
         for m_thm in m_list:
             assert m_thm in mathlib_p2, f"Missing {m_thm} in {mathlib_p2_path} or {ext_path}"
@@ -224,6 +239,7 @@ def main():
                 "index": idx,
                 "paper": "Paper 2 (JF)",
                 **env,
+                "formalization_status": "REQUIRES_SEMANTIC_REVIEW" if label in REVISED_LABELS else "NAME_MAPPING_ONLY",
                 "mathlib_theorem": ", ".join(f"CurrentMM.{m}" for m in m_list),
                 "mathlib_file": ", ".join(sorted({"CurrentProofs/InfoSafetyExtensions.lean" if m in ext_thms else "CurrentProofs/CeilingSuitePaper2.lean" for m in m_list})),
                 "mathlib_line": mathlib_p2[m_list[0]],
@@ -260,14 +276,22 @@ def main():
             }
         )
 
+    current = records_p1 + records_p2
+    missing = [r["label"] for r in current if r["formalization_status"] == "UNMAPPED"]
+    revised = [r["label"] for r in current if r["formalization_status"] == "REQUIRES_SEMANTIC_REVIEW"]
+    mapped_p1 = sum(r["formalization_status"] != "UNMAPPED" for r in records_p1)
+    mapped_p2 = sum(r["formalization_status"] != "UNMAPPED" for r in records_p2)
     manifest = {
-        "status": "ALL_ENVIRONMENTS_MAPPED_NO_SORRY_SEE_COVERAGE_MD",
+        "status": "MAPPING_AUDIT_INCOMPLETE" if missing or revised else "NAME_MAPS_CHECKED_SEE_SEMANTIC_COVERAGE",
+        "unmapped_labels": missing,
+        "revised_labels_requiring_semantic_review": revised,
+        "fresh_lean_build_performed": False,
         "lean_toolchain": "leanprover/lean4:v4.34.1",
         "paper1_total_environments": len(records_p1),
         "paper2_total_environments": len(records_p2),
         "foundational_bridge_theorems": len(records_bridge),
         "total_ceiling_suite_environments": len(records_p1) + len(records_p2),
-        "total_verified_theorems": len(records_p1) + len(records_p2) + len(records_bridge),
+        "total_existing_name_mappings": mapped_p1 + mapped_p2,
         "sha256": {
             "CurrentProofs/CeilingSuitePaper1.lean": sha256(mathlib_p1_path),
             "CurrentProofs/CeilingSuitePaper2.lean": sha256(mathlib_p2_path),
@@ -284,13 +308,15 @@ def main():
     manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
 
     md_lines = [
-        "# Ceiling Suite — Complete Lean 4 Formal Verification Report",
+        "# Ceiling Suite — Lean declaration mapping audit",
         "",
-        "- **Status**: every environment mapped to a kernel-checked declaration (0 `sorry`, 0 `admit`, 0 `native_decide`, 0 unapproved axioms); how much of each statement is formalized is in `COVERAGE.md`",
+        f"- **Status**: {manifest['status']}. Existing declaration references checked; no fresh Lean build or full semantic equivalence is claimed.",
+        f"- **Unmapped labels**: {', '.join(missing) or 'none'}",
+        f"- **Revised statements requiring semantic review**: {', '.join(revised) or 'none'}",
         "- **Lean Toolchain**: `leanprover/lean4:v4.34.1`",
-        f"- **Paper 1 (`ceiling_suite/paper1/`)**: {len(records_p1)} / 26 formal environments mapped (see COVERAGE.md for full / conditional / arithmetic)",
-        f"- **Paper 2 (`ceiling_suite/paper2/`)**: {len(records_p2)} / 28 formal environments mapped (see COVERAGE.md for full / conditional / arithmetic)",
-        f"- **Total Ceiling Suite Environments**: {len(records_p1) + len(records_p2)} / 54 mapped to kernel-checked declarations in Mathlib (`ℝ`) and Core Lean 4 (`Rat`); mapping is not semantic equivalence",
+        f"- **Paper 1**: {mapped_p1} / {len(records_p1)} current formal environments have an existing name mapping.",
+        f"- **Paper 2**: {mapped_p2} / {len(records_p2)} current formal environments have an existing name mapping.",
+        "- Run with `--require-complete` to fail if unmapped or revised statements remain. A successful default run means the audit was generated, not that manuscript formalization is complete.",
         "",
         "## Paper 1 — Auditable Memory and Financial Identification Limits (`paper1/`)",
         "",
@@ -332,9 +358,10 @@ def main():
 
     report_path = SUITE_DIR / "CEILING_SUITE_LEAN_PROOF_REPORT.md"
     report_path.write_text("\n".join(md_lines) + "\n")
-    print(
-        f"[PASS] Verified all {len(records_p1)} Paper 1 + {len(records_p2)} Paper 2 + {len(records_bridge)} Foundational Bridge = {len(records_p1) + len(records_p2) + len(records_bridge)} theorems!"
-    )
+    print(f"[AUDIT] {mapped_p1 + mapped_p2}/{len(current)} existing name mappings; "
+          f"{len(missing)} unmapped; {len(revised)} revised statements require semantic review. No fresh Lean build.")
+    if "--require-complete" in sys.argv and (missing or revised):
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

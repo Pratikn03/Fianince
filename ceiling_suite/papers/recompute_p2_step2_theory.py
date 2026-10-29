@@ -2,9 +2,9 @@
   1. Proposition prop:inventory_S: Closed-form summed response S(psi) when traders carry inventory
      (I_{i,t} = (1 - delta_inv) I_{i,t-1} + u_{i,t}, u_{i,t} = q_i y_{i,t} - psi_i I_{i,t-1}).
   2. Proposition prop:driftguard: Uniformly safe pre-trade guard under interval-bounded unknown
-     hidden cohort drift ||y_0||_infty <= y_bar_0, and its exact capacity cost.
+     hidden cohort drift ||y_0||_infty <= y_bar_0, with corrected cumulative identity and a sufficient invariant box.
 
-Output: ceiling_suite/papers/recomputed/R_P2_step2_theory.json
+Output: ceiling_suite/papers/recomputed/R_P2_step2_theory_repaired.json
 """
 from __future__ import annotations
 
@@ -96,76 +96,39 @@ def verify_inventory_proposition(rng: np.random.Generator) -> dict:
 
 
 def verify_drift_guard_proposition(rng: np.random.Generator) -> dict:
-    """Verify Proposition prop:driftguard on the bridge_check.py rational pair and 500 random economies."""
-    # Rational counterexample pair from bridge_check.py Part F:
-    # a = 0.4, kappa = 1.0, Phi = 0.40, S(1) = 5.0
-    a, kappa, phi_plus = 0.4, 1.0, 0.40
-    I_pos = 1.0
-    u_bar = 0.48
-    B_bud = 1.00
-    y_bar_0 = 0.25
-    x_0 = 0.0
+    """Check the corrected identity, peak envelope and sufficient invariant box.
 
-    # Rest-state guard: c_I = 1 - a - kappa * |I| * u_bar / B = 0.6 - 0.20 / 1.50 = 0.46667
-    # alpha^* = min(1, c_I / (kappa * Phi^+))
-    c_I = 1.0 - a - kappa * I_pos * u_bar / B_bud
-    alpha_rest = min(1.0, c_I / (kappa * phi_plus))
-    # Drift-adjusted guard: alpha_drift^* = min(1, ((1 - a)*B - |I|*(a|x_0| + kappa*u_bar)) / (kappa * Phi^+ * (B + |I|*y_bar_0)))
-    alpha_drift = min(1.0, max(0.0, ((1.0 - a) * B_bud - I_pos * (a * abs(x_0) + kappa * u_bar)) / (kappa * phi_plus * (B_bud + I_pos * y_bar_0))))
-    cap_cost_closed = alpha_rest * (I_pos * y_bar_0) / (B_bud + I_pos * y_bar_0)
-
-    def max_loss_sim(q_vec, eta_vec, alpha_val, y0_vec, H=300):
-        # Worst-case adversary u_t = u_bar for positive system with y0_vec
-        y = np.array(y0_vec, dtype=float)
-        xp = x_0
-        max_x = abs(xp)
-        for _ in range(1, H + 1):
-            u_coh = alpha_val * float(np.dot(q_vec, y))
-            xt = a * xp + kappa * (u_coh + u_bar)
-            y = (1.0 - eta_vec) * y + eta_vec * xt
-            max_x = max(max_x, abs(xt))
-            xp = xt
-        return I_pos * max_x
-
-    q1, eta1 = np.array([0.20, 0.20]), np.array([5.0 / 8.0, 3.0 / 8.0])
-    q2, eta2 = np.array([9.0 / 25.0, 1.0 / 25.0]), np.array([13.0 / 24.0, 1.0 / 8.0])
-
-    # Under worst-case hidden state y_0 = [y_bar_0, y_bar_0]:
-    loss_rest_e1 = max_loss_sim(q1, eta1, alpha_rest, [y_bar_0, y_bar_0])
-    loss_rest_e2 = max_loss_sim(q2, eta2, alpha_rest, [y_bar_0, y_bar_0])
-    loss_drift_e1 = max_loss_sim(q1, eta1, alpha_drift, [y_bar_0, y_bar_0])
-    loss_drift_e2 = max_loss_sim(q2, eta2, alpha_drift, [y_bar_0, y_bar_0])
-
-    # Check 500 random economies with random y_0 in [-y_bar_0, y_bar_0]^K
-    n_breach_drift = 0
-    n_breach_rest = 0
+    Historical R_P2_step2_theory.json is retained; it did not test maximality.
+    """
+    import sys
+    from pathlib import Path
+    root = str(Path(__file__).resolve().parents[2])
+    if root not in sys.path:
+        sys.path.insert(0, root)
+    from studies.economic_review_20261029.models import (
+        box_admission, cumulative_drift, finite_peak_envelope, state_matrix,
+    )
+    a, kappa, phi, eta = .4, 1., .4, .1
+    J = state_matrix(a, kappa, [phi], [eta])
+    z = np.array([0., .25])
+    exact = float((np.linalg.solve(np.eye(2)-J,z)-z)[0])
+    corrected = cumulative_drift(a,kappa,[phi],[eta],0.,[.25])
+    alpha_box = box_admission(a,kappa,phi,1.,1.,.48,0.,.25)
+    worst = 0.
     for _ in range(500):
-        K = int(rng.integers(2, 5))
-        w_split = rng.dirichlet(np.ones(K))
-        q_k = phi_plus * w_split
-        eta_k = rng.uniform(0.10, 0.85, size=K)
-        y0_k = rng.uniform(-y_bar_0, y_bar_0, size=K)
-        if max_loss_sim(q_k, eta_k, alpha_drift, y0_k) > B_bud + 1e-9:
-            n_breach_drift += 1
-        if max_loss_sim(q_k, eta_k, alpha_rest, np.full(K, y_bar_0)) > B_bud + 1e-9:
-            n_breach_rest += 1
-
-    return {
-        "calibration": {
-            "a": a, "kappa": kappa, "Phi_plus": phi_plus, "I": I_pos,
-            "u_bar": u_bar, "B": B_bud, "y_bar_0": y_bar_0,
-        },
-        "alpha_rest": round(alpha_rest, 4),
-        "alpha_drift": round(alpha_drift, 4),
-        "capacity_cost_closed_form": round(cap_cost_closed, 4),
-        "capacity_cost_diff": round(alpha_rest - alpha_drift, 4),
-        "loss_under_rest_guard_econ1": round(loss_rest_e1, 4),
-        "loss_under_rest_guard_econ2": round(loss_rest_e2, 4),
-        "loss_under_drift_guard_econ1": round(loss_drift_e1, 4),
-        "loss_under_drift_guard_econ2": round(loss_drift_e2, 4),
-        "breaches_500_random_economies_drift_guard": n_breach_drift,
-        "breaches_500_worst_state_rest_guard": n_breach_rest,
-    }
+        K = int(rng.integers(1,5))
+        q = phi*rng.dirichlet(np.ones(K))
+        rates = rng.uniform(.01,1.,K)
+        peak = finite_peak_envelope(a,kappa,q,rates,0.,.25,.48,300,alpha_box).max()
+        worst = max(worst,float(peak))
+    assert abs(exact-corrected)<1e-10
+    assert worst<=1+1e-10
+    return dict(status="corrected; original exact-capacity-cost claim withdrawn",
+                cumulative_original_expression=.5, cumulative_corrected=corrected,
+                cumulative_resolvent=exact, alpha_box=round(alpha_box,4),
+                calibration_capacity_reduction=0., max_peak_500_models=worst,
+                proof_scope="box sufficiency for all rates; exact peak for each fixed model",
+                historical_result_file="R_P2_step2_theory.json")
 
 
 def main():
@@ -174,7 +137,7 @@ def main():
         "inventory_proposition": verify_inventory_proposition(rng),
         "drift_guard_proposition": verify_drift_guard_proposition(rng),
     }
-    fp = os.path.join(HERE, "recomputed", "R_P2_step2_theory.json")
+    fp = os.path.join(HERE, "recomputed", "R_P2_step2_theory_repaired.json")
     json.dump(res, open(fp, "w"), indent=2)
     print(json.dumps(res, indent=2))
     print("Wrote", fp)

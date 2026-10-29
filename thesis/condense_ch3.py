@@ -9,28 +9,19 @@ import re
 import sys
 from pathlib import Path
 
-ANCHOR = {105: "Time is discrete", 116: "\\begin{proposition}[Stability with one cohort]",
-          128: "Chapter~\\ref{ch:p1} shows that prices identify", 140: "\\begin{proposition}[Summed response with carried",
-          175: "\\begin{theorem}[Safe radius", 242: "Let $x_t$ be the price displacement", 258: "Add momentum traders",
-          309: "\\begin{theorem}[Summed response in closed form]", 327: "We work in the positive cohort economy",
-          341: "\\begin{example}[An exact ambiguity witness]", 361: "Lags $1$ to $n$", 384: "\\begin{theorem}[Certification cost",
-          441: "A dealer with inventory", 479: "\\begin{theorem}[Robust gain]", 493: "The guard of Lemma",
-          602: "\\begin{proposition}[Uniformly safe guard", 645: "\\begin{theorem}[Decision value of disclosure]",
-          686: "\\subsection{Setup}", 1305: "\\begin{table}[!htbp]", 1377: "\\begin{table}[!tbp]",
-          1766: "\\begin{thebibliography}", 1835: "\\paragraph{Proposition~\\ref{p2:prop:jury}.}",
-          1837: "\\paragraph{Proposition~\\ref{p2:prop:invariance}.}", 1839: "\\paragraph{Proposition~\\ref{p2:prop:inventory_S}.}",
-          1841: "\\paragraph{Theorem~\\ref{p2:thm:radius}.}", 1847: "\\paragraph{Proposition~\\ref{p2:prop:driftguard}.}",
-          1855: "\\paragraph{Theorem~\\ref{p2:thm:window}.}", 1857: "\\paragraph{Theorem~\\ref{p2:thm:certcost}.}",
-          1859: "\\paragraph{Lemma~\\ref{p2:lem:sound}.}", 1861: "\\paragraph{Theorem~\\ref{p2:thm:robustguard}.}",
-          1863: "\\paragraph{Theorem~\\ref{p2:thm:disclosure}.}"}
-END = {112: "\\end{equation}", 122: "\\end{proposition}", 188: "\\end{theorem}", 254: "\\end{definition}",
-       1342: "\\end{table}", 1831: "\\end{thebibliography}"}
+ANCHOR = {105: 'Time is discrete', 116: '\\begin{proposition}[Stability with one cohort]', 128: 'Chapter~\\ref{ch:p1} shows that prices identify', 140: '\\begin{proposition}[Summed response with carried', 175: '\\begin{theorem}[Safe radius', 242: 'Let $x_t$ be the price displacement', 258: 'Add momentum traders', 309: '\\begin{theorem}[Summed response in closed form]', 327: 'We work in the positive cohort economy', 341: '\\begin{example}[An exact ambiguity witness]', 361: 'Lags $1$ to $n$', 384: '\\begin{theorem}[Certification cost', 441: 'A dealer with inventory', 479: '\\begin{theorem}[Robust gain]', 493: 'The guard of Lemma', 602: '\\begin{proposition}[Hidden-state drift', 648: '\\begin{theorem}[Decision value of disclosure]', 689: '\\subsection{Setup}', 1308: '\\begin{table}[!htbp]', 1380: '\\begin{table}[!tbp]', 1769: '\\begin{thebibliography}', 1838: '\\paragraph{Proposition~\\ref{p2:prop:jury}.}', 1840: '\\paragraph{Proposition~\\ref{p2:prop:invariance}.}', 1842: '\\paragraph{Proposition~\\ref{p2:prop:inventory_S}.}', 1849: '\\paragraph{Theorem~\\ref{p2:thm:radius}.}', 1855: '\\paragraph{Proposition~\\ref{p2:prop:driftguard}.}', 1863: '\\paragraph{Theorem~\\ref{p2:thm:window}.}', 1865: '\\paragraph{Theorem~\\ref{p2:thm:certcost}.}', 1867: '\\paragraph{Lemma~\\ref{p2:lem:sound}.}', 1869: '\\paragraph{Theorem~\\ref{p2:thm:robustguard}.}', 1871: '\\paragraph{Theorem~\\ref{p2:thm:disclosure}.}'}
+END = {112: '\\end{equation}', 122: '\\end{proposition}', 188: '\\end{theorem}', 254: '\\end{definition}', 1345: '\\end{table}', 1834: '\\end{thebibliography}'}
 FULL = []
 
 
 def L(a, b):
     """Lines a..b of the full chapter, 1-based inclusive, checked against their anchors."""
     assert FULL[a - 1].startswith(ANCHOR[a]), f"Paper 2 moved: line {a} no longer starts with {ANCHOR[a]!r}"
+    if a == b and FULL[a - 1].startswith("\\paragraph{"):
+        stop = a
+        while stop < len(FULL) and not FULL[stop].startswith(("\\paragraph{", "\\section{")):
+            stop += 1
+        return "\n".join(FULL[a - 1:stop]).rstrip()
     if b in END:
         assert FULL[b - 1].startswith(END[b]), f"Paper 2 moved: line {b} no longer is {END[b]!r}"
     return "\n".join(FULL[a - 1:b])
@@ -70,7 +61,7 @@ def _build(T):
 
     \paragraph{Who controls the risk.} Reversion is a public good: dealers under-provide it, momentum traders over-provide feedback, and the corrective rebate is a function of the guard's own statistic (Proposition~\ref{p2:prop:equil}).
 
-    \paragraph{Evidence.} Twenty-five registered primaries were tested with hashed specifications and test sets opened once; fifteen pass (Table~\ref{p2:tab:alltests}). The deepest book, BTCUSDT, sits on the stable side of the amplification condition and fails a registered forecasting test. In thin books the statistic forecasts the size of the next hour's adverse excursion in every registered forecasting test on Binance, on new symbols and on untouched days, by up to $2.8$ points of $R^2$ beyond a full volatility baseline; about a fifth as much in thin US stocks; negligibly on Bybit; not at all on Coinbase. We have not identified a deeper mechanism: the effect does not run through open-interest liquidations, and it is carried by slow reversion relative to impact, which is what the statistic measures. As a risk control the certified guard lowers tail loss against a static limit but not against a volatility cap at matched exposure.
+    \paragraph{Evidence.} Twenty-five primaries were registered; twenty-four were tested and one was not opened under its fixed sequence; fifteen pass (Table~\ref{p2:tab:alltests}). The deepest book, BTCUSDT, sits on the stable side of the amplification condition and fails a registered forecasting test. In thin books the statistic forecasts the size of the next hour's adverse excursion in every registered forecasting test on Binance, on new symbols and on untouched days, by up to $2.8$ points of $R^2$ beyond a full volatility baseline; about a fifth as much in thin US stocks; negligibly on Bybit; not at all on Coinbase. We have not identified a deeper mechanism: the effect does not run through open-interest liquidations, and it is carried by slow reversion relative to impact, which is what the statistic measures. As a risk control the certified guard lowers tail loss against a static limit but not against a volatility cap at matched exposure.
 
     \paragraph{What we do not claim.} The information-safety theorems concern declared observation contracts (controlled reset experiments, exact windows, audited data), not finite-sample guarantees for observational order-book records. Cohorts are any traders whose demand is a linear filter of past prices; nothing attributes an effect to algorithms rather than people. The forecasting result is reduced-form, and its size depends on the venue.
 
@@ -92,7 +83,7 @@ def _build(T):
     """)
     add(L(175, 188))
     add(r"""
-    For $J_\theta=\begin{psmallmatrix}0.8&\theta\\0&0.4\end{psmallmatrix}$ the spectral radius is $0.8$ throughout, while the price-row gain rises from 1 to 120 as $\theta$ goes from 0 to 100 and the safe radius falls by the same factor. Chapter~\ref{ch:p1} shows more: markets that share their eigenvalues, one-step price variance and stationary price variance can differ arbitrarily in worst-case transient gain, so neither eigenvalue nor volatility monitors bound transient loss. In the cohort economy with nonnegative weights the price response is a nonnegative mixture of decaying exponentials and peaks at the direct impact (Chapter~\ref{ch:p1}, positive-geometry lemma): non-normality is necessary for amplification but not sufficient, and adaptive momentum alone does not supply it. Depth depletion does.
+    For $J_\theta=\begin{psmallmatrix}0.8&\theta\\0&0.4\end{psmallmatrix}$ the spectral radius is $0.8$ throughout, while the price-row gain rises from 1 to 120 as $\theta$ goes from 0 to 100 and the safe radius falls by the same factor. Chapter~\ref{ch:p1} shows more: markets that share their eigenvalues, one-step price variance and stationary price variance can differ arbitrarily in worst-case transient gain, so neither eigenvalue nor volatility monitors bound transient loss. In the cohort economy with nonnegative weights the price response is a nonnegative mixture of decaying exponentials and peaks at the direct impact (Chapter~\ref{ch:p1}, positive-geometry lemma): non-normality is not sufficient for scalar price overshoot, and necessity for Euclidean state-norm growth does not extend to arbitrary input-output responses. In this positive cohort model, momentum alone does not supply overshoot. Depth depletion does.
 
     \section{When does a book amplify? An exact condition}\label{p2:sec:t6}
 
@@ -146,9 +137,9 @@ def _build(T):
 
     \paragraph{Why the peak guard is unsafe in a real book.} At the median BTCUSDT estimates of Section~\ref{p2:sec:evidence}, price impact is persistent ($\hat a\approx0.97$ per minute), so the summed gain over 15 minutes is about 13 times the peak. A guard calibrated to the peak would admit inventory about 13 times larger than is safe against a sustained adversarial flow of the declared size, although that book does not amplify. Persistence alone makes peak-based limits unsafe.
 
-    \paragraph{The guard on a dealer's balance sheet.} The full version carries the guard through maintenance margin, hedging and worst-case fills, and proves forward solvency at every step at which an admissible level exists; when none exists the guard halts new fills and flags the state, because existing inventory can still breach margin. In a matched-shock Monte Carlo inside the model, with every rule calibrated to the same trading capacity, the guard has no forced liquidations against 31.6\% with no control, 31.4\% under a trailing volatility limit and 20.3\% under an inventory cap. With a hidden cohort state the drift of future prices is not identification-invariant under a Euclidean bound, but it is under the natural interval bound on the cohorts' memories:
+    \paragraph{The guard on a dealer's balance sheet.} The full version carries the guard through maintenance margin, hedging and worst-case fills, and proves forward solvency at every step at which an admissible level exists; when none exists the guard halts new fills and flags the state, because existing inventory can still breach margin. In a matched-shock Monte Carlo inside the model, with every rule calibrated to the same trading capacity, the guard has no forced liquidations against 31.6\% with no control, 31.4\% under a trailing volatility limit and 20.3\% under an inventory cap. With a hidden cohort state the drift of future prices is not identification-invariant under a Euclidean bound, whereas the natural interval bound supports the following sufficient invariant box. Cumulative unforced drift still depends on the updating rates:
     """)
-    add(L(602, 621))
+    add(L(602, 624))
     add(r"""
     Re-optimization by the traders does not undo the guard: when a venue throttles admission, filtering cohorts lower their adaptation rates, and in the positive cohort economy every finite-horizon summed response falls with them.
 
@@ -156,13 +147,13 @@ def _build(T):
 
     Chapter~\ref{ch:p1} measures disclosure in samples needed to identify the cohorts. For a pre-trade control the relevant value is the safe trading capacity it unlocks.
     """)
-    add(L(645, 681))
+    add(L(648, 684))
     add(r"""
     \section{Who provides reversion? An equilibrium}\label{p2:sec:equil}
 
     Theorem~\ref{p2:thm:sum} says that transient risk is governed by $S=\tilde\kappa/(m-q\tilde\kappa)$, and its ingredients are chosen by participants: dealers decide how hard to lean against displacements, which sets reversion $m$, and momentum traders how strongly to chase them, which sets $q$.
     """)
-    add(L(686, 712))
+    add(L(689, 715))
     add(r"""
     Across the liquidity terciles of 30 Binance perpetuals the summed response per dollar of flow rises steeply as depth falls (Spearman correlation with log depth $-0.94$), as part (ii) predicts, but the unit-free multiple $S/|h_0|$ is the same in all three terciles (medians $46.4$, $47.3$ and $46.9$): thinner books carry more cumulative risk because their impact is larger, not because they revert more slowly. That is the pattern of part (v), which we added after seeing the comparison, so the match is a consistency check, not a test.
 
@@ -217,7 +208,7 @@ def _build(T):
     \subsection{Every registered test}\label{p2:sec:alltests}
     Of twenty-five registered primaries, fifteen pass, nine fail and one was not tested because the test it depended on failed (Table~\ref{p2:tab:alltests}).
     """)
-    add(L(1305, 1342))
+    add(L(1308, 1345))
     add(r"""
     \paragraph{How to read the passes.} The program was sequential: each registration protected one test from specification search on its own test data, but which test to run next was chosen after the earlier results were known. The passing Binance tests share training days and are not independent replications; they vary one thing at a time (symbols, days, baseline), and the US test shares none of their data. Every feature uses only minutes before the forecast hour, and a scrambling audit leaves every feature unchanged when later data are permuted. The gains are modest on top of a strong baseline, a 15\% increase in the explained variance of the next hour's excursion at most; they are not a new predictor that replaces volatility.
 
@@ -225,7 +216,7 @@ def _build(T):
 
     The theorems of Sections~\ref{p2:sec:infosafety}--\ref{p2:sec:disclosure} concern declared contracts, which market data cannot deliver. They are therefore tested in simulations with a known truth (Table~\ref{p2:tab:simtests}).
     """)
-    add(L(1377, 1405))
+    add(L(1380, 1408))
     add(r"""
     \section{Policy implications}\label{p2:sec:policy}
 
@@ -239,12 +230,12 @@ def _build(T):
     """)
 
     # bibliography: keep the full chapter's environment, filtered below to the keys still cited
-    add(L(1766, 1831))
+    add(L(1769, 1834))
 
     add(r"""
     \section{Appendix: Proofs}\label{p2:app:proofs}
     """)
-    for a in (1835, 1837, 1839, 1841, 1847, 1855, 1857, 1859, 1861, 1863):
+    for a in (1838, 1840, 1842, 1849, 1855, 1863, 1865, 1867, 1869, 1871):
         add(L(a, a))
         add("")
 

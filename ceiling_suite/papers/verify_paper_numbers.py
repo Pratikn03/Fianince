@@ -31,7 +31,7 @@ RECOMP = os.path.join(_H, "recomputed")
 TEX1 = os.path.join(_H, "paper1")
 p22_23 = json.load(open(os.path.join(RECOMP, "R_P2_p22_p23.json")))
 p24_25 = json.load(open(os.path.join(RECOMP, "R_P2_p24_p25.json")))
-p2_step2 = json.load(open(os.path.join(RECOMP, "R_P2_step2_theory.json")))
+p2_step2 = json.load(open(os.path.join(RECOMP, "R_P2_step2_theory_repaired.json")))
 p1_cat = json.load(open(os.path.join(RECOMP, "R_P1_cat_disclosure_dollars.json")))
 p1_lrn = json.load(open(os.path.join(RECOMP, "R_P1_learners.json")))
 p1_oos = json.load(open(os.path.join(RECOMP, "R_P1_disclosure_oos.json")))
@@ -126,8 +126,8 @@ for lab, key, val in [("P18 part9 real-placebo", "+2.74", pts(p18["part9_thin"][
 t_p2_th = open(os.path.join(TEX, "p2_theory1.tex")).read() + open(os.path.join(TEX, "p2_guard.tex")).read()
 for lab, key, val in [("P2 inventory S_with_inv", "2.5000", p2_step2["inventory_proposition"]["worked_example"]["S_with_inventory_closed"]),
                       ("P2 inventory S_no_inv", "2.7778", p2_step2["inventory_proposition"]["worked_example"]["S_no_inventory"]),
-                      ("P2 drift alpha_drift", "0.24", p2_step2["drift_guard_proposition"]["alpha_drift"]),
-                      ("P2 drift cap cost", "0.06", p2_step2["drift_guard_proposition"]["capacity_cost_closed_form"])]:
+                      ("P2 repaired box admission", "0.3000", p2_step2["drift_guard_proposition"]["alpha_box"]),
+                      ("P2 calibration reduction", "0.0000", p2_step2["drift_guard_proposition"]["calibration_capacity_reduction"])]:
     ok = abs(float(key) - val) < 0.001 and key in t_p2_th; checked += 1; bad += not ok
     print(f"{'OK ' if ok else 'BAD'} {lab:26s} printed {key} json {val:.4f}")
 

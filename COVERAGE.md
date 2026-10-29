@@ -1,3 +1,5 @@
+> **29 October source-revision boundary:** this table predates the economic-review corrections. In particular, revised `prop:driftguard`, the sufficiency scope of `thm:forward`, and other changed statements do not inherit full formalization from their labels. The committed receipt records 520 named theorems and incomplete full-manuscript coverage; no new Lean rebuild or proof of these revisions is claimed. See [the current audit ledger](studies/economic_review_20261029/CLAIM_LEDGER.csv).
+
 # Lean 4 Formalization Coverage Matrix (`COVERAGE.md`)
 
 This document provides an explicit, item-by-item audit of what is formalized in the repository's Lean 4 projects and how each Lean declaration relates to the mathematical statements in the October 2026 manuscripts (**Paper 1**: `ceiling_suite/paper1/` and **Paper 2**: `ceiling_suite/paper2/`).
