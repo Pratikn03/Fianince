@@ -16,18 +16,14 @@
   saved configuration for the exact study-specific sizes.
 * Notebook schema and all Python cells were checked. Every code cell executed
   in local validation mode, including tests, simulations, plots and ZIP export.
-  The hosted Google Colab service was not exercised. A separate Jupyter-kernel
+  This local check did not exercise the hosted Google Colab service; the later author-returned run is documented below. A separate Jupyter-kernel
   startup was blocked by this environment's socket restrictions; cell execution
   was therefore checked directly in a shared Python namespace.
 * Optional real-data code was tested with synthetic CSV fixtures, including
   future-feature invariance and invalid timestamp rejection. No new public-data
   result, causal identification, GPU result or prospective study is claimed.
-* Working Paper 1, Working Paper 2 and the synthesis compile in three LaTeX
-  passes with no undefined references or overfull boxes in the tested builds.
-  The thesis compiles with no undefined references; seven layout overflow
-  warnings remain in inherited long formulas/tables/URLs. Compiled PDFs were
-  build-check intermediates. Committed older PDFs remain labeled snapshots;
-  revised TeX sources are authoritative in this branch.
+* Updated PDF delivery: all six working/journal/synthesis/thesis variants were rebuilt from the corrected sources. Oversized result-map tables, the all-tests table, the forest figure and long thesis formulas were repaired. The delivered builds have no undefined references, overfull boxes or oversized-float warnings.
+* The author returned a completed full notebook archive from the pinned published source. Ten exported-file hashes and four analytical source modules were verified. E1/E2/E3/E4/E6 completed; no CSV was supplied and E5/E7 were not run. A development appendix in the PDFs reports the outcomes as a same-code seeded execution reproduction, not independent scientific validation. See `results/colab_return_20261029/verification.json`.
 * The name-mapping audit now reports **54 of 57** formal environments with
   existing mappings, **3 unmapped**, and **7 revised** statements requiring
   semantic review. Default exit success means the audit was generated. The

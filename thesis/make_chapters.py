@@ -34,6 +34,8 @@ def prefix_cites(tex, p):
 
 def chapterize(src, prefix, chap_label, title, preface, figdir, companion_key, other_label, replacements):
     s = open(src).read()
+    # The thesis carries one common development appendix, not duplicate paper notes.
+    s = re.sub(r"% BEGIN ECONOMIC REVIEW 20261029.*?% END ECONOMIC REVIEW 20261029", "", s, flags=re.S)
     body = s[s.index("\\begin{document}") + len("\\begin{document}"):s.rindex("\\end{document}")]
     abstract = body[body.index("\\begin{abstract}") + len("\\begin{abstract}"):body.index("\\end{abstract}")]
     abstract = abstract.replace("\\noindent", "").strip()
@@ -129,10 +131,10 @@ def main():
                      "Auditable memory and identification limits", pre1, "p1figs", "niroula2026b", "ch:p2", rep1)
     ch4 = chapterize(os.path.join(REPO, "paper2", "paper2.tex"), "p2:", "ch:p2",
                      "Safety without identification: transient amplification and a maximal pre-trade guard", pre2, "p2figs", "niroula2026", "ch:p1", rep2)
-    open(os.path.join(HERE, "ch2_paper1.tex"), "w").write(condense_ch2(ch3))
+    open(os.path.join(HERE, "ch2_paper1.tex"), "w").write(condense_ch2(ch3).rstrip() + "\n")
     # Paper 2 enters the thesis condensed: the full chapter is kept (not compiled) and condense_ch3.py builds
     # ch3_paper2.tex from it, copying theorems, proofs and tables verbatim and replacing the rest by shorter text.
-    open(os.path.join(HERE, "ch3_paper2_full.tex"), "w").write(ch4)
+    open(os.path.join(HERE, "ch3_paper2_full.tex"), "w").write(ch4.rstrip() + "\n")
     import condense_ch3
     condense_ch3.main(HERE)
     for name, t in (("paper1", ch3), ("paper2", ch4)):

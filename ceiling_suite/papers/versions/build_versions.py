@@ -99,8 +99,8 @@ mv("\\subsection{A certified guard}\\label{sec:certguard}", "\\subsection{Octobe
 mv("\\subsection{Balance-sheet solvency}", "\\section{The value of disclosure for safe trading}", "Balance-sheet solvency",
    "\\subsection{Balance-sheet solvency}\nThe Internet Appendix embeds the guard in a dealer's balance sheet with maintenance margin, hedging cost, worst-case passive fills and a safety reserve (Theorem~\\ref{thm:forward}), and states when an eigenvalue rule admits a level that this solvency certificate does not cover (Proposition~\\ref{prop:dominance}) and when re-optimizing learners reinforce the guard (Proposition~\\ref{prop:lucas}).\n\n")
 # map of results (unreferenced full-page float) to the Internet Appendix
-_mp0 = front.index("\\begin{table}[p]\\centering\\footnotesize\n\\begin{threeparttable}\n\\caption{Map of results}")
-_mp1 = front.index("\\end{table}", _mp0) + len("\\end{table}")
+_mp0 = front.index("{\\footnotesize\\singlespacing\n\\begin{longtable}")
+_mp1 = front.index("% End result map", _mp0) + len("% End result map")
 ia_extra = "\\section{Map of results}\n" + front[_mp0:_mp1] + "\n" + ia_extra
 front = front[:_mp0] + front[_mp1:]
 body = body.replace("\\FloatBarrier\n\\section{Tests of the information-safety results}", "\\section{Tests of the information-safety results}", 1)
@@ -119,7 +119,8 @@ mv("\\subsection{Three analyses specified in advance, not deposited (Parts 19--2
    "\\subsection{Pre-registered test of the liquidation mechanism (Part 22)}\\label{sec:p22}",
    "Analyses specified in advance, not deposited (Parts 19--21)",
    "\\subsection{Three analyses specified in advance, not deposited (Parts 19--21)}\\label{sec:p1921}\nThree further analyses were specified in an earlier draft before their data were downloaded but were not hash-registered; the Internet Appendix reports their full tables (Tables~\\ref{tab:p19}--\\ref{tab:p21}). In Part 19 (19 thin symbols on the 8th of each month), Primary 1---the interaction of $\\hat C_3$ with high open-interest-to-depth leverage (${\\rm LEV}\\ge16.77$)---fails ($-0.18$~bp, 95\\% CI $[-3.02,+3.73]$); post hoc, $\\hat C_3$ already contains $\\hat\\kappa$, so high-${\\rm LEV}$ hours have larger variance in $\\hat C_3$ ($\\Delta R^2=+8.172$ vs.\\ $+3.678$ points; difference $+4.495$ points, 95\\% CI $[-1.094,+11.663]$), while the matched spot gain is $15.2\\%$ of the perpetual gain ($+0.987$ vs.\\ $+6.495$ points, Clark--West $t=4.96$, ratio 95\\% CI $[-0.015,+0.308]$, exploratory). In Part 20 (BTCUSDT spot zero-fee introduction and removal), the primary reversion ($\\hat m=-0.00120$, $p=0.590$, 80\\% MDE $31.9\\%$) and gain-multiple ($\\widehat{S/\\tilde\\kappa}=-26.88$, $p=0.362$, MDE $52.0\\%$) hypotheses are not supported, while spot impact falls $18.3\\%$ ($\\hat\\kappa=-0.2432$, $t=-3.86$, $p=0.0002$, exploratory, single treated pair; $+0.0082$, $p=0.887$ when pooling a third VIP maker-fee date), consistent with Proposition~\\ref{prop:equil}(v). In Part 21, the guard alone lowers hourly $\\mathrm{ES}_{95}$ per \\$1M of position by \\$3{,}045 ($p=0.0025$) and \\$10{,}518 ($p=0.004$) against a static limit, while adding it to a volatility cap lowers $\\mathrm{ES}_{95}$ by \\$398 ($p=0.196$) and \\$2{,}557 ($p=0.036$, Holm $p=0.07$), neither significant.\n\n")
-_f0 = body.index("\\begin{figure}[p]\\centering\n\\includegraphics[height=0.62\\textheight]{figs/fig_forest.pdf}") if "height=0.62" in body else body.index("\\begin{figure}[p]\\centering\n\\includegraphics[width=0.78\\textwidth]{figs/fig_forest.pdf}")
+_f_label = body.index("\\label{fig:forest}")
+_f0 = body.rfind("\\begin{figure}", 0, _f_label)
 _f1 = body.index("\\end{figure}", _f0) + len("\\end{figure}")
 ia_extra += "\\section{Every out-of-sample forecasting evaluation}\n" + body[_f0:_f1].replace("width=0.78\\textwidth]{figs/fig_forest", "height=0.6\\textheight,width=0.95\\textwidth,keepaspectratio]{figs/fig_forest").replace("height=0.62\\textheight", "height=0.58\\textheight") + "\n"
 body = body[:_f0] + body[_f1:]
@@ -173,13 +174,7 @@ for tlab, tsec in [
     body = body[:_t0] + body[_t1:]
     body = body.replace("Table~\\ref{" + tlab + "}", "Internet Appendix Table~\\ref{" + tlab + "}")
 # layout fixes (Oct 22): the map of results runs over several pages, the all-tests table must fit one page
-_mo = ia_extra.index("\\begin{table}[p]\\centering\\footnotesize\n\\begin{threeparttable}\n\\caption{Map of results}\\label{tab:map}\n\\begin{tabular}{p{0.34\\textwidth}p{0.38\\textwidth}p{0.16\\textwidth}}")
-_mc = ia_extra.index("\\end{tabular}\n\\end{threeparttable}\n\\end{table}", _mo) + len("\\end{tabular}\n\\end{threeparttable}\n\\end{table}")
-_mb = ia_extra[_mo:_mc]
-_mb = _mb.replace("\\begin{table}[p]\\centering\\footnotesize\n\\begin{threeparttable}\n\\caption{Map of results}\\label{tab:map}\n\\begin{tabular}{p{0.34\\textwidth}p{0.38\\textwidth}p{0.16\\textwidth}}",
-                  "{\\footnotesize\\begin{longtable}{p{0.34\\textwidth}p{0.38\\textwidth}p{0.16\\textwidth}}\n\\caption{Map of results}\\label{tab:map}\\\\")
-_mb = _mb.replace("\\end{tabular}\n\\end{threeparttable}\n\\end{table}", "\\end{longtable}}")
-ia_extra = ia_extra[:_mo] + _mb + ia_extra[_mc:]
+# The canonical result map is already a page-breaking longtable.
 body = body.replace("\\begin{table}[!htbp]\\centering\\footnotesize\n\\begin{threeparttable}\n\\caption{All pre-registered tests}", "\\begin{table}[!htbp]\\centering\\scriptsize\\renewcommand{\\arraystretch}{0.78}\n\\begin{threeparttable}\n\\caption{All pre-registered tests}", 1)
 # proofs and notation to the Internet Appendix
 _p0 = app_main.index("\\section{Proofs}\\label{app:proofs}")

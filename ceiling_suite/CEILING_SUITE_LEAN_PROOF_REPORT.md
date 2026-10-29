@@ -21,7 +21,7 @@
 | 7 | `proposition` | `prop:disclosure` | Exact financial disclosure changes the experiment | `p1_ident.tex:114` | `CurrentMM.p1_prop_disclosure_third_mark` (L221) | `MachineMarkets.p1_prop_disclosure_changes_experiment` (L66) |
 | 8 | `lemma` | `thm:capital` | Time-domain Toeplitz coercivity: capital order for funded probes | `p1_ident.tex:122` | `CurrentMM.p1_thm_capital_funded_probes` (L235) | `MachineMarkets.p1_thm_capital_order` (L74) |
 | 9 | `proposition` | `prop:primitives` | Identification in economic primitives | `p1_ident.tex:150` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 10 | `proposition` | `prop:tied` | Intensity tied to information quality | `p1_ident.tex:164` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 10 | `proposition` | `prop:tied` | Intensity tied to information quality | `p1_ident.tex:168` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
 | 11 | `proposition` | `prop:tri` | Tri-region partition and finite-session resolution floor | `p1_account.tex:15` | `CurrentMM.p1_prop_tri_region_partition` (L285) | `MachineMarkets.p1_prop_tri_region_floor` (L93) |
 | 12 | `theorem` | `thm:spectral` | Spectral dissipation lower bound | `p1_account.tex:67` | `CurrentMM.p1_thm_spectral_dissipation_bound` (L299) | `MachineMarkets.p1_thm_spectral_dissipation` (L99) |
 | 13 | `theorem` | `thm:adaptive` | Adaptive and sequential probing | `p1_account.tex:94` | `CurrentMM.p1_thm_adaptive_sequential_bound` (L319) | `MachineMarkets.p1_thm_adaptive_sequential` (L107) |

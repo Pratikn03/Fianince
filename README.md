@@ -3,7 +3,7 @@
 [![CI](https://github.com/Pratikn03/Fianince/actions/workflows/ci.yml/badge.svg)](https://github.com/Pratikn03/Fianince/actions/workflows/ci.yml)
 [![Lean 4](https://img.shields.io/badge/Lean_4-recorded_receipt-blue.svg)](research_extension/current_manuscript_lean_20261008/formal_verification_receipt.json)
 
-> **29 October review branch:** supported source corrections and exploratory experiments are documented in [the research plan](studies/economic_review_20261029/RESEARCH_PLAN.md). Start with [the Colab notebook](studies/economic_review_20261029/Economic_Review_Experiments.ipynb). The current modular sources are `ceiling_suite/papers/paper1/` and `ceiling_suite/papers/paper2/`; historical PDFs and registered results are snapshots, not evidence for revised statements.
+> **29 October review branch:** supported source corrections and exploratory experiments are documented in [the research plan](studies/economic_review_20261029/RESEARCH_PLAN.md). Start with [the Colab notebook](studies/economic_review_20261029/Economic_Review_Experiments.ipynb). The current modular sources are `ceiling_suite/papers/paper1/` and `ceiling_suite/papers/paper2/`; the six current PDFs are rebuilt for the 29 October development revision, including the checked author-returned experiment record. Historical registered results remain unchanged.
 >
 > **Formalization boundary:** the committed 25 October receipt records 520 named theorems and explicitly reports `full_manuscript_formalization_complete: false`. It is a historical build receipt, not an independent rebuild in this branch. Existing name mappings do not establish semantic coverage of revised propositions. See [COVERAGE.md](COVERAGE.md) and the new [claim ledger](studies/economic_review_20261029/CLAIM_LEDGER.csv) for their distinct purposes.
 
@@ -14,13 +14,13 @@
 This repository contains the LaTeX sources, replication code, pre-registered notebooks, and Lean 4 formalizations for two companion working papers:
 
 1. **Paper 1 — *Auditable Memory and Financial Identification Limits in Electronic Limit Order Books***  
-   - **Working Paper PDF**: [`ceiling_suite/paper1/paper1.pdf`](ceiling_suite/paper1/paper1.pdf) (80 pp., with appendices)  
-   - ***Quantitative Economics* submission format**: [`ceiling_suite/papers/versions/Paper1_QE.pdf`](ceiling_suite/papers/versions/Paper1_QE.pdf) (89 pp., with supplement)  
+   - **Working Paper PDF**: [`ceiling_suite/paper1/paper1.pdf`](ceiling_suite/paper1/paper1.pdf) (99 pp., with appendices)  
+   - ***Quantitative Economics* submission format**: [`ceiling_suite/papers/versions/Paper1_QE.pdf`](ceiling_suite/papers/versions/Paper1_QE.pdf) (83 pp., with supplement)  
    - **Core Contribution**: Establishes what an observer can and cannot learn about hidden adaptive trading cohorts from price and order-flow records, including merged rate-weight equivalence, minimax $(\Delta\eta)^{-(4K-2)}$ cohort-separation sample complexity, spectral dissipation lower bounds, and finite-window abstention limits.
 
 2. **Paper 2 — *From Human Markets to Machine Markets: Transient Amplification, an Exact Depth Condition, and a Maximal Pre-Trade Guard*** (Niroula, Alkhushayni, Chen, Bhavsar and Niroula)  
-   - **Working Paper PDF**: [`ceiling_suite/paper2/paper2.pdf`](ceiling_suite/paper2/paper2.pdf) (114 pp., with appendices)  
-   - ***Journal of Finance* submission format**: [`ceiling_suite/papers/versions/Paper2_JF.pdf`](ceiling_suite/papers/versions/Paper2_JF.pdf) (106 pp.: 60-page main text, Internet Appendix from p. IA-1)  
+   - **Working Paper PDF**: [`ceiling_suite/paper2/paper2.pdf`](ceiling_suite/paper2/paper2.pdf) (133 pp., with appendices)  
+   - ***Journal of Finance* submission format**: [`ceiling_suite/papers/versions/Paper2_JF.pdf`](ceiling_suite/papers/versions/Paper2_JF.pdf) (116 pp., including the Internet Appendix)  
    - **Core Contribution**: Connects closed-loop limit-order-book feedback and partial identification to financial safety:
      - **Transient Amplification (Sections 3–4)**: Non-normal Kreiss bounds, the peak-overshoot theorem (depletion versus momentum, with the confluent peak lag), and the closed-form summed response $S = \tilde\kappa / (m - q\tilde\kappa)$.
      - **Information Limits for Safety (Section 5)**: Constructive two-market ambiguity witness (`ex:witness`), total-variation capacity-loss bound (`prop:twoworld`), Markov–Krein finite-window bounds and unboundedness without a memory bound (`thm:window`), and parametric-rate safety certification $N = O(\sigma^2\epsilon^{-2}\log(1/\epsilon))$ (`thm:certcost`).
@@ -38,7 +38,7 @@ This repository contains the LaTeX sources, replication code, pre-registered not
 │   ├── paper1/                                     # Paper 1 modular LaTeX sources & paper1.pdf
 │   ├── paper2/                                     # Paper 2 modular LaTeX sources & paper2.pdf
 │   ├── papers/
-│   │   ├── versions/                               # Paper1_QE.pdf (89 pp.) & Paper2_JF.pdf (106 pp.)
+│   │   ├── versions/                               # Paper1_QE.pdf (83 pp.) & Paper2_JF.pdf (116 pp.)
 │   │   ├── hardening/                              # Numerical checks behind the October 2026 theorem hardening
 │   │   └── research_extension/information_safety/  # Python verification & simulation suite for Sections 5–7 (T01–T15)
 │   ├── Part15_InfoSafety_Untouched.ipynb           # Pre-registered Part 15 untouched-days empirical notebook
