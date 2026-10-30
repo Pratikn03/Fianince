@@ -31,8 +31,10 @@ if __name__ == "__main__":
     out = {}
     for rc in [0.95, 0.99]:
         rows = []
-        for D in [0.002, 0.004, 0.008, 0.016, 0.032]:
+        # memory rates must stay inside (0, 1): drop spacings that would push rc + D/2 to 1 or above
+        for D in [x for x in [0.002, 0.004, 0.008, 0.016, 0.032] if rc + x / 2 < 1]:
             r = np.array([rc - D / 2, rc + D / 2])
+            assert 0 < r.min() and r.max() < 1
             w = np.array([0.5, 0.5])
             Np, Nt, ratio = compute_days(w, r, D, L=L, sig=sig)
             rows.append({"Delta": D, "N_price_days": Np, "N_tagged_days": Nt, "ratio": ratio})

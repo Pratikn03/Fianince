@@ -126,3 +126,12 @@ rates, learning-rule robustness, spectral blind spot and feedback measurement mo
 - **Phase 10.** Reproducibility paragraph now states the proofs are not independently reviewed or formally
   verified and that numerical checks are same-code reproductions. No Lean claims in Paper 1.
 - **Phase 11.** `review/internal_referee_report.md`. **Phases 12–13.** `review/submission_package.md`.
+
+## 7. Response to the targeted SSRN review (30 October, afternoon)
+| Finding | Change |
+|---|---|
+| Monetary lower bound applies only to the probing experiment | Abstract, introduction, CAT section, policy section and conclusion now say the dollar figures are lower bounds for an observer who learns by trading; a passive observer pays in time (Theorem `prop:passive`), and no figure is a social cost. |
+| Abstract overcompressed `thm:discvalue` | Abstract, introduction, results map, comparison table, policy section and conclusion now give both savings: (Δη)^−(4K−2) at fixed accuracy (tagging removes the spacing dependence) and (Δη)^−(4K−4) for resolving rates to a fraction of their spacing. |
+| Passive-testing proof relied on an asymptotic step | Statement now specifies i.i.d. Gaussian innovations with known variance and no observation noise. Proof replaced `KL_T = TD + O(1)` by a nonasymptotic Toeplitz bound `KL_T ≤ C T ε²` with C independent of T and of the separation (spectra bounded above and away from zero on the compact stable family). Lower bounds now hold for every T, uniformly as the separation shrinks. Attainment by the likelihood-ratio test is stated as pointwise (Stein's lemma), not uniform. |
+| Empirical persistence vs learning memory | CFTC and Binance tables and text now say "fitted persistence of class positions"; added that aggregated-position persistence also reflects turnover and class membership; abstract now carries the near-unit-root correction and the failed return forecasts. |
+| Grid with memory rate 1.006 | `theory/disclosure_value.py` (and `scripts/` copy): at r_c = 0.99 the spacing 0.032 put a rate at 1.006. Grid now drops spacings with r_c + Δ/2 ≥ 1 and asserts rates in (0,1). Rerun: r_c = 0.95 results used in the paper unchanged (slopes −6.08, −4.34; ratios 333, 19); r_c = 0.99 price slope now −6.13 (was −5.76). |
