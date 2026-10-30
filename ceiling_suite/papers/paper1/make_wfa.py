@@ -23,15 +23,44 @@ core = re.sub(r"\\bibitem\[Niroula et~al\.\(2026\)\]\{niroula2026b\}.*?\n",
               "pre-trade guards in closed-loop markets. Working paper, withheld for anonymous review.\n", core, count=1)
 core = core.replace("The historical simulation results retain their original execution records; this revision reruns the "
                     "named advanced experiment only. ", "")
-# Section 10 (measuring reduced-form feedback indices) is secondary to the paper's question: move it, unchanged, to the
-# appendix just before the reproducibility map, so the main text ends with policy and the conclusion.
-s10 = "\\section{Empirical feedback and its measurement}"
-s11 = "\\section{Implications for supervision and market design}"
+# Focus the main text on the paper's question (what prices reveal, what disclosure buys, in money and in data).
+# Supporting material moves, unchanged and with its labels, to the internet appendix before the reproducibility map.
+MOVES = [  # (heading that starts the block, heading that ends it, appendix title)
+    ("\\section{Account-level capital}", "\\section{Unknown mixtures and passive data}", "Account-level capital"),
+    ("\\subsection{Near-colliding rates: a uniform rate for the merged measure}", "\\subsection{General memory: the minimax rate is logarithmic}",
+     "Near-colliding rates: a uniform rate for the merged measure"),
+    ("\\section{Robustness to nonlinear and adaptive trading rules}", "\\section{What disclosure buys}", "Robustness to nonlinear and adaptive trading rules"),
+    ("\\section{A spectral blind spot}", "\\section{Empirical feedback and its measurement}", "A spectral blind spot"),
+    ("\\section{Empirical feedback and its measurement}", "\\section{Implications for supervision and market design}", "Empirical feedback and its measurement"),
+]
 repro = "\\section{Reproducibility: source of every number}"
-i, j = core.index(s10), core.index(s11)
-sec10 = core[i:j]
-core = core[:i] + core[j:]
-core = core.replace(repro, sec10.replace(s10, "\\section{Internet appendix: empirical feedback and its measurement}") + repro, 1)
+moved = []
+for start, stop, title in MOVES:
+    i, j = core.index(start), core.index(stop)
+    block = core[i:j]
+    core = core[:i] + core[j:]
+    head = block[:block.index("}") + 1]
+    body = block[len(head):]
+    if head.startswith("\\subsection"):                     # a moved subsection becomes an appendix section;
+        body = body.replace("\\subsubsection{", "\\subsection{")  # (none present, kept for safety)
+    moved.append("\\section{Internet appendix: " + title + "}" + body)
+core = core.replace(repro, "".join(moved) + repro, 1)
+# References to moved material say "Appendix", not "Section".
+for lab in ("sec:account", "sec:dollars", "sec:uniform", "sec:learners", "sec:blind", "sec:empirics"):
+    core = core.replace("Section~\\ref{" + lab + "}", "Appendix~\\ref{" + lab + "}")
+    core = core.replace("Sections~\\ref{" + lab + "}", "Appendices~\\ref{" + lab + "}")
+# No table of contents in a submission; an outline that matches the submission's own order.
+core = core.replace("\\setcounter{page}{1}\n\\tableofcontents\n\\newpage\n", "\\setcounter{page}{1}\n", 1)
+o1, o2 = core.index("\\subsection{Outline}"), core.index("\\section{Model and microfoundations}")
+core = core[:o1] + ("\\subsection{Outline}\n"
+    "Section~\\ref{sec:model} sets out the model and Section~\\ref{sec:ident} the identification boundary. "
+    "Section~\\ref{sec:resources} turns memory resolution into executed quantity, capital and money for a known pair, and "
+    "Section~\\ref{sec:mixtures} treats unknown mixtures, general memory and passive data. Section~\\ref{sec:disclosure} "
+    "states what disclosure buys, prices it against the Consolidated Audit Trail, and tests it on the CFTC's mandated "
+    "trader-class reports and on Binance's class ratios. Section~\\ref{sec:policy} draws the implications for "
+    "supervision and Section~\\ref{sec:conclusion} concludes. Proofs are in Appendix~\\ref{app:proofs}; the internet "
+    "appendix contains account-level capital, near-colliding rates, robustness to learning rules, the spectral blind spot "
+    "and the measurement of reduced-form feedback, and Appendix~\\ref{app:repro} maps every number to its source.\n\n") + core[o2:]
 out = core.rstrip() + "\n\n\\end{document}\n"
 for word in ("Niroula", "Pratik", "Prashant", "Mankato", "Tribhuvan", "mnsu", "Pratikn03", "fianince"):
     assert word.lower() not in out.lower().replace("niroula2026b", ""), f"identifying text left: {word}"
