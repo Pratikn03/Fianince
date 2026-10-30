@@ -23,6 +23,15 @@ core = re.sub(r"\\bibitem\[Niroula et~al\.\(2026\)\]\{niroula2026b\}.*?\n",
               "pre-trade guards in closed-loop markets. Working paper, withheld for anonymous review.\n", core, count=1)
 core = core.replace("The historical simulation results retain their original execution records; this revision reruns the "
                     "named advanced experiment only. ", "")
+# Section 10 (measuring reduced-form feedback indices) is secondary to the paper's question: move it, unchanged, to the
+# appendix just before the reproducibility map, so the main text ends with policy and the conclusion.
+s10 = "\\section{Empirical feedback and its measurement}"
+s11 = "\\section{Implications for supervision and market design}"
+repro = "\\section{Reproducibility: source of every number}"
+i, j = core.index(s10), core.index(s11)
+sec10 = core[i:j]
+core = core[:i] + core[j:]
+core = core.replace(repro, sec10.replace(s10, "\\section{Internet appendix: empirical feedback and its measurement}") + repro, 1)
 out = core.rstrip() + "\n\n\\end{document}\n"
 for word in ("Niroula", "Pratik", "Prashant", "Mankato", "Tribhuvan", "mnsu", "Pratikn03", "fianince"):
     assert word.lower() not in out.lower().replace("niroula2026b", ""), f"identifying text left: {word}"
