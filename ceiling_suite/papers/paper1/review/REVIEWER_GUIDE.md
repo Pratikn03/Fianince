@@ -91,3 +91,13 @@ repository; offer it.
 - Do not ask them to re-run the code; offer the repository instead.
 - Do not present the AI review as independent review in the paper, the cover letter or to the professors.
 - Do not list reviewers as authors, or authors as independent reviewers.
+
+## Part 4. Open items from the AI review, for the team
+
+| Item | Who | What to do |
+|---|---|---|
+| `prop:primitives`(ii) | Area A/C readers | Check whether the Wasserstein bound transfers to the intensity-weighted distribution or only to the merged-weight one; narrow the statement if only the latter |
+| Rounding and range mismatches | Pratik | 99,192 vs 99,193 and 149,901 vs 149,902 (CAT vs capital tables), 193.62 vs 193.63, max trade 1.24 vs 1.25; "0.64–0.92" (five-symbol subset) vs the registered range 0.65–0.99 — check against the result JSON files and make the text match |
+| Editorial leftovers | AI on request | stray commas after removed file names; "Part 13" references to material outside the paper |
+| Modelling wording | Sujan | the inventory term in the microfoundation remark; "tabular Q-learning has the same form"; the Δη > 1 region in the disclosure-choice proposition |
+| Novelty after the new citations | outside statistics reviewer | with Wu–Yang, Rebafka–Roueff, Shahram–Milanfar, Castelli–Cover and Katz–Diab–Batenkov now cited, is what remains (closed-loop extraction, passive Whittle bound for K clustered modes, sample-to-capital conversion, value of class records) enough for a journal contribution? |
