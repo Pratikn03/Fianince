@@ -296,7 +296,9 @@ if (ROOT / 'evidence/B2_results.json').exists():
     _b2x = _ilu0.module_from_spec(_spec2); _spec2.loader.exec_module(_b2x)
     assert _b2x.numbers_tex(b2r) == (ROOT / 'checks/B2_extra.tex').read_text(), 'B2 extra macros differ from the result file'
     _ai = (ROOT / 'ch4b_aiagents.tex').read_text()
-    assert '\\input{checks/B2_numbers}' in _ai and '\\input{checks/B2_extra}' in _ai and 'pending' not in _ai.split('sec:ai_b2')[1].split('sec:ai_limits')[0]
+    _inputs = _ai + (ROOT / 'thesis.tex').read_text()
+    assert '\\input{checks/B2_numbers}' in _inputs and '\\input{checks/B2_extra}' in _inputs
+    assert 'pending' not in _ai.split('sec:ai_b2')[1].split('sec:ai_limits')[0]
 else:
     assert b2c['opens'] == 0
 print('Test B2: registration and results reproduce from their files: PASS')
