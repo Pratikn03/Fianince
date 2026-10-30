@@ -61,6 +61,26 @@ core = core[:o1] + ("\\subsection{Outline}\n"
     "supervision and Section~\\ref{sec:conclusion} concludes. Proofs are in Appendix~\\ref{app:proofs}; the internet "
     "appendix contains account-level capital, near-colliding rates, robustness to learning rules, the spectral blind spot "
     "and the measurement of reduced-form feedback, and Appendix~\\ref{app:repro} maps every number to its source.\n\n") + core[o2:]
+# Hygiene for a submission: no internal tags, script names or hashes outside the reproducibility appendix
+# (Appendix "Reproducibility: source of every number" keeps the full map from each number to its script).
+core = core.replace("\\newcommand{\\lab}[1]{\\textsc{[#1]}}", "\\newcommand{\\lab}[1]{}")
+cut = core.index("\\section{Reproducibility: source of every number}")
+head, tail = core[:cut], core[cut:]
+TT = r"\\texttt\{(?:[^{}]|\{[^{}]*\})*?\}"
+head = re.sub(r"\s*Kind: [^\n]*?(?=\\end\{tablenotes\})", "", head)                      # 'Kind: recomputed (...)' table notes
+head = re.sub(r"\s*\(" + TT + r"(?:\s*(?:and|,|\$\\to\$)\s*" + TT + r")*\)", "", head)    # (script.py) parentheticals
+head = re.sub(r";\s*" + TT + r"(?:\s*\$\\to\$\s*" + TT + r")?\)", ")", head)              # '...; script.py)'
+head = re.sub(r"\s*From " + TT + r"(?:\s*and\s*" + TT + r")*;\s*", " ", head)                 # 'From a.py and b.py; '
+head = re.sub(r"\s*Recomputed columns from " + TT + r"\.?", "", head)
+head = re.sub(r"Estimators re-implemented in " + TT + r":\s*", "Estimators: ", head)
+head = re.sub(r"\s*\((?:registered,\s*)?SHA-256 " + TT + r"\)", "", head)                  # (SHA-256 abc...)
+head = re.sub(r"[,;]?\s*[Ss]pecification SHA-256 " + TT + r"[;,.]?", "", head)
+head = re.sub(r"\s*SHA-256 " + TT, "", head)
+core = head + tail
+left = [m.group(0)[:90] for m in re.finditer(r"[^\n]{0,40}(\.py\b|SHA-256)[^\n]{0,40}", head)]
+print("script/hash mentions left outside the reproducibility appendix:", len(left))
+for l in left[:12]:
+    print("   ", l)
 out = core.rstrip() + "\n\n\\end{document}\n"
 for word in ("Niroula", "Pratik", "Prashant", "Mankato", "Tribhuvan", "mnsu", "Pratikn03", "fianince"):
     assert word.lower() not in out.lower().replace("niroula2026b", ""), f"identifying text left: {word}"
