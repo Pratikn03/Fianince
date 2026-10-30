@@ -91,6 +91,15 @@ if ARGS.ssrn:
         fhc = fhc.replace(old, new)
     fhc = fhc.replace("fhc:waarde", "vanwaarde2020").replace("fhc:heinrich", "heinrich2018")
     moved.append(fhc)
+    # its sources go into the reproducibility map (first longtable after the map heading)
+    fhc_rows = (r"Finite-horizon decision appendix: primary decisions, cost--horizon sensitivities (819 rows), hard-pair "
+                r"requirements, assumption failures, cash-flow audit & \texttt{studies/finite\_horizon\_costs\_20261029/run.py} "
+                r"$\to$ \texttt{results/final\_full\_20261030/} & recomputed\\" + "\n"
+                r"Finite-horizon appendix: independent checks and LP cross-check & "
+                r"\texttt{studies/finite\_horizon\_costs\_20261029/validation/} & audit\\" + "\n")
+    r0 = core.index("\\section{Reproducibility: source of every number}")
+    r1 = core.index("\\end{longtable}", r0)
+    core = core[:r1] + fhc_rows + core[r1:]
     extra = (
         "\\bibitem[Blackwell(1953)]{fhc:blackwell} Blackwell, D. (1953). Equivalent comparisons of experiments. "
         "\\emph{Annals of Mathematical Statistics} 24, 265--272.\n"
