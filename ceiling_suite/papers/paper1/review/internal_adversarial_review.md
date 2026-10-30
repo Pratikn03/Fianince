@@ -107,3 +107,37 @@ Recommendation: major revision; score 7.8 as a foundational paper. Each point wa
 extraction "genuinely new", which this paper itself now says is a smooth invertible map that decides the method,
 not the rate; and it judged novelty "sufficient" without checking the literature beyond the references given.
 Treat its 7.8 as optimistic.
+
+## Two independent referee reports (30 Oct 2026): dispositions
+
+Report A (4/10, reject) and Report B (5.5/10, major revision bordering on reject). Both are AI-generated reviews run by the authors; they are not independent human review.
+
+### Fixed in the manuscript
+| Point | Change |
+|---|---|
+| CAT comparison in the abstract is apples-to-oranges (A, B) | Removed from the abstract and the introduction; abstract now calls the probing figure a shadow price, not a social cost. The comparison stays in Section 6.4 with its caveats |
+| "These regimes rest on an implicit claim" overstates (A) | Rewritten: audit trails serve many purposes; the paper studies one question they raise |
+| Superseded CAT budget (B) | 2026 CAT LLC budget, $147.0M (31 Mar 2026); market columns recomputed; earlier vintages documented |
+| Minimax claim unrestricted (B) | `prop:esprit` restricted to rich classes; singleton counterexample remark |
+| c0 in the Prony proof did not keep the perturbation inside the root-separation radius (B) | c0 = min(ρ0, γ/(2L))/C1 |
+| `thm:twocohort`(iii) "unbiased to first order" projection estimator unproven (B) | Replaced by reference to `prop:esprit` (K=2) |
+| `thm:twocohort`(ii) permutation-invariant range (B) | Stated: only for Δη ≥ 2τq/(q+2τ); W1 statement below that |
+| `thm:merged` with η=1 (B) | Effective anchor a′ = a + κM({0}); degree counted over supp(M)∩(0,1) |
+| `prop:tagged` CLT for m-dependent sequences not justified with endogenous instruments (B) | Martingale CLT via (Z_t − r_i Z_{t+1})ε_{i,t} |
+| α, β undefined in `thm:adaptive` (B) | Terminal test with stated error levels |
+| Boundary Λ_N = 4 log(1/ρ) (B) | Strict inequality |
+| Notebook references "Part 13, R6/R7" (B) | Removed |
+| "certified constant" in conclusion (B) | "numerically evaluated" |
+| Fundamental value known; no dealer equilibrium (A) | Stated in the model section |
+| Negative CFTC w_c outside the positive economy (B) | Stated; dollar bounds do not apply there |
+| Missing literature (A, B) | Leach–Madhavan 1993; Andrews–Cheng 2012; Barth–Kahn 2021 (all verified) |
+| J identified only up to realization class (B) | Conclusion corrected; open question stated |
+
+### Not done; author decision needed
+1. Cut to a focused ~40-page theory paper; move empirics, FHC, spectral blind spot, feedback appendices out (both reports).
+2. A decision proposition comparing aggregate vs cohort-targeted intervention, showing tagged information changes the optimal action (both reports' "single most important change").
+3. Real-noise validation (semi-synthetic injection test).
+4. A tagged-flow test on CFTC flows (requires registration and approval).
+
+### Not accepted
+No point was rejected outright. Neither report showed a central mechanism to be false; the disputes were scope, quantifiers, novelty and economic framing.

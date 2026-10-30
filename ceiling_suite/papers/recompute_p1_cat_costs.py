@@ -44,7 +44,8 @@ SIGMA_1S = 1.9762563262273953       # USDT, median one-second price-change s.d. 
 C_REF_K2_KNOWN = 61.41              # certified round-trip loss at sigma=0.01, delta=0.05 (Delta_eta=0.10)
 
 CAT_BUDGET_2025_NOV2024 = 248.8e6   # CAT LLC Nov 2024 2025 operating budget ($248,846,076)
-CAT_BUDGET_2025_MAY2025 = 228.3e6   # CAT LLC May 2025 revised 2025 operating budget ($228.3M)
+CAT_BUDGET_2025_MAY2025 = 228.3e6   # CAT LLC May 2025 revised 2025 operating budget ($228.3M), superseded
+CAT_BUDGET_2026_MAR2026 = 147.044869e6  # CAT LLC 2026 Financial and Operating Budget, 31 Mar 2026: total expenses $147,044,869
 CAT_ANNUAL_INDUSTRY_2016 = 1.7e9    # SEC Release No. 34-79318 (2016), 81 FR 84801, p. 363
 CAT_BUILD_INDUSTRY_2016 = 2.4e9     # SEC Release No. 34-79318 (2016), 81 FR 84801, p. 363
 CAT_ANNUAL_INDUSTRY_2010 = 2.1e9    # SEC Release No. 34-62174 (2010), 75 FR 32600, p. 153
@@ -140,6 +141,8 @@ def main():
             "annual_loss_weekly_1s_usd": int(round(l_1s_52)),
             "markets_cat_llc_228m_weekly_roll": round(CAT_BUDGET_2025_MAY2025 / l_roll_52, 1),
             "markets_cat_llc_228m_weekly_1s": round(CAT_BUDGET_2025_MAY2025 / l_1s_52, 2),
+            "markets_cat_llc_2026_147m_weekly_roll": round(CAT_BUDGET_2026_MAR2026 / l_roll_52, 1),
+            "markets_cat_llc_2026_147m_weekly_1s": round(CAT_BUDGET_2026_MAR2026 / l_1s_52, 2),
             "markets_sec_1700m_weekly_roll": round(CAT_ANNUAL_INDUSTRY_2016 / l_roll_52, 1),
             "markets_sec_1700m_weekly_1s": round(CAT_ANNUAL_INDUSTRY_2016 / l_1s_52, 2),
         })
@@ -161,6 +164,8 @@ def main():
             "annual_loss_weekly_1s_usd": int(round(l_1s_52)),
             "markets_cat_llc_228m_weekly_roll": round(CAT_BUDGET_2025_MAY2025 / l_roll_52, 1),
             "markets_cat_llc_228m_weekly_1s": round(CAT_BUDGET_2025_MAY2025 / l_1s_52, 2),
+            "markets_cat_llc_2026_147m_weekly_roll": round(CAT_BUDGET_2026_MAR2026 / l_roll_52, 1),
+            "markets_cat_llc_2026_147m_weekly_1s": round(CAT_BUDGET_2026_MAR2026 / l_1s_52, 2),
             "markets_sec_1700m_weekly_roll": round(CAT_ANNUAL_INDUSTRY_2016 / l_roll_52, 1),
             "markets_sec_1700m_weekly_1s": round(CAT_ANNUAL_INDUSTRY_2016 / l_1s_52, 2),
         })
@@ -172,6 +177,7 @@ def main():
         "benchmarks": {
             "cat_llc_2025_nov2024_usd": CAT_BUDGET_2025_NOV2024,
             "cat_llc_2025_may2025_usd": CAT_BUDGET_2025_MAY2025,
+            "cat_llc_2026_mar2026_usd": CAT_BUDGET_2026_MAR2026,
             "sec_2016_annual_industry_usd": CAT_ANNUAL_INDUSTRY_2016,
             "sec_2016_build_industry_usd": CAT_BUILD_INDUSTRY_2016,
             "sec_2010_annual_industry_usd": CAT_ANNUAL_INDUSTRY_2010,

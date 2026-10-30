@@ -89,7 +89,7 @@ if ARGS.ssrn:
     ]:
         assert fhc.count(old) == 1, old[:40]
         fhc = fhc.replace(old, new)
-    fhc = fhc.replace("fhc:waarde", "vanwaarde2020").replace("fhc:heinrich", "heinrich2018")
+    fhc = fhc.replace("fhc:waarde", "vanwaarde2020").replace("fhc:heinrich", "heinrich2018").replace("fhc:wagenmaker", "wagenmaker2021")
     moved.append(fhc)
     # its sources go into the reproducibility map (first longtable after the map heading)
     fhc_rows = (r"Finite-horizon decision appendix: primary decisions, cost--horizon sensitivities (819 rows), hard-pair "
@@ -107,9 +107,7 @@ if ARGS.ssrn:
         "\\emph{Annals of Statistics} 22, 238--270.\n"
         "\\bibitem[Tu et~al.(2018)]{fhc:tu} Tu, S., R. Boczar, and B. Recht (2018). Minimax lower bounds for "
         "$\\mathcal H_\\infty$-norm estimation. arXiv preprint arXiv:1809.10855.\n"
-        "\\bibitem[Wagenmaker et~al.(2021)]{fhc:wagenmaker} Wagenmaker, A.~J., M. Simchowitz, and K. Jamieson (2021). "
-        "Task-optimal exploration in linear dynamical systems. In \\emph{Proceedings of the 38th International Conference "
-        "on Machine Learning}, PMLR 139, 10641--10652.\n")
+        )
     k = core.index("\\end{thebibliography}")
     core = core[:k] + extra + core[k:]
 core = core.replace(repro, "".join(moved) + repro, 1)
