@@ -32,7 +32,7 @@ Paper 1 cites Paper 2 only for the identification-free alternative; it uses none
 agent-based models from prices (the estimates of type-separating parameters in that literature are often weak;
 Paper 1 gives a computable reason), and supervisors/exchanges deciding what to record.
 
-**Title.** Pending author choice (Section 5, item T1).
+**Title (chosen 30 Oct).** *What Prices Reveal About Hidden Trader Populations, and What Identifying Them Costs.*
 
 ## 2. Classification of results (Phase 1)
 
@@ -93,7 +93,7 @@ rates, learning-rule robustness, spectral blind spot and feedback measurement mo
   authors can say which is accurate; the published statement must be the accurate one.
 - **O3 (Pratik).** Companion-paper citation: one PDF has "Niroula and Niroula (2026b)", the repo has five
   authors (Niroula, Alkhushayni, Chen, Bhavsar, Niroula). Must match Paper 2's agreed byline.
-- **T1 (Pratik, title).** "From Human Markets to Machine Markets" is Paper 2's title. Using it for Paper 1 gives two
+- **T1 (closed: title chosen).** "From Human Markets to Machine Markets" is Paper 2's title. Using it for Paper 1 gives two
   papers one name. If the umbrella title moves to Paper 1, Paper 2 must be retitled first.
 - **N1 (notation).** `thm:merged`(ii) uses K for a family constant while K also counts groups; `thm:capital` is a
   lemma with a theorem label; `prop:passive` is a theorem with a proposition label. Cosmetic, fix in Phase 11.
@@ -101,3 +101,28 @@ rates, learning-rule robustness, spectral blind spot and feedback measurement mo
   (quantity δ^−2 squared through the Toeplitz form) and also the passive/average-power **horizon** for that pair;
   (Δη)^−6 is the **number of experiments** for K=2 unknown groups ((4K−2) at K=2; the finite-horizon appendix's
   Θ(δ^−6) is the same object). The text should say this in one place.
+
+## 6. Phases 3–11 pass (30 October)
+- **Phase 3 (closed in text).** New subsection `sec:observer`: who observes, what is known, the three options (wait,
+  probe, disclose), timing, who bears costs, and the three money quantities (capital required, round-trip loss,
+  annualised loss). R1 (δ^−4 vs (Δη)^−6) resolved there.
+- **Phase 4.** Load-bearing proofs re-derived: `thm:merged` (transfer function, partial fractions, no cancellation,
+  (ii) bound), `thm:quantity` (ΔG formula, d₂ identity, exact error), `thm:capital` (coercivity constant, Pinsker),
+  `thm:spectral` (Toeplitz symbol = 2Re H − κ), `thm:kcohort` (Gauss vs Gauss–Radau moments, response lower bound),
+  `prop:esprit` (confluent Vandermonde, Δη-scaling). **Error found and fixed:** the resolvent identity lacked the
+  factor z^−1 (three places); bounds unaffected because |z|=1, and the non-vanishing step of `prop:passive` was
+  restated correctly. Abstract and introduction now separate non-identification, finite-sample difficulty and
+  unstable recovery. Status: internally checked; independent review still required (`thm:kcohort`,
+  `prop:esprit`, `thm:general`, `prop:passive`).
+- **Phase 5.** "What counts as an experiment" paragraph: the (Δη)^−(4K−2) order holds for any probe energy
+  (NE ≳ σ²(Δη)^−(4K−2)); lower bounds scoped to the stated probe classes; unknown-primitive cost stated as not
+  analysed.
+- **Phase 6.** Table `tab:closest` (existing result, observations, target, conclusion, difference); Wu–Yang rate
+  n^−1/(4k−2) verified in the source. Closed-loop novelty restated honestly (extraction is a smooth invertible map).
+- **Phase 7.** `review/phase7_checks.py`: exact equivalence to 3e−17, near-equivalence slope 2.003, d₂ identity,
+  resolvent identity with/without z^−1, probe-energy bound (max ratio 0.53 ≤ 1).
+- **Phase 8.** Financial example = the observer's choice (`prop:choice`) plus the finite-horizon decision appendix.
+- **Phase 9.** "What the data can and cannot test" paragraph before the CFTC section.
+- **Phase 10.** Reproducibility paragraph now states the proofs are not independently reviewed or formally
+  verified and that numerical checks are same-code reproductions. No Lean claims in Paper 1.
+- **Phase 11.** `review/internal_referee_report.md`. **Phases 12–13.** `review/submission_package.md`.
