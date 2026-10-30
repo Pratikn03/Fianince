@@ -26,7 +26,7 @@ src = (HERE / "paper1.tex").read_text()
 core, _, _ = src.partition("% BEGIN ECONOMIC REVIEW 20261029")
 assert "\\section{Reproducibility: source of every number}" in core and "returned_results" not in core
 core = re.sub(r"% BEGIN ADVANCED FRONT STATUS 20261030.*?% END ADVANCED FRONT STATUS 20261030\n", "", core, flags=re.S)
-core = core.replace("\\date{Development revision, 30 October 2026}", "\\date{November 2026}")
+core = core.replace("\\date{Development revision, 30 October 2026}", "\\date{This version: 30 October 2026}")
 if ARGS.ssrn:
     if ARGS.solo:
         core = re.sub(r"\n\\and Prashant Niroula\\thanks\{.*?\}\}", "}", core, count=1, flags=re.S)
@@ -68,6 +68,14 @@ if ARGS.ssrn:
     # own status paragraph) as a further internet appendix. Its separate reference list is merged into the main one.
     a, b = "% BEGIN FINITE HORIZON COST 20261029\n", "% END FINITE HORIZON COST 20261029"
     fhc = src[src.index(a) + len(a):src.index(b)]
+    # The full note (statements, proofs, its own references) is published as a separate supplement PDF in the
+    # repository; the preprint carries a one-page summary with the same label.
+    supp = (src[:src.index("\\begin{document}")] + "\\begin{document}\n\\begin{center}\\large Supplement to ``What Prices "
+            "Reveal About Hidden Trader Populations, and What Identifying Them Costs''\\end{center}\n" + fhc + "\n\\end{document}\n")
+    (HERE / "paper1_finite_horizon_supplement.tex").write_text(supp)
+    for _ in range(2):
+        subprocess.run(["pdflatex", "-interaction=nonstopmode", "paper1_finite_horizon_supplement.tex"], cwd=HERE,
+                       stdout=subprocess.DEVNULL)
     i, j = fhc.index("\\begin{thebibliography}"), fhc.index("\\end{thebibliography}") + len("\\end{thebibliography}")
     fhc = fhc[:i] + fhc[j:]
     fhc = fhc.replace("\\section*{Finite-horizon information, cohort ambiguity, and net inventory-service value}",
@@ -90,7 +98,22 @@ if ARGS.ssrn:
         assert fhc.count(old) == 1, old[:40]
         fhc = fhc.replace(old, new)
     fhc = fhc.replace("fhc:waarde", "vanwaarde2020").replace("fhc:heinrich", "heinrich2018").replace("fhc:wagenmaker", "wagenmaker2021")
-    moved.append(fhc)
+    moved.append(
+        "\\section{Internet appendix: A finite-horizon decision that needs only the combined response}\\label{app:fhc}\n"
+        "A separate note, \\texttt{paper1\\_finite\\_horizon\\_supplement.pdf} in the public repository, works out one "
+        "financial decision in full. An unlevered desk that warehouses inventory for $H$ periods under a hard stress budget "
+        "buys $N$ reset experiments, pays for them out of the same capital, and sizes its position from an upper confidence "
+        "bound on the summed price response over the horizon. With probability at least $1-\\gamma$ the position meets the "
+        "stress budget for every bounded shock path; its profit shortfall is at most $AN^{-1/2}+Dc_HN$ for explicit "
+        "constants $A$ and $D$ and cost $c_H$ per experiment; and a stated inequality guarantees a positive expected net "
+        "value of the information. These guarantees hold uniformly over the positive cohort class, whatever the number and "
+        "spacing of the cohorts. Under the same observations, telling apart two particular two-cohort economies whose rates "
+        "are of order $\\delta$ apart requires a number of experiments of order $\\delta^{-6}$, so at a fixed information price "
+        "cohort identification becomes unaffordable while the decision keeps its positive value.\n\n"
+        "The lesson cuts both ways. Many risk decisions need only the combined response, which public data identify at the "
+        "ordinary rate; class-level records are valuable only for decisions that depend on attribution, which this paper "
+        "does not yet model (Section~\\ref{sec:conclusion}). The note's proofs have not been independently reviewed, its "
+        "numerical illustration is exploratory, and its priority is unconfirmed.\n\n")
     # its sources go into the reproducibility map (first longtable after the map heading)
     fhc_rows = (r"Finite-horizon decision appendix: primary decisions, cost--horizon sensitivities (819 rows), hard-pair "
                 r"requirements, assumption failures, cash-flow audit & \texttt{studies/finite\_horizon\_costs\_20261029/run.py} "
@@ -100,16 +123,6 @@ if ARGS.ssrn:
     r0 = core.index("\\section{Reproducibility: source of every number}")
     r1 = core.index("\\end{longtable}", r0)
     core = core[:r1] + fhc_rows + core[r1:]
-    extra = (
-        "\\bibitem[Blackwell(1953)]{fhc:blackwell} Blackwell, D. (1953). Equivalent comparisons of experiments. "
-        "\\emph{Annals of Mathematical Statistics} 24, 265--272.\n"
-        "\\bibitem[Donoho(1994)]{fhc:donoho} Donoho, D.~L. (1994). Statistical estimation and optimal recovery. "
-        "\\emph{Annals of Statistics} 22, 238--270.\n"
-        "\\bibitem[Tu et~al.(2018)]{fhc:tu} Tu, S., R. Boczar, and B. Recht (2018). Minimax lower bounds for "
-        "$\\mathcal H_\\infty$-norm estimation. arXiv preprint arXiv:1809.10855.\n"
-        )
-    k = core.index("\\end{thebibliography}")
-    core = core[:k] + extra + core[k:]
 core = core.replace(repro, "".join(moved) + repro, 1)
 # References to moved material say "Appendix", not "Section".
 for lab in ("sec:account", "sec:dollars", "sec:uniform", "sec:learners", "sec:blind", "sec:empirics"):
@@ -117,12 +130,12 @@ for lab in ("sec:account", "sec:dollars", "sec:uniform", "sec:learners", "sec:bl
     core = core.replace("Sections~\\ref{" + lab + "}", "Appendices~\\ref{" + lab + "}")
 # No table of contents in a submission; an outline that matches the submission's own order.
 core = core.replace("\\setcounter{page}{1}\n\\tableofcontents\n\\newpage\n", "\\setcounter{page}{1}\n", 1)
-o1, o2 = core.index("\\subsection{Outline}"), core.index("\\section{Model and microfoundations}")
+o1, o2 = core.index("\\subsection{Outline}"), core.index("\\section{Model and motivating examples}")
 core = core[:o1] + ("\\subsection{Outline}\n"
     "Section~\\ref{sec:model} sets out the model and Section~\\ref{sec:ident} the identification boundary. "
     "Section~\\ref{sec:resources} turns memory resolution into executed quantity, capital and money for a known pair, and "
     "Section~\\ref{sec:mixtures} treats unknown mixtures, general memory and passive data. Section~\\ref{sec:disclosure} "
-    "states what disclosure buys, prices it against the Consolidated Audit Trail, and tests it on the CFTC's mandated "
+    "states what disclosure buys, gives a hypothetical scale illustration of its value, and tests it on the CFTC's mandated "
     "trader-class reports and on Binance's class ratios. Section~\\ref{sec:policy} draws the implications for "
     "supervision and Section~\\ref{sec:conclusion} concludes. Proofs are in Appendix~\\ref{app:proofs}; the internet "
     "appendix contains account-level capital, near-colliding rates, robustness to learning rules, the spectral blind spot "
@@ -149,6 +162,22 @@ left = [m.group(0)[:90] for m in re.finditer(r"[^\n]{0,40}(\.py\b|SHA-256)[^\n]{
 print("script/hash mentions left outside the reproducibility appendix:", len(left))
 for l in left[:12]:
     print("   ", l)
+if ARGS.ssrn:
+    # The full source map moves to the public repository (REPRODUCIBILITY_MAP.md and a PDF of the same table);
+    # the preprint keeps a short pointer section with the same label.
+    r0 = core.index("\\section{Reproducibility: source of every number}")
+    block = core[r0:].replace("\\end{document}", "").rstrip()
+    preamble = core[:core.index("\\begin{document}")]
+    standalone = (preamble + "\\begin{document}\n\\begin{center}\\large Reproducibility map for ``What Prices Reveal About "
+                  "Hidden Trader Populations, and What Identifying Them Costs''\\end{center}\n"
+                  + block.replace("\\section{Reproducibility: source of every number}\\label{app:repro}",
+                                  "\\section*{Source of every number}") + "\n\\end{document}\n")
+    core = core[:r0] + ("\\section{Reproducibility}\\label{app:repro}\n"
+        "Every table, figure and number in this paper is mapped to the notebook or script and the result file that "
+        "produce it in the reproducibility map, \\texttt{ceiling\\_suite/papers/paper1/REPRODUCIBILITY\\_MAP.md} "
+        "(also as \\texttt{paper1\\_reproducibility\\_map.pdf}) in the public repository "
+        "\\url{https://github.com/Pratikn03/Fianince}, release tag \\texttt{paper1-ssrn-v1}. The map also lists the "
+        "replication notebooks in run order and the specification files of the pre-specified tests.\n")
 out = core.rstrip() + "\n\n\\end{document}\n"
 if not ARGS.ssrn:
     for word in ("Niroula", "Pratik", "Prashant", "Mankato", "Tribhuvan", "mnsu", "Pratikn03", "fianince"):
@@ -160,3 +189,14 @@ for _ in range(2):
     subprocess.run(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", f"{NAME}.tex"], cwd=HERE,
                    check=True, stdout=subprocess.DEVNULL)
 print(f"built {NAME}.pdf")
+if ARGS.ssrn:
+    # Resolve cross-references to the preprint's numbering, then build the map as PDF and Markdown.
+    labels = dict(re.findall(r"\\newlabel\{([^}]*)\}\{\{([^}]*)\}", (HERE / f"{NAME}.aux").read_text()))
+    standalone = re.sub(r"\\ref\{([^}]*)\}", lambda m: labels.get(m.group(1), "??"), standalone)
+    (HERE / "paper1_reproducibility_map.tex").write_text(standalone)
+    for _ in range(2):
+        subprocess.run(["pdflatex", "-interaction=nonstopmode", "paper1_reproducibility_map.tex"], cwd=HERE,
+                       stdout=subprocess.DEVNULL)
+    subprocess.run(["pandoc", "paper1_reproducibility_map.tex", "-o", "REPRODUCIBILITY_MAP.md", "-t", "gfm"], cwd=HERE,
+                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    print("built paper1_reproducibility_map.pdf and REPRODUCIBILITY_MAP.md; unresolved refs:", standalone.count("??"))

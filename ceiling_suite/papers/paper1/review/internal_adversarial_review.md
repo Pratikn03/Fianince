@@ -141,3 +141,51 @@ Report A (4/10, reject) and Report B (5.5/10, major revision bordering on reject
 
 ### Not accepted
 No point was rejected outright. Neither report showed a central mechanism to be false; the disputes were scope, quantifiers, novelty and economic framing.
+
+## Five AI professor-role reviews (30 Oct 2026, on the 124-page build): dispositions
+
+AI-generated critiques run by the authors (files in `five_AI_reviews_20261030/`). Not independent review. Scores: P1 5.5, P2 5, P3 5, P4 5.5, P5 5.5 (all "do not forward unchanged"). None verified a false theorem, a false number or fabrication.
+
+### Fixed (verified against the source text or primary sources)
+| Point (reviewer) | Change |
+|---|---|
+| Abstract overloaded; dollar figure and CAT in abstract (P2, P4, P5) | Abstract rewritten (~230 words): linear model up front, no dollar figure, failures stated |
+| "Registered" read as external preregistration (P3, P5) | Defined as the authors' declaration; "pre-specified" in abstract and introduction |
+| Failures buried (P3, P5) | New Table "What the empirical tests found: passes and failures" in the introduction (11 rows) |
+| Tagging "does not depend on spacing" too strong (P1, verified: V_i depends on r_i and the price spectrum) | "stays well conditioned / no singularity as rates collide" |
+| Thm discvalue (ii) target constant (P1) | c0 Delta-eta with c0 below the radius of a ball in the node class |
+| W1 vs fixed-weight loss (P1) | Paragraph after Thm kcohort says which loss each bound matches |
+| Prony global inverse (P1) | Injectivity on a neighbourhood, single inverse, nonsingular Hankel, Prony returns F^-1 exactly |
+| Proof status (P1) | Front matter lists the five results most needing independent proof check; constants are computed, not theorems |
+| "certified" constants (P1, P5) | "numerically evaluated lower bound" |
+| General-memory and passive scope (P1) | Qualifiers in the introduction |
+| "Competitive dealers"; known fundamental (P2) | "Reduced-form dealer sector ... imposed primitive"; both assumptions in "What we do not claim" |
+| Kalman/OGD as microfoundation (P1, P2) | Section and lemma renamed "motivating examples"; memory rate is a tuning parameter of two illustrative families |
+| Reset experiments (P2) | Stated as a benchmark experiment no outsider can run |
+| No decision where attribution matters (P1, P2, P5) | Stated as the main open economic question in the introduction and conclusion |
+| CFTC comparison not equal-estimand; bootstrap near unit root; fast/slow labels; price-source basis; categories; Tuesday snapshot (P3, P4) | All stated in Section 6.3 and Table note |
+| Binance: lead with horizon-matched result (P3) | Sentence added; introduction leads with 29/29, median 7.3 |
+| OOS forecast wording (P3) | "statistically inconclusive, no evidence of a gain" |
+| CAT scope, PII relief scope (Feb 2025: names, addresses, years of birth of natural persons reported with transformed SSN/ITIN), access by SROs, accounts vs algorithms, pseudonymous label (P4) | Policy paragraph rewritten; verified against the CAT Alert 2025-01 |
+| MiFID citation (P4) | RTS 24 (Delegated Reg. 2017/580) Art. 2(1)(b)-(c) added (verified via an LME notice) |
+| 2016/2012 estimates vs operating budgets; 2025 budget further reduced (P4) | Split into two kinds of figure; "reduced further later in 2025" (a $196M forecast reported Oct 2025; P4's $188M not verified, not used) |
+| CAT break-even in results map and conclusion (P2, P4) | Removed; results map row is the hypothetical probing loss; Section 6.2 opens with a "hypothetical scale illustration" disclaimer |
+| Economies of scale as CAT design (P4) | Narrowed |
+| AI statement incomplete (P5) | Now names Claude, ChatGPT and Gemini and says AI critiques are not independent review (authors must confirm) |
+| Date (P5) | "This version: 30 October 2026" |
+| van Waarde grammar, Monte Carlo wording, machine-precision wording, 892-economies note (P1, P5) | Fixed |
+| Length (all) | SSRN build 130 -> 115 pages: reproducibility map moved to `REPRODUCIBILITY_MAP.md` + `paper1_reproducibility_map.pdf`; finite-horizon appendix replaced by a one-page summary, full note in `paper1_finite_horizon_supplement.pdf` |
+
+### Not done (needs author decision or new work)
+- Funding and full competing-interest statements (only the authors know); acknowledgments.
+- Companion-paper author list (bibliography lists 5 authors).
+- Release tag `paper1-ssrn-v1` to be created at the final upload commit.
+- Block-length (26/52-week) and weak-ID-robust intervals for the CFTC test; CME futures returns instead of spot/Yahoo (reanalysis of existing data; needs approval).
+- Aggregate-vs-targeted decision proposition (all five reviews).
+- Independent human proof check of Theorems prop:esprit, thm:general, prop:passive, thm:spectral, thm:rh.
+- 10-15 page faculty synopsis (P5).
+- Moving the feedback-index and spectral appendices to a separate paper (P5).
+
+### Not accepted
+- P5's alternative title: kept the current title; the abstract's first sentences now say "linear market model".
+- P1 #13 "attach a critical-lemma inventory": done as one sentence in the front matter rather than a page.
