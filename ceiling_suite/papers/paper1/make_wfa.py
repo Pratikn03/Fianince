@@ -6,7 +6,8 @@ returned-experiment work register (all retained in paper1.tex and in studies/). 
 header and the self-citation of the companion paper. Output: paper1_wfa.tex -> paper1_wfa.pdf.
 
 With --ssrn it builds the named public preprint instead (same text and structure, authors and companion citation kept,
-link to the public code repository): paper1_ssrn.tex -> paper1_ssrn.pdf. --solo drops the second author; use it only
+link to the public code repository, plus the finite-horizon decision extension as a further internet appendix):
+paper1_ssrn.tex -> paper1_ssrn.pdf. --solo drops the second author; use it only
 once both authors have agreed in writing.
 """
 import argparse
@@ -62,6 +63,46 @@ for start, stop, title in MOVES:
     if head.startswith("\\subsection"):                     # a moved subsection becomes an appendix section;
         body = body.replace("\\subsubsection{", "\\subsection{")  # (none present, kept for safety)
     moved.append("\\section{Internet appendix: " + title + "}" + body)
+if ARGS.ssrn:
+    # The full preprint also carries the finite-horizon decision extension (complete statements and proofs, with its
+    # own status paragraph) as a further internet appendix. Its separate reference list is merged into the main one.
+    a, b = "% BEGIN FINITE HORIZON COST 20261029\n", "% END FINITE HORIZON COST 20261029"
+    fhc = src[src.index(a) + len(a):src.index(b)]
+    i, j = fhc.index("\\begin{thebibliography}"), fhc.index("\\end{thebibliography}") + len("\\end{thebibliography}")
+    fhc = fhc[:i] + fhc[j:]
+    fhc = fhc.replace("\\section*{Finite-horizon information, cohort ambiguity, and net inventory-service value}",
+                      "\\section{Internet appendix: Finite-horizon information, cohort ambiguity, and net inventory-service value}"
+                      "\\label{app:fhc}", 1)
+    fhc = fhc.replace("\\section*{Checked synthetic financial illustration}", "\\subsection*{Checked synthetic financial illustration}")
+    assert "\\section*" not in fhc
+    for old, new in [  # wording written for the development log, restated for a public reader (same claims)
+        ("It does not close the broader open\ntheorem of the preceding drafts.",
+         "It does not settle the general question of when identification is worth its cost."),
+        ("are candidate additions to this project, not verified first-in-literature\nclaims. A specialist must check whether "
+         "they are an immediate corollary of\nexisting task-specific or constrained-decision results before publication.",
+         "are candidate additions, not verified first-in-literature\nclaims. They have not been independently reviewed, and "
+         "they may be an immediate corollary of\nexisting task-specific or constrained-decision results."),
+        ("This illustration uses the frozen primary design and the stronger comparison\nrecorded in the design amendment. "
+         "It is exploratory and was developed after\nthe earlier project runs; it is not independent preregistration or replication.",
+         "This illustration is exploratory. It was developed after the paper's other\nsimulations and is not an "
+         "independent preregistration or replication."),
+    ]:
+        assert fhc.count(old) == 1, old[:40]
+        fhc = fhc.replace(old, new)
+    fhc = fhc.replace("fhc:waarde", "vanwaarde2020").replace("fhc:heinrich", "heinrich2018")
+    moved.append(fhc)
+    extra = (
+        "\\bibitem[Blackwell(1953)]{fhc:blackwell} Blackwell, D. (1953). Equivalent comparisons of experiments. "
+        "\\emph{Annals of Mathematical Statistics} 24, 265--272.\n"
+        "\\bibitem[Donoho(1994)]{fhc:donoho} Donoho, D.~L. (1994). Statistical estimation and optimal recovery. "
+        "\\emph{Annals of Statistics} 22, 238--270.\n"
+        "\\bibitem[Tu et~al.(2018)]{fhc:tu} Tu, S., R. Boczar, and B. Recht (2018). Minimax lower bounds for "
+        "$\\mathcal H_\\infty$-norm estimation. arXiv preprint arXiv:1809.10855.\n"
+        "\\bibitem[Wagenmaker et~al.(2021)]{fhc:wagenmaker} Wagenmaker, A.~J., M. Simchowitz, and K. Jamieson (2021). "
+        "Task-optimal exploration in linear dynamical systems. In \\emph{Proceedings of the 38th International Conference "
+        "on Machine Learning}, PMLR 139, 10641--10652.\n")
+    k = core.index("\\end{thebibliography}")
+    core = core[:k] + extra + core[k:]
 core = core.replace(repro, "".join(moved) + repro, 1)
 # References to moved material say "Appendix", not "Section".
 for lab in ("sec:account", "sec:dollars", "sec:uniform", "sec:learners", "sec:blind", "sec:empirics"):
@@ -78,7 +119,9 @@ core = core[:o1] + ("\\subsection{Outline}\n"
     "trader-class reports and on Binance's class ratios. Section~\\ref{sec:policy} draws the implications for "
     "supervision and Section~\\ref{sec:conclusion} concludes. Proofs are in Appendix~\\ref{app:proofs}; the internet "
     "appendix contains account-level capital, near-colliding rates, robustness to learning rules, the spectral blind spot "
-    "and the measurement of reduced-form feedback, and Appendix~\\ref{app:repro} maps every number to its source.\n\n") + core[o2:]
+    "and the measurement of reduced-form feedback" + (", and Appendix~\\ref{app:fhc} gives a finite-horizon decision in which a "
+    "desk profits from the identified aggregate while cohort identification stays unaffordable" if ARGS.ssrn else "") +
+    ", and Appendix~\\ref{app:repro} maps every number to its source.\n\n") + core[o2:]
 # Hygiene for a submission: no internal tags, script names or hashes outside the reproducibility appendix
 # (Appendix "Reproducibility: source of every number" keeps the full map from each number to its script).
 core = core.replace("\\newcommand{\\lab}[1]{\\textsc{[#1]}}", "\\newcommand{\\lab}[1]{}")
