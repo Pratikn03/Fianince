@@ -1894,4 +1894,474 @@ require separate review. No publication rating follows from the returned run.
 
 
 
+% BEGIN FINITE HORIZON COST 20261029
+\section*{Finite-horizon information, cohort ambiguity, and net inventory-service value}
+
+\paragraph{Status and contribution boundary.}
+This appendix supplies a restricted analytic separation and its financial
+consequence. The proof below is written in full; exact rational and numerical
+checks accompany it. It has not received independent proof review and is not
+a Lean formalization. Its priority is unconfirmed. Control without unique
+identification, task-directed exploration, Gaussian functional estimation,
+moment matching, and the value of information are established ideas
+\citep{fhc:waarde,fhc:wagenmaker,fhc:donoho,fhc:heinrich,fhc:blackwell}.
+The candidate extension is their explicit combination for a finite-horizon
+inventory commitment, with a hard stress budget and the information bill
+deducted from both capital and profit. It does not close the broader open
+theorem of the preceding drafts.
+
+\subsection*{The observation contract and the financial institution}
+Fix $H\ge4$, $0\le a<1$, $\kappa>0$ and
+$0\le Q\le\overline Q<(1-a)/\kappa$. There are arbitrarily many finite
+cohorts, with $q_i\ge0$, $\sum_iq_i=Q$, and $0<\eta_i\le1$:
+\[
+ x_{t+1}=a x_t+\kappa\bigl(\sum_iq_i y_{i,t}+u_t\bigr),\qquad
+ y_{i,t+1}=(1-\eta_i)y_{i,t}+\eta_i x_{t+1}.
+\]
+Initial states are reset to zero. Let $h_0,\ldots,h_{H-1}$ be the price
+response to a unit impulse, with $h_0=\kappa$, and put
+$G=\sum_{t<H}h_t$. Positivity implies $h_t\ge0$.
+No positive lower bound on $\eta_i$ is imposed.
+
+The observer purchases $N$ independent reset experiments, each lasting $H$
+model periods and returning all $H$ taps with independent Gaussian errors of
+known variance $\sigma^2$. Thus the tap means are
+$\overline h_t=h_t+\sigma Z_t/\sqrt N$, with independent standard normal
+$Z_t$. The same observations are available for identifying the cohorts and
+for choosing the financial position. One experiment is not one scalar reading:
+it returns $H$ readings and costs $c_H$, including the declared operating and
+time charges. Total information cost is $F=Nc_H$. This observation contract
+is not an ordinary exchange tape; longer horizons cost both time and readings.
+Plant parameters, the feedback cap, reset, and stationarity are assumptions.
+Measurements are acquired ahead of a common future service-start deadline.
+Cash can earn the common reference rate during acquisition; the model does
+not include earlier service opportunities. The stated measurement price is
+exogenous, not a calibrated self-impact cost for actual market probes.
+
+The institution is a price-taking, unlevered inventory-warehousing desk.
+It buys $I\ge0$ units at $P_0$, holds them for $H$ periods, and closes.
+It earns a prequoted service fee $pI$ \emph{after} settlement. Round-trip
+execution and carry costs are $bI+dI^2$, where $b\ge0$ and $d>0$.
+For example, $b=b_{\rm trade}+P_0 r_f H/(365\cdot24\cdot60)$ for
+one-minute model periods. The service premium is unavailable as collateral
+until after settlement. Both trading costs and $F$ must be prefunded.
+Initial cash is $W$, the stressed-settlement loss budget is $B$, and
+$|u_t|\le\overline u$, with $\overline u>0$. Assume
+$P_0>\overline u\,\overline G$, so the asset price remains positive.
+This desk does not alter market feedback, depth, or another participant's
+behaviour. The service fee is exogenous, not an equilibrium price.
+
+For the expected-profit objective, future shocks have conditional mean zero
+given the observations. Consequently the conditional expected trading price
+change is zero. The financial objective, including every declared charge, is
+\[
+ V(I,F)=g(I)-F,\qquad g(I)=(p-b)I-dI^2.
+\]
+This is expected service profit with a hard stress constraint, not a Kelly
+growth theorem or a return-prediction result. There are no additional training
+or validation tapes, no leverage, uncertain fills, or changing inventory.
+
+\begin{lemma}[Sharp prior bounds and exact prefunded capacity]\label{fhc:capacity}
+Write
+\[
+ \underline G=\kappa\sum_{t<H}a^t,\qquad
+ \overline G=\kappa\sum_{t<H}(a+\kappa\overline Q)^t.
+\]
+Then $\underline G\le G\le\overline G$, and both endpoints are attained
+in the declared class. For a gain bound $C\ge G$ and
+$0\le F\le\min(B,W)$, define
+\[
+ \begin{gathered}
+ R(v,r)=\frac{2v}{r+\sqrt{r^2+4dv}},\qquad I_u=\frac{(p-b)_+}{2d},\\
+ I(C,F)=\min\{I_u,R(B-F,\overline u C+b),R(W-F,P_0+b)\}.
+ \end{gathered}
+\]
+This is the optimal expected-profit position subject to the stated stress
+reserve and prefunding constraints. The zero-violation no-observation robust optimum is
+$I_{\rm nd}=I(\overline G,0)$, not an arbitrarily conservative benchmark.
+The response-informed oracle is $I_\circ=I(G,0)$; it knows no future shocks.
+\end{lemma}
+
+\begin{proof}
+Let $k_j=\sum_iq_i\eta_i(1-\eta_i)^j$. The normalized price response is
+the renewal sequence with defective interarrival probabilities
+$s_1=a+\kappa k_0$ and $s_j=\kappa k_{j-1}$ for $j\ge2$.
+Their total mass is $a+\kappa Q<1$, with the remaining mass placed at
+infinity. The cumulative interarrival distribution at integer $j\ge1$ is
+\[
+ a+\kappa\sum_iq_i[1-(1-\eta_i)^j].
+\]
+It lies between $a$ and $a+\kappa\overline Q$. Coupling interarrivals by
+the same independent uniforms orders every renewal time and hence the
+number of renewals before $H$. Taking expectations proves the two bounds.
+The lower endpoint is the no-feedback economy; the upper is one cohort
+with $Q=\overline Q$ and $\eta=1$. This also proves sharpness of the
+no-observation stress bound.
+
+At date $t\le H$, the price change is
+$x_t=\sum_{j<t}h_j u_{t-1-j}$, so
+$|x_t|\le\overline u\sum_{j<t}h_j\le\overline uG$.
+All costs paid by that date are at most the total prefunded costs.
+The constant adverse sequence $u_t=-\overline u$ attains the total price
+loss $I\overline uG$ at settlement. Before the service fee is credited,
+worst loss from initial wealth is therefore exactly
+$I\overline uG+bI+dI^2+F$. The declared robust reserve requirement is
+$I\overline uC+bI+dI^2+F\le B$; prefunding requires
+$P_0I+bI+dI^2+F\le W$. These increasing quadratics yield the two roots.
+Finally $g$ increases up to $I_u$ and decreases after it, proving the
+optimizer and the two benchmarks. This exact reserve contract is not a
+peak-to-trough drawdown or a repeated-deployment guarantee.
+\end{proof}
+
+\begin{lemma}[No data at the same error budget]\label{fhc:nodata-chance}
+Let $I_f=\min\{I_u,R(W,P_0+b)\}$ and allow a data-free rule to randomize,
+with probability of a stress-budget violation at most $\gamma$ in every
+economy of the class. Its greatest expected service profit is
+\[
+ V_{{\rm nd},\gamma}=(1-\gamma)g(I_{\rm nd})+\gamma g(I_f).
+\]
+It is attained by the displayed two-position lottery. This is a theoretical
+benchmark, not a recommended trading policy. The corresponding response-
+informed same-error-budget oracle has value
+$(1-\gamma)g(I_\circ)+\gamma g(I_f)$.
+\end{lemma}
+
+\begin{proof}
+Truncating an action at $I_f$ weakly improves profit and lowers risk, so
+restrict to $0\le I\le I_f$. At the attainable worst economy with gain
+$\overline G$, every $I>I_{\rm nd}$ is unsafe unless $I_{\rm nd}=I_f$,
+in which case all larger actions are already dominated. Thus a feasible
+lottery puts at most $\gamma$ mass above $I_{\rm nd}$. Below that point
+profit is at most $g(I_{\rm nd})$, and above it at most $g(I_f)$.
+This gives the upper bound. The two-point lottery attains it and is unsafe
+in any economy with probability at most $\gamma$. Replace $\overline G$
+by the known $G$ for the oracle statement.
+\end{proof}
+
+\begin{theorem}[Uniform cost-aware finite-horizon decision]\label{fhc:decision}
+Fix $0<\gamma<1/2$, $z=\Phi^{-1}(1-\gamma)$,
+$s_N=\sigma\sqrt{H/N}$, and
+\[
+ Y=\sum_{t<H}\overline h_t,\qquad
+ C_N=\min\{\overline G,\max\{\underline G,Y+zs_N\}\}.
+\]
+Purchase a fixed, affordable $N$ and take $I_N=I(C_N,F)$.
+The following hold uniformly over the declared positive-cohort class,
+without dependence on cohort spacing, cohort count, or a memory-rate floor.
+\begin{enumerate}
+\item With probability at least $1-\gamma$ over measurements, the position
+      satisfies the stress budget for \emph{every} bounded future shock path.
+\item Put $r_0=\overline u\underline G+b$, $I_{\max}=W/P_0$,
+\[
+ \begin{aligned}
+ L_G&=\frac{\overline u I_{\max}}{r_0}, &
+ L_F&=\frac{1}{\min(r_0,P_0+b)},\\
+ A&=2z\sigma\sqrt H\,(p-b)_+L_G, & D&=1+(p-b)_+L_F.
+ \end{aligned}
+\]
+With probability at least $1-2\gamma$,
+\[
+ 0\le g(I_\circ)-V(I_N,F)\le A N^{-1/2}+D c_HN.
+\]
+For sufficiently small $c_H>0$, choosing
+$N=\lceil(A/(2Dc_H))^{2/3}\rceil$ is affordable and gives a bound
+$3\,2^{-2/3}A^{2/3}(Dc_H)^{1/3}+Dc_H$, when $A>0$.
+This is an upper bound from this procedure, not a new minimax optimality claim.
+\item Let $I_-=I(G+2zs_N,F)$. A sufficient condition for strictly positive
+      expected net information value relative to the strongest no-data rule
+      at the \emph{same} error budget is
+\[
+ \underbrace{(1-2\gamma)g(I_-)-F-V_{{\rm nd},\gamma}}_{\displaystyle\mathcal L_N}>0.
+\]
+Precisely, $\mathbb E_D[V(I_N,F)]-V_{{\rm nd},\gamma}\ge\mathcal L_N$.
+The conclusion can fail at high data costs or a low service premium.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+$Y-G$ is Gaussian with variance $H\sigma^2/N$. On
+$\{Y-G\ge-zs_N\}$, which has probability $1-\gamma$, $C_N\ge G$;
+clipping preserves this because $G$ lies between the prior bounds.
+Lemma~\ref{fhc:capacity} proves simultaneous safety for every future
+bounded path on this single event, including the data-selected position.
+There is no tail beyond $H$ to estimate, explaining the absence of a
+memory-floor assumption. This does not certify an infinite horizon.
+
+On $E=\{|Y-G|\le zs_N\}$, of probability $1-2\gamma$,
+$G\le C_N\le G+2zs_N$. The position function is decreasing in each
+of $C$ and $F$, so $I_-\le I_N\le I_\circ$ on $E$.
+To bound the position difference, implicitly differentiate the stress root:
+its derivatives are $-\overline u I/(\overline u C+b+2dI)$ in $C$
+and $-1/(\overline u C+b+2dI)$ in $F$.
+Clip this root at $I_{\max}$ without changing the final minimum, since
+the prefunding root is at most $I_{\max}$. The clipped root is
+$L_G$-Lipschitz in $C$ and $1/r_0$-Lipschitz in $F$.
+The prefunding root is independent of $C$ and
+$1/(P_0+b)$-Lipschitz in $F$. Minimum with $I_u$ preserves these
+common Lipschitz bounds. Hence
+\[
+ 0\le I_\circ-I_N\le 2L_Gzs_N+L_FF.
+\]
+On $[0,I_u]$, $0\le g'\le(p-b)_+$. Multiplication and addition of
+the paid fee give the regret bound. Minimizing
+$AN^{-1/2}+Dc_HN$ over positive real $N$ gives the stated root and
+value. Rounding up adds at most $Dc_H$; affordability follows as
+$c_HN=O(c_H^{1/3})\to0$. The case $A=0$ has no positive-gain
+information task and does not need this optimization.
+
+On $E$, $g(I_N)\ge g(I_-)$, while $g(I_N)\ge0$ always because
+$0\le I_N\le I_u$. Thus
+$\mathbb E_D g(I_N)\ge(1-2\gamma)g(I_-)$.
+Subtracting $F$ and the same-error-budget no-data value proves the last assertion.
+Conditional mean-zero future flows justify the stated expected-profit
+interpretation; their distribution is not learned from extra tapes.
+\end{proof}
+
+\begin{theorem}[A two-cohort identification obstruction under the same observations]\label{fhc:pair}
+Fix $Q>0$, $a+\kappa Q<1$, and $0<\eta_0<1$. For sufficiently small
+$\delta>0$, compare the two economies
+\[
+\begin{array}{c|cc}
+ &\text{normalized weights}&\text{adaptation rates}\\ \hline
+\mathrm A_\delta &(1/2,1/2)&(\eta_0-\delta,\eta_0+\delta)\\
+\mathrm B_\delta &(1/5,4/5)&(\eta_0-2\delta,\eta_0+\delta/2).
+\end{array}
+\]
+Actual weights are $Q$ times those displayed. For fixed $H\ge4$,
+$D_H(\delta)=\|h^{\rm B}_{0:H-1}-h^{\rm A}_{0:H-1}\|_2
+=\Theta(\delta^3)$. The exact minimax error for distinguishing these
+two \emph{known} alternatives from $N$ reset experiments is
+\[
+ e_N=\Phi\!\left(-\frac{\sqrt N D_H(\delta)}{2\sigma}\right).
+\]
+Therefore error at most $\beta<1/2$ requires
+$N\ge[2\sigma\Phi^{-1}(1-\beta)/D_H(\delta)]^2
+=\Theta(\delta^{-6})$.
+In particular any recovery of the two normalized weights to sup-norm error
+less than $0.15$ with probability at least $1-\beta$ in both worlds must
+satisfy this testing requirement.
+Both worlds contain exactly two distinct rates. Both have identical infinite
+summed response, but their finite-horizon gains are not asserted identical.
+\end{theorem}
+
+\begin{proof}
+The two rate distributions have equal mass, mean $\eta_0$, and variance
+$\delta^2$. Their third centered moments are respectively $0$ and
+$-3\delta^3/2$. Thus their kernels $k_j$ agree at $j=0,1$ and
+$k^{\rm B}_2-k^{\rm A}_2=-3Q\delta^3/2$. The response recursion
+gives equal $h_0,h_1,h_2$ and
+\[
+ h^{\rm B}_3-h^{\rm A}_3=-3\kappa^2Q\delta^3/2,
+\]
+which is a lower bound for $D_H$ in absolute value.
+
+For an upper bound put $f_t(\eta)=\eta(1-\eta)^t$.
+Its third derivative is
+$3t(t-1)(1-\eta)^{t-2}
+-\eta t(t-1)(t-2)(1-\eta)^{t-3}$, with absent low-degree terms zero.
+The sum over $t\ge0$ of its absolute value is at most $12/\eta^3$.
+For $\delta\le\eta_0/4$, all intervening rates are at least
+$v=\eta_0/2$. Taylor's integral remainder in $\ell_1$ is therefore at
+most $2|\eta-\eta_0|^3/v^3$. The matching first two moments cancel
+the quadratic Taylor terms. The sum of the two third absolute centered
+moments is $(1+17/10)\delta^3=27\delta^3/10$, giving
+\[
+ \|k^{\rm B}-k^{\rm A}\|_1\le\frac{27Q}{5v^3}\delta^3.
+\]
+If $K(z)=\sum k_tz^t$ and $H(z)=\sum h_tz^t$, the recursion gives
+$H(z)=\kappa/[1-az-\kappa zK(z)]$. Consequently
+$H_{\rm B}-H_{\rm A}=zH_{\rm A}H_{\rm B}(K_{\rm B}-K_{\rm A})$.
+The infinite response sums of both economies equal
+$S=\kappa/(1-a-\kappa Q)$. Young's inequality yields
+$D_H\le S^2\|k^{\rm B}-k^{\rm A}\|_1=O(\delta^3)$.
+This proves the two-sided order with constants independent of $\delta$.
+
+For equal-covariance Gaussian laws, the likelihood-ratio test projects the
+sample mean onto the difference of the two known means, and thresholds at
+their midpoint. The projected normal law gives the displayed error in each
+world. Its equal-prior Bayes optimality and symmetry establish minimax
+optimality. A weight estimator accurate within $0.15$ distinguishes the
+two disjoint normalized-weight balls, proving the identification lower bound.
+Finite-horizon gains need not be equal: only their difference is of cubic
+order. The test concerns latent cohort recovery, not identification of the
+input-output response vector, and does not cover alternative probe designs.
+\end{proof}
+
+\begin{corollary}[A priced separation]\label{fhc:priced}
+Fix $c_H>0$ and an affordable $N$ for which $\mathcal L_N>0$ at the limiting merged
+economy $\delta=0$. For all sufficiently small positive $\delta$, the
+financial rule of Theorem~\ref{fhc:decision} has a
+strictly positive expected net information value, with its stated safety
+probability. Its observation requirement has no dependence on $\delta$.
+At this same fixed information price, sufficiently small $\delta$ makes cohort
+identification at error $\beta$ unaffordable within the same hard fee budget
+$B$: $c_H[2\sigma\Phi^{-1}(1-\beta)/D_H(\delta)]^2>B$.
+Any procedure limited to that many affordable observations is covered,
+including one that stops early, since it can be viewed as a function of the
+full affordable sample. A rational agent may abandon identification and use
+the no-data rule. There is no assertion that regulation requires identification.
+\end{corollary}
+
+\begin{proof}
+Apply the two theorems. The first statement uses the strictly positive
+lower bound on net value, rather than an assumption that more information
+is automatically beneficial. The second follows from $D_H=\Theta(\delta^3)$.
+For a neighbourhood of a fixed $\delta$ where the strict value inequality
+holds, continuity preserves it. To claim the inequality for all sufficiently
+small $\delta$, it suffices that it hold strictly at the limiting merged
+economy: finite $G_H$ and $I_-$ are continuous there. The numerical example
+reports both the primary pair and that limiting check. No finite-class grid
+is used in the uniform decision guarantee.
+\end{proof}
+
+\paragraph{What the result does not establish.}
+The direct gain-sum certificate is exactly ordinary Gaussian projection onto
+the vector of ones. It is not a new estimator and does not beat that benchmark.
+The latent-cohort lower bound is not a lower bound for learning the observable
+response vector; comparing it with FIR model-identification results for
+$\mathcal H_\infty$ norms would conflate different tasks \citep{fhc:tu}.
+No optimal estimation rate over all observation designs is claimed.
+The data cost is not an empirically measured exchange probing cost.
+An ordinary public-tape bridge, endogenous quotes and depth, incomplete resets,
+unknown or misspecified noise, and independent replication remain open.
+The information purchase in the example is predeclared. Its positive value
+is pointwise at the displayed economy; no prior over unknown economies or
+globally optimal Bayesian/robust acquisition policy is claimed.
+The fixed horizon, independent measurement contract, and conditional mean-zero
+future flows cannot be removed by the simulation. At another horizon the
+certificate must be recomputed. A rolling sequence needs simultaneous or
+time-uniform coverage; a one-decision guarantee is insufficient.
+
+\paragraph{Literature priority.}
+The reviewed sources already establish the general principles used here.
+The explicit dollar-cost/capital formulation and the combined result above
+are candidate additions to this project, not verified first-in-literature
+claims. A specialist must check whether they are an immediate corollary of
+existing task-specific or constrained-decision results before publication.
+
+\begin{thebibliography}{9}\small
+\bibitem[van Waarde et~al.(2020)]{fhc:waarde} H.~J. van Waarde, J. Eising,
+H.~L. Trentelman and M.~K. Camlibel. Data Informativity: A New Perspective on
+Data-Driven Analysis and Control. \emph{IEEE TAC} 65, 4753--4768.
+\bibitem[Wagenmaker et~al.(2021)]{fhc:wagenmaker} A.~J. Wagenmaker,
+M. Simchowitz and K. Jamieson. Task-Optimal Exploration in Linear Dynamical
+Systems. \emph{ICML}, PMLR 139, 10641--10652.
+\bibitem[Donoho(1994)]{fhc:donoho} D.~L. Donoho. Statistical Estimation and
+Optimal Recovery. \emph{Annals of Statistics} 22, 238--270.
+\bibitem[Heinrich and Kahn(2018)]{fhc:heinrich} P. Heinrich and J. Kahn.
+Strong Identifiability and Optimal Minimax Rates for Finite Mixture Estimation.
+\emph{Annals of Statistics} 46, 2844--2870.
+\bibitem[Blackwell(1953)]{fhc:blackwell} D. Blackwell. Equivalent Comparisons
+of Experiments. \emph{Annals of Mathematical Statistics} 24, 265--272.
+\bibitem[Tu et~al.(2018)]{fhc:tu} S. Tu, R. Boczar and B. Recht.
+Minimax Lower Bounds for $\mathcal H_\infty$-Norm Estimation.
+\emph{arXiv:1809.10855}.
+\end{thebibliography}
+
+\section*{Checked synthetic financial illustration}
+This illustration uses the frozen primary design and the stronger comparison
+recorded in the design amendment. It is exploratory and was developed after
+the earlier project runs; it is not independent preregistration or replication.
+The two-cohort primary has $a=0.4$, $\kappa=1$, $Q=0.4$, rates
+$0.49,0.51$, and equal weights. The known class cap is $\overline Q=0.55$;
+$H=60$ one-minute model periods, $N=32$, $\sigma=0.02$, and
+$\gamma=0.025$. Initial wealth is 1,000, price 100, stress budget 1,
+and flow bound 0.04. The service fee is 0.08 per unit. Execution costs are
+$0.002I+0.0002I^2$ and carry is charged at 5 percent annualized.
+The assumed all-in reset fee is 0.002, so the learning bill is 0.064.
+These are hypothetical model dollars, not an exchange calibration or returns.
+The same-error-budget no-data lottery is a theoretical strongest comparator,
+not a proposed desk practice. The zero-violation comparisons are also shown.
+
+\begin{center}\footnotesize
+\begin{tabular}{p{0.43\textwidth}rrr}
+\toprule
+Policy & Mean units & Net expected profit & Unsafe reserve (\%)\\
+\midrule
+No data, zero violations & 1.306 & 0.1007 & 0.00\\
+Best no data, same error budget & 1.523 & 0.1171 & 2.50\\
+Finite-horizon certificate & 4.553 & 0.2844 & 2.44\\
+Standard Gaussian projection & 4.553 & 0.2844 & 2.44\\
+Full-response ellipsoid & 4.386 & 0.2718 & 0.00\\
+Point estimate (uncertified) & 4.601 & 0.2880 & 50.41\\
+Exact gain report, fee 0.05 & 4.669 & 0.3072 & 0.00\\
+Response oracle, zero violations & 4.914 & 0.3756 & 0.00\\
+Response oracle, same error budget & 5.041 & 0.3851 & 2.50\\
+\bottomrule\end{tabular}\end{center}
+Profit integrates the future zero-mean flow model and every declared cost;
+the data-dependent policy values are also integrated over reading noise by
+one-dimensional Gaussian quadrature. Mean units and empirical reserve
+violations use 20,000 synthetic reading draws. Oracle and no-data lottery
+values are analytic. A reserve violation means some bounded future path can
+exceed the budget, not that a sampled market path actually did so.
+The 97.5 percent safety statement is over measurement draws for a single
+future commitment; it is not certainty, market-wide stability, or time-uniform
+coverage. The point rule buys slightly more expected profit by violating the
+same risk requirement and is not a valid superiority comparison.
+The proposed estimator and standard Gaussian projection coincide exactly.
+
+The net information advantage over the strongest same-error-budget no-data rule is 0.1673. The written theorem's sufficient lower bound is 0.1465, strictly positive even after all costs. At the limiting merged economy the lower bound is 0.1465; continuity therefore supports the small-separation corollary. These bounds are evaluated in floating point with a wide positive margin, not claimed interval-arithmetic certificates.
+\begin{center}\small\begin{tabular}{rrr}
+\toprule
+Separation $\delta$ & Known-pair resets required & Implied fee bill\\
+\midrule
+0.0800 & 478 & 0.955\\
+0.0400 & 3.96e+04 & 79.2\\
+0.0200 & 2.84e+06 & 5.67e+03\\
+0.0100 & 1.91e+08 & 3.83e+05\\
+0.0050 & 1.26e+10 & 2.51e+07\\
+0.0025 & 8.15e+11 & 1.63e+09\\
+\bottomrule\end{tabular}\end{center}
+The known-pair test receives all 60 taps, exactly as the financial rule does.
+Response differences are calculated in rational arithmetic before conversion
+to floating point. The sample threshold is the Gaussian testing formula, not
+a measured runtime or an asserted physical trading-capital requirement.
+For the primary $\delta=0.01$, distinguishing the two already-known
+alternatives requires about 191 million resets at 5 percent error. Even
+this optimistic information fee is far beyond the unit stress budget.
+Identifying arbitrary cohorts cannot be easier than this embedded test under
+the same fixed query contract. Other experimental designs are not covered.
+
+At fixed $N=32$, the expected net benefit crosses zero at an illustrative reset price of about 0.005825. An exact scalar gain report is worth purchasing only below a fee of about 0.188690 in this example. These are computed break-even prices, not observed reporting costs.
+\paragraph{Failures retained.}
+The full output includes all 819 cost, horizon and service-fee sensitivity
+rows, including negative values and unaffordable information budgets.
+A low service premium or expensive measurements can make abstaining from
+data acquisition preferable. Independent checks cover 13 algebra, optimizer,
+shock-corner, cash-flow and Gaussian-testing properties, including the
+same-error-budget no-data optimum checked against a separate linear program.
+An initial low-premium LP check was affected by the solver's absolute
+objective tolerance; rescaling the objective resolved it, and that failed
+log is retained. This is not independent mathematical proof review.
+
+\begin{center}\footnotesize\begin{tabular}{p{0.52\textwidth}rr}
+\toprule
+Reading/model contract & Gain coverage (\%) & Unsafe reserve (\%)\\
+\midrule
+Independent Gaussian, valid & 97.36 & 2.63\\
+Correlated taps, wrong variance & 71.16 & 28.84\\
+Correlated taps, correct variance & 97.36 & 2.63\\
+Negative reading bias, invalid & 0.00 & 100.00\\
+Future feedback changes, invalid & 0.00 & 100.00\\
+\bottomrule\end{tabular}\end{center}
+The valid Gaussian row has finite Monte Carlo variation around its nominal
+97.5 percent coverage. Using the correct correlated variance restores the
+specified measurement contract at the cost of a larger margin. Bias or
+future parameter change is not repaired by a larger sample under the wrong
+model. A signed kernel such as $(1,-0.9)$ has sum $0.1$ and absolute sum
+$1.9$, so positivity is indispensable to using the plain sum. The same
+certificate used repeatedly without correction does not retain its
+one-decision guarantee.
+
+\paragraph{What changed economically.}
+In this model, the desk can choose a larger inventory commitment while
+paying for information and retaining the same permitted unsafe-action
+probability as its strongest no-data comparator. This is an example of
+positive decision value, not evidence that information always pays, that
+trading strategies must be identified, or that a real venue's liquidity and
+welfare improve. Realistic observation costs and a public-data bridge remain
+requirements for an empirical finance claim.
+
+% END FINITE HORIZON COST 20261029
+
 \end{document}
