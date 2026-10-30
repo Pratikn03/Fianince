@@ -44,5 +44,40 @@ an added assumption; **MINOR** = wording, constants, references.
 - Citations: Tsybakov (2009) Lemma 2.6 and Theorem 2.2; Wu and Yang (2020) rate n^{−1/(4k−2)} and moment
   comparison; Bernstein's constant 0.2802 (Varga and Carpenter 1985).
 
-## 3. Fresh-context second review
-(added when it completes)
+## 3. Fresh-context second review (saw only the PDF and source)
+
+No critical errors: no load-bearing theorem was found false. Five major and eighteen minor findings. The two
+headline numerical claims below were re-verified independently before changing the paper.
+
+| # | Severity | Finding | Verified? | Disposition |
+|---|---|---|---|---|
+| M1 | MAJOR | `thm:discvalue` had no real proof: no tagged reset-experiment model; the (σ/σ_f)² factor unproven (with noisy prices the IV instrument is invalid) | yes (by reading) | Theorem restated with an explicit tagged reset-experiment model; constants depend on (σ, σ_f) and the class; two-sided proof (plug-in least squares; Le Cam); note on why `prop:tagged`'s IV setting differs |
+| M2 | MAJOR | "$15M–$356M at calibrated parameters": only σ is estimated; structural parameters and Δη = 0.10 assumed; constant very sensitive; deterministic probes only | yes: C* = 358.8, 179.0, 61.1, 13.9 for a = 0…0.7; 3.9…305.2 for η̄ = 0.2…0.6 | "illustrative parameters (spacing 0.10)", "deterministic probes" in abstract and introduction; sensitivity, adaptivity factor 0.49, Radau orientation and row-spread caveats added to the CAT section |
+| M3 | MAJOR | `prop:choice` treats price-only attribution time as exact though `prop:passive` is a lower bound; weight target removes the lower edge | yes | assumption stated; slower price attribution only enlarges the band; weight-target caveat; abstract says "stylised decision model" |
+| M4 | MAJOR | worked example rescaled the η̄ = 0.4 constant: 262 should be about 77 par units (4×10⁵ → 1.2×10⁵ USDT) | yes: 76.35 / 76.20 by direct evaluation | corrected |
+| M5 | MAJOR | `thm:twocohort` uses w for intensities q, not merged weights; under the defined notation the remark on summed responses would be false; Δη conventions differ across results | yes: summed response 2.353 (intensity) vs 8.551/8.522 (merged) | notation stated in the theorem; Δη spread conventions stated in the CAT section |
+| m1 | MINOR | `lem:altpair` atom at rate 0 | — | wording: n-atom merged measure; atom at 0 allowed |
+| m2 | MINOR | "unless the number of cohorts and their spacing are known" contradicts `thm:uniformw1` | — | fixed |
+| m3 | MINOR | Table 13 row shows L+1 | — | relabelled |
+| m4 | MINOR | `thm:rh` closed form is "≥", not "=" | — | fixed |
+| m5 | MINOR | 64.76 vs 65.02; λ_L vs λ_{L−1} | — | explained; fixed |
+| m6 | MINOR | "certified" infimum on a grid | refinement agrees to 4 digits | stated as numerical evaluation, not interval enclosure |
+| m7 | MINOR | Stein vs Chernoff exponent | — | both stated |
+| m8 | MINOR | `thm:kcohort` needs Δη < min(r_c, 1−r_c); log(2/β) vs log(2K/β) | — | fixed |
+| m9 | MINOR | two-cohort (iii) unbiased only to first order; one-parameter family | — | stated; general K = 2 bound referred to `prop:esprit` |
+| m10 | MINOR | `prop:primitives`(ii) transfers W₁ to merged weights, not intensity weights | not yet checked | **open — team review area A/C** |
+| m11 | MINOR | `prop:tagged` CLT is not one-dependent; needs w ≥ w_min | — | martingale CLT wording; w_min is in the class of `thm:discvalue` |
+| m12 | MINOR | signed weights make T_h indefinite (round trip earns 0.32) | — | cost results stated as positive-economy only |
+| m13 | MINOR | "iff" over (0,1) vs η = 1 | — | (0,1] |
+| m14 | MINOR | Alfonsi et al. citation | yes (ASS 2012 abstract) | Gatheral 2010; Alfonsi–Schied–Slynko 2012 added; 2016 as multivariate extension |
+| m15 | MINOR | rounding mismatches (99,192 vs 99,193 etc.); "0.64–0.92" vs registered range | not yet checked | **open — needs the source JSON** |
+| m16 | MINOR | data availability omitted CFTC and Yahoo | — | fixed |
+| m17 | MINOR | editorial (cut "Spec." note, commas, "Part 13" references) | — | "Spec." fixed; others open |
+| m18 | MINOR | inventory term in the microfoundation remark; "Q-learning has the same form" loose; Δη > 1 region in `prop:choice` | — | **open — wording** |
+
+**Priority (second review).** The logarithmic rate and the moment/polynomial technique are known for general mixing
+distributions (Wu–Yang 2020, log log n/log n) and for exponential mixtures (Rebafka–Roueff, arXiv 1002.4516, (log n)^−2α
+with matching lower bound); the known-pair δ^−4 law is classical in resolution analysis (Shahram–Milanfar 2005,
+IEEE TSP); labelled samples are far more informative in mixtures (Castelli–Cover 1996). All four are now cited, and
+the paper claims only the closed-loop, passive and financial forms. No prior passive Whittle bound for K clustered
+modes in a closed loop was found.
