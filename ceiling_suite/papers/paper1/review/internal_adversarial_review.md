@@ -81,3 +81,29 @@ with matching lower bound); the known-pair δ^−4 law is classical in resolutio
 IEEE TSP); labelled samples are far more informative in mixtures (Castelli–Cover 1996). All four are now cited, and
 the paper claims only the closed-loop, passive and financial forms. No prior passive Whittle bound for K clustered
 modes in a closed loop was found.
+
+## 4. Gemini review (third model, harsh-referee prompt, 30 October)
+
+Recommendation: major revision; score 7.8 as a foundational paper. Each point was checked against the source.
+
+| Point | Valid? | Disposition |
+|---|---|---|
+| G(z) defined with a factor z in Section 2 but without it in Appendix A; McMillan degree at a = 0 inconsistent | **No.** G(z) = Σ wᵢz/(z − rᵢ) is defined once and used consistently; the minimum-phase proof's delay-variable form is (4) divided by z^{K+1}, as it says. Gemini's own counter-check confirms the degree claim | no change |
+| Prony proof skips the root-perturbation step | Partly. The inverse-function argument already covers it (Prony's output is F⁻¹(t̂) on the ball), but the proof did not say so | sentence added, with Katz et al. (2023) |
+| Passive theorem claims uniform attainment | No — already stated as pointwise only after the earlier fix | no change |
+| Regulators do not probe; frame dollar figures as a hypothetical shadow cost | Yes | abstract, introduction, observer subsection and CAT section now say "hypothetical benchmark", "outside participant", "shadow cost"; the supervisor's cost is detection delay (Proposition `prop:choice`) |
+| Reset experiments unrealistic | Yes, as a limitation | added: unknown free response is a nuisance that only makes separation harder, so lower bounds hold; upper bounds need reset or known state |
+| Known primitives | Already stated | no change |
+| Positions vs tagged flow | Already stated | no change |
+| Abstract tagging claim needs its observation contract | Yes | "Under the stated observation contracts" |
+| OOS primary pass should say it reflects persistence | Yes | added in the sentence itself |
+| Conclusion should carry the model qualifier | Yes | added |
+| Empty "Probing protocols" heading | Yes (table floated) | intro sentence; table placement fixed |
+| Cut the finite-horizon appendix; condense the feedback-measurement appendix | Valid for the journal version | kept in the full SSRN preprint (author's choice); to be cut in the QF build |
+| Script names in tables | SSRN keeps them by design (code link); the anonymous build strips them | no change |
+| Semi-synthetic injection test on real Binance tape | Useful idea | listed as a candidate run in `evidence_inventory.md`; needs approval and a fixed design |
+
+**Calibration note.** Gemini was the most lenient of the three reviews: it called the closed-loop transmission-zero
+extraction "genuinely new", which this paper itself now says is a smooth invertible map that decides the method,
+not the rate; and it judged novelty "sufficient" without checking the literature beyond the references given.
+Treat its 7.8 as optimistic.
