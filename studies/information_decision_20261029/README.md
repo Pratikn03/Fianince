@@ -4,6 +4,16 @@ Exploratory, self-contained Colab package for the question: when can observation
 support a specified exposure limit while trading strategies remain unidentified?
 This package does not establish a publication rating or complete the existing papers.
 
+## Current manuscript revision
+
+The returned full-mode Colab run has now been checked and integrated into the
+existing Paper 1, Paper 2, thesis, synthesis and journal-layout sources. See
+`MANUSCRIPT_REVISION.md` for the locations, findings and proof boundaries.
+Only unrun empirical result cells remain empty in those revisions. The older
+blank template is superseded as the manuscript-editing route; it remains here
+as an historical artifact. The pinned notebook and its embedded experiment
+sources have not been changed by this editorial integration.
+
 Open `Information_Decision_Run_and_Return.ipynb` in Colab. Use a CPU runtime.
 Run all cells. Default is the full profile and a fresh standalone Lean check.
 The last cell downloads `Information_Decision_Results_<UTC>.zip`. Upload that ZIP
@@ -27,8 +37,13 @@ receipts retain their previous limitations.
 - `THEORY.md`: derivations, assumptions and unresolved central theorem.
 - `PAPER_CODE_MAP.csv`: theorem/experiment/paper-slot traceability.
 - `PROTOCOL.md`, `LITERATURE.md`: design and primary-source comparison obligations.
-- `paper/Blank_Research_Papers.tex` and `.pdf`: headings and blank spaces ONLY.
-  No results, abstract claims, conclusions, or proof claims are filled in.
+- `integrate_existing_papers.py`: checks the returned archive and updates the
+  existing manuscript sources without replacing their historical content.
+- `paper/p1_existing_revision.tex`, `paper/p2_existing_revision.tex`: additions
+  integrated into the existing papers, not standalone replacement manuscripts.
+- `results/returned_20261029T225100/`: checked returned outputs, diagnostics,
+  source-preservation record and narrowly scoped Lean receipt.
+- `paper/Blank_Research_Papers.tex` and `.pdf`: superseded blank template.
 
 ## Local run
 

@@ -36,6 +36,7 @@ def chapterize(src, prefix, chap_label, title, preface, figdir, companion_key, o
     s = open(src).read()
     # The thesis carries one common development appendix, not duplicate paper notes.
     s = re.sub(r"% BEGIN ECONOMIC REVIEW 20261029.*?% END ECONOMIC REVIEW 20261029", "", s, flags=re.S)
+    s = re.sub(r"% BEGIN INFORMATION DECISION REVISION 20261029.*?% END INFORMATION DECISION REVISION 20261029", "", s, flags=re.S)
     body = s[s.index("\\begin{document}") + len("\\begin{document}"):s.rindex("\\end{document}")]
     abstract = body[body.index("\\begin{abstract}") + len("\\begin{abstract}"):body.index("\\end{abstract}")]
     abstract = abstract.replace("\\noindent", "").strip()
