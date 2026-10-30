@@ -1,19 +1,19 @@
 # Ceiling Suite — Lean declaration mapping audit
 
 - **Status**: MAPPING_AUDIT_INCOMPLETE. Existing declaration references checked; no fresh Lean build or full semantic equivalence is claimed.
-- **Unmapped labels**: prop:primitives, prop:tied, thm:uniformw1
+- **Unmapped labels**: prop:primitives, prop:tied, thm:uniformw1, fhc:capacity, fhc:nodata-chance, fhc:decision, fhc:pair, fhc:priced, fhc:capacity, fhc:nodata-chance, fhc:decision, fhc:pair, fhc:priced
 - **Revised statements requiring semantic review**: prop:esprit, thm:minphase, prop:inventory_S, thm:window, thm:certcost, thm:forward, prop:driftguard
 - **Lean Toolchain**: `leanprover/lean4:v4.34.1`
-- **Paper 1**: 26 / 29 current formal environments have an existing name mapping.
-- **Paper 2**: 28 / 28 current formal environments have an existing name mapping.
+- **Paper 1**: 26 / 34 current formal environments have an existing name mapping.
+- **Paper 2**: 28 / 33 current formal environments have an existing name mapping.
 - Run with `--require-complete` to fail if unmapped or revised statements remain. A successful default run means the audit was generated, not that manuscript formalization is complete.
 
 ## Paper 1 — Auditable Memory and Financial Identification Limits (`paper1/`)
 
 | # | Environment | Label | Title | LaTeX Source | Mathlib (`ℝ`) Theorem | Core Lean (`Rat`) Theorem |
 |---|---|---|---|---|---|---|
-| 1 | `lemma` | `lem:micro` | Filtering and learning microfoundations | `p1_front.tex:167` | `CurrentMM.p1_prop_kalman_memory, CurrentMM.p1_prop_ogd_memory` (L46) | `MachineMarkets.p1_prop_kalman_memory, MachineMarkets.p1_prop_ogd_memory` (L13) |
-| 2 | `lemma` | `lem:cm` | Positive price-response geometry | `p1_front.tex:181` | `CurrentMM.p1_lem_cm_positive_response` (L96) | `MachineMarkets.p1_lem_cm_positive_geometry` (L29) |
+| 1 | `lemma` | `lem:micro` | Filtering and learning microfoundations | `p1_front.tex:179` | `CurrentMM.p1_prop_kalman_memory, CurrentMM.p1_prop_ogd_memory` (L46) | `MachineMarkets.p1_prop_kalman_memory, MachineMarkets.p1_prop_ogd_memory` (L13) |
+| 2 | `lemma` | `lem:cm` | Positive price-response geometry | `p1_front.tex:193` | `CurrentMM.p1_lem_cm_positive_response` (L96) | `MachineMarkets.p1_lem_cm_positive_geometry` (L29) |
 | 3 | `theorem` | `thm:merged` | Merged rate--weight equivalence | `p1_ident.tex:5` | `CurrentMM.p1_thm_merged_equivalence_and_resolvent` (L123) | `MachineMarkets.p1_thm_merged_equivalence` (L38) |
 | 4 | `theorem` | `thm:quantity` | Sharp probing-resource orders for a known symmetric pair | `p1_ident.tex:33` | `CurrentMM.p1_thm_quantity_sharp_orders` (L143) | `MachineMarkets.p1_thm_quantity_orders` (L44) |
 | 5 | `lemma` | `lem:toeplitz` | Fair execution | `p1_ident.tex:87` | `CurrentMM.p1_lem_toeplitz_fair_execution` (L161) | `MachineMarkets.p1_lem_toeplitz_fair_execution` (L53) |
@@ -41,6 +41,11 @@
 | 27 | `theorem` | `thm:blind` | Spectral blindness | `p1_disclosure.tex:196` | `CurrentMM.p1_thm_blind_spectral_blindness` (L590) | `MachineMarkets.p1_thm_spectral_blindness` (L211) |
 | 28 | `theorem` | `thm:abstain` | Finite-window abstention | `p1_appendix.tex:166` | `CurrentMM.p1_thm_abstain_finite_window` (L640) | `MachineMarkets.p1_thm_abstain_finite_window` (L228) |
 | 29 | `proposition` | `prop:passive0` | Passive distinction with zero controlled quantity | `p1_appendix.tex:182` | `CurrentMM.p1_prop_passive0_three_step_blocks` (L254) | `MachineMarkets.p1_prop_passive0_distinction` (L79) |
+| 30 | `lemma` | `fhc:capacity` | Sharp prior bounds and exact prefunded capacity | `p1_appendix.tex:592` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 31 | `lemma` | `fhc:nodata-chance` | No data at the same error budget | `p1_appendix.tex:644` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 32 | `theorem` | `fhc:decision` | Uniform cost-aware finite-horizon decision | `p1_appendix.tex:669` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 33 | `theorem` | `fhc:pair` | A two-cohort identification obstruction under the same observations | `p1_appendix.tex:748` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 34 | `corollary` | `fhc:priced` | A priced separation | `p1_appendix.tex:818` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
 
 ## Paper 2 — Transient Amplification & Summed-Gain Guard (`paper2/`)
 
@@ -74,6 +79,11 @@
 | 26 | `theorem` | `thm:disclosure` | Decision value of disclosure | `p2_disclosure.tex:5` | `CurrentMM.p2_thm_disclosure, CurrentMM.is_disclosure_monotone, CurrentMM.is_disclosure_strict, CurrentMM.is_intersection_admits_more` (L1181) | `MachineMarkets.p2_thm_disclosure` (L346) |
 | 27 | `proposition` | `prop:equil` | Equilibrium transient risk | `p2_equil.tex:10` | `CurrentMM.p2_prop_equil_transient_risk, CurrentMM.is_depth_solution_increasing, CurrentMM.is_depth_eq_lt_sp, CurrentMM.is_depth_rebate_identified` (L449) | `MachineMarkets.p2_prop_equil_transient_risk` (L159) |
 | 28 | `proposition` | `prop:probe` | Anytime-valid probing | `p2_appendix.tex:148` | `CurrentMM.is_sequential_rule_correct` (L704) | `MachineMarkets.p2_prop_probe` (L393) |
+| 29 | `lemma` | `fhc:capacity` | Sharp prior bounds and exact prefunded capacity | `p2_appendix.tex:577` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 30 | `lemma` | `fhc:nodata-chance` | No data at the same error budget | `p2_appendix.tex:629` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 31 | `theorem` | `fhc:decision` | Uniform cost-aware finite-horizon decision | `p2_appendix.tex:654` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 32 | `theorem` | `fhc:pair` | A two-cohort identification obstruction under the same observations | `p2_appendix.tex:733` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 33 | `corollary` | `fhc:priced` | A priced separation | `p2_appendix.tex:803` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
 
 ## Phase 7 — Unified Foundational Bridge Theorems (Paper 1 ↔ Paper 2)
 
