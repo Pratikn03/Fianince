@@ -21,6 +21,7 @@ JOBS = [
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--date-tag", default="20261029")
     args = parser.parse_args()
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -30,7 +31,7 @@ def main():
         name, folder, source = job
         dest = builds / name
         dest.mkdir(exist_ok=True)
-        target = out / f"{name}_Updated_20261029.pdf"
+        target = out / f"{name}_Updated_{args.date_tag}.pdf"
         target.unlink(missing_ok=True)
         # Do not accept stale PDFs or partially written auxiliary files from a failed build.
         for suffix in [".aux", ".out", ".toc", ".log", ".pdf"]:
