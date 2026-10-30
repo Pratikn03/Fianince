@@ -4,23 +4,41 @@ Keeps the paper itself (abstract through Appendix D) and removes what is not par
 status paragraph, the development-revision and information-decision blocks, the finite-horizon extension and the
 returned-experiment work register (all retained in paper1.tex and in studies/). Anonymises the title page, running
 header and the self-citation of the companion paper. Output: paper1_wfa.tex -> paper1_wfa.pdf.
+
+With --ssrn it builds the named public preprint instead (same text and structure, authors and companion citation kept,
+link to the public code repository): paper1_ssrn.tex -> paper1_ssrn.pdf. --solo drops the second author; use it only
+once both authors have agreed in writing.
 """
+import argparse
 import re
 import subprocess
 from pathlib import Path
 
+ap = argparse.ArgumentParser()
+ap.add_argument("--ssrn", action="store_true", help="named public preprint instead of the anonymous WFA version")
+ap.add_argument("--solo", action="store_true", help="single-author byline (only after written agreement)")
+ARGS = ap.parse_args()
+NAME = "paper1_ssrn" if ARGS.ssrn else "paper1_wfa"
 HERE = Path(__file__).resolve().parent
 src = (HERE / "paper1.tex").read_text()
 
 core, _, _ = src.partition("% BEGIN ECONOMIC REVIEW 20261029")
 assert "\\section{Reproducibility: source of every number}" in core and "returned_results" not in core
 core = re.sub(r"% BEGIN ADVANCED FRONT STATUS 20261030.*?% END ADVANCED FRONT STATUS 20261030\n", "", core, flags=re.S)
-core = re.sub(r"\\author\{.*?\}\}\n", r"\\author{}\n", core, count=1, flags=re.S)
 core = core.replace("\\date{Development revision, 30 October 2026}", "\\date{November 2026}")
-core = core.replace("\\fancyhead[L]{\\small Niroula and Niroula}", "\\fancyhead[L]{\\small Anonymous submission}")
-core = re.sub(r"\\bibitem\[Niroula et~al\.\(2026\)\]\{niroula2026b\}.*?\n",
-              "\\\\bibitem[Anonymous(2026)]{niroula2026b} Anonymous (2026). Companion paper on transient amplification and "
-              "pre-trade guards in closed-loop markets. Working paper, withheld for anonymous review.\n", core, count=1)
+if ARGS.ssrn:
+    if ARGS.solo:
+        core = re.sub(r"\n\\and Prashant Niroula\\thanks\{.*?\}\}", "}", core, count=1, flags=re.S)
+        core = core.replace("\\fancyhead[L]{\\small Niroula and Niroula}", "\\fancyhead[L]{\\small Niroula}")
+    repo = ("\n\n\\noindent\\textbf{Code and data.} All code, registered test specifications and result files are public at "
+            "\\url{https://github.com/Pratikn03/Fianince}.\n")
+    core = core.replace("\\paragraph{Reproducibility.}", repo + "\n\\paragraph{Reproducibility.}", 1)
+else:
+    core = re.sub(r"\\author\{.*?\}\}\n", r"\\author{}\n", core, count=1, flags=re.S)
+    core = core.replace("\\fancyhead[L]{\\small Niroula and Niroula}", "\\fancyhead[L]{\\small Anonymous submission}")
+    core = re.sub(r"\\bibitem\[Niroula et~al\.\(2026\)\]\{niroula2026b\}.*?\n",
+                  "\\\\bibitem[Anonymous(2026)]{niroula2026b} Anonymous (2026). Companion paper on transient amplification and "
+                  "pre-trade guards in closed-loop markets. Working paper, withheld for anonymous review.\n", core, count=1)
 core = core.replace("The historical simulation results retain their original execution records; this revision reruns the "
                     "named advanced experiment only. ", "")
 # Focus the main text on the paper's question (what prices reveal, what disclosure buys, in money and in data).
@@ -82,10 +100,13 @@ print("script/hash mentions left outside the reproducibility appendix:", len(lef
 for l in left[:12]:
     print("   ", l)
 out = core.rstrip() + "\n\n\\end{document}\n"
-for word in ("Niroula", "Pratik", "Prashant", "Mankato", "Tribhuvan", "mnsu", "Pratikn03", "fianince"):
-    assert word.lower() not in out.lower().replace("niroula2026b", ""), f"identifying text left: {word}"
-(HERE / "paper1_wfa.tex").write_text(out)
+if not ARGS.ssrn:
+    for word in ("Niroula", "Pratik", "Prashant", "Mankato", "Tribhuvan", "mnsu", "Pratikn03", "fianince"):
+        assert word.lower() not in out.lower().replace("niroula2026b", ""), f"identifying text left: {word}"
+elif ARGS.solo:
+    assert "Prashant" not in out.split("\\begin{abstract}")[0], "second author still on the title page"
+(HERE / f"{NAME}.tex").write_text(out)
 for _ in range(2):
-    subprocess.run(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", "paper1_wfa.tex"], cwd=HERE,
+    subprocess.run(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", f"{NAME}.tex"], cwd=HERE,
                    check=True, stdout=subprocess.DEVNULL)
-print("built paper1_wfa.pdf")
+print(f"built {NAME}.pdf")
