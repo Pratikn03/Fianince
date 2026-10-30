@@ -38,6 +38,7 @@ def chapterize(src, prefix, chap_label, title, preface, figdir, companion_key, o
     s = re.sub(r"% BEGIN ECONOMIC REVIEW 20261029.*?% END ECONOMIC REVIEW 20261029", "", s, flags=re.S)
     s = re.sub(r"% BEGIN INFORMATION DECISION REVISION 20261029.*?% END INFORMATION DECISION REVISION 20261029", "", s, flags=re.S)
     s = re.sub(r"% BEGIN FINITE HORIZON COST 20261029.*?% END FINITE HORIZON COST 20261029", "", s, flags=re.S)
+    s = re.sub(r"% BEGIN ADVANCED RETURN STATUS 20261030.*?% END ADVANCED RETURN STATUS 20261030", "", s, flags=re.S)
     body = s[s.index("\\begin{document}") + len("\\begin{document}"):s.rindex("\\end{document}")]
     abstract = body[body.index("\\begin{abstract}") + len("\\begin{abstract}"):body.index("\\end{abstract}")]
     abstract = abstract.replace("\\noindent", "").strip()
