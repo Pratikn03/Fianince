@@ -1,0 +1,60 @@
+{
+  "N_star": "smallest N on the grid 2^(j/2), j = 0..59 (rounded), with failure rate <= 0.25 at that N and at the next grid point; 200 replications per point",
+  "calibration": "sigma, sigma_f and the spacing grids were chosen on i.i.d. Gaussian noise only (price slopes -5.96 for K = 2 and -9.96 for K = 3; tagged N* between 256 and 724), before any real noise was downloaded; the code was dry-run on synthetic Student-t noise",
+  "economy": {
+    "K2": {
+      "d_eta": [
+        0.5,
+        0.4,
+        0.32,
+        0.25,
+        0.2,
+        0.16,
+        0.125
+      ],
+      "rc": 0.6
+    },
+    "K3": {
+      "d_eta": [
+        0.6,
+        0.5,
+        0.4,
+        0.32,
+        0.25
+      ],
+      "rc": 0.5
+    },
+    "W": 0.08,
+    "a": 0.5,
+    "kappa": 0.8,
+    "rule": "K-point Gauss-Legendre nodes s and normalized weights; rates rc + d_eta*s, merged weights W*omega"
+  },
+  "estimators": {
+    "price_only": "closed-loop deconvolution of h_1..h_2K into kernel values, then Prony (Hankel solve, real roots in (0,1), Vandermonde weights)",
+    "tagged": "per class, least squares of fbar_t on (fbar_{t-1}, hbar_t), t = 1..5 (6 taps)"
+  },
+  "experiment": "each reset experiment returns the unit-impulse price response h_0..h_{T-1} plus sigma times a noise window (h_0 = kappa known); with tagging it also returns each class's flow response plus sigma_f times independent noise windows",
+  "failure": "any weight off by more than 0.25 times the smallest true weight, or no valid Prony solution",
+  "hypotheses": {
+    "H1_primary": "price-only, K = 2, real noise: OLS slope of log N* on log d_eta lies in [-7.5, -4.5] (theory -6)",
+    "H2_primary": "tagged, K = 2, real noise: N* stays bounded across the spacing grid, max/min of N*_tagged <= 8 (theory: bounded above and below uniformly in d_eta; the price-only requirement grows by about (0.5/0.125)^6 = 4096 over the same grid); the slope is reported but is not the criterion, because over a finite grid a bounded requirement can drift mildly",
+    "H3_secondary": "price-only, K = 3, real noise: slope lies in [-12.5, -7.5] (theory -10)",
+    "H4_report": "ratio N*_real / N*_gaussian at each spacing (no criterion)"
+  },
+  "noise_arms": {
+    "gaussian": "i.i.d. standard normal windows (control)",
+    "large_N": "averages of N windows are resampled exactly for N <= 4096 and drawn as Gaussian vectors with the pool's empirical window covariance for N > 4096 (central limit theorem); the share of N* values in each regime is reported",
+    "real": "Binance spot BTCUSDT one-minute klines on the 6th of each month, January 2025 to September 2026 (21 days, untouched in this project); log close-to-close changes; non-overlapping windows of length T within each day; demeaned and scaled to unit variance over the pool"
+  },
+  "noise_levels": {
+    "note": "real windows are standardized to unit variance; the test is about the shape of the noise, not its level",
+    "sigma": 0.001,
+    "sigma_f": 0.02
+  },
+  "pass_rule": "the test passes if H1 and H2 both hold; H3 and H4 are reported either way",
+  "question": "Does the price-only sample requirement still scale as (Delta eta)^-(4K-2), and does the class-tagged requirement stay flat, when the observation errors of the reset experiments have the shape of real market price changes (heavy tails, autocorrelation, volatility clustering) rather than i.i.d. Gaussian noise?",
+  "relation": "Paper 1 Theorems thm:kcohort, prop:esprit and thm:discvalue; answers the referees' request for validation under real noise. Synthetic cohorts with known spacing; only the noise is real.",
+  "runs": "run once; every run is counted in the unlock file",
+  "seed": 20261031,
+  "test": "P1_injection"
+}
