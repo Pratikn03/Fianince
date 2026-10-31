@@ -66,3 +66,8 @@ import CurrentProofs.Paper1UniformInverse
 import CurrentProofs.Paper1PronyMoment
 import CurrentProofs.Paper1PronyDeconv
 import CurrentProofs.Paper1PronyUpper
+import CurrentProofs.Paper1MergedSeparation
+import CurrentProofs.Paper1Blind
+import CurrentProofs.Paper1MinPhase
+import CurrentProofs.Paper1TaggedRates
+import CurrentProofs.Paper1TaggedIV
