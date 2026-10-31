@@ -71,3 +71,6 @@ import CurrentProofs.Paper1Blind
 import CurrentProofs.Paper1MinPhase
 import CurrentProofs.Paper1TaggedRates
 import CurrentProofs.Paper1TaggedIV
+import CurrentProofs.Paper1GaussianTriangular
+import CurrentProofs.Paper1PassiveRecord
+import CurrentProofs.Paper1PassiveCost
