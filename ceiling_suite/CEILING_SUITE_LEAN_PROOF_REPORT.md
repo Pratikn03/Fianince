@@ -43,11 +43,11 @@
 | 29 | `theorem` | `thm:blind` | Spectral blindness | `p1_disclosure.tex:265` | `CurrentMM.p1_thm_blind_spectral_blindness` (L590) | `MachineMarkets.p1_thm_spectral_blindness` (L211) |
 | 30 | `theorem` | `thm:abstain` | Finite-window abstention | `p1_appendix.tex:208` | `CurrentMM.p1_thm_abstain_finite_window` (L640) | `MachineMarkets.p1_thm_abstain_finite_window` (L228) |
 | 31 | `proposition` | `prop:passive0` | Passive distinction with zero controlled quantity | `p1_appendix.tex:224` | `CurrentMM.p1_prop_passive0_three_step_blocks` (L254) | `MachineMarkets.p1_prop_passive0_distinction` (L79) |
-| 32 | `lemma` | `fhc:capacity` | Sharp prior bounds and exact prefunded capacity | `p1_appendix.tex:642` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 33 | `lemma` | `fhc:nodata-chance` | No data at the same error budget | `p1_appendix.tex:694` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 34 | `theorem` | `fhc:decision` | Uniform cost-aware finite-horizon decision | `p1_appendix.tex:719` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 35 | `theorem` | `fhc:pair` | A two-cohort identification obstruction under the same observations | `p1_appendix.tex:798` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 36 | `corollary` | `fhc:priced` | A priced separation | `p1_appendix.tex:868` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 32 | `lemma` | `fhc:capacity` | Sharp prior bounds and exact prefunded capacity | `p1_appendix.tex:646` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 33 | `lemma` | `fhc:nodata-chance` | No data at the same error budget | `p1_appendix.tex:698` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 34 | `theorem` | `fhc:decision` | Uniform cost-aware finite-horizon decision | `p1_appendix.tex:723` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 35 | `theorem` | `fhc:pair` | A two-cohort identification obstruction under the same observations | `p1_appendix.tex:802` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 36 | `corollary` | `fhc:priced` | A priced separation | `p1_appendix.tex:872` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
 
 ## Paper 2 — Transient Amplification & Summed-Gain Guard (`paper2/`)
 
