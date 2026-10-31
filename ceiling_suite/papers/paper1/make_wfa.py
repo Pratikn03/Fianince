@@ -26,7 +26,7 @@ src = (HERE / "paper1.tex").read_text()
 core, _, _ = src.partition("% BEGIN ECONOMIC REVIEW 20261029")
 assert "\\section{Reproducibility: source of every number}" in core and "returned_results" not in core
 core = re.sub(r"% BEGIN ADVANCED FRONT STATUS 20261030.*?% END ADVANCED FRONT STATUS 20261030\n", "", core, flags=re.S)
-core = core.replace("\\date{Development revision, 30 October 2026}", "\\date{This version: 30 October 2026}")
+core = core.replace("\\date{Development revision, 31 October 2026}", "\\date{This version: 31 October 2026}")
 if ARGS.ssrn:
     if ARGS.solo:
         core = re.sub(r"\n\\and .*?(?=\}\n\\date)", "", core, count=1, flags=re.S)
@@ -103,12 +103,14 @@ if ARGS.ssrn:
          "Voluntary disclosure: Binance's trader-class ratios",
          "\\subsection{Evidence from trader-class reports}\n"
          "Two public data sets report positions by trader class: the CFTC's weekly Commitments of Traders, mandated by "
-         "law, in eight regulated futures markets, and Binance's five-minute top-trader and all-account ratios, published "
+         "law, in twenty regulated futures markets, and Binance's five-minute top-trader and all-account ratios, published "
          "voluntarily, in 30 perpetual markets. Supplements~\\ref{sec:cot} and~\\ref{sec:disc_data} report the "
          "pre-specified tests in full. In both, class positions pin each class's fitted persistence to a narrow interval "
          "while prices leave it essentially unrestricted: the primary CFTC hypothesis holds in all eight markets, with "
-         "price-only intervals 9 to 71 times wider, and on 30 fresh Binance markets the horizon-matched comparison gives a "
-         "median width ratio of 7.3. Several pre-specified tests failed and are reported as they came out "
+         "price-only intervals 9 to 71 times wider, and in all twelve markets of a later registered replication; matching "
+         "the weekly report's precision from prices alone would take, at the median, about 1{,}350 times as much data "
+         "(a post hoc lower bound, Table~\\ref{tab:dataequiv}). On 30 fresh Binance markets the horizon-matched "
+         "comparison gives a median width ratio of 7.3. Several pre-specified tests failed and are reported as they came out "
          "(Table~\\ref{tab:scorecard}): Binance class data did not improve out-of-sample return forecasts, the CFTC "
          "reports read as flows pinned down their own persistence in only 3 of 8 markets (6 were required), and a test "
          "designed to separate learning memory from position turnover found a distinct faster root in only 2 of 8. A fitted persistence of aggregated positions also "
