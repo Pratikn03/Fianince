@@ -52,8 +52,23 @@ MOVES = [  # (heading that starts the block, heading that ends it, appendix titl
     ("\\section{A spectral blind spot}", "\\section{Empirical feedback and its measurement}", "A spectral blind spot"),
     ("\\section{Empirical feedback and its measurement}", "\\section{Implications for supervision and market design}", "Empirical feedback and its measurement"),
 ]
+if ARGS.ssrn:
+    # SSRN = journal-length main paper + online supplement. These blocks move, unchanged and with their labels,
+    # from the main text to the supplement (headings must still exist in core when each move runs).
+    MOVES = [
+        ("\\subsection{Related literature}", "\\subsection{Outline}", "Extended related literature"),
+        ("\\subsection{What prices hide, in economic terms}", "\\subsection{Natural excitation and the cost of ambiguity}",
+         "What prices hide, in economic terms"),
+        ("\\subsection{Natural excitation and the cost of ambiguity}", "\\section{Account-level capital}",
+         "Natural excitation and the cost of ambiguity"),
+        ("\\subsection{Local information: the Cram\\'er--Rao benchmark}", "\\subsection{A global two-point bound for any estimator}",
+         "Local information: the Cram\\'er--Rao benchmark"),
+        ("\\subsection{Disclosure in dollars}", "\\subsection{When disclosure is worth acquiring}",
+         "A hypothetical scale illustration: disclosure in dollars"),
+    ] + MOVES
 repro = "\\section{Reproducibility: source of every number}"
 moved = []
+MOVED_SEC_LABELS = []
 supp_blocks = []   # --ssrn: the spectral blind spot and feedback measurement go to a separate supplement PDF
 for start, stop, title in MOVES:
     i, j = core.index(start), core.index(stop)
@@ -63,7 +78,8 @@ for start, stop, title in MOVES:
     body = block[len(head):]
     if head.startswith("\\subsection"):                     # a moved subsection becomes an appendix section;
         body = body.replace("\\subsubsection{", "\\subsection{")  # (none present, kept for safety)
-    if ARGS.ssrn and title in ("A spectral blind spot", "Empirical feedback and its measurement"):
+    MOVED_SEC_LABELS.extend(re.findall(r"\\label\{((?:sec|app):[^}]*)\}", block))
+    if False and title in ("A spectral blind spot", "Empirical feedback and its measurement"):  # now part of the online supplement
         supp_blocks.append("\\section{" + title + "}" + body)
     else:
         moved.append("\\section{Internet appendix: " + title + "}" + body)
@@ -150,21 +166,50 @@ if ARGS.ssrn and supp_blocks:
         for word in ("Appendix", "Appendices", "Section", "Sections"):
             core = core.replace(word + "~\\ref{" + lab + "}", "Supplement~" + num)
         core = core.replace("\\eqref{" + lab + "}", "(" + num + ")").replace("\\ref{" + lab + "}", num)
+if ARGS.ssrn:
+    # Journal-length main paper followed by an S-numbered online supplement (one PDF; split into two files below).
+    for lab in MOVED_SEC_LABELS:
+        for w in ("Section", "Sections"):
+            core = core.replace(w + "~\\ref{" + lab + "}", "Supplement~\\ref{" + lab + "}")
+    core = core.replace("Appendix~\\ref{", "Supplement~\\ref{").replace("Appendices~\\ref{", "Supplements~\\ref{")
+    core = core.replace("(Internet Appendix, ", "(Online Supplement, ")
+    core = core.replace("\\section{Internet appendix: ", "\\section{").replace("\\section{Internet appendix}", "\\section{Further results}")
+    m0 = core.index("\\caption{Map of results}"); t0 = core.rfind("\\begin{table}", 0, m0)
+    t1 = core.index("\\end{table}", m0) + len("\\end{table}")
+    maptable = core[t0:t1]; core = core[:t0] + core[t1:]          # the map of results stays in the main text
+    lit = (HERE / "review" / "litmain.tex").read_text() + maptable + "\n\n"
+    core = core.replace("\\subsection{Outline}", lit + "\\subsection{Outline}", 1)
+    core = core.replace("\\doublespacing", "\\onehalfspacing", 1)
+    supp_head = ("\\appendix\n\\clearpage\n\\setcounter{page}{1}\\renewcommand{\\thepage}{S-\\arabic{page}}"
+                 "\\renewcommand{\\thesection}{S\\arabic{section}}\\setcounter{table}{0}\\renewcommand{\\thetable}{S\\arabic{table}}"
+                 "\\setcounter{figure}{0}\\renewcommand{\\thefigure}{S\\arabic{figure}}\\setcounter{equation}{0}"
+                 "\\renewcommand{\\theequation}{S\\arabic{equation}}\\fancyhead[R]{\\small Online Supplement}\n"
+                 "\\begin{center}{\\Large Online Supplement}\\\\[4pt]{\\large What Prices Reveal About Hidden Trader Populations, "
+                 "and What Identifying Them Costs}\\end{center}\n\\noindent The supplement contains the proofs (Section~S1), "
+                 "further results and robustness checks, the extended literature review, the hypothetical dollar illustration, "
+                 "a finite-horizon decision example, the spectral blind spot, the measurement of reduced-form feedback and the reproducibility map. Section, table, figure and equation numbers "
+                 "prefixed with S refer to this supplement.\n\n")
+    assert core.count("\\appendix\n") == 1
+    core = core.replace("\\appendix\n", supp_head, 1)
 # No table of contents in a submission; an outline that matches the submission's own order.
 core = core.replace("\\setcounter{page}{1}\n\\tableofcontents\n\\newpage\n", "\\setcounter{page}{1}\n", 1)
 o1, o2 = core.index("\\subsection{Outline}"), core.index("\\section{Model and motivating examples}")
-core = core[:o1] + ("\\subsection{Outline}\n"
+_outline = ("\\subsection{Outline}\n"
     "Section~\\ref{sec:model} sets out the model and Section~\\ref{sec:ident} the identification boundary. "
     "Section~\\ref{sec:resources} turns memory resolution into executed quantity, capital and money for a known pair, and "
     "Section~\\ref{sec:mixtures} treats unknown mixtures, general memory and passive data. Section~\\ref{sec:disclosure} "
-    "states what disclosure buys, gives a hypothetical scale illustration of its value, and tests it on the CFTC's mandated "
+    "states what disclosure buys and when it changes a supervisor's decision, and tests it on the CFTC's mandated "
     "trader-class reports and on Binance's class ratios. Section~\\ref{sec:policy} draws the implications for "
-    "supervision and Section~\\ref{sec:conclusion} concludes. Proofs are in Appendix~\\ref{app:proofs}; the internet "
-    "appendix contains account-level capital, near-colliding rates and robustness to learning rules" +
-    (", a separate supplement contains the spectral blind spot and the measurement of reduced-form feedback" if ARGS.ssrn else
-     ", the spectral blind spot and the measurement of reduced-form feedback") + (", and Appendix~\\ref{app:fhc} gives a finite-horizon decision in which a "
-    "desk profits from the identified aggregate while cohort identification stays unaffordable" if ARGS.ssrn else "") +
-    ", and Appendix~\\ref{app:repro} maps every number to its source.\n\n") + core[o2:]
+    "supervision and Section~\\ref{sec:conclusion} concludes. ")
+if ARGS.ssrn:
+    _outline += ("The online supplement contains the proofs, the extended literature review, further results and robustness "
+                 "checks, the hypothetical dollar illustration, a finite-horizon decision example, the spectral blind spot, the "
+                 "measurement of reduced-form feedback and the reproducibility map.\n\n")
+else:
+    _outline += ("Proofs are in Appendix~\\ref{app:proofs}; the internet appendix contains account-level capital, near-colliding "
+                 "rates, robustness to learning rules, the spectral blind spot and the measurement of reduced-form feedback, and "
+                 "Appendix~\\ref{app:repro} maps every number to its source.\n\n")
+core = core[:o1] + _outline + core[o2:]
 # Hygiene for a submission: no internal tags, script names or hashes outside the reproducibility appendix
 # (Appendix "Reproducibility: source of every number" keeps the full map from each number to its script).
 core = core.replace("\\newcommand{\\lab}[1]{\\textsc{[#1]}}", "\\newcommand{\\lab}[1]{}")
@@ -197,7 +242,7 @@ if ARGS.ssrn:
                                   "\\section*{Source of every number}") + "\n\\end{document}\n")
     core = core[:r0] + ("\\section{Reproducibility}\\label{app:repro}\n"
         "Every table, figure and number in this paper is mapped to the notebook or script and the result file that "
-        "produce it in the reproducibility map, \\texttt{ceiling\\_suite/papers/paper1/REPRODUCIBILITY\\_MAP.md} "
+        "produce it in the reproducibility map, \\path{ceiling_suite/papers/paper1/REPRODUCIBILITY_MAP.md} "
         "(also as \\texttt{paper1\\_reproducibility\\_map.pdf}) in the public repository "
         "\\url{https://github.com/Pratikn03/Fianince}, release tag \\texttt{paper1-ssrn-v1}. The map also lists the "
         "replication notebooks in run order and the specification files of the pre-specified tests.\n")
@@ -212,6 +257,17 @@ for _ in range(2):
     subprocess.run(["pdflatex", "-interaction=nonstopmode", "-halt-on-error", f"{NAME}.tex"], cwd=HERE,
                    check=True, stdout=subprocess.DEVNULL)
 print(f"built {NAME}.pdf")
+if ARGS.ssrn:
+    # Split the combined preprint into the journal's two files: main paper and online supplement.
+    import pypdf
+    rd = pypdf.PdfReader(str(HERE / f"{NAME}.pdf"))
+    k = next(i for i, pg in enumerate(rd.pages) if "The supplement contains the proofs" in (pg.extract_text() or ""))
+    for name, rng in (("paper1_main", range(0, k)), ("paper1_online_supplement", range(k, len(rd.pages)))):
+        w = pypdf.PdfWriter()
+        for i in rng:
+            w.add_page(rd.pages[i])
+        w.write(str(HERE / f"{name}.pdf"))
+    print(f"split: main {k} pages, supplement {len(rd.pages) - k} pages")
 if ARGS.ssrn:
     # Resolve cross-references to the preprint's numbering, then build the map as PDF and Markdown.
     labels = dict(re.findall(r"\\newlabel\{([^}]*)\}\{\{([^}]*)\}", (HERE / f"{NAME}.aux").read_text()))
