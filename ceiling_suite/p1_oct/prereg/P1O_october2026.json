@@ -1,0 +1,69 @@
+{
+  "N2_feedback_beyond_persistence": {
+    "H1_primary": "the full model has lower out-of-sample squared error with Diebold-Mariano p < 0.05 in at least 60% of included symbols",
+    "fit_and_evaluate": "OLS on 1-20 October; one-step squared errors on 21-30 October with the fitted coefficients",
+    "full": "restricted + sum_{j=0..5} beta_j r_{t-j}",
+    "reported_without_criterion": "out-of-sample R^2 gain, MSE ratio and the cumulative response sum(beta) for every symbol",
+    "restricted": "dy_t = c + sum_{j=1..6} phi_j dy_{t-j} + e_t",
+    "statistic": "one-sided Diebold-Mariano test of equal squared error, Newey-West variance with 12 lags"
+  },
+  "N3_combined_response_from_flow": {
+    "H1_primary": "the interval for Psi excludes zero AND its half-width is below half of |Psi| in at least 80% of included symbols",
+    "H2_secondary": "Psi has the same sign on 1-15 October and 16-30 October in at least 80% of included symbols",
+    "H3_secondary_root_T": "the half-width on 1-10 October divided by the half-width on all 30 days lies in [1.2, 2.5] (root-T predicts sqrt(3) = 1.73) in at least 70% of included symbols",
+    "estimand": "combined response Psi = sum_{m=1..12} k_m, Newey-West 95% interval with 24 lags",
+    "model": "x_t = c + sum_{m=1..12} k_m r_{t-m} + u_t (one hour of lags), OLS on all 30 days"
+  },
+  "approved": "Requested by the author in chat on 2026-10-31 ('new improved tests to run at Colab'); registered by this commit before any October 2026 data are opened.",
+  "data": {
+    "dates": "2026-10-01 to 2026-10-30 inclusive (30 days); no other dates are read",
+    "grid": "5-minute grid over the 30 days, at the metrics snapshot times (minute multiple of 5, UTC)",
+    "inclusion": "a symbol is included if at least 28 of the 30 days have both klines and metrics files and at least 90% of the 5-minute grid points have a finite class position and return; decided in the data stage before any estimate; no replacement symbols",
+    "source": "data.binance.vision, futures/um/daily: 1-minute klines and 5-minute metrics; every file checked against Binance's .CHECKSUM (thesis/evidence/binance_vision.py, unchanged)",
+    "symbols_in_order": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "BNBUSDT",
+      "XRPUSDT",
+      "DOGEUSDT",
+      "ADAUSDT",
+      "AVAXUSDT",
+      "LINKUSDT",
+      "DOTUSDT",
+      "LTCUSDT",
+      "BCHUSDT",
+      "NEARUSDT",
+      "ATOMUSDT",
+      "UNIUSDT",
+      "FILUSDT",
+      "APTUSDT",
+      "ARBUSDT",
+      "OPUSDT",
+      "SUIUSDT",
+      "INJUSDT",
+      "AAVEUSDT",
+      "ETCUSDT",
+      "TRXUSDT",
+      "XLMUSDT",
+      "HBARUSDT",
+      "ICPUSDT",
+      "SEIUSDT",
+      "TIAUSDT",
+      "WIFUSDT"
+    ],
+    "variables": {
+      "class_position": "y_t = log(sum_toptrader_long_short_ratio) at snapshot t (Binance's top-trader position ratio, a class-tagged position); dy_t = y_t - y_{t-5min}",
+      "flow": "x_t = sum over the five 1-minute bars ending at t of (2*taker_buy_quote_volume - quote_volume) divided by the sum of quote_volume (taker-flow imbalance, untagged)",
+      "price": "p_t = close of the 1-minute bar ending at snapshot time t",
+      "r": "r_t = log p_t - log p_{t-5min}"
+    }
+  },
+  "power_check": "prereg/P1O_power_check.json (synthetic data only, 300 replications, Student-t(5) returns, 8,640 bars): N2's Diebold-Mariano test has power 0.66 at a population out-of-sample R^2 gain of 0.8% and 0.93 at 1.6%; N3's criterion has power 0.72 at a flow R^2 of 0.4% and 0.98 at 0.8%. Effects smaller than these will usually fail; that is part of the prediction.",
+  "question": "On a data window that no earlier test has used (Binance USD-M futures, 1-30 October 2026), (N2) do price changes move a trader class's position beyond the persistence of that position, out of sample, as the closed-loop model's feedback channel requires; and (N3) does aggregate taker order flow identify the combined (merged) response to past returns at the root-T rate, as the theory predicts for flow data, in contrast with the earlier price-only test that failed (5 of 30)?",
+  "relation_to_paper": "Results go into Paper 1's empirical section and Table tab:scorecard as new rows, pass or fail, labelled pre-specified; no earlier row changes.",
+  "runs": "oct_tests.py is run once in Colab; its unlock counter (prereg/P1O_unlocks.json in the author's Drive) must read 1. A crash before results is reported, not hidden.",
+  "seed": 20261031,
+  "test": "P1O_october2026_binance",
+  "why_new": "The earlier state-tracking result passed but was explained by the persistence of the target, and the earlier price-only combined-response test failed. N2 measures the feedback channel net of persistence, out of sample. N3 uses flow data, which the theory says identify the combined response, and checks the root-T rate. Neither re-scores or redefines an earlier test; the earlier results stand as reported."
+}
