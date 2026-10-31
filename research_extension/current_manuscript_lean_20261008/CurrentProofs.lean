@@ -38,6 +38,7 @@ import CurrentProofs.Paper1LowerBound
 import CurrentProofs.Paper1MatchedPair
 import CurrentProofs.Paper1PoleCount
 import CurrentProofs.Paper1Tagged
+import CurrentProofs.Paper1FiniteIdentification
 import CurrentProofs.CeilingSuitePaper2
 import CurrentProofs.InfoSafetyExtensions
 

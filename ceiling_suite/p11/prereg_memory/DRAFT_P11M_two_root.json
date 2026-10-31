@@ -1,0 +1,19 @@
+{
+  "test": "P11M_cot_two_root_memory",
+  "status": "DRAFT - not approved, not registered, not run. The SHA-256 is fixed only after the author approves this file.",
+  "question": "Paper 1 measures how persistent class positions are, not the classes' learning memory. In the cohort model with inventory costs (remark after Lemma lem:micro) a class position follows two roots: a slow inventory/turnover root and the faster belief-memory root r_i. Do CFTC class positions show a second, faster root, distinct from the slow one, as the model predicts?",
+  "data": "as in prereg/P11_cot.json (futures-only COT reports through 2026-10-13, the registered price sources); n_t = (long - short) / open interest for the designated speculative ('fast') and comparison ('slow') classes; only rows whose current and two previous reports are consecutive weeks with fresh prices",
+  "model": "n_t = alpha + phi1 n_{t-1} + phi2 n_{t-2} + b0 ret_t + b1 ret_{t-1} + e_t by OLS (the reduced form of a two-root position process driven by returns); roots z1 >= z2 of z^2 - phi1 z - phi2",
+  "inference": "moving-block bootstrap, 13-week blocks, 2,000 draws, 95% percentile intervals; draws with complex roots are counted, and their share is reported",
+  "hypotheses": {
+    "H1_primary": "for the fast class, both roots are real and the 95% interval of the smaller root z2 lies inside (0, 0.9) while the 95% interval of z1 - z2 excludes zero, in at least 6 of 8 markets",
+    "H2": "for the fast class, the half-life of the smaller root, log(0.5)/log(z2), is below 13 weeks in at least 6 of 8 markets",
+    "H3": "the fast class's smaller root is below the comparison class's smaller root in at least 5 of 8 markets",
+    "report": "phi1, phi2, b0, b1, both roots and their intervals for both classes; share of bootstrap draws with complex roots; AR(1) persistence for comparison with Table tab:cot"
+  },
+  "pass_rule": "the test passes if H1 holds; H2, H3 and the reports are given either way",
+  "interpretation_fixed_in_advance": "A pass shows that class positions contain a distinct faster root, as the model with inventory costs predicts; it is consistent with, but does not prove, that this root is learning memory. A fail is reported as a failure of the two-root reading of CFTC positions.",
+  "relation": "answers the paper's main stated limitation (position persistence versus learning memory); same data, markets, classes, prices and end date as P11_cot",
+  "seed": 20261101,
+  "runs": "run once; every run is counted in the unlock file"
+}
