@@ -254,7 +254,7 @@ if ARGS.ssrn:
         "replication notebooks in run order and the specification files of the pre-specified tests.\n")
 out = core.rstrip() + "\n\n\\end{document}\n"
 if not ARGS.ssrn:
-    for word in ("Niroula", "Pratik", "Prashant", "Sujan", "Khatiwada", "Mankato", "Tribhuvan", "mnsu", "Pratikn03", "fianince"):
+    for word in ("Niroula", "Pratik", "Prashant", "Sujan", "Khatiwada", "Robotics", "Mankato", "Tribhuvan", "mnsu", "Pratikn03", "fianince"):
         assert word.lower() not in out.lower().replace("niroula2026b", ""), f"identifying text left: {word}"
 elif ARGS.solo:
     assert "Prashant" not in out.split("\\begin{abstract}")[0], "second author still on the title page"

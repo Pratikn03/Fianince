@@ -82,3 +82,7 @@ from public market data (real data), and audits.
 
 [^2]: Faculty of Management, Tribhuvan University, Kirtipur, Nepal.
     `prashantniroula20@gmail.com`.
+
+[^3]: Department of Electrical, Computer and Robotics Engineering,
+    Minnesota State University, Mankato, MN 56001, USA.
+    `sujan.khatiwada@mnsu.edu`.
