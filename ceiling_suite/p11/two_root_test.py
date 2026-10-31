@@ -1,10 +1,9 @@
 # ============================================================================
-# P11M (DRAFT, NOT APPROVED, NOT REGISTERED): do CFTC class positions show a second, faster root?
-# Specification draft: prereg_memory/DRAFT_P11M_two_root.json. This script refuses to run until the author approves
-# the specification and its SHA-256 is pasted below (then the file is renamed two_root_test.py and committed before
-# any run).
+# P11M: pre-specified test (approved by the author on 2026-10-31): do CFTC class positions show a second, faster
+# root? Specification: prereg_memory/P11M_two_root.json (SHA-256 checked below; committed before any run).
+# Output: <BASE>/results/C6M_cot_two_root.json and <BASE>/prereg/P11M_unlocks.json. Run it once.
 #
-# Colab (after approval):  !git clone https://github.com/Pratikn03/Fianince.git
+# Colab:                   !git clone https://github.com/Pratikn03/Fianince.git
 #                          %cd Fianince/ceiling_suite/p11
 #                          %run two_root_test.py
 # ============================================================================
@@ -12,7 +11,7 @@ import os, json, time, hashlib
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else os.getcwd()
-SPEC_SHA256 = None            # filled in only after approval
+SPEC_SHA256 = "e66335881e2c83333f928db7704d0cf723216d1921aeddb1cc75fc168886040c"
 
 
 def two_root_fit(D, c):
