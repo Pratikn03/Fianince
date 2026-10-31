@@ -29,17 +29,21 @@ core = re.sub(r"% BEGIN ADVANCED FRONT STATUS 20261030.*?% END ADVANCED FRONT ST
 core = core.replace("\\date{Development revision, 30 October 2026}", "\\date{This version: 30 October 2026}")
 if ARGS.ssrn:
     if ARGS.solo:
-        core = re.sub(r"\n\\and Prashant Niroula\\thanks\{.*?\}\}", "}", core, count=1, flags=re.S)
-        core = core.replace("\\fancyhead[L]{\\small Niroula and Niroula}", "\\fancyhead[L]{\\small Niroula}")
+        core = re.sub(r"\n\\and .*?(?=\}\n\\date)", "", core, count=1, flags=re.S)
+        core = core.replace("\\fancyhead[L]{\\small Niroula, Niroula and Khatiwada}", "\\fancyhead[L]{\\small Niroula}")
     repo = ("\n\n\\noindent\\textbf{Code and data.} All code, pre-specified test specifications and result files are public at "
             "\\url{https://github.com/Pratikn03/Fianince}.\n")
     core = core.replace("\\paragraph{Reproducibility.}", repo + "\n\\paragraph{Reproducibility.}", 1)
 else:
-    core = re.sub(r"\\author\{.*?\}\}\n", r"\\author{}\n", core, count=1, flags=re.S)
-    core = core.replace("\\fancyhead[L]{\\small Niroula and Niroula}", "\\fancyhead[L]{\\small Anonymous submission}")
+    core = re.sub(r"\\author\{.*?\}\n(?=\\date)", r"\\author{}\n", core, count=1, flags=re.S)
+    core = core.replace("\\fancyhead[L]{\\small Niroula, Niroula and Khatiwada}", "\\fancyhead[L]{\\small Anonymous submission}")
     core = re.sub(r"\\bibitem\[Niroula et~al\.\(2026\)\]\{niroula2026b\}.*?\n",
                   "\\\\bibitem[Anonymous(2026)]{niroula2026b} Anonymous (2026). Companion paper on transient amplification and "
                   "pre-trade guards in closed-loop markets. Working paper, withheld for anonymous review.\n", core, count=1)
+    core = re.sub(r"\\paragraph\{Author contributions\.\}[^\n]*\n",
+                  lambda m: "\\paragraph{Author contributions.} Withheld for anonymous review.\n", core, count=1)
+    core = core.replace("are public at \\url{https://github.com/Pratikn03/Fianince}. The repository's README",
+                        "are in an anonymized replication package (link withheld for review). Its README")
 core = core.replace("The historical simulation results retain their original execution records; this revision reruns the "
                     "named advanced experiment only. ", "")
 # Focus the main text on the paper's question (what prices reveal, what disclosure buys, in money and in data).
@@ -250,7 +254,7 @@ if ARGS.ssrn:
         "replication notebooks in run order and the specification files of the pre-specified tests.\n")
 out = core.rstrip() + "\n\n\\end{document}\n"
 if not ARGS.ssrn:
-    for word in ("Niroula", "Pratik", "Prashant", "Mankato", "Tribhuvan", "mnsu", "Pratikn03", "fianince"):
+    for word in ("Niroula", "Pratik", "Prashant", "Sujan", "Khatiwada", "Mankato", "Tribhuvan", "mnsu", "Pratikn03", "fianince"):
         assert word.lower() not in out.lower().replace("niroula2026b", ""), f"identifying text left: {word}"
 elif ARGS.solo:
     assert "Prashant" not in out.split("\\begin{abstract}")[0], "second author still on the title page"
