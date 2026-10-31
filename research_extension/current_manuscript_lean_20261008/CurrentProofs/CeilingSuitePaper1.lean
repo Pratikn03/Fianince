@@ -5,11 +5,17 @@ namespace CurrentMM
 noncomputable section
 
 /-!
-# Ceiling Suite — Paper 1 Complete Formalization (`ceiling_suite/paper1/`)
-*Title:* "Auditable Memory and Financial Identification Limits in Electronic Limit Order Books"
-*Authors:* Pratik Niroula and Prashant Niroula
+# Ceiling Suite — Paper 1: one Lean declaration per formal environment (`ceiling_suite/paper1/`)
+*Title:* "What Prices Reveal About Hidden Trader Populations, and What Identifying Them Costs"
+*Authors:* Pratik Niroula, Prashant Niroula and Sujan Khatiwada
 
-Provides 1-to-1 mechanized Lean 4 formal proofs for all 29 formal environments
+**Scope (read this first).** Each declaration below is attached to one formal environment of the paper, but most
+check only a scalar or algebraic core of that result (often at concrete parameter values), not the full statement.
+`COVERAGE.md` at the repository root tags each one `full`, `conditional` or `arithmetic`. The substantive
+formalizations of `thm:kcohort` (moment-gap core) and `thm:merged` (i) (identification of the merged measure) are
+in `Paper1MomentGap.lean` and `Paper1Identification.lean`.
+
+Declarations, one per environment
 (`theorem`, `proposition`, `lemma`, `corollary`) across `ceiling_suite/paper1/`:
 1. `prop:kalman` (`p1_prop_kalman_memory`)
 2. `prop:ogd` (`p1_prop_ogd_memory`)
