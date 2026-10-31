@@ -79,3 +79,4 @@ import CurrentProofs.Paper1GeneralMemoryLower
 import CurrentProofs.Paper1Jackson
 import CurrentProofs.Paper1JacksonPoly
 import CurrentProofs.Paper1GeneralMemoryUpper
+import CurrentProofs.Paper1GeneralMemoryRate

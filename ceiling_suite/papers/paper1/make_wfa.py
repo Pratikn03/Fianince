@@ -125,13 +125,17 @@ if ARGS.ssrn:
          "types are hard to estimate (Supplement~\\ref{app:whomatters}).\n\n"),
         ("\\paragraph{Robustness, a new failure and real noise.}", "\\paragraph{Two supplementary results.}",
          "Robustness checks, the failed tests and real noise}\\label{app:introrobust",
-         "\\paragraph{Passes and failures.} Table~\\ref{tab:scorecard} in the supplement lists all fifteen empirical "
-         "tests with their predictions and outcomes: eight passed or held, six failed and one secondary prediction was "
-         "not supported. The failures are part of the evidence: the CFTC's designated speculative class trend-followed in "
-         "only four of eight markets; the reports read as weekly flows did not pin down how persistent that flow is; "
-         "positions showed no distinct faster root that could be learning memory; Binance prices pinned down the combined "
-         "response in only 5 of 30 markets, and the combined response was far cheaper to learn than the separate rates in "
-         "only 10 of 30 in a longer follow-up; and class data did not improve return forecasts. Supplement~"
+         "\\paragraph{Passes and failures.} Table~\\ref{tab:scorecard} in the supplement lists all twenty-two empirical "
+         "tests with their predictions and outcomes: eleven passed or held, ten failed and one secondary prediction was "
+         "not supported. The primary CFTC result replicates on twelve new markets (12 of 12). The failures are part of "
+         "the evidence: the CFTC's designated speculative class trend-followed in only four of the original eight markets "
+         "(it did in eleven of the twelve new ones) and was the less persistent class in only three of the new twelve; "
+         "the reports read as weekly flows did not pin down how persistent that flow is; positions showed no distinct "
+         "faster root that could be learning memory; Binance prices pinned down the combined response in only 5 of 30 "
+         "markets, and the combined response was far cheaper to learn than the separate rates in only 10 of 30 in a "
+         "longer follow-up; class data did not improve return forecasts; and in October 2026 prices did not forecast "
+         "the top-trader position beyond its own persistence (1 of 30), and taker flow did not pin down the combined "
+         "response (5 of 30), although its uncertainty shrank at the predicted root-$T$ rate in all 30. Supplement~"
          "\\ref{app:introrobust} reports the robustness checks.\n\n"),
         ("\\paragraph{Two supplementary results.}", "\\paragraph{Contribution.}",
          "Two supplementary results}\\label{app:twosupp",
@@ -185,7 +189,7 @@ if ARGS.ssrn:
              "``Pre-specified'' means that the authors committed the specification to the public repository before opening "
              "the test data; this is the authors' declaration, not independent preregistration. The proofs have not yet "
              "been independently reviewed. Lean~4 with Mathlib machine-checks, using only Lean's standard axioms, the "
-             "identification theorem, the matching lower and upper bounds for $K$ cohorts, the lower bound for general memory and six further results; "
+             "identification theorem, the matching lower and upper bounds for $K$ cohorts and for general memory, and six further results; "
              "Supplement~\\ref{app:verification} states exactly what is and is not machine-checked.")
     core = core[:r0] + short + core[r1:]
     moved.append("\\section{Internet appendix: Reproducibility and formal verification}\\label{app:verification}\n"
