@@ -38,9 +38,9 @@
 | 24 | `theorem` | `prop:passive` | Passive cost | `p1_mixture.tex:284` | `CurrentMM.p1_thm_passive_cost` (L544) | `MachineMarkets.p1_prop_passive_cost` (L189) |
 | 25 | `proposition` | `prop:tagged` | Tagged flow removes the barrier | `p1_disclosure.tex:38` | `CurrentMM.p1_prop_tagged_flow_removes_barrier, CurrentMM.is_iv_det_pos` (L565) | `MachineMarkets.p1_prop_tagged_flow_ident` (L195) |
 | 26 | `theorem` | `thm:discvalue` | Value of class-tagged disclosure | `p1_disclosure.tex:59` | `CurrentMM.p1_thm_discvalue_ratio` (L574) | `MachineMarkets.p1_thm_disclosure_value` (L203) |
-| 27 | `proposition` | `prop:choice` | When an audit trail is chosen | `p1_disclosure.tex:121` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 28 | `proposition` | `prop:target` | Market-wide versus targeted intervention | `p1_disclosure.tex:134` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 29 | `theorem` | `thm:blind` | Spectral blindness | `p1_disclosure.tex:265` | `CurrentMM.p1_thm_blind_spectral_blindness` (L590) | `MachineMarkets.p1_thm_spectral_blindness` (L211) |
+| 27 | `proposition` | `prop:choice` | When an audit trail is chosen | `p1_disclosure.tex:123` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 28 | `proposition` | `prop:target` | Market-wide versus targeted intervention | `p1_disclosure.tex:136` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 29 | `theorem` | `thm:blind` | Spectral blindness | `p1_disclosure.tex:267` | `CurrentMM.p1_thm_blind_spectral_blindness` (L590) | `MachineMarkets.p1_thm_spectral_blindness` (L211) |
 | 30 | `theorem` | `thm:abstain` | Finite-window abstention | `p1_appendix.tex:208` | `CurrentMM.p1_thm_abstain_finite_window` (L640) | `MachineMarkets.p1_thm_abstain_finite_window` (L228) |
 | 31 | `proposition` | `prop:passive0` | Passive distinction with zero controlled quantity | `p1_appendix.tex:224` | `CurrentMM.p1_prop_passive0_three_step_blocks` (L254) | `MachineMarkets.p1_prop_passive0_distinction` (L79) |
 | 32 | `lemma` | `fhc:capacity` | Sharp prior bounds and exact prefunded capacity | `p1_appendix.tex:646` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
