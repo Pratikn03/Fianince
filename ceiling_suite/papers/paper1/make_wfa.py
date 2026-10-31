@@ -185,7 +185,7 @@ if ARGS.ssrn:
              "``Pre-specified'' means that the authors committed the specification to the public repository before opening "
              "the test data; this is the authors' declaration, not independent preregistration. The proofs have not yet "
              "been independently reviewed. Lean~4 with Mathlib machine-checks, using only Lean's standard axioms, the "
-             "identification theorem, the matching lower and upper bounds for $K$ cohorts and five further results; "
+             "identification theorem, the matching lower and upper bounds for $K$ cohorts, the lower bound for general memory and six further results; "
              "Supplement~\\ref{app:verification} states exactly what is and is not machine-checked.")
     core = core[:r0] + short + core[r1:]
     moved.append("\\section{Internet appendix: Reproducibility and formal verification}\\label{app:verification}\n"
