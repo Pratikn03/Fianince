@@ -35,6 +35,7 @@ import CurrentProofs.Paper1Identification
 import CurrentProofs.Paper1MergedModel
 import CurrentProofs.Paper1Testing
 import CurrentProofs.Paper1LowerBound
+import CurrentProofs.Paper1MatchedPair
 import CurrentProofs.CeilingSuitePaper2
 import CurrentProofs.InfoSafetyExtensions
 
