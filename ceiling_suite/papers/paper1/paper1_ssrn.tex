@@ -56,7 +56,7 @@
 
 \noindent\textbf{Code and data.} All code, pre-specified test specifications and result files are public at \url{https://github.com/Pratikn03/Fianince}.
 
-\paragraph{Reproducibility.} Every number in the paper is produced by a script or notebook cell that writes a result file from public data or from a closed form; Supplement~\ref{app:repro} maps each table, figure and number to its source. ``Registered'' or ``pre-specified'' in this paper means that the authors wrote the specification and committed it to the public repository before opening the test data; this is the authors' declaration, not independent preregistration. For the October 2026 follow-up tests (Supplement~\ref{sec:learners} and Section~\ref{sec:disc_data}) each specification reached the public repository in the same push as its results, so the order rests on the commit history alone. For the real-noise test, the class-flow test and the CFTC robustness checks (Sections~\ref{sec:injection} and~\ref{sec:cot}), specifications and code were pushed in a separate commit (\texttt{84af69f}, 03:43 UTC on 31 October 2026) before the first of them ran (03:56 UTC). The proofs have been checked by the authors and against numerical computations, and they have not yet been independently reviewed; the numerical checks reproduce results with the same code unless stated otherwise. Lean~4 with Mathlib machine-checks, using only Lean's standard axioms, three of the main results: Theorem~\ref{thm:merged}(i) for the model itself (for known $a$ and $\kappa\neq0$, two economies have the same price response if and only if they have the same merged measure, $2K+1$ noise-free periods already determine that measure, and with distinct nonzero rates the transfer function has exactly $1+K$ poles; the classical step from pole count to minimal state dimension is not formalized), and the lower bound of Theorem~\ref{thm:kcohort} on a finite observation horizon, from the moment gap through the closed loop and the Gaussian divergence to the testing step. The check holds for every $K$ with no added assumption: in place of the Gauss and Gauss--Radau rules it uses another moment-matched pair, binomial weights on $2K$ equally spaced nodes, which gives the same order; its constant depends on the number of observed periods per experiment. Lean checks the matching upper bound of Theorem~\ref{prop:esprit} for every $K$: with probability at least $1-\beta$ the Prony estimate exists, is unique and recovers every merged weight to within $C\sqrt{\log(4K/\beta)}\,\epsilon_N$, with constants that do not depend on the spacing; the formal version allows sub-Gaussian noise, which includes the Gaussian case, and assumes memory rates of modulus at most one, and a separate formal lemma shows that Prony's method computes exactly the estimate that the theorem bounds. Lean also checks the reset-experiment form of the tagged-flow result: class-tagged records recover every group's weight with an error bound that does not depend on the memory rates. Five further results are checked in Lean as well: Theorem~\ref{thm:merged}(ii), the $\Omega(\delta^{-4})$ separation bound for power-constrained probes (stated for tests whose two error probabilities are at most $1/4$); the spectral-blindness theorem (Theorem~\ref{thm:blind}); the zero structure and minimum phase of $H$ in Theorem~\ref{thm:minphase}; a finite-sample tagged rate-recovery bound giving the $(\Delta\eta)^{-2}$ upper bound of Theorem~\ref{thm:discvalue}(ii); and the uniform nonsingularity of the instrument matrix in Proposition~\ref{prop:tagged}. The general-memory and passive-data theorems, the spectral-factorization step of Theorem~\ref{thm:minphase}, and the ergodic and central limit steps of Proposition~\ref{prop:tagged} are not formally verified; Supplement~\ref{app:stress} reports numerical stress tests of them. The results whose proofs most need an independent check are Theorems~\ref{thm:general}, \ref{prop:passive}, \ref{thm:spectral} and~\ref{thm:rh}. Numerical constants such as the capital bounds are computed at a declared parameter set and are not separate theorems.
+\paragraph{Reproducibility.} Every number in the paper is produced by a script or notebook cell that writes a result file from public data or from a closed form; Supplement~\ref{app:repro} maps each number to its source. ``Pre-specified'' means that the authors committed the specification to the public repository before opening the test data; this is the authors' declaration, not independent preregistration. The proofs have not yet been independently reviewed. Lean~4 with Mathlib machine-checks, using only Lean's standard axioms, the identification theorem, the matching lower and upper bounds for $K$ cohorts and five further results; Supplement~\ref{app:verification} states exactly what is and is not machine-checked.
 
 \endgroup
 \newpage
@@ -98,9 +98,9 @@ Proposition~\ref{prop:choice} says when each option is the cheapest.
 \item \emph{Researchers} who estimate models with several trader types get one reason why the parameters that separate the types are often imprecise, and a number that says how precise they can be before any estimation (Supplement~\ref{sec:lit}).
 \end{itemize}
 
-\paragraph{What the data show.} Two real reporting systems let us check the main prediction, that class records pin down what prices leave open. The U.S.\ Commodity Futures Trading Commission collects positions from large futures traders and publishes a weekly snapshot of them, aggregated by trader category. In a pre-specified test in eight futures markets (CME Bitcoin and Ether, the E-mini S\&P 500, 10-year Treasury notes, the euro, the yen, crude oil and natural gas), these class positions pin down the persistence of the designated speculative class's positions to a range 9 to 71 times narrower than weekly prices allow, while prices alone leave it almost anywhere in the admissible range (Section~\ref{sec:cot}). On Binance, in a pre-specified test on 30 markets never used before that matches the memory horizon of the two routes, the class data give the narrower interval in 29 of 29 evaluable markets, by a median factor of 7.3 (Section~\ref{sec:disc_data}).
+\paragraph{What the data show.} Two real reporting systems let us check the main prediction, that class records pin down what prices leave open. The U.S.\ Commodity Futures Trading Commission collects positions from large futures traders and publishes a weekly snapshot of them, aggregated by trader category. In a pre-specified test in eight futures markets (CME Bitcoin and Ether, the E-mini S\&P 500, 10-year Treasury notes, the euro, the yen, crude oil and natural gas), these class positions pin down the persistence of the designated speculative class's positions to a range 9 to 71 times narrower than weekly prices allow, while prices alone leave it almost anywhere in the admissible range (Supplement~\ref{sec:cot}). On Binance, in a pre-specified test on 30 markets never used before that matches the memory horizon of the two routes, the class data give the narrower interval in 29 of 29 evaluable markets, by a median factor of 7.3 (Supplement~\ref{sec:disc_data}).
 
-\paragraph{Robustness, a new failure and real noise.} Rerunning the CFTC test with CME futures prices, without contract-roll weeks or with longer bootstrap blocks leaves its primary result unchanged. Read as weekly flows rather than positions, the same reports failed a second pre-specified test: they pin down how each class's flow responds to prices, but not how persistent that flow is. A third test asked whether positions carry a second, faster root that could be learning memory, as the model with inventory costs predicts; it failed too (2 of 8 markets), so these data cannot separate learning memory from the slow turnover of positions. Another pre-specified test gives synthetic groups real Bitcoin price noise instead of Gaussian noise and finds the predicted rates, a slope of $-6.01$ against $-6$ for two groups and $-9.81$ against $-10$ for three, while class-tagged requirements stay flat; at large sample sizes it uses a normal approximation to the real noise (Section~\ref{sec:injection}). These comparisons are descriptive: a position series reveals its own persistence directly, while the price route must infer it. Several predictions failed, and Table~\ref{tab:scorecard} lists them next to the ones that passed. The data therefore show what prices cannot pin down. They do not show that this persistence is the learning memory of the model.
+\paragraph{Robustness, a new failure and real noise.} Rerunning the CFTC test with CME futures prices, without contract-roll weeks or with longer bootstrap blocks leaves its primary result unchanged. Read as weekly flows rather than positions, the same reports failed a second pre-specified test: they pin down how each class's flow responds to prices, but not how persistent that flow is. A third test asked whether positions carry a second, faster root that could be learning memory, as the model with inventory costs predicts; it failed too (2 of 8 markets), so these data cannot separate learning memory from the slow turnover of positions. Another pre-specified test gives synthetic groups real Bitcoin price noise instead of Gaussian noise and finds the predicted rates, a slope of $-6.01$ against $-6$ for two groups and $-9.81$ against $-10$ for three, while class-tagged requirements stay flat; at large sample sizes it uses a normal approximation to the real noise (Supplement~\ref{sec:injection}). These comparisons are descriptive: a position series reveals its own persistence directly, while the price route must infer it. Several predictions failed, and Table~\ref{tab:scorecard} lists them next to the ones that passed. The data therefore show what prices cannot pin down. They do not show that this persistence is the learning memory of the model.
 
 \begin{table}[!htbp]\centering\footnotesize
 \begin{threeparttable}
@@ -134,66 +134,19 @@ Binance, state tracking & Class data track class positions better than prices & 
 
 \paragraph{Contribution.} A large literature asks how transparency affects liquidity and trading costs \citep{pagano1996,boehmer2005,bessembinder2006}. We ask a different question that market supervision now faces as trading passes to algorithms: what can an observer learn about \emph{who} moves prices, and what is it worth to be told? The paper makes three contributions. First, it gives an identification result for supervision: a closed-loop price process reveals only the combined distribution of the trader groups' memories and weights, and nothing finer (Theorem~\ref{thm:merged}), so questions about individual groups cannot be answered from public prices however much data accumulates. Second, it prices what it takes to go further, in the units a market participant or regulator faces, the number of experiments or observations, the quantity traded and the capital at risk, with matching upper and lower bounds where we can prove them (Sections~\ref{sec:resources} and~\ref{sec:mixtures}); the cost explodes as $(\Delta\eta)^{-(4K-2)}$ when groups react over similar horizons, which turns the economic value of attribution into a number. Third, it values disclosure in the same units and shows when it changes a decision: class-tagged records keep the problem well conditioned (Proposition~\ref{prop:tagged}), sizing a market-wide limit needs only public prices, and deciding whether halting one group is enough needs the records (Proposition~\ref{prop:target}); published CFTC and Binance class positions pin down what prices leave open, with the failed predictions reported next to the passes (Section~\ref{sec:disclosure}). The mathematical tools, moment matching, two-point testing and Prony-type estimation, are known from mixture estimation and signal processing; what is new is their closed-loop, passive and financial form (Supplement~\ref{sec:lit}). Three of the central results, the identification theorem and the matching lower and upper bounds, are machine-checked in the Lean proof assistant, which is still rare in economics and finance.
 
-\paragraph{How to read the paper.} Every main result is stated formally and then explained in a short paragraph headed ``In words'', which says what it means for a trader or a supervisor; proofs are in the online supplement. Section~\ref{sec:worked} works through two desks that use Kalman filters, in numbers, and Table~\ref{tab:map} maps each question to its answer. Readers who want the finance first can read this introduction, Section~\ref{sec:observer}, the worked example and Section~\ref{sec:disclosure}, and take the statistical results as given. Table~\ref{tab:glossary} explains the main symbols.
+\paragraph{How to read the paper.} Every main result is stated formally and then explained in a short paragraph headed ``In words'', which says what it means for a trader or a supervisor; proofs are in the online supplement. Supplement~\ref{sec:worked} works through two desks that use Kalman filters, in numbers, and Table~\ref{tab:map} maps each question to its answer. Readers who want the finance first can read this introduction, Section~\ref{sec:observer}, the worked example and Section~\ref{sec:disclosure}, and take the statistical results as given. Table~\ref{tab:glossary} explains the main symbols.
 
-\begin{table}[!htbp]\centering\small
-\begin{threeparttable}
-\caption{The main symbols in plain words}\label{tab:glossary}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.75\textwidth}}
-\toprule
-Symbol & Meaning\\
-\midrule
-$K$ & Number of trader groups (``cohorts'')\\
-$\eta_i$ & Group $i$'s learning rate: the weight it puts on the newest price. Large $\eta_i$ means a short memory and fast reactions; small $\eta_i$ means a long memory\\
-$r_i=1-\eta_i$ & Group $i$'s memory rate: the share of last period's view that survives\\
-$q_i$ & Group $i$'s trading intensity: how strongly it trades on its view. Positive $q_i$ means it buys when the price is above value, as trend followers do\\
-$\Delta\eta$, $2\delta$ & How far apart the groups' learning rates are ($\Delta\eta$ for unknown groups, $2\delta$ for a known pair)\\
-$a$, $\kappa$ & How persistent pricing errors are, and how far one unit of net order flow moves the price\\
-$M$ (merged measure) & The combined summary of all groups that prices reveal: where the memories are and how much trading sits at each\\
-$N$ & Number of experiments (test trades from a fresh start) or observations\\
-Par units & The model's own unit of quantity and money, before conversion to USDT (Table~\ref{tab:capital})\\
-\bottomrule
-\end{tabular}
-\end{threeparttable}
-\end{table}
 
-\paragraph{What we do not claim.} The identification results hold for the stated linear model and for the stated observation contracts, that is, for what the observer is assumed to see. The model treats price impact and the persistence of pricing errors as known primitives rather than solving a dealer equilibrium, and it assumes the observer knows the fundamental value; real data meet neither assumption. They are not general limits on surveillance with participant-level records, which can be far more informative (Propositions~\ref{prop:disclosure} and~\ref{prop:tagged}). The matching upper bound holds on a class with separated rescaled rates and weights bounded away from zero. Capital figures depend on the observation-noise calibration, which we estimate rather than assume. The empirical results are reduced-form diagnostics; they do not identify structural learning parameters. Our pre-specified real-data test of the identification boundary failed its criterion on one of its three parts: on 42 days of data the merged response was precisely estimated in only 5 of 30 markets (Section~\ref{sec:disc_data}). Binance's class ratios are positions, not tagged order flow, so they are the closest public analogue to the disclosure of Proposition~\ref{prop:tagged}, not an instance of it. We hold the algorithms' memories and intensities fixed across disclosure regimes; disclosure that reveals positions may lead informed desks to trade less or to split orders across accounts, which we do not model.
+
+\paragraph{What we do not claim.} The identification results hold for the stated linear model and for the stated observation contracts, that is, for what the observer is assumed to see. The model treats price impact and the persistence of pricing errors as known primitives rather than solving a dealer equilibrium, and it assumes the observer knows the fundamental value; real data meet neither assumption. They are not general limits on surveillance with participant-level records, which can be far more informative (Propositions~\ref{prop:disclosure} and~\ref{prop:tagged}). The matching upper bound holds on a class with separated rescaled rates and weights bounded away from zero. Capital figures depend on the observation-noise calibration, which we estimate rather than assume. The empirical results are reduced-form diagnostics; they do not identify structural learning parameters. Our pre-specified real-data test of the identification boundary failed its criterion on one of its three parts: on 42 days of data the merged response was precisely estimated in only 5 of 30 markets (Supplement~\ref{sec:disc_data}). Binance's class ratios are positions, not tagged order flow, so they are the closest public analogue to the disclosure of Proposition~\ref{prop:tagged}, not an instance of it. We hold the algorithms' memories and intensities fixed across disclosure regimes; disclosure that reveals positions may lead informed desks to trade less or to split orders across accounts, which we do not model.
 
 \subsection{Relation to the literature}\label{sec:litmain}
 Three literatures meet here. In finance, learning algorithms and AI agents in markets are studied by simulating or modelling them \citep{colliard2022,dou2025}; traders who differ in horizon or speed are studied in equilibrium \citep{cespa2015,biais2015,crouzet2020}; the exponentially fading beliefs we use are the extrapolative beliefs of \citet{barberis2015,barberis2018}; and heterogeneous-agent models estimated from prices often leave the type-separating parameters imprecise \citep{brock1998,amilon2008,kukacka2017}, for which our results give one reason. Price formation follows the linear-impact tradition \citep{kyle1985,glosten1985,hasbrouck1991} and the transient-impact literature \citep{obizhaeva2013,gatheral2010,alfonsi2012}; trader types have been inferred from public data, as in the probability of informed trading \citep{easley1996}, and from account data \citep{kirilenko2017}. Learning by trading has an equilibrium counterpart in price experimentation \citep{leach1993}, and execution that learns impact while trading is studied by \citet{moallemi2008} and \citet{parkvanroy2015}. Technically, the closest work is closed-loop identification \citep{ljung1999,forssell1999}, weak identification \citep{andrews2012}, and super-resolution and mixture estimation \citep{moitra2015,heinrich2018,wu2020,batenkov2021,katz2023}. We do not claim the $K$-group exponent as new: in mixture language it is the square of the condition number for $K$ clustered nodes \citep{heinrich2018,wu2020}, and Prony's method attains it \citep{katz2023}; the $\delta^{-4}$ law for one against two close components is classical in resolution analysis \citep{shahram2005}; logarithmic rates are known for mixtures of exponentials \citep{rebafka2015}; and labelled samples are known to be more informative than unlabelled ones \citep{castelli1996}. What is new is the closed-loop form (the memories are zeros, not poles, of the observed transfer function, so they must first be extracted from the loop), the passive equivalence, the translation of sample sizes into executed quantity, capital and money, and the value of class records, including a decision in which attribution changes the right action. Supplement~\ref{sec:lit} gives the full comparison, with tables of the closest results.
 
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Map of results}\label{tab:map}
-\begin{tabular}{p{0.34\textwidth}p{0.36\textwidth}p{0.18\textwidth}}
-\toprule
-Question & Answer & Where\\
-\midrule
-What do prices identify? & The merged rate--weight measure only & Thm~\ref{thm:merged}\\
-Quantity to separate a known pair & $\Theta(\delta^{-2})$, exact error formula & Thm~\ref{thm:quantity}\\
-Capital to separate a known pair & $\Theta(\delta^{-4})$, counterparty or own funds & Thm~\ref{thm:cap}, Lem.~\ref{thm:capital}\\
-Constant at the calibration & $[61.41,64.48]$ par units; $\approx10^5$ USDT & Thms~\ref{thm:spectral}--\ref{thm:rh}, Table~\ref{tab:capital}\\
-Does adaptivity help? & At most by a factor $\approx0.49$ in expected loss & Thm~\ref{thm:adaptive}\\
-Unknown mixtures & $(\Delta\eta)^{-(4K-2)}$, tight on rich classes for every $K$ & Thms~\ref{thm:kcohort}, \ref{prop:esprit}\\
-General memory & Accuracy $\asymp1/\log N$, lower and upper bounds & Lem.~\ref{lem:altpair}, Thm~\ref{thm:general}\\
-Passive data & Identifies $M$; at least the same polynomial cost for every $K$ & Thms~\ref{thm:minphase}, \ref{prop:passive}, Prop.~\ref{prop:passive0}\\
-Nonlinear and adaptive rules? & Settled online learners obey $\delta^{-4}$; fast adaptation or thresholds break it & Table~\ref{tab:learners}\\
-What removes the barrier? & Tagged flow, audited equity & Props~\ref{prop:disclosure}, \ref{prop:tagged}\\
-Does attribution change a decision? & Yes in a stylised case: a market-wide limit needs only $S$; whether a targeted halt suffices needs each $q_i$ & Prop.~\ref{prop:target}\\
-What is tagging worth? & Factor $(\Delta\eta)^{-(4K-2)}$ (fixed accuracy) or $(\Delta\eta)^{-(4K-4)}$ (rates); $\approx333\times$ for BTCUSDT (illustrative) & Thm~\ref{thm:discvalue}\\
-Hypothetical probing loss? & At least \$15M--\$356M a year per market to re-learn two unknown groups weekly at $\Delta\eta=0.10$; illustrative, not a social cost & Table~\ref{tab:cat_dollars}\\
-Do class data restrict class persistence? & Yes: CFTC 8 of 8; Binance 30 of 30 and 29 of 29 new markets (registered); whether it is memory is open & Tables~\ref{tab:cot}, \ref{tab:disc}\\
-Do the rates survive real price noise? & Yes where it was used directly; large samples use a normal approximation & Table~\ref{tab:injection}\\
-Can eigenvalues certify safety? & No & Thm~\ref{thm:blind}\\
-What do feedback indices measure? & Mostly filtering and timing; small real feedback & Tables~\ref{tab:panel}, \ref{tab:feedback}\\
-Does feedback track activity? & No: fees move volume 2.6--4.9$\times$, not $\hat Q$ & Table~\ref{tab:fee2}\\
-\bottomrule
-\end{tabular}
-\end{threeparttable}
-\end{table}
+
 
 \subsection{Outline}
-Section~\ref{sec:model} sets out the model and Section~\ref{sec:ident} the identification boundary. Section~\ref{sec:resources} turns memory resolution into executed quantity, capital and money for a known pair, and Section~\ref{sec:mixtures} treats unknown mixtures, general memory and passive data. Section~\ref{sec:disclosure} states what disclosure buys and when it changes a supervisor's decision, and tests it on the CFTC's mandated trader-class reports and on Binance's class ratios. Section~\ref{sec:policy} draws the implications for supervision and Section~\ref{sec:conclusion} concludes. The online supplement contains the proofs, the extended literature review, further results and robustness checks, the hypothetical dollar illustration, a finite-horizon decision example, the spectral blind spot, the measurement of reduced-form feedback and the reproducibility map.
+Section~\ref{sec:model} sets out the model and Section~\ref{sec:ident} the identification boundary. Section~\ref{sec:resources} turns memory resolution into executed quantity, capital and money for a known pair, and Section~\ref{sec:mixtures} treats unknown mixtures, general memory and passive data. Section~\ref{sec:disclosure} states what disclosure buys and when it changes a supervisor's decision, and tests it on the CFTC's mandated trader-class reports and on Binance's class ratios. Section~\ref{sec:policy} draws the implications for supervision and Section~\ref{sec:conclusion} concludes. The online supplement contains the proofs, the extended literature review and the map of results, the discussion of the assumptions, general memory, the real-noise test, the trader-class tests in full, further results and robustness checks, the hypothetical dollar illustration, a finite-horizon decision example, the spectral blind spot, the measurement of reduced-form feedback, the formal-verification statement and the reproducibility map.
 
 \section{Model and motivating examples}\label{sec:model}
 
@@ -238,7 +191,7 @@ In the \emph{positive economy} ($q_i\ge0$), $J$ is entrywise nonnegative, its pr
 \begin{remark}[Why exponential memory]
 Lemma~\ref{lem:micro} shows that two different design philosophies, Bayesian filtering and regularized online learning, produce the same observable reduced-form belief state $y_{i,t}$. When desk $i$ chooses order flow $u_{i,t}$ subject to $I_{i,t}=(1-\delta_{\rm inv})I_{i,t-1}+u_{i,t}$ and an inventory cap $|I_{i,t}|\le\bar I_i$ to maximize expected continuation return $\beta_i y_{i,t}u_{i,t}$ net of quadratic execution cost $\tfrac12\lambda_{{\rm tc},i}u_{i,t}^2$ and quadratic inventory holding cost $\tfrac12\gamma_{{\rm inv},i}I_{i,t}^2$, its interior first-order condition gives $u_{i,t}^*=q_iy_{i,t}-\psi_{{\rm inv},i}I_{i,t-1}$ with market-response weight $q_i=\beta_i/(\lambda_{{\rm tc},i}+\gamma_{{\rm inv},i})$ and inventory mean-reversion $\psi_{{\rm inv},i}=\gamma_{{\rm inv},i}(1-\delta_{\rm inv})/(\lambda_{{\rm tc},i}+\gamma_{{\rm inv},i})$, which shrinks toward zero as trading costs or inventory penalties tighten and destabilizes the market when the closed-loop spectral radius reaches one. This filtering-and-control recursion specifies an individual agent's decision rule, not a complete economic equilibrium (dealer--trader equilibrium is analysed in the companion paper).
 
-Two further simplifications matter for reading the results: the observer is taken to know the fundamental value $p^*$, so the pricing error $x_t$ is observed, and the dealer sector is a fixed linear impact $\kappa$ rather than an equilibrium quote. The paragraph before Section~\ref{sec:cot} states what the data tests lose when neither holds. Assuming that the observer knows $p^*$ gives it more information than any real observer has, so the lower bounds hold a fortiori when $p^*$ is unknown; the upper bounds use it.
+Two further simplifications matter for reading the results: the observer is taken to know the fundamental value $p^*$, so the pricing error $x_t$ is observed, and the dealer sector is a fixed linear impact $\kappa$ rather than an equilibrium quote. The paragraph before Supplement~\ref{sec:cot} states what the data tests lose when neither holds. Assuming that the observer knows $p^*$ gives it more information than any real observer has, so the lower bounds hold a fortiori when $p^*$ is unknown; the upper bounds use it.
 
 The model applies these rules to the pricing error $x_t$: a desk that cannot separate fundamental news from transitory deviations treats recent deviations as a signal of a persistent trend, which is the exponential extrapolation of \citet{barberis2015,barberis2018}. With $q_i>0$ such a desk buys after rises, as trend followers do, and nothing in the model says this is profitable; the lemma shows only that the update has the exponential form. In these two illustrative families of algorithms the memory rate is a known function of a tuning parameter, the desk's signal-to-noise ratio or its regularization. That is the kind of private information a supervisor would like to recover, although real trading algorithms need not belong to either family. Section~\ref{sec:ident} shows why prices reveal it only in merged form.
 \end{remark}
@@ -253,19 +206,8 @@ It is completely monotone and nonincreasing; its peak is the direct impact $\kap
 
 As an illustration of the lemma (not part of its proof), $(-1)^n\Delta^nh_j\ge0$ for $n\le4$ held in all 892 stable random positive economies tested. Lemma~\ref{lem:cm} matters twice: it makes probing costs positive (Section~\ref{sec:resources}), and it shows that in this economy transient amplification of the price response cannot arise from cohort feedback alone. The companion paper locates amplification in order-book depth instead.
 
-\subsection{Discussion of the assumptions}\label{sec:assumptions}
+\paragraph{Assumptions.} Supplement~\ref{sec:assumptions} discusses the six modelling choices behind the results: linearity, price-first timing within a period, exponential memory (relaxed in Supplement~\ref{sec:general}), algorithms that react to being probed, known primitives, and the observation contracts. Unknown primitives can only make separation harder, so the lower bounds remain valid; the upper bounds as stated assume the primitives are known.
 
-\paragraph{Linearity.} The model is linear in prices, flows and memory states. Linearity is what makes the merged-measure equivalence exact and the testing problems Gaussian. Nonlinear strategies (for example threshold rules or position limits) can break the equivalence class, but they do so in regions of the state space that a small probe does not visit; for small probes the linearization around the steady state is the relevant object.
-
-\paragraph{Price-first timing.} We order the price update before the cohort update. Under the alternative lagged timing the transition matrix becomes $\begin{psmallmatrix}a&1\\ \eta Q&1-\eta\end{psmallmatrix}$ and its eigenvalues differ, so stability statements must be computed under the timing actually used. The identification results depend on the transfer function and survive either convention.
-
-\paragraph{Exponential memory.} Lemma~\ref{lem:micro} justifies exponential memory for filtering and regularized learning. Neural and reinforcement-learning policies are not exponential filters. Rules whose orders are smooth functions of an exponential-memory state are exponential filters to first order, so the results hold for small probes; Supplement~\ref{sec:learners} checks this in stylized simulations and finds where it fails, and how closely production algorithms follow such rules remains an empirical question we do not settle. Mixtures of exponentials can approximate any completely monotone kernel, so a power-law memory corresponds to a continuum of cohorts, for which Theorem~\ref{thm:general} shows that accuracy improves only logarithmically in the data.
-
-\paragraph{Algorithms that react to being probed.} The probing results assume that the cohorts keep their memories while they are probed. An algorithm that detects a probe could pause, shorten its memory or trade against the probe. Four observations limit what this does to our conclusions. First, a reaction that all cohorts share does not help separate them, and an algorithm that mimics another group's memory rate only brings the hypotheses closer, so neither lowers the costs we derive. A reaction that differs across cohorts is a new signature, but one the observer must specify and estimate, so it shifts the identification problem rather than solving it. Second, the passive route needs no probe: Theorem~\ref{prop:passive} shows that natural price variation faces a lower bound of the same polynomial order, so an observer who avoids detection by not trading does not escape the barrier; it pays in time instead of money. We do not show that passive data attain that order. Third, detection is itself a testing problem against the same noise: the generalized-eigenvector probe of Supplement~\ref{sec:account} trades at most 1.25 par units in any period, and a probe sized within normal flow variation is hard to tell from noise, so the threat bites mainly for large single pulses, which our ledger shows are not optimal anyway. Fourth, what we cannot rule out is an algorithm designed to defeat surveillance, which turns identification into a game between observer and observed; our results are the benchmark against which such a game would be measured, and we leave it to future work.
-
-\paragraph{Known primitives.} The resource theorems take $\kappa$, $a$ and the noise law as known. Unknown primitives can only make separation harder, so the lower bounds remain valid. The upper bounds as stated assume the primitives known; estimating them adds a cost we do not analyse, which we expect to be of lower order because they enter the response at first order. In an equilibrium in which dealers set the impact $\kappa$ from the order flow they see, as in \citet{kyle1985}, a prober's unexpected trades would also move $\kappa$; we do not model this, and expect it to raise the cost of probing rather than lower it.
-
-\paragraph{Observation contracts.} Each result names what the observer sees. A price-only observer, an observer with executed quantities, one with noisy statements, one with audited equity and one with tagged flow face different experiments. The paper's central message is that these differences, not the observer's statistical skill, determine what can be learned.
 \subsection{The observer, its options and its costs}\label{sec:observer}
 The results are stated from the side of one observer outside the trader groups: a supervisor, an exchange's surveillance unit or a large desk. Its \emph{target} is attribution, recovering the merged weight and memory rate of each group to a stated accuracy, or deciding between two candidate populations at a stated error. Before it observes, it knows the price persistence $a$, the impact $\kappa$ and the law of the observation noise, and, for the $K$-group results, the number of groups; it does not know their rates or weights. These are the conditions under which the lower bounds are statements about the data rather than about the observer's ignorance; unknown primitives can only enlarge the set of candidate populations.
 
@@ -275,7 +217,7 @@ The observer has three options, and each result prices one of them.
 \item \emph{Probe.} Execute a sequence $v_t$ of trades against the groups and record the price response. Probes execute at the average price of a linear book after the uncontrolled state update; the prober bears the execution loss $\tfrac12v^\top T_hv$ plus fees (Lemma~\ref{lem:toeplitz}) and must fund margin throughout. The counted resource is the number of independent experiments, each starting from the reset state, or the executed quantity and capital of a single experiment (Theorems~\ref{thm:quantity}--\ref{thm:spectral}).
 \item \emph{Acquire disclosure.} Receive each class's flow or position, observed with noise, at an operating cost per supervisory cycle and a compliance cost per market (Proposition~\ref{prop:tagged}, Theorem~\ref{thm:discvalue}, Proposition~\ref{prop:choice}).
 \end{enumerate}
-Within each period the order is: the probe (if any) executes and the price updates, the groups update their states on the new price, and the observer records the price with noise. The groups do not change their rules in response to being observed; Section~\ref{sec:assumptions} discusses what happens if they do. Probing experiments start from the reset state. A probe sent into a running market adds the free response of the current state, which by linearity superposes with the forced response; if the state is unknown it acts as a nuisance term, which can only make separation harder, so the lower bounds still hold, while the upper bounds as stated need the reset state or a known one. Independent resets are a benchmark experiment that no outside participant can run in a live market; we use them because they make the information content of the data exact, and the economic comparisons say whenever they rely on them. Regulators do not, in practice, trade to learn; the probing option describes an outside participant, or prices the information a supervisor would otherwise have to buy by trading.
+Within each period the order is: the probe (if any) executes and the price updates, the groups update their states on the new price, and the observer records the price with noise. The groups do not change their rules in response to being observed; Supplement~\ref{sec:assumptions} discusses what happens if they do. Probing experiments start from the reset state. A probe sent into a running market adds the free response of the current state, which by linearity superposes with the forced response; if the state is unknown it acts as a nuisance term, which can only make separation harder, so the lower bounds still hold, while the upper bounds as stated need the reset state or a known one. Independent resets are a benchmark experiment that no outside participant can run in a live market; we use them because they make the information content of the data exact, and the economic comparisons say whenever they rely on them. Regulators do not, in practice, trade to learn; the probing option describes an outside participant, or prices the information a supervisor would otherwise have to buy by trading.
 
 Three money quantities appear and are kept apart: the \emph{capital required}, the equity an account must hold so that its margin constraint is never breached while it probes (Theorem~\ref{thm:cap} and Lemma~\ref{thm:capital}); the \emph{round-trip trading loss}, the execution loss of a probe that ends flat, which is what the account actually spends (Theorems~\ref{thm:spectral}, \ref{thm:adaptive} and~\ref{thm:rh}); and the \emph{annualised loss} of renewing that probe weekly, used for the comparison with audit-trail budgets (Supplement~\ref{sec:disc_dollars}). The lower bounds hold for the stated probe classes, deterministic probes and, in Theorem~\ref{thm:adaptive}, non-anticipating sequential probes; they are not lower bounds on information obtained through other channels, which is the point of Section~\ref{sec:disclosure}. Two rates recur and measure different things: $\delta^{-4}$ is the capital (and the average-power horizon) for a \emph{known} symmetric pair whose rates differ by $2\delta$, while $(\Delta\eta)^{-(4K-2)}$, which is $(\Delta\eta)^{-6}$ for $K=2$, is the number of experiments for $K$ \emph{unknown} groups with spacing $\Delta\eta$.
 
@@ -341,29 +283,11 @@ and the third observation achieve error exactly $\alpha$. The necessary and suff
 
 The identity in (iii) follows by direct substitution, and code checks it at $\delta\in\{0.02,0.05,0.10\}$: the difference is $-1.2\times10^{-4}$, $-7.5\times10^{-4}$ and $-3.0\times10^{-3}$ at $\kappa=1$, $q=0.3$, and $-3.2\times10^{-4}$ at the calibration $\kappa=0.8$, $q=0.2$, $\delta=0.05$. The theorem does not solve estimation of an unknown mixture (Section~\ref{sec:mixtures}).
 
-\begin{figure}[t]\centering
-\includegraphics[width=\textwidth]{figs/fig_impulse.pdf}
-\caption{Left: impulse responses of the single cohort and the split pair ($\delta=0.05$) are nearly indistinguishable. Right: the difference scaled by $\delta^2$ collapses onto one curve, with first nonzero value $-\kappa^2q$ at lag 2 (dotted). Calibration $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$.}\label{fig:impulse}
-\end{figure}
+
 
 \paragraph{A Monte Carlo check of the exact error.} Formula \eqref{eq:exacterr} is exact for the likelihood-ratio test. We simulated 200,000 noisy paths per hypothesis at the calibration ($\sigma=0.01$, $\delta=0.05$) for several pulse sizes and horizons (Table~\ref{tab:mcerr}); simulated errors match the formula within Monte Carlo standard error under both hypotheses.
 
-\begin{table}[t]\centering
-\begin{threeparttable}
-\caption{Exact known-pair error: formula versus simulation}\label{tab:mcerr}
-\begin{tabular}{rrccc}
-\toprule
-Pulse $V$ & Horizon $T$ & $\Phi(-V\|d_T\|_2/2\sigma)$ & Simulated error, $H_0$ & Simulated error, $H_\delta$\\
-\midrule
-20 & 3 & 0.3745 & 0.3734 & 0.3762\\
-40 & 3 & 0.2611 & 0.2599 & 0.2603\\
-40 & 10 & 0.0029 & 0.0030 & 0.0027\\
-80 & 20 & $1.8\times10^{-10}$ & 0 & 0\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item 200,000 paths per hypothesis; $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$. \end{tablenotes}
-\end{threeparttable}
-\end{table}
+
 
 Figure~\ref{fig:impulse} shows why the problem is hard. The two economies have the same direct impact and the same first-lag response; they first differ at lag two, by an amount proportional to $\delta^2$, and the whole difference sequence scales with $\delta^2$. A test therefore needs the signal-to-noise ratio $V\|d\|/\sigma$ to grow like $\delta^{-2}$, which is the quantity order, and because the adverse mark of a probe grows with the square of its size, capital grows like $\delta^{-4}$.
 
@@ -396,10 +320,7 @@ equivalently $(\mu+\tfrac12)\kappa V^2+(c+\mu P_*)V\le B$. The cap holds across 
 
 Even with zero initial inventory, the probe creates a quadratic adverse mark that a fixed initial price exposure would miss. Figure~\ref{fig:knownpair} illustrates the experiment.
 
-\begin{figure}[t]\centering
-\includegraphics[width=\textwidth]{figs/fig_knownpair.pdf}
-\caption{Known-pair experiment funded by the counterparty cash/margin contract. (a) Exact Gaussian error at fixed capital 100 and 1,000, separation $\delta=0.05$. (b) The sharp robust quantity allowance \eqref{eq:VB}. (c) Capital for error $0.1$ with 200 observations. Parameters: $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$, observation s.d.\ $0.003$, reference price 100, margin $0.25$, cost $0.02$. No process noise.}\label{fig:knownpair}
-\end{figure}
+
 
 \begin{proposition}[Exact financial disclosure changes the experiment]\label{prop:disclosure}
 In this noiseless-state account, exact disclosure of the third equity mark after a single positive pulse $0<A\le V_B$ distinguishes the known pair with zero error for every $\delta>0$.
@@ -425,11 +346,7 @@ without a quantity cap and at any horizon. Conversely, for any margin fraction $
 
 Lemma~\ref{thm:capital} is an order statement: an elementary time-domain coercivity argument for Toeplitz forms that establishes the $\delta^{-4}$ rate before the exact frequency-domain optimization of Supplement~\ref{sec:account}. Its explicit constant is very conservative, because it scales as $m/K_*^2\propto\epsilon^7(1-S)^5$: at the calibrated parameters it is $4.9\times10^{-4}$ par units at $\delta=0.05$ with $\epsilon=0.35$, five orders of magnitude below any feasible design. We therefore state it as a lemma; Supplement~\ref{sec:account} computes the sharp constant, within 5\% of a feasible design at every separation.
 
-\subsection{A worked example: two Kalman desks}\label{sec:worked}
-
-To make the orders concrete, consider two desks that track the same trend with Kalman filters (Lemma~\ref{lem:micro}(i)) and differ only in their signal-to-noise ratios: $\sigma_\zeta^2/\sigma_\nu^2=0.09$ and $0.16$. Their gains are $\eta_1=0.2584$ and $\eta_2=0.3279$, so $\bar\eta=0.2931$ and $\delta=0.0348$. With equal weights, the economy is observationally the split pair of Theorem~\ref{thm:quantity} around $\bar\eta$, and the response difference first appears at lag two, $d_2=-\kappa^2q\delta^2=-1.55\times10^{-4}$ (verified).
-
-A supervisor who wants to tell this market from a single desk with gain $\bar\eta$ at 5\% error using a single pulse and the third observation needs $A=2\sigma\Phi^{-1}(0.95)/(\kappa^2q\delta^2)=212$ units of executed quantity, and, under a 0.5\% margin and 4 basis points of fees, single-pulse capital of $18{,}166$ par units. The pulse is very inefficient: the spectral lower bound of Theorem~\ref{thm:spectral}, evaluated at this pair ($\bar\eta=0.2931$, $\delta=0.0348$), gives about 77 par units for the optimal flat probe (rescaling the $\bar\eta=0.4$ constant by $\delta^{-4}$ alone would give 262, because the constant also depends on $\bar\eta$). Converting with the measured Roll noise (factor $(0.40/0.01)^2$), the optimal probe costs roughly $1.2\times10^5$ USDT and the naive pulse about $3\times10^7$ USDT. Two desks whose signal-to-noise ratios differ by almost a factor of two are therefore expensive, but not impossible, to tell apart by probing; three or more desks are much harder (Theorem~\ref{thm:kcohort}).
+A worked example with two Kalman desks that differ only in their signal-to-noise ratios (Supplement~\ref{sec:worked}) puts these orders into numbers.
 
 \section{Unknown mixtures and passive data}\label{sec:mixtures}
 
@@ -471,28 +388,7 @@ because then $d_\infty(\theta_0,\theta_1)=\min\{2\tau(1+\Delta\eta/q),\,(1+2\tau
 
 We recomputed the two-point quantities exactly (Table~\ref{tab:lecam}): the moment gap equals $4\tau p_-p_+(\Delta\eta)^3$ to machine precision, and the Le Cam requirement at $\Delta\eta=0.10$ is $5{,}927.6$ resets. The worst-case failure rates of four re-implemented estimators all lie above the lower bound (Table~\ref{tab:lecam}).
 
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Two-point sample complexity for two-cohort weight recovery}\label{tab:lecam}
-\begin{tabular}{lcccc}
-\toprule
-$\Delta\eta$ & $\Delta M_3$ & $\|\Delta h\|_2$ & $N^*_{\rm LeCam}$ (95\%) & $N^*_{\rm CRB}$\\
-\midrule
-0.30 & $2.67\times10^{-4}$ & $1.98\times10^{-3}$ & 7.1 & 47.8\\
-0.20 & $7.92\times10^{-5}$ & $5.60\times10^{-4}$ & 88.2 & 597.0\\
-0.14 & $2.72\times10^{-5}$ & $1.89\times10^{-4}$ & 775.3 & 5{,}267.9\\
-0.10 & $9.90\times10^{-6}$ & $6.84\times10^{-5}$ & 5{,}927.6 & 40{,}374.2\\
-0.08 & $5.07\times10^{-6}$ & $3.49\times10^{-5}$ & 22{,}740.5 & 155{,}048.9\\
-0.06 & $2.14\times10^{-6}$ & $1.47\times10^{-5}$ & 128{,}333.0 & 875{,}732.3\\
-0.05 & $1.24\times10^{-6}$ & $8.50\times10^{-6}$ & 383{,}859.1 & 2{,}620{,}321.2\\
-0.04 & $6.34\times10^{-7}$ & $4.35\times10^{-6}$ & 1{,}466{,}361.5 & 10{,}012{,}662.4\\
-\midrule
-\multicolumn{5}{p{0.85\textwidth}}{\emph{Worst-case failure at $\Delta\eta=0.10$, $N=50$, 1,000 trials per hypothesis}: bound 44.1\%; ML 94.5\%, ridge 47.5\%, positive-part shrinkage 100\%, heavy prior 73.9\%.}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item $\tau=0.01$, $\sigma_h=1.6\times10^{-3}$, $a=0.5$, $\kappa=0.8$, 121 taps. Estimators: ML is least squares from four starts; ridge and heavy prior are posterior modes with prior standard deviations $(0.05,0.10)$ and $(0.005,0.02)$ for (weights, rates) around the symmetric centre of the two hypotheses; positive-part shrinkage pulls the ML weights toward their mean. Failure means some weight is off by at least $\tau$.\end{tablenotes}
-\end{threeparttable}
-\end{table}
+
 
 \begin{remark}[The hard directions carry no risk]\label{rem:riskneutral}
 The two economies of Theorem~\ref{thm:twocohort} have the same total weight $\sum_iq_i=q$, so their summed price response $\sum_th_t=\kappa/(1-a-\kappa\sum_iq_i)$ is identical, $2.353$ at the calibration of Table~\ref{tab:lecam}: the directions in which prices are least informative about the cohorts are directions in which cumulative price risk does not move. The summed response is a linear functional of the response and is estimated at the parametric rate whatever the spacing of the memories; the companion paper turns this into a certification theorem, a minimax-optimal pre-trade guard and a decision value of disclosure \citep{niroula2026b}. Identification and safety ask different questions of the same data.
@@ -514,42 +410,11 @@ The construction uses the $K$-point Gauss and Gauss--Radau rules of the same wei
 
 \paragraph{What counts as an experiment.} In Theorem~\ref{thm:kcohort} an experiment is a unit impulse from the reset state whose response is observed with noise of variance $\sigma^2$ per tap. The exponent is the same for any probe design of bounded energy. For any probe $v$ the mean difference between the two economies is at most $\sup_\omega|\Delta\hat H(e^{i\omega})|\,\|v\|_2$, and $\sup_\omega|\Delta\hat H|=O((\Delta\eta)^{2K-1})$ because $\Delta\hat H=z^{-1}\hat H_A\hat H_B\,\Delta G$ with both responses bounded on the circle. Experiments with probe energy $E$ each therefore need $NE\gtrsim\sigma^2(\Delta\eta)^{-(4K-2)}$: a larger probe buys the same information with fewer experiments, and Supplement~\ref{sec:account} prices the capital that a larger probe requires. The bound does not cover information obtained without trading against the groups, such as class records (Section~\ref{sec:disclosure}).
 
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Gauss and Gauss--Radau rules on $[-1,1]$ used in Theorem~\ref{thm:kcohort}}\label{tab:radau}
-\begin{tabular}{cp{0.42\textwidth}cc}
-\toprule
-$K$ & Gauss nodes / Gauss--Radau nodes & Max gap, orders $<2K-1$ & Gap at order $2K-1$\\
-\midrule
-2 & $\pm0.5774$ \;/\; $-1,\ 0.3333$ & $6\times10^{-17}$ & 0.2222\\
-3 & $0,\ \pm0.7746$ \;/\; $-1,\ -0.2899,\ 0.6899$ & $2\times10^{-16}$ & 0.0533\\
-4 & $\pm0.3400,\ \pm0.8611$ \;/\; $-1,\ -0.5753,\ 0.1811,\ 0.8228$ & $4\times10^{-16}$ & 0.0131\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item All Gauss--Radau weights are positive. \end{tablenotes}
-\end{threeparttable}
-\end{table} Table~\ref{tab:kcohort} and Figure~\ref{fig:kcohort} confirm the order numerically.
+ Table~\ref{tab:kcohort} and Figure~\ref{fig:kcohort} confirm the order numerically.
 
-\begin{table}[t]\centering
-\begin{threeparttable}
-\caption{Numerical check of Theorem~\ref{thm:kcohort}}\label{tab:kcohort}
-\begin{tabular}{lccc}
-\toprule
- & $K=2$ & $K=3$ & $K=4$\\
-\midrule
-Theoretical exponent of $N^*$ & $-6$ & $-10$ & $-14$\\
-Fitted log--log slope (small $\Delta\eta$) & $-5.96$ & $-9.96$ & $-14.01$\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize
-\item Le Cam bound $N^*\propto\sigma^2/\|h^A-h^B\|_2^2$ with $\sigma=1$, $a=0.5$, $\kappa=1$, total merged weight $0.10$, rates centered at $0.70$, responses over 400 lags. \end{tablenotes}
-\end{threeparttable}
-\end{table}
 
-\begin{figure}[t]\centering
-\includegraphics[width=0.62\textwidth]{figs/fig_kcohort.pdf}
-\caption{Two-point lower bound on the number of reset experiments needed to separate $K$-cohort economies, as a function of the rate spacing.}\label{fig:kcohort}
-\end{figure}
+
+
 
 \begin{theorem}[Matching upper bound for every $K$]\label{prop:esprit}
 Fix $K\ge2$, a compact set $\mathcal S\subset\{s\in[-1,1]^K:s_1<\cdots<s_K\}$ of ordered rescaled rates with $\min_{i\ne j}|s_i-s_j|\ge\gamma>0$, and merged weights $w_i\in[\omega_{\min},\omega_{\max}]$ with $\omega_{\min}>0$. Consider the class of $K$-cohort economies with rates $r_c+\Delta\eta\,s$, $s\in\mathcal S$, and $N$ independent reset experiments whose responses carry Gaussian noise with variance $\sigma^2$. There are constants $c_0,C>0$ depending only on $(K,\mathcal S,\gamma,\omega_{\min},\omega_{\max},a,\kappa,r_c)$ such that, whenever $\epsilon_N\equiv\sigma N^{-1/2}(\Delta\eta)^{-(2K-1)}\le c_0/\sqrt{\log(4K/\beta)}$, Prony's method applied to the first $2K$ estimated kernel values, with its output atoms listed in increasing order of rate, recovers the weights with
@@ -570,115 +435,11 @@ The kernel values $k_m=\sum_iw_ir_i^m$ are the power moments of the merged measu
 
 Table~\ref{tab:kupper} confirms the order numerically. For numerical stability the estimator works in centred and rescaled coordinates (the estimator is the same; only its floating-point evaluation changes). The argument parallels the stability analysis of super-resolution for clustered complex nodes \citep{batenkov2021}, and \citet{katz2023} show that Prony's method attains the min-max bound for clustered exponents; here the nodes are real and are first extracted from the closed loop, and it reproduces the ESPRIT slope of $-6.15$ reported for $K=2$ in the earlier version.
 
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Sample requirement of Prony's method against the lower-bound order}\label{tab:kupper}
-\begin{tabular}{lcccc}
-\toprule
- & $K=2$ & $K=3$ & $K=4$ & $K=5$\\
-\midrule
-Lower-bound order $-(4K-2)$ & $-6$ & $-10$ & $-14$ & $-18$\\
-Fitted slope of $N^*$ in $\Delta\eta$ (Prony) & $-5.94$ & $-10.00$ & $-13.93$ & $-18.34$\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item Rates $0.7+\Delta\eta\,s$ with $s$ the $K$-point Gauss nodes, total weight 0.1, $\Delta\eta\in[0.03,0.2]$; $N^*$ is the number of experiments for a weight RMSE of 10\% of the smallest weight, from 400 simulated estimates per point. At $K=5$ the fit is numerically sensitive: rerunning the same seeded script with a different numerical library gives slopes $-5.94$, $-10.00$, $-13.92$ and $-17.89$. \end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-\subsection{Do the rates survive real market noise?}\label{sec:injection}
-
-Theorems~\ref{thm:kcohort} and~\ref{prop:esprit} are proved for observation errors that are independent and Gaussian, and Table~\ref{tab:kupper} checks them with Gaussian noise. Real price changes are different: one-minute returns have heavy tails, although they are almost uncorrelated from one minute to the next. To see whether the rates depend on the Gaussian assumption, we ran a pre-specified test (opened once) in which the trader groups are synthetic, with known memory spacing, and only the noise is real. Each reset experiment returns the price response to a unit impulse plus a window of consecutive one-minute log-price changes of Binance BTCUSDT, demeaned and scaled to unit variance. The changes come from 21 days, the 6th of each month from January 2025 to September 2026, that are used nowhere else in this project; their kurtosis is 19.4, against 3 for Gaussian noise. With class tagging, the experiment also returns each group's flow response, observed through independent windows of the same noise. A control arm uses i.i.d.\ Gaussian noise of the same variance. For each spacing, $N^*$ is the smallest number of experiments at which every recovered weight lies within 25\% of the smallest true weight in at least 75\% of 200 replications, using Prony's method on prices alone or the per-group regression of Proposition~\ref{prop:tagged} with tagging. The noise level and the spacing grids were fixed on Gaussian noise alone, before any real noise was downloaded.
-
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Sample requirement with real Bitcoin price noise: fitted slope of $\log N^*$ in $\log\Delta\eta$}\label{tab:injection}
-\begin{tabular}{lccccl}
-\toprule
- & Theory & Real noise & Gaussian control & Pre-specified criterion & Result\\
-\midrule
-Price only, $K=2$ (H1) & $-6$ & $-6.01$ & $-6.22$ & slope in $[-7.5,-4.5]$ & pass\\
-Tagged, $K=2$ (H2) & bounded & 256--724 & 256--1{,}024 & max/min $\le8$ & pass (2.8)\\
-Price only, $K=3$ (H3) & $-10$ & $-9.81$ & $-9.96$ & slope in $[-12.5,-7.5]$ & holds\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item Synthetic groups at rates $r_c+\Delta\eta\,s$ ($s$ the $K$-point Gauss nodes; $r_c=0.6$ and $\Delta\eta$ from 0.5 to 0.125 for $K=2$, $r_c=0.5$ and $\Delta\eta$ from 0.6 to 0.25 for $K=3$), $a=0.5$, $\kappa=0.8$, total weight 0.08, $\sigma=10^{-3}$, $\sigma_f=0.02$. The test passes if H1 and H2 hold; H3 is reported either way. The tagged row gives the range of $N^*$ over the spacing grid. Requirements above $4{,}096$ use the central-limit draw described in the text. Requirements at each spacing are in Supplement Table~\ref{tab:injectionfull}. Test opened once.\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-Both pre-specified hypotheses hold, so the test passes (Table~\ref{tab:injection}). With real noise, the price-only requirement for two groups rises from 64 experiments at $\Delta\eta=0.5$ to $370{,}728$ at $\Delta\eta=0.125$, a factor of about 5{,}800, and the fitted slope is $-6.01$; for three groups it is $-9.81$. Over the same grid the tagged requirement stays between 256 and 724 experiments, and it falls slightly rather than rises as the spacing shrinks. At every spacing the real-noise requirement is within one step of the grid (a factor $\sqrt2$) of the Gaussian control.
-
-The test has a limit, stated in its specification. Averages of $N$ real windows are resampled exactly up to $N=4{,}096$; beyond that they are drawn as Gaussian vectors with the real windows' covariance, as the central limit theorem suggests. Real one-minute changes are almost uncorrelated (lag-one autocorrelation between $-0.007$ and $0.009$ within the windows), so beyond $4{,}096$ the real and Gaussian arms differ little by construction. The direct evidence about heavy tails therefore comes from the points in the exact range: every tagged requirement, and the price-only requirements for two groups at the three widest spacings (64, 362 and 1{,}448 experiments, against 64, 362 and 1{,}024 with Gaussian noise). The other four price-only points for two groups, and all points for three groups, check the rate with the real noise's variance and covariance but not its tails. Averaging should make heavy tails matter less as $N$ grows, but the test does not show this.
-
-\paragraph{In words.} Where real Bitcoin price noise could be used directly, it needs about as many experiments as Gaussian noise, and over the whole grid halving the spacing between two groups still multiplies the number of experiments by about 64, while class-tagged records keep the requirement flat. At the largest sample sizes the test relies on a normal approximation to the real noise.
-
-\subsection{General memory: the minimax rate is logarithmic}\label{sec:general}
-
-Exponential memory is a modelling choice. Suppose instead that the feedback kernel is completely monotone, $k_m=\int_{[0,\rho]}r^m\,d\mu(r)$ with $\rho<1$, where $\mu$ is any nonnegative measure of total mass $W$: a finite or infinite mixture of exponential memories with merged weight $W$. Write $\mathcal M(\rho,W)$ for this class, assume the closed loop is uniformly stable, $s\equiv a+\kappa W/(1-\rho)<1$, and measure accuracy by
-\[
-d(\mu,\mu')=\sup\Bigl\{\textstyle\int f\,d(\mu-\mu'):\ f\ \text{1-Lipschitz on }[0,\rho],\ f(0)=0\Bigr\},
-\]
-which equals the Wasserstein-1 distance between measures of equal mass and also compares estimates whose mass is not exactly $W$. Let $E_L(|x|)$ denote the error of the best uniform approximation of $|x|$ on $[-1,1]$ by polynomials of degree $L$, and let $c_*=\inf_{L\ge1}L\,E_L(|x|)$. \citet{bernstein1914} showed that $L\,E_L(|x|)$ converges to a positive constant ($0.2802$; \citealp{varga1985}), so $c_*>0$; numerically $c_*=1/4$, attained at $L=2$ (Table~\ref{tab:general}).
-
-\begin{lemma}[Moment-matched cohort pairs]\label{lem:altpair}
-For every $n\ge2$ there are two probability measures on $[0,\rho]$, each with exactly $n$ atoms, whose moments of orders $0,\ldots,2n-2$ coincide and whose Wasserstein-1 distance is at least $\rho\,E_{2n-2}(|x|)\ge c_*\rho/(2n-2)$.
-\end{lemma}
-
-The atoms are the points where the best approximation of $|r-\rho/2|$ by polynomials of degree $2n-2$ attains its maximal error with alternating signs, and the weights are those of the divided difference on these points, which annihilates every polynomial of degree $2n-2$ (Supplement~\ref{app:proofs}). Each measure is an $n$-atom merged measure in the class; one atom may sit at rate $0$ (a cohort with $\eta=1$), which the class allows.
-
-\begin{theorem}[Minimax rate for general memory]\label{thm:general}
-Let $N$ independent reset experiments observe the impulse response with Gaussian noise of variance $\sigma^2$ per tap, and let $B(\rho)=(1+\sqrt2)(1+2/\rho)$ and $C_h=\kappa^2/(1-s)^2$.
-\begin{enumerate}[label=(\roman*)]
-\item \emph{Lower bound.} Let $\Lambda_N=\log(N/\sigma^2)+\log\bigl(2C_h^2W^2/((1-\rho)\rho)^2\bigr)$. Whenever $\Lambda_N>4\log(1/\rho)$, every estimator $\hat\mu$ satisfies
-\[
-\sup_{\mu\in\mathcal M(\rho,W)}P_\mu\Bigl(d(\hat\mu,\mu)\ge\frac{c_*\,\rho W\log(1/\rho)}{\Lambda_N}\Bigr)\;\ge\;\frac1{4e},
-\]
-and the bound already holds over $n$-cohort economies, for a finite $n$ that grows with $N$.
-\item \emph{Upper bound.} With $a$ and $\kappa$ known, invert the averaged response into kernel values $\hat k_0,\ldots,\hat k_L$, with $L+1=\lfloor\log(N/\sigma^2)/(4\log B(\rho))\rfloor$, and let $\hat\mu$ be any measure on $[0,\rho]$ minimizing $\max_{j\le L}|\int r^jd\hat\mu-\hat k_j|$ (a linear program). For every $\beta\in(0,1)$ there is $N_0$ depending only on $(\rho,W,a,\kappa,\beta)$ such that for $N/\sigma^2\ge N_0$,
-\[
-\sup_{\mu\in\mathcal M(\rho,W)}P_\mu\Bigl(d(\hat\mu,\mu)>\frac{3\pi\rho W\log B(\rho)}{\log(N/\sigma^2)}\Bigr)\;\le\;\beta .
-\]
-\end{enumerate}
-Hence the minimax accuracy is of exact order $1/\log(N/\sigma^2)$, and reaching accuracy $w$ requires and suffices $N/\sigma^2=\exp(\Theta(1/w))$.
-\end{theorem}
-
-\begin{proof}[Proof sketch]
-(i) Put the measures of Lemma~\ref{lem:altpair}, scaled to mass $W$, into the model. Their difference annihilates polynomials of degree $2n-2$, so the generating function of the kernel difference is $\int(1-rz)^{-1}d(\mu_A-\mu_B)=z^{2n-1}\int r^{2n-1}(1-rz)^{-1}d(\mu_A-\mu_B)$; on $|z|=1$ it is at most $2W\rho^{2n-1}/(1-\rho)$, and Parseval bounds $\|k^A-k^B\|_2$ by the same quantity. The response difference is $H_AH_B$ times the shifted kernel difference, so $\|h^A-h^B\|_2\le C_h\|k^A-k^B\|_2$. Choosing the smallest $n$ for which the Kullback--Leibler divergence of the $N$-sample experiments is at most one, the Bretagnolle--Huber form of Le Cam's lemma gives the bound with half the Wasserstein separation of the lemma. (ii) For a 1-Lipschitz $f$ with $f(0)=0$, Jackson's theorem gives a polynomial $q$ of degree $L$ with $\sup|f-q|\le\pi\rho/(4(L+1))$, and expanding $q$ in Chebyshev polynomials of $2r/\rho-1$ bounds the sum of its monomial coefficients by $\rho B(\rho)^{L+1}$. Hence $d(\hat\mu,\mu)\le\pi\rho(W+\delta)/(2(L+1))+2\delta\rho B(\rho)^{L+1}$, where $\delta$ is the largest kernel error. The kernel is recovered from the response by a series reciprocal, $K(z)=(1-az-\kappa/H(z))/(\kappa z)$, whose error is at most $2((1+s)/\kappa)^2(L+2)$ times the largest response error, so $\delta=O_P(\sigma N^{-1/2}L\sqrt{\log L})$. The choice of $L$ makes $\delta B(\rho)^{L+1}=O_P((\sigma^2/N)^{1/4}L\sqrt{\log L})$, negligible against the first term. Full proofs are in Supplement~\ref{app:proofs}.
-\end{proof}
-
-\paragraph{In words.} If trader memory is a general mixture of exponentials rather than a few clean ones, accuracy improves only with the logarithm of the data: to halve the error, the data must be squared. The few-groups model of the previous results is therefore the optimistic case.
 
 
-Theorem~\ref{thm:general} replaces a polynomial barrier with a logarithmic one. With exponential memory and $K$ known cohorts, halving the error multiplies the required number of experiments by a constant; with general memory, halving the error squares it. The lower bound holds already for finite mixtures, so knowing that the memory is a finite mixture of exponentials does not help unless the number of cohorts is also known (Theorem~\ref{thm:uniformw1}). The constants of the two bounds differ, by a factor that grows as $\rho\to1$, so the dependence on how long memory lasts is not pinned down. The source of the gap is visible in the proof: as $\rho\to1$ the moment-matched pairs separate their kernels more slowly ($\rho^{2n-1}$ decays slowly), which weakens the lower bound through $\log(1/\rho)$, while the upper bound pays $\log B(\rho)$, which stays bounded away from zero, for the conditioning of polynomial approximation on $[0,\rho]$. Logarithmic rates of this kind are familiar from deconvolution with supersmooth errors \citep{fan1991} and from moment methods for mixing distributions \citep{kong2017,wu2020}; here they arise from the closed loop of a market.
+\paragraph{Real market noise.} Theorems~\ref{thm:kcohort} and~\ref{prop:esprit} assume Gaussian noise. A pre-specified test (Supplement~\ref{sec:injection}) keeps the trader groups synthetic and replaces the noise with heavy-tailed one-minute Bitcoin price changes: the price-only requirement still grows with fitted slopes $-6.01$ for $K=2$ and $-9.81$ for $K=3$ (theory $-6$ and $-10$), while the tagged requirement stays bounded across the spacing grid.
 
-Table~\ref{tab:general} checks the construction and the estimator. The pairs of Lemma~\ref{lem:altpair} have exactly $n$ atoms, agree in all moments below order $2n-1$ to $10^{-61}$, and remain at Wasserstein distance about $0.4/n$, while the distance between their kernels shrinks by a factor of about $0.2$ per atom at $\rho=0.9$. The linear-programming estimator applied to a continuous memory distribution has error times $\log(N/\sigma^2)$ between $0.18$ and $0.28$ for $N$ from $10^4$ to $10^{24}$: a $10^{20}$-fold increase in data halves the error. The exponential-memory model of the previous subsections, where the cost is polynomial in $1/\Delta\eta$, is therefore the optimistic case: relaxing the parametric form makes identification from prices much harder, not easier.
-
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{General memory: moment-matched cohort pairs and the moment estimator}\label{tab:general}
-\setlength{\tabcolsep}{3.5pt}
-\begin{tabular}{lcccccc}
-\toprule
-\multicolumn{7}{l}{\emph{A. Best approximation of $|x|$}}\\
-$L$ & 2 & 4 & 6 & 10 & 20 & 30\\
-$L\,E_L(|x|)$ & 0.2500 & 0.2705 & 0.2756 & 0.2785 & 0.2797 & 0.2800\\
-\midrule
-\multicolumn{7}{l}{\emph{B. Pairs of Lemma~\ref{lem:altpair}}}\\
-Atoms per measure $n$ & 2 & 4 & 6 & 8 & 10 & 12\\
-$W_1(\mu_A,\mu_B)$, $\rho=0.9$ & 0.2250 & 0.1037 & 0.0669 & 0.0494 & 0.0391 & 0.0324\\
-$n\,W_1$, $\rho=0.9$ & 0.450 & 0.415 & 0.402 & 0.395 & 0.391 & 0.388\\
-$\|k^A-k^B\|_2$, $\rho=0.9$ & $4.41\times10^{-2}$ & $1.03\times10^{-3}$ & $4.08\times10^{-5}$ & $1.96\times10^{-6}$ & $1.05\times10^{-7}$ & $5.95\times10^{-9}$\\
-$\|k^A-k^B\|_2$, $\rho=0.99$ & $7.41\times10^{-2}$ & $5.84\times10^{-3}$ & $1.07\times10^{-3}$ & $2.76\times10^{-4}$ & $8.33\times10^{-5}$ & $2.76\times10^{-5}$\\
-\midrule
-\multicolumn{7}{l}{\emph{C. Linear-programming estimator, continuous memory distribution, $\rho=0.9$}}\\
-$\log_{10}N$ & 4 & 8 & 12 & 16 & 20 & 24\\
-Moments used ($L+1$) & 2 & 3 & 5 & 6 & 7 & 8\\
-Error $d(\hat\mu,\mu)$ & 0.00878 & 0.00759 & 0.00432 & 0.00445 & 0.00382 & 0.00399\\
-Error $\times\log(N/\sigma^2)$ & 0.202 & 0.245 & 0.179 & 0.226 & 0.229 & 0.276\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item A: Remez algorithm; the limit is Bernstein's constant $0.2802$. B: moments of orders $0,\ldots,2n-2$ agree to $10^{-61}$ (60-digit arithmetic); every $W_1$ exceeds $\rho E_{2n-2}(|x|)$. C: true merged measure Beta(2,3) on $[0,0.9]$ with mass $0.1$; kernel values observed with noise $\sigma N^{-1/2}$, $\sigma=10^{-3}$; $L$ from the rule in Theorem~\ref{thm:general}(ii); measure fitted on a 401-point grid; 20 replications.\end{tablenotes}
-\end{threeparttable}
-\end{table}
+\paragraph{General memory.} If memory is any completely monotone kernel, a finite or infinite mixture of exponential memories, recovery becomes far harder: the minimax accuracy for the memory distribution is of exact order $1/\log(N/\sigma^2)$, so reaching accuracy $w$ requires and suffices $N/\sigma^2=\exp(\Theta(1/w))$ (Theorem~\ref{thm:general}, Supplement~\ref{sec:general}). The polynomial rates above rely on memory being a finite mixture of exponentials.
 
 \subsection{Passive data}
 
@@ -780,7 +541,7 @@ $N_p\asymp\sigma^2(\Delta\eta)^{-(4K-2)}$ by Theorems~\ref{thm:kcohort} and~\ref
 
 Proposition~\ref{prop:tagged} and Theorem~\ref{thm:discvalue} use different observation arrangements: the proposition concerns passive, stationary data with prices observed without noise, where the price is a valid instrument; the theorem concerns reset experiments with noisy prices. With noisy prices, regressing flow on the observed price is an errors-in-variables problem, which is why the theorem works from the known impulse instead.
 
-With the same noise and lags for both observers, the Cram\'er--Rao requirements give fitted slopes of $-6.08$ for prices and $-4.34$ for the ratio at $K=2$ (theory $-6$ and $-4$). Calibrated to the class memories estimated below, prices alone would need about 333 times as many days as the published class ratios to separate the top-trader and all-account memories in BTCUSDT (rates $0.9889$ and $0.9986$ per five minutes; about 6{,}000 days against 18), and about 19 times as many in ETHUSDT (rates $0.9793$ and $0.9972$). These rates come from day-demeaned regressions, which bias persistence down (Section~\ref{sec:disc_data}), so the factors are illustrative.
+With the same noise and lags for both observers, the Cram\'er--Rao requirements give fitted slopes of $-6.08$ for prices and $-4.34$ for the ratio at $K=2$ (theory $-6$ and $-4$). Calibrated to the class memories estimated below, prices alone would need about 333 times as many days as the published class ratios to separate the top-trader and all-account memories in BTCUSDT (rates $0.9889$ and $0.9986$ per five minutes; about 6{,}000 days against 18), and about 19 times as many in ETHUSDT (rates $0.9793$ and $0.9972$). These rates come from day-demeaned regressions, which bias persistence down (Supplement~\ref{sec:disc_data}), so the factors are illustrative.
 
 \subsection{When disclosure is worth acquiring}\label{sec:decision}
 
@@ -819,120 +580,12 @@ N\;\ge\;\Bigl(\frac{2z_{0.75}\,\sigma}{\|h^A-h^B\|_2}\Bigr)^2\;\ge\;c\,\sigma^2(
 
 \paragraph{In words.} A supervisor that only needs to cool the whole market can act on public data: the size of a market-wide measure depends on the combined response, which is learned quickly. A supervisor that wants to stop one group and leave the others trading needs that group's own trading intensity, and there are two markets that look almost the same in prices, one in which halting the largest group is enough and one in which it is not. Telling them apart takes the full $(\Delta\eta)^{-(4K-2)}$ cost; class-tagged records reduce it to a bounded number of experiments. Table~\ref{tab:target} gives numbers. The largest normalized weights of the two rules differ for every $K\le8$ that we checked (for example $0.500$ against $0.750$ for $K=2$ and $0.444$ against $0.512$ for $K=3$); we do not have a proof that they differ for every $K$. This proposition is new to this revision and has not been independently reviewed.
 
-\begin{table}[!htbp]\centering\footnotesize
-\begin{threeparttable}
-\caption{Targeted versus market-wide intervention: two economies that prices barely separate}\label{tab:target}
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{ccccccc}
-\toprule
-$K$ & $\Delta\eta$ & $|S^A-S^B|$ & $\kappa q^{G}_{\max}$ & $\kappa q^{R}_{\max}$ & Window for $\bar s$ & $N$ for a correct choice\\
-\midrule
-2 & 0.20 & $3.9\times10^{-3}$ & 0.112 & 0.144 & [0.527, 0.562] & 5\\
-2 & 0.10 & $5.0\times10^{-4}$ & 0.093 & 0.131 & [0.532, 0.570] & 306\\
-2 & 0.05 & $6.5\times10^{-5}$ & 0.086 & 0.125 & [0.536, 0.575] & 18{,}095\\
-3 & 0.20 & $2.8\times10^{-4}$ & 0.073 & 0.092 & [0.583, 0.603] & 1{,}092\\
-3 & 0.10 & $7.8\times10^{-6}$ & 0.071 & 0.076 & [0.587, 0.592] & $1.4\times10^{6}$\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item Calibration $a=0.5$, $\kappa=0.8$, $W=0.08$, $r_c=0.60$, observation noise $\sigma=0.01$ per tap; G and R are the Gauss and Gauss--Radau economies. Both economies have $S\approx0.66$--$0.68$. ``Window'' is the range of thresholds in which halting the largest group restores $S\le\bar s$ in one economy and not in the other. The last column is the exact Gaussian-shift requirement for a choice that is correct with probability $3/4$ in both.\end{tablenotes}
-\end{threeparttable}
-\end{table}
+
 
 \paragraph{What the data can and cannot test.} The theorems concern experiments that no outside researcher can run: reset initial states, known price persistence and impact, and either controlled probes or stationary data from a known innovation law. Public data meet none of these exactly. Order flow is endogenous, the fundamental value is unobserved and replaced by returns, observations overlap in time, parameters drift, and the class reports are positions aggregated over many accounts rather than tagged flow. The tests below therefore check the theory's observable prediction, that class records restrict persistence which prices leave unrestricted, under a stated mapping from class positions to cohort states. They do not estimate the theorems' rates, and a pass does not show that class persistence is learning memory.
 
-\subsection{Mandated disclosure: the CFTC's trader-class reports}\label{sec:cot}
-
-The cleanest test uses disclosure mandated by law. The U.S. Commodity Futures Trading Commission requires large traders in regulated futures markets to report their positions and publishes a weekly snapshot of Tuesday positions, usually on Friday, aggregated by reporting category: leveraged funds, asset managers/institutional investors and dealers/intermediaries in financial futures, and managed money, producers/merchants/processors/users and swap dealers in commodities. The categories reflect each trader's reported business, not the algorithm that traded. These are published, aggregated class positions, not class-tagged flow. We pre-specified a test before downloading any data, in eight markets that span asset classes: CME Bitcoin and Ether, the E-mini S\&P 500, 10-year Treasury notes, the euro, the yen, WTI crude oil and Henry Hub natural gas, using every weekly report through October 2026 (282 to 1{,}039 weeks per market). For each class, $n_{c,t}=(\text{long}-\text{short})/\text{open interest}$ follows $n_{c,t}=\alpha_c+r_cn_{c,t-1}+w_c\,{\rm ret}_t$, the weekly version of the cohort recursion. The price-only alternative regresses each week's return on its own twelve lags and fits a two-exponential kernel $\phi_j=b_1r_1^{\,j-1}+b_2r_2^{\,j-1}$ to the twelve coefficients by least squares over the grid $0\le r_1<r_2\le0.99$ in steps of $0.02$. Weekly futures returns are close to serially uncorrelated, so the fitted weights are close to zero and the rates are weakly identified nuisance parameters \citep{andrews2012}; that is part of what the wide price-only intervals show. Returns come from Binance spot (Bitcoin, Ether), the S\&P 500 index, euro and yen spot rates, minus the change in the 10-year Treasury yield, and front-month crude-oil and natural-gas futures (Yahoo Finance). Only the last two are futures returns; for the other six the basis between spot and the CME contract enters the return regressor; this matters most for the sign of $w_c$ in markets where leveraged funds run basis trades. The comparison is descriptive, not a race between estimators of the same object: the class route fits the persistence of an observed position series, the price route infers latent kernel rates from returns. Intervals come from a 13-week moving-block bootstrap; near a unit root an autoregressive coefficient is estimated at rate $T^{-1}$ rather than $T^{-1/2}$, so the narrow class intervals partly reflect the near-unit-root persistence of position stocks, such percentile intervals are pointwise and can understate uncertainty, and price-only intervals that fill the admissible range are better read as a sign of weak identification than as calibrated 95\% intervals. The pre-specified hypotheses were: (H1, primary) the fast class's memory rate is pinned to an interval narrower than $0.25$ while both price-only intervals are wider, in at least 75\% of markets; (H2) the fast class trend-follows, $w_c>0$, in at least 75\%; (H3) the fast class has the shorter memory in at least half.
-
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Fitted persistence of trader-class positions, CFTC Commitments of Traders, eight regulated futures markets}\label{tab:cot}
-\setlength{\tabcolsep}{3pt}\footnotesize
-\begin{tabular}{lrccccr}
-\toprule
-Market & Weeks & Fast $\hat r$ [95\% CI] & Slow $\hat r$ & $\hat r_{\rm fast}-\hat r_{\rm slow}$ [95\% CI] & $\hat w_{\rm fast}$ & Ratio\\
-\midrule
-Bitcoin (CME) & 434 & 0.951 [0.928, 0.969] & 0.986 & $-0.035$ [$-0.062$, $-0.010$] & $-$ & 23.7\\
-Ether (CME) & 282 & 0.890 [0.826, 0.932] & 0.960 & $-0.070$ [$-0.143$, $-0.011$] & $-$ & 9.1\\
-E-mini S\&P 500 & 1{,}039 & 0.914 [0.884, 0.937] & 0.954 & $-0.040$ [$-0.071$, $-0.012$] & $-$ & 18.3\\
-10-year T-note & 1{,}039 & 0.992 [0.985, 0.998] & 0.993 & $-0.000$ [$-0.006$, $+0.007$] & (0) & 71.4\\
-Euro & 1{,}035 & 0.961 [0.947, 0.972] & 0.996 & $-0.034$ [$-0.051$, $-0.022$] & $+$ & 37.3\\
-Yen & 1{,}035 & 0.955 [0.939, 0.968] & 0.984 & $-0.029$ [$-0.047$, $-0.013$] & $+$ & 34.0\\
-WTI crude oil & 1{,}039 & 0.961 [0.946, 0.974] & 0.999 & $-0.037$ [$-0.053$, $-0.023$] & $+$ & 35.2\\
-Natural gas & 1{,}039 & 0.981 [0.969, 0.990] & 0.980 & $+0.001$ [$-0.014$, $+0.017$] & $+$ & 44.0\\
-\midrule
-\multicolumn{7}{l}{\emph{Pre-specified hypotheses}: H1 (primary) 8 of 8, pass; H2 4 of 8, fail; H3 6 of 8, pass (two indistinguishable).}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item ``Fast'' (designated speculative) class: leveraged funds (financial futures) or managed money (commodities); ``slow'' (designated comparison) class: asset managers or producers/merchants. The labels are fixed by class role before estimation, not by the estimates; in natural gas the designated fast class has the (insignificantly) higher persistence. $\hat w_{\rm fast}$: sign of the response to returns, $+$ or $-$ when the 95\% interval excludes zero, (0) otherwise. Ratio: mean width of the two price-only rate intervals over the width of the fast-class interval; the price-only intervals span 0.95--0.96 of the admissible range $[0,0.99]$ in every market. Weekly returns: Binance spot (Bitcoin, Ether); S\&P 500 index, euro and yen spot, minus the change in the 10-year yield, and front-month crude-oil and natural-gas futures from Yahoo Finance. For the six non-futures series the spot--futures basis is ignored; a post hoc rerun with CME futures prices gives the same counts and the same signs of $\hat w_{\rm fast}$ (see text). Test opened once.\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-The primary hypothesis holds in all eight markets (Table~\ref{tab:cot}). The class reports pin the fitted persistence rate of each fast class's positions to an interval between $0.013$ and $0.106$ wide, while the price-only kernel leaves both rates anywhere in the admissible range; the width ratios run from 9 to 71. The ratio partly reflects how little weekly returns reveal, which is the point of the theory rather than an artefact of it. A fitted persistence of aggregated positions is not a structural learning memory: it also reflects how slowly positions turn over and how accounts enter and leave a class. In the model with inventory costs (the remark after Lemma~\ref{lem:micro}) a position accumulates order flow, so it carries an inventory-adjustment root, close to one when inventory costs are small, on top of the belief root $r_i$, and a one-lag fit to positions mostly picks up the former. The classes differ as the cohort model allows. Leveraged funds and managed money have the less persistent positions in six of eight markets, with half-lives of 6 to 18 weeks against months to years for asset managers and producers; in Treasuries and natural gas the two persistences are indistinguishable.
-
-The trend-following hypothesis fails. The fast class buys after rises in the euro, the yen, crude oil and natural gas, but sells after rises in Bitcoin, Ether and the S\&P 500 futures. The first half matches the finding of \citet{moskowitz2012} that speculators' positions tend to go with past returns. We did not predict this. One candidate explanation is that leveraged-fund positions in financial futures are dominated by the short futures leg of cash--futures basis trades, which a single memory per class cannot represent \citep{barth2021}. A post-hoc check is consistent with it but not decisive: weekly position changes of leveraged funds and asset managers are strongly negatively correlated in Bitcoin, Ether, the S\&P 500 and Treasuries ($-0.37$ to $-0.67$) but not in the euro or yen ($-0.04$ and $-0.05$), and holding the asset managers' change fixed removes the negative response in Bitcoin and halves it in Ether and the S\&P 500. Because class positions sum to zero across all reporting categories, some negative correlation is mechanical, so this is a signature, not a test. The failure sharpens rather than weakens the case for class tagging: class labels are not strategies, and a supervisor who wants to know how a class responds to prices needs its positions, which the price process does not reveal. Negative estimated $w_c$ also lies outside the positive economy of Section~\ref{sec:model}, so the dollar bounds of Supplement~\ref{sec:disc_dollars} do not apply to these classes; the pre-specified restriction test does not use positivity.
-
-\paragraph{Post hoc robustness.} After the registered test we reran the same estimators with three changes, approved before any of them was run and reported without re-scoring the registered result: CME futures prices (BTC, ETH, ES, ZN, 6E and 6J front months) for the six markets that used spot, index or yield prices; the futures version with contract-roll weeks removed by a calendar rule fixed in advance; and 26- and 52-week bootstrap blocks. With futures prices the counts are unchanged (H1 8 of 8, H2 4 of 8, H3 6 of 8), and so is the sign of $\hat w_{\rm fast}$ in every market: the fast class still sells after rises in Bitcoin, Ether and the S\&P 500. The spot--futures basis in the registered returns therefore does not produce the negative signs. Longer blocks leave the counts unchanged; Bitcoin's response interval then includes zero. Removing roll weeks leaves H1 and H2 unchanged, lowers H3 to 4 of 8 and turns the Treasury response negative. H3 is lost in Bitcoin and Ether, where the rule removes 46\% of the weeks (200 of 436 and 131 of 284): a report is dropped whenever any day of its week touches the five-day expiry window, so with monthly expiries the rule removes about two weeks in four, more than intended, and the fast--slow difference is no longer resolved in the shorter samples. In the equity-index, currency and Treasury markets it removes 15\% of the weeks, and in crude oil and natural gas none. The primary result, that class positions pin down a persistence that prices leave open, holds in all seven variants.
-
-\paragraph{Class flows: a pre-specified test that failed.} Proposition~\ref{prop:tagged} is about tagged flow, while the registered test uses positions. A second pre-specified test (opened once) reads the same reports as flows, the weekly change in the fast class's net position, and estimates $u_t=c+r\,u_{t-1}+w\,{\rm ret}_t$ by the instrumental-variables regression of the proposition, with last week's return as the instrument for last week's flow and the same 13-week bootstrap. Its primary hypothesis, that the 95\% interval for $r$ is narrower than 0.5 in at least six markets, fails. It holds in three: the S\&P 500, crude oil and natural gas, with widths from 0.36 to 0.44. The intervals are 0.57 and 0.60 wide in the euro and the yen, 1.08 in Ether, 3.4 in Bitcoin and 10.8 in Treasuries. The instrument is strong (first-stage $F\ge10$) in seven markets, all but Treasuries ($F=4.3$), and the flow response $w$ is nonzero in six, with the same signs as in positions: negative in Ether and the S\&P 500, positive in the euro, the yen, crude oil and natural gas. Read as flows, then, the CFTC reports identify how each class's flow responds to prices, but not how persistent that flow is, at the precision the test required. In Proposition~\ref{prop:tagged} the precision is of order $T^{-1/2}$ with a constant that grows with the noise in the reported flow ($\sigma_f^2$ in \eqref{eq:ivvar}). Weekly changes in aggregated positions also move when accounts enter or leave a class, which is noise for this purpose, and two markets have short samples (279 and 428 weeks); we did not test these explanations. The failure limits the claim that published class aggregates implement the tagged-flow contract of Proposition~\ref{prop:tagged}. It does not bear on the proposition itself, which is a statement about the model.
-
-\paragraph{Separating memory from turnover: a pre-specified test that failed.} A fitted persistence of positions mixes two things: in the model with inventory costs (the remark after Lemma~\ref{lem:micro}) a class position follows a slow inventory or turnover root and, on top of it, the faster belief-memory root $r_i$. A third pre-specified test (opened once) asked whether the CFTC positions show that second root. For each class it fits $n_t=\alpha+\phi_1n_{t-1}+\phi_2n_{t-2}+b_0{\rm ret}_t+b_1{\rm ret}_{t-1}$, takes the roots $z_1\ge z_2$ of $z^2-\phi_1z-\phi_2$, and requires, for the fast class in at least six markets, that the 95\% interval of $z_2$ lie inside $(0,0.9)$ and that $z_1-z_2$ be clearly positive. It fails: the condition holds in two markets, crude oil and natural gas. The larger root is between 0.90 and 0.99 in every market, as in Table~\ref{tab:cot}. The smaller root is between $-0.16$ and $0.21$; it is negative in Bitcoin, Ether, the S\&P 500 and Treasuries, and where it is positive its half-life is under half a week (0.22 to 0.44 weeks), far shorter than any learning memory the weekly reports could reveal. Positions therefore behave as one slow component plus short-lived noise. By the interpretation fixed before the run, this is a failure of the two-root reading of CFTC positions, and it confirms the limitation stated above: these data restrict how persistent class positions are, but they cannot separate learning memory from the turnover of positions.
-
-Together with Table~\ref{tab:disc}, the evidence now covers two disclosure regimes, one voluntary and one mandated by law, in crypto and in regulated equity-index, rate, currency and commodity futures. In both, class-tagged positions restrict persistence rates that prices leave unrestricted; whether that persistence is learning memory or slow turnover of positions, these data do not say.
-
-\subsection{Voluntary disclosure: Binance's trader-class ratios}\label{sec:disc_data}
-
-Binance publishes voluntarily, for one venue but every five minutes, long/short ratios for its top-trader group, by position and by account, and for all accounts. These are class-level positions, the closest public analogue to the tagged data of Proposition~\ref{prop:tagged}, but not homogeneous cohorts: the top-trader position ratio is built from position sizes, the all-account ratio from counts of long and short accounts, the top-trader group is a subset of all accounts, and its membership can change. We treat a class's reported net position as the observable counterpart of its cohort state: it obeys the same one-lag recursion class by class, so the block-diagonal information structure of Proposition~\ref{prop:tagged} carries over. The mapping is an assumption, because the reports are positions rather than flows and returns stand in for the unobserved deviation $x_t$. For each class $c$ we estimate $n_{c,t}=r_cn_{c,t-1}+w_c\,{\rm ret}_t$, with $n=(R-1)/(R+1)$ from the ratio $R$. The price-only alternative regresses signed five-minute taker flow on twelve lagged five-minute returns and fits two exponentials to the kernel; it estimates the memory rates without class information. Intervals come from a day bootstrap with 200 draws.
-
-\begin{table}[t]\centering\small
-\begin{threeparttable}
-\caption{Fitted persistence rates with and without class-tagged data}\label{tab:disc}
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lcccp{0.1\textwidth}p{0.08\textwidth}}
-\toprule
-Symbol & Days & Top position $\hat r$ [95\% CI] & All accounts $\hat r$ [95\% CI] & Width ratio & Classes differ\\
-\midrule
-BTCUSDT & 48 & 0.9889 [0.9842, 0.9935] & 0.9986 [0.9955, 1.0005] & 121.7 & yes\\
-ETHUSDT & 48 & 0.9793 [0.9616, 0.9907] & 0.9972 [0.9934, 0.9997] & 55.6 & yes\\
-CELRUSDT & 48 & 0.9884 [0.9830, 0.9922] & 0.9882 [0.9804, 0.9914] & 81.6 & no\\
-CVXUSDT & 33 & 0.9822 [0.9732, 0.9908] & 0.9829 [0.9694, 0.9900] & 45.9 & no\\
-\midrule
-\multicolumn{6}{l}{\emph{Pre-specified test on fresh days, 30 USD-M perpetuals, 2025--2026}}\\
-\multicolumn{3}{l}{(i) width ratio $>10$} & \multicolumn{3}{l}{30 of 30 (range 27.6--124.0)}\\
-\multicolumn{3}{l}{(ii) price-only rate interval wider than 0.25} & \multicolumn{3}{l}{30 of 30 (range 0.65--0.99)}\\
-\multicolumn{3}{l}{(iii) merged response $\sum_mk_m$ identified} & \multicolumn{3}{l}{5 of 30}\\
-\multicolumn{3}{l}{Classes differ} & \multicolumn{3}{l}{11 of 30}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item Top panel: training days 2023--2024; width ratio is the mean price-only rate-interval width over the mean tagged width. Estimates are from day-demeaned regressions, which bias persistence down; corrected by a split-panel jackknife, the median tagged rate is $1.0008$ (Section~\ref{sec:disc_data}). The price-only intervals for both rates cover most of $[0,0.99]$. Bottom panel: specification pre-specified before the fresh days were downloaded; a symbol passes if all three of the first rows hold, and the test required 80\% of symbols to pass. \end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-We begin with the one-hour price kernel of Table~\ref{tab:disc} and end with the fairer horizon-matched comparison on 30 new markets, which reduces the width ratio to a median of 7.3. Table~\ref{tab:disc} gives three results. First, tagged class data restrict persistence rates that prices and flow leave essentially unrestricted: with the one-hour price-only kernel, the price-only intervals are 28 to 124 times wider in every one of 30 symbols on fresh days, and cover most of the admissible range. Part of this ratio is mechanical, because a series of positions identifies its own persistence directly while the price-only route must fit two exponentials to a weakly identified kernel. Restricting attention to the five symbols in which the price-only fit does identify the merged response (ACH, API3, OGN, ZEN and DASH) does not change the conclusion: the price-only rate intervals are still $0.64$ to $0.92$ wide and the ratios run from $27.6$ to $62.5$ (median $47.5$). We therefore read the ratios as a measure of how little prices reveal about class memory, not as a horse race between two estimators of equal standing. The ratios also overstate the gap for a second reason: the price-only kernel spans one hour (twelve five-minute lags), while the tagged half-lives are several hours, so the price-only fit cannot see memories of that length. An exploratory check on the 30 symbols and 105 days of the follow-up test refits the price-only kernel with 48 and 96 lags (four and eight hours) and compares both routes in one unit, the half-life. With 96 lags the price-only slow half-life (median 5.6 hours) reaches the tagged scale (median 4.2 hours). The tagged intervals remain narrower in all 30 symbols, but by a median factor of 7.5 in log half-life rather than 28 to 124, and the price-only interval still reaches a bound of the fit in 25 of 30. The horizon-matched comparison was then pre-specified as a primary hypothesis of a test on 30 symbols never used in this project, before its data were downloaded, and passed: the tagged interval was narrower in 29 of 29 evaluable symbols (median factor 7.3, smallest 2.6), and the price-only interval reached a bound of the fit in 26. A pre-specified secondary of the same test qualifies what the tagged estimate measures. Day-demeaned regressions bias persistence down; corrected by a split-panel jackknife, the median tagged rate is 1.0008 per five minutes, and the corrected interval lies below one in only 7 of 87 class fits. Within a day the class ratios are close to a random walk, so the half-lives of a few hours reported here are largely produced by removing each day's mean. The evidence therefore supports a narrower claim than identification of class memory: positioning data restrict a persistence parameter that prices cannot bound. Whether that persistence reflects learning memory or slow turnover of positions, which theory's tagged contract (class-tagged flow) would distinguish, is not established by these data. Second, the classes differ where theory says the information should be: in BTCUSDT and ETHUSDT the top-trader group's positioning has a half-life of about three to five hours against about one to two days for all accounts, while in thin symbols the classes are often indistinguishable. Third, the pre-specified test fails its 80\% criterion, on the part of the prediction that concerns what prices \emph{do} reveal: the merged response is significantly different from zero in only 5 of 30 symbols. Theorem~\ref{thm:minphase} says the merged measure is identified; on 42 days of thin-market data it is not estimated precisely. This is a failure of the prediction as pre-specified, and we report it as one. A post hoc reading, not tested here, is that identification is an asymptotic statement and 42 days of passive thin-market data are far from that regime. Two follow-ups were pre-specified before their data were downloaded, and each ran once. On 105 untouched days in the same 30 markets, price-only intervals were again at least ten times wider than class-tagged ones in all 30 symbols (median ratio 74.9 with the one-hour kernel), but the merged response was significantly different from zero in only 9 symbols, and pinning it down was at least ten times cheaper than separating the memory rates in only 10 of 30 (23 were required): that prediction failed. On 58 further days, the advantage of tagging grew with the sample in 22 of 29 symbols, the number required, but the tagged intervals shrank more slowly than the parametric rate (20 of 29 in the predicted range, 22 required), consistent with drift in class persistence over 21 months. Complete tables for both follow-ups are in the public replication repository.
-
-To test directly whether the memory rates identified by class-tagged positions improve out-of-sample return predictions after large order-flow shocks, we pre-specified a dedicated out-of-sample test before downloading the 22nd-of-month data for January 2025--September 2026 across 19 thin perpetuals ($6{,}137$ top-decile five-minute flow shocks on 2024 training days; $4{,}579$ shocks on untouched 2025--2026 test days). On the training sample we estimate each symbol's two memory rates $\hat r_1,\hat r_2$ either from the class-tagged positions or from the price-only two-exponential fit, construct the filtered memory states $y_{k,t}=\hat r_k y_{k,t-1}+(1-\hat r_k){\rm ret}_t$, and forecast the 30-minute post-shock cumulative return $R_{t+1\to t+6}$ out of sample relative to an AR(1) return-and-flow baseline. The primary hypothesis fails: on the untouched test shocks, the price-only memory states yield $\Delta R^2=-0.199$~percentage points relative to the baseline, the class-tagged memory states yield $\Delta R^2=-1.288$~points, and the tagged-minus-price-only difference is $\Delta R^2=-1.089$~points (95\% date-block bootstrap CI $[-2.605,+0.376]$, Clark--West $t=0.96$, $p=0.1684$). The difference is statistically inconclusive, and there is no evidence of a gain from class data. Likewise, adding the level and one-hour change of the top-trader and all-account positions to the hourly tail-risk controls of the companion paper leaves out-of-sample $R^2$ unchanged ($-0.19$~points, CI $[-0.99,0.83]$).
-
-After this test failed, we pre-specified a follow-up on untouched 2nd-and-9th-of-month data for January 2025--September 2026 across the same 19 thin perpetuals ($12{,}046$ top-decile five-minute flow shocks on 24 training dates in 2024; $9{,}875$ shocks on 42 test dates; test opened once). It asks the narrower question that Theorem~\ref{thm:merged} and Proposition~\ref{prop:tagged} answer directly: can prices and flow track the class states themselves? A two-exponential price-and-flow filter ($\alpha_{\rm fast}=0.50$, $\alpha_{\rm slow}=0.10$ on five-minute returns and signed flow, plus shock return, shock flow and symbol fixed effects) is compared with a filter that adds the current class states and their one-bar changes. Both pre-specified primaries pass by a wide margin (Table~\ref{tab:disc_state_oos}): adding the class states raises out-of-sample $R^2$ from $-4.8\%$ to $46.0\%$ for the 30-minute divergence between top-trader and all-account positions, and from $4.4\%$ to $54.8\%$ for the top-trader state. As the next paragraph shows, the gain reflects the near-unit-root persistence of position levels, not predictability of future trading.
-
-\begin{table}[!htbp]\centering\footnotesize
-\begin{threeparttable}
-\caption{Pre-specified out-of-sample cohort-state trajectory test on untouched 2nd-and-9th-of-month days, 2025--2026}\label{tab:disc_state_oos}
-\setlength{\tabcolsep}{1.4pt}
-\begin{tabular}{lccccc}
-\toprule
-30-min post-shock target (19 thin) & $R^2_{\rm pf}$ & $R^2_{\rm tag}$ & $\Delta R^2$ (pts) [95\% CI] & CW $t$ ($p$) & Res.\\
-\midrule
-Prim.\ 1: Divergence $d_{t+6}$ ($9{,}875$ shocks) & $-4.766$ & $45.962$ & $+50.728$ [$+45.291$, $+55.918$] & $21.27$ ($<10^{-16}$) & pass\\
-Prim.\ 2: Top state $n_{{\rm top},t+6}$ ($9{,}875$ shocks) & $4.441$ & $54.845$ & $+50.404$ [$+47.226$, $+53.724$] & $21.85$ ($<10^{-16}$) & pass\\
-Sec.: Divergence $d_{t+6}$, all ($210{,}144$ bars) & $-0.586$ & $37.053$ & $+37.639$ [$+36.232$, $+39.107$] & $72.75$ ($<10^{-16}$) & ---\\
-Sec.: Top state $n_{{\rm top},t+6}$, all ($210{,}144$ bars) & $0.186$ & $46.779$ & $+46.593$ [$+45.555$, $+47.643$] & $80.44$ ($<10^{-16}$) & ---\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item Out-of-sample $R^2$ in percent. Trained on 24 dates in 2024 ($12{,}046$ shocks, $120{,}384$ bars); evaluated once on 42 untouched test dates (2nd and 9th of each month, Jan 2025--Sep 2026); 2{,}000-draw date-block bootstrap 95\% CIs; Holm $p<10^{-16}$ across both primaries.\end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-The gain is almost entirely persistence. In an exploratory decomposition on the same test shocks, an AR(1) on the current level alone accounts for $100.5\%$ and $99.1\%$ of the improvement, and when the target is the 30-minute \emph{change} in positions the class data add $-0.26$ and $+1.41$ points. Because the class filter observes the series it forecasts, this is a weak test: it confirms that prices and flow cannot reconstruct where the classes are positioned, which Theorem~\ref{thm:merged} implies, but it does not show that class data reveal how their positions will move, and neither pre-specified test finds that class data improve return forecasts.
+\subsection{Evidence from trader-class reports}
+Two public data sets report positions by trader class: the CFTC's weekly Commitments of Traders, mandated by law, in eight regulated futures markets, and Binance's five-minute top-trader and all-account ratios, published voluntarily, in 30 perpetual markets. Supplements~\ref{sec:cot} and~\ref{sec:disc_data} report the pre-specified tests in full. In both, class positions pin each class's fitted persistence to a narrow interval while prices leave it essentially unrestricted: the primary CFTC hypothesis holds in all eight markets, with price-only intervals 9 to 71 times wider, and on 30 fresh Binance markets the horizon-matched comparison gives a median width ratio of 7.3. Several pre-specified tests failed and are reported as they came out (Table~\ref{tab:scorecard}): Binance class data did not improve out-of-sample return forecasts, the CFTC reports read as flows pinned down their own persistence in only 3 of 8 markets (6 were required), and a test designed to separate learning memory from position turnover found a distinct faster root in only 2 of 8. A fitted persistence of aggregated positions also reflects how slowly positions turn over, so these data restrict how persistent class positions are, not learning memory itself.
 
 \section{Implications for supervision and market design}\label{sec:policy}
 
@@ -1067,7 +720,7 @@ Two open questions remain. The first is economic: Proposition~\ref{prop:target} 
 \clearpage
 \setcounter{page}{1}\renewcommand{\thepage}{S-\arabic{page}}\renewcommand{\thesection}{S\arabic{section}}\setcounter{table}{0}\renewcommand{\thetable}{S\arabic{table}}\setcounter{figure}{0}\renewcommand{\thefigure}{S\arabic{figure}}\setcounter{equation}{0}\renewcommand{\theequation}{S\arabic{equation}}\fancyhead[R]{\small Online Supplement}
 \begin{center}{\Large Online Supplement}\\[4pt]{\large What Prices Reveal About Hidden Trader Populations, and What Identifying Them Costs}\end{center}
-\noindent The supplement contains the proofs (Section~S1), further results and robustness checks, the extended literature review, the hypothetical dollar illustration, a finite-horizon decision example, the spectral blind spot, the measurement of reduced-form feedback and the reproducibility map. Section, table, figure and equation numbers prefixed with S refer to this supplement.
+\noindent The supplement contains the proofs (Section~S1), further results and robustness checks, the extended literature review and map of results, the discussion of the assumptions, general memory, the real-noise test, the CFTC and Binance trader-class tests in full, the hypothetical dollar illustration, a finite-horizon decision example, the spectral blind spot, the measurement of reduced-form feedback, tables and figures that belong to the main text, the formal-verification statement and the reproducibility map. Nothing has been removed from the paper; material was moved here to keep the main text to journal length. Section, table, figure and equation numbers prefixed with S refer to this supplement.
 
 \section{Proofs}\label{app:proofs}
 
@@ -1260,7 +913,7 @@ For $J=\begin{psmallmatrix}a&\kappa q\\ \eta a&1-\eta+\eta\kappa q\end{psmallmat
 
 \subsection{Real-noise injection: requirements at each spacing}\label{app:injection}
 
-Table~\ref{tab:injectionfull} gives the requirements behind Table~\ref{tab:injection}. $N^*$ is read off the grid $2^{j/2}$, so neighbouring values differ by a factor $\sqrt2$, and a ratio of $\sqrt2$ or $1/\sqrt2$ between the two arms is one grid step. Entries above $4{,}096$ use the central-limit draw described in Section~\ref{sec:injection}.
+Table~\ref{tab:injectionfull} gives the requirements behind Table~\ref{tab:injection}. $N^*$ is read off the grid $2^{j/2}$, so neighbouring values differ by a factor $\sqrt2$, and a ratio of $\sqrt2$ or $1/\sqrt2$ between the two arms is one grid step. Entries above $4{,}096$ use the central-limit draw described in Supplement~\ref{sec:injection}.
 
 \begin{table}[!htbp]\centering\small
 \begin{threeparttable}
@@ -1370,7 +1023,35 @@ Data informativity \citep{vanwaarde2020} & Finite data, often noiseless & Whethe
 
 Partial fractions, Gaussian testing, convolution inequalities and positive-system gains are established tools. Our contribution is to connect them into a quantitative chain from memory resolution, through probing resources, to money, with matching orders, explicit constants and a supervisory interpretation, and then to measure the relevant quantities in data.
 
-
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Map of results}\label{tab:map}
+\begin{tabular}{p{0.34\textwidth}p{0.36\textwidth}p{0.18\textwidth}}
+\toprule
+Question & Answer & Where\\
+\midrule
+What do prices identify? & The merged rate--weight measure only & Thm~\ref{thm:merged}\\
+Quantity to separate a known pair & $\Theta(\delta^{-2})$, exact error formula & Thm~\ref{thm:quantity}\\
+Capital to separate a known pair & $\Theta(\delta^{-4})$, counterparty or own funds & Thm~\ref{thm:cap}, Lem.~\ref{thm:capital}\\
+Constant at the calibration & $[61.41,64.48]$ par units; $\approx10^5$ USDT & Thms~\ref{thm:spectral}--\ref{thm:rh}, Table~\ref{tab:capital}\\
+Does adaptivity help? & At most by a factor $\approx0.49$ in expected loss & Thm~\ref{thm:adaptive}\\
+Unknown mixtures & $(\Delta\eta)^{-(4K-2)}$, tight on rich classes for every $K$ & Thms~\ref{thm:kcohort}, \ref{prop:esprit}\\
+General memory & Accuracy $\asymp1/\log N$, lower and upper bounds & Lem.~\ref{lem:altpair}, Thm~\ref{thm:general}\\
+Passive data & Identifies $M$; at least the same polynomial cost for every $K$ & Thms~\ref{thm:minphase}, \ref{prop:passive}, Prop.~\ref{prop:passive0}\\
+Nonlinear and adaptive rules? & Settled online learners obey $\delta^{-4}$; fast adaptation or thresholds break it & Table~\ref{tab:learners}\\
+What removes the barrier? & Tagged flow, audited equity & Props~\ref{prop:disclosure}, \ref{prop:tagged}\\
+Does attribution change a decision? & Yes in a stylised case: a market-wide limit needs only $S$; whether a targeted halt suffices needs each $q_i$ & Prop.~\ref{prop:target}\\
+What is tagging worth? & Factor $(\Delta\eta)^{-(4K-2)}$ (fixed accuracy) or $(\Delta\eta)^{-(4K-4)}$ (rates); $\approx333\times$ for BTCUSDT (illustrative) & Thm~\ref{thm:discvalue}\\
+Hypothetical probing loss? & At least \$15M--\$356M a year per market to re-learn two unknown groups weekly at $\Delta\eta=0.10$; illustrative, not a social cost & Table~\ref{tab:cat_dollars}\\
+Do class data restrict class persistence? & Yes: CFTC 8 of 8; Binance 30 of 30 and 29 of 29 new markets (registered); whether it is memory is open & Tables~\ref{tab:cot}, \ref{tab:disc}\\
+Do the rates survive real price noise? & Yes where it was used directly; large samples use a normal approximation & Table~\ref{tab:injection}\\
+Can eigenvalues certify safety? & No & Thm~\ref{thm:blind}\\
+What do feedback indices measure? & Mostly filtering and timing; small real feedback & Tables~\ref{tab:panel}, \ref{tab:feedback}\\
+Does feedback track activity? & No: fees move volume 2.6--4.9$\times$, not $\hat Q$ & Table~\ref{tab:fee2}\\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
 
 \section{What prices hide, in economic terms}\label{sec:primitives}
 
@@ -1462,7 +1143,7 @@ Theorem~\ref{thm:discvalue} states the value of class-tagged disclosure in sampl
 L_{\rm rt}^*(K,\Delta\eta)\;=\;\frac{4\sigma^2 z_{1-\alpha}^2}{\sup_\omega\bigl(|\Delta\hat H_{K,\Delta\eta}(e^{i\omega})|^2/g_0(\omega)\bigr)},
 \]
 directly for the $K$-point Gauss versus Gauss--Radau economies of Theorem~\ref{thm:kcohort} and Table~\ref{tab:radau}, whose moments below order $2K-1$ coincide and whose $(2K-1)$-th moment gap has the exact constant $\Delta_2=0.222222$, $\Delta_3=0.053333$, and $\Delta_4=0.013061$ at spacing $\Delta\eta$ (with $\Delta\eta=2\delta$ for the symmetric known pair).
-\item \emph{Flow against flow.} A single probe loss $L_{\rm rt}^*$ is a one-time certification cost, whereas an audit trail is an ongoing annual expenditure. Because algorithm populations turn over, we report the annualised round-trip trading loss $52\times L_{\rm rt}^*$ under weekly renewal (matching the CFTC weekly reporting cycle of Section~\ref{sec:cot}). For orientation only, we also record official audit-trail figures of two different kinds; we do not divide one by the other, because a prober's trading loss is a private transfer to other traders calibrated to a Bitcoin perpetual, while an audit trail's budget is a resource cost for equities and options. The first is CAT LLC's own operating budget: $\$248.8$~million for 2025 in the November 2024 filing (SEC Release No.\ 34-101901, Dec.\ 12, 2024, p.~4), revised to $\$228.3$~million in May 2025 and reduced further later in 2025, and the revised 2026 Financial and Operating Budget of 31 March 2026, with total expenses of $\$147{,}044{,}869$, which we use \citep{catbudget2026}. The second is historical, ex ante estimates of industry-wide compliance costs, which are not operating budgets and cover a different scope: the SEC's 2016 CAT NMS Plan Approval Order estimate of $\$2.4$~billion in initial industry build costs and $\$1.7$~billion per year in ongoing industry costs \citep[Release No.\ 34-79318, Nov.\ 15, 2016, 81 FR 84696 at 84801, p.~363]{sec2016}; and the SEC's Rule 613 proposing and adopting releases estimating $\$4.0$~billion initial and $\$2.1$~billion annual ongoing costs \citep[Release No.\ 34-62174, May 26, 2010, 75 FR 32556 at 32598, 32600, pp.~147, 153; Release No.\ 34-67457, July 18, 2012, 77 FR 45722 at 45790--45795, pp.~220--238]{sec2012}.
+\item \emph{Flow against flow.} A single probe loss $L_{\rm rt}^*$ is a one-time certification cost, whereas an audit trail is an ongoing annual expenditure. Because algorithm populations turn over, we report the annualised round-trip trading loss $52\times L_{\rm rt}^*$ under weekly renewal (matching the CFTC weekly reporting cycle of Supplement~\ref{sec:cot}). For orientation only, we also record official audit-trail figures of two different kinds; we do not divide one by the other, because a prober's trading loss is a private transfer to other traders calibrated to a Bitcoin perpetual, while an audit trail's budget is a resource cost for equities and options. The first is CAT LLC's own operating budget: $\$248.8$~million for 2025 in the November 2024 filing (SEC Release No.\ 34-101901, Dec.\ 12, 2024, p.~4), revised to $\$228.3$~million in May 2025 and reduced further later in 2025, and the revised 2026 Financial and Operating Budget of 31 March 2026, with total expenses of $\$147{,}044{,}869$, which we use \citep{catbudget2026}. The second is historical, ex ante estimates of industry-wide compliance costs, which are not operating budgets and cover a different scope: the SEC's 2016 CAT NMS Plan Approval Order estimate of $\$2.4$~billion in initial industry build costs and $\$1.7$~billion per year in ongoing industry costs \citep[Release No.\ 34-79318, Nov.\ 15, 2016, 81 FR 84696 at 84801, p.~363]{sec2016}; and the SEC's Rule 613 proposing and adopting releases estimating $\$4.0$~billion initial and $\$2.1$~billion annual ongoing costs \citep[Release No.\ 34-62174, May 26, 2010, 75 FR 32556 at 32598, 32600, pp.~147, 153; Release No.\ 34-67457, July 18, 2012, 77 FR 45722 at 45790--45795, pp.~220--238]{sec2012}.
 \end{enumerate}
 
 \begin{table}[t]\centering\footnotesize
@@ -1822,7 +1503,7 @@ At $\lambda=(0.8,0.7)$, $s_1=1$ and $V=5$, the gain is $1.77$, $5.10$, $16.95$, 
 Two clarifications prevent over-reading. First, the cohort economy of Section~\ref{sec:model} is itself non-normal, yet its price output does not amplify (Lemma~\ref{lem:cm}). Large weighted gains can be manufactured by output weights alone: with $C_w=(1,160)$, a price-and-memory functional peaks at $160.003$ at $t=0$, which is the static weight, not dynamic growth (Supplement~\ref{app:coordw}). Second, in a network of $M$ identical cohort economies coupled by symmetric nonnegative cross-impact, the coupled operator stays symmetric in the coordinates of Lemma~\ref{lem:cm}; with cross-impact $0.05$, the spectral radius rises from $0.822$ ($M=1$) to $0.973$ ($M=10$) while the Kreiss constant stays at one, as it must for a stable symmetric operator. A stable normal contraction cannot exhibit Euclidean state-norm transient growth. This does not exclude scalar input-output overshoot relative to initial impact, which also depends on the input and output maps. The positive-cohort no-overshoot result is model-specific; the companion paper studies a depth-depletion mechanism.
 \section{Empirical feedback and its measurement}\label{sec:empirics}
 
-The theory says what prices can reveal. The empirical work has two roles, and neither is a test of the identification bounds themselves, which concern controlled experiments no outside researcher can run. First, Section~\ref{sec:disc_data} tests the theory's policy prediction directly: that class-tagged data pin down memories that prices leave unrestricted. Second, this section asks what the reduced-form feedback indices a supervisor would compute from public data actually measure, and how much of them is feedback rather than filtering, timing or trading activity.
+The theory says what prices can reveal. The empirical work has two roles, and neither is a test of the identification bounds themselves, which concern controlled experiments no outside researcher can run. First, Supplement~\ref{sec:disc_data} tests the theory's policy prediction directly: that class-tagged data pin down memories that prices leave unrestricted. Second, this section asks what the reduced-form feedback indices a supervisor would compute from public data actually measure, and how much of them is feedback rather than filtering, timing or trading activity.
 
 \subsection{Estimand and filtering mechanics}
 
@@ -1991,6 +1672,362 @@ Pair-days & 320 & 320 & 640\\
 
 The fee change moved activity enormously: zero fees multiplied BTCUSDT volume relative to the controls by $e^{0.945}\approx2.6$ when they began, and their removal divided it by $e^{1.599}\approx4.9$. Measured feedback did not follow. The two point estimates have opposite signs, neither is significant, and the pooled effect is $-0.00016$ with an interval of $[-0.00087,0.00055]$, against a sample mean of $0.00037$. A strong first stage with no second-stage response says that $\hat Q$ is not a by-product of trading activity, and the reversal design removes the main weakness of a single treated event. With one treated asset the interval remains wide, so this is evidence that $\hat Q$ does not scale with activity, not a proof of invariance.
 
+\section{Discussion of the assumptions}\label{sec:assumptions}
+
+\paragraph{Linearity.} The model is linear in prices, flows and memory states. Linearity is what makes the merged-measure equivalence exact and the testing problems Gaussian. Nonlinear strategies (for example threshold rules or position limits) can break the equivalence class, but they do so in regions of the state space that a small probe does not visit; for small probes the linearization around the steady state is the relevant object.
+
+\paragraph{Price-first timing.} We order the price update before the cohort update. Under the alternative lagged timing the transition matrix becomes $\begin{psmallmatrix}a&1\\ \eta Q&1-\eta\end{psmallmatrix}$ and its eigenvalues differ, so stability statements must be computed under the timing actually used. The identification results depend on the transfer function and survive either convention.
+
+\paragraph{Exponential memory.} Lemma~\ref{lem:micro} justifies exponential memory for filtering and regularized learning. Neural and reinforcement-learning policies are not exponential filters. Rules whose orders are smooth functions of an exponential-memory state are exponential filters to first order, so the results hold for small probes; Supplement~\ref{sec:learners} checks this in stylized simulations and finds where it fails, and how closely production algorithms follow such rules remains an empirical question we do not settle. Mixtures of exponentials can approximate any completely monotone kernel, so a power-law memory corresponds to a continuum of cohorts, for which Theorem~\ref{thm:general} shows that accuracy improves only logarithmically in the data.
+
+\paragraph{Algorithms that react to being probed.} The probing results assume that the cohorts keep their memories while they are probed. An algorithm that detects a probe could pause, shorten its memory or trade against the probe. Four observations limit what this does to our conclusions. First, a reaction that all cohorts share does not help separate them, and an algorithm that mimics another group's memory rate only brings the hypotheses closer, so neither lowers the costs we derive. A reaction that differs across cohorts is a new signature, but one the observer must specify and estimate, so it shifts the identification problem rather than solving it. Second, the passive route needs no probe: Theorem~\ref{prop:passive} shows that natural price variation faces a lower bound of the same polynomial order, so an observer who avoids detection by not trading does not escape the barrier; it pays in time instead of money. We do not show that passive data attain that order. Third, detection is itself a testing problem against the same noise: the generalized-eigenvector probe of Supplement~\ref{sec:account} trades at most 1.25 par units in any period, and a probe sized within normal flow variation is hard to tell from noise, so the threat bites mainly for large single pulses, which our ledger shows are not optimal anyway. Fourth, what we cannot rule out is an algorithm designed to defeat surveillance, which turns identification into a game between observer and observed; our results are the benchmark against which such a game would be measured, and we leave it to future work.
+
+\paragraph{Known primitives.} The resource theorems take $\kappa$, $a$ and the noise law as known. Unknown primitives can only make separation harder, so the lower bounds remain valid. The upper bounds as stated assume the primitives known; estimating them adds a cost we do not analyse, which we expect to be of lower order because they enter the response at first order. In an equilibrium in which dealers set the impact $\kappa$ from the order flow they see, as in \citet{kyle1985}, a prober's unexpected trades would also move $\kappa$; we do not model this, and expect it to raise the cost of probing rather than lower it.
+
+\paragraph{Observation contracts.} Each result names what the observer sees. A price-only observer, an observer with executed quantities, one with noisy statements, one with audited equity and one with tagged flow face different experiments. The paper's central message is that these differences, not the observer's statistical skill, determine what can be learned.
+\section{A worked example: two Kalman desks}\label{sec:worked}
+
+To make the orders concrete, consider two desks that track the same trend with Kalman filters (Lemma~\ref{lem:micro}(i)) and differ only in their signal-to-noise ratios: $\sigma_\zeta^2/\sigma_\nu^2=0.09$ and $0.16$. Their gains are $\eta_1=0.2584$ and $\eta_2=0.3279$, so $\bar\eta=0.2931$ and $\delta=0.0348$. With equal weights, the economy is observationally the split pair of Theorem~\ref{thm:quantity} around $\bar\eta$, and the response difference first appears at lag two, $d_2=-\kappa^2q\delta^2=-1.55\times10^{-4}$ (verified).
+
+A supervisor who wants to tell this market from a single desk with gain $\bar\eta$ at 5\% error using a single pulse and the third observation needs $A=2\sigma\Phi^{-1}(0.95)/(\kappa^2q\delta^2)=212$ units of executed quantity, and, under a 0.5\% margin and 4 basis points of fees, single-pulse capital of $18{,}166$ par units. The pulse is very inefficient: the spectral lower bound of Theorem~\ref{thm:spectral}, evaluated at this pair ($\bar\eta=0.2931$, $\delta=0.0348$), gives about 77 par units for the optimal flat probe (rescaling the $\bar\eta=0.4$ constant by $\delta^{-4}$ alone would give 262, because the constant also depends on $\bar\eta$). Converting with the measured Roll noise (factor $(0.40/0.01)^2$), the optimal probe costs roughly $1.2\times10^5$ USDT and the naive pulse about $3\times10^7$ USDT. Two desks whose signal-to-noise ratios differ by almost a factor of two are therefore expensive, but not impossible, to tell apart by probing; three or more desks are much harder (Theorem~\ref{thm:kcohort}).
+
+\section{Do the rates survive real market noise?}\label{sec:injection}
+
+Theorems~\ref{thm:kcohort} and~\ref{prop:esprit} are proved for observation errors that are independent and Gaussian, and Table~\ref{tab:kupper} checks them with Gaussian noise. Real price changes are different: one-minute returns have heavy tails, although they are almost uncorrelated from one minute to the next. To see whether the rates depend on the Gaussian assumption, we ran a pre-specified test (opened once) in which the trader groups are synthetic, with known memory spacing, and only the noise is real. Each reset experiment returns the price response to a unit impulse plus a window of consecutive one-minute log-price changes of Binance BTCUSDT, demeaned and scaled to unit variance. The changes come from 21 days, the 6th of each month from January 2025 to September 2026, that are used nowhere else in this project; their kurtosis is 19.4, against 3 for Gaussian noise. With class tagging, the experiment also returns each group's flow response, observed through independent windows of the same noise. A control arm uses i.i.d.\ Gaussian noise of the same variance. For each spacing, $N^*$ is the smallest number of experiments at which every recovered weight lies within 25\% of the smallest true weight in at least 75\% of 200 replications, using Prony's method on prices alone or the per-group regression of Proposition~\ref{prop:tagged} with tagging. The noise level and the spacing grids were fixed on Gaussian noise alone, before any real noise was downloaded.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Sample requirement with real Bitcoin price noise: fitted slope of $\log N^*$ in $\log\Delta\eta$}\label{tab:injection}
+\begin{tabular}{lccccl}
+\toprule
+ & Theory & Real noise & Gaussian control & Pre-specified criterion & Result\\
+\midrule
+Price only, $K=2$ (H1) & $-6$ & $-6.01$ & $-6.22$ & slope in $[-7.5,-4.5]$ & pass\\
+Tagged, $K=2$ (H2) & bounded & 256--724 & 256--1{,}024 & max/min $\le8$ & pass (2.8)\\
+Price only, $K=3$ (H3) & $-10$ & $-9.81$ & $-9.96$ & slope in $[-12.5,-7.5]$ & holds\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Synthetic groups at rates $r_c+\Delta\eta\,s$ ($s$ the $K$-point Gauss nodes; $r_c=0.6$ and $\Delta\eta$ from 0.5 to 0.125 for $K=2$, $r_c=0.5$ and $\Delta\eta$ from 0.6 to 0.25 for $K=3$), $a=0.5$, $\kappa=0.8$, total weight 0.08, $\sigma=10^{-3}$, $\sigma_f=0.02$. The test passes if H1 and H2 hold; H3 is reported either way. The tagged row gives the range of $N^*$ over the spacing grid. Requirements above $4{,}096$ use the central-limit draw described in the text. Requirements at each spacing are in Supplement Table~\ref{tab:injectionfull}. Test opened once.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Both pre-specified hypotheses hold, so the test passes (Table~\ref{tab:injection}). With real noise, the price-only requirement for two groups rises from 64 experiments at $\Delta\eta=0.5$ to $370{,}728$ at $\Delta\eta=0.125$, a factor of about 5{,}800, and the fitted slope is $-6.01$; for three groups it is $-9.81$. Over the same grid the tagged requirement stays between 256 and 724 experiments, and it falls slightly rather than rises as the spacing shrinks. At every spacing the real-noise requirement is within one step of the grid (a factor $\sqrt2$) of the Gaussian control.
+
+The test has a limit, stated in its specification. Averages of $N$ real windows are resampled exactly up to $N=4{,}096$; beyond that they are drawn as Gaussian vectors with the real windows' covariance, as the central limit theorem suggests. Real one-minute changes are almost uncorrelated (lag-one autocorrelation between $-0.007$ and $0.009$ within the windows), so beyond $4{,}096$ the real and Gaussian arms differ little by construction. The direct evidence about heavy tails therefore comes from the points in the exact range: every tagged requirement, and the price-only requirements for two groups at the three widest spacings (64, 362 and 1{,}448 experiments, against 64, 362 and 1{,}024 with Gaussian noise). The other four price-only points for two groups, and all points for three groups, check the rate with the real noise's variance and covariance but not its tails. Averaging should make heavy tails matter less as $N$ grows, but the test does not show this.
+
+\paragraph{In words.} Where real Bitcoin price noise could be used directly, it needs about as many experiments as Gaussian noise, and over the whole grid halving the spacing between two groups still multiplies the number of experiments by about 64, while class-tagged records keep the requirement flat. At the largest sample sizes the test relies on a normal approximation to the real noise.
+
+\section{General memory: the minimax rate is logarithmic}\label{sec:general}
+
+Exponential memory is a modelling choice. Suppose instead that the feedback kernel is completely monotone, $k_m=\int_{[0,\rho]}r^m\,d\mu(r)$ with $\rho<1$, where $\mu$ is any nonnegative measure of total mass $W$: a finite or infinite mixture of exponential memories with merged weight $W$. Write $\mathcal M(\rho,W)$ for this class, assume the closed loop is uniformly stable, $s\equiv a+\kappa W/(1-\rho)<1$, and measure accuracy by
+\[
+d(\mu,\mu')=\sup\Bigl\{\textstyle\int f\,d(\mu-\mu'):\ f\ \text{1-Lipschitz on }[0,\rho],\ f(0)=0\Bigr\},
+\]
+which equals the Wasserstein-1 distance between measures of equal mass and also compares estimates whose mass is not exactly $W$. Let $E_L(|x|)$ denote the error of the best uniform approximation of $|x|$ on $[-1,1]$ by polynomials of degree $L$, and let $c_*=\inf_{L\ge1}L\,E_L(|x|)$. \citet{bernstein1914} showed that $L\,E_L(|x|)$ converges to a positive constant ($0.2802$; \citealp{varga1985}), so $c_*>0$; numerically $c_*=1/4$, attained at $L=2$ (Table~\ref{tab:general}).
+
+\begin{lemma}[Moment-matched cohort pairs]\label{lem:altpair}
+For every $n\ge2$ there are two probability measures on $[0,\rho]$, each with exactly $n$ atoms, whose moments of orders $0,\ldots,2n-2$ coincide and whose Wasserstein-1 distance is at least $\rho\,E_{2n-2}(|x|)\ge c_*\rho/(2n-2)$.
+\end{lemma}
+
+The atoms are the points where the best approximation of $|r-\rho/2|$ by polynomials of degree $2n-2$ attains its maximal error with alternating signs, and the weights are those of the divided difference on these points, which annihilates every polynomial of degree $2n-2$ (Supplement~\ref{app:proofs}). Each measure is an $n$-atom merged measure in the class; one atom may sit at rate $0$ (a cohort with $\eta=1$), which the class allows.
+
+\begin{theorem}[Minimax rate for general memory]\label{thm:general}
+Let $N$ independent reset experiments observe the impulse response with Gaussian noise of variance $\sigma^2$ per tap, and let $B(\rho)=(1+\sqrt2)(1+2/\rho)$ and $C_h=\kappa^2/(1-s)^2$.
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Lower bound.} Let $\Lambda_N=\log(N/\sigma^2)+\log\bigl(2C_h^2W^2/((1-\rho)\rho)^2\bigr)$. Whenever $\Lambda_N>4\log(1/\rho)$, every estimator $\hat\mu$ satisfies
+\[
+\sup_{\mu\in\mathcal M(\rho,W)}P_\mu\Bigl(d(\hat\mu,\mu)\ge\frac{c_*\,\rho W\log(1/\rho)}{\Lambda_N}\Bigr)\;\ge\;\frac1{4e},
+\]
+and the bound already holds over $n$-cohort economies, for a finite $n$ that grows with $N$.
+\item \emph{Upper bound.} With $a$ and $\kappa$ known, invert the averaged response into kernel values $\hat k_0,\ldots,\hat k_L$, with $L+1=\lfloor\log(N/\sigma^2)/(4\log B(\rho))\rfloor$, and let $\hat\mu$ be any measure on $[0,\rho]$ minimizing $\max_{j\le L}|\int r^jd\hat\mu-\hat k_j|$ (a linear program). For every $\beta\in(0,1)$ there is $N_0$ depending only on $(\rho,W,a,\kappa,\beta)$ such that for $N/\sigma^2\ge N_0$,
+\[
+\sup_{\mu\in\mathcal M(\rho,W)}P_\mu\Bigl(d(\hat\mu,\mu)>\frac{3\pi\rho W\log B(\rho)}{\log(N/\sigma^2)}\Bigr)\;\le\;\beta .
+\]
+\end{enumerate}
+Hence the minimax accuracy is of exact order $1/\log(N/\sigma^2)$, and reaching accuracy $w$ requires and suffices $N/\sigma^2=\exp(\Theta(1/w))$.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+(i) Put the measures of Lemma~\ref{lem:altpair}, scaled to mass $W$, into the model. Their difference annihilates polynomials of degree $2n-2$, so the generating function of the kernel difference is $\int(1-rz)^{-1}d(\mu_A-\mu_B)=z^{2n-1}\int r^{2n-1}(1-rz)^{-1}d(\mu_A-\mu_B)$; on $|z|=1$ it is at most $2W\rho^{2n-1}/(1-\rho)$, and Parseval bounds $\|k^A-k^B\|_2$ by the same quantity. The response difference is $H_AH_B$ times the shifted kernel difference, so $\|h^A-h^B\|_2\le C_h\|k^A-k^B\|_2$. Choosing the smallest $n$ for which the Kullback--Leibler divergence of the $N$-sample experiments is at most one, the Bretagnolle--Huber form of Le Cam's lemma gives the bound with half the Wasserstein separation of the lemma. (ii) For a 1-Lipschitz $f$ with $f(0)=0$, Jackson's theorem gives a polynomial $q$ of degree $L$ with $\sup|f-q|\le\pi\rho/(4(L+1))$, and expanding $q$ in Chebyshev polynomials of $2r/\rho-1$ bounds the sum of its monomial coefficients by $\rho B(\rho)^{L+1}$. Hence $d(\hat\mu,\mu)\le\pi\rho(W+\delta)/(2(L+1))+2\delta\rho B(\rho)^{L+1}$, where $\delta$ is the largest kernel error. The kernel is recovered from the response by a series reciprocal, $K(z)=(1-az-\kappa/H(z))/(\kappa z)$, whose error is at most $2((1+s)/\kappa)^2(L+2)$ times the largest response error, so $\delta=O_P(\sigma N^{-1/2}L\sqrt{\log L})$. The choice of $L$ makes $\delta B(\rho)^{L+1}=O_P((\sigma^2/N)^{1/4}L\sqrt{\log L})$, negligible against the first term. Full proofs are in Supplement~\ref{app:proofs}.
+\end{proof}
+
+\paragraph{In words.} If trader memory is a general mixture of exponentials rather than a few clean ones, accuracy improves only with the logarithm of the data: to halve the error, the data must be squared. The few-groups model of the previous results is therefore the optimistic case.
+
+
+Theorem~\ref{thm:general} replaces a polynomial barrier with a logarithmic one. With exponential memory and $K$ known cohorts, halving the error multiplies the required number of experiments by a constant; with general memory, halving the error squares it. The lower bound holds already for finite mixtures, so knowing that the memory is a finite mixture of exponentials does not help unless the number of cohorts is also known (Theorem~\ref{thm:uniformw1}). The constants of the two bounds differ, by a factor that grows as $\rho\to1$, so the dependence on how long memory lasts is not pinned down. The source of the gap is visible in the proof: as $\rho\to1$ the moment-matched pairs separate their kernels more slowly ($\rho^{2n-1}$ decays slowly), which weakens the lower bound through $\log(1/\rho)$, while the upper bound pays $\log B(\rho)$, which stays bounded away from zero, for the conditioning of polynomial approximation on $[0,\rho]$. Logarithmic rates of this kind are familiar from deconvolution with supersmooth errors \citep{fan1991} and from moment methods for mixing distributions \citep{kong2017,wu2020}; here they arise from the closed loop of a market.
+
+Table~\ref{tab:general} checks the construction and the estimator. The pairs of Lemma~\ref{lem:altpair} have exactly $n$ atoms, agree in all moments below order $2n-1$ to $10^{-61}$, and remain at Wasserstein distance about $0.4/n$, while the distance between their kernels shrinks by a factor of about $0.2$ per atom at $\rho=0.9$. The linear-programming estimator applied to a continuous memory distribution has error times $\log(N/\sigma^2)$ between $0.18$ and $0.28$ for $N$ from $10^4$ to $10^{24}$: a $10^{20}$-fold increase in data halves the error. The exponential-memory model of the previous subsections, where the cost is polynomial in $1/\Delta\eta$, is therefore the optimistic case: relaxing the parametric form makes identification from prices much harder, not easier.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{General memory: moment-matched cohort pairs and the moment estimator}\label{tab:general}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{lcccccc}
+\toprule
+\multicolumn{7}{l}{\emph{A. Best approximation of $|x|$}}\\
+$L$ & 2 & 4 & 6 & 10 & 20 & 30\\
+$L\,E_L(|x|)$ & 0.2500 & 0.2705 & 0.2756 & 0.2785 & 0.2797 & 0.2800\\
+\midrule
+\multicolumn{7}{l}{\emph{B. Pairs of Lemma~\ref{lem:altpair}}}\\
+Atoms per measure $n$ & 2 & 4 & 6 & 8 & 10 & 12\\
+$W_1(\mu_A,\mu_B)$, $\rho=0.9$ & 0.2250 & 0.1037 & 0.0669 & 0.0494 & 0.0391 & 0.0324\\
+$n\,W_1$, $\rho=0.9$ & 0.450 & 0.415 & 0.402 & 0.395 & 0.391 & 0.388\\
+$\|k^A-k^B\|_2$, $\rho=0.9$ & $4.41\times10^{-2}$ & $1.03\times10^{-3}$ & $4.08\times10^{-5}$ & $1.96\times10^{-6}$ & $1.05\times10^{-7}$ & $5.95\times10^{-9}$\\
+$\|k^A-k^B\|_2$, $\rho=0.99$ & $7.41\times10^{-2}$ & $5.84\times10^{-3}$ & $1.07\times10^{-3}$ & $2.76\times10^{-4}$ & $8.33\times10^{-5}$ & $2.76\times10^{-5}$\\
+\midrule
+\multicolumn{7}{l}{\emph{C. Linear-programming estimator, continuous memory distribution, $\rho=0.9$}}\\
+$\log_{10}N$ & 4 & 8 & 12 & 16 & 20 & 24\\
+Moments used ($L+1$) & 2 & 3 & 5 & 6 & 7 & 8\\
+Error $d(\hat\mu,\mu)$ & 0.00878 & 0.00759 & 0.00432 & 0.00445 & 0.00382 & 0.00399\\
+Error $\times\log(N/\sigma^2)$ & 0.202 & 0.245 & 0.179 & 0.226 & 0.229 & 0.276\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item A: Remez algorithm; the limit is Bernstein's constant $0.2802$. B: moments of orders $0,\ldots,2n-2$ agree to $10^{-61}$ (60-digit arithmetic); every $W_1$ exceeds $\rho E_{2n-2}(|x|)$. C: true merged measure Beta(2,3) on $[0,0.9]$ with mass $0.1$; kernel values observed with noise $\sigma N^{-1/2}$, $\sigma=10^{-3}$; $L$ from the rule in Theorem~\ref{thm:general}(ii); measure fitted on a 401-point grid; 20 replications.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\section{Mandated disclosure: the CFTC's trader-class reports}\label{sec:cot}
+
+The cleanest test uses disclosure mandated by law. The U.S. Commodity Futures Trading Commission requires large traders in regulated futures markets to report their positions and publishes a weekly snapshot of Tuesday positions, usually on Friday, aggregated by reporting category: leveraged funds, asset managers/institutional investors and dealers/intermediaries in financial futures, and managed money, producers/merchants/processors/users and swap dealers in commodities. The categories reflect each trader's reported business, not the algorithm that traded. These are published, aggregated class positions, not class-tagged flow. We pre-specified a test before downloading any data, in eight markets that span asset classes: CME Bitcoin and Ether, the E-mini S\&P 500, 10-year Treasury notes, the euro, the yen, WTI crude oil and Henry Hub natural gas, using every weekly report through October 2026 (282 to 1{,}039 weeks per market). For each class, $n_{c,t}=(\text{long}-\text{short})/\text{open interest}$ follows $n_{c,t}=\alpha_c+r_cn_{c,t-1}+w_c\,{\rm ret}_t$, the weekly version of the cohort recursion. The price-only alternative regresses each week's return on its own twelve lags and fits a two-exponential kernel $\phi_j=b_1r_1^{\,j-1}+b_2r_2^{\,j-1}$ to the twelve coefficients by least squares over the grid $0\le r_1<r_2\le0.99$ in steps of $0.02$. Weekly futures returns are close to serially uncorrelated, so the fitted weights are close to zero and the rates are weakly identified nuisance parameters \citep{andrews2012}; that is part of what the wide price-only intervals show. Returns come from Binance spot (Bitcoin, Ether), the S\&P 500 index, euro and yen spot rates, minus the change in the 10-year Treasury yield, and front-month crude-oil and natural-gas futures (Yahoo Finance). Only the last two are futures returns; for the other six the basis between spot and the CME contract enters the return regressor; this matters most for the sign of $w_c$ in markets where leveraged funds run basis trades. The comparison is descriptive, not a race between estimators of the same object: the class route fits the persistence of an observed position series, the price route infers latent kernel rates from returns. Intervals come from a 13-week moving-block bootstrap; near a unit root an autoregressive coefficient is estimated at rate $T^{-1}$ rather than $T^{-1/2}$, so the narrow class intervals partly reflect the near-unit-root persistence of position stocks, such percentile intervals are pointwise and can understate uncertainty, and price-only intervals that fill the admissible range are better read as a sign of weak identification than as calibrated 95\% intervals. The pre-specified hypotheses were: (H1, primary) the fast class's memory rate is pinned to an interval narrower than $0.25$ while both price-only intervals are wider, in at least 75\% of markets; (H2) the fast class trend-follows, $w_c>0$, in at least 75\%; (H3) the fast class has the shorter memory in at least half.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Fitted persistence of trader-class positions, CFTC Commitments of Traders, eight regulated futures markets}\label{tab:cot}
+\setlength{\tabcolsep}{3pt}\footnotesize
+\begin{tabular}{lrccccr}
+\toprule
+Market & Weeks & Fast $\hat r$ [95\% CI] & Slow $\hat r$ & $\hat r_{\rm fast}-\hat r_{\rm slow}$ [95\% CI] & $\hat w_{\rm fast}$ & Ratio\\
+\midrule
+Bitcoin (CME) & 434 & 0.951 [0.928, 0.969] & 0.986 & $-0.035$ [$-0.062$, $-0.010$] & $-$ & 23.7\\
+Ether (CME) & 282 & 0.890 [0.826, 0.932] & 0.960 & $-0.070$ [$-0.143$, $-0.011$] & $-$ & 9.1\\
+E-mini S\&P 500 & 1{,}039 & 0.914 [0.884, 0.937] & 0.954 & $-0.040$ [$-0.071$, $-0.012$] & $-$ & 18.3\\
+10-year T-note & 1{,}039 & 0.992 [0.985, 0.998] & 0.993 & $-0.000$ [$-0.006$, $+0.007$] & (0) & 71.4\\
+Euro & 1{,}035 & 0.961 [0.947, 0.972] & 0.996 & $-0.034$ [$-0.051$, $-0.022$] & $+$ & 37.3\\
+Yen & 1{,}035 & 0.955 [0.939, 0.968] & 0.984 & $-0.029$ [$-0.047$, $-0.013$] & $+$ & 34.0\\
+WTI crude oil & 1{,}039 & 0.961 [0.946, 0.974] & 0.999 & $-0.037$ [$-0.053$, $-0.023$] & $+$ & 35.2\\
+Natural gas & 1{,}039 & 0.981 [0.969, 0.990] & 0.980 & $+0.001$ [$-0.014$, $+0.017$] & $+$ & 44.0\\
+\midrule
+\multicolumn{7}{l}{\emph{Pre-specified hypotheses}: H1 (primary) 8 of 8, pass; H2 4 of 8, fail; H3 6 of 8, pass (two indistinguishable).}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item ``Fast'' (designated speculative) class: leveraged funds (financial futures) or managed money (commodities); ``slow'' (designated comparison) class: asset managers or producers/merchants. The labels are fixed by class role before estimation, not by the estimates; in natural gas the designated fast class has the (insignificantly) higher persistence. $\hat w_{\rm fast}$: sign of the response to returns, $+$ or $-$ when the 95\% interval excludes zero, (0) otherwise. Ratio: mean width of the two price-only rate intervals over the width of the fast-class interval; the price-only intervals span 0.95--0.96 of the admissible range $[0,0.99]$ in every market. Weekly returns: Binance spot (Bitcoin, Ether); S\&P 500 index, euro and yen spot, minus the change in the 10-year yield, and front-month crude-oil and natural-gas futures from Yahoo Finance. For the six non-futures series the spot--futures basis is ignored; a post hoc rerun with CME futures prices gives the same counts and the same signs of $\hat w_{\rm fast}$ (see text). Test opened once.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+The primary hypothesis holds in all eight markets (Table~\ref{tab:cot}). The class reports pin the fitted persistence rate of each fast class's positions to an interval between $0.013$ and $0.106$ wide, while the price-only kernel leaves both rates anywhere in the admissible range; the width ratios run from 9 to 71. The ratio partly reflects how little weekly returns reveal, which is the point of the theory rather than an artefact of it. A fitted persistence of aggregated positions is not a structural learning memory: it also reflects how slowly positions turn over and how accounts enter and leave a class. In the model with inventory costs (the remark after Lemma~\ref{lem:micro}) a position accumulates order flow, so it carries an inventory-adjustment root, close to one when inventory costs are small, on top of the belief root $r_i$, and a one-lag fit to positions mostly picks up the former. The classes differ as the cohort model allows. Leveraged funds and managed money have the less persistent positions in six of eight markets, with half-lives of 6 to 18 weeks against months to years for asset managers and producers; in Treasuries and natural gas the two persistences are indistinguishable.
+
+The trend-following hypothesis fails. The fast class buys after rises in the euro, the yen, crude oil and natural gas, but sells after rises in Bitcoin, Ether and the S\&P 500 futures. The first half matches the finding of \citet{moskowitz2012} that speculators' positions tend to go with past returns. We did not predict this. One candidate explanation is that leveraged-fund positions in financial futures are dominated by the short futures leg of cash--futures basis trades, which a single memory per class cannot represent \citep{barth2021}. A post-hoc check is consistent with it but not decisive: weekly position changes of leveraged funds and asset managers are strongly negatively correlated in Bitcoin, Ether, the S\&P 500 and Treasuries ($-0.37$ to $-0.67$) but not in the euro or yen ($-0.04$ and $-0.05$), and holding the asset managers' change fixed removes the negative response in Bitcoin and halves it in Ether and the S\&P 500. Because class positions sum to zero across all reporting categories, some negative correlation is mechanical, so this is a signature, not a test. The failure sharpens rather than weakens the case for class tagging: class labels are not strategies, and a supervisor who wants to know how a class responds to prices needs its positions, which the price process does not reveal. Negative estimated $w_c$ also lies outside the positive economy of Section~\ref{sec:model}, so the dollar bounds of Supplement~\ref{sec:disc_dollars} do not apply to these classes; the pre-specified restriction test does not use positivity.
+
+\paragraph{Post hoc robustness.} After the registered test we reran the same estimators with three changes, approved before any of them was run and reported without re-scoring the registered result: CME futures prices (BTC, ETH, ES, ZN, 6E and 6J front months) for the six markets that used spot, index or yield prices; the futures version with contract-roll weeks removed by a calendar rule fixed in advance; and 26- and 52-week bootstrap blocks. With futures prices the counts are unchanged (H1 8 of 8, H2 4 of 8, H3 6 of 8), and so is the sign of $\hat w_{\rm fast}$ in every market: the fast class still sells after rises in Bitcoin, Ether and the S\&P 500. The spot--futures basis in the registered returns therefore does not produce the negative signs. Longer blocks leave the counts unchanged; Bitcoin's response interval then includes zero. Removing roll weeks leaves H1 and H2 unchanged, lowers H3 to 4 of 8 and turns the Treasury response negative. H3 is lost in Bitcoin and Ether, where the rule removes 46\% of the weeks (200 of 436 and 131 of 284): a report is dropped whenever any day of its week touches the five-day expiry window, so with monthly expiries the rule removes about two weeks in four, more than intended, and the fast--slow difference is no longer resolved in the shorter samples. In the equity-index, currency and Treasury markets it removes 15\% of the weeks, and in crude oil and natural gas none. The primary result, that class positions pin down a persistence that prices leave open, holds in all seven variants.
+
+\paragraph{Class flows: a pre-specified test that failed.} Proposition~\ref{prop:tagged} is about tagged flow, while the registered test uses positions. A second pre-specified test (opened once) reads the same reports as flows, the weekly change in the fast class's net position, and estimates $u_t=c+r\,u_{t-1}+w\,{\rm ret}_t$ by the instrumental-variables regression of the proposition, with last week's return as the instrument for last week's flow and the same 13-week bootstrap. Its primary hypothesis, that the 95\% interval for $r$ is narrower than 0.5 in at least six markets, fails. It holds in three: the S\&P 500, crude oil and natural gas, with widths from 0.36 to 0.44. The intervals are 0.57 and 0.60 wide in the euro and the yen, 1.08 in Ether, 3.4 in Bitcoin and 10.8 in Treasuries. The instrument is strong (first-stage $F\ge10$) in seven markets, all but Treasuries ($F=4.3$), and the flow response $w$ is nonzero in six, with the same signs as in positions: negative in Ether and the S\&P 500, positive in the euro, the yen, crude oil and natural gas. Read as flows, then, the CFTC reports identify how each class's flow responds to prices, but not how persistent that flow is, at the precision the test required. In Proposition~\ref{prop:tagged} the precision is of order $T^{-1/2}$ with a constant that grows with the noise in the reported flow ($\sigma_f^2$ in \eqref{eq:ivvar}). Weekly changes in aggregated positions also move when accounts enter or leave a class, which is noise for this purpose, and two markets have short samples (279 and 428 weeks); we did not test these explanations. The failure limits the claim that published class aggregates implement the tagged-flow contract of Proposition~\ref{prop:tagged}. It does not bear on the proposition itself, which is a statement about the model.
+
+\paragraph{Separating memory from turnover: a pre-specified test that failed.} A fitted persistence of positions mixes two things: in the model with inventory costs (the remark after Lemma~\ref{lem:micro}) a class position follows a slow inventory or turnover root and, on top of it, the faster belief-memory root $r_i$. A third pre-specified test (opened once) asked whether the CFTC positions show that second root. For each class it fits $n_t=\alpha+\phi_1n_{t-1}+\phi_2n_{t-2}+b_0{\rm ret}_t+b_1{\rm ret}_{t-1}$, takes the roots $z_1\ge z_2$ of $z^2-\phi_1z-\phi_2$, and requires, for the fast class in at least six markets, that the 95\% interval of $z_2$ lie inside $(0,0.9)$ and that $z_1-z_2$ be clearly positive. It fails: the condition holds in two markets, crude oil and natural gas. The larger root is between 0.90 and 0.99 in every market, as in Table~\ref{tab:cot}. The smaller root is between $-0.16$ and $0.21$; it is negative in Bitcoin, Ether, the S\&P 500 and Treasuries, and where it is positive its half-life is under half a week (0.22 to 0.44 weeks), far shorter than any learning memory the weekly reports could reveal. Positions therefore behave as one slow component plus short-lived noise. By the interpretation fixed before the run, this is a failure of the two-root reading of CFTC positions, and it confirms the limitation stated above: these data restrict how persistent class positions are, but they cannot separate learning memory from the turnover of positions.
+
+Together with Table~\ref{tab:disc}, the evidence now covers two disclosure regimes, one voluntary and one mandated by law, in crypto and in regulated equity-index, rate, currency and commodity futures. In both, class-tagged positions restrict persistence rates that prices leave unrestricted; whether that persistence is learning memory or slow turnover of positions, these data do not say.
+
+\section{Voluntary disclosure: Binance's trader-class ratios}\label{sec:disc_data}
+
+Binance publishes voluntarily, for one venue but every five minutes, long/short ratios for its top-trader group, by position and by account, and for all accounts. These are class-level positions, the closest public analogue to the tagged data of Proposition~\ref{prop:tagged}, but not homogeneous cohorts: the top-trader position ratio is built from position sizes, the all-account ratio from counts of long and short accounts, the top-trader group is a subset of all accounts, and its membership can change. We treat a class's reported net position as the observable counterpart of its cohort state: it obeys the same one-lag recursion class by class, so the block-diagonal information structure of Proposition~\ref{prop:tagged} carries over. The mapping is an assumption, because the reports are positions rather than flows and returns stand in for the unobserved deviation $x_t$. For each class $c$ we estimate $n_{c,t}=r_cn_{c,t-1}+w_c\,{\rm ret}_t$, with $n=(R-1)/(R+1)$ from the ratio $R$. The price-only alternative regresses signed five-minute taker flow on twelve lagged five-minute returns and fits two exponentials to the kernel; it estimates the memory rates without class information. Intervals come from a day bootstrap with 200 draws.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Fitted persistence rates with and without class-tagged data}\label{tab:disc}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcccp{0.1\textwidth}p{0.08\textwidth}}
+\toprule
+Symbol & Days & Top position $\hat r$ [95\% CI] & All accounts $\hat r$ [95\% CI] & Width ratio & Classes differ\\
+\midrule
+BTCUSDT & 48 & 0.9889 [0.9842, 0.9935] & 0.9986 [0.9955, 1.0005] & 121.7 & yes\\
+ETHUSDT & 48 & 0.9793 [0.9616, 0.9907] & 0.9972 [0.9934, 0.9997] & 55.6 & yes\\
+CELRUSDT & 48 & 0.9884 [0.9830, 0.9922] & 0.9882 [0.9804, 0.9914] & 81.6 & no\\
+CVXUSDT & 33 & 0.9822 [0.9732, 0.9908] & 0.9829 [0.9694, 0.9900] & 45.9 & no\\
+\midrule
+\multicolumn{6}{l}{\emph{Pre-specified test on fresh days, 30 USD-M perpetuals, 2025--2026}}\\
+\multicolumn{3}{l}{(i) width ratio $>10$} & \multicolumn{3}{l}{30 of 30 (range 27.6--124.0)}\\
+\multicolumn{3}{l}{(ii) price-only rate interval wider than 0.25} & \multicolumn{3}{l}{30 of 30 (range 0.65--0.99)}\\
+\multicolumn{3}{l}{(iii) merged response $\sum_mk_m$ identified} & \multicolumn{3}{l}{5 of 30}\\
+\multicolumn{3}{l}{Classes differ} & \multicolumn{3}{l}{11 of 30}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Top panel: training days 2023--2024; width ratio is the mean price-only rate-interval width over the mean tagged width. Estimates are from day-demeaned regressions, which bias persistence down; corrected by a split-panel jackknife, the median tagged rate is $1.0008$ (Supplement~\ref{sec:disc_data}). The price-only intervals for both rates cover most of $[0,0.99]$. Bottom panel: specification pre-specified before the fresh days were downloaded; a symbol passes if all three of the first rows hold, and the test required 80\% of symbols to pass. \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+We begin with the one-hour price kernel of Table~\ref{tab:disc} and end with the fairer horizon-matched comparison on 30 new markets, which reduces the width ratio to a median of 7.3. Table~\ref{tab:disc} gives three results. First, tagged class data restrict persistence rates that prices and flow leave essentially unrestricted: with the one-hour price-only kernel, the price-only intervals are 28 to 124 times wider in every one of 30 symbols on fresh days, and cover most of the admissible range. Part of this ratio is mechanical, because a series of positions identifies its own persistence directly while the price-only route must fit two exponentials to a weakly identified kernel. Restricting attention to the five symbols in which the price-only fit does identify the merged response (ACH, API3, OGN, ZEN and DASH) does not change the conclusion: the price-only rate intervals are still $0.64$ to $0.92$ wide and the ratios run from $27.6$ to $62.5$ (median $47.5$). We therefore read the ratios as a measure of how little prices reveal about class memory, not as a horse race between two estimators of equal standing. The ratios also overstate the gap for a second reason: the price-only kernel spans one hour (twelve five-minute lags), while the tagged half-lives are several hours, so the price-only fit cannot see memories of that length. An exploratory check on the 30 symbols and 105 days of the follow-up test refits the price-only kernel with 48 and 96 lags (four and eight hours) and compares both routes in one unit, the half-life. With 96 lags the price-only slow half-life (median 5.6 hours) reaches the tagged scale (median 4.2 hours). The tagged intervals remain narrower in all 30 symbols, but by a median factor of 7.5 in log half-life rather than 28 to 124, and the price-only interval still reaches a bound of the fit in 25 of 30. The horizon-matched comparison was then pre-specified as a primary hypothesis of a test on 30 symbols never used in this project, before its data were downloaded, and passed: the tagged interval was narrower in 29 of 29 evaluable symbols (median factor 7.3, smallest 2.6), and the price-only interval reached a bound of the fit in 26. A pre-specified secondary of the same test qualifies what the tagged estimate measures. Day-demeaned regressions bias persistence down; corrected by a split-panel jackknife, the median tagged rate is 1.0008 per five minutes, and the corrected interval lies below one in only 7 of 87 class fits. Within a day the class ratios are close to a random walk, so the half-lives of a few hours reported here are largely produced by removing each day's mean. The evidence therefore supports a narrower claim than identification of class memory: positioning data restrict a persistence parameter that prices cannot bound. Whether that persistence reflects learning memory or slow turnover of positions, which theory's tagged contract (class-tagged flow) would distinguish, is not established by these data. Second, the classes differ where theory says the information should be: in BTCUSDT and ETHUSDT the top-trader group's positioning has a half-life of about three to five hours against about one to two days for all accounts, while in thin symbols the classes are often indistinguishable. Third, the pre-specified test fails its 80\% criterion, on the part of the prediction that concerns what prices \emph{do} reveal: the merged response is significantly different from zero in only 5 of 30 symbols. Theorem~\ref{thm:minphase} says the merged measure is identified; on 42 days of thin-market data it is not estimated precisely. This is a failure of the prediction as pre-specified, and we report it as one. A post hoc reading, not tested here, is that identification is an asymptotic statement and 42 days of passive thin-market data are far from that regime. Two follow-ups were pre-specified before their data were downloaded, and each ran once. On 105 untouched days in the same 30 markets, price-only intervals were again at least ten times wider than class-tagged ones in all 30 symbols (median ratio 74.9 with the one-hour kernel), but the merged response was significantly different from zero in only 9 symbols, and pinning it down was at least ten times cheaper than separating the memory rates in only 10 of 30 (23 were required): that prediction failed. On 58 further days, the advantage of tagging grew with the sample in 22 of 29 symbols, the number required, but the tagged intervals shrank more slowly than the parametric rate (20 of 29 in the predicted range, 22 required), consistent with drift in class persistence over 21 months. Complete tables for both follow-ups are in the public replication repository.
+
+To test directly whether the memory rates identified by class-tagged positions improve out-of-sample return predictions after large order-flow shocks, we pre-specified a dedicated out-of-sample test before downloading the 22nd-of-month data for January 2025--September 2026 across 19 thin perpetuals ($6{,}137$ top-decile five-minute flow shocks on 2024 training days; $4{,}579$ shocks on untouched 2025--2026 test days). On the training sample we estimate each symbol's two memory rates $\hat r_1,\hat r_2$ either from the class-tagged positions or from the price-only two-exponential fit, construct the filtered memory states $y_{k,t}=\hat r_k y_{k,t-1}+(1-\hat r_k){\rm ret}_t$, and forecast the 30-minute post-shock cumulative return $R_{t+1\to t+6}$ out of sample relative to an AR(1) return-and-flow baseline. The primary hypothesis fails: on the untouched test shocks, the price-only memory states yield $\Delta R^2=-0.199$~percentage points relative to the baseline, the class-tagged memory states yield $\Delta R^2=-1.288$~points, and the tagged-minus-price-only difference is $\Delta R^2=-1.089$~points (95\% date-block bootstrap CI $[-2.605,+0.376]$, Clark--West $t=0.96$, $p=0.1684$). The difference is statistically inconclusive, and there is no evidence of a gain from class data. Likewise, adding the level and one-hour change of the top-trader and all-account positions to the hourly tail-risk controls of the companion paper leaves out-of-sample $R^2$ unchanged ($-0.19$~points, CI $[-0.99,0.83]$).
+
+After this test failed, we pre-specified a follow-up on untouched 2nd-and-9th-of-month data for January 2025--September 2026 across the same 19 thin perpetuals ($12{,}046$ top-decile five-minute flow shocks on 24 training dates in 2024; $9{,}875$ shocks on 42 test dates; test opened once). It asks the narrower question that Theorem~\ref{thm:merged} and Proposition~\ref{prop:tagged} answer directly: can prices and flow track the class states themselves? A two-exponential price-and-flow filter ($\alpha_{\rm fast}=0.50$, $\alpha_{\rm slow}=0.10$ on five-minute returns and signed flow, plus shock return, shock flow and symbol fixed effects) is compared with a filter that adds the current class states and their one-bar changes. Both pre-specified primaries pass by a wide margin (Table~\ref{tab:disc_state_oos}): adding the class states raises out-of-sample $R^2$ from $-4.8\%$ to $46.0\%$ for the 30-minute divergence between top-trader and all-account positions, and from $4.4\%$ to $54.8\%$ for the top-trader state. As the next paragraph shows, the gain reflects the near-unit-root persistence of position levels, not predictability of future trading.
+
+\begin{table}[!htbp]\centering\footnotesize
+\begin{threeparttable}
+\caption{Pre-specified out-of-sample cohort-state trajectory test on untouched 2nd-and-9th-of-month days, 2025--2026}\label{tab:disc_state_oos}
+\setlength{\tabcolsep}{1.4pt}
+\begin{tabular}{lccccc}
+\toprule
+30-min post-shock target (19 thin) & $R^2_{\rm pf}$ & $R^2_{\rm tag}$ & $\Delta R^2$ (pts) [95\% CI] & CW $t$ ($p$) & Res.\\
+\midrule
+Prim.\ 1: Divergence $d_{t+6}$ ($9{,}875$ shocks) & $-4.766$ & $45.962$ & $+50.728$ [$+45.291$, $+55.918$] & $21.27$ ($<10^{-16}$) & pass\\
+Prim.\ 2: Top state $n_{{\rm top},t+6}$ ($9{,}875$ shocks) & $4.441$ & $54.845$ & $+50.404$ [$+47.226$, $+53.724$] & $21.85$ ($<10^{-16}$) & pass\\
+Sec.: Divergence $d_{t+6}$, all ($210{,}144$ bars) & $-0.586$ & $37.053$ & $+37.639$ [$+36.232$, $+39.107$] & $72.75$ ($<10^{-16}$) & ---\\
+Sec.: Top state $n_{{\rm top},t+6}$, all ($210{,}144$ bars) & $0.186$ & $46.779$ & $+46.593$ [$+45.555$, $+47.643$] & $80.44$ ($<10^{-16}$) & ---\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Out-of-sample $R^2$ in percent. Trained on 24 dates in 2024 ($12{,}046$ shocks, $120{,}384$ bars); evaluated once on 42 untouched test dates (2nd and 9th of each month, Jan 2025--Sep 2026); 2{,}000-draw date-block bootstrap 95\% CIs; Holm $p<10^{-16}$ across both primaries.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+The gain is almost entirely persistence. In an exploratory decomposition on the same test shocks, an AR(1) on the current level alone accounts for $100.5\%$ and $99.1\%$ of the improvement, and when the target is the 30-minute \emph{change} in positions the class data add $-0.26$ and $+1.41$ points. Because the class filter observes the series it forecasts, this is a weak test: it confirms that prices and flow cannot reconstruct where the classes are positioned, which Theorem~\ref{thm:merged} implies, but it does not show that class data reveal how their positions will move, and neither pre-specified test finds that class data improve return forecasts.
+
+\section{Reproducibility and formal verification}\label{app:verification}
+Every number in the paper is produced by a script or notebook cell that writes a result file from public data or from a closed form; Supplement~\ref{app:repro} maps each table, figure and number to its source. ``Registered'' or ``pre-specified'' in this paper means that the authors wrote the specification and committed it to the public repository before opening the test data; this is the authors' declaration, not independent preregistration. For the October 2026 follow-up tests (Supplement~\ref{sec:learners} and Supplement~\ref{sec:disc_data}) each specification reached the public repository in the same push as its results, so the order rests on the commit history alone. For the real-noise test, the class-flow test and the CFTC robustness checks (Supplement~\ref{sec:injection} and~\ref{sec:cot}), specifications and code were pushed in a separate commit (\texttt{84af69f}, 03:43 UTC on 31 October 2026) before the first of them ran (03:56 UTC). The proofs have been checked by the authors and against numerical computations, and they have not yet been independently reviewed; the numerical checks reproduce results with the same code unless stated otherwise. Lean~4 with Mathlib machine-checks, using only Lean's standard axioms, three of the main results: Theorem~\ref{thm:merged}(i) for the model itself (for known $a$ and $\kappa\neq0$, two economies have the same price response if and only if they have the same merged measure, $2K+1$ noise-free periods already determine that measure, and with distinct nonzero rates the transfer function has exactly $1+K$ poles; the classical step from pole count to minimal state dimension is not formalized), and the lower bound of Theorem~\ref{thm:kcohort} on a finite observation horizon, from the moment gap through the closed loop and the Gaussian divergence to the testing step. The check holds for every $K$ with no added assumption: in place of the Gauss and Gauss--Radau rules it uses another moment-matched pair, binomial weights on $2K$ equally spaced nodes, which gives the same order; its constant depends on the number of observed periods per experiment. Lean checks the matching upper bound of Theorem~\ref{prop:esprit} for every $K$: with probability at least $1-\beta$ the Prony estimate exists, is unique and recovers every merged weight to within $C\sqrt{\log(4K/\beta)}\,\epsilon_N$, with constants that do not depend on the spacing; the formal version allows sub-Gaussian noise, which includes the Gaussian case, and assumes memory rates of modulus at most one, and a separate formal lemma shows that Prony's method computes exactly the estimate that the theorem bounds. Lean also checks the reset-experiment form of the tagged-flow result: class-tagged records recover every group's weight with an error bound that does not depend on the memory rates. Five further results are checked in Lean as well: Theorem~\ref{thm:merged}(ii), the $\Omega(\delta^{-4})$ separation bound for power-constrained probes (stated for tests whose two error probabilities are at most $1/4$); the spectral-blindness theorem (Theorem~\ref{thm:blind}); the zero structure and minimum phase of $H$ in Theorem~\ref{thm:minphase}; a finite-sample tagged rate-recovery bound giving the $(\Delta\eta)^{-2}$ upper bound of Theorem~\ref{thm:discvalue}(ii); and the uniform nonsingularity of the instrument matrix in Proposition~\ref{prop:tagged}. The general-memory and passive-data theorems, the spectral-factorization step of Theorem~\ref{thm:minphase}, and the ergodic and central limit steps of Proposition~\ref{prop:tagged} are not formally verified; Supplement~\ref{app:stress} reports numerical stress tests of them. The results whose proofs most need an independent check are Theorems~\ref{thm:general}, \ref{prop:passive}, \ref{thm:spectral} and~\ref{thm:rh}. Numerical constants such as the capital bounds are computed at a declared parameter set and are not separate theorems.
+
+\section{Further tables and figures for the main text}\label{app:mainfloats}
+These tables and figures belong to the main text; they are collected here to keep it to journal length.
+
+\begin{table}[!htbp]\centering\small
+\begin{threeparttable}
+\caption{The main symbols in plain words}\label{tab:glossary}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.75\textwidth}}
+\toprule
+Symbol & Meaning\\
+\midrule
+$K$ & Number of trader groups (``cohorts'')\\
+$\eta_i$ & Group $i$'s learning rate: the weight it puts on the newest price. Large $\eta_i$ means a short memory and fast reactions; small $\eta_i$ means a long memory\\
+$r_i=1-\eta_i$ & Group $i$'s memory rate: the share of last period's view that survives\\
+$q_i$ & Group $i$'s trading intensity: how strongly it trades on its view. Positive $q_i$ means it buys when the price is above value, as trend followers do\\
+$\Delta\eta$, $2\delta$ & How far apart the groups' learning rates are ($\Delta\eta$ for unknown groups, $2\delta$ for a known pair)\\
+$a$, $\kappa$ & How persistent pricing errors are, and how far one unit of net order flow moves the price\\
+$M$ (merged measure) & The combined summary of all groups that prices reveal: where the memories are and how much trading sits at each\\
+$N$ & Number of experiments (test trades from a fresh start) or observations\\
+Par units & The model's own unit of quantity and money, before conversion to USDT (Table~\ref{tab:capital})\\
+\bottomrule
+\end{tabular}
+\end{threeparttable}
+\end{table}
+
+\begin{figure}[!htbp]\centering
+\includegraphics[width=\textwidth]{figs/fig_impulse.pdf}
+\caption{Left: impulse responses of the single cohort and the split pair ($\delta=0.05$) are nearly indistinguishable. Right: the difference scaled by $\delta^2$ collapses onto one curve, with first nonzero value $-\kappa^2q$ at lag 2 (dotted). Calibration $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$.}\label{fig:impulse}
+\end{figure}
+
+\begin{table}[!htbp]\centering
+\begin{threeparttable}
+\caption{Exact known-pair error: formula versus simulation}\label{tab:mcerr}
+\begin{tabular}{rrccc}
+\toprule
+Pulse $V$ & Horizon $T$ & $\Phi(-V\|d_T\|_2/2\sigma)$ & Simulated error, $H_0$ & Simulated error, $H_\delta$\\
+\midrule
+20 & 3 & 0.3745 & 0.3734 & 0.3762\\
+40 & 3 & 0.2611 & 0.2599 & 0.2603\\
+40 & 10 & 0.0029 & 0.0030 & 0.0027\\
+80 & 20 & $1.8\times10^{-10}$ & 0 & 0\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item 200,000 paths per hypothesis; $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$. \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{figure}[!htbp]\centering
+\includegraphics[width=\textwidth]{figs/fig_knownpair.pdf}
+\caption{Known-pair experiment funded by the counterparty cash/margin contract. (a) Exact Gaussian error at fixed capital 100 and 1,000, separation $\delta=0.05$. (b) The sharp robust quantity allowance \eqref{eq:VB}. (c) Capital for error $0.1$ with 200 observations. Parameters: $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$, observation s.d.\ $0.003$, reference price 100, margin $0.25$, cost $0.02$. No process noise.}\label{fig:knownpair}
+\end{figure}
+
+\begin{table}[!htbp]\centering\small
+\begin{threeparttable}
+\caption{Two-point sample complexity for two-cohort weight recovery}\label{tab:lecam}
+\begin{tabular}{lcccc}
+\toprule
+$\Delta\eta$ & $\Delta M_3$ & $\|\Delta h\|_2$ & $N^*_{\rm LeCam}$ (95\%) & $N^*_{\rm CRB}$\\
+\midrule
+0.30 & $2.67\times10^{-4}$ & $1.98\times10^{-3}$ & 7.1 & 47.8\\
+0.20 & $7.92\times10^{-5}$ & $5.60\times10^{-4}$ & 88.2 & 597.0\\
+0.14 & $2.72\times10^{-5}$ & $1.89\times10^{-4}$ & 775.3 & 5{,}267.9\\
+0.10 & $9.90\times10^{-6}$ & $6.84\times10^{-5}$ & 5{,}927.6 & 40{,}374.2\\
+0.08 & $5.07\times10^{-6}$ & $3.49\times10^{-5}$ & 22{,}740.5 & 155{,}048.9\\
+0.06 & $2.14\times10^{-6}$ & $1.47\times10^{-5}$ & 128{,}333.0 & 875{,}732.3\\
+0.05 & $1.24\times10^{-6}$ & $8.50\times10^{-6}$ & 383{,}859.1 & 2{,}620{,}321.2\\
+0.04 & $6.34\times10^{-7}$ & $4.35\times10^{-6}$ & 1{,}466{,}361.5 & 10{,}012{,}662.4\\
+\midrule
+\multicolumn{5}{p{0.85\textwidth}}{\emph{Worst-case failure at $\Delta\eta=0.10$, $N=50$, 1,000 trials per hypothesis}: bound 44.1\%; ML 94.5\%, ridge 47.5\%, positive-part shrinkage 100\%, heavy prior 73.9\%.}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item $\tau=0.01$, $\sigma_h=1.6\times10^{-3}$, $a=0.5$, $\kappa=0.8$, 121 taps. Estimators: ML is least squares from four starts; ridge and heavy prior are posterior modes with prior standard deviations $(0.05,0.10)$ and $(0.005,0.02)$ for (weights, rates) around the symmetric centre of the two hypotheses; positive-part shrinkage pulls the ML weights toward their mean. Failure means some weight is off by at least $\tau$.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[!htbp]\centering\small
+\begin{threeparttable}
+\caption{Gauss and Gauss--Radau rules on $[-1,1]$ used in Theorem~\ref{thm:kcohort}}\label{tab:radau}
+\begin{tabular}{cp{0.42\textwidth}cc}
+\toprule
+$K$ & Gauss nodes / Gauss--Radau nodes & Max gap, orders $<2K-1$ & Gap at order $2K-1$\\
+\midrule
+2 & $\pm0.5774$ \;/\; $-1,\ 0.3333$ & $6\times10^{-17}$ & 0.2222\\
+3 & $0,\ \pm0.7746$ \;/\; $-1,\ -0.2899,\ 0.6899$ & $2\times10^{-16}$ & 0.0533\\
+4 & $\pm0.3400,\ \pm0.8611$ \;/\; $-1,\ -0.5753,\ 0.1811,\ 0.8228$ & $4\times10^{-16}$ & 0.0131\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item All Gauss--Radau weights are positive. \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[!htbp]\centering
+\begin{threeparttable}
+\caption{Numerical check of Theorem~\ref{thm:kcohort}}\label{tab:kcohort}
+\begin{tabular}{lccc}
+\toprule
+ & $K=2$ & $K=3$ & $K=4$\\
+\midrule
+Theoretical exponent of $N^*$ & $-6$ & $-10$ & $-14$\\
+Fitted log--log slope (small $\Delta\eta$) & $-5.96$ & $-9.96$ & $-14.01$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Le Cam bound $N^*\propto\sigma^2/\|h^A-h^B\|_2^2$ with $\sigma=1$, $a=0.5$, $\kappa=1$, total merged weight $0.10$, rates centered at $0.70$, responses over 400 lags. \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{figure}[!htbp]\centering
+\includegraphics[width=0.62\textwidth]{figs/fig_kcohort.pdf}
+\caption{Two-point lower bound on the number of reset experiments needed to separate $K$-cohort economies, as a function of the rate spacing.}\label{fig:kcohort}
+\end{figure}
+
+\begin{table}[!htbp]\centering\small
+\begin{threeparttable}
+\caption{Sample requirement of Prony's method against the lower-bound order}\label{tab:kupper}
+\begin{tabular}{lcccc}
+\toprule
+ & $K=2$ & $K=3$ & $K=4$ & $K=5$\\
+\midrule
+Lower-bound order $-(4K-2)$ & $-6$ & $-10$ & $-14$ & $-18$\\
+Fitted slope of $N^*$ in $\Delta\eta$ (Prony) & $-5.94$ & $-10.00$ & $-13.93$ & $-18.34$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Rates $0.7+\Delta\eta\,s$ with $s$ the $K$-point Gauss nodes, total weight 0.1, $\Delta\eta\in[0.03,0.2]$; $N^*$ is the number of experiments for a weight RMSE of 10\% of the smallest weight, from 400 simulated estimates per point. At $K=5$ the fit is numerically sensitive: rerunning the same seeded script with a different numerical library gives slopes $-5.94$, $-10.00$, $-13.92$ and $-17.89$. \end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[!htbp]\centering\footnotesize
+\begin{threeparttable}
+\caption{Targeted versus market-wide intervention: two economies that prices barely separate}\label{tab:target}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{ccccccc}
+\toprule
+$K$ & $\Delta\eta$ & $|S^A-S^B|$ & $\kappa q^{G}_{\max}$ & $\kappa q^{R}_{\max}$ & Window for $\bar s$ & $N$ for a correct choice\\
+\midrule
+2 & 0.20 & $3.9\times10^{-3}$ & 0.112 & 0.144 & [0.527, 0.562] & 5\\
+2 & 0.10 & $5.0\times10^{-4}$ & 0.093 & 0.131 & [0.532, 0.570] & 306\\
+2 & 0.05 & $6.5\times10^{-5}$ & 0.086 & 0.125 & [0.536, 0.575] & 18{,}095\\
+3 & 0.20 & $2.8\times10^{-4}$ & 0.073 & 0.092 & [0.583, 0.603] & 1{,}092\\
+3 & 0.10 & $7.8\times10^{-6}$ & 0.071 & 0.076 & [0.587, 0.592] & $1.4\times10^{6}$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Calibration $a=0.5$, $\kappa=0.8$, $W=0.08$, $r_c=0.60$, observation noise $\sigma=0.01$ per tap; G and R are the Gauss and Gauss--Radau economies. Both economies have $S\approx0.66$--$0.68$. ``Window'' is the range of thresholds in which halting the largest group restores $S\le\bar s$ in one economy and not in the other. The last column is the exact Gaussian-shift requirement for a choice that is correct with probability $3/4$ in both.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\clearpage
 \section{A finite-horizon decision that needs only the combined response}\label{app:fhc}
 A separate note, \texttt{paper1\_finite\_horizon\_supplement.pdf} in the public repository, works out one financial decision in full. An unlevered desk that warehouses inventory for $H$ periods under a hard stress budget buys $N$ reset experiments, pays for them out of the same capital, and sizes its position from an upper confidence bound on the summed price response over the horizon. With probability at least $1-\gamma$ the position meets the stress budget for every bounded shock path; its profit shortfall is at most $AN^{-1/2}+Dc_HN$ for explicit constants $A$ and $D$ and cost $c_H$ per experiment; and a stated inequality guarantees a positive expected net value of the information. These guarantees hold uniformly over the positive cohort class, whatever the number and spacing of the cohorts. Under the same observations, telling apart two particular two-cohort economies whose rates are of order $\delta$ apart requires a number of experiments of order $\delta^{-6}$, so at a fixed information price cohort identification becomes unaffordable while the decision keeps its positive value.
 

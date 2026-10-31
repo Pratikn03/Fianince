@@ -69,15 +69,68 @@ if ARGS.ssrn:
          "Local information: the Cram\\'er--Rao benchmark"),
         ("\\subsection{Disclosure in dollars}", "\\subsection{When disclosure is worth acquiring}",
          "A hypothetical scale illustration: disclosure in dollars"),
-    ] + MOVES
+    ] + MOVES + [
+        # 31 Oct 2026 journal-length cut: nothing is deleted; each block moves unchanged (with its labels) to the
+        # supplement and a short summary takes its place in the main text.
+        ("\\subsection{Discussion of the assumptions}", "\\subsection{The observer, its options and its costs}",
+         "Discussion of the assumptions",
+         "\\paragraph{Assumptions.} Supplement~\\ref{sec:assumptions} discusses the six modelling choices behind the "
+         "results: linearity, price-first timing within a period, exponential memory (relaxed in "
+         "Supplement~\\ref{sec:general}), algorithms that react to being probed, known primitives, and the observation "
+         "contracts. Unknown primitives can only make separation harder, so the lower bounds remain valid; the upper "
+         "bounds as stated assume the primitives are known.\n\n"),
+        ("\\subsection{A worked example: two Kalman desks}", "\\section{Unknown mixtures and passive data}",
+         "A worked example: two Kalman desks",
+         "A worked example with two Kalman desks that differ only in their signal-to-noise ratios "
+         "(Supplement~\\ref{sec:worked}) puts these orders into numbers.\n\n"),
+        ("\\subsection{Do the rates survive real market noise?}", "\\subsection{General memory: the minimax rate is logarithmic}",
+         "Do the rates survive real market noise?",
+         "\\paragraph{Real market noise.} Theorems~\\ref{thm:kcohort} and~\\ref{prop:esprit} assume Gaussian noise. "
+         "A pre-specified test (Supplement~\\ref{sec:injection}) keeps the trader groups synthetic and replaces the "
+         "noise with heavy-tailed one-minute Bitcoin price changes: the price-only requirement still grows with fitted "
+         "slopes $-6.01$ for $K=2$ and $-9.81$ for $K=3$ (theory $-6$ and $-10$), while the tagged requirement stays "
+         "bounded across the spacing grid.\n\n"),
+        ("\\subsection{General memory: the minimax rate is logarithmic}", "\\subsection{Passive data}",
+         "General memory: the minimax rate is logarithmic",
+         "\\paragraph{General memory.} If memory is any completely monotone kernel, a finite or infinite mixture of "
+         "exponential memories, recovery becomes far harder: the minimax accuracy for the memory distribution is of exact "
+         "order $1/\\log(N/\\sigma^2)$, so reaching accuracy $w$ requires and suffices $N/\\sigma^2=\\exp(\\Theta(1/w))$ "
+         "(Theorem~\\ref{thm:general}, Supplement~\\ref{sec:general}). The polynomial rates above rely on memory being a "
+         "finite mixture of exponentials.\n\n"),
+        ("\\subsection{Mandated disclosure: the CFTC's trader-class reports}", "\\subsection{Voluntary disclosure: Binance's trader-class ratios}",
+         "Mandated disclosure: the CFTC's trader-class reports", ""),
+        ("\\subsection{Voluntary disclosure: Binance's trader-class ratios}", "\\section{Implications for supervision and market design}",
+         "Voluntary disclosure: Binance's trader-class ratios",
+         "\\subsection{Evidence from trader-class reports}\n"
+         "Two public data sets report positions by trader class: the CFTC's weekly Commitments of Traders, mandated by "
+         "law, in eight regulated futures markets, and Binance's five-minute top-trader and all-account ratios, published "
+         "voluntarily, in 30 perpetual markets. Supplements~\\ref{sec:cot} and~\\ref{sec:disc_data} report the "
+         "pre-specified tests in full. In both, class positions pin each class's fitted persistence to a narrow interval "
+         "while prices leave it essentially unrestricted: the primary CFTC hypothesis holds in all eight markets, with "
+         "price-only intervals 9 to 71 times wider, and on 30 fresh Binance markets the horizon-matched comparison gives a "
+         "median width ratio of 7.3. Several pre-specified tests failed and are reported as they came out "
+         "(Table~\\ref{tab:scorecard}): Binance class data did not improve out-of-sample return forecasts, the CFTC "
+         "reports read as flows pinned down their own persistence in only 3 of 8 markets (6 were required), and a test "
+         "designed to separate learning memory from position turnover found a distinct faster root in only 2 of 8. A fitted persistence of aggregated positions also "
+         "reflects how slowly positions turn over, so these data restrict how persistent class positions are, not "
+         "learning memory itself.\n\n"),
+    ]
+    FLOAT_MOVES = ["tab:glossary", "fig:impulse", "tab:mcerr", "fig:knownpair", "tab:lecam", "tab:radau",
+                   "tab:kcohort", "fig:kcohort", "tab:kupper", "tab:target"]
+    MAP_TO_SUPPLEMENT = True
+else:
+    FLOAT_MOVES = []
+    MAP_TO_SUPPLEMENT = False
 repro = "\\section{Reproducibility: source of every number}"
 moved = []
 MOVED_SEC_LABELS = []
 supp_blocks = []   # --ssrn: the spectral blind spot and feedback measurement go to a separate supplement PDF
-for start, stop, title in MOVES:
+for mv in MOVES:
+    start, stop, title = mv[:3]
+    summary = mv[3] if len(mv) > 3 else ""
     i, j = core.index(start), core.index(stop)
     block = core[i:j]
-    core = core[:i] + core[j:]
+    core = core[:i] + summary + core[j:]
     head = block[:block.index("}") + 1]
     body = block[len(head):]
     if head.startswith("\\subsection"):                     # a moved subsection becomes an appendix section;
@@ -87,6 +140,33 @@ for start, stop, title in MOVES:
         supp_blocks.append("\\section{" + title + "}" + body)
     else:
         moved.append("\\section{Internet appendix: " + title + "}" + body)
+_floats = []
+for lab in FLOAT_MOVES:
+    k = core.index("\\label{" + lab + "}")
+    b0 = max(core.rfind("\\begin{table}", 0, k), core.rfind("\\begin{figure}", 0, k))
+    env = "table" if core.startswith("\\begin{table}", b0) else "figure"
+    e1 = core.index("\\end{" + env + "}", k) + len("\\end{" + env + "}")
+    _floats.append(re.sub(r"\\begin\{(table|figure)\}\[[^\]]*\]", lambda m: "\\begin{" + m.group(1) + "}[!htbp]",
+                          core[b0:e1], count=1))
+    core = core[:b0] + core[e1:]
+if ARGS.ssrn:
+    # The full reproducibility and formal-verification statement moves to the supplement; a short version stays.
+    r0 = core.index("\\paragraph{Reproducibility.}"); r1 = core.index("\n", r0)
+    full = core[r0:r1]
+    short = ("\\paragraph{Reproducibility.} Every number in the paper is produced by a script or notebook cell that writes a "
+             "result file from public data or from a closed form; Appendix~\\ref{app:repro} maps each number to its source. "
+             "``Pre-specified'' means that the authors committed the specification to the public repository before opening "
+             "the test data; this is the authors' declaration, not independent preregistration. The proofs have not yet "
+             "been independently reviewed. Lean~4 with Mathlib machine-checks, using only Lean's standard axioms, the "
+             "identification theorem, the matching lower and upper bounds for $K$ cohorts and five further results; "
+             "Supplement~\\ref{app:verification} states exactly what is and is not machine-checked.")
+    core = core[:r0] + short + core[r1:]
+    moved.append("\\section{Internet appendix: Reproducibility and formal verification}\\label{app:verification}\n"
+                 + full.replace("\\paragraph{Reproducibility.} ", "", 1) + "\n\n")
+if _floats:
+    moved.append("\\section{Internet appendix: Further tables and figures for the main text}\\label{app:mainfloats}\n"
+                 "These tables and figures belong to the main text; they are collected here to keep it to journal length.\n\n"
+                 + "\n\n".join(_floats) + "\n\\clearpage\n")
 if ARGS.ssrn:
     # The full preprint also carries the finite-horizon decision extension (complete statements and proofs, with its
     # own status paragraph) as a further internet appendix. Its separate reference list is merged into the main one.
@@ -180,7 +260,11 @@ if ARGS.ssrn:
     core = core.replace("\\section{Internet appendix: ", "\\section{").replace("\\section{Internet appendix}", "\\section{Further results}")
     m0 = core.index("\\caption{Map of results}"); t0 = core.rfind("\\begin{table}", 0, m0)
     t1 = core.index("\\end{table}", m0) + len("\\end{table}")
-    maptable = core[t0:t1]; core = core[:t0] + core[t1:]          # the map of results stays in the main text
+    maptable = core[t0:t1]
+    if not MAP_TO_SUPPLEMENT:                                        # the map of results stays in the main text
+        core = core[:t0] + core[t1:]
+    else:
+        maptable = ""
     lit = (HERE / "review" / "litmain.tex").read_text() + maptable + "\n\n"
     core = core.replace("\\subsection{Outline}", lit + "\\subsection{Outline}", 1)
     core = core.replace("\\doublespacing", "\\onehalfspacing", 1)
@@ -190,8 +274,12 @@ if ARGS.ssrn:
                  "\\renewcommand{\\theequation}{S\\arabic{equation}}\\fancyhead[R]{\\small Online Supplement}\n"
                  "\\begin{center}{\\Large Online Supplement}\\\\[4pt]{\\large What Prices Reveal About Hidden Trader Populations, "
                  "and What Identifying Them Costs}\\end{center}\n\\noindent The supplement contains the proofs (Section~S1), "
-                 "further results and robustness checks, the extended literature review, the hypothetical dollar illustration, "
-                 "a finite-horizon decision example, the spectral blind spot, the measurement of reduced-form feedback and the reproducibility map. Section, table, figure and equation numbers "
+                 "further results and robustness checks, the extended literature review and map of results, the discussion of the "
+                 "assumptions, general memory, the real-noise test, the CFTC and Binance trader-class tests in full, the "
+                 "hypothetical dollar illustration, a finite-horizon decision example, the spectral blind spot, the measurement "
+                 "of reduced-form feedback, tables and figures that belong to the main text, the formal-verification statement "
+                 "and the reproducibility map. Nothing has been removed from the paper; material was moved here to keep the main "
+                 "text to journal length. Section, table, figure and equation numbers "
                  "prefixed with S refer to this supplement.\n\n")
     assert core.count("\\appendix\n") == 1
     core = core.replace("\\appendix\n", supp_head, 1)
@@ -206,9 +294,11 @@ _outline = ("\\subsection{Outline}\n"
     "trader-class reports and on Binance's class ratios. Section~\\ref{sec:policy} draws the implications for "
     "supervision and Section~\\ref{sec:conclusion} concludes. ")
 if ARGS.ssrn:
-    _outline += ("The online supplement contains the proofs, the extended literature review, further results and robustness "
-                 "checks, the hypothetical dollar illustration, a finite-horizon decision example, the spectral blind spot, the "
-                 "measurement of reduced-form feedback and the reproducibility map.\n\n")
+    _outline += ("The online supplement contains the proofs, the extended literature review and the map of results, the "
+                 "discussion of the assumptions, general memory, the real-noise test, the trader-class tests in full, further "
+                 "results and robustness checks, the hypothetical dollar illustration, a finite-horizon decision example, the "
+                 "spectral blind spot, the measurement of reduced-form feedback, the formal-verification statement and the "
+                 "reproducibility map.\n\n")
 else:
     _outline += ("Proofs are in Appendix~\\ref{app:proofs}; the internet appendix contains account-level capital, near-colliding "
                  "rates, robustness to learning rules, the spectral blind spot and the measurement of reduced-form feedback, and "
