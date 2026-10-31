@@ -31,7 +31,7 @@ if ARGS.ssrn:
     if ARGS.solo:
         core = re.sub(r"\n\\and Prashant Niroula\\thanks\{.*?\}\}", "}", core, count=1, flags=re.S)
         core = core.replace("\\fancyhead[L]{\\small Niroula and Niroula}", "\\fancyhead[L]{\\small Niroula}")
-    repo = ("\n\n\\noindent\\textbf{Code and data.} All code, registered test specifications and result files are public at "
+    repo = ("\n\n\\noindent\\textbf{Code and data.} All code, pre-specified test specifications and result files are public at "
             "\\url{https://github.com/Pratikn03/Fianince}.\n")
     core = core.replace("\\paragraph{Reproducibility.}", repo + "\n\\paragraph{Reproducibility.}", 1)
 else:
@@ -54,6 +54,7 @@ MOVES = [  # (heading that starts the block, heading that ends it, appendix titl
 ]
 repro = "\\section{Reproducibility: source of every number}"
 moved = []
+supp_blocks = []   # --ssrn: the spectral blind spot and feedback measurement go to a separate supplement PDF
 for start, stop, title in MOVES:
     i, j = core.index(start), core.index(stop)
     block = core[i:j]
@@ -62,7 +63,10 @@ for start, stop, title in MOVES:
     body = block[len(head):]
     if head.startswith("\\subsection"):                     # a moved subsection becomes an appendix section;
         body = body.replace("\\subsubsection{", "\\subsection{")  # (none present, kept for safety)
-    moved.append("\\section{Internet appendix: " + title + "}" + body)
+    if ARGS.ssrn and title in ("A spectral blind spot", "Empirical feedback and its measurement"):
+        supp_blocks.append("\\section{" + title + "}" + body)
+    else:
+        moved.append("\\section{Internet appendix: " + title + "}" + body)
 if ARGS.ssrn:
     # The full preprint also carries the finite-horizon decision extension (complete statements and proofs, with its
     # own status paragraph) as a further internet appendix. Its separate reference list is merged into the main one.
@@ -111,8 +115,8 @@ if ARGS.ssrn:
         "are of order $\\delta$ apart requires a number of experiments of order $\\delta^{-6}$, so at a fixed information price "
         "cohort identification becomes unaffordable while the decision keeps its positive value.\n\n"
         "The lesson cuts both ways. Many risk decisions need only the combined response, which public data identify at the "
-        "ordinary rate; class-level records are valuable only for decisions that depend on attribution, which this paper "
-        "does not yet model (Section~\\ref{sec:conclusion}). The note's proofs have not been independently reviewed, its "
+        "ordinary rate; class-level records are valuable only for decisions that depend on attribution, such as the "
+        "targeted halt of Proposition~\\ref{prop:target}. The note's proofs have not been independently reviewed, its "
         "numerical illustration is exploratory, and its priority is unconfirmed.\n\n")
     # its sources go into the reproducibility map (first longtable after the map heading)
     fhc_rows = (r"Finite-horizon decision appendix: primary decisions, cost--horizon sensitivities (819 rows), hard-pair "
@@ -128,6 +132,24 @@ core = core.replace(repro, "".join(moved) + repro, 1)
 for lab in ("sec:account", "sec:dollars", "sec:uniform", "sec:learners", "sec:blind", "sec:empirics"):
     core = core.replace("Section~\\ref{" + lab + "}", "Appendix~\\ref{" + lab + "}")
     core = core.replace("Sections~\\ref{" + lab + "}", "Appendices~\\ref{" + lab + "}")
+if ARGS.ssrn and supp_blocks:
+    # Build the supplement once to learn its numbering, then point the preprint's references at it.
+    bib = core[core.index("\\begin{thebibliography}"):core.index("\\end{thebibliography}") + len("\\end{thebibliography}")]
+    pre = core[:core.index("\\begin{document}")]
+    supp_tex = (pre + "\\begin{document}\n\\begin{center}\\large Supplement to ``What Prices Reveal About Hidden Trader "
+                "Populations, and What Identifying Them Costs'': a spectral blind spot and the measurement of reduced-form "
+                "feedback\\end{center}\n\\renewcommand{\\thesection}{S\\arabic{section}}\\renewcommand{\\thetable}{S\\arabic{table}}"
+                "\\renewcommand{\\thefigure}{S\\arabic{figure}}\\renewcommand{\\theequation}{S\\arabic{equation}}\n"
+                "These two analyses accompany the paper but are not needed for its main results.\n\n"
+                + "".join(supp_blocks) + "\n" + bib + "\n\\end{document}\n")
+    SUPP = "paper1_feedback_spectral_supplement"
+    (HERE / f"{SUPP}.tex").write_text(supp_tex)
+    subprocess.run(["pdflatex", "-interaction=nonstopmode", f"{SUPP}.tex"], cwd=HERE, stdout=subprocess.DEVNULL)
+    supp_labels = dict(re.findall(r"\\newlabel\{([^}]*)\}\{\{([^}]*)\}", (HERE / f"{SUPP}.aux").read_text()))
+    for lab, num in supp_labels.items():
+        for word in ("Appendix", "Appendices", "Section", "Sections"):
+            core = core.replace(word + "~\\ref{" + lab + "}", "Supplement~" + num)
+        core = core.replace("\\eqref{" + lab + "}", "(" + num + ")").replace("\\ref{" + lab + "}", num)
 # No table of contents in a submission; an outline that matches the submission's own order.
 core = core.replace("\\setcounter{page}{1}\n\\tableofcontents\n\\newpage\n", "\\setcounter{page}{1}\n", 1)
 o1, o2 = core.index("\\subsection{Outline}"), core.index("\\section{Model and motivating examples}")
@@ -138,8 +160,9 @@ core = core[:o1] + ("\\subsection{Outline}\n"
     "states what disclosure buys, gives a hypothetical scale illustration of its value, and tests it on the CFTC's mandated "
     "trader-class reports and on Binance's class ratios. Section~\\ref{sec:policy} draws the implications for "
     "supervision and Section~\\ref{sec:conclusion} concludes. Proofs are in Appendix~\\ref{app:proofs}; the internet "
-    "appendix contains account-level capital, near-colliding rates, robustness to learning rules, the spectral blind spot "
-    "and the measurement of reduced-form feedback" + (", and Appendix~\\ref{app:fhc} gives a finite-horizon decision in which a "
+    "appendix contains account-level capital, near-colliding rates and robustness to learning rules" +
+    (", a separate supplement contains the spectral blind spot and the measurement of reduced-form feedback" if ARGS.ssrn else
+     ", the spectral blind spot and the measurement of reduced-form feedback") + (", and Appendix~\\ref{app:fhc} gives a finite-horizon decision in which a "
     "desk profits from the identified aggregate while cohort identification stays unaffordable" if ARGS.ssrn else "") +
     ", and Appendix~\\ref{app:repro} maps every number to its source.\n\n") + core[o2:]
 # Hygiene for a submission: no internal tags, script names or hashes outside the reproducibility appendix
@@ -200,3 +223,13 @@ if ARGS.ssrn:
     subprocess.run(["pandoc", "paper1_reproducibility_map.tex", "-o", "REPRODUCIBILITY_MAP.md", "-t", "gfm"], cwd=HERE,
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     print("built paper1_reproducibility_map.pdf and REPRODUCIBILITY_MAP.md; unresolved refs:", standalone.count("??"))
+if ARGS.ssrn and supp_blocks:
+    # Resolve the supplement's references to the preprint, then rebuild it.
+    labels = dict(re.findall(r"\\newlabel\{([^}]*)\}\{\{([^}]*)\}", (HERE / f"{NAME}.aux").read_text()))
+    t = (HERE / f"{SUPP}.tex").read_text()
+    t = re.sub(r"\\eqref\{([^}]*)\}", lambda m: "(" + labels[m.group(1)] + ")" if m.group(1) in labels and m.group(1) not in supp_labels else m.group(0), t)
+    t = re.sub(r"\\ref\{([^}]*)\}", lambda m: labels[m.group(1)] if m.group(1) in labels and m.group(1) not in supp_labels else m.group(0), t)
+    (HERE / f"{SUPP}.tex").write_text(t)
+    for _ in range(2):
+        subprocess.run(["pdflatex", "-interaction=nonstopmode", f"{SUPP}.tex"], cwd=HERE, stdout=subprocess.DEVNULL)
+    print("built", SUPP + ".pdf")

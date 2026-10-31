@@ -189,3 +189,40 @@ AI-generated critiques run by the authors (files in `five_AI_reviews_20261030/`)
 ### Not accepted
 - P5's alternative title: kept the current title; the abstract's first sentences now say "linear market model".
 - P1 #13 "attach a critical-lemma inventory": done as one sentence in the front matter rather than a page.
+
+## Second round: five professor-role AI reviews of the 115-page build (30 Oct 2026)
+
+AI-generated (files in `professor_reviews_round2_20261030/`); not independent review. Scores for posting: P1 6.0, P2 5.5, P3 6.5, P4 7.0, P5 7.5 (after fixes 8.5, 7.5, 8.5, 9.0, 9.2). Forward to a colleague: P1, P3, P4, P5 yes; P2 no. No reviewer found a false theorem, number or regulatory fact (P4 verified every regulatory citation).
+
+Note: part of this round's changes were already in the working tree, uncommitted, when this session resumed (edits dated 23:59-00:00 UTC by another session); they were checked here and kept. They include Proposition prop:target and `theory/targeted_intervention.py`, whose table was reproduced exactly.
+
+### Fixed
+| Point (reviewer) | Change |
+|---|---|
+| No decision where attribution matters (P2; all of round 1) | New Proposition prop:target (market-wide limit needs only S; whether halting one group suffices needs q_i and inherits the (Delta eta)^-(4K-2) cost; tagged data: bounded). Table tab:target reproduced from `theory/targeted_intervention.py`. Abstract, results map, policy opening, conclusion and finite-horizon summary updated |
+| CAT market-count columns and break-even sentences (P2, P4) | Removed; Section 6.2 keeps the CAT budget only "for orientation" and says why the two numbers are not comparable |
+| Appendices G (spectral blind spot) and H (feedback measurement) stitched on (P1-P5) | Moved to `paper1_feedback_spectral_supplement.pdf`; references point to Supplement S1/S2. SSRN build now 112 pages |
+| "Pre-registered" in tables (P3, P5) | "Pre-specified" throughout |
+| JSON file names and bug log in text (P5) | Removed (also the trained-learners file name, which left "json,)" after hash stripping) |
+| Thm 5.5 finite-sample quantifiers (P1) | h_0 = kappa known; explicit Gaussian event over 2K taps with log(4K/beta); radius condition |
+| Thm 5.4 stability and tap horizon (P1) | Added |
+| Thm 5.2 8/11 (P1) | Explained |
+| Prop 6.1 martingale wording, Thm 5.7 triangle step (P1) | Present |
+| Kalman desks vs trading on x_t; known p* (P2) | Reconciled in the remark; known p* is an a fortiori aid for the lower bounds |
+| Missing finance literature (P2) | Barberis et al. 2015, 2018; Cespa-Vives 2015; Biais-Foucault-Moinas 2015; Crouzet-Dew-Becker-Nathanson 2020 (RFS, not JF as P2 said). All verified |
+| CFTC price-only regression unspecified; weak identification (P3) | Specified (each week's return on its own 12 lags, then two-exponential fit); weak-ID and near-unit-root T^-1 scaling notes |
+| Return proxies (P3, P4) | Corrected the description: crude oil and natural gas already use front-month futures; the other six use spot/index/yield (basis ignored). Rerun with CME futures returns not done (needs data access) |
+| Positions vs flows; inventory root (P3) | Added |
+| Table 16 jackknife note; "333" wording (P3) | Added; "fitted day-demeaned persistences (illustrative calibration)" |
+| MiFID RTS 6, firm-specific IDs (P4) | Added |
+| Policy summary paragraph (P4) | Added at the start of Section 7 |
+| "companion thesis" (P5) | Now "public replication repository" |
+| Sentence rewrites (P5) | Applied the clearest ones |
+
+### Not done
+- CFTC rerun with CME futures returns for the six spot/index/yield series (P3, P4, P5): needs Yahoo/CME data from Colab and the user's approval; would be reported as a post hoc robustness check.
+- Acknowledgments and funding statement (P5): authors must supply.
+- Repository name "Fianince" (P5): renaming is the user's decision (GitHub redirects old URLs).
+- 35-40 page version / executive summary (P5).
+- Independent human check of the five key proofs and of Proposition prop:target.
+- Proof that Gauss and Gauss-Radau maximal weights differ for every K (checked K <= 8 only; stated in the paper).
