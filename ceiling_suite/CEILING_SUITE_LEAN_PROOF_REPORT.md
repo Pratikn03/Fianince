@@ -1,10 +1,10 @@
 # Ceiling Suite — Lean declaration mapping audit
 
 - **Status**: MAPPING_AUDIT_INCOMPLETE. Existing declaration references checked; no fresh Lean build or full semantic equivalence is claimed.
-- **Unmapped labels**: prop:primitives, prop:tied, thm:uniformw1, fhc:capacity, fhc:nodata-chance, fhc:decision, fhc:pair, fhc:priced, fhc:capacity, fhc:nodata-chance, fhc:decision, fhc:pair, fhc:priced
+- **Unmapped labels**: prop:primitives, prop:tied, thm:uniformw1, prop:choice, prop:target, fhc:capacity, fhc:nodata-chance, fhc:decision, fhc:pair, fhc:priced, fhc:capacity, fhc:nodata-chance, fhc:decision, fhc:pair, fhc:priced
 - **Revised statements requiring semantic review**: prop:esprit, thm:minphase, prop:inventory_S, thm:window, thm:certcost, thm:forward, prop:driftguard
 - **Lean Toolchain**: `leanprover/lean4:v4.34.1`
-- **Paper 1**: 26 / 34 current formal environments have an existing name mapping.
+- **Paper 1**: 26 / 36 current formal environments have an existing name mapping.
 - **Paper 2**: 28 / 33 current formal environments have an existing name mapping.
 - Run with `--require-complete` to fail if unmapped or revised statements remain. A successful default run means the audit was generated, not that manuscript formalization is complete.
 
@@ -12,40 +12,42 @@
 
 | # | Environment | Label | Title | LaTeX Source | Mathlib (`ℝ`) Theorem | Core Lean (`Rat`) Theorem |
 |---|---|---|---|---|---|---|
-| 1 | `lemma` | `lem:micro` | Filtering and learning microfoundations | `p1_front.tex:179` | `CurrentMM.p1_prop_kalman_memory, CurrentMM.p1_prop_ogd_memory` (L46) | `MachineMarkets.p1_prop_kalman_memory, MachineMarkets.p1_prop_ogd_memory` (L13) |
-| 2 | `lemma` | `lem:cm` | Positive price-response geometry | `p1_front.tex:193` | `CurrentMM.p1_lem_cm_positive_response` (L96) | `MachineMarkets.p1_lem_cm_positive_geometry` (L29) |
+| 1 | `lemma` | `lem:micro` | Two motivating examples: filtering and learning | `p1_front.tex:285` | `CurrentMM.p1_prop_kalman_memory, CurrentMM.p1_prop_ogd_memory` (L46) | `MachineMarkets.p1_prop_kalman_memory, MachineMarkets.p1_prop_ogd_memory` (L13) |
+| 2 | `lemma` | `lem:cm` | Positive price-response geometry | `p1_front.tex:299` | `CurrentMM.p1_lem_cm_positive_response` (L96) | `MachineMarkets.p1_lem_cm_positive_geometry` (L29) |
 | 3 | `theorem` | `thm:merged` | Merged rate--weight equivalence | `p1_ident.tex:5` | `CurrentMM.p1_thm_merged_equivalence_and_resolvent` (L123) | `MachineMarkets.p1_thm_merged_equivalence` (L38) |
-| 4 | `theorem` | `thm:quantity` | Sharp probing-resource orders for a known symmetric pair | `p1_ident.tex:33` | `CurrentMM.p1_thm_quantity_sharp_orders` (L143) | `MachineMarkets.p1_thm_quantity_orders` (L44) |
-| 5 | `lemma` | `lem:toeplitz` | Fair execution | `p1_ident.tex:87` | `CurrentMM.p1_lem_toeplitz_fair_execution` (L161) | `MachineMarkets.p1_lem_toeplitz_fair_execution` (L53) |
-| 6 | `theorem` | `thm:cap` | Sharp robust quantity cap from cash and margin | `p1_ident.tex:99` | `CurrentMM.p1_thm_cap_counterparty_margin` (L191) | `MachineMarkets.p1_thm_cap_robust_quantity` (L60) |
-| 7 | `proposition` | `prop:disclosure` | Exact financial disclosure changes the experiment | `p1_ident.tex:114` | `CurrentMM.p1_prop_disclosure_third_mark` (L221) | `MachineMarkets.p1_prop_disclosure_changes_experiment` (L66) |
-| 8 | `lemma` | `thm:capital` | Time-domain Toeplitz coercivity: capital order for funded probes | `p1_ident.tex:122` | `CurrentMM.p1_thm_capital_funded_probes` (L235) | `MachineMarkets.p1_thm_capital_order` (L74) |
-| 9 | `proposition` | `prop:primitives` | Identification in economic primitives | `p1_ident.tex:150` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 10 | `proposition` | `prop:tied` | Intensity tied to information quality | `p1_ident.tex:168` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 4 | `theorem` | `thm:quantity` | Sharp probing-resource orders for a known symmetric pair | `p1_ident.tex:36` | `CurrentMM.p1_thm_quantity_sharp_orders` (L143) | `MachineMarkets.p1_thm_quantity_orders` (L44) |
+| 5 | `lemma` | `lem:toeplitz` | Fair execution | `p1_ident.tex:93` | `CurrentMM.p1_lem_toeplitz_fair_execution` (L161) | `MachineMarkets.p1_lem_toeplitz_fair_execution` (L53) |
+| 6 | `theorem` | `thm:cap` | Sharp robust quantity cap from cash and margin | `p1_ident.tex:105` | `CurrentMM.p1_thm_cap_counterparty_margin` (L191) | `MachineMarkets.p1_thm_cap_robust_quantity` (L60) |
+| 7 | `proposition` | `prop:disclosure` | Exact financial disclosure changes the experiment | `p1_ident.tex:123` | `CurrentMM.p1_prop_disclosure_third_mark` (L221) | `MachineMarkets.p1_prop_disclosure_changes_experiment` (L66) |
+| 8 | `lemma` | `thm:capital` | Time-domain Toeplitz coercivity: capital order for funded probes | `p1_ident.tex:133` | `CurrentMM.p1_thm_capital_funded_probes` (L235) | `MachineMarkets.p1_thm_capital_order` (L74) |
+| 9 | `proposition` | `prop:primitives` | Identification in economic primitives | `p1_ident.tex:161` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 10 | `proposition` | `prop:tied` | Intensity tied to information quality | `p1_ident.tex:181` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
 | 11 | `proposition` | `prop:tri` | Tri-region partition and finite-session resolution floor | `p1_account.tex:15` | `CurrentMM.p1_prop_tri_region_partition` (L285) | `MachineMarkets.p1_prop_tri_region_floor` (L93) |
-| 12 | `theorem` | `thm:spectral` | Spectral dissipation lower bound | `p1_account.tex:67` | `CurrentMM.p1_thm_spectral_dissipation_bound` (L299) | `MachineMarkets.p1_thm_spectral_dissipation` (L99) |
-| 13 | `theorem` | `thm:adaptive` | Adaptive and sequential probing | `p1_account.tex:94` | `CurrentMM.p1_thm_adaptive_sequential_bound` (L319) | `MachineMarkets.p1_thm_adaptive_sequential` (L107) |
-| 14 | `theorem` | `thm:rh` | Finite-horizon Rayleigh--H\"older duality | `p1_account.tex:124` | `CurrentMM.p1_thm_rh_duality, CurrentMM.is_rh_radius_bound, CurrentMM.is_rh_chain` (L338) | `MachineMarkets.p1_thm_rayleigh_holder_duality` (L113) |
-| 15 | `corollary` | `cor:garch` | Invariance under impact-induced heteroskedasticity | `p1_account.tex:166` | `CurrentMM.p1_cor_garch_heteroskedastic_invariance` (L371) | `MachineMarkets.p1_cor_garch_invariance` (L119) |
+| 12 | `theorem` | `thm:spectral` | Spectral dissipation lower bound | `p1_account.tex:69` | `CurrentMM.p1_thm_spectral_dissipation_bound` (L299) | `MachineMarkets.p1_thm_spectral_dissipation` (L99) |
+| 13 | `theorem` | `thm:adaptive` | Adaptive and sequential probing | `p1_account.tex:101` | `CurrentMM.p1_thm_adaptive_sequential_bound` (L319) | `MachineMarkets.p1_thm_adaptive_sequential` (L107) |
+| 14 | `theorem` | `thm:rh` | Finite-horizon Rayleigh--H\"older duality | `p1_account.tex:133` | `CurrentMM.p1_thm_rh_duality, CurrentMM.is_rh_radius_bound, CurrentMM.is_rh_chain` (L338) | `MachineMarkets.p1_thm_rayleigh_holder_duality` (L113) |
+| 15 | `corollary` | `cor:garch` | Invariance under impact-induced heteroskedasticity | `p1_account.tex:177` | `CurrentMM.p1_cor_garch_heteroskedastic_invariance` (L371) | `MachineMarkets.p1_cor_garch_invariance` (L119) |
 | 16 | `proposition` | `prop:crb` | Cram\'er--Rao benchmark | `p1_mixture.tex:11` | `CurrentMM.p1_prop_crb_benchmark` (L383) | `MachineMarkets.p1_prop_crb_benchmark` (L127) |
-| 17 | `theorem` | `thm:twocohort` | Global two-point bound and matching upper bound, $K=2$ | `p1_mixture.tex:45` | `CurrentMM.p1_thm_twocohort_hankel_and_moment_gap` (L399) | `MachineMarkets.p1_thm_twocohort_hankel` (L136) |
-| 18 | `theorem` | `thm:kcohort` | $K$-cohort two-point lower bound | `p1_mixture.tex:100` | `CurrentMM.p1_thm_kcohort_lower_bound` (L438) | `MachineMarkets.p1_thm_kcohort_lower_bound` (L145) |
-| 19 | `theorem` | `prop:esprit` | Matching upper bound for every $K$ | `p1_mixture.tex:147` | `CurrentMM.p1_thm_esprit_matching_upper_bound` (L453) | `MachineMarkets.p1_prop_esprit_upper_bound` (L151) |
-| 20 | `theorem` | `thm:uniformw1` | Uniform rate without separation | `p1_mixture.tex:180` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 21 | `lemma` | `lem:altpair` | Moment-matched cohort pairs | `p1_mixture.tex:202` | `CurrentMM.p1_lem_altpair_moment_matched_wasserstein` (L490) | `MachineMarkets.p1_lem_altpair_moment_matched` (L162) |
-| 22 | `theorem` | `thm:general` | Minimax rate for general memory | `p1_mixture.tex:208` | `CurrentMM.p1_thm_general_memory_minimax` (L506) | `MachineMarkets.p1_thm_general_memory_minimax` (L177) |
-| 23 | `theorem` | `thm:minphase` | Passive identification: minimum phase | `p1_mixture.tex:262` | `CurrentMM.p1_thm_minphase_passive_identification` (L528) | `MachineMarkets.p1_thm_minphase_identification` (L183) |
-| 24 | `theorem` | `prop:passive` | Passive cost | `p1_mixture.tex:268` | `CurrentMM.p1_thm_passive_cost` (L544) | `MachineMarkets.p1_prop_passive_cost` (L189) |
+| 17 | `theorem` | `thm:twocohort` | Global two-point bound and matching upper bound, $K=2$ | `p1_mixture.tex:47` | `CurrentMM.p1_thm_twocohort_hankel_and_moment_gap` (L399) | `MachineMarkets.p1_thm_twocohort_hankel` (L136) |
+| 18 | `theorem` | `thm:kcohort` | $K$-cohort two-point lower bound | `p1_mixture.tex:104` | `CurrentMM.p1_thm_kcohort_lower_bound` (L438) | `MachineMarkets.p1_thm_kcohort_lower_bound` (L145) |
+| 19 | `theorem` | `prop:esprit` | Matching upper bound for every $K$ | `p1_mixture.tex:155` | `CurrentMM.p1_thm_esprit_matching_upper_bound` (L453) | `MachineMarkets.p1_prop_esprit_upper_bound` (L151) |
+| 20 | `theorem` | `thm:uniformw1` | Uniform rate without separation | `p1_mixture.tex:191` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 21 | `lemma` | `lem:altpair` | Moment-matched cohort pairs | `p1_mixture.tex:215` | `CurrentMM.p1_lem_altpair_moment_matched_wasserstein` (L490) | `MachineMarkets.p1_lem_altpair_moment_matched` (L162) |
+| 22 | `theorem` | `thm:general` | Minimax rate for general memory | `p1_mixture.tex:221` | `CurrentMM.p1_thm_general_memory_minimax` (L506) | `MachineMarkets.p1_thm_general_memory_minimax` (L177) |
+| 23 | `theorem` | `thm:minphase` | Passive identification: minimum phase | `p1_mixture.tex:278` | `CurrentMM.p1_thm_minphase_passive_identification` (L528) | `MachineMarkets.p1_thm_minphase_identification` (L183) |
+| 24 | `theorem` | `prop:passive` | Passive cost | `p1_mixture.tex:284` | `CurrentMM.p1_thm_passive_cost` (L544) | `MachineMarkets.p1_prop_passive_cost` (L189) |
 | 25 | `proposition` | `prop:tagged` | Tagged flow removes the barrier | `p1_disclosure.tex:38` | `CurrentMM.p1_prop_tagged_flow_removes_barrier, CurrentMM.is_iv_det_pos` (L565) | `MachineMarkets.p1_prop_tagged_flow_ident` (L195) |
-| 26 | `theorem` | `thm:discvalue` | Value of class-tagged disclosure | `p1_disclosure.tex:56` | `CurrentMM.p1_thm_discvalue_ratio` (L574) | `MachineMarkets.p1_thm_disclosure_value` (L203) |
-| 27 | `theorem` | `thm:blind` | Spectral blindness | `p1_disclosure.tex:196` | `CurrentMM.p1_thm_blind_spectral_blindness` (L590) | `MachineMarkets.p1_thm_spectral_blindness` (L211) |
-| 28 | `theorem` | `thm:abstain` | Finite-window abstention | `p1_appendix.tex:166` | `CurrentMM.p1_thm_abstain_finite_window` (L640) | `MachineMarkets.p1_thm_abstain_finite_window` (L228) |
-| 29 | `proposition` | `prop:passive0` | Passive distinction with zero controlled quantity | `p1_appendix.tex:182` | `CurrentMM.p1_prop_passive0_three_step_blocks` (L254) | `MachineMarkets.p1_prop_passive0_distinction` (L79) |
-| 30 | `lemma` | `fhc:capacity` | Sharp prior bounds and exact prefunded capacity | `p1_appendix.tex:592` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 31 | `lemma` | `fhc:nodata-chance` | No data at the same error budget | `p1_appendix.tex:644` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 32 | `theorem` | `fhc:decision` | Uniform cost-aware finite-horizon decision | `p1_appendix.tex:669` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 33 | `theorem` | `fhc:pair` | A two-cohort identification obstruction under the same observations | `p1_appendix.tex:748` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 34 | `corollary` | `fhc:priced` | A priced separation | `p1_appendix.tex:818` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 26 | `theorem` | `thm:discvalue` | Value of class-tagged disclosure | `p1_disclosure.tex:59` | `CurrentMM.p1_thm_discvalue_ratio` (L574) | `MachineMarkets.p1_thm_disclosure_value` (L203) |
+| 27 | `proposition` | `prop:choice` | When an audit trail is chosen | `p1_disclosure.tex:121` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 28 | `proposition` | `prop:target` | Market-wide versus targeted intervention | `p1_disclosure.tex:134` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 29 | `theorem` | `thm:blind` | Spectral blindness | `p1_disclosure.tex:265` | `CurrentMM.p1_thm_blind_spectral_blindness` (L590) | `MachineMarkets.p1_thm_spectral_blindness` (L211) |
+| 30 | `theorem` | `thm:abstain` | Finite-window abstention | `p1_appendix.tex:208` | `CurrentMM.p1_thm_abstain_finite_window` (L640) | `MachineMarkets.p1_thm_abstain_finite_window` (L228) |
+| 31 | `proposition` | `prop:passive0` | Passive distinction with zero controlled quantity | `p1_appendix.tex:224` | `CurrentMM.p1_prop_passive0_three_step_blocks` (L254) | `MachineMarkets.p1_prop_passive0_distinction` (L79) |
+| 32 | `lemma` | `fhc:capacity` | Sharp prior bounds and exact prefunded capacity | `p1_appendix.tex:642` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 33 | `lemma` | `fhc:nodata-chance` | No data at the same error budget | `p1_appendix.tex:694` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 34 | `theorem` | `fhc:decision` | Uniform cost-aware finite-horizon decision | `p1_appendix.tex:719` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 35 | `theorem` | `fhc:pair` | A two-cohort identification obstruction under the same observations | `p1_appendix.tex:798` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 36 | `corollary` | `fhc:priced` | A priced separation | `p1_appendix.tex:868` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
 
 ## Paper 2 — Transient Amplification & Summed-Gain Guard (`paper2/`)
 

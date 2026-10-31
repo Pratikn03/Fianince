@@ -28,7 +28,7 @@ Every numbered formal environment in **Paper 2** (28 items) and **Paper 1** (26 
 > Tags for results unchanged by the revision are carried over from the October 20 audit after checking that the cited
 > declarations still exist; tags for new or restated results were assigned in this revision. Tags for Paper 1 rows whose
 > Lean core in `CeilingSuitePaper1.lean` takes scalar parameters are `arithmetic`, even where an earlier version of this file
-> said `full`. Removed environments: Paper 1 `prop:kalman`, `prop:ogd` (merged into `lem:micro`), `prop:ambiguity` (kept in
+> said `full`. Paper 1 results added after 24 Oct 2026 and not mapped to Lean: `prop:primitives`, `prop:tied`, `thm:uniformw1`, `prop:choice`, `prop:target` (and the five `fhc:` results of the SSRN finite-horizon supplement); see `ceiling_suite/CEILING_SUITE_LEAN_PROOF_REPORT.md`, which now audits the current `paper1.tex`. Removed environments: Paper 1 `prop:kalman`, `prop:ogd` (merged into `lem:micro`), `prop:ambiguity` (kept in
 > Paper 2 as `prop:ambig`), `prop:mech` (now an inline equation); Paper 2 `prop:blind`, `lem:cm` (cited from Paper 1),
 > `prop:bridge` (now a sentence), and the five Section 4 results, which are parts of `thm:peak`.
 
@@ -81,7 +81,7 @@ Every numbered formal environment in **Paper 2** (28 items) and **Paper 1** (26 
 | 8 | `thm:capital` | Lemma: Time-domain Toeplitz coercivity (capital order) | `p1_ident.tex` | `p1_thm_capital_funded_probes`, `actual_all_anchor_trader_energy_bound` | **`full`** | Solvency energy bound. Demoted from theorem to lemma in this revision (its constant scales as $\epsilon^7(1-S)^5$). |
 | 9 | `prop:tri` | Proposition: Tri-region partition | `p1_account.tex` | `p1_prop_tri_region_partition`, `actual_physical_perpetual_fee_reserve_cap` | **`arithmetic`** | Pulse-count and floor algebra. |
 | 10 | `thm:spectral` | Theorem: Spectral dissipation lower bound | `p1_account.tex` | `p1_thm_spectral_dissipation_bound`, `parseval_toep_quadratic_ratio_bound` | **`conditional`** | (i)–(ii) Parseval ratio bound; (iii) numbers are computed; (iv) process noise (new) is proved on paper, not formalized. |
-| 11 | `thm:adaptive` | Theorem: Adaptive and sequential probing | `p1_account.tex` | `p1_thm_adaptive_sequential_bound`, `wald_sequential_kl_chain_rule_capital_bound` | **`full`** | Wald/KL chain-rule capital bound. |
+| 11 | `thm:adaptive` | Theorem: Adaptive and sequential probing | `p1_account.tex` | `p1_thm_adaptive_sequential_bound`, `wald_sequential_kl_chain_rule_capital_bound` | **`conditional`** | Capital bound from the per-step information ratio; the per-step KL bound and the KL chain rule for the stopped experiment enter as hypotheses (`hstep`, `hchain`). Re-tagged from `full` in the 31 Oct 2026 audit. |
 | 12 | `thm:rh` | Theorem: Finite-horizon Rayleigh–Hölder duality | `p1_account.tex` | `p1_thm_rh_duality`, `rayleigh_holder_closed_form_analytic_lower_bound`, `is_rh_radius_bound`, `is_rh_chain` | **`conditional`** | The scalar chain behind the new explicit $F_{\rm dom}$, $W_\perp$, $\gamma$ bound is full; the generalized eigen-decomposition and Hölder/Cauchy–Schwarz steps are on paper. |
 | 13 | `cor:garch` | Corollary: Invariance under impact-induced heteroskedasticity | `p1_account.tex` | `p1_cor_garch_heteroskedastic_invariance` | **`arithmetic`** | Scalar core. |
 | 14 | `prop:crb` | Proposition: Cramér–Rao benchmark | `p1_mixture.tex` | `p1_prop_crb_benchmark`, `cramer_rao_two_cohort_confluent_vandermonde_exact_bound` | **`conditional`** | Confluent Vandermonde bound; the Θ-order statement is on paper. |
@@ -92,7 +92,7 @@ Every numbered formal environment in **Paper 2** (28 items) and **Paper 1** (26 
 | 19 | `thm:general` | Theorem: Minimax rate for general memory | `p1_mixture.tex` | `p1_thm_general_memory_minimax` | **`arithmetic`** | Scalar core. |
 | 20 | `thm:minphase` | Theorem: Passive identification, minimum phase | `p1_mixture.tex` | `p1_thm_minphase_passive_identification` | **`arithmetic`** | Scalar core. |
 | 21 | `prop:passive` | Theorem: Passive cost (now for every K) | `p1_mixture.tex` | `p1_thm_passive_cost` | **`arithmetic`** | Scalar core; the Whittle expansion and the new all-$K$ part (iii) are on paper. |
-| 22 | `prop:tagged` | Proposition: Tagged flow removes the barrier | `p1_disclosure.tex` | `p1_prop_tagged_flow_removes_barrier`, `is_iv_det_pos` | **`conditional`** | Positivity of the IV Jacobian determinant is full; the CLT for $m$-dependent scores is on paper. |
+| 22 | `prop:tagged` | Proposition: Tagged flow removes the barrier | `p1_disclosure.tex` | `p1_prop_tagged_flow_removes_barrier`, `is_iv_det_pos` | **`conditional`** | Positivity of the IV Jacobian determinant is full; the martingale CLT for the scores is on paper. |
 | 23 | `thm:discvalue` | Theorem: Value of class-tagged disclosure | `p1_disclosure.tex` | `p1_thm_discvalue_ratio` | **`arithmetic`** | Ratio algebra. |
 | 24 | `thm:blind` | Theorem: Spectral blindness | `p1_disclosure.tex` | `p1_thm_blind_spectral_blindness` | **`arithmetic`** | Scalar core. |
 | 25 | `thm:abstain` | Theorem: Finite-window abstention (supplement) | `p1_appendix.tex` | `p1_thm_abstain_finite_window`, `scalar_ar1_path_kl_bound`, `finite_window_abstention_lower_bound` | **`full`** | AR(1) path KL and abstention bound. |

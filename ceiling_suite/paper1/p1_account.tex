@@ -2,7 +2,7 @@
 
 Lemma~\ref{thm:capital} gives the order but not the constant. This section computes what a trader actually needs under a calibrated linear-impact environment, then converts it to Bitcoin dollars.
 
-\paragraph{Numerical status.} The analytic inequalities below are conditional mathematical bounds. The displayed decimal optima and brackets are numerical evaluations, not independently outward-certified enclosures of the continuous frequency or angle extrema. A finite grid and a matching archived number do not establish that enclosure; rigorous optimization remains a separate verification obligation.
+\paragraph{Numerical values.} Decimal optima and brackets below are numerical evaluations of the stated bounds.
 
 \subsection{Observation design and the tri-region partition}
 
@@ -23,6 +23,8 @@ N_{\rm pulses}(T,\delta)=\Bigl\lceil\frac{4\sigma^2z_\alpha^2}{V_{\rm eff}^2\|d_
 \item \emph{Infeasible with isolated pulses.} If the budget cannot finance sequential costs, peak inventory breaches $I_{\max}$, or a session deadline binds, the finite-session floor $\delta_{\min}(T_{\rm session})$ is the root of $V_{\rm eff}\|d_{T_{\rm cycle}}(\delta)\|_2=2\sigma z_\alpha/\sqrt{\lfloor T_{\rm session}/T_{\rm cycle}\rfloor}$, with small-$\delta$ approximation $\delta_{\min}=\Theta(T_{\rm session}^{-1/4})$.
 \end{enumerate}
 \end{proposition}
+
+\paragraph{In words.} A single test trade works only when the groups are far enough apart and the account has enough capital. Closer groups need many capped test trades, and a longer observation window after each trade makes every test trade more informative.
 
 At the calibration $\kappa=0.8$, $q=0.2$, $\sigma=0.01$, $V_{\max}=50$, $D_{\max}=5$ ($V_{\rm eff}=6.25$), the single-tap floor is $\delta_{\min}(3)=\sqrt{2\sigma z_\alpha/(V_{\rm eff}\kappa^2q)}=0.2028$; extended observation lowers it to $0.1376$ ($T=4$), $0.0973$ ($T=10$), $0.0914$ ($T=20$) and $0.0905$ ($T=100$). At $\delta=0.05$ the simplified one-leg benchmark (cost $\tfrac12\kappa V_{\rm eff}^2+\phi P_*V_{\rm eff}=15.875$ per pulse plus initial margin $3.125$) needs 271 pulses and $4{,}305.25$ par units with $T=3$, 58 pulses and $923.88$ with $T=4$, but only 12 pulses and $193.63$ with $T=20$ and 11 pulses and $177.75$ with $T=100$; optimizing the pulse size (6.06 rather than 6.25) lowers the $T=20$ figure to $182.03$. Most of the saving comes from observing the transient response rather than a single tap (Figure~\ref{fig:phase}).
 
@@ -84,6 +86,9 @@ with ${\rm kl}$ as in Theorem~\ref{thm:adaptive}. In-loop noise therefore leaves
 \end{enumerate}
 \end{theorem}
 
+\paragraph{In words.} This turns the order into a dollar floor. No round trip that tells the two candidate markets apart at 5\% error can lose less than this amount, and a concrete probe comes within 5\% of it.
+
+
 \begin{figure}[t]\centering
 \includegraphics[width=\textwidth]{figs/fig_dissipation.pdf}
 \caption{Left: the dissipation kernel $g_0(\omega)$ is strictly positive. Right: the capital ratio in \eqref{eq:Cdet}; dots mark its minimum, near $\omega^*\approx0.25$ for every separation. Recomputed in this revision.}\label{fig:dissip}
@@ -91,14 +96,18 @@ with ${\rm kl}$ as in Theorem~\ref{thm:adaptive}. In-loop noise therefore leaves
 
 Positivity of $g_i$ follows from Lemma~\ref{lem:cm}: $g_i(\omega)=\tfrac12\sum_\ell\omega_\ell\frac{1-\lambda_\ell^2}{1-2\lambda_\ell\cos\omega+\lambda_\ell^2}>0$. We compute $C^*_{\rm det,quad}$ across separations (Table~\ref{tab:capbounds}): $61.14$ at $\delta=0.05$, with $\delta^4C^*_{\rm det,quad}$ between $3.67\times10^{-4}$ and $3.84\times10^{-4}$, confirming the $\delta^{-4}$ law. The fee term, the feasible upper bounds and the adaptive bound of Theorem~\ref{thm:adaptive} are reported in the same table.
 
+The infimum over $\omega$ is evaluated on a fine frequency grid; a local refinement agrees to four digits ($61.1377$ at $\omega^*=0.2526$), and the reported constant is the larger of the two hypotheses' bounds. ``Certified'' here means a numerical evaluation of the stated bound, not an interval-arithmetic enclosure.
+
 \begin{theorem}[Adaptive and sequential probing]\label{thm:adaptive}
-Let $(v_t)_{t\le\tau}$ be any non-anticipating policy adapted to the price filtration, with an almost surely finite stopping time and $\sum_{t\le\tau}v_t=0$. Then
+Let $(v_t)_{t\le\tau}$ be any non-anticipating policy adapted to the price filtration, with an almost surely finite stopping time and $\sum_{t\le\tau}v_t=0$, followed by a terminal test $\psi_\tau\in\{0,1\}$ with $P_0(\psi_\tau=1)\le\alpha$ and $P_1(\psi_\tau=0)\le\beta$. Then
 \begin{equation}\label{eq:adaptive}
 \E_0[L_0(v)]\;\ge\;2\sigma^2\,{\rm kl}(\alpha,1-\beta)\inf_\omega\frac{g_0(\omega)}{|\Delta\hat H(e^{i\omega})|^2},
 \end{equation}
 where ${\rm kl}(\alpha,1-\beta)=\alpha\log\tfrac{\alpha}{1-\beta}+(1-\alpha)\log\tfrac{1-\alpha}{\beta}$.
 Hence adaptation can lower expected fee-free loss by at most the factor ${\rm kl}(\alpha,1-\beta)/(2z_{1-\alpha}^2)\approx0.4897$ at $\alpha=\beta=0.05$, and cannot alter the $\delta^{-4}$ order.
 \end{theorem}
+
+\paragraph{In words.} Letting the observer adapt its test trades as data arrive, and stop as soon as it is confident, helps only a little: at the calibration it can cut the expected loss by at most about half. The steep cost is a property of the market, not of a clumsy probing plan.
 
 At $\delta=0.05$ the adaptive bound is $29.94$, or $30.22$ with the minimal fee. Pairing it with the feasible deterministic 64.48 gives a numerical ratio of at least $0.464$. In 20{,}000 simulated sequential probability-ratio tests, which split the optimal probe into ten copies of equal information, mean loss was $39.5$ under $H_0$, between the two bounds, but losses vary with the stopping time: the 95th and 99th percentiles of required account capital were $91.7$ and $128.4$, and funding a trader with only the mean loss gives a 37.5\% insolvency rate before the test ends. Expected-loss savings are not solvency savings.
 
@@ -136,10 +145,12 @@ L_i(v)+c_{\rm fee}\|v\|_1\;\ge\;\min_{\theta}\Bigl\{\frac{c_{\rm req}}{\lambda(\
 \[
 \Psi(\theta)=\min_{x\ge0}\Bigl\{x^2+\Bigl[F_{\rm dom}(\theta)\bigl(1-\gamma(\theta)x^2\bigr)_+-\sqrt{W_\perp(\theta)}\,x\Bigr]_+\Bigr\}\;\ge0 ,
 \]
-a piecewise-quadratic minimization in closed form; when $\gamma F_{\rm dom}<1$ and the minimizer has $\gamma x^2\le1$, $\Psi=\max\bigl(0,F_{\rm dom}-W_\perp/(4(1-\gamma F_{\rm dom}))\bigr)$.
+a piecewise-quadratic minimization in closed form; when $\gamma F_{\rm dom}<1$ and the minimizer has $\gamma x^2\le1$, $\Psi\ge\max\bigl(0,F_{\rm dom}-W_\perp/(4(1-\gamma F_{\rm dom}))\bigr)$, which is what the bound uses.
 \end{theorem}
 
-The bound is computable for any horizon. Table~\ref{tab:rh} reports its quadratic part $c_{\rm req}/\lambda_{L-1}$, which decays toward the infinite-horizon value 61.14 at rate $O(L^{-1})$, the full bound $C_{\rm RH}(L)$, and the best feasible fee-paying probe we find at each horizon. At $L=80$ the full bound is $64.72$ against a best probe of $64.76$ on the same loss-plus-fee objective, so the dual is essentially tight at short horizons; at longer horizons the fee term of the dual weakens and the bracket widens to about 5\%. The fee of unpadded full-support eigenvectors grows as $\Theta(\sqrt L)$, which is why zero-padded or $L_1$-localized probes are needed at long horizons.
+\paragraph{In words.} This is the exact cheapest probe over a finite number of trading periods, fees included. It confirms that the dollar floor of Theorem~\ref{thm:spectral} is not an artefact of assuming an infinitely long probe.
+
+The bound is computable for any horizon. Table~\ref{tab:rh} reports its quadratic part $c_{\rm req}/\lambda_{L-1}$, which decays toward the infinite-horizon value 61.14 at rate $O(L^{-1})$, the full bound $C_{\rm RH}(L)$, and the best feasible fee-paying probe we find at each horizon. At $L=80$ the full bound is $64.72$ against a best probe of $64.76$ on the same loss-plus-fee objective (Table~\ref{tab:rh} reports $65.02$ for ledger capital, which also includes margin), so the dual is essentially tight at short horizons; at longer horizons the fee term of the dual weakens and the bracket widens to about 5\%. The fee of unpadded full-support eigenvectors grows as $\Theta(\sqrt L)$, which is why zero-padded or $L_1$-localized probes are needed at long horizons.
 
 \begin{table}[t]\centering\small
 \begin{threeparttable}
@@ -157,7 +168,7 @@ Horizon $L$ & Quadratic part $c_{\rm req}/\lambda_{L-1}$ & Full bound $C_{\rm RH
 480 & 61.19 & --- & $\le64.48$ & $\le5.0\%$\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item Quadratic bound $c_{\rm req}/\lambda_L$ from the generalized eigenproblem of Theorem~\ref{thm:rh} on flat probes (equivalently $c_{\rm req}/(2\lambda'_L)$ with $\lambda'$ computed against $T_{h_0}$ rather than $\tfrac12T_{h_0}$); it converges to the infinite-horizon value 61.14. The full bound minimizes \eqref{eq:rh} over 3{,}600 values of $\theta$ (\texttt{hardening/rh\_bound.py}); at $L=80$ and $120$ a direct numerical minimization of loss plus fee under the separation constraint gives $64.76$ and $64.43$, above the bound. Feasible probes: top generalized eigenvector refined by sequential quadratic programming on the full ledger; at $L=320$ and $480$ the $L=240$ probe padded with zeros is feasible at the same cost, so the best feasible value can only be lower. \end{tablenotes}
+\begin{tablenotes}\footnotesize\item Quadratic bound $c_{\rm req}/\lambda_{L-1}$ from the generalized eigenproblem of Theorem~\ref{thm:rh} on flat probes (equivalently $c_{\rm req}/(2\lambda'_L)$ with $\lambda'$ computed against $T_{h_0}$ rather than $\tfrac12T_{h_0}$); it converges to the infinite-horizon value 61.14. The full bound minimizes \eqref{eq:rh} over 3{,}600 values of $\theta$ (\texttt{hardening/rh\_bound.py}); at $L=80$ and $120$ a direct numerical minimization of loss plus fee under the separation constraint gives $64.76$ and $64.43$, above the bound. Feasible probes: top generalized eigenvector refined by sequential quadratic programming on the full ledger; at $L=320$ and $480$ the $L=240$ probe padded with zeros is feasible at the same cost, so the best feasible value can only be lower. \end{tablenotes}
 \end{threeparttable}
 \end{table}
 
@@ -180,8 +191,8 @@ Capital scales as $\sigma^2\delta^{-4}$, so the dollar magnitude hinges on the o
 \toprule
 Noise calibration & $\delta=0.02$ & $\delta=0.05$ & $\delta=0.10$\\
 \midrule
-Roll estimator, median (0.40 USDT) & 3{,}874{,}696 & 99{,}193 & 6{,}200\\
-One-second price-change s.d., median (1.98 USDT) & 93{,}688{,}369 & 2{,}398{,}422 & 149{,}902\\
+Roll estimator, median (0.40 USDT) & 3{,}874{,}696 & 99{,}192 & 6{,}200\\
+One-second price-change s.d., median (1.98 USDT) & 93{,}688{,}369 & 2{,}398{,}422 & 149{,}901\\
 Earlier assumption (4 USDT, upper scenario) & 383{,}812{,}500 & 9{,}825{,}600 & 614{,}100\\
 \bottomrule
 \end{tabular}

@@ -132,7 +132,7 @@ for lab, key, val in [("P2 inventory S_with_inv", "2.5000", p2_step2["inventory_
     print(f"{'OK ' if ok else 'BAD'} {lab:26s} printed {key} json {val:.4f}")
 
 # Paper 1 checks (learners, CAT dollars, disclosure OOS, disclosure state OOS)
-t_p1 = open(os.path.join(TEX1, "p1_mixture.tex")).read() + open(os.path.join(TEX1, "p1_disclosure.tex")).read()
+t_p1 = open(os.path.join(TEX1, "paper1.tex")).read()  # the single Paper 1 source
 _hl = json.load(open(os.path.join(RECOMP, "R_P1_trained_learners_hardened.json")))["regime_evaluations"]
 _hr = lambda reg, rule: next(r for r in _hl if r["regime"] == reg and r["rule_kind"] == rule)
 for lab, key, val in [("P1 trained RLS cap slope", "-4.014", _hr("Regime1a_Unnormalized_Frozen_SharedStream", "rls_trained")["testB_capital_slope"]),

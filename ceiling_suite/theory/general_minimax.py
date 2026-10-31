@@ -141,5 +141,5 @@ for logN in (4, 6, 8, 10, 12, 14, 16, 20, 24):
     est[logN] = {"L": L, "mean_KR_error": float(np.mean(errs)), "error_times_log(N/sigma^2)": float(np.mean(errs) * np.log(N / sigma ** 2))}
     print(f"N=1e{logN:2d} L={L:2d} KR error={np.mean(errs):.5f}  error*log(N/s^2)={np.mean(errs)*np.log(N/sigma**2):.4f}")
 out["lp_estimator"] = {"rho": rho, "true": "Beta(2,3) on [0,rho], mass 0.1", "sigma": sigma, "B(rho)": B_, "by_log10N": est}
-json.dump(out, open("/home/claude/theory/R_P1_general_minimax.json", "w"), indent=2)
+json.dump(out, open(__import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "R_P1_general_minimax.json"), "w"), indent=2)
 print("written R_P1_general_minimax.json")
