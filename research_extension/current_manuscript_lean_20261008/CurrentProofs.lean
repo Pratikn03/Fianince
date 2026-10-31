@@ -33,6 +33,8 @@ import CurrentProofs.CeilingSuitePaper1
 import CurrentProofs.Paper1MomentGap
 import CurrentProofs.Paper1Identification
 import CurrentProofs.Paper1MergedModel
+import CurrentProofs.Paper1Testing
+import CurrentProofs.Paper1LowerBound
 import CurrentProofs.CeilingSuitePaper2
 import CurrentProofs.InfoSafetyExtensions
 
