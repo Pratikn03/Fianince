@@ -198,6 +198,7 @@ _mp1_1 = f1.index("\\end{table}", _mp1_0) + len("\\end{table}")
 supp_extra1 = "\\section{Map of results}\n" + f1[_mp1_0:_mp1_1] + "\n"
 f1 = f1[:_mp1_0] + f1[_mp1_1:]
 app1 = rd(f"{P1}/p1_appendix.tex")
+app1 = re.sub(r"% BEGIN ADVANCED RETURN STATUS 20261030.*?% END ADVANCED RETURN STATUS 20261030\n?", "", app1, flags=re.S)  # development log: not part of the journal version
 i1_proofs = app1.index("\\section{Proofs}\\label{app:proofs}")
 main1 = app1[:i1_proofs]
 supp1 = app1[i1_proofs:].replace("\\end{document}", "")

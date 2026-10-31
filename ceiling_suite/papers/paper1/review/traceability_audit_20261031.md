@@ -99,3 +99,13 @@ above is the Paper 1 check.
 3. Executors of pre-specified tests should be renamed (`run_*`) so that nobody mistakes them for recomputations.
 4. `Paper1_QE` (journal version built by `versions/build_versions.py`) now builds from the current text but has
    overfull lines in the new tables; it needs a layout pass before any journal use.
+
+## 8. Clean-reproduction check after the fixes
+
+Run locally exactly as CI runs it (fresh copy of `ceiling_suite/papers`, fresh virtual environment): unit tests and
+all data-free results identical; **`paper1/paper1` IDENTICAL TEXT**. The check then stops at
+`TEXT DIFFERS paper2/paper2`: Paper 2's sources were changed on 29 October (by another session) without refreshing
+`pdf_delivered/paper2.pdf` ("Development revision" vs the delivered "Revised preprint"). This is Paper 2 content and
+was left for the author: either refresh the delivered Paper 2 PDFs to the current source or restore the source.
+Also fixed for the check: `paper1.tex` read two development-log files from outside `ceiling_suite/papers`; they are
+now copied into `paper1/dev_register/`, and the journal-version builder drops that development log.
