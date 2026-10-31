@@ -14,7 +14,7 @@ trading and without observation noise. Any test whose two error probabilities ar
   (data processing, the factorization `A₀ B = A₁`, and `p1_kl_triangular_gaussian`);
 * `p1_closed_loop_reciprocal`: the closed loop's response has reciprocal series `1, -(a + κ k₀), -κ k₁, …`, so
   `‖r‖₁ ≤ 1 + |a| + |κ| ‖k‖₁` (no separate minimum-phase argument is needed);
-* `p1_thm_passive_cost`: the sample bound.
+* `p1_thm_passive_cost_sample_bound`: the sample bound.
 -/
 
 namespace CurrentMM
@@ -174,7 +174,7 @@ theorem p1_split_response_gap (a κ q ηbar δ ε s : ℝ) (ha : 0 ≤ a) (hκ :
 started from rest any number `M` of periods earlier and driven by i.i.d. `N(0, v)` innovations: any test with both
 error probabilities at most `1/4` needs `1 ≤ 2 (1+s)² C² δ⁴ T`, `C = 2 κ q / (ε³ (1-s)²)`; that is,
 `T ≥ 1 / (2 (1+s)² C² δ⁴) = Ω(δ^{-4})`, uniformly in `M`. -/
-theorem p1_thm_passive_cost (a κ q ηbar δ ε s : ℝ) (ha : 0 ≤ a) (hκ : 0 < κ) (hq : 0 ≤ q)
+theorem p1_thm_passive_cost_sample_bound (a κ q ηbar δ ε s : ℝ) (ha : 0 ≤ a) (hκ : 0 < κ) (hq : 0 ≤ q)
     (hε : 0 < ε) (hδ : 0 < δ) (hlo : ε ≤ ηbar - δ) (hhi : ηbar + δ ≤ 1 - ε)
     (hs : a + κ * q ≤ s) (hs1 : s < 1) (M T : ℕ) (v : ℝ≥0) (hv : v ≠ 0)
     (A : Set (Fin T → ℝ)) (hA : MeasurableSet A)

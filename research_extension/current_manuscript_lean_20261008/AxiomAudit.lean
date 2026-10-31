@@ -370,7 +370,7 @@ run_cmd do
   `CurrentMM.p1_closed_loop_reciprocal,
   `CurrentMM.p1_clRecip_l1,
   `CurrentMM.p1_split_response_gap,
-  `CurrentMM.p1_thm_passive_cost,
+  `CurrentMM.p1_thm_passive_cost_sample_bound,
   `CurrentMM.p1_inner_conv,
   `CurrentMM.p1_recording_factor_N,
   `CurrentMM.p1_recording_factor,
