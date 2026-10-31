@@ -69,3 +69,11 @@ Console output: `colab_console_20261031.txt` (verbatim). The five result and unl
 
 Interpretation fixed in advance: a pass shows a distinct faster root, consistent with but not proof of learning memory;
 a fail is reported as a failure of the two-root reading of CFTC positions.
+
+### Run D result (31 October 2026, opened once, unlock n = 1)
+
+**FAIL.** H1 2 of 8 (crude oil, natural gas; 6 required); H2 4 of 8; H3 6 of 8. Larger root 0.90-0.99 everywhere;
+smaller root -0.16 to 0.21, negative in BTC, ETH, ES, TY, and where positive a half-life of 0.22-0.44 weeks. Positions
+behave as one slow component plus short-lived noise: the data cannot separate learning memory from turnover. Files:
+`p11res/results/C6M_cot_two_root.json`, `p11res/prereg/P11M_unlocks.json` (byte-exact from the author's zip).
+In the paper: scorecard row, Section 6.3 paragraph, abstract, introduction, conclusion, reproducibility map.
