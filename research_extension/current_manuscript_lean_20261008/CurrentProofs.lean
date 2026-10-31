@@ -62,3 +62,7 @@ import CurrentProofs.ThesisHidden
 import CurrentProofs.ThesisPooled
 import CurrentProofs.ThesisMonoculture
 import CurrentProofs.ThesisAntiGaming
+import CurrentProofs.Paper1UniformInverse
+import CurrentProofs.Paper1PronyMoment
+import CurrentProofs.Paper1PronyDeconv
+import CurrentProofs.Paper1PronyUpper

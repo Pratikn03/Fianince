@@ -68,8 +68,8 @@ repository; offer it.
 **Questions for the statistics reviewer.**
 1. Is the K-cohort lower bound (Gauss vs Gauss–Radau quadrature) correct, and is the response-level order
    ‖h^A − h^B‖ ≍ (Δη)^{2K−1} justified from both sides?
-2. Are the constants in the Prony upper bound uniform over the stated compact class? Is the result more than an
-   adaptation of Katz, Diab and Batenkov (2023) and Batenkov et al. (2021) to real nodes?
+2. The Prony upper bound is now machine-checked in Lean for every K (constants uniform over the compact class).
+   Does the formal statement match the paper's? Is the result more than an adaptation of Katz, Diab and Batenkov (2023) and Batenkov et al. (2021) to real nodes?
 3. Is the 1/log N minimax rate for completely monotone kernels new, or a corollary of known deconvolution or
    moment-method results (Fan 1991; Kong and Valiant 2017; Wu and Yang 2020)?
 4. Is the nonasymptotic passive lower bound (Toeplitz KL bound) correct, and is the mixture rate known for

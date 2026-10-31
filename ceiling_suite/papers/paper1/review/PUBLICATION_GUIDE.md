@@ -49,11 +49,15 @@ realistic; journal acceptance is never guaranteed.
 
 ## Part C. Proofs that most need a human check (in order)
 
-1. Theorem `prop:esprit` (Prony upper bound; the finite-sample and global-inverse steps).
-2. Theorem `thm:general` (logarithmic rate; the alternating-measure and coefficient bounds).
-3. Theorem `prop:passive` (finite-T Toeplitz bound).
-4. Theorems `thm:spectral` and `thm:rh` (dollar floor and its finite-horizon dual).
-5. Proposition `prop:target` (new; Le Cam reduction and the window of thresholds).
+1. Theorem `thm:general` (logarithmic rate; the alternating-measure and coefficient bounds).
+2. Theorem `prop:passive` (finite-T Toeplitz bound).
+3. Theorems `thm:spectral` and `thm:rh` (dollar floor and its finite-horizon dual).
+4. Proposition `prop:target` (new; Le Cam reduction and the window of thresholds).
+
+Theorem `prop:esprit` (Prony upper bound) was machine-checked in Lean on 31 Oct 2026 for every K
+(`Paper1PronyUpper.lean`). A human reader should still compare the formal statement's assumptions with the
+paper's (sub-Gaussian noise; memory rates of modulus at most one; the estimator defined as the ordered
+moment-matching representation, which `p1_prony_polynomial` shows is Prony's output).
 Lean covers the model facts, not these rate theorems; the paper says so.
 
 ## Part D. CFTC re-run with CME futures prices (needs your approval)
