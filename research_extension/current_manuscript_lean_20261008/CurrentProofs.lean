@@ -76,3 +76,6 @@ import CurrentProofs.Paper1PassiveRecord
 import CurrentProofs.Paper1PassiveCost
 import CurrentProofs.Paper1PassiveKCohort
 import CurrentProofs.Paper1GeneralMemoryLower
+import CurrentProofs.Paper1Jackson
+import CurrentProofs.Paper1JacksonPoly
+import CurrentProofs.Paper1GeneralMemoryUpper
