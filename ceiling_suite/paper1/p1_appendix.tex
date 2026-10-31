@@ -278,6 +278,36 @@ D: generalized eigenvector & 0.03 & 2{,}359.7 & 3.7 & 0.050 (0.003) & 2{,}632.77
 \subsection{Coordinate-weighted output}\label{app:coordw}
 For $J=\begin{psmallmatrix}a&\kappa q\\ \eta a&1-\eta+\eta\kappa q\end{psmallmatrix}$ with $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.3$ ($\rho(J)=0.8224$, non-normal), the price output has $\sup_t\|e_x^\top J^t\|=1$. The weighted output $C_w=(1,\lambda/{\rm MMR})=(1,160)$ with $\lambda=0.8$ and ${\rm MMR}=0.005$ has $\sup_t\|C_wJ^t\|=\|C_w\|=160.003$, attained at $t=0$, then $122.32$, $98.32$, $80.79$ \lab{recomputed in closed form}. The factor 160 is a static coordinate weight; $C_wz$ is not a margin quantity because $z$ contains no inventory. Margin must be computed on a cash-and-inventory ledger.
 
+\subsection{Real-noise injection: requirements at each spacing}\label{app:injection}
+
+Table~\ref{tab:injectionfull} gives the requirements behind Table~\ref{tab:injection}. $N^*$ is read off the grid $2^{j/2}$, so neighbouring values differ by a factor $\sqrt2$, and a ratio of $\sqrt2$ or $1/\sqrt2$ between the two arms is one grid step. Entries above $4{,}096$ use the central-limit draw described in Section~\ref{sec:injection}.
+
+\begin{table}[!htbp]\centering\small
+\begin{threeparttable}
+\caption{Real-noise injection: number of experiments $N^*$ at each spacing}\label{tab:injectionfull}
+\begin{tabular}{lrrrrr}
+\toprule
+ & $\Delta\eta$ & Price, real & Price, Gaussian & Tagged, real & Tagged, Gaussian\\
+\midrule
+$K=2$ & 0.500 & 64 & 64 & 724 & 1{,}024\\
+ & 0.400 & 362 & 362 & 362 & 512\\
+ & 0.320 & 1{,}448 & 1{,}024 & 362 & 362\\
+ & 0.250 & 5{,}793 & 5{,}793 & 256 & 256\\
+ & 0.200 & 16{,}384 & 23{,}170 & 256 & 362\\
+ & 0.160 & 65{,}536 & 92{,}682 & 256 & 256\\
+ & 0.125 & 370{,}728 & 370{,}728 & 256 & 256\\
+\midrule
+$K=3$ & 0.60 & 23{,}170 & 16{,}384 & & \\
+ & 0.50 & 65{,}536 & 65{,}536 & & \\
+ & 0.40 & 741{,}455 & 741{,}455 & & \\
+ & 0.32 & 8{,}388{,}608 & 5{,}931{,}642 & & \\
+ & 0.25 & 94{,}906{,}266 & 94{,}906{,}266 & & \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Real noise: 30{,}219 one-minute log-price changes of Binance BTCUSDT on 21 days (the 6th of each month, January 2025 to September 2026), kurtosis 19.4. Tagged requirements were computed for $K=2$ only. Kind: semi-synthetic.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
 \section{Reproducibility: source of every number}\label{app:repro}
 
 The replication package contains numbered Colab notebooks and stand-alone scripts; its README lists them in run order. ``Part $N$'' below and in table notes refers to notebook $N$ (Part 1: theorem checks and spot tests; Part 2: BTCUSDT futures depth; Parts 4--13: the cross-section, replications, fresh-day tests, second venues, the CFTC test, the certified guard and post-hoc checks). Result identifiers such as \texttt{X6} or \texttt{U6} name the JSON file that the notebook writes. ``Kind'' distinguishes closed-form or simulation results (recomputed), results from public market data (real data), and audits.
@@ -340,6 +370,9 @@ Section~\ref{sec:disc_data} and Table~\ref{tab:scorecard}: horizon-matched test 
 Section~\ref{sec:disc_data}: exploratory 48- and 96-lag refit (median 7.5) & \texttt{thesis/evidence/pilot3\_horizon\_matched\_results.json} & real data (exploratory)\\
 Section~\ref{sec:disc_data} and Table~\ref{tab:scorecard}: 105-day follow-up (median ratio 74.9; 9 identified; 10 of 30, 23 required) & \texttt{thesis/evidence/E1v2\_results.json} & real data\\
 Section~\ref{sec:disc_data} and Table~\ref{tab:scorecard}: 58-day follow-up (22 of 29; 20 of 29, 22 required) & \texttt{thesis/evidence/D1\_results.json} & real data\\
+Section~\ref{sec:injection}, Tables~\ref{tab:injection}, \ref{tab:injectionfull} and~\ref{tab:scorecard}: real-noise injection (slopes $-6.01$, $-9.81$; tagged 256--724) & \path{p1_injection/injection_test.py}, \path{I1_injection_test} (specification \path{p1_injection/prereg/P1_injection.json}, 596a700d\ldots) & semi-synthetic\\
+Section~\ref{sec:cot}: post hoc robustness (futures prices, roll weeks, 26- and 52-week blocks) & \path{p11/robustness_cot.py}, \path{C4R_cot_robustness} & real data (post hoc)\\
+Section~\ref{sec:cot} and Table~\ref{tab:scorecard}: class-flow test (3 of 8; $F\ge10$ in 7; $w\ne0$ in 6) & \path{p11/tagged_flow_test.py}, \path{C5F_cot_tagged_flow} (specification \path{p11/prereg_flow/P11F_cot_tagged_flow.json}, 052a63f2\ldots) & real data\\
 \end{longtable}
 
 

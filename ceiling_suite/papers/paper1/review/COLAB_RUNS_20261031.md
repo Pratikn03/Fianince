@@ -50,3 +50,13 @@ run crashes before it finishes, tell me before running it again (a crash before 
   was dry-run on synthetic Student-t noise. A and C were dry-run on fake data with the network switched off.
 * If Colab cannot reach Yahoo Finance, the CFTC API or the Binance archive, the scripts stop with a message;
   send me the message.
+
+## Results (returned 31 October 2026, each run opened once)
+
+Console output: `colab_console_20261031.txt` (verbatim). Result JSON and unlock files still to be committed.
+
+| Run | Outcome | In the paper |
+|---|---|---|
+| A. Robustness | Futures prices: H1 8/8, H2 4/8, H3 6/8, every sign of w_fast unchanged (the basis does not make the negative signs). 26/52-week blocks: counts unchanged; Bitcoin's w interval includes zero. Roll weeks removed: H1 8, H2 4, **H3 4 of 8**, Treasury w turns negative. | Section 6.3 paragraph "Post hoc robustness"; tab:cot note |
+| B. Real-noise injection | **PASS.** K=2 price slope -6.01 (band [-7.5,-4.5]); tagged N* 256-724, max/min 2.83 (<= 8); K=3 slope -9.81 (band [-12.5,-7.5]). Real/Gaussian within one grid step everywhere. Limit: N* > 4096 uses the CLT draw (tails not kept); all tagged points and the first three K=2 price points are exact. | New main subsection sec:injection, tab:injection; Supplement tab:injectionfull; scorecard rows; abstract; introduction |
+| C. CFTC tagged flow | **FAIL** (H1 3 of 8; 6 required). H2 first-stage F >= 10 in 7 of 8 (pass); H3 w excludes zero in 6 of 8 (pass), same signs as positions. | Section 6.3 paragraph "Class flows: a pre-specified test that failed"; scorecard row; abstract; introduction |

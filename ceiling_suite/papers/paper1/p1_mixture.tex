@@ -184,6 +184,32 @@ Fitted slope of $N^*$ in $\Delta\eta$ (Prony) & $-5.94$ & $-10.00$ & $-13.93$ & 
 \end{threeparttable}
 \end{table}
 
+\subsection{Do the rates survive real market noise?}\label{sec:injection}
+
+Theorems~\ref{thm:kcohort} and~\ref{prop:esprit} are proved for observation errors that are independent and Gaussian, and Table~\ref{tab:kupper} checks them with Gaussian noise. Real price changes are different: one-minute returns have heavy tails and their volatility comes in clusters. To see whether the rates depend on the Gaussian assumption, we ran a pre-specified test (SHA-256 \texttt{596a700da2e4\ldots}, opened once) in which the trader groups are synthetic, with known memory spacing, and only the noise is real. Each reset experiment returns the price response to a unit impulse plus a window of consecutive one-minute log-price changes of Binance BTCUSDT, demeaned and scaled to unit variance. The changes come from 21 days, the 6th of each month from January 2025 to September 2026, that are used nowhere else in this project; their kurtosis is 19.4, against 3 for Gaussian noise. With class tagging, the experiment also returns each group's flow response, observed through independent windows of the same noise. A control arm uses i.i.d.\ Gaussian noise of the same variance. For each spacing, $N^*$ is the smallest number of experiments at which every recovered weight lies within 25\% of the smallest true weight in at least 75\% of 200 replications, using Prony's method on prices alone or the per-group regression of Proposition~\ref{prop:tagged} with tagging. The noise level and the spacing grids were fixed on Gaussian noise alone, before any real noise was downloaded.
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Sample requirement with real Bitcoin price noise: fitted slope of $\log N^*$ in $\log\Delta\eta$}\label{tab:injection}
+\begin{tabular}{lccccl}
+\toprule
+ & Theory & Real noise & Gaussian control & Pre-specified criterion & Result\\
+\midrule
+Price only, $K=2$ (H1) & $-6$ & $-6.01$ & $-6.22$ & slope in $[-7.5,-4.5]$ & pass\\
+Tagged, $K=2$ (H2) & bounded & 256--724 & 256--1{,}024 & max/min $\le8$ & pass (2.8)\\
+Price only, $K=3$ (H3) & $-10$ & $-9.81$ & $-9.96$ & slope in $[-12.5,-7.5]$ & holds\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Synthetic groups at rates $r_c+\Delta\eta\,s$ ($s$ the $K$-point Gauss nodes; $r_c=0.6$ and $\Delta\eta$ from 0.5 to 0.125 for $K=2$, $r_c=0.5$ and $\Delta\eta$ from 0.6 to 0.25 for $K=3$), $a=0.5$, $\kappa=0.8$, total weight 0.08, $\sigma=10^{-3}$, $\sigma_f=0.02$. The test passes if H1 and H2 hold; H3 is reported either way. The tagged row gives the range of $N^*$ over the spacing grid. Requirements at each spacing are in Supplement Table~\ref{tab:injectionfull}. Specification SHA-256 \texttt{596a700da2e4\ldots}; opened once. Kind: semi-synthetic (synthetic groups, real noise).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+Both pre-specified hypotheses hold, so the test passes (Table~\ref{tab:injection}). With real noise, the price-only requirement for two groups rises from 64 experiments at $\Delta\eta=0.5$ to $370{,}728$ at $\Delta\eta=0.125$, a factor of about 5{,}800, and the fitted slope is $-6.01$; for three groups it is $-9.81$. Over the same grid the tagged requirement stays between 256 and 724 experiments, and it falls slightly rather than rises as the spacing shrinks. At every spacing the real-noise requirement is within one step of the grid (a factor $\sqrt2$) of the Gaussian control.
+
+The test has a limit, stated in its specification. Averages of $N$ real windows are resampled exactly up to $N=4{,}096$; beyond that they are drawn as Gaussian vectors with the real windows' covariance, as the central limit theorem suggests. That keeps the correlation between neighbouring minutes but not the heavy tails. All tagged requirements and the first three price-only spacings for two groups are in the exact range; the other four price-only points for two groups, and all points for three groups, rely on the approximation. The test therefore shows that heavy tails leave the requirement unchanged at the sample sizes where they can be used directly, and that the rate does not change when the noise is correlated as real noise is. It does not show how heavy tails act at sample sizes in the millions, where averaging makes them matter less.
+
+\paragraph{In words.} The steep cost of telling groups apart is not an artefact of Gaussian noise. With real Bitcoin price noise, halving the spacing between two groups still multiplies the number of experiments by about 64, while class-tagged records keep the requirement flat.
+
 \subsection{Near-colliding rates: a uniform rate for the merged measure}\label{sec:uniform}
 
 Theorem~\ref{prop:esprit} needs the rates to stay $\gamma$-separated and every weight to stay away from zero. Neither restriction can be dropped for weight recovery: two atoms of weights $w$ and $W-w$ at rates $r$ and $r+\Delta$ and two of weights $W-w$ and $w$ at the same rates have merged measures that converge to the same measure as $\Delta\to0$, so no estimator recovers the individual weights uniformly over near-colliding economies. What can be recovered uniformly is the merged measure itself, in the permutation-invariant Wasserstein distance.
