@@ -115,7 +115,34 @@ if ARGS.ssrn:
          "reflects how slowly positions turn over, so these data restrict how persistent class positions are, not "
          "learning memory itself.\n\n"),
     ]
-    FLOAT_MOVES = ["tab:glossary", "fig:impulse", "tab:mcerr", "fig:knownpair", "tab:lecam", "tab:radau",
+    MOVES += [
+        # Introduction to about four pages: detail moves to the supplement, each with a short replacement.
+        ("\\paragraph{Why this matters for finance.}", "\\paragraph{What the data show.}",
+         "Who the results matter for}\\label{app:whomatters",
+         "\\paragraph{Why this matters for finance.} Supervisors learn which data to require for which question, "
+         "exchanges learn which questions their account-level data already answer, risk managers get a realistic limit "
+         "on what can be inferred about other traders, and researchers get one reason why models with several trader "
+         "types are hard to estimate (Supplement~\\ref{app:whomatters}).\n\n"),
+        ("\\paragraph{Robustness, a new failure and real noise.}", "\\paragraph{Two supplementary results.}",
+         "Robustness checks, the failed tests and real noise}\\label{app:introrobust",
+         "\\paragraph{Passes and failures.} Table~\\ref{tab:scorecard} in the supplement lists all fifteen empirical "
+         "tests with their predictions and outcomes: eight passed or held, six failed and one secondary prediction was "
+         "not supported. The failures are part of the evidence: the CFTC's designated speculative class trend-followed in "
+         "only four of eight markets; the reports read as weekly flows did not pin down how persistent that flow is; "
+         "positions showed no distinct faster root that could be learning memory; Binance prices pinned down the combined "
+         "response in only 5 of 30 markets, and the combined response was far cheaper to learn than the separate rates in "
+         "only 10 of 30 in a longer follow-up; and class data did not improve return forecasts. Supplement~"
+         "\\ref{app:introrobust} reports the robustness checks.\n\n"),
+        ("\\paragraph{Two supplementary results.}", "\\paragraph{Contribution.}",
+         "Two supplementary results}\\label{app:twosupp",
+         "Two supplementary results, on markets that share eigenvalues and price variance but not short-run risk and on "
+         "how reduced-form feedback is measured, are summarized in Supplement~\\ref{app:twosupp}.\n\n"),
+        ("\\paragraph{How to read the paper.}", "\\paragraph{What we do not claim.}",
+         "How to read the paper, and the main symbols}\\label{app:howtoread",
+         "\\paragraph{How to read the paper.} Every main result is followed by a short paragraph headed ``In words''; "
+         "Supplement~\\ref{app:howtoread} gives a reading guide and the main symbols in plain words.\n\n"),
+    ]
+    FLOAT_MOVES = ["fig:impulse", "tab:mcerr", "fig:knownpair", "tab:lecam", "tab:radau",
                    "tab:kcohort", "fig:kcohort", "tab:kupper", "tab:target"]
     MAP_TO_SUPPLEMENT = True
 else:

@@ -330,6 +330,33 @@ Value of disclosure, Theorem~\ref{thm:discvalue} & Tagged and price-only require
 \end{threeparttable}
 \end{table}
 
+
+\subsection{Probing a running market without resets}\label{app:running}
+The probing results count independent experiments that each start from the reset state, which no outside participant can arrange in a live market. As a numerical check, not a proof and not a pre-specified test, we drop the resets. The observer sends a known i.i.d.\ $\pm1$ probe into one long stationary run of the closed loop of Table~\ref{tab:injection} ($K=2$, $a=0.5$, $\kappa=0.8$, total weight $0.08$, $r_c=0.6$), which is also driven by its own price innovations $w_t\sim N(0,\sigma_w^2)$; prices are observed with noise $\nu_t\sim N(0,\sigma_\nu^2)$, $\sigma_\nu=10^{-3}$ as in the reset experiments. The groups' state is never reset or known: its free response is part of the noise. The observer estimates the response taps $h_1,\ldots,h_4$ by least squares of the observed price on the current and 200 lagged probe values, then applies the same Prony estimator and success rule as Table~\ref{tab:kupper} (every weight within 25\% of the smallest true weight in at least 75\% of 200 replications). Because the probe is white and independent of the noise, the least-squares error is asymptotically Gaussian with covariance $\Gamma_e/T$, where $\Gamma_e$ is the autocovariance of the regression residual; the required number of periods $T^*$ is computed from this law, which we checked against 120 simulated runs of $10^5$ periods at $\Delta\eta=0.5$ (standard deviation of the tap estimates 5.44 to 6.05$\times10^{-6}$ against 5.35$\times10^{-6}$ predicted).
+
+Table~\ref{tab:running} shows that the order survives: the number of periods grows with fitted slopes -6.26 and -6.22 in $\Delta\eta$, against -5.87 for reset experiments and $-6$ in theory. The constant is larger, because the market's own innovations and the groups' unknown state add noise: with $\sigma_w=\sigma_\nu$ a running market needs 1.4 to 2.8 times as many periods as the reset benchmark needs experiments, and with $\sigma_w=3\sigma_\nu$ four to six times as many (the grid of $T$ and $N$ has steps of $\sqrt2$). Since every reset experiment itself uses at least $2K+1$ periods, the running market is not slower in calendar time. What the check does not show is that a live prober can trade a $\pm1$ sequence every period at the prices assumed, or that other traders ignore it; those are the strategic-response caveats of Section~\ref{sec:observer}.
+
+\begin{table}[!htbp]\centering\small
+\begin{threeparttable}
+\caption{Probing with and without resets: required reset experiments $N^*$ and required periods $T^*$ of one running market}\label{tab:running}
+\begin{tabular}{lccc}
+\toprule
+$\Delta\eta$ & Reset experiments $N^*$ & Running market $T^*$, $\sigma_w=\sigma_\nu$ & Running market $T^*$, $\sigma_w=3\sigma_\nu$\\
+\midrule
+0.5 & 91 & 128 & 362\\
+0.4 & 362 & 512 & 1{,}448\\
+0.32 & 1{,}024 & 2{,}048 & 5{,}793\\
+0.25 & 5{,}793 & 8{,}192 & 32{,}768\\
+0.2 & 23{,}170 & 32{,}768 & 131{,}072\\
+0.16 & 65{,}536 & 185{,}364 & 370{,}728\\
+\midrule
+Fitted slope in $\Delta\eta$ & $-5.87$ & $-6.26$ & $-6.22$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Numerical check, not pre-specified. $K=2$ Gauss-node economy of Table~\ref{tab:injection}; i.i.d.\ $\pm1$ probe; least squares on 200 probe lags; Prony estimator and success rule as in Table~\ref{tab:kupper}. Source: \path{p1_running/running_market.py}, \path{p1_running/results/R1_running_market.json}.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
 \section{Reproducibility: source of every number}\label{app:repro}
 
 The replication package contains numbered Colab notebooks and stand-alone scripts; its README lists them in run order. ``Part $N$'' below and in table notes refers to notebook $N$ (Part 1: theorem checks and spot tests; Part 2: BTCUSDT futures depth; Parts 4--13: the cross-section, replications, fresh-day tests, second venues, the CFTC test, the certified guard and post-hoc checks). Result identifiers such as \texttt{X6} or \texttt{U6} name the JSON file that the notebook writes. ``Kind'' distinguishes closed-form or simulation results (recomputed), results from public market data (real data), and audits.
@@ -394,6 +421,7 @@ Section~\ref{sec:disc_data} and Table~\ref{tab:scorecard}: 105-day follow-up (me
 Section~\ref{sec:disc_data} and Table~\ref{tab:scorecard}: 58-day follow-up (22 of 29; 20 of 29, 22 required) & \texttt{thesis/evidence/D1\_results.json} & real data\\
 Section~\ref{sec:injection}, Tables~\ref{tab:injection}, \ref{tab:injectionfull} and~\ref{tab:scorecard}: real-noise injection (slopes $-6.01$, $-9.81$; tagged 256--724) & \path{p1_injection/injection_test.py}, \path{p1_injection/results/I1_injection_test.json} (specification \path{p1_injection/prereg/P1_injection.json}, 596a700d\ldots) & semi-synthetic\\
 Supplement~\ref{app:stress} and Table~\ref{tab:stress}: numerical stress tests & \path{p1_stress/stress_theorems.py}, \path{p1_stress/results/S1_stress_tests.json} & numerical check\\
+Appendix~\ref{app:running} and Table~\ref{tab:running}: probing a running market without resets & \path{p1_running/running_market.py}, \path{p1_running/results/R1_running_market.json} & numerical check\\
 Theorem~\ref{thm:merged}(i), Theorem~\ref{thm:kcohort} and Proposition~\ref{prop:tagged} (machine-checked parts) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1MergedModel.lean}, \path{Paper1Identification.lean}, \path{Paper1MomentGap.lean}, \path{Paper1PoleCount.lean}, \path{Paper1FiniteIdentification.lean}, \path{Paper1Tagged.lean}, \path{Paper1Testing.lean}, \path{Paper1LowerBound.lean}, \path{Paper1MatchedPair.lean} & Lean 4 proof\\
 Theorem~\ref{prop:esprit} (machine-checked, every $K$) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1PronyUpper.lean}, \path{Paper1PronyMoment.lean}, \path{Paper1PronyDeconv.lean}, \path{Paper1UniformInverse.lean} & Lean 4 proof\\
 Theorems~\ref{thm:merged}(ii), \ref{thm:blind}, \ref{thm:minphase} (zeros), \ref{thm:discvalue}(ii) (tagged upper bound) and Proposition~\ref{prop:tagged} (instrument determinant), machine-checked parts & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1MergedSeparation.lean}, \path{Paper1Blind.lean}, \path{Paper1MinPhase.lean}, \path{Paper1TaggedRates.lean}, \path{Paper1TaggedIV.lean} & Lean 4 proof\\
