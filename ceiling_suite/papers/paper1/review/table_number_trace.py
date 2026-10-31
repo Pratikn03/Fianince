@@ -37,7 +37,7 @@ def nums(seg):
 report=[]
 for lab in re.findall(r"\\label\{(tab:[^}]+)\}",body):
     rows=[r for r in mp.split("\\\\") if "\\ref{"+lab+"}" in r]
-    ids=[x for r in rows for x in re.findall(r"\\texttt\{((?:[^{}]|\{[^{}]*\})*)\}",r)]
+    ids=[x for r in rows for x in re.findall(r"\\(?:texttt|path)\{((?:[^{}]|\{[^{}]*\})*)\}",r)]
     k=body.index("\\label{"+lab+"}"); s=body.rfind("\\begin{table",0,k); e=body.find("\\end{table}",k)
     seg=body[s:e]
     tb=seg[seg.find("\\begin{tabular"):seg.find("\\end{tabular}")]

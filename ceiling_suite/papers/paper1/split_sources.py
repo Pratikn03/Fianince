@@ -35,6 +35,10 @@ def main():
             (d / f"{name}.tex").write_text(part)
         if d != HERE:
             (d / "paper1.tex").write_text(src)
+            # paper1.tex \input's the vendored dev_register files; the mirror must carry them too (CI compiles it)
+            import shutil
+            if (HERE / "dev_register").is_dir():
+                shutil.copytree(HERE / "dev_register", d / "dev_register", dirs_exist_ok=True)
     print("split sources regenerated from paper1.tex (" + ", ".join(NAMES) + ")")
 
 
