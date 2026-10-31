@@ -74,3 +74,4 @@ import CurrentProofs.Paper1TaggedIV
 import CurrentProofs.Paper1GaussianTriangular
 import CurrentProofs.Paper1PassiveRecord
 import CurrentProofs.Paper1PassiveCost
+import CurrentProofs.Paper1PassiveKCohort
