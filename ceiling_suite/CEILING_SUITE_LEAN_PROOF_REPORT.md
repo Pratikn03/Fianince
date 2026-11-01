@@ -12,8 +12,8 @@
 
 | # | Environment | Label | Title | LaTeX Source | Mathlib (`ℝ`) Theorem | Core Lean (`Rat`) Theorem |
 |---|---|---|---|---|---|---|
-| 1 | `lemma` | `lem:micro` | Two motivating examples: filtering and learning | `p1_front.tex:301` | `CurrentMM.p1_prop_kalman_memory, CurrentMM.p1_prop_ogd_memory` (L52) | `MachineMarkets.p1_prop_kalman_memory, MachineMarkets.p1_prop_ogd_memory` (L13) |
-| 2 | `lemma` | `lem:cm` | Positive price-response geometry | `p1_front.tex:319` | `CurrentMM.p1_lem_cm_positive_response` (L102) | `MachineMarkets.p1_lem_cm_positive_geometry` (L29) |
+| 1 | `lemma` | `lem:micro` | Two motivating examples: filtering and learning | `p1_front.tex:309` | `CurrentMM.p1_prop_kalman_memory, CurrentMM.p1_prop_ogd_memory` (L52) | `MachineMarkets.p1_prop_kalman_memory, MachineMarkets.p1_prop_ogd_memory` (L13) |
+| 2 | `lemma` | `lem:cm` | Positive price-response geometry | `p1_front.tex:327` | `CurrentMM.p1_lem_cm_positive_response` (L102) | `MachineMarkets.p1_lem_cm_positive_geometry` (L29) |
 | 3 | `theorem` | `thm:merged` | Merged rate--weight equivalence | `p1_ident.tex:5` | `CurrentMM.p1_thm_merged_equivalence_and_resolvent` (L129) | `MachineMarkets.p1_thm_merged_equivalence` (L38) |
 | 4 | `theorem` | `thm:quantity` | Sharp probing-resource orders for a known symmetric pair | `p1_ident.tex:36` | `CurrentMM.p1_thm_quantity_sharp_orders` (L149) | `MachineMarkets.p1_thm_quantity_orders` (L44) |
 | 5 | `lemma` | `lem:toeplitz` | Fair execution | `p1_ident.tex:93` | `CurrentMM.p1_lem_toeplitz_fair_execution` (L167) | `MachineMarkets.p1_lem_toeplitz_fair_execution` (L53) |
@@ -43,11 +43,11 @@
 | 29 | `theorem` | `thm:blind` | Spectral blindness | `p1_disclosure.tex:304` | `CurrentMM.p1_thm_blind_spectral_blindness` (L596) | `MachineMarkets.p1_thm_spectral_blindness` (L211) |
 | 30 | `theorem` | `thm:abstain` | Finite-window abstention | `p1_appendix.tex:208` | `CurrentMM.p1_thm_abstain_finite_window` (L646) | `MachineMarkets.p1_thm_abstain_finite_window` (L228) |
 | 31 | `proposition` | `prop:passive0` | Passive distinction with zero controlled quantity | `p1_appendix.tex:224` | `CurrentMM.p1_prop_passive0_three_step_blocks` (L260) | `MachineMarkets.p1_prop_passive0_distinction` (L79) |
-| 32 | `lemma` | `fhc:capacity` | Sharp prior bounds and exact prefunded capacity | `p1_appendix.tex:739` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 33 | `lemma` | `fhc:nodata-chance` | No data at the same error budget | `p1_appendix.tex:791` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 34 | `theorem` | `fhc:decision` | Uniform cost-aware finite-horizon decision | `p1_appendix.tex:816` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 35 | `theorem` | `fhc:pair` | A two-cohort identification obstruction under the same observations | `p1_appendix.tex:895` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
-| 36 | `corollary` | `fhc:priced` | A priced separation | `p1_appendix.tex:965` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 32 | `lemma` | `fhc:capacity` | Sharp prior bounds and exact prefunded capacity | `p1_appendix.tex:740` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 33 | `lemma` | `fhc:nodata-chance` | No data at the same error budget | `p1_appendix.tex:792` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 34 | `theorem` | `fhc:decision` | Uniform cost-aware finite-horizon decision | `p1_appendix.tex:817` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 35 | `theorem` | `fhc:pair` | A two-cohort identification obstruction under the same observations | `p1_appendix.tex:896` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
+| 36 | `corollary` | `fhc:priced` | A priced separation | `p1_appendix.tex:966` | `UNMAPPED` (LNone) | `UNMAPPED` (LNone) |
 
 ## Paper 2 — Transient Amplification & Summed-Gain Guard (`paper2/`)
 
