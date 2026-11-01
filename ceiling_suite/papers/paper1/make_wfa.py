@@ -143,6 +143,44 @@ if ARGS.ssrn:
          "Two supplementary results}\\label{app:twosupp",
          "Two supplementary results, on markets that share eigenvalues and price variance but not short-run risk and on "
          "how reduced-form feedback is measured, are summarized in Supplement~\\ref{app:twosupp}.\n\n"),
+        # 1 Nov 2026 tightening: three more blocks move unchanged to the supplement with short summaries.
+        ("\\paragraph{How large are the costs? A hypothetical illustration.}", "\\paragraph{Why this matters for finance.}",
+         "How large are the costs? A hypothetical illustration}\\label{app:hypocost",
+         "\\paragraph{How large are the costs?} In a hypothetical benchmark (Supplement~\\ref{app:hypocost}), an outside "
+         "trader that re-learned two unknown algorithms each week with test trades would lose at least \\$15 million to "
+         "\\$356 million a year per market. Regulators do not trade to learn; the figure prices the information that "
+         "labelled records deliver without any trading.\n\n"),
+        ("\\subsection{Execution cost}", "A worked example with two Kalman desks",
+         "Execution cost and capital}\\label{app:capital",
+         "\\subsection{Execution cost and capital}\nSupplement~\\ref{app:capital} puts the quantity bound into money. "
+         "Executing a probe against a linear book costs a positive-definite quadratic form in the probe, so no round "
+         "trip yields a sure gain (Lemma~\\ref{lem:toeplitz}). A counterparty that fills the probe needs margin that grows "
+         "with the square of the probe, so the capital needed grows as $1/\\delta^4$: halving the difference between "
+         "two memories multiplies it by sixteen (Theorem~\\ref{thm:cap}); the same order holds for capital paid by the "
+         "probe trader (Lemma~\\ref{thm:capital}). If the observer can instead see an account's exact equity, one test "
+         "trade settles the question (Proposition~\\ref{prop:disclosure}): the difficulty lies in what the observer is "
+         "allowed to see, not in the market.\n\n"),
+        ("\\subsection{Why naive pole fitting fails}", "\\subsection{Many unknown cohorts}",
+         "Two unknown cohorts: pole fitting and the global two-point bound}\\label{app:twocohort",
+         "Two facts from the case of two cohorts carry over (Supplement~\\ref{app:twocohort}). Fitting poles to the price "
+         "response targets the closed-loop eigenvalues and misses the memory rates, which are zeros of the transfer "
+         "function. And for two unknown groups no estimator, biased or not, separates them with fewer than order "
+         "$(\\Delta\\eta)^{-6}$ experiments (Theorem~\\ref{thm:twocohort}), while the two hardest-to-separate economies "
+         "have the same summed price response, so what prices cannot see carries no market-wide risk "
+         "(Remark~\\ref{rem:riskneutral}). The general case follows.\n\n"),
+        ("\\paragraph{Three ways to learn more, and what each costs.}", "\\paragraph{How large are the costs?",
+         "Three ways to learn more, and what each costs}\\label{app:threeways",
+         "\\paragraph{Three ways to learn more.} An observer that wants more than prices can wait and watch, which costs "
+         "time and needs at least as many observations as an active prober needs experiments (Theorem~\\ref{prop:passive}); "
+         "trade against the groups, which costs money, with capital rising as $1/\\delta^4$ (Theorem~\\ref{thm:cap}); or "
+         "acquire labelled records, which costs whatever the reporting system costs but removes the explosion in data "
+         "(Theorem~\\ref{thm:discvalue}). Supplement~\\ref{app:threeways} gives the details.\n\n"),
+        ("\\paragraph{When is disclosure worth its cost?}", "\\paragraph{A decision in which attribution matters.}",
+         "When an audit trail is chosen}\\label{app:choice",
+         "\\paragraph{When is disclosure worth its cost?} In a stylised cost comparison (Proposition~\\ref{prop:choice}, "
+         "Supplement~\\ref{app:choice}), a supervisor prefers an audit trail when the harm from slow attribution exceeds "
+         "the trail's cost per market. Disclosure is most valuable in a middle band of memory spacings, where prices are "
+         "too slow and labels are fast, and only when the trail covers enough markets to share its fixed cost.\n\n"),
         ("\\paragraph{How to read the paper.}", "\\paragraph{What we do not claim.}",
          "How to read the paper, and the main symbols}\\label{app:howtoread",
          "\\paragraph{How to read the paper.} Every main result is followed by a short paragraph headed ``In words''; "
@@ -175,6 +213,8 @@ for mv in MOVES:
         moved.append("\\section{Internet appendix: " + title + "}" + body)
 _floats = []
 for lab in FLOAT_MOVES:
+    if ("\\label{" + lab + "}") not in core:      # already moved with its block
+        continue
     k = core.index("\\label{" + lab + "}")
     b0 = max(core.rfind("\\begin{table}", 0, k), core.rfind("\\begin{figure}", 0, k))
     env = "table" if core.startswith("\\begin{table}", b0) else "figure"

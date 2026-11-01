@@ -70,26 +70,28 @@ This paper asks a question that supervisors now face when they decide which trad
 
 The question matters now. Trading is passing to learning algorithms and AI agents \citep{colliard2022,dou2025}, and regulators have begun to require firms to say which algorithm sent each order. Under MiFID II, EU trading venues must keep order records that identify the person or algorithm responsible for each investment and execution decision \citep{rts24,esma2016}. The US Consolidated Audit Trail (CAT) is designed to record each order in US-listed stocks and options, and the account behind it, across exchanges and broker-dealers; its revised 2026 budget, published in March 2026, is about \$147 million \citep{sec2012,catbudget2026}. Such systems serve many purposes, among them enforcement, rebuilding market events after the fact, and surveillance. One question they raise, and the one we study, is how much of the information about who drives price moves could instead be learned from public data, and at what cost.
 
-\paragraph{The short answer.} Prices tell an observer less than one might hope, and sharpening what they do tell is expensive.
-\begin{itemize}[itemsep=1pt]
-\item Prices reveal one combined summary of all the trader groups, not the groups themselves. Two groups that react to prices with the same memory look exactly like one larger group, however much price data is collected (Theorem~\ref{thm:merged}).
-\item This splits supervision in two. A market-wide measure, a limit or slowdown applied to everyone, depends only on that combined summary and can be sized from public prices. A targeted measure, pausing one algorithm while the others keep trading, depends on the parts: there are pairs of markets that look almost identical in prices, in one of which halting the largest group restores stability and in the other not (Proposition~\ref{prop:target}).
-\item Groups with different memories can be told apart in principle, but the data needed grow very fast as their memories get closer. For two unknown groups, halving the difference between their memories multiplies the data needed by 64; for three groups, by 1{,}024 (Theorems~\ref{thm:kcohort} and~\ref{prop:esprit}).
-\item Records that report each class's flow separately remove this problem. Each group then becomes an ordinary estimation problem that stays well conditioned however similar the groups are (Proposition~\ref{prop:tagged}).
-\end{itemize}
-We keep three statements apart throughout: what cannot be learned at all, what can be learned but only at high cost, and where estimates become unstable.
+\begin{center}\fcolorbox{gray!60}{gray!6}{\parbox{0.95\textwidth}{\small
+\textbf{The question.} A supervisor wants to know which group of traders drives prices. What can public prices tell it, what does it cost to learn the rest, and what are trader-class reports worth?\par\smallskip
+\textbf{The answer.}
+\begin{enumerate}[label=\arabic*.,leftmargin=1.4em,itemsep=1pt,topsep=2pt]
+\item \emph{Prices see the crowd, not the groups.} They reveal one combined summary of all the groups. Two groups with the same memory look exactly like one larger group, however much price data is collected (Theorem~\ref{thm:merged}).
+\item \emph{So supervision splits in two.} A market-wide measure, applied to everyone, can be sized from prices. Whether halting one group is enough cannot: two markets can look almost identical in prices while halting the largest group restores stability in one and not in the other (Proposition~\ref{prop:target}).
+\item \emph{Learning the groups from prices is very expensive.} The data needed grow as $(\Delta\eta)^{-(4K-2)}$ when the memories of $K$ groups are $\Delta\eta$ apart: halving the gap multiplies the data by 64 for two groups and by 1{,}024 for three (Theorems~\ref{thm:kcohort} and~\ref{prop:esprit}). If memory is a general mixture, accuracy improves only with the logarithm of the data (Theorem~\ref{thm:general}).
+\item \emph{Class records remove the cost.} When each class's flow is reported separately, the problem stays well conditioned however similar the groups are (Proposition~\ref{prop:tagged}). In 20 futures markets, the CFTC's weekly class report pins down the persistence of speculative positions 9 to 71 times more precisely than prices; matching it from prices alone would take about 1{,}350 times as much data at the median market (Figure~\ref{fig:summary}).
+\item \emph{What we do not show.} That this persistence is the traders' learning memory. Ten of the twenty-two predictions we tested failed, and Table~\ref{tab:scorecard} lists them.
+\end{enumerate}
+We keep three statements apart throughout: what cannot be learned at all, what can be learned but only at high cost, and where estimates become unstable.}}\end{center}
+
+\begin{figure}[!t]\centering
+\includegraphics[width=\textwidth]{figs/fig_summary.pdf}
+\caption{The paper in one figure. (a) Groups of traders reach the price only through the sum of their orders, so prices reveal the combined behaviour: enough to size a market-wide measure, not to decide whether halting one group is enough. (b) Pre-specified real-noise injection test (Supplement~\ref{sec:injection}): experiments needed to recover the groups' weights against the spacing of their memories, with real one-minute Bitcoin price noise; price-only requirements grow with slopes $-6.01$ (two groups) and $-9.81$ (three groups; theory $-6$ and $-10$), tagged requirements stay flat. (c) Post hoc: how many times more data a price-only analysis would need to match the precision of the CFTC's weekly class report, in the 20 markets of the registered tests (Table~\ref{tab:dataequiv}); every bar is a lower bound. Kind: registered results (b) and a calculation from registered results (c), \texttt{figs/make\_fig\_summary.py}.}\label{fig:summary}
+\end{figure}
 
 \paragraph{Why prices hide the groups.} The reason is the feedback loop. Algorithms trade on recent prices, their orders move prices, and those prices feed back into the algorithms. We model each group as tracking the price with a fading memory: recent prices count most, older prices count less, and one number, the group's memory rate, sets how fast the past fades. A desk behaves exactly this way if it uses a Kalman filter or a regularized online learning rule (Lemma~\ref{lem:micro}). Because every group reaches the price only through the sum of all their trades, the price records the total and loses the parts. Think of several people pushing the same door: from the door's movement one can learn the total push and how it builds and fades, but two people who push in the same rhythm look like one stronger person.
 
-\paragraph{Three ways to learn more, and what each costs.} An observer that wants to know more, whether a supervisor, an exchange's surveillance team or a large trading desk, has three options (Section~\ref{sec:observer}).
-\begin{enumerate}[label=(\alph*),itemsep=1pt]
-\item \emph{Wait and watch prices.} This costs time. In a stationary Gaussian market observed without error, a passive observer needs at least as many observations, in order of magnitude, as an active one needs experiments (Theorem~\ref{prop:passive}).
-\item \emph{Trade against the groups} and watch how the price responds, much as one taps a wall to find a hidden beam. Every test trade moves the price against the trader, so learning this way costs money. To tell one group from two groups whose memory rates differ by $2\delta$, the quantity traded grows like $1/\delta^{2}$ and the capital at risk like $1/\delta^{4}$: halve the difference and the capital needed rises sixteen-fold (Theorems~\ref{thm:quantity} and~\ref{thm:cap}). If memory is a general mixture of fading memories rather than a few exponentials (with the slowest bounded away from a random walk), accuracy improves only with the logarithm of the data, so halving the error squares the data needed (Theorem~\ref{thm:general}).
-\item \emph{Acquire labelled records}, such as audit-trail data or class-level position reports. This costs whatever the reporting system costs, but it removes the explosion in data: labels save a factor of order $(\Delta\eta)^{-(4K-2)}$ at fixed accuracy, where $K$ is the number of groups and $\Delta\eta$ the spacing of their memory rates (Theorem~\ref{thm:discvalue}).
-\end{enumerate}
-Proposition~\ref{prop:choice} says when each option is the cheapest.
+\paragraph{Three ways to learn more.} An observer that wants more than prices can wait and watch, which costs time and needs at least as many observations as an active prober needs experiments (Theorem~\ref{prop:passive}); trade against the groups, which costs money, with capital rising as $1/\delta^4$ (Theorem~\ref{thm:cap}); or acquire labelled records, which costs whatever the reporting system costs but removes the explosion in data (Theorem~\ref{thm:discvalue}). Supplement~\ref{app:threeways} gives the details.
 
-\paragraph{How large are the costs? A hypothetical illustration.} To give a sense of scale we price the trading option in a hypothetical benchmark. The model parameters are illustrative; only the size of the measurement noise is estimated, from Bitcoin data. An outside participant that re-learns two unknown algorithms each week with test trades would lose at least \$15 million to \$356 million a year per market; with three unknown algorithms it would lose more than \$40 million a year per market even when their memories are far apart (Supplement~\ref{sec:disc_dollars}). These are lower bounds for one stated way of learning, not estimates of what any regulator spends: regulators do not trade to learn. They are best read as the price of the information that labelled records deliver without any trading.
+\paragraph{How large are the costs?} In a hypothetical benchmark (Supplement~\ref{app:hypocost}), an outside trader that re-learned two unknown algorithms each week with test trades would lose at least \$15 million to \$356 million a year per market. Regulators do not trade to learn; the figure prices the information that labelled records deliver without any trading.
 
 \paragraph{Why this matters for finance.} Supervisors learn which data to require for which question, exchanges learn which questions their account-level data already answer, risk managers get a realistic limit on what can be inferred about other traders, and researchers get one reason why models with several trader types are hard to estimate (Supplement~\ref{app:whomatters}).
 
@@ -256,60 +258,8 @@ The identity in (iii) follows by direct substitution, and code checks it at $\de
 
 Figure~\ref{fig:impulse} shows why the problem is hard. The two economies have the same direct impact and the same first-lag response; they first differ at lag two, by an amount proportional to $\delta^2$, and the whole difference sequence scales with $\delta^2$. A test therefore needs the signal-to-noise ratio $V\|d\|/\sigma$ to grow like $\delta^{-2}$, which is the quantity order, and because the adverse mark of a probe grows with the square of its size, capital grows like $\delta^{-4}$.
 
-\subsection{Execution cost}
-
-A probe changes inventory as well as price. We therefore specify cash and execution timing. Price has units of currency per asset, and $\kappa$ currency per squared quantity.
-
-\begin{lemma}[Fair execution]\label{lem:toeplitz}
-For a quote schedule refreshed after the uncontrolled state update, execution at the average price of a linear book costs, relative to the constant fundamental mark,
-\begin{equation}\label{eq:cost}
-C(v)=\tfrac12v^\top T_hv+c\|v\|_1,\qquad (T_h)_{ij}=h_{|i-j|}.
-\end{equation}
-In the positive stable economy $T_h$ is positive definite, so no nonzero round trip produces a deterministic gain.
-\end{lemma}
-
-We verify the ledger identity \eqref{eq:cost} against an explicit cash account to $5.7\times10^{-13}$ on 1,000 random probes, and the smallest eigenvalue of $T_h$ over 1,000 random stable positive economies is $0.141$. A direct-only proxy $\sum\tfrac12\kappa v_t^2$ omits cross-time impact: for $v=(+1,-1)$ it gives $0.80$ against a true Toeplitz loss of $h_0-h_1=0.3488$.
-
-\subsection{Capital supplied by a counterparty}
-
-\begin{theorem}[Sharp robust quantity cap from cash and margin]\label{thm:cap}
-Use the positive, stable, reset economy with constant fundamental price $P_*>0$ and no process noise. A designated dealer fills only nonnegative probes $v_t\ge0$ at the average price $P^0_{t+1}+\kappa v_t/2$ of a linear schedule, holds inventory $I_{t+1}=I_t-v_t$ and cash $K_{t+1}=K_t+v_t(P^0_{t+1}+\kappa v_t/2)-cv_t$, starts with equity $B>0$, and must satisfy $\mu|I_t|P_t\le E_t$ at every time. For the robust contract admitting every probe with $\sum_tv_t\le V$, the largest allowance guaranteeing margin is
-\begin{equation}\label{eq:VB}
-V_B=\frac{2B}{\beta+\sqrt{\beta^2+4(\mu+\tfrac12)\kappa B}},\qquad\beta=c+\mu P_*,
-\end{equation}
-equivalently $(\mu+\tfrac12)\kappa V^2+(c+\mu P_*)V\le B$. The cap holds across all positive cohort representations with $S<1$, without resolving individual rates. An observer that receives only noisy prices and executed quantities has best error $\Phi[-V_B\|d_T\|_2/(2\sigma)]$ within this allowance; fixed error $\alpha<1/2$ requires capital of order at least $\delta^{-4}$, and a single positive pulse attains that order.
-\end{theorem}
-
-\paragraph{In words.} A probe moves the price against the account that makes it, so the margin it needs grows with the square of the probe. Because the probe grows like $1/\delta^2$, the capital grows like $1/\delta^4$: halving the difference multiplies the capital needed by 16.
-
-
-Even with zero initial inventory, the probe creates a quadratic adverse mark that a fixed initial price exposure would miss. Figure~\ref{fig:knownpair} illustrates the experiment.
-
-
-
-\begin{proposition}[Exact financial disclosure changes the experiment]\label{prop:disclosure}
-In this noiseless-state account, exact disclosure of the third equity mark after a single positive pulse $0<A\le V_B$ distinguishes the known pair with zero error for every $\delta>0$.
-\end{proposition}
-
-\paragraph{In words.} If the observer can see an account's exact equity, a single test trade settles the question, however close the two candidate markets are. The hard part of the problem is therefore not the market itself but what the observer is allowed to see.
-
-Exact marked equity is extra information, not a free observation assumed by the price-only theorem. Real account marks have their own precision: with reports rounded to $0.01$, a guaranteed change requires a larger trade (Section~\ref{sec:disclosure}).
-
-\subsection{Capital paid by the probe trader}
-
-\begin{lemma}[Time-domain Toeplitz coercivity: capital order for funded probes]\label{thm:capital}
-Use the same economy and execution law. The statistical observer receives only noisy prices and executed quantities. The probe trader starts with cash $B>0$ and zero inventory; a finite signed sequence $v$ changes inventory by $+v_t$ and cash by $K_{t+1}=K_t-v_t(P^0_{t+1}+\kappa v_t/2)-c|v_t|$, after which trading stops and the trader must remain solvent as the price returns to $P_*$. Put
-\[
-r=1-\epsilon(1-S)<1,\qquad m=\kappa\frac{1-r}{1+r}>0,\qquad K_*=\frac{2\kappa^2q}{\epsilon^3(1-S)^2}.
-\]
-Every solvent strategy satisfies $\KL(P_0^v\|P_\delta^v)\le K_*^2B\delta^4/(\sigma^2m)$, so error at most $\alpha<1/2$ requires
-\begin{equation}\label{eq:Bmin}
-B\;\ge\;\frac{2\sigma^2m(1-2\alpha)^2}{K_*^2\delta^4},
-\end{equation}
-without a quantity cap and at any horizon. Conversely, for any margin fraction $0<\mu\le1$, the pulse $A$ in \eqref{eq:pulse} achieves error $\alpha$ and remains margin-solvent at every later mark with capital $B_A=\tfrac{\kappa}{2}A^2+(c+\mu P_*)A$. Necessary and sufficient capital orders are $\delta^{-4}$.
-\end{lemma}
-
-Lemma~\ref{thm:capital} is an order statement: an elementary time-domain coercivity argument for Toeplitz forms that establishes the $\delta^{-4}$ rate before the exact frequency-domain optimization of Supplement~\ref{sec:account}. Its explicit constant is very conservative, because it scales as $m/K_*^2\propto\epsilon^7(1-S)^5$: at the calibrated parameters it is $4.9\times10^{-4}$ par units at $\delta=0.05$ with $\epsilon=0.35$, five orders of magnitude below any feasible design. We therefore state it as a lemma; Supplement~\ref{sec:account} computes the sharp constant, within 5\% of a feasible design at every separation.
+\subsection{Execution cost and capital}
+Supplement~\ref{app:capital} puts the quantity bound into money. Executing a probe against a linear book costs a positive-definite quadratic form in the probe, so no round trip yields a sure gain (Lemma~\ref{lem:toeplitz}). A counterparty that fills the probe needs margin that grows with the square of the probe, so the capital needed grows as $1/\delta^4$: halving the difference between two memories multiplies it by sixteen (Theorem~\ref{thm:cap}); the same order holds for capital paid by the probe trader (Lemma~\ref{thm:capital}). If the observer can instead see an account's exact equity, one test trade settles the question (Proposition~\ref{prop:disclosure}): the difficulty lies in what the observer is allowed to see, not in the market.
 
 A worked example with two Kalman desks that differ only in their signal-to-noise ratios (Supplement~\ref{sec:worked}) puts these orders into numbers.
 
@@ -317,47 +267,7 @@ A worked example with two Kalman desks that differ only in their signal-to-noise
 
 Theorem~\ref{thm:quantity} concerns a \emph{known} pair. A supervisor faces an unknown number of cohorts with unknown rates and weights. This section asks how fast the cost of recovering them grows.
 
-\subsection{Why naive pole fitting fails}
-
-Because the memory rates are zeros of $H$ (Theorem~\ref{thm:merged}), extracting poles directly from the price impulse response by matrix-pencil or Prony methods targets closed-loop eigenvalues. A four-step inversion repairs this: (1) decouple $g_t=h_{t+1}-ah_t$; (2) form a Hankel matrix of $g$ and compute a minimal realization by Kung's eigensystem realization; (3) compute its transmission zeros, which are the roots of the denominator of $G$; (4) project reconstructed flow onto the recovered memory filters to obtain the weights (Supplement~\ref{app:era}). Without noise this recovers $K=0$, $K=1$ and well-separated two-cohort systems exactly (Supplement~\ref{app:era}); with noise, per-cohort weights become unreliable once rates are close. The reason is information-theoretic, as the rest of this section shows.
-
-\subsection{A global two-point bound for any estimator}
-
-The Cram\'er--Rao benchmark of Proposition~\ref{prop:crb} applies only to regular unbiased estimators. Could biased, ridge, shrinkage or Bayesian estimators escape the $(\Delta\eta)^{-6}$ scaling? No.
-
-\begin{theorem}[Global two-point bound and matching upper bound, $K=2$]\label{thm:twocohort}
-In this theorem $w_k$ denotes cohort $k$'s trading intensity $q_k$, not the merged weight $q_k\eta_k$ of Section~\ref{sec:model}, and $\Delta\eta$ is the actual spacing of the two rates. Fix total intensity $q=0.20$, mean rate $\bar\eta=0.40$, target separation $\tau=0.01$, and $\Delta\eta\in(0,8/11)$ (so that $\bar\eta-p_+\Delta\eta>0$). Let $p_\mp=\tfrac12\mp\tau/q$ and
-\begin{equation}\label{eq:pair}
-\theta_0=(qp_-,qp_+,\bar\eta-p_+\Delta\eta,\bar\eta+p_-\Delta\eta),\qquad\theta_1=(qp_+,qp_-,\bar\eta-p_-\Delta\eta,\bar\eta+p_+\Delta\eta).
-\end{equation}
-\begin{enumerate}[label=(\roman*)]
-\item Label cohorts in increasing order of rate, so that weight vectors are compared rate by rate (as unordered sets the two weight vectors coincide). Both economies have spacing $\Delta\eta$, weight separation $\|w(\theta_1)-w(\theta_0)\|_\infty=2\tau$ in this labelling, and equal rate moments $M_m=\sum_kw_k\eta_k^m$ for $m\in\{0,1,2\}$, while
-\begin{equation}\label{eq:dM3}
-M_3(\theta_1)-M_3(\theta_0)=4\tau p_-p_+(\Delta\eta)^3 .
-\end{equation}
-Hence $\|h(\theta_1)-h(\theta_0)\|_2=\Theta(\tau(\Delta\eta)^3)$.
-\item For any measurable estimator (including biased, ridge, James--Stein or MAP) that reports weights in the same rate order, the supremum being over the class of two-cohort economies with total weight $q$, mean rate $\bar\eta$ and spacing $\Delta\eta$,
-\begin{equation}\label{eq:lecam2}
-\sup_\theta P_\theta(\|\hat w-w(\theta)\|_\infty\ge\tau)\;\ge\;1-\Phi\!\Bigl(\frac{\sqrt N\|h(\theta_1)-h(\theta_0)\|_2}{2\sigma_h}\Bigr),
-\end{equation}
-so failure probability at most $0.05$ requires $N\ge4\sigma_h^2z_{0.95}^2/\|h(\theta_1)-h(\theta_0)\|_2^2=\Omega((\Delta\eta)^{-6})$. For $\Delta\eta\ge2\tau q/(q+2\tau)$ ($\approx0.018$ at the stated values) the same bound holds without any labelling convention, for the permutation-invariant loss
-\[
-d_\infty(\hat\theta,\theta)=\min_{\pi\in S_2}\max_{k}\bigl(|\hat w_{\pi(k)}-w_k|+|\hat\eta_{\pi(k)}-\eta_k|\bigr),
-\]
-because then $d_\infty(\theta_0,\theta_1)=\min\{2\tau(1+\Delta\eta/q),\,(1+2\tau/q)\Delta\eta\}\ge2\tau$. For smaller spacings the relevant permutation-invariant statement is the Wasserstein bound of Theorem~\ref{thm:kcohort}.
-\item Conversely, the matching upper bound $N=O((\Delta\eta)^{-6})$ on rich separated two-cohort classes is Theorem~\ref{prop:esprit} with $K=2$. On the separated class with weights and rates bounded away from the boundary, Toeplitz deconvolution followed by a Prony--Hankel root step has Hankel determinant $g_1g_3-g_2^2=w_1w_2\eta_1\eta_2r_1r_2(\Delta\eta)^2>0$ for the deconvolved kernel $g_m=\sum_iw_i\eta_ir_i^m$, and perturbation analysis gives the same order.
-\end{enumerate}
-\end{theorem}
-
-\paragraph{In words.} For two unknown groups, no method can tell the two candidate markets apart reliably with fewer than a number of experiments of order $(\Delta\eta)^{-6}$, and a practical method (Prony's method, Theorem~\ref{prop:esprit}) achieves this order. Halving the spacing multiplies the data needed by 64.
-
-We recomputed the two-point quantities exactly (Table~\ref{tab:lecam}): the moment gap equals $4\tau p_-p_+(\Delta\eta)^3$ to machine precision, and the Le Cam requirement at $\Delta\eta=0.10$ is $5{,}927.6$ resets. The worst-case failure rates of four re-implemented estimators all lie above the lower bound (Table~\ref{tab:lecam}).
-
-
-
-\begin{remark}[The hard directions carry no risk]\label{rem:riskneutral}
-The two economies of Theorem~\ref{thm:twocohort} have the same total weight $\sum_iq_i=q$, so their summed price response $\sum_th_t=\kappa/(1-a-\kappa\sum_iq_i)$ is identical, $2.353$ at the calibration of Table~\ref{tab:lecam}: the directions in which prices are least informative about the cohorts are directions in which cumulative price risk does not move. The summed response is a linear functional of the response and is estimated at the parametric rate whatever the spacing of the memories; the companion paper turns this into a certification theorem, a minimax-optimal pre-trade guard and a decision value of disclosure \citep{niroula2026b}. Identification and safety ask different questions of the same data.
-\end{remark}
+Two facts from the case of two cohorts carry over (Supplement~\ref{app:twocohort}). Fitting poles to the price response targets the closed-loop eigenvalues and misses the memory rates, which are zeros of the transfer function. And for two unknown groups no estimator, biased or not, separates them with fewer than order $(\Delta\eta)^{-6}$ experiments (Theorem~\ref{thm:twocohort}), while the two hardest-to-separate economies have the same summed price response, so what prices cannot see carries no market-wide risk (Remark~\ref{rem:riskneutral}). The general case follows.
 
 \subsection{Many unknown cohorts}
 
@@ -510,20 +420,7 @@ With the same noise and lags for both observers, the Cram\'er--Rao requirements 
 
 \subsection{When disclosure is worth acquiring}\label{sec:decision}
 
-\paragraph{When is disclosure worth its cost?} The dollar illustration of Supplement~\ref{sec:disc_dollars} prices disclosure; it does not say when a supervisor should buy it. Remark~\ref{rem:riskneutral} shows that a supervisor who only needs to bound aggregate price risk does not need disclosure at all: the summed response is identified from public prices at the ordinary rate. Attribution matters when supervision is selective: one algorithm must be stopped or sanctioned while the others keep supplying liquidity, and the law requires attributing the conduct to it at a given error level. A supervisor without an audit trail does not run trading probes; it waits for public data to accumulate, and the cost of waiting is the harm done in the meantime.
-
-Consider $M$ markets, a supervisory cycle of $\bar T$ periods, and in each market one algorithm whose conduct does harm $\ell>0$ per period until it is attributed. With prices alone, attribution at the required error level takes $T_p(\Delta\eta)=c_p(\Delta\eta)^{-(4K-2)}$ periods; with class-tagged records it takes $T_t(\Delta\eta)=c_t(\Delta\eta)^{-2}$ periods, the orders of Theorems~\ref{prop:passive} and~\ref{thm:discvalue} with constants $c_p,c_t>0$. We take the attribution times to be of exactly these orders, which is a modelling assumption: Theorem~\ref{prop:passive} gives only a lower bound for prices, and if price-only attribution is slower, $G$ below is larger and disclosure is chosen at least on the band the proposition describes. $T_t\propto(\Delta\eta)^{-2}$ is the rate target; for weights at fixed accuracy $T_t$ does not grow as $\Delta\eta$ shrinks, and the lower edge of the band disappears. Attribution that would take longer than the cycle does not happen within it. An audit trail costs $F$ per cycle to operate and $c$ per market to comply with, including any information leakage. The supervisor's expected loss is therefore $\mathcal L_{\rm price}=M\ell\min\{\bar T,T_p\}$ without disclosure and $\mathcal L_{\rm disc}=F+Mc+M\ell\min\{\bar T,T_t\}$ with it. Write $\Delta\eta_t=(c_t/\bar T)^{1/2}$ and $\Delta\eta_p=(c_p/\bar T)^{1/(4K-2)}$ for the spacings at which tagged and price-only attribution just fit within the cycle.
-
-\begin{proposition}[When an audit trail is chosen]\label{prop:choice}
-Let $K\ge2$ and $\Delta\eta_t<\Delta\eta_p$, and let $G(\Delta\eta)=\min\{\bar T,T_p(\Delta\eta)\}-\min\{\bar T,T_t(\Delta\eta)\}$ be the attribution delay that disclosure saves.
-\begin{enumerate}[label=(\roman*),itemsep=1pt]
-\item The supervisor strictly prefers disclosure if and only if $F/M+c<\ell\,G(\Delta\eta)$.
-\item $G$ vanishes for $\Delta\eta\le\Delta\eta_t$, increases on $(\Delta\eta_t,\Delta\eta_p]$ to its maximum $G^*=\bar T-T_t(\Delta\eta_p)>0$, decreases wherever it is positive beyond $\Delta\eta_p$, and is negative for $\Delta\eta>(c_p/c_t)^{1/(4K-4)}$, where it returns toward zero from below. Hence the spacings at which disclosure is chosen form an interval around $\Delta\eta_p$, possibly empty: disclosure is never chosen for algorithms so similar that even tagged records cannot attribute them within the cycle, nor for algorithms so different that prices attribute them quickly.
-\item The interval is non-empty if and only if the audit trail covers more than $M^*=F/(\ell G^*-c)$ markets (with $M^*=\infty$ if $\ell G^*\le c$), and it widens as $M$ grows.
-\end{enumerate}
-\end{proposition}
-
-Part (i) restates the comparison of losses. Part (ii) says that disclosure is valuable in a middle band, where algorithms are close enough that prices cannot attribute them within the cycle but far enough apart that tagged records can; the polynomial gap between the two delays, $(\Delta\eta)^{-(4K-2)}$ against $(\Delta\eta)^{-2}$, is what makes the band wide. Part (iii) is an economies-of-scale result: an audit trail with a fixed operating cost pays only when it spans enough markets. This illustrates a possible economy of scale for market-wide reporting; the cost function is stylised, not estimated from CAT, and the result neither explains CAT's legal architecture nor shows that it is optimal. A supervisor that can trade has a second option, active probing, whose cost is the frontier of Table~\ref{tab:cat_dollars}; because that cost grows at the same polynomial order, it shortens price-only attribution only for well-separated algorithms and leaves the comparison for close ones unchanged. The model takes the harm $\ell$ as given and holds the algorithms' behaviour fixed across regimes; Section~\ref{sec:conclusion} returns to both.
+\paragraph{When is disclosure worth its cost?} In a stylised cost comparison (Proposition~\ref{prop:choice}, Supplement~\ref{app:choice}), a supervisor prefers an audit trail when the harm from slow attribution exceeds the trail's cost per market. Disclosure is most valuable in a middle band of memory spacings, where prices are too slow and labels are fast, and only when the trail covers enough markets to share its fixed cost.
 
 \paragraph{A decision in which attribution matters.} Proposition~\ref{prop:choice} takes the harm from slow attribution as given. The next result derives such a harm inside the model: a supervisor that must restore stability can act on the whole market, which needs only the combined response, or halt one group, which needs that group's own intensity.
 
@@ -1952,6 +1849,152 @@ Same, N3 secondary & Its interval shrinks at the root-$T$ rate & Pass, 30 of 30 
 
 \section{Two supplementary results}\label{app:twosupp} Neither is needed for the main results. Markets with the same eigenvalues, the same one-step volatility and the same long-run price variance can still have very different worst-case short-run losses, so watching eigenvalues or volatility cannot replace knowing who trades (Theorem~\ref{thm:blind}). And standard feedback measures computed from public data mostly reflect filtering and clock alignment: two fee changes that moved trading volume by factors of 2.6 and 4.9 left measured feedback unchanged (Supplement~\ref{sec:empirics}).
 
+\section{How large are the costs? A hypothetical illustration}\label{app:hypocost} To give a sense of scale we price the trading option in a hypothetical benchmark. The model parameters are illustrative; only the size of the measurement noise is estimated, from Bitcoin data. An outside participant that re-learns two unknown algorithms each week with test trades would lose at least \$15 million to \$356 million a year per market; with three unknown algorithms it would lose more than \$40 million a year per market even when their memories are far apart (Supplement~\ref{sec:disc_dollars}). These are lower bounds for one stated way of learning, not estimates of what any regulator spends: regulators do not trade to learn. They are best read as the price of the information that labelled records deliver without any trading.
+
+\section{Execution cost and capital}\label{app:capital}
+
+A probe changes inventory as well as price. We therefore specify cash and execution timing. Price has units of currency per asset, and $\kappa$ currency per squared quantity.
+
+\begin{lemma}[Fair execution]\label{lem:toeplitz}
+For a quote schedule refreshed after the uncontrolled state update, execution at the average price of a linear book costs, relative to the constant fundamental mark,
+\begin{equation}\label{eq:cost}
+C(v)=\tfrac12v^\top T_hv+c\|v\|_1,\qquad (T_h)_{ij}=h_{|i-j|}.
+\end{equation}
+In the positive stable economy $T_h$ is positive definite, so no nonzero round trip produces a deterministic gain.
+\end{lemma}
+
+We verify the ledger identity \eqref{eq:cost} against an explicit cash account to $5.7\times10^{-13}$ on 1,000 random probes, and the smallest eigenvalue of $T_h$ over 1,000 random stable positive economies is $0.141$. A direct-only proxy $\sum\tfrac12\kappa v_t^2$ omits cross-time impact: for $v=(+1,-1)$ it gives $0.80$ against a true Toeplitz loss of $h_0-h_1=0.3488$.
+
+\subsection{Capital supplied by a counterparty}
+
+\begin{theorem}[Sharp robust quantity cap from cash and margin]\label{thm:cap}
+Use the positive, stable, reset economy with constant fundamental price $P_*>0$ and no process noise. A designated dealer fills only nonnegative probes $v_t\ge0$ at the average price $P^0_{t+1}+\kappa v_t/2$ of a linear schedule, holds inventory $I_{t+1}=I_t-v_t$ and cash $K_{t+1}=K_t+v_t(P^0_{t+1}+\kappa v_t/2)-cv_t$, starts with equity $B>0$, and must satisfy $\mu|I_t|P_t\le E_t$ at every time. For the robust contract admitting every probe with $\sum_tv_t\le V$, the largest allowance guaranteeing margin is
+\begin{equation}\label{eq:VB}
+V_B=\frac{2B}{\beta+\sqrt{\beta^2+4(\mu+\tfrac12)\kappa B}},\qquad\beta=c+\mu P_*,
+\end{equation}
+equivalently $(\mu+\tfrac12)\kappa V^2+(c+\mu P_*)V\le B$. The cap holds across all positive cohort representations with $S<1$, without resolving individual rates. An observer that receives only noisy prices and executed quantities has best error $\Phi[-V_B\|d_T\|_2/(2\sigma)]$ within this allowance; fixed error $\alpha<1/2$ requires capital of order at least $\delta^{-4}$, and a single positive pulse attains that order.
+\end{theorem}
+
+\paragraph{In words.} A probe moves the price against the account that makes it, so the margin it needs grows with the square of the probe. Because the probe grows like $1/\delta^2$, the capital grows like $1/\delta^4$: halving the difference multiplies the capital needed by 16.
+
+
+Even with zero initial inventory, the probe creates a quadratic adverse mark that a fixed initial price exposure would miss. Figure~\ref{fig:knownpair} illustrates the experiment.
+
+\begin{figure}[t]\centering
+\includegraphics[width=\textwidth]{figs/fig_knownpair.pdf}
+\caption{Known-pair experiment funded by the counterparty cash/margin contract. (a) Exact Gaussian error at fixed capital 100 and 1,000, separation $\delta=0.05$. (b) The sharp robust quantity allowance \eqref{eq:VB}. (c) Capital for error $0.1$ with 200 observations. Parameters: $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$, observation s.d.\ $0.003$, reference price 100, margin $0.25$, cost $0.02$. No process noise.}\label{fig:knownpair}
+\end{figure}
+
+\begin{proposition}[Exact financial disclosure changes the experiment]\label{prop:disclosure}
+In this noiseless-state account, exact disclosure of the third equity mark after a single positive pulse $0<A\le V_B$ distinguishes the known pair with zero error for every $\delta>0$.
+\end{proposition}
+
+\paragraph{In words.} If the observer can see an account's exact equity, a single test trade settles the question, however close the two candidate markets are. The hard part of the problem is therefore not the market itself but what the observer is allowed to see.
+
+Exact marked equity is extra information, not a free observation assumed by the price-only theorem. Real account marks have their own precision: with reports rounded to $0.01$, a guaranteed change requires a larger trade (Section~\ref{sec:disclosure}).
+
+\subsection{Capital paid by the probe trader}
+
+\begin{lemma}[Time-domain Toeplitz coercivity: capital order for funded probes]\label{thm:capital}
+Use the same economy and execution law. The statistical observer receives only noisy prices and executed quantities. The probe trader starts with cash $B>0$ and zero inventory; a finite signed sequence $v$ changes inventory by $+v_t$ and cash by $K_{t+1}=K_t-v_t(P^0_{t+1}+\kappa v_t/2)-c|v_t|$, after which trading stops and the trader must remain solvent as the price returns to $P_*$. Put
+\[
+r=1-\epsilon(1-S)<1,\qquad m=\kappa\frac{1-r}{1+r}>0,\qquad K_*=\frac{2\kappa^2q}{\epsilon^3(1-S)^2}.
+\]
+Every solvent strategy satisfies $\KL(P_0^v\|P_\delta^v)\le K_*^2B\delta^4/(\sigma^2m)$, so error at most $\alpha<1/2$ requires
+\begin{equation}\label{eq:Bmin}
+B\;\ge\;\frac{2\sigma^2m(1-2\alpha)^2}{K_*^2\delta^4},
+\end{equation}
+without a quantity cap and at any horizon. Conversely, for any margin fraction $0<\mu\le1$, the pulse $A$ in \eqref{eq:pulse} achieves error $\alpha$ and remains margin-solvent at every later mark with capital $B_A=\tfrac{\kappa}{2}A^2+(c+\mu P_*)A$. Necessary and sufficient capital orders are $\delta^{-4}$.
+\end{lemma}
+
+Lemma~\ref{thm:capital} is an order statement: an elementary time-domain coercivity argument for Toeplitz forms that establishes the $\delta^{-4}$ rate before the exact frequency-domain optimization of Supplement~\ref{sec:account}. Its explicit constant is very conservative, because it scales as $m/K_*^2\propto\epsilon^7(1-S)^5$: at the calibrated parameters it is $4.9\times10^{-4}$ par units at $\delta=0.05$ with $\epsilon=0.35$, five orders of magnitude below any feasible design. We therefore state it as a lemma; Supplement~\ref{sec:account} computes the sharp constant, within 5\% of a feasible design at every separation.
+
+\section{Two unknown cohorts: pole fitting and the global two-point bound}\label{app:twocohort}
+
+Because the memory rates are zeros of $H$ (Theorem~\ref{thm:merged}), extracting poles directly from the price impulse response by matrix-pencil or Prony methods targets closed-loop eigenvalues. A four-step inversion repairs this: (1) decouple $g_t=h_{t+1}-ah_t$; (2) form a Hankel matrix of $g$ and compute a minimal realization by Kung's eigensystem realization; (3) compute its transmission zeros, which are the roots of the denominator of $G$; (4) project reconstructed flow onto the recovered memory filters to obtain the weights (Supplement~\ref{app:era}). Without noise this recovers $K=0$, $K=1$ and well-separated two-cohort systems exactly (Supplement~\ref{app:era}); with noise, per-cohort weights become unreliable once rates are close. The reason is information-theoretic, as the rest of this section shows.
+
+\subsection{A global two-point bound for any estimator}
+
+The Cram\'er--Rao benchmark of Proposition~\ref{prop:crb} applies only to regular unbiased estimators. Could biased, ridge, shrinkage or Bayesian estimators escape the $(\Delta\eta)^{-6}$ scaling? No.
+
+\begin{theorem}[Global two-point bound and matching upper bound, $K=2$]\label{thm:twocohort}
+In this theorem $w_k$ denotes cohort $k$'s trading intensity $q_k$, not the merged weight $q_k\eta_k$ of Section~\ref{sec:model}, and $\Delta\eta$ is the actual spacing of the two rates. Fix total intensity $q=0.20$, mean rate $\bar\eta=0.40$, target separation $\tau=0.01$, and $\Delta\eta\in(0,8/11)$ (so that $\bar\eta-p_+\Delta\eta>0$). Let $p_\mp=\tfrac12\mp\tau/q$ and
+\begin{equation}\label{eq:pair}
+\theta_0=(qp_-,qp_+,\bar\eta-p_+\Delta\eta,\bar\eta+p_-\Delta\eta),\qquad\theta_1=(qp_+,qp_-,\bar\eta-p_-\Delta\eta,\bar\eta+p_+\Delta\eta).
+\end{equation}
+\begin{enumerate}[label=(\roman*)]
+\item Label cohorts in increasing order of rate, so that weight vectors are compared rate by rate (as unordered sets the two weight vectors coincide). Both economies have spacing $\Delta\eta$, weight separation $\|w(\theta_1)-w(\theta_0)\|_\infty=2\tau$ in this labelling, and equal rate moments $M_m=\sum_kw_k\eta_k^m$ for $m\in\{0,1,2\}$, while
+\begin{equation}\label{eq:dM3}
+M_3(\theta_1)-M_3(\theta_0)=4\tau p_-p_+(\Delta\eta)^3 .
+\end{equation}
+Hence $\|h(\theta_1)-h(\theta_0)\|_2=\Theta(\tau(\Delta\eta)^3)$.
+\item For any measurable estimator (including biased, ridge, James--Stein or MAP) that reports weights in the same rate order, the supremum being over the class of two-cohort economies with total weight $q$, mean rate $\bar\eta$ and spacing $\Delta\eta$,
+\begin{equation}\label{eq:lecam2}
+\sup_\theta P_\theta(\|\hat w-w(\theta)\|_\infty\ge\tau)\;\ge\;1-\Phi\!\Bigl(\frac{\sqrt N\|h(\theta_1)-h(\theta_0)\|_2}{2\sigma_h}\Bigr),
+\end{equation}
+so failure probability at most $0.05$ requires $N\ge4\sigma_h^2z_{0.95}^2/\|h(\theta_1)-h(\theta_0)\|_2^2=\Omega((\Delta\eta)^{-6})$. For $\Delta\eta\ge2\tau q/(q+2\tau)$ ($\approx0.018$ at the stated values) the same bound holds without any labelling convention, for the permutation-invariant loss
+\[
+d_\infty(\hat\theta,\theta)=\min_{\pi\in S_2}\max_{k}\bigl(|\hat w_{\pi(k)}-w_k|+|\hat\eta_{\pi(k)}-\eta_k|\bigr),
+\]
+because then $d_\infty(\theta_0,\theta_1)=\min\{2\tau(1+\Delta\eta/q),\,(1+2\tau/q)\Delta\eta\}\ge2\tau$. For smaller spacings the relevant permutation-invariant statement is the Wasserstein bound of Theorem~\ref{thm:kcohort}.
+\item Conversely, the matching upper bound $N=O((\Delta\eta)^{-6})$ on rich separated two-cohort classes is Theorem~\ref{prop:esprit} with $K=2$. On the separated class with weights and rates bounded away from the boundary, Toeplitz deconvolution followed by a Prony--Hankel root step has Hankel determinant $g_1g_3-g_2^2=w_1w_2\eta_1\eta_2r_1r_2(\Delta\eta)^2>0$ for the deconvolved kernel $g_m=\sum_iw_i\eta_ir_i^m$, and perturbation analysis gives the same order.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} For two unknown groups, no method can tell the two candidate markets apart reliably with fewer than a number of experiments of order $(\Delta\eta)^{-6}$, and a practical method (Prony's method, Theorem~\ref{prop:esprit}) achieves this order. Halving the spacing multiplies the data needed by 64.
+
+We recomputed the two-point quantities exactly (Table~\ref{tab:lecam}): the moment gap equals $4\tau p_-p_+(\Delta\eta)^3$ to machine precision, and the Le Cam requirement at $\Delta\eta=0.10$ is $5{,}927.6$ resets. The worst-case failure rates of four re-implemented estimators all lie above the lower bound (Table~\ref{tab:lecam}).
+
+\begin{table}[t]\centering\small
+\begin{threeparttable}
+\caption{Two-point sample complexity for two-cohort weight recovery}\label{tab:lecam}
+\begin{tabular}{lcccc}
+\toprule
+$\Delta\eta$ & $\Delta M_3$ & $\|\Delta h\|_2$ & $N^*_{\rm LeCam}$ (95\%) & $N^*_{\rm CRB}$\\
+\midrule
+0.30 & $2.67\times10^{-4}$ & $1.98\times10^{-3}$ & 7.1 & 47.8\\
+0.20 & $7.92\times10^{-5}$ & $5.60\times10^{-4}$ & 88.2 & 597.0\\
+0.14 & $2.72\times10^{-5}$ & $1.89\times10^{-4}$ & 775.3 & 5{,}267.9\\
+0.10 & $9.90\times10^{-6}$ & $6.84\times10^{-5}$ & 5{,}927.6 & 40{,}374.2\\
+0.08 & $5.07\times10^{-6}$ & $3.49\times10^{-5}$ & 22{,}740.5 & 155{,}048.9\\
+0.06 & $2.14\times10^{-6}$ & $1.47\times10^{-5}$ & 128{,}333.0 & 875{,}732.3\\
+0.05 & $1.24\times10^{-6}$ & $8.50\times10^{-6}$ & 383{,}859.1 & 2{,}620{,}321.2\\
+0.04 & $6.34\times10^{-7}$ & $4.35\times10^{-6}$ & 1{,}466{,}361.5 & 10{,}012{,}662.4\\
+\midrule
+\multicolumn{5}{p{0.85\textwidth}}{\emph{Worst-case failure at $\Delta\eta=0.10$, $N=50$, 1,000 trials per hypothesis}: bound 44.1\%; ML 94.5\%, ridge 47.5\%, positive-part shrinkage 100\%, heavy prior 73.9\%.}\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item $\tau=0.01$, $\sigma_h=1.6\times10^{-3}$, $a=0.5$, $\kappa=0.8$, 121 taps. Estimators: ML is least squares from four starts; ridge and heavy prior are posterior modes with prior standard deviations $(0.05,0.10)$ and $(0.005,0.02)$ for (weights, rates) around the symmetric centre of the two hypotheses; positive-part shrinkage pulls the ML weights toward their mean. Failure means some weight is off by at least $\tau$.\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{remark}[The hard directions carry no risk]\label{rem:riskneutral}
+The two economies of Theorem~\ref{thm:twocohort} have the same total weight $\sum_iq_i=q$, so their summed price response $\sum_th_t=\kappa/(1-a-\kappa\sum_iq_i)$ is identical, $2.353$ at the calibration of Table~\ref{tab:lecam}: the directions in which prices are least informative about the cohorts are directions in which cumulative price risk does not move. The summed response is a linear functional of the response and is estimated at the parametric rate whatever the spacing of the memories; the companion paper turns this into a certification theorem, a minimax-optimal pre-trade guard and a decision value of disclosure \citep{niroula2026b}. Identification and safety ask different questions of the same data.
+\end{remark}
+
+\section{Three ways to learn more, and what each costs}\label{app:threeways} An observer that wants to know more, whether a supervisor, an exchange's surveillance team or a large trading desk, has three options (Section~\ref{sec:observer}).
+\begin{enumerate}[label=(\alph*),itemsep=1pt]
+\item \emph{Wait and watch prices.} This costs time. In a stationary Gaussian market observed without error, a passive observer needs at least as many observations, in order of magnitude, as an active one needs experiments (Theorem~\ref{prop:passive}).
+\item \emph{Trade against the groups} and watch how the price responds, much as one taps a wall to find a hidden beam. Every test trade moves the price against the trader, so learning this way costs money. To tell one group from two groups whose memory rates differ by $2\delta$, the quantity traded grows like $1/\delta^{2}$ and the capital at risk like $1/\delta^{4}$: halve the difference and the capital needed rises sixteen-fold (Theorems~\ref{thm:quantity} and~\ref{thm:cap}). If memory is a general mixture of fading memories rather than a few exponentials (with the slowest bounded away from a random walk), accuracy improves only with the logarithm of the data, so halving the error squares the data needed (Theorem~\ref{thm:general}).
+\item \emph{Acquire labelled records}, such as audit-trail data or class-level position reports. This costs whatever the reporting system costs, but it removes the explosion in data: labels save a factor of order $(\Delta\eta)^{-(4K-2)}$ at fixed accuracy, where $K$ is the number of groups and $\Delta\eta$ the spacing of their memory rates (Theorem~\ref{thm:discvalue}).
+\end{enumerate}
+Proposition~\ref{prop:choice} says when each option is the cheapest.
+
+\section{When an audit trail is chosen}\label{app:choice} The dollar illustration of Supplement~\ref{sec:disc_dollars} prices disclosure; it does not say when a supervisor should buy it. Remark~\ref{rem:riskneutral} shows that a supervisor who only needs to bound aggregate price risk does not need disclosure at all: the summed response is identified from public prices at the ordinary rate. Attribution matters when supervision is selective: one algorithm must be stopped or sanctioned while the others keep supplying liquidity, and the law requires attributing the conduct to it at a given error level. A supervisor without an audit trail does not run trading probes; it waits for public data to accumulate, and the cost of waiting is the harm done in the meantime.
+
+Consider $M$ markets, a supervisory cycle of $\bar T$ periods, and in each market one algorithm whose conduct does harm $\ell>0$ per period until it is attributed. With prices alone, attribution at the required error level takes $T_p(\Delta\eta)=c_p(\Delta\eta)^{-(4K-2)}$ periods; with class-tagged records it takes $T_t(\Delta\eta)=c_t(\Delta\eta)^{-2}$ periods, the orders of Theorems~\ref{prop:passive} and~\ref{thm:discvalue} with constants $c_p,c_t>0$. We take the attribution times to be of exactly these orders, which is a modelling assumption: Theorem~\ref{prop:passive} gives only a lower bound for prices, and if price-only attribution is slower, $G$ below is larger and disclosure is chosen at least on the band the proposition describes. $T_t\propto(\Delta\eta)^{-2}$ is the rate target; for weights at fixed accuracy $T_t$ does not grow as $\Delta\eta$ shrinks, and the lower edge of the band disappears. Attribution that would take longer than the cycle does not happen within it. An audit trail costs $F$ per cycle to operate and $c$ per market to comply with, including any information leakage. The supervisor's expected loss is therefore $\mathcal L_{\rm price}=M\ell\min\{\bar T,T_p\}$ without disclosure and $\mathcal L_{\rm disc}=F+Mc+M\ell\min\{\bar T,T_t\}$ with it. Write $\Delta\eta_t=(c_t/\bar T)^{1/2}$ and $\Delta\eta_p=(c_p/\bar T)^{1/(4K-2)}$ for the spacings at which tagged and price-only attribution just fit within the cycle.
+
+\begin{proposition}[When an audit trail is chosen]\label{prop:choice}
+Let $K\ge2$ and $\Delta\eta_t<\Delta\eta_p$, and let $G(\Delta\eta)=\min\{\bar T,T_p(\Delta\eta)\}-\min\{\bar T,T_t(\Delta\eta)\}$ be the attribution delay that disclosure saves.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The supervisor strictly prefers disclosure if and only if $F/M+c<\ell\,G(\Delta\eta)$.
+\item $G$ vanishes for $\Delta\eta\le\Delta\eta_t$, increases on $(\Delta\eta_t,\Delta\eta_p]$ to its maximum $G^*=\bar T-T_t(\Delta\eta_p)>0$, decreases wherever it is positive beyond $\Delta\eta_p$, and is negative for $\Delta\eta>(c_p/c_t)^{1/(4K-4)}$, where it returns toward zero from below. Hence the spacings at which disclosure is chosen form an interval around $\Delta\eta_p$, possibly empty: disclosure is never chosen for algorithms so similar that even tagged records cannot attribute them within the cycle, nor for algorithms so different that prices attribute them quickly.
+\item The interval is non-empty if and only if the audit trail covers more than $M^*=F/(\ell G^*-c)$ markets (with $M^*=\infty$ if $\ell G^*\le c$), and it widens as $M$ grows.
+\end{enumerate}
+\end{proposition}
+
+Part (i) restates the comparison of losses. Part (ii) says that disclosure is valuable in a middle band, where algorithms are close enough that prices cannot attribute them within the cycle but far enough apart that tagged records can; the polynomial gap between the two delays, $(\Delta\eta)^{-(4K-2)}$ against $(\Delta\eta)^{-2}$, is what makes the band wide. Part (iii) is an economies-of-scale result: an audit trail with a fixed operating cost pays only when it spans enough markets. This illustrates a possible economy of scale for market-wide reporting; the cost function is stylised, not estimated from CAT, and the result neither explains CAT's legal architecture nor shows that it is optimal. A supervisor that can trade has a second option, active probing, whose cost is the frontier of Table~\ref{tab:cat_dollars}; because that cost grows at the same polynomial order, it shortens price-only attribution only for well-separated algorithms and leaves the comparison for close ones unchanged. The model takes the harm $\ell$ as given and holds the algorithms' behaviour fixed across regimes; Section~\ref{sec:conclusion} returns to both.
+
 \section{How to read the paper, and the main symbols}\label{app:howtoread} Every main result is stated formally and then explained in a short paragraph headed ``In words'', which says what it means for a trader or a supervisor; proofs are in the online supplement. Supplement~\ref{sec:worked} works through two desks that use Kalman filters, in numbers, and Table~\ref{tab:map} maps each question to its answer. Readers who want the finance first can read this introduction, Section~\ref{sec:observer}, the worked example and Section~\ref{sec:disclosure}, and take the statistical results as given. Table~\ref{tab:glossary} explains the main symbols.
 
 \begin{table}[!htbp]\centering\small
@@ -2000,34 +2043,6 @@ Pulse $V$ & Horizon $T$ & $\Phi(-V\|d_T\|_2/2\sigma)$ & Simulated error, $H_0$ &
 \bottomrule
 \end{tabular}
 \begin{tablenotes}\footnotesize\item 200,000 paths per hypothesis; $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$. \end{tablenotes}
-\end{threeparttable}
-\end{table}
-
-\begin{figure}[!htbp]\centering
-\includegraphics[width=\textwidth]{figs/fig_knownpair.pdf}
-\caption{Known-pair experiment funded by the counterparty cash/margin contract. (a) Exact Gaussian error at fixed capital 100 and 1,000, separation $\delta=0.05$. (b) The sharp robust quantity allowance \eqref{eq:VB}. (c) Capital for error $0.1$ with 200 observations. Parameters: $a=0.5$, $\kappa=0.8$, $q=0.2$, $\eta=0.4$, observation s.d.\ $0.003$, reference price 100, margin $0.25$, cost $0.02$. No process noise.}\label{fig:knownpair}
-\end{figure}
-
-\begin{table}[!htbp]\centering\small
-\begin{threeparttable}
-\caption{Two-point sample complexity for two-cohort weight recovery}\label{tab:lecam}
-\begin{tabular}{lcccc}
-\toprule
-$\Delta\eta$ & $\Delta M_3$ & $\|\Delta h\|_2$ & $N^*_{\rm LeCam}$ (95\%) & $N^*_{\rm CRB}$\\
-\midrule
-0.30 & $2.67\times10^{-4}$ & $1.98\times10^{-3}$ & 7.1 & 47.8\\
-0.20 & $7.92\times10^{-5}$ & $5.60\times10^{-4}$ & 88.2 & 597.0\\
-0.14 & $2.72\times10^{-5}$ & $1.89\times10^{-4}$ & 775.3 & 5{,}267.9\\
-0.10 & $9.90\times10^{-6}$ & $6.84\times10^{-5}$ & 5{,}927.6 & 40{,}374.2\\
-0.08 & $5.07\times10^{-6}$ & $3.49\times10^{-5}$ & 22{,}740.5 & 155{,}048.9\\
-0.06 & $2.14\times10^{-6}$ & $1.47\times10^{-5}$ & 128{,}333.0 & 875{,}732.3\\
-0.05 & $1.24\times10^{-6}$ & $8.50\times10^{-6}$ & 383{,}859.1 & 2{,}620{,}321.2\\
-0.04 & $6.34\times10^{-7}$ & $4.35\times10^{-6}$ & 1{,}466{,}361.5 & 10{,}012{,}662.4\\
-\midrule
-\multicolumn{5}{p{0.85\textwidth}}{\emph{Worst-case failure at $\Delta\eta=0.10$, $N=50$, 1,000 trials per hypothesis}: bound 44.1\%; ML 94.5\%, ridge 47.5\%, positive-part shrinkage 100\%, heavy prior 73.9\%.}\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item $\tau=0.01$, $\sigma_h=1.6\times10^{-3}$, $a=0.5$, $\kappa=0.8$, 121 taps. Estimators: ML is least squares from four starts; ridge and heavy prior are posterior modes with prior standard deviations $(0.05,0.10)$ and $(0.005,0.02)$ for (weights, rates) around the symmetric centre of the two hypotheses; positive-part shrinkage pulls the ML weights toward their mean. Failure means some weight is off by at least $\tau$.\end{tablenotes}
 \end{threeparttable}
 \end{table}
 
