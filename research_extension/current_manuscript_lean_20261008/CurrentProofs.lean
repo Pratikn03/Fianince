@@ -81,3 +81,4 @@ import CurrentProofs.Paper1JacksonPoly
 import CurrentProofs.Paper1GeneralMemoryUpper
 import CurrentProofs.Paper1GeneralMemoryRate
 import CurrentProofs.Paper1SupervisorySeparation
+import CurrentProofs.Paper1QuantityCapital
