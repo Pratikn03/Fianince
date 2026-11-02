@@ -85,3 +85,4 @@ import CurrentProofs.Paper1QuantityCapital
 import CurrentProofs.StockFlowAndPlugIn
 import CurrentProofs.Paper1Primitives
 import CurrentProofs.Paper1ConditionalClosures
+import CurrentProofs.Paper1FullFrontiers
