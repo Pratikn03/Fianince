@@ -26,7 +26,8 @@ src = (HERE / "paper1.tex").read_text()
 core, _, _ = src.partition("% BEGIN ECONOMIC REVIEW 20261029")
 assert "\\section{Reproducibility: source of every number}" in core and "returned_results" not in core
 core = re.sub(r"% BEGIN ADVANCED FRONT STATUS 20261030.*?% END ADVANCED FRONT STATUS 20261030\n", "", core, flags=re.S)
-core = core.replace("\\date{Development revision, 31 October 2026}", "\\date{This version: 31 October 2026}")
+core = re.sub(r"\\date\{Development revision, [^}]+\}", r"\\date{This version: 2 November 2026}", core)
+core = core.replace("\\date{Development revision, 2 November 2026}", "\\date{This version: 2 November 2026}")
 if ARGS.ssrn:
     if ARGS.solo:
         core = re.sub(r"\n\\and .*?(?=\}\n\\date)", "", core, count=1, flags=re.S)
