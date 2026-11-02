@@ -459,7 +459,7 @@ def build_workbook():
     # 12 DETAILED QUESTION MODULES
     # ==========================================
     
-    questions = [
+    QUESTIONS = [
         {
             "num": 1,
             "title": "The Closed-Loop Transfer Function and the Fundamental Identification Boundary",
@@ -843,7 +843,7 @@ def build_workbook():
         }
     ]
 
-    for q in questions:
+    for q in QUESTIONS:
         # Module Title
         p_q = doc.add_paragraph()
         style_heading_1(p_q)
