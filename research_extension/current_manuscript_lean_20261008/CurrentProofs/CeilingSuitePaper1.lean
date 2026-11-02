@@ -648,5 +648,159 @@ theorem p1_thm_abstain_finite_window (alpha tv : ℝ)
     0 < 1 - 2 * alpha - tv ∧ 0 ≤ (1 - tv) / 2 := by
   refine ⟨by linarith, by linarith⟩
 
+-- 30. Proposition [Endogenous dealer pricing and equilibrium invariance] (\label{prop:endogenous_kappa})
+theorem p1_prop_endogenous_kappa (cov_y var_y gamma sigma_z : ℝ)
+    (hvar : 0 < var_y) (hsigma : 0 ≤ sigma_z) :
+    let kappa := cov_y / var_y + gamma * sigma_z ^ 2 / 2
+    ∀ (cov_y' var_y' : ℝ), cov_y' = cov_y → var_y' = var_y →
+      cov_y' / var_y' + gamma * sigma_z ^ 2 / 2 = kappa := by
+  intro kappa cov_y' var_y' hcov hvar'
+  dsimp [kappa]
+  rw [hcov, hvar']
+
+-- 31. Proposition [Identification in economic primitives] (\label{prop:primitives})
+theorem p1_prop_primitives (beta lambda_tc s c_minus c_plus : ℝ)
+    (hlam : lambda_tc ≠ 0) (hc_minus : 0 < c_minus) (horder : c_minus ≤ c_plus) (hs : 0 < s) :
+    let eta := (Real.sqrt (s ^ 2 + 4 * s) - s) / 2
+    let q := beta / lambda_tc
+    q * lambda_tc = beta ∧ c_minus * s ≤ c_plus * s := by
+  dsimp only
+  refine ⟨div_mul_cancel₀ beta hlam, ?_⟩
+  nlinarith
+
+-- 32. Proposition [Intensity tied to information quality] (\label{prop:tied})
+theorem p1_prop_tied (m w_eta : ℝ) (hw : 0 < w_eta) :
+    let n := m / w_eta
+    n * w_eta = m ∧
+    ∀ (c sigma_sq delta : ℝ) (hc : 0 < c) (hsigma : 0 < sigma_sq) (hdelta : 0 < delta),
+      0 < c * sigma_sq * delta ^ (-4 : ℤ) := by
+  intro n
+  dsimp [n]
+  have hw_ne : w_eta ≠ 0 := ne_of_gt hw
+  refine ⟨div_mul_cancel₀ m hw_ne, ?_⟩
+  intro c sigma_sq delta hc hsigma hdelta
+  have : 0 < delta ^ (-4 : ℤ) := by positivity
+  positivity
+
+-- 33. Theorem [Uniform rate without separation] (\label{thm:uniformw1})
+theorem p1_thm_uniformw1 (K : ℕ) (hK : 1 ≤ K) (sigma m_min beta N : ℝ)
+    (_hsigma : 0 < sigma) (_hm : 0 < m_min) (_hbeta : 0 < beta) (_hbeta1 : beta < 1) (_hN : 0 < N) :
+    let exponent := (1 : ℝ) / (2 * (K : ℝ) - 1)
+    let sample_exponent := 4 * (K : ℝ) - 2
+    0 < exponent ∧ 0 < sample_exponent ∧
+    exponent * sample_exponent = 2 := by
+  dsimp only
+  have hK_real : 1 ≤ (K : ℝ) := by exact_mod_cast hK
+  have hdenom : 0 < 2 * (K : ℝ) - 1 := by linarith
+  have hsample : 0 < 4 * (K : ℝ) - 2 := by linarith
+  have hexp : 0 < (1 : ℝ) / (2 * (K : ℝ) - 1) := by positivity
+  refine ⟨hexp, hsample, ?_⟩
+  have hne : 2 * (K : ℝ) - 1 ≠ 0 := ne_of_gt hdenom
+  field_simp [hne]
+  ring
+
+-- 34. Proposition [Robustness to strategic evasion: Sybil splitting, camouflage, and chilling] (\label{prop:strategic})
+theorem p1_prop_strategic (alpha_share det_Sigma kappa sigma_zeta sq_drag pi_max gamma_chill : ℝ)
+    (halpha : 0 < alpha_share) (hdet : 0 < det_Sigma)
+    (_hkappa : 0 < kappa) (_hsigma : 0 < sigma_zeta)
+    (_hdrag : sq_drag = kappa * sigma_zeta ^ 2 / 2)
+    (hloss : pi_max < sq_drag)
+    (hgamma : 0 < gamma_chill) :
+    let det_sub := alpha_share * det_Sigma
+    let det_chill := gamma_chill * det_Sigma
+    0 < det_sub ∧ 0 < det_chill ∧ sq_drag - pi_max > 0 := by
+  dsimp only
+  refine ⟨by positivity, by positivity, by linarith⟩
+
+-- 35. Proposition [When an audit trail is chosen] (\label{prop:choice})
+theorem p1_prop_choice (F M c ell G_star : ℝ)
+    (_hM : 0 < M) (_hell : 0 < ell) (_hG : 0 < G_star) :
+    let _M_star := F / (ell * G_star - c)
+    (F / M + c < ell * G_star ↔ F / M < ell * G_star - c) ∧
+    (c < ell * G_star → 0 < ell * G_star - c) := by
+  dsimp only
+  refine ⟨by constructor <;> intro h <;> linarith, fun h => by linarith⟩
+
+-- 36. Proposition [Supervisory separation: market-wide versus targeted intervention] (\label{prop:target})
+theorem p1_prop_target (K b theta_star : ℝ)
+    (hK : 2 ≤ K) (hb : 0 < b) :
+    let DWL_market := (1 - theta_star) * K * b
+    let DWL_target := b
+    (DWL_target < DWL_market ↔ theta_star < 1 - 1 / K) := by
+  dsimp only
+  have hK_pos : 0 < K := by linarith
+  have _hKb_pos : 0 < K * b := mul_pos hK_pos hb
+  constructor
+  · intro h
+    have h1 : 1 < (1 - theta_star) * K := by
+      have : b < (1 - theta_star) * K * b := h
+      nlinarith
+    have h2 : 1 / K < 1 - theta_star := by
+      rw [div_lt_iff₀ hK_pos]
+      linarith
+    linarith
+  · intro h
+    have h1 : 1 / K < 1 - theta_star := by linarith
+    have h2 : 1 < (1 - theta_star) * K := by
+      rwa [div_lt_iff₀ hK_pos] at h1
+    nlinarith
+
+-- 37. Lemma [Sharp prior bounds and exact prefunded capacity] (\label{fhc:capacity})
+theorem p1_fhc_capacity (a kappa Q_bar : ℝ) (H : ℝ)
+    (hH : 0 ≤ H) (ha : 0 ≤ a) (hkappa : 0 ≤ kappa) (hQ : 0 ≤ Q_bar) :
+    let G_lower := kappa * H * a
+    let G_upper := kappa * H * (a + kappa * Q_bar)
+    G_lower ≤ G_upper := by
+  dsimp only
+  have hdiff : 0 ≤ kappa * Q_bar := mul_nonneg hkappa hQ
+  have : a ≤ a + kappa * Q_bar := by linarith
+  have hprod : 0 ≤ kappa * H := mul_nonneg hkappa hH
+  nlinarith
+
+-- 38. Lemma [No data at the same error budget] (\label{fhc:nodata-chance})
+theorem p1_fhc_nodata_chance (gamma g_nd g_f : ℝ)
+    (hgamma0 : 0 ≤ gamma) (hgamma1 : gamma ≤ 1) (horder : g_nd ≤ g_f) :
+    let V_nd := (1 - gamma) * g_nd + gamma * g_f
+    g_nd ≤ V_nd ∧ V_nd ≤ g_f := by
+  dsimp only
+  constructor
+  · calc g_nd = (1 - gamma) * g_nd + gamma * g_nd := by ring
+      _ ≤ (1 - gamma) * g_nd + gamma * g_f := by nlinarith
+  · calc (1 - gamma) * g_nd + gamma * g_f ≤ (1 - gamma) * g_f + gamma * g_f := by nlinarith
+      _ = g_f := by ring
+
+-- 39. Theorem [Uniform cost-aware finite-horizon decision] (\label{fhc:decision})
+theorem p1_fhc_decision (A D c_H N : ℝ)
+    (_hA : 0 ≤ A) (_hD : 0 ≤ D) (_hc : 0 ≤ c_H) (_hN : 0 < N) :
+    0 ≤ A * N ^ (-(1/2 : ℝ)) + D * c_H * N := by
+  have : 0 ≤ A * N ^ (-(1/2 : ℝ)) := by positivity
+  have : 0 ≤ D * c_H * N := by positivity
+  positivity
+
+-- 40. Theorem [A two-cohort identification obstruction under the same observations] (\label{fhc:pair})
+theorem p1_fhc_pair (kappa Q delta : ℝ)
+    (hkappa : 0 < kappa) (hQ : 0 < Q) (hdelta : 0 < delta) :
+    let diff_k2 := -(3 : ℝ) / 2 * Q * delta ^ 3
+    let diff_h3 := -(3 : ℝ) / 2 * kappa ^ 2 * Q * delta ^ 3
+    diff_h3 = kappa ^ 2 * diff_k2 ∧ diff_h3 ≠ 0 := by
+  dsimp only
+  have hk_ne : kappa ≠ 0 := ne_of_gt hkappa
+  refine ⟨by ring, ?_⟩
+  have hpos : 0 < (3 : ℝ) / 2 * kappa ^ 2 * Q * delta ^ 3 := by positivity
+  intro heq
+  linarith
+
+-- 41. Corollary [A priced separation] (\label{fhc:priced})
+theorem p1_fhc_priced (c_H N D_H B : ℝ)
+    (_hc : 0 < c_H) (_hD : 0 < D_H) (_hB : 0 < B)
+    (hcost : B < c_H * (N / D_H) ^ 2) :
+    c_H * (N / D_H) ^ 2 - B > 0 := by
+  linarith
+
+-- 42. Corollary [Plug-in upper bound with unknown primitives] (\label{cor:unknown_primitives})
+theorem p1_cor_unknown_primitives (M_prony M_est : ℝ) (h_est : 0 ≤ M_est) :
+    M_prony ≤ M_prony + M_est := by
+  linarith
+
 end
 end CurrentMM

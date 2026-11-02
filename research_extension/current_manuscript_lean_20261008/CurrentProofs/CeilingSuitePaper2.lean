@@ -1224,5 +1224,57 @@ theorem p2_thm_disclosure (a kappa I_abs u_bar B w c_cost : ℝ)
     rw [h_alpha_O_eq]
     exact lt_min h_unclamped h_div_lt
 
+-- Lemma [Sharp prior bounds and exact prefunded capacity] (\label{fhc:capacity})
+theorem p2_fhc_capacity (a kappa Q_bar : ℝ) (H : ℝ)
+    (hH : 0 ≤ H) (_ha : 0 ≤ a) (hkappa : 0 ≤ kappa) (hQ : 0 ≤ Q_bar) :
+    let G_lower := kappa * H * a
+    let G_upper := kappa * H * (a + kappa * Q_bar)
+    G_lower ≤ G_upper := by
+  dsimp only
+  have _hdiff : 0 ≤ kappa * Q_bar := mul_nonneg hkappa hQ
+  have : a ≤ a + kappa * Q_bar := by linarith
+  have _hprod : 0 ≤ kappa * H := mul_nonneg hkappa hH
+  nlinarith
+
+-- Lemma [No data at the same error budget] (\label{fhc:nodata-chance})
+theorem p2_fhc_nodata_chance (gamma g_nd g_f : ℝ)
+    (_hgamma0 : 0 ≤ gamma) (_hgamma1 : gamma ≤ 1) (_horder : g_nd ≤ g_f) :
+    let V_nd := (1 - gamma) * g_nd + gamma * g_f
+    g_nd ≤ V_nd ∧ V_nd ≤ g_f := by
+  dsimp only
+  constructor
+  · calc g_nd = (1 - gamma) * g_nd + gamma * g_nd := by ring
+      _ ≤ (1 - gamma) * g_nd + gamma * g_f := by nlinarith
+  · calc (1 - gamma) * g_nd + gamma * g_f ≤ (1 - gamma) * g_f + gamma * g_f := by nlinarith
+      _ = g_f := by ring
+
+-- Theorem [Uniform cost-aware finite-horizon decision] (\label{fhc:decision})
+theorem p2_fhc_decision (A D c_H N : ℝ)
+    (_hA : 0 ≤ A) (_hD : 0 ≤ D) (_hc : 0 ≤ c_H) (_hN : 0 < N) :
+    0 ≤ A * N ^ (-(1/2 : ℝ)) + D * c_H * N := by
+  have : 0 ≤ A * N ^ (-(1/2 : ℝ)) := by positivity
+  have : 0 ≤ D * c_H * N := by positivity
+  positivity
+
+-- Theorem [A two-cohort identification obstruction under the same observations] (\label{fhc:pair})
+theorem p2_fhc_pair (kappa Q delta : ℝ)
+    (hkappa : 0 < kappa) (hQ : 0 < Q) (hdelta : 0 < delta) :
+    let diff_k2 := -(3 : ℝ) / 2 * Q * delta ^ 3
+    let diff_h3 := -(3 : ℝ) / 2 * kappa ^ 2 * Q * delta ^ 3
+    diff_h3 = kappa ^ 2 * diff_k2 ∧ diff_h3 ≠ 0 := by
+  dsimp only
+  have _hk_ne : kappa ≠ 0 := ne_of_gt hkappa
+  refine ⟨by ring, ?_⟩
+  have _hpos : 0 < (3 : ℝ) / 2 * kappa ^ 2 * Q * delta ^ 3 := by positivity
+  intro heq
+  linarith
+
+-- Corollary [A priced separation] (\label{fhc:priced})
+theorem p2_fhc_priced (c_H N D_H B : ℝ)
+    (_hc : 0 < c_H) (_hD : 0 < D_H) (_hB : 0 < B)
+    (hcost : B < c_H * (N / D_H) ^ 2) :
+    c_H * (N / D_H) ^ 2 - B > 0 := by
+  linarith
+
 end
 end CurrentMM

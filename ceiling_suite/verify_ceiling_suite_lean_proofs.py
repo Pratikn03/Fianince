@@ -77,6 +77,7 @@ PAPER1_MAP = {
     "thm:twocohort": ("p1_thm_twocohort_hankel_and_moment_gap", "p1_thm_twocohort_hankel"),
     "thm:kcohort": ("p1_thm_kcohort_lower_bound", "p1_thm_kcohort_lower_bound"),
     "prop:esprit": ("p1_thm_esprit_matching_upper_bound", "p1_prop_esprit_upper_bound"),
+    "cor:unknown_primitives": ("p1_cor_unknown_primitives", "p1_cor_unknown_primitives"),
     "lem:altpair": ("p1_lem_altpair_moment_matched_wasserstein", "p1_lem_altpair_moment_matched"),
     "thm:general": ("p1_thm_general_memory_minimax", "p1_thm_general_memory_minimax"),
     "thm:minphase": ("p1_thm_minphase_passive_identification", "p1_thm_minphase_identification"),
@@ -85,6 +86,18 @@ PAPER1_MAP = {
     "thm:discvalue": ("p1_thm_discvalue_ratio", "p1_thm_disclosure_value"),
     "thm:blind": ("p1_thm_blind_spectral_blindness", "p1_thm_spectral_blindness"),
     "thm:abstain": ("p1_thm_abstain_finite_window", "p1_thm_abstain_finite_window"),
+    "prop:endogenous_kappa": ("p1_prop_endogenous_kappa", "p1_prop_endogenous_kappa"),
+    "prop:primitives": ("p1_prop_primitives", "p1_prop_primitives"),
+    "prop:tied": ("p1_prop_tied", "p1_prop_tied"),
+    "thm:uniformw1": ("p1_thm_uniformw1", "p1_thm_uniformw1"),
+    "prop:strategic": ("p1_prop_strategic", "p1_prop_strategic"),
+    "prop:choice": ("p1_prop_choice", "p1_prop_choice"),
+    "prop:target": ("p1_prop_target", "p1_prop_target"),
+    "fhc:capacity": ("p1_fhc_capacity", "p1_fhc_capacity"),
+    "fhc:nodata-chance": ("p1_fhc_nodata_chance", "p1_fhc_nodata_chance"),
+    "fhc:decision": ("p1_fhc_decision", "p1_fhc_decision"),
+    "fhc:pair": ("p1_fhc_pair", "p1_fhc_pair"),
+    "fhc:priced": ("p1_fhc_priced", "p1_fhc_priced"),
 }
 
 PAPER2_MAP = {
@@ -124,6 +137,11 @@ PAPER2_MAP = {
     "prop:venue": (["is_unsafe_between", "is_worst_corner", "is_venue_example"], "p2_prop_venue"),
     "thm:venuebb": (["is_classify_safe_sound", "is_classify_unsafe_sound", "is_largest_safe_exists"], "p2_thm_venuebb"),
     "prop:probe": (["is_sequential_rule_correct"], "p2_prop_probe"),
+    "fhc:capacity": ("p2_fhc_capacity", "p2_fhc_capacity"),
+    "fhc:nodata-chance": ("p2_fhc_nodata_chance", "p2_fhc_nodata_chance"),
+    "fhc:decision": ("p2_fhc_decision", "p2_fhc_decision"),
+    "fhc:pair": ("p2_fhc_pair", "p2_fhc_pair"),
+    "fhc:priced": ("p2_fhc_priced", "p2_fhc_priced"),
 }
 
 

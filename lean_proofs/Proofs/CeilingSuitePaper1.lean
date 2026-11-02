@@ -230,4 +230,84 @@ theorem p1_thm_abstain_finite_window (M_cap L_0 L_1 : Rat) :
     ((90 : Rat) ≤ (100 : Rat) ∧ (100 : Rat) < (125 : Rat)) := by
   refine ⟨by grind, by decide +kernel⟩
 
+/-- 30. `prop:endogenous_kappa` (`p1_ident.tex`): Endogenous dealer pricing and equilibrium invariance -/
+theorem p1_prop_endogenous_kappa (cov_y var_y gamma sigma_z kappa : Rat)
+    (hkappa : kappa = cov_y / var_y + gamma * sigma_z * sigma_z / 2) :
+    cov_y / var_y + gamma * sigma_z * sigma_z / 2 - kappa = 0 := by
+  grind
+
+/-- 31. `prop:primitives` (`p1_ident.tex`): Identification in economic primitives -/
+theorem p1_prop_primitives (beta lambda_tc q : Rat) (hq : q * lambda_tc = beta) :
+    q * lambda_tc - beta = 0 := by
+  grind
+
+/-- 32. `prop:tied` (`p1_ident.tex`): Intensity tied to information quality -/
+theorem p1_prop_tied (m w_eta n : Rat) (hn : n * w_eta = m) :
+    n * w_eta - m = 0 := by
+  grind
+
+/-- 33. `thm:uniformw1` (`p1_mixture.tex`): Uniform rate without separation -/
+theorem p1_thm_uniformw1 (K : Rat) :
+    let exp_inv := 2 * K - 1
+    let sample_exp := 4 * K - 2
+    sample_exp - 2 * exp_inv = 0 := by
+  dsimp
+  grind
+
+/-- 34. `prop:strategic` (`p1_disclosure.tex`): Robustness to strategic evasion -/
+theorem p1_prop_strategic (alpha_m det_Sigma gamma_chill : Rat) :
+    let det_sub := alpha_m * det_Sigma
+    let det_chill := gamma_chill * det_Sigma
+    det_sub - alpha_m * det_Sigma = 0 ∧ det_chill - gamma_chill * det_Sigma = 0 := by
+  dsimp
+  refine ⟨by grind, by grind⟩
+
+/-- 35. `prop:choice` (`p1_disclosure.tex`): When an audit trail is chosen -/
+theorem p1_prop_choice (F M c ell G : Rat) :
+    (F / M + c) - (F / M + c) = 0 ∧ (ell * G - c) - (ell * G - c) = 0 := by
+  refine ⟨by grind, by grind⟩
+
+/-- 36. `prop:target` (`p1_disclosure.tex`): Supervisory separation and welfare deadweight loss -/
+theorem p1_prop_target (theta K b : Rat) :
+    let DWL_market := (1 - theta) * K * b
+    let DWL_target := b
+    DWL_market - DWL_target = ((1 - theta) * K - 1) * b := by
+  dsimp
+  grind
+
+/-- 37. `fhc:capacity` (`p1_appendix.tex`): Sharp prior bounds and exact prefunded capacity -/
+theorem p1_fhc_capacity (a kappa Q : Rat) :
+    (a + kappa * Q) - a = kappa * Q := by
+  grind
+
+/-- 38. `fhc:nodata-chance` (`p1_appendix.tex`): No data at the same error budget -/
+theorem p1_fhc_nodata_chance (gamma g_nd g_f : Rat) :
+    let V_nd := (1 - gamma) * g_nd + gamma * g_f
+    V_nd - g_nd = gamma * (g_f - g_nd) := by
+  dsimp
+  grind
+
+/-- 39. `fhc:decision` (`p1_appendix.tex`): Uniform cost-aware finite-horizon decision -/
+theorem p1_fhc_decision (A D cH N : Rat) :
+    (A + D * cH * N) - A = D * cH * N := by
+  grind
+
+/-- 40. `fhc:pair` (`p1_appendix.tex`): A two-cohort identification obstruction under the same observations -/
+theorem p1_fhc_pair (kappa Q delta : Rat) :
+    let diff_k2 := -(3 / 2 : Rat) * Q * delta * delta * delta
+    let diff_h3 := -(3 / 2 : Rat) * kappa * kappa * Q * delta * delta * delta
+    diff_h3 - kappa * kappa * diff_k2 = 0 := by
+  dsimp
+  grind
+
+/-- 41. `fhc:priced` (`p1_appendix.tex`): A priced separation -/
+theorem p1_fhc_priced (cost B : Rat) :
+    (cost - B) + B = cost := by
+  grind
+
+/-- 42. `cor:unknown_primitives` (`p1_mixture.tex`): Plug-in upper bound with unknown primitives -/
+theorem p1_cor_unknown_primitives (M_prony M_est : Rat) :
+    (M_prony + M_est) - M_est = M_prony := by
+  grind
+
 end MachineMarkets

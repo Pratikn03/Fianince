@@ -77,8 +77,8 @@ if ARGS.ssrn:
          "\\paragraph{Assumptions.} Supplement~\\ref{sec:assumptions} discusses the six modelling choices behind the "
          "results: linearity, price-first timing within a period, exponential memory (relaxed in "
          "Supplement~\\ref{sec:general}), algorithms that react to being probed, known primitives, and the observation "
-         "contracts. Unknown primitives can only make separation harder, so the lower bounds remain valid; the upper "
-         "bounds as stated assume the primitives are known.\n\n"),
+         "contracts. Unknown primitives can only make separation harder, so the lower bounds remain valid; "
+         "Corollary~\\ref{cor:unknown_primitives} proves that estimating $(p^*,\\kappa,a)$ at the parametric rate leaves the $\\Theta((\\Delta\\eta)^{-(4K-2)})$ upper-bound rate unchanged.\n\n"),
         ("\\subsection{A worked example: two Kalman desks}", "\\section{Unknown mixtures and passive data}",
          "A worked example: two Kalman desks",
          "A worked example with two Kalman desks that differ only in their signal-to-noise ratios "
@@ -105,17 +105,20 @@ if ARGS.ssrn:
          "Two public data sets report positions by trader class: the CFTC's weekly Commitments of Traders, mandated by "
          "law, in twenty regulated futures markets, and Binance's five-minute top-trader and all-account ratios, published "
          "voluntarily, in 30 perpetual markets. Supplements~\\ref{sec:cot} and~\\ref{sec:disc_data} report the "
-         "pre-specified tests in full. In both, class positions pin each class's fitted persistence to a narrow interval "
+         "pre-specified tests in full; the formal two-root stock--flow inventory bridge linking Remark~2.2 to reported "
+         "position stocks and flows is derived at the beginning of Supplement~\\ref{sec:cot}. In both datasets, class positions pin each class's fitted persistence to a narrow interval "
          "while prices leave it essentially unrestricted: the primary CFTC hypothesis holds in all eight markets, with "
          "price-only intervals 9 to 71 times wider, and in all twelve markets of a later registered replication; matching "
          "the weekly report's precision from prices alone would take, at the median, about 1{,}350 times as much data "
-         "(a post hoc lower bound, Table~\\ref{tab:dataequiv}). On 30 fresh Binance markets the horizon-matched "
+         "under standard root-$T$ scaling (a post hoc lower bound, Table~\\ref{tab:dataequiv}). On 30 fresh Binance markets the horizon-matched "
          "comparison gives a median width ratio of 7.3. Several pre-specified tests failed and are reported as they came out "
          "(Table~\\ref{tab:scorecard}): Binance class data did not improve out-of-sample return forecasts, the CFTC "
          "reports read as flows pinned down their own persistence in only 3 of 8 markets (6 were required), and a test "
-         "designed to separate learning memory from position turnover found a distinct faster root in only 2 of 8. A fitted persistence of aggregated positions also "
-         "reflects how slowly positions turn over, so these data restrict how persistent class positions are, not "
-         "learning memory itself.\n\n"),
+         "designed to separate learning memory from position turnover found a distinct faster root in only 2 of 8. These "
+         "test failures provide direct institutional evidence of within-class sign cancellation: coarse reporting buckets "
+         "(e.g., CFTC Leveraged Funds) mix offsetting strategies (such as cash--futures basis arbitrageurs trading against "
+         "trend-following momentum CTAs), proving why macroprudential surveillance requires granular, algorithm-tagged records "
+         "(such as MiFID II RTS 24 \\texttt{algo\\_id}).\n\n"),
     ]
     MOVES += [
         # Introduction to about four pages: detail moves to the supplement, each with a short replacement.
@@ -309,8 +312,8 @@ if ARGS.ssrn and supp_blocks:
     # Build the supplement once to learn its numbering, then point the preprint's references at it.
     bib = core[core.index("\\begin{thebibliography}"):core.index("\\end{thebibliography}") + len("\\end{thebibliography}")]
     pre = core[:core.index("\\begin{document}")]
-    supp_tex = (pre + "\\begin{document}\n\\begin{center}\\large Supplement to ``What Prices Reveal About Hidden Trader "
-                "Populations, and What Identifying Them Costs'': a spectral blind spot and the measurement of reduced-form "
+    supp_tex = (pre + "\\begin{document}\n\\begin{center}\\large Supplement to ``What Prices Cannot Tell a Market Supervisor: "
+                "The Cost of Identifying Trader Groups and the Value of Class Disclosure'': a spectral blind spot and the measurement of reduced-form "
                 "feedback\\end{center}\n\\renewcommand{\\thesection}{S\\arabic{section}}\\renewcommand{\\thetable}{S\\arabic{table}}"
                 "\\renewcommand{\\thefigure}{S\\arabic{figure}}\\renewcommand{\\theequation}{S\\arabic{equation}}\n"
                 "These two analyses accompany the paper but are not needed for its main results.\n\n"
@@ -345,8 +348,8 @@ if ARGS.ssrn:
                  "\\renewcommand{\\thesection}{S\\arabic{section}}\\setcounter{table}{0}\\renewcommand{\\thetable}{S\\arabic{table}}"
                  "\\setcounter{figure}{0}\\renewcommand{\\thefigure}{S\\arabic{figure}}\\setcounter{equation}{0}"
                  "\\renewcommand{\\theequation}{S\\arabic{equation}}\\fancyhead[R]{\\small Online Supplement}\n"
-                 "\\begin{center}{\\Large Online Supplement}\\\\[4pt]{\\large What Prices Reveal About Hidden Trader Populations, "
-                 "and What Identifying Them Costs}\\end{center}\n\\noindent The supplement contains the proofs (Section~S1), "
+                 "\\begin{center}{\\Large Online Supplement}\\\\[4pt]{\\large What Prices Cannot Tell a Market Supervisor:\\\\ "
+                 "The Cost of Identifying Trader Groups and the Value of Class Disclosure}\\end{center}\n\\noindent The supplement contains the proofs (Section~S1), "
                  "further results and robustness checks, the extended literature review and map of results, the discussion of the "
                  "assumptions, general memory, the real-noise test, the CFTC and Binance trader-class tests in full, the "
                  "hypothetical dollar illustration, a finite-horizon decision example, the spectral blind spot, the measurement "

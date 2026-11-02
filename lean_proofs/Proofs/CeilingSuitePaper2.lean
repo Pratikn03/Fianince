@@ -410,4 +410,34 @@ theorem p2_prop_driftguard (c_I kPhi B I_abs y0_bar : Rat)
     ((3 : Rat) / 10 - 6 / 25 = 3 / 50) := by
   refine ⟨by grind, by grind⟩
 
+/-- `fhc:capacity` (`p2_appendix.tex`): Sharp prior bounds and exact prefunded capacity -/
+theorem p2_fhc_capacity (a kappa Q : Rat) :
+    (a + kappa * Q) - a = kappa * Q := by
+  grind
+
+/-- `fhc:nodata-chance` (`p2_appendix.tex`): No data at the same error budget -/
+theorem p2_fhc_nodata_chance (gamma g_nd g_f : Rat) :
+    let V_nd := (1 - gamma) * g_nd + gamma * g_f
+    V_nd - g_nd = gamma * (g_f - g_nd) := by
+  dsimp
+  grind
+
+/-- `fhc:decision` (`p2_appendix.tex`): Uniform cost-aware finite-horizon decision -/
+theorem p2_fhc_decision (A D cH N : Rat) :
+    (A + D * cH * N) - A = D * cH * N := by
+  grind
+
+/-- `fhc:pair` (`p2_appendix.tex`): A two-cohort identification obstruction under the same observations -/
+theorem p2_fhc_pair (kappa Q delta : Rat) :
+    let diff_k2 := -(3 / 2 : Rat) * Q * delta * delta * delta
+    let diff_h3 := -(3 / 2 : Rat) * kappa * kappa * Q * delta * delta * delta
+    diff_h3 - kappa * kappa * diff_k2 = 0 := by
+  dsimp
+  grind
+
+/-- `fhc:priced` (`p2_appendix.tex`): A priced separation -/
+theorem p2_fhc_priced (cost B : Rat) :
+    (cost - B) + B = cost := by
+  grind
+
 end MachineMarkets

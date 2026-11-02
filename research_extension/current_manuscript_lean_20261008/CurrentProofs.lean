@@ -82,3 +82,6 @@ import CurrentProofs.Paper1GeneralMemoryUpper
 import CurrentProofs.Paper1GeneralMemoryRate
 import CurrentProofs.Paper1SupervisorySeparation
 import CurrentProofs.Paper1QuantityCapital
+import CurrentProofs.StockFlowAndPlugIn
+import CurrentProofs.Paper1Primitives
+import CurrentProofs.Paper1ConditionalClosures

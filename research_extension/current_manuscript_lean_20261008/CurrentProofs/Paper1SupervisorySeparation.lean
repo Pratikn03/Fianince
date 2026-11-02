@@ -1,4 +1,5 @@
 import CurrentProofs.Paper1LowerBound
+import CurrentProofs.Paper1MatchedPair
 import Mathlib.Algebra.BigOperators.Field
 
 /-!
@@ -17,7 +18,10 @@ weight `w_i = q_i η_i` and memory rate `r_i = 1 - η_i`.
 * `p1_prop_target_two_cohorts`: for the explicit two-cohort matched pair, if `d ≤ u/5` there is a nonempty interval of
   thresholds at which halting the larger group restores stability in economy `A`, while halting either group fails
   in economy `B`; and any rule that makes this decision correctly with probability at least `3/4` in both
-  economies from `N` reset experiments of `T` taps needs `σ² ≤ 2NT((2W 2^T d³) C_T)²`, i.e. `N = Ω(d^-6)`.
+  economies from `N` reset experiments of `T` taps needs `σ² ≤ 2NT((2W 2^T d³) C_T)²`, i.e. `N = Ω(d^-6)`;
+* `p1_prop_target_every_K`: for every number of cohorts `K = L + 1`, moment-matched populations have persistence gap
+  `O(d^(2K-1))` while targeted halting separates by `Ω(1)`, and any rule that correctly chooses targeted halting needs
+  `N = Ω(σ² d^-(4K-2))` reset experiments.
 -/
 
 namespace CurrentMM
@@ -203,5 +207,122 @@ theorem p1_prop_target_two_cohorts (a κ c d W H : ℝ) (hκ : 0 < κ) (hW : 0 <
   · intro N T variance hv hh' A hA herr0 herr1
     exact p1_thm_twocohort_lower_bound_formal a κ c d W H N T q rate q' rate' variance hv hc hd.le
       (by linarith) hH hW.le hr hr' hq hq' hh' A hA herr0 herr1
+
+/-- **Proposition `prop:target` (ii) for every `K = L + 1`.**
+    For two `K`-cohort populations whose moments match up to order `2L+1`:
+    (i) The persistence gap is bounded by `κ · 2 W d^(2L+1) / (u^(2L+1) (u - d))`;
+    (ii) If economy A has a dominant cohort with margin `Δq` over all cohorts in B, and `d` is small enough
+         that the persistence gap is strictly less than `κ Δq`, there is a non-empty interval of thresholds `s̄`
+         at which halting the dominant cohort in A restores stability, whereas halting any cohort in B fails;
+    (iii) Any test from `N` reset experiments of `T` taps that makes this decision with error at most `1/4`
+         satisfies `σ² ≤ 2 N T (2 W 2^T d^(2K-1) C_T)²`, i.e. `N = Ω(σ² d^-(4K-2))`. -/
+theorem p1_prop_target_every_K (L : ℕ) (a κ c d W H : ℝ)
+    (q rate q' rate' : Fin (L + 1) → ℝ)
+    (_ha : 0 ≤ a) (hκ : 0 < κ) (hc : 0 ≤ c) (hd : 0 < d) (hcd : c + d ≤ 1)
+    (hW : 0 < W) (hH : 0 ≤ H)
+    (hr : ∀ i : Fin (L + 1), 1 - rate i = c + d * gridNode L (2 * i + 1))
+    (hr' : ∀ i : Fin (L + 1), 1 - rate' i = c + d * gridNode L (2 * i))
+    (hq : ∀ i : Fin (L + 1), q i * rate i = W * ((2 * L + 1).choose (2 * i + 1) : ℝ) / 2 ^ (2 * L))
+    (hq' : ∀ i : Fin (L + 1), q' i * rate' i = W * ((2 * L + 1).choose (2 * i) : ℝ) / 2 ^ (2 * L))
+    (i_star : Fin (L + 1)) (Δq : ℝ) (_hΔq : 0 < Δq)
+    (h_dom : ∀ j : Fin (L + 1), q' j ≤ q i_star - Δq) :
+    let u := 1 - c
+    let SA := a + κ * ∑ i, q i
+    let SB := a + κ * ∑ i, q' i
+    let gap_bound := κ * (2 * W * d ^ (2 * L + 1) / (u ^ (2 * L + 1) * (u - d)))
+    d < u →
+    gap_bound < κ * Δq →
+    |SA - SB| ≤ gap_bound ∧
+    (∀ sbar : ℝ,
+      SA - κ * q i_star ≤ sbar ∧ sbar < SA - κ * q i_star + κ * Δq - gap_bound →
+      SA - κ * q i_star ≤ sbar ∧ ∀ j : Fin (L + 1), SB - κ * q' j > sbar) ∧
+    (∀ (N T : ℕ) (variance : NNReal), variance ≠ 0 →
+      (∀ t, t < T → |actualCohortImpulse a κ q' rate' t| ≤ H) →
+      ∀ (A : Set (ObservationRecord (N * T))), MeasurableSet A →
+      (gaussianRecordLaw (N * T) (p1RepeatedMean N T (actualCohortImpulse a κ q rate)) variance).real A ≤ 1 / 4 →
+      (gaussianRecordLaw (N * T) (p1RepeatedMean N T (actualCohortImpulse a κ q' rate')) variance).real Aᶜ ≤ 1 / 4 →
+      (variance : ℝ) ≤ 2 * N * T * ((2 * W * 2 ^ T * d ^ (2 * L + 1)) * p1GapConst a |κ| W H T) ^ 2) := by
+  intro u SA SB gap_bound hdu _hgap_lt
+  have hu : 0 < u := by simp only [u]; linarith
+  have hud : 0 < u - d := by linarith
+  have hpow : (0 : ℝ) < 2 ^ (2 * L) := by positivity
+  obtain ⟨hodd, heven⟩ := p1_grid_half_weight L
+  -- weights and nodes
+  let wA : Fin (L + 1) → ℝ := fun i => W * ((2 * L + 1).choose (2 * i + 1) : ℝ) / 2 ^ (2 * L)
+  let wB : Fin (L + 1) → ℝ := fun i => W * ((2 * L + 1).choose (2 * i) : ℝ) / 2 ^ (2 * L)
+  let sA : Fin (L + 1) → ℝ := fun i => gridNode L (2 * i + 1)
+  let sB : Fin (L + 1) → ℝ := fun i => gridNode L (2 * i)
+  have hwA : ∀ i, 0 ≤ wA i := fun i => by positivity
+  have hwB : ∀ i, 0 ≤ wB i := fun i => by positivity
+  have hsumA : ∑ i, wA i ≤ W := by
+    change ∑ i : Fin (L + 1), W * ((2 * L + 1).choose (2 * (i : ℕ) + 1) : ℝ) / 2 ^ (2 * L) ≤ W
+    rw [Fin.sum_univ_eq_sum_range (fun i => W * ((2 * L + 1).choose (2 * i + 1) : ℝ) / 2 ^ (2 * L)),
+      ← sum_div, ← mul_sum, hodd, mul_div_assoc, div_self hpow.ne', mul_one]
+  have hsumB : ∑ i, wB i ≤ W := by
+    change ∑ i : Fin (L + 1), W * ((2 * L + 1).choose (2 * (i : ℕ)) : ℝ) / 2 ^ (2 * L) ≤ W
+    rw [Fin.sum_univ_eq_sum_range (fun i => W * ((2 * L + 1).choose (2 * i) : ℝ) / 2 ^ (2 * L)),
+      ← sum_div, ← mul_sum, heven, mul_div_assoc, div_self hpow.ne', mul_one]
+  have hsA : ∀ i, |sA i| ≤ 1 := fun i => by
+    have : (2 * (i : ℕ) + 1) ≤ 2 * L + 1 := by have := i.isLt; omega
+    exact p1_gridNode_abs_le L _ this
+  have hsB : ∀ i, |sB i| ≤ 1 := fun i => by
+    have : (2 * (i : ℕ)) ≤ 2 * L + 1 := by have := i.isLt; omega
+    exact p1_gridNode_abs_le L _ this
+  -- rate positivity
+  have hη : ∀ i, rate i = u - d * sA i := fun i => by
+    have := hr i; simp only [u, sA]; linarith
+  have hη' : ∀ i, rate' i = u - d * sB i := fun i => by
+    have := hr' i; simp only [u, sB]; linarith
+  have hηpos : ∀ i, 0 < rate i := fun i => by
+    rw [hη i]
+    have : d * sA i ≤ d := by nlinarith [abs_le.mp (hsA i)]
+    linarith
+  have hηpos' : ∀ i, 0 < rate' i := fun i => by
+    rw [hη' i]
+    have : d * sB i ≤ d := by nlinarith [abs_le.mp (hsB i)]
+    linarith
+  have hqi : ∀ i, q i = wA i / (u - d * sA i) := fun i => by
+    have h1 : q i * rate i = wA i := hq i
+    rw [← h1, ← hη i]; field_simp [(hηpos i).ne']
+  have hqi' : ∀ i, q' i = wB i / (u - d * sB i) := fun i => by
+    have h1 : q' i * rate' i = wB i := hq' i
+    rw [← h1, ← hη' i]; field_simp [(hηpos' i).ne']
+  -- persistence gap from p1_persistence_gap
+  have hgap : |∑ i, q i - ∑ i, q' i| ≤ 2 * W * d ^ (2 * L + 1) / (u ^ (2 * L + 1) * (u - d)) := by
+    simp_rw [hqi, hqi']
+    refine p1_persistence_gap wA sA wB sB u d W (2 * L + 1)
+      hd.le hdu hwA hwB hsumA hsumB hsA hsB ?_
+    intro j hj
+    change ∑ i : Fin (L + 1), (W * ((2 * L + 1).choose (2 * (i : ℕ) + 1) : ℝ) / 2 ^ (2 * L)) * gridNode L (2 * (i : ℕ) + 1) ^ j =
+           ∑ i : Fin (L + 1), (W * ((2 * L + 1).choose (2 * (i : ℕ)) : ℝ) / 2 ^ (2 * L)) * gridNode L (2 * (i : ℕ)) ^ j
+    rw [Fin.sum_univ_eq_sum_range (fun i => W * ((2 * L + 1).choose (2 * i + 1) : ℝ) / 2 ^ (2 * L) * gridNode L (2 * i + 1) ^ j),
+        Fin.sum_univ_eq_sum_range (fun i => W * ((2 * L + 1).choose (2 * i) : ℝ) / 2 ^ (2 * L) * gridNode L (2 * i) ^ j)]
+    have hm := p1_grid_matched_moments L j hj
+    have e : ∀ (f : ℕ → ℝ), ∑ i ∈ range (L + 1), W * f i / 2 ^ (2 * L) * gridNode L (2 * i + 1) ^ j =
+        W / 2 ^ (2 * L) * ∑ i ∈ range (L + 1), f i * gridNode L (2 * i + 1) ^ j := by
+      intro f; rw [mul_sum]; refine sum_congr rfl (fun i _ => by ring)
+    have e' : ∀ (f : ℕ → ℝ), ∑ i ∈ range (L + 1), W * f i / 2 ^ (2 * L) * gridNode L (2 * i) ^ j =
+        W / 2 ^ (2 * L) * ∑ i ∈ range (L + 1), f i * gridNode L (2 * i) ^ j := by
+      intro f; rw [mul_sum]; refine sum_congr rfl (fun i _ => by ring)
+    rw [e (fun i => ((2 * L + 1).choose (2 * i + 1) : ℝ)),
+      e' (fun i => ((2 * L + 1).choose (2 * i) : ℝ)), hm]
+  have hSgap : |SA - SB| ≤ gap_bound := by
+    have e : SA - SB = κ * (∑ i, q i - ∑ i, q' i) := by simp only [SA, SB]; ring
+    rw [e, abs_mul, abs_of_pos hκ]
+    exact mul_le_mul_of_nonneg_left hgap hκ.le
+  refine ⟨hSgap, ?_, ?_⟩
+  · intro sbar ⟨hlo, hhi⟩
+    refine ⟨hlo, fun j => ?_⟩
+    have h1 : SB ≥ SA - gap_bound := by
+      have := (abs_le.mp hSgap).2; linarith
+    have h2 : κ * q' j ≤ κ * q i_star - κ * Δq := by
+      have hj := h_dom j
+      have := mul_le_mul_of_nonneg_left (show q' j ≤ q i_star - Δq from hj) hκ.le
+      calc κ * q' j ≤ κ * (q i_star - Δq) := this
+        _ = κ * q i_star - κ * Δq := by ring
+    linarith
+  · intro N T variance hv hh' A hA herr0 herr1
+    exact p1_thm_kcohort_lower_bound_every_K L a κ c d W H N T q rate q' rate' variance hv
+      hc hd.le hcd hH hW.le hr hr' hq hq' hh' A hA herr0 herr1
 
 end CurrentMM

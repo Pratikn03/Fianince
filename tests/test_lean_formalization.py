@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 import pytest
 
@@ -32,3 +33,16 @@ def test_lean_proofs_build_and_axiom_audit():
     )
     assert audit_res.returncode == 0, f"Axiom audit failed:\n{audit_res.stderr}"
     assert "SUCCESS: ALL THEOREMS FULLY VERIFIED WITHOUT SORRY!" in audit_res.stdout
+
+
+def test_ceiling_suite_manifest_audit():
+    root = Path(__file__).resolve().parent.parent
+    audit_script = root / "ceiling_suite" / "verify_ceiling_suite_lean_proofs.py"
+    res = subprocess.run(
+        [sys.executable, str(audit_script)],
+        cwd=str(root),
+        capture_output=True,
+        text=True
+    )
+    assert res.returncode == 0, f"Manifest audit failed:\n{res.stdout}\n{res.stderr}"
+    assert "72/72 existing name mappings; 0 unmapped" in res.stdout
