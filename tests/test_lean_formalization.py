@@ -1,4 +1,5 @@
 import os
+import json
 import shutil
 import subprocess
 import sys
@@ -45,4 +46,20 @@ def test_ceiling_suite_manifest_audit():
         text=True
     )
     assert res.returncode == 0, f"Manifest audit failed:\n{res.stdout}\n{res.stderr}"
-    assert "72/72 existing name mappings; 0 unmapped" in res.stdout
+    manifest = json.loads((root / "ceiling_suite" / "CEILING_SUITE_LEAN_PROOF_MANIFEST.json").read_text())
+    records = manifest["paper1"] + manifest["paper2"]
+    assert manifest["total_ceiling_suite_environments"] == len(records)
+    assert manifest["total_existing_name_mappings"] == len(records)
+    assert manifest["unmapped_labels"] == []
+    assert all(r["mathlib_theorem"] != "UNMAPPED" and r["mathlib_file"] for r in records)
+    by_label = {r["label"]: r for r in manifest["paper1"]}
+    assert "p1_supervisory_gaussian_unsafe_halt" in by_label["prop:robust_gate"]["mathlib_theorem"]
+    assert "p1_information_purchase_break_even" in by_label["prop:priced_decision"]["mathlib_theorem"]
+    assert by_label["prop:robust_gate"]["core_lean_theorem"] == "NOT_SEPARATELY_FORMALIZED"
+    # Name completeness must not silently become a semantic-coverage claim.
+    assert manifest["fresh_lean_build_performed"] is False
+    assert manifest["revised_labels_requiring_semantic_review"]
+    strict = subprocess.run([sys.executable, str(audit_script), "--require-complete"],
+                            cwd=root, capture_output=True, text=True)
+    assert strict.returncode != 0
+

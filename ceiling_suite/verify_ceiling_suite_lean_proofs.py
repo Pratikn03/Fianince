@@ -87,13 +87,15 @@ PAPER1_MAP = {
     "thm:discvalue": ("p1_thm_discvalue_ratio", "p1_thm_disclosure_value"),
     "thm:blind": ("p1_thm_blind_spectral_blindness", "p1_thm_spectral_blindness"),
     "thm:abstain": ("p1_thm_abstain_finite_window", "p1_thm_abstain_finite_window"),
-    "prop:endogenous_kappa": ("p1_prop_endogenous_kappa", "p1_prop_endogenous_kappa"),
+    "prop:endogenous_kappa": (["p1_endogenous_contraction_sensitivity"], []),
     "prop:primitives": ("p1_prop_primitives", "p1_prop_primitives"),
     "prop:tied": ("p1_prop_tied", "p1_prop_tied"),
     "thm:uniformw1": ("p1_thm_uniformw1", "p1_thm_uniformw1"),
-    "prop:strategic": ("p1_prop_strategic", "p1_prop_strategic"),
+    "prop:strategic": (["p1_sybil_share_count_bound", "p1_camouflage_unprofitable"], []),
     "prop:choice": ("p1_prop_choice", "p1_prop_choice"),
     "prop:target": ("p1_prop_target", "p1_prop_target"),
+    "prop:robust_gate": (["p1_supervisory_gaussian_unsafe_halt", "p1_supervisory_gaussian_unsafe_halt_budget"], []),
+    "prop:priced_decision": (["p1_no_data_throttle_optimal", "p1_no_data_capped_halt_optimal", "p1_information_purchase_break_even", "p1_optional_information_value_nonnegative"], []),
     "fhc:capacity": ("p1_fhc_capacity", "p1_fhc_capacity"),
     "fhc:nodata-chance": ("p1_fhc_nodata_chance", "p1_fhc_nodata_chance"),
     "fhc:decision": ("p1_fhc_decision", "p1_fhc_decision"),
@@ -207,6 +209,14 @@ def main():
     for k, v in ext_thms.items():
         mathlib_p2.setdefault(k, v)
         mathlib_p1.setdefault(k, v)
+    # Paper 1 now has measure-theoretic declarations outside the legacy wrapper.
+    # Record their real source locations; no rational analogue is invented.
+    p1_locations = {}
+    for source in sorted((MATHLIB_DIR / "CurrentProofs").glob("*.lean")):
+        for name, line in parse_lean_theorems(source).items():
+            assert name not in p1_locations, f"Duplicate theorem name: {name}"
+            p1_locations[name] = (str(source.relative_to(MATHLIB_DIR)), line)
+            mathlib_p1[name] = line
     core_p1 = parse_lean_theorems(core_p1_path)
     core_p2 = parse_lean_theorems(core_p2_path)
 
@@ -232,12 +242,12 @@ def main():
                 **env,
                 "formalization_status": "REQUIRES_SEMANTIC_REVIEW" if label in REVISED_LABELS else "NAME_MAPPING_ONLY",
                 "mathlib_theorem": ", ".join(f"CurrentMM.{m}" for m in m_list),
-                "mathlib_file": ", ".join(sorted({"CurrentProofs/InfoSafetyExtensions.lean" if m in ext_thms else "CurrentProofs/CeilingSuitePaper1.lean" for m in m_list})),
+                "mathlib_file": ", ".join(sorted({p1_locations[m][0] for m in m_list})),
                 "mathlib_line": mathlib_p1[m_list[0]],
                 "axioms": sorted(set().union(*(checked_by_name[f"CurrentMM.{m}"]["axioms"] for m in m_list))),
-                "core_lean_theorem": ", ".join(f"MachineMarkets.{c}" for c in c_list),
-                "core_lean_file": "Proofs/CeilingSuitePaper1.lean",
-                "core_lean_line": core_p1[c_list[0]],
+                "core_lean_theorem": ", ".join(f"MachineMarkets.{c}" for c in c_list) if c_list else "NOT_SEPARATELY_FORMALIZED",
+                "core_lean_file": "Proofs/CeilingSuitePaper1.lean" if c_list else "",
+                "core_lean_line": core_p1[c_list[0]] if c_list else None,
             }
         )
 
@@ -312,6 +322,7 @@ def main():
         "total_ceiling_suite_environments": len(records_p1) + len(records_p2),
         "total_existing_name_mappings": mapped_p1 + mapped_p2,
         "sha256": {
+            **{p1_locations[m][0]: sha256(MATHLIB_DIR / p1_locations[m][0]) for r in records_p1 for m in r["mathlib_theorem"].replace("CurrentMM.", "").split(", ") if m in p1_locations},
             "CurrentProofs/CeilingSuitePaper1.lean": sha256(mathlib_p1_path),
             "CurrentProofs/CeilingSuitePaper2.lean": sha256(mathlib_p2_path),
             "CurrentProofs/InfoSafetyExtensions.lean": sha256(ext_path),
