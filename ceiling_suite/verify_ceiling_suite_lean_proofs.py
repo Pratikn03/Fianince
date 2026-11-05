@@ -19,7 +19,8 @@ import sys
 
 # A retained label does not transfer semantic coverage to a revised statement.
 REVISED_LABELS = {"prop:driftguard", "thm:forward", "prop:inventory_S", "thm:minphase",
-                  "thm:window", "thm:certcost", "prop:esprit"}
+                  "thm:window", "thm:certcost", "prop:esprit", "prop:endogenous_kappa",
+                  "prop:strategic", "prop:target"}
 
 
 def unmapped_record(idx, paper, env):
@@ -384,3 +385,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -1,0 +1,615 @@
+{
+  "source_sha256": "7b072db1cca5f16232fc9dbc9adcced91c9c125aa4ef622b729373dd7c629aa2",
+  "scope": "Standalone SSRN manuscript; exact statement hashes and historical typed signatures. A mapping is not equivalence.",
+  "full_manuscript_formalization_complete": false,
+  "human_independent_review_complete": false,
+  "rows": [
+    {
+      "label": "lem:micro",
+      "environment": "lemma",
+      "source_line": 158,
+      "statement_sha256": "ec644568b587c55c462454822e6eaf9b44bffc8a4d2b2213115d31d337635858",
+      "statement": "\\begin{lemma}[Two motivating examples: filtering and learning]\\label{lem:micro}\n\\begin{enumerate}[label=(\\roman*)]\n\\item \\emph{Kalman memory.} A desk that tracks a latent random-walk trend $v_{t+1}=v_t+\\zeta_{t+1}$, $\\zeta\\sim N(0,\\sigma_\\zeta^2)$, from signals $r_t=v_t+\\nu_t$, $\\nu\\sim N(0,\\sigma_\\nu^2)$, using the steady-state Kalman filter, updates as $\\hat v_{t+1}=(1-\\eta)\\hat v_t+\\eta r_t$ with\n\\begin{equation}\\label{eq:kgain}\n\\eta=\\frac{-\\sigma_\\zeta^2+\\sqrt{\\sigma_\\zeta^4+4\\sigma_\\zeta^2\\sigma_\\nu^2}}{2\\sigma_\\nu^2}\\in(0,1).\n\\end{equation}\n\\item \\emph{Gradient memory.} Online gradient descent with $L_2$ regularization $\\gamma\\in(0,1)$, step size $\\alpha>0$ and loss $\\tfrac12H(x_t-\\theta_t)^2$ gives $\\theta_{t+1}=(1-\\eta)\\theta_t+\\eta q x_t$ with $\\eta=\\gamma+\\alpha H\\in(0,1)$ and $q=\\alpha H/\\eta$. A tabular value update with learning rate $\\eta$ at a fixed state has the same form; general reinforcement-learning policies need not.\n\\end{enumerate}\n\\end{lemma}",
+      "historical_mapped_declarations": [
+        "p1_prop_kalman_memory",
+        "p1_prop_ogd_memory"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_prop_kalman_memory": "\u2200 (Q R vHat r : \u211d),\n  0 < Q \u2192\n    0 < R \u2192\n      have eta := (-Q + \u221a(Q ^ 2 + 4 * Q * R)) / (2 * R);\n      (0 < eta \u2227 eta < 1) \u2227 R * eta ^ 2 + Q * eta - Q = 0 \u2227 vHat + eta * (r - vHat) = (1 - eta) * vHat + eta * r",
+        "p1_prop_ogd_memory": "\u2200 (gamma alpha H theta x : \u211d),\n  0 < gamma + alpha * H \u2192\n    gamma + alpha * H < 1 \u2192\n      have eta := gamma + alpha * H;\n      have q := alpha * H / eta;\n      (0 < eta \u2227 eta < 1) \u2227 (1 - gamma) * theta + alpha * H * (x - theta) = (1 - eta) * theta + eta * (q * x)"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Steady-state filtering/OGD under their distinct information and objective assumptions; not identification of learning from fitted market persistence."
+    },
+    {
+      "label": "lem:cm",
+      "environment": "lemma",
+      "source_line": 176,
+      "statement_sha256": "68d2345ff4261151b9c388a41ee86e73aed06da94cabc39c38a96e084b163d71",
+      "statement": "\\begin{lemma}[Positive price-response geometry]\\label{lem:cm}\nIn the positive, stable economy the impulse response is a nonnegative mixture of decaying exponentials,\n\\[\nh_j=\\sum_\\ell \\omega_\\ell\\lambda_\\ell^j,\\qquad \\omega_\\ell\\ge0,\\quad \\sum_\\ell\\omega_\\ell=\\kappa,\\quad 0\\le\\lambda_\\ell<1 .\n\\]\nIt is completely monotone and nonincreasing; its peak is the direct impact $\\kappa$, even though $J$ is non-normal. In price/memory coordinates the price-only gain is $\\sup_t\\|e_x^\\top J^t\\|_2=1$.\n\\end{lemma}",
+      "historical_mapped_declarations": [
+        "p1_lem_cm_positive_response"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_lem_cm_positive_response": "\u2200 (w1 w2 lam1 lam2 kappa : \u211d),\n  0 \u2264 w1 \u2192\n    0 \u2264 w2 \u2192\n      w1 + w2 = kappa \u2192\n        0 \u2264 lam1 \u2192\n          lam1 < 1 \u2192\n            0 \u2264 lam2 \u2192\n              lam2 < 1 \u2192\n                \u2200 (j : \u2115),\n                  have h := fun m => w1 * lam1 ^ m + w2 * lam2 ^ m;\n                  0 \u2264 h j \u2227 h (j + 1) \u2264 h j \u2227 h j \u2264 kappa \u2227 0 \u2264 h j - 2 * h (j + 1) + h (j + 2)"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Positive stable response class; verify initial-state and a=0 boundary conventions before reuse."
+    },
+    {
+      "label": "thm:merged",
+      "environment": "theorem",
+      "source_line": 205,
+      "statement_sha256": "53d15483f13c017b336806ec2125c8e87631537a898b8e3af5f33bfce086a778",
+      "statement": "\\begin{theorem}[Merged rate--weight equivalence]\\label{thm:merged}\nLet $\\kappa>0$ and $a\\in[0,1)$ be known. Use zero initial states and a common probe contract, and observe the modeled price state $x_t$.\n\\begin{enumerate}[label=(\\roman*)]\n\\item \\emph{Equivalence class.} Two economies $\\mathcal E^A=\\{(q_i^A,\\eta_i^A)\\}$ and $\\mathcal E^B=\\{(q_j^B,\\eta_j^B)\\}$ produce identical price responses for every probe sequence if and only if their merged measures coincide:\n\\begin{equation}\\label{eq:merged}\n\\sum_{i:\\eta_i^A=\\eta} q_i^A\\eta \\;=\\; \\sum_{j:\\eta_j^B=\\eta} q_j^B\\eta\\qquad\\forall\\eta\\in(0,1].\n\\end{equation}\nWrite $a'=a+\\kappa M(\\{0\\})$, so that cohorts with $\\eta=1$ (rate $0$) act as part of the anchor. For $a'\\neq0$ the minimal realization has dimension $1+|\\mathrm{supp}(M)\\cap(0,1)|$, counting distinct positive rates with nonzero merged weight after signed cancellation; for $a'=0$ the price carries no state of its own and the dimension is $|\\mathrm{supp}(M)\\cap(0,1)|$. A cohort with $\\eta=1$ merges into the anchor $a$ without adding a pole.\n\\item \\emph{Separation complexity under average power.} Consider testing a single cohort with rate $\\bar\\eta$ against two cohorts with rates $\\bar\\eta\\pm\\delta$ and the same total weight, on a compact family that is uniformly Schur stable with all rates in $[\\epsilon,1-\\epsilon]$ for some $\\epsilon>0$. Observe $\\tilde x_t=x_t+\\nu_t$ with $\\nu_t\\sim N(0,\\sigma_\\nu^2)$ and use deterministic probes with $\\frac1T\\sum_{t<T}v_t^2\\le P$. Any test with worst-case error at most $\\alpha\\in(0,1/4)$ needs\n\\begin{equation}\\label{eq:Tpower}\nT\\;\\ge\\;\\frac{4\\sigma_\\nu^2(1-2\\alpha)^2}{C_{\\mathcal F}^2P\\,\\delta^4}=\\Omega(\\delta^{-4}),\n\\end{equation}\nwhere $C_{\\mathcal F}$ depends only on the family, through $\\epsilon$, the bound on $|H|$ implied by uniform stability, and the total weight $q$.\n\\end{enumerate}\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_merged_equivalence_and_resolvent"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_merged_equivalence_and_resolvent": "\u2200 (kappa z a G0 G1 sigma_nu alpha K P delta T : \u211d),\n  z - a - kappa * G0 \u2260 0 \u2192\n    z - a - kappa * G1 \u2260 0 \u2192\n      0 < K \u2192\n        0 < P \u2192\n          0 < delta \u2192\n            0 < sigma_nu \u2192\n              (1 - 2 * alpha) ^ 2 \u2264 K ^ 2 * P * delta ^ 4 * T / (4 * sigma_nu ^ 2) \u2192\n                have H0 := kappa / (z - a - kappa * G0);\n                have H1 := kappa / (z - a - kappa * G1);\n                H1 - H0 = H1 * H0 * (G1 - G0) \u2227 4 * sigma_nu ^ 2 * (1 - 2 * alpha) ^ 2 / (K ^ 2 * P * delta ^ 4) \u2264 T"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Merged measure, not ownership or multiplicity at equal rates. Pole count does not by itself certify the unformalized minimal-realization step."
+    },
+    {
+      "label": "prop:endogenous_kappa",
+      "environment": "proposition",
+      "source_line": 230,
+      "statement_sha256": "e4c45c85dd055f838d76314cdda5585e2b1557dbc3208ee506231654d74366a8",
+      "statement": "\\begin{proposition}[Conditional endogenous-pricing invariance]\\label{prop:endogenous_kappa}\nLet $\\kappa=\\mathcal K(\\Gamma_M(\\kappa))$ on a common admissible interval, with identical innovation laws, initial-state conventions and other primitives across economies. Here $\\Gamma_M(\\kappa)$ is the specified covariance record at a fixed impact and $\\mathcal K$ is a maintained dealer rule, not a derived general equilibrium.\n\\begin{enumerate}[label=(\\roman*)]\n\\item If equal merged measures imply the same map $\\Gamma_M$ and the fixed point is unique (or a common selection rule depends only on that map), equal merged measures give equal selected impacts.\n\\item Suppose $\\mathcal K$ is $L_K$-Lipschitz, each covariance map is $L_\\Gamma$-Lipschitz in impact, $L_KL_\\Gamma<1$, and $\\sup_\\kappa\\|\\Gamma_A(\\kappa)-\\Gamma_B(\\kappa)\\|\\le\\epsilon$. For existing fixed points,\n\\begin{equation}\\label{eq:kappa_closeness}\n |\\kappa_A-\\kappa_B|\\le\\frac{L_K\\epsilon}{1-L_KL_\\Gamma}.\n\\end{equation}\nThus a covariance discrepancy of order $(\\Delta\\eta)^{2K-1}$ preserves that order only under these uniform conditions.\n\\end{enumerate}\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_endogenous_kappa"
+      ],
+      "additional_review_declarations": [
+        "p1_endogenous_contraction_sensitivity"
+      ],
+      "historical_types": {
+        "p1_prop_endogenous_kappa": "\u2200 (cov_y var_y gamma sigma_z : \u211d),\n  0 < var_y \u2192\n    0 \u2264 sigma_z \u2192\n      have kappa := cov_y / var_y + gamma * sigma_z ^ 2 / 2;\n      \u2200 (cov_y' var_y' : \u211d), cov_y' = cov_y \u2192 var_y' = var_y \u2192 cov_y' / var_y' + gamma * sigma_z ^ 2 / 2 = kappa"
+      },
+      "status": "CONDITIONAL_REWRITE_NEW_BUILD_REQUIRED",
+      "scope_note": "Rewritten: common selected fixed point; Lipschitz/contraction sensitivity. New scalar bound does not derive a dealer equilibrium or covariance-only information set."
+    },
+    {
+      "label": "thm:quantity",
+      "environment": "theorem",
+      "source_line": 250,
+      "statement_sha256": "eec83c31c8f700fda16dcad1964a2390a3a08c5c2057bc069dd0f93a4c97a72a",
+      "statement": "\\begin{theorem}[Sharp probing-resource orders for a known symmetric pair]\\label{thm:quantity}\nFix $0\\le a<1$, $\\kappa,q>0$, $S=a+\\kappa q<1$ and $\\eta\\in(0,1)$. Compare a single cohort of weight $q$ and rate $\\eta$ with two cohorts of weight $q/2$ and rates $\\eta\\pm\\delta$, both in $[\\epsilon,1-\\epsilon]$. All parameters are known. The price receives executed quantity through $\\kappa v_t$, starts from zero, has no process noise, and is observed with independent $N(0,\\sigma^2)$ noise. Probes are deterministic and common to both alternatives. Let $d_T=(h^\\delta_j-h^0_j)_{j<T}$ and $K_*=2\\kappa^2q/[\\epsilon^3(1-S)^2]$.\n\\begin{enumerate}[label=(\\roman*)]\n\\item For every probe with $\\sum_t|v_t|\\le V$,\n\\begin{equation}\\label{eq:klV}\n\\KL(P_0^v\\|P_\\delta^v)\\le\\frac{K_*^2V^2\\delta^4}{2\\sigma^2},\\qquad e_{\\rm worst}\\ge\\frac12\\Bigl(1-\\frac{K_*V\\delta^2}{2\\sigma}\\Bigr)_+ .\n\\end{equation}\n\\item The optimal worst-case error over these probes and all classifiers is exactly\n\\begin{equation}\\label{eq:exacterr}\ne^*_T(V)=\\Phi\\!\\left(-\\frac{V\\|d_T\\|_2}{2\\sigma}\\right),\n\\end{equation}\nattained by a pulse at the first input and the likelihood-ratio test. Waiting adds information but $\\|d_T\\|_2\\uparrow\\|d_\\infty\\|_2<\\infty$, so it cannot make the error arbitrarily small at fixed $V$. Error at most $\\alpha<1/2$ requires $V\\ge2\\sigma(1-2\\alpha)/(K_*\\delta^2)$ independently of $T$.\n\\item The first two taps coincide and $d_2=-\\kappa^2q\\delta^2$. A single pulse of size\n\\begin{equation}\\label{eq:pulse}\nA=\\frac{2\\sigma\\Phi^{-1}(1-\\alpha)}{\\kappa^2q\\delta^2}\n\\end{equation}\nand the third observation achieve error exactly $\\alpha$. The necessary and sufficient quantity order is $\\delta^{-2}$.\n\\item Under average power $\\sum_{t<T}v_t^2\\le PT$, the necessary horizon order is $\\delta^{-4}$, attained by the pulse whenever $T\\ge\\max\\{3,\\lceil A^2/P\\rceil\\}$.\n\\item For a fixed monetary price exposure $\\lambda\\neq0$, additive reserve $L$ and cost envelope $c\\sum|v_t|$, the sharp robust quantity allowance under budget $B>L$ is $V_B=(B-L)/(|\\lambda|\\kappa+c)$.\n\\end{enumerate}\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_quantity_sharp_orders"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_quantity_sharp_orders": "\u2200 (a kappa q eta delta V B L lam c : \u211d),\n  0 < kappa \u2192\n    0 < |lam| \u2192\n      0 \u2264 c \u2192\n        have d0 := kappa - kappa;\n        have d1 :=\n          kappa * (a + kappa * (q / 2 * (eta - delta) + q / 2 * (eta + delta))) - kappa * (a + kappa * (q * eta));\n        have d2 :=\n          kappa *\n              ((a + kappa * q * eta) ^ 2 +\n                kappa * (q / 2 * (eta - delta) * (1 - (eta - delta)) + q / 2 * (eta + delta) * (1 - (eta + delta)))) -\n            kappa * ((a + kappa * q * eta) ^ 2 + kappa * q * eta * (1 - eta));\n        (d0 = 0 \u2227 d1 = 0 \u2227 d2 = -kappa ^ 2 * q * delta ^ 2) \u2227\n          (|lam| * kappa * V + c * V + L \u2264 B \u2194 V \u2264 (B - L) / (|lam| * kappa + c))"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Separate executed quantity, disturbance and testing resources. Exact Gaussian quantile identity and solvency converse have historically narrower formal coverage."
+    },
+    {
+      "label": "thm:kcohort",
+      "environment": "theorem",
+      "source_line": 298,
+      "statement_sha256": "86bc57056dfb1795746ae75b3d41740de45d808afde803c63dc76a9cc4d0532f",
+      "statement": "\\begin{theorem}[$K$-cohort two-point lower bound]\\label{thm:kcohort}\nFix $K\\ge2$, a center $r_c\\in(0,1)$, total merged weight $W>0$ and $0<\\Delta\\eta<\\min(r_c,1-r_c)$, so that all rates lie in $(0,1)$, and assume $a+\\kappa W/(1-r_c-\\Delta\\eta)<1$, so that every candidate economy is Schur stable. Each reset experiment observes $T\\ge2K$ noisy taps ($T=\\infty$ allowed); the bound below uses the full response norm, which dominates any finite prefix. There exist two $K$-cohort economies with rates in $r_c+\\Delta\\eta[-1,1]$, positive weights, and merged measures whose moments of order $0,\\ldots,2K-2$ coincide while the moment of order $2K-1$ differs by a constant times $(\\Delta\\eta)^{2K-1}$. Their impulse responses differ by $\\|h^A-h^B\\|_2\\asymp(\\Delta\\eta)^{2K-1}$, so recovering the weights from $N$ independent noisy reset experiments with worst-case error probability below $1/4$ requires\n\\[\nN\\;\\ge\\;c\\,\\sigma^2(\\Delta\\eta)^{-(4K-2)} .\n\\]\nThe same requirement holds for the permutation-invariant loss $W_1(\\hat M,M)$ between estimated and true merged measures at accuracy $c_KW\\Delta\\eta$, where $2c_K>0$ is the Wasserstein distance between the two normalized quadrature rules, so no relabelling of atoms escapes it.\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_kcohort_lower_bound"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_kcohort_lower_bound": "\u2200 (Delta_eta W g_K : \u211d),\n  0 < W \u2192\n    g_K \u2260 0 \u2192\n      0 < Delta_eta \u2192\n        have m0_R := 1 / 4 + 3 / 4;\n        have m1_R := 1 / 4 * -1 + 3 / 4 * (1 / 3);\n        have m2_R := 1 / 4 * (-1) ^ 2 + 3 / 4 * (1 / 3) ^ 2;\n        have m3_R := 1 / 4 * (-1) ^ 3 + 3 / 4 * (1 / 3) ^ 3;\n        (m0_R = 1 \u2227 m1_R = 0 \u2227 m2_R = 1 / 3 \u2227 m3_R = -2 / 9) \u2227\n          W * (0 - m3_R) * Delta_eta ^ 3 = 2 / 9 * W * Delta_eta ^ 3 \u2227 W * g_K * Delta_eta ^ 3 \u2260 0"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Finite record and binomial pair formally supported; distinguish from a quadrature construction and constants uniform in record length."
+    },
+    {
+      "label": "prop:esprit",
+      "environment": "theorem",
+      "source_line": 318,
+      "statement_sha256": "72731a7ee76eea08b2f5ce9d0b1e51cfe1caf4eed16242f3f02c37623fed6ecc",
+      "statement": "\\begin{theorem}[Matching upper bound for every $K$]\\label{prop:esprit}\nFix $K\\ge2$, a compact set $\\mathcal S\\subset\\{s\\in[-1,1]^K:s_1<\\cdots<s_K\\}$ of ordered rescaled rates with $\\min_{i\\ne j}|s_i-s_j|\\ge\\gamma>0$, and merged weights $w_i\\in[\\omega_{\\min},\\omega_{\\max}]$ with $\\omega_{\\min}>0$. Consider the class of $K$-cohort economies with rates $r_c+\\Delta\\eta\\,s$, $s\\in\\mathcal S$, and $N$ independent reset experiments whose responses carry Gaussian noise with variance $\\sigma^2$. There are constants $c_0,C>0$ depending only on $(K,\\mathcal S,\\gamma,\\omega_{\\min},\\omega_{\\max},a,\\kappa,r_c)$ such that, whenever $\\epsilon_N\\equiv\\sigma N^{-1/2}(\\Delta\\eta)^{-(2K-1)}\\le c_0/\\sqrt{\\log(4K/\\beta)}$, Prony's method applied to the first $2K$ estimated kernel values, with its output atoms listed in increasing order of rate, recovers the weights with\n\\[\n\\max_i|\\hat w_i-w_i|\\;\\le\\;C\\sqrt{\\log(4K/\\beta)}\\;\\epsilon_N\n\\]\nwith probability at least $1-\\beta$. Hence $N=C'\\sigma^2(\\Delta\\eta)^{-(4K-2)}$ experiments suffice for any fixed accuracy and confidence. On any such class that contains the Gauss and Gauss--Radau pair of Theorem~\\ref{thm:kcohort} (a rich class), together with that theorem the minimax sample requirement is $N^*\\asymp\\sigma^2(\\Delta\\eta)^{-(4K-2)}$. On smaller classes the upper bound need not be tight: if the rates are known, for example, the weights need only order $\\sigma^2(\\Delta\\eta)^{-2}$ experiments. The constants $c_0$ and $C$ grow quickly with $K$, through the conditioning of the moment map; the theorem gives the order in $\\Delta\\eta$ for fixed $K$, not a usable constant for large $K$ (in Supplement Table~\\ref{tab:stress} our double-precision Prony implementation already fails at $K=4$ on the disclosure grid).\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_esprit_matching_upper_bound"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_esprit_matching_upper_bound": "\u2200 (w1 w2 s1 s2 omega_min gamma r_c Delta_eta : \u211d),\n  omega_min \u2264 w1 \u2192\n    omega_min \u2264 w2 \u2192\n      0 < omega_min \u2192\n        0 < gamma \u2192\n          gamma ^ 2 \u2264 (s1 - s2) ^ 2 \u2192\n            have r1 := r_c + Delta_eta * s1;\n            have r2 := r_c + Delta_eta * s2;\n            have k0 := w1 + w2;\n            have k1 := w1 * r1 + w2 * r2;\n            have k2 := w1 * r1 ^ 2 + w2 * r2 ^ 2;\n            have k3 := w1 * r1 ^ 3 + w2 * r2 ^ 3;\n            have mu0 := k0;\n            have mu1 := k1 - r_c * k0;\n            have mu2 := k2 - 2 * r_c * k1 + r_c ^ 2 * k0;\n            have mu3 := k3 - 3 * r_c * k2 + 3 * r_c ^ 2 * k1 - r_c ^ 3 * k0;\n            have det_confluent := w1 * w2 * (s1 - s2) ^ 4;\n            (mu0 = w1 + w2 \u2227\n                mu1 = Delta_eta * (w1 * s1 + w2 * s2) \u2227\n                  mu2 = Delta_eta ^ 2 * (w1 * s1 ^ 2 + w2 * s2 ^ 2) \u2227\n                    mu3 = Delta_eta ^ 3 * (w1 * s1 ^ 3 + w2 * s2 ^ 3)) \u2227\n              omega_min ^ 2 * gamma ^ 4 \u2264 det_confluent \u2227 0 < det_confluent"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Revised statement. Existing two-point wrapper is insufficient; inspect all-K Prony/inverse-map declarations and the exact compact rich parameter class."
+    },
+    {
+      "label": "cor:unknown_primitives",
+      "environment": "corollary",
+      "source_line": 334,
+      "statement_sha256": "82b9f4c668cdf19e6c3b538de23a74d8907e630acc3f66951ad5995bf74e1e3a",
+      "statement": "\\begin{corollary}[Plug-in upper bound with unknown primitives $(p^*,\\kappa,a)$]\n\\label{cor:unknown_primitives}\nSuppose the fundamental value $p^*$, price impact $\\kappa\\in[\\underline{\\kappa},\\overline{\\kappa}]\\subset(0,\\infty)$, and persistence $a\\in[0,\\bar{a}]\\subset[0,1)$ are unknown to the observer. Subtracting the pre-probe price $p_{n,0}=p^*+\\nu_{n,-1}$ eliminates $p^*$ (doubling observation noise variance to $2\\sigma^2$), and $\\hat{\\kappa}=\\hat{h}_0$ estimates $\\kappa$ from the impact tap $h_0 = \\kappa$ with $|\\hat{\\kappa}-\\kappa|\\le\\sigma N^{-1/2}\\sqrt{2\\log(8K/\\beta)}$. Since the lag-1 response satisfies $h_1 = a\\kappa + \\kappa^2 k_0$, any $\\sqrt{N}$-consistent estimator of $a$ with $|\\hat{a}-a|\\le C_a\\sigma N^{-1/2}\\sqrt{2\\log(8K/\\beta)}$ (for example from lag-0 and lag-1 taps, a pre-probe free-decay step, or regressing price changes on aggregate anonymous order flow under contract $I_1$) can be plugged in: replacing $(a,\\kappa)$ by $(\\hat{a},\\hat{\\kappa})$ in the closed-loop deconvolution of Theorem~\\ref{prop:esprit} yields\n\\[\n\\max_{0\\le m\\le 2K-1}|\\hat{k}_m^{\\mathrm{plug}}-\\hat{k}_m|\\le L_{a,\\kappa}\\big(|\\hat{a}-a|+|\\hat{\\kappa}-\\kappa|\\big)\\le C_{a,\\kappa}\\sigma N^{-1/2}\\sqrt{\\log(8K/\\beta)}\n\\]\nwith probability at least $1-\\beta/2$, where $L_{a,\\kappa}<\\infty$ depends only on $(K,\\underline{\\kappa},\\overline{\\kappa},\\bar{a},W)$ and not on $\\Delta\\eta$. Consequently, Prony's method with plug-in $(\\hat{a},\\hat{\\kappa})$ achieves the exact same minimax sample complexity $N=C''\\sigma^2(\\Delta\\eta)^{-(4K-2)}$ as when $(p^*,\\kappa,a)$ are known.\n\\end{corollary}",
+      "historical_mapped_declarations": [
+        "p1_cor_unknown_primitives"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_cor_unknown_primitives": "\u2200 (M_prony M_est : \u211d), 0 \u2264 M_est \u2192 M_prony \u2264 M_prony + M_est"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Plug-in stability is conditional on bounded primitive error and nonzero impact; does not identify the fundamental proxy from prices."
+    },
+    {
+      "label": "thm:minphase",
+      "environment": "theorem",
+      "source_line": 354,
+      "statement_sha256": "3897ba8159e22c88b357f6e5c3e711bb1fabb8aae409e8af294301fe185528b9",
+      "statement": "\\begin{theorem}[Passive identification: minimum phase]\\label{thm:minphase}\nIn a stable economy with $0<a<1$, distinct $0<r_i<1$ and nonzero merged weights, the zeros of $H$ are the memory rates $r_i$ together with a structural zero at $z=0$, and $H$ is minimum phase. Degenerate anchor and zero-rate cases require the cancellations described in the merged-equivalence proof. With a single price innovation, the price spectrum identifies $H$ up to scale, hence the memory rates; with $\\kappa$ and $a$ known, as in Theorem~\\ref{thm:merged}, it identifies the merged measure.\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_minphase_passive_identification"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_minphase_passive_identification": "\u2200 (kappa a w1 w2 r1 r2 : \u211d),\n  kappa \u2260 0 \u2192\n    w1 \u2260 0 \u2192\n      r1 \u2260 0 \u2192\n        r1 \u2260 r2 \u2192\n          have D := fun z => (z - r1) * (z - r2);\n          have N := fun z => w1 * z * (z - r2) + w2 * z * (z - r1);\n          have Denom := fun z => (z - a) * D z - kappa * N z;\n          D r1 = 0 \u2227 Denom r1 = -kappa * w1 * r1 * (r1 - r2) \u2227 Denom r1 \u2260 0"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Revised statement. Separate zero geometry, spectral factorization, known innovation variance and minimum-phase normalization."
+    },
+    {
+      "label": "prop:passive",
+      "environment": "theorem",
+      "source_line": 360,
+      "statement_sha256": "d940d36b5103a6b5a3ea72d3605885d6330750026acdde471087e67c553ae061",
+      "statement": "\\begin{theorem}[Passive cost]\\label{prop:passive}\nSuppose the price is observed passively as the stationary output $x_t=H_\\theta(L)\\xi_t$ of i.i.d.\\ Gaussian innovations $\\xi_t\\sim N(0,\\sigma^2)$, $\\sigma^2>0$ known, without observation noise, for $\\theta$ in a compact, uniformly Schur-stable family with rates in $[\\eta_{\\min},\\eta_{\\max}]\\subset(0,1)$, and let $D(\\theta_1\\|\\theta_0)$ be the Kullback--Leibler divergence rate per observation.\n\\begin{enumerate}[label=(\\roman*)]\n\\item For a single cohort at $\\bar\\eta$ against the symmetric pair at $\\bar\\eta\\pm\\delta$ with the same total weight, $D=\\Theta(\\delta^4)$.\n\\item For the moment-matched two-cohort economies of Theorem~\\ref{thm:twocohort}, $D=\\Theta(\\tau^2(\\Delta\\eta)^6)$.\n\\item For every $K\\ge2$, for the $K$-cohort Gauss and Gauss--Radau economies of Theorem~\\ref{thm:kcohort}, $D=\\Theta((\\Delta\\eta)^{4K-2})$.\n\\end{enumerate}\nHence any test based on $T$ passive observations with worst-case error at most $\\alpha<1/4$ needs $T=\\Omega(\\delta^{-4})$, $T=\\Omega(\\tau^{-2}(\\Delta\\eta)^{-6})$ and $T=\\Omega((\\Delta\\eta)^{-(4K-2)})$ respectively, uniformly as the separation shrinks: passive data cost at least the same polynomial order as active probing for every number of cohorts. For each fixed pair, at fixed type-I error the likelihood-ratio test's type-II error decays at exponential rate $D$ (Stein's lemma), and both errors decay at the Chernoff-information rate, which is of the same order in the separation; so the orders are the right ones; we do not claim that this attainment is uniform as the separation shrinks.\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_passive_cost"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_passive_cost": "\u2200 (u c_spec delta tau p_minus p_plus Delta_eta : \u211d),\n  0 < c_spec \u2192\n    delta \u2260 0 \u2192\n      tau \u2260 0 \u2192\n        p_minus \u2260 0 \u2192\n          p_plus \u2260 0 \u2192\n            Delta_eta \u2260 0 \u2192\n              have q_quad := u ^ 2 / 4;\n              have D_sym := c_spec * (delta ^ 2) ^ 2;\n              have D_mix := c_spec * (4 * tau * p_minus * p_plus * Delta_eta ^ 3) ^ 2;\n              0 \u2264 q_quad \u2227\n                (D_sym = c_spec * delta ^ 4 \u2227 0 < D_sym) \u2227\n                  D_mix = 16 * c_spec * tau ^ 2 * p_minus ^ 2 * p_plus ^ 2 * Delta_eta ^ 6 \u2227 0 < D_mix"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Finite-record sample bounds have actual Gaussian-law proofs; divergence-rate asymptotics and matching rate lower bound remain separate written obligations."
+    },
+    {
+      "label": "prop:tagged",
+      "environment": "proposition",
+      "source_line": 414,
+      "statement_sha256": "ed994f7aa80f65e3b33b203f7f35afcac1949cef585af9502a401f4f3be932b7",
+      "statement": "\\begin{proposition}[Tagged flow removes the barrier]\\label{prop:tagged}\nLet the price be driven by i.i.d.\\ innovations of variance $\\sigma_\\xi^2$ in a positive, stable economy, with stationary autocovariances $\\gamma_x(s)=\\sum_\\ell c_\\ell\\lambda_\\ell^{|s|}$ ($c_\\ell\\ge0$, $0\\le\\lambda_\\ell<1$ the closed-loop modes). Suppose cohort $i$ has merged weight $w_i>0$ and the observer receives prices and each cohort's flow $\\tilde u_{i,t}=u_{i,t}+\\varepsilon_{i,t}$, $u_{i,t}=q_iy_{i,t}$, with i.i.d.\\ measurement noise of variance $\\sigma_f^2$ independent of prices. Then $\\tilde u_{i,t}=r_i\\tilde u_{i,t-1}+w_ix_t+e_{i,t}$ with $e_{i,t}=\\varepsilon_{i,t}-r_i\\varepsilon_{i,t-1}$, and the just-identified IV estimator of $\\beta_i=(r_i,w_i)$ with instruments $Z_t=(x_{t-1},x_t)^\\top$ satisfies $\\sqrt T(\\hat\\beta_i-\\beta_i)\\to N(0,V_i)$,\n\\begin{equation}\\label{eq:ivvar}\nV_i=\\Sigma_i^{-1}\\Omega_i\\Sigma_i^{-\\top},\\qquad \\Sigma_i=\\begin{pmatrix}w_iA_0&\\gamma_x(1)\\\\ w_iA_1&\\gamma_x(0)\\end{pmatrix},\\qquad \\Omega_i=\\sigma_f^2\\bigl[(1+r_i^2)\\Gamma_0-r_i(\\Gamma_1+\\Gamma_1^\\top)\\bigr],\n\\end{equation}\nwhere $A_m=\\sum_{s\\ge0}r_i^s\\gamma_x(s+m)$, $\\Gamma_0=\\begin{psmallmatrix}\\gamma_x(0)&\\gamma_x(1)\\\\ \\gamma_x(1)&\\gamma_x(0)\\end{psmallmatrix}$ and $\\Gamma_1=\\E[Z_tZ_{t-1}^\\top]$. The Jacobian determinant is\n\\begin{equation}\\label{eq:ivdet}\n\\det\\Sigma_i=w_i\\sum_{\\ell,m}c_\\ell c_m\\frac{1-\\lambda_\\ell\\lambda_m}{1-r_i\\lambda_m}\\;>\\;0 .\n\\end{equation}\n$V_i$ depends only on cohort $i$'s own $(w_i,r_i)$, $\\sigma_f^2$ and the price autocovariances, which are bounded and nondegenerate uniformly on a uniformly stable family with merged weights bounded below, whatever the rate spacing; so the merged weights are estimated at rate $T^{-1/2}$ with a constant that does not depend on $|r_i-r_j|$.\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_tagged_flow_removes_barrier",
+        "is_iv_det_pos"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_prop_tagged_flow_removes_barrier": "\u2200 (r_i w_i x_t u_prev sigma_f Var_x : \u211d),\n  0 < sigma_f \u2192\n    0 < Var_x \u2192\n      have u_next := r_i * u_prev + w_i * x_t;\n      have fisher_w_i := Var_x / sigma_f ^ 2;\n      u_next - r_i * u_prev = w_i * x_t \u2227 0 < fisher_w_i",
+        "is_iv_det_pos": "\u2200 {n : \u2115} (c lam : Fin n \u2192 \u211d) (w r : \u211d),\n  0 < w \u2192\n    0 \u2264 r \u2192\n      r < 1 \u2192\n        (\u2200 (l : Fin n), 0 \u2264 c l) \u2192\n          (\u2200 (l : Fin n), 0 \u2264 lam l) \u2192\n            (\u2200 (l : Fin n), lam l < 1) \u2192\n              (\u2203 l, 0 < c l) \u2192 0 < w * \u2211 l, \u2211 m, c l * c m * (1 - lam l * lam m) / (1 - r * lam m)"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Instrument nonsingularity is supported. Stationary IV ergodic/CLT steps and independence of reporting errors from the whole price path are separate obligations."
+    },
+    {
+      "label": "thm:discvalue",
+      "environment": "theorem",
+      "source_line": 435,
+      "statement_sha256": "e9807c2b369f029b5a6e52894266dfea3bf0e26aecc7675ee164d5fc54cf3183",
+      "statement": "\\begin{theorem}[Value of class-tagged disclosure]\\label{thm:discvalue}\nTake a rich class of Theorem~\\ref{prop:esprit}: rates $r_c+\\Delta\\eta\\,s$ with $s$ in a compact set of $\\gamma$-separated ordered points that has nonempty interior and contains the Gauss and Gauss--Radau pair of Theorem~\\ref{thm:kcohort}, and merged weights in a nondegenerate interval $[\\omega_{\\min},\\omega_{\\max}]$, $0<\\omega_{\\min}<\\omega_{\\max}$. In each reset experiment the observer applies a unit impulse and records the price response with independent $N(0,\\sigma^2)$ noise per tap; under tagging it also records each class's flow response $f_{i,t}=w_i\\sum_{s\\le t}r_i^{\\,t-s}h_s$ with independent $N(0,\\sigma_f^2)$ noise per tap. Let $N_p$ and $N_t$ be the numbers of experiments needed, without and with tagging, for a fixed accuracy and confidence. There are constants $0<c\\le C<\\infty$, depending on $(\\sigma,\\sigma_f)$ and the class but not on $\\Delta\\eta$, such that\n\\begin{enumerate}[label=(\\roman*),itemsep=1pt]\n\\item to recover the weights to a fixed accuracy smaller than half the weight difference between the Gauss and Gauss--Radau economies (so that recovering the weights decides between them), $c\\le N_t\\le C$, so $N_p/N_t\\asymp(\\Delta\\eta)^{-(4K-2)}$;\n\\item to recover the rates to accuracy $c_0\\Delta\\eta$, for a fixed $c_0>0$ smaller than the radius of a ball contained in the class of rescaled nodes (so that no fixed guess meets the target), $c(\\Delta\\eta)^{-2}\\le N_t\\le C(\\Delta\\eta)^{-2}$, so $N_p/N_t\\asymp(\\Delta\\eta)^{-(4K-4)}$.\n\\end{enumerate}\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_discvalue_ratio"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_discvalue_ratio": "\u2200 (sigma sigma_f Delta_eta D_pow : \u211d),\n  0 < sigma \u2192\n    0 < sigma_f \u2192\n      0 < Delta_eta \u2192\n        0 < D_pow \u2192\n          have N_p := sigma ^ 2 * Delta_eta ^ 2;\n          have N_t_weight := sigma_f ^ 2 * (Delta_eta ^ 2 * D_pow * Delta_eta ^ 2);\n          have N_t_rate := sigma_f ^ 2 * (Delta_eta ^ 2 * D_pow);\n          N_p / N_t_weight = (sigma / sigma_f) ^ 2 / (D_pow * Delta_eta ^ 2) \u2227\n            N_p / N_t_rate = (sigma / sigma_f) ^ 2 / D_pow"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Reset experiment and stationary passive IV are different contracts; keep noise laws, known probe and rate accuracy metric explicit."
+    },
+    {
+      "label": "prop:strategic",
+      "environment": "proposition",
+      "source_line": 452,
+      "statement_sha256": "b73ff6a39d9b265d350d1ed02c203363cf153ba40e11b13c204fbf3913652930",
+      "statement": "\\begin{proposition}[Conditional limits of three evasion arguments]\\label{prop:strategic}\nMaintain the exogenous reporting-noise and valid-instrument assumptions of Proposition~\\ref{prop:tagged}; fix the finite number of linked class labels and a uniformly stable model family.\n\\begin{enumerate}[label=(\\roman*)]\n\\item For a fixed split $u_{i,m}=\\alpha_{i,m}u_i$ with known common ownership, independent mean-zero reporting errors and $\\alpha_{i,m}\\ge\\underline\\alpha>0$, only the lagged-flow column of the population IV matrix scales. Thus $\\Sigma_{i,m}=\\Sigma_i\\operatorname{diag}(\\alpha_{i,m},1)$ and $\\det\\Sigma_{i,m}=\\alpha_{i,m}\\det\\Sigma_i$. Subject to the remaining uniform moment and excitation conditions, fixed finitely many consistent sub-account estimates can be summed: the true identity is $w_i=\\sum_m w_{i,m}$, and the estimated sum has sampling error. The share restriction implies $M_i\\underline\\alpha\\le1$. This is not robustness to arbitrarily many vanishing accounts; a common estimated rate does not identify ownership.\n\\item Assume separately an execution cost lower bound $\\mathbb E C_\\zeta\\ge c_\\zeta\\sigma_\\zeta^2$ with $c_\\zeta>0$ and a gross profit upper bound $\\mathbb E\\Pi\\le\\overline\\Pi$ uniform in the spacing. Camouflage is unprofitable when $c_\\zeta\\sigma_\\zeta^2>\\overline\\Pi$. A variance requirement of order $(\\Delta\\eta)^{-(4K-2)}$ requires an additional additive exogenous-noise estimation model with uniformly controlled instruments. Neither this variance requirement nor the execution bound is established for arbitrary strategic orders.\n\\item If intensity is scaled to $\\gamma_iw_i$ while $1-r_i\\ge\\eta_{\\min}>0$, then $q_i\\le\\gamma_iw_i/\\eta_{\\min}\\to0$ as $\\gamma_i\\to0$. The other groups remain in the aggregate budget; reducing one contribution does not itself establish that the ceiling is met.\n\\end{enumerate}\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_strategic"
+      ],
+      "additional_review_declarations": [
+        "p1_sybil_share_count_bound",
+        "p1_camouflage_unprofitable"
+      ],
+      "historical_types": {
+        "p1_prop_strategic": "\u2200 (alpha_share det_Sigma kappa sigma_zeta sq_drag pi_max gamma_chill : \u211d),\n  0 < alpha_share \u2192\n    0 < det_Sigma \u2192\n      0 < kappa \u2192\n        0 < sigma_zeta \u2192\n          sq_drag = kappa * sigma_zeta ^ 2 / 2 \u2192\n            pi_max < sq_drag \u2192\n              0 < gamma_chill \u2192\n                have det_sub := alpha_share * det_Sigma;\n                have det_chill := gamma_chill * det_Sigma;\n                0 < det_sub \u2227 0 < det_chill \u2227 sq_drag - pi_max > 0"
+      },
+      "status": "CONDITIONAL_REWRITE_NEW_BUILD_REQUIRED",
+      "scope_note": "Rewritten conditional limits. Old wrapper assumes the cost/profit gap. No unrestricted account splitting or equilibrium evasion theorem."
+    },
+    {
+      "label": "prop:target",
+      "environment": "proposition",
+      "source_line": 471,
+      "statement_sha256": "4c48e5e5797c77d6c1f3f050ae35c856b99ec20e779da906fb94039e84e2f26f",
+      "statement": "\\begin{proposition}[Supervisory separation: market-wide versus targeted intervention]\\label{prop:target}\nAssume the positive stable model, known $a,\\kappa$, and $a<\\bar s<1$. Write $q_i=w_i/(1-r_i)$ and $R=S-\\kappa\\max_iq_i$ for the post-halt feedback budget.\n\\begin{enumerate}[label=(\\roman*),itemsep=1pt]\n\\item A uniform scale $\\theta$ meets the ceiling exactly when $a+\\theta(S-a)\\le\\bar s$. Its largest feasible value is $\\theta^*=\\min\\{1,(\\bar s-a)/(S-a)\\}$. The identity $S=1-\\kappa/\\sum_jh_j$ is algebraic; estimating this infinite sum requires a justified tail bound and an observation/noise model. It alone establishes no unconditional parametric learning rate.\n\\item For $K=2$, the Gauss and Gauss--Radau pair of Theorem~\\ref{thm:kcohort} has limiting largest normalized weights $1/2$ and $3/4$. Thus $|S^G-S^R|=O((\\Delta\\eta)^3)$ and $q^R_{\\max}-q^G_{\\max}=W/(4(1-r_c))+O(\\Delta\\eta)$. For sufficiently small spacing, a nonempty interval of ceilings separates their post-halt decisions. For $N$ independent reset records with common Gaussian noise $\\sigma^2 I$, both decision errors at most $1/4$ require\n\\[\n N\\ge (2\\Phi^{-1}(0.75)\\sigma/\\|h^G-h^R\\|_2)^2\n \\ge c\\sigma^2(\\Delta\\eta)^{-6}.\n\\]\nThe record horizon and the response norm must be the same on both sides.\n\\item Tagged-flow estimation under Theorem~\\ref{thm:discvalue}, a rate bound away from one, and a fixed nonzero decision margin gives a bounded sample requirement as the spacing shrinks. The target class must be mapped to an executable, verified class label; a largest latent atom alone supplies no such identity.\n\\end{enumerate}\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_target"
+      ],
+      "additional_review_declarations": [
+        "p1_gr_three_matched_moments",
+        "p1_gr_dominant_intensity_gap",
+        "p1_gr_aggregate_gap",
+        "p1_gr_reset_lower_bound"
+      ],
+      "historical_types": {
+        "p1_prop_target": "\u2200 (K b theta_star : \u211d),\n  2 \u2264 K \u2192\n    0 < b \u2192\n      have DWL_market := (1 - theta_star) * K * b;\n      have DWL_target := b;\n      DWL_target < DWL_market \u2194 theta_star < 1 - 1 / K",
+        "p1_gr_three_matched_moments": "\u2200 (W : \u211d),\n  \u2200 j < 3,\n    \u2211 i, W * CurrentMM.grGWeight i * CurrentMM.grGNode i ^ j = \u2211 i, W * CurrentMM.grRWeight i * CurrentMM.grRNode i ^ j",
+        "p1_gr_dominant_intensity_gap": "\u2200 (W u d : \u211d),\n  0 < W \u2192\n    0 < u \u2192\n      0 \u2264 d \u2192\n        d \u2264 u / 3 \u2192\n          \u2200 (i : Fin 2),\n            CurrentMM.grIntensity CurrentMM.grGWeight CurrentMM.grGNode W u d i \u2264\n              CurrentMM.grIntensity CurrentMM.grRWeight CurrentMM.grRNode W u d 1 - W / (8 * u)",
+        "p1_gr_aggregate_gap": "\u2200 (W u d : \u211d),\n  0 < W \u2192\n    0 \u2264 d \u2192\n      d < u \u2192\n        |\u2211 i, CurrentMM.grIntensity CurrentMM.grGWeight CurrentMM.grGNode W u d i -\n              \u2211 i, CurrentMM.grIntensity CurrentMM.grRWeight CurrentMM.grRNode W u d i| \u2264\n          2 * W * d ^ 3 / (u ^ 3 * (u - d))",
+        "p1_gr_reset_lower_bound": "\u2200 (a \u03ba c d W H : \u211d) (N T : \u2115) (q rate q' rate' : Fin 2 \u2192 \u211d) (variance : NNReal),\n  variance \u2260 0 \u2192\n    0 \u2264 c \u2192\n      0 \u2264 d \u2192\n        c + d \u2264 1 \u2192\n          0 < W \u2192\n            0 \u2264 H \u2192\n              (\u2200 (i : Fin 2), 1 - rate i = c + d * CurrentMM.grGNode i) \u2192\n                (\u2200 (i : Fin 2), 1 - rate' i = c + d * CurrentMM.grRNode i) \u2192\n                  (\u2200 (i : Fin 2), q i * rate i = W * CurrentMM.grGWeight i) \u2192\n                    (\u2200 (i : Fin 2), q' i * rate' i = W * CurrentMM.grRWeight i) \u2192\n                      (\u2200 t < T, |CurrentMM.actualCohortImpulse a \u03ba q' rate' t| \u2264 H) \u2192\n                        \u2200 (A : Set (CurrentMM.ObservationRecord (N * T))),\n                          MeasurableSet A \u2192\n                            (CurrentMM.gaussianRecordLaw (N * T)\n                                      (CurrentMM.p1RepeatedMean N T (CurrentMM.actualCohortImpulse a \u03ba q rate))\n                                      variance).real\n                                  A \u2264\n                                1 / 4 \u2192\n                              (CurrentMM.gaussianRecordLaw (N * T)\n                                        (CurrentMM.p1RepeatedMean N T (CurrentMM.actualCohortImpulse a \u03ba q' rate'))\n                                        variance).real\n                                    A\u1d9c \u2264\n                                  1 / 4 \u2192\n                                \u2191variance \u2264 2 * \u2191N * \u2191T * (2 * W * 2 ^ T * d ^ 3 * CurrentMM.p1GapConst a |\u03ba| W H T) ^ 2"
+      },
+      "status": "PRIOR_RELEASE_CORE_SCOPE_REVIEWED",
+      "scope_note": "Exact K=2 witness and finite Gaussian price-record bound checked in prior release. All-K dominant-weight gap absent; label executability and response conditions retained."
+    },
+    {
+      "label": "prop:robust_gate",
+      "environment": "proposition",
+      "source_line": 519,
+      "statement_sha256": "b31350d6da13e07e3fa857746792f9ffdef9c71b140a019700bb8a7798e6ec52",
+      "statement": "\\begin{proposition}[A robust scalar disclosure gate]\\label{prop:robust_gate}\nLet $Z_1,\\ldots,Z_N$ be independent $N(R,v)$ readings of the fixed post-halt feedback budget, $N>0$, and let the realized action response $d$ satisfy $d\\le\\varepsilon$. For $t>0$, halt only if $\\bar Z+t+\\varepsilon\\le\\bar s$. Then the probability of halting while the realized budget exceeds the ceiling is at most\n\\[\n \\Pr\\{\\bar Z+t+\\varepsilon\\le\\bar s,\\ R+d>\\bar s\\}\n \\le \\frac{v}{Nt^2}.\n\\]\nConsequently $v\\le\\alpha Nt^2$ gives a per-world error bound $\\alpha$.\n\\end{proposition}",
+      "historical_mapped_declarations": [],
+      "additional_review_declarations": [
+        "p1_supervisory_gaussian_unsafe_halt",
+        "p1_supervisory_gaussian_unsafe_halt_budget"
+      ],
+      "historical_types": {
+        "p1_supervisory_gaussian_unsafe_halt": "\u2200 (N : \u2115),\n  0 < N \u2192\n    \u2200 (r threshold allowance drift radius : \u211d) (v : NNReal),\n      0 < radius \u2192\n        drift \u2264 allowance \u2192\n          (MeasureTheory.Measure.pi fun x => ProbabilityTheory.gaussianReal r v)\n              {x | (\u2211 i, x i) / \u2191N + radius + allowance \u2264 threshold \u2227 threshold < r + drift} \u2264\n            ENNReal.ofReal (\u2191v / (\u2191N * radius ^ 2))",
+        "p1_supervisory_gaussian_unsafe_halt_budget": "\u2200 (N : \u2115),\n  0 < N \u2192\n    \u2200 (r threshold allowance drift radius beta : \u211d) (v : NNReal),\n      0 < radius \u2192\n        drift \u2264 allowance \u2192\n          \u2191v \u2264 beta * (\u2191N * radius ^ 2) \u2192\n            (MeasureTheory.Measure.pi fun x => ProbabilityTheory.gaussianReal r v)\n                {x | (\u2211 i, x i) / \u2191N + radius + allowance \u2264 threshold \u2227 threshold < r + drift} \u2264\n              ENNReal.ofReal beta"
+      },
+      "status": "PRIOR_RELEASE_CORE_SCOPE_REVIEWED",
+      "scope_note": "Actual product-Gaussian unsafe event bound checked in prior release. Scalar R readings remain hypothetical; direct flow bridge is a separate contract."
+    },
+    {
+      "label": "prop:priced_decision",
+      "environment": "proposition",
+      "source_line": 547,
+      "statement_sha256": "5b43431682793a5313d1c22e14e99a00e08bdfbf0980782ca147fca6a7020cd9",
+      "statement": "\\begin{proposition}[No-data action and information purchase]\\label{prop:priced_decision}\nFor the fixed halt/throttle menu, let $\\overline L_h=\\sum_j\\pi_jL_{h,j}$ and let $p_{\\max}=\\alpha$ if a halt is unsafe in at least one world, otherwise $p_{\\max}=1$. Assuming the fallback meets the ceiling, the best constant no-data halt probability is $p=0$ when $\\overline L_h\\ge L_T$, and $p=p_{\\max}$ when $\\overline L_h<L_T$. A specified information rule with expected action loss $L_I$ is strictly preferred if and only if\n\\[\n F+Nc<\\mathcal L_0-L_I.\n\\]\nAllowing refusal to purchase gives loss $\\min\\{\\mathcal L_0,F+Nc+L_I\\}\\le\\mathcal L_0$.\n\\end{proposition}",
+      "historical_mapped_declarations": [],
+      "additional_review_declarations": [
+        "p1_no_data_throttle_optimal",
+        "p1_no_data_capped_halt_optimal",
+        "p1_information_purchase_break_even",
+        "p1_optional_information_value_nonnegative"
+      ],
+      "historical_types": {
+        "p1_no_data_throttle_optimal": "\u2200 (fallback halt p : \u211d), 0 \u2264 p \u2192 fallback \u2264 halt \u2192 fallback \u2264 p * halt + (1 - p) * fallback",
+        "p1_no_data_capped_halt_optimal": "\u2200 (fallback halt p pMax : \u211d),\n  p \u2264 pMax \u2192 halt \u2264 fallback \u2192 pMax * halt + (1 - pMax) * fallback \u2264 p * halt + (1 - p) * fallback",
+        "p1_information_purchase_break_even": "\u2200 (fallback expectedActionLoss fixedFee perSample n : \u211d),\n  fixedFee + n * perSample + expectedActionLoss < fallback \u2194 fixedFee + n * perSample < fallback - expectedActionLoss",
+        "p1_optional_information_value_nonnegative": "\u2200 (fallback paid : \u211d), 0 \u2264 fallback - min fallback paid"
+      },
+      "status": "PRIOR_RELEASE_CORE_SCOPE_REVIEWED",
+      "scope_note": "Fixed-menu affine optimization and acquisition algebra checked. No optimum over all interventions or acquisition schemes."
+    },
+    {
+      "label": "thm:abstain",
+      "environment": "theorem",
+      "source_line": 822,
+      "statement_sha256": "62e447e9bba8774c92268b5215314cb01eb783b39b496f19c9d24fa8d3933e7b",
+      "statement": "\\begin{theorem}[Finite-window abstention]\\label{thm:abstain}\nObserve $x_t=sx_{t-1}+w_t$, $w_t\\sim N(0,\\sigma^2)$, $x_0=0$, $t\\le T$, with $s\\in(0,2)$. Let a possibly randomized rule $\\Psi$ output Stable, Unstable or Abstain, with $\\sup_{s<1}P_s(\\Psi={\\rm Unstable})\\le\\alpha$ and $\\sup_{s\\ge1}P_s(\\Psi={\\rm Stable})\\le\\alpha$, $\\alpha<1/2$. Choose $0<c_0<1$ with $c_0e^{c_0}/(2\\sqrt2)<1-2\\alpha$. On $B_T=(1-c_0/T,1+c_0/T)$,\n\\[\n\\inf_{s\\in B_T}P_s(\\Psi={\\rm Abstain})\\;\\ge\\;1-2\\alpha-\\frac{c_0e^{c_0}}{2\\sqrt2}>0 ,\n\\]\nand for every finite $T$ the minimax worst-case error of binary rules over $s\\in(0,2)$ is at least $1/2$.\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_abstain_finite_window"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_abstain_finite_window": "\u2200 (alpha tv : \u211d), 0 \u2264 alpha \u2192 tv < 1 - 2 * alpha \u2192 0 < 1 - 2 * alpha - tv \u2227 0 \u2264 (1 - tv) / 2"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Decision/algebra support does not establish the autoregression path divergence; inspect its derivation and horizon regime."
+    },
+    {
+      "label": "prop:passive0",
+      "environment": "proposition",
+      "source_line": 838,
+      "statement_sha256": "ec794e8b7068dbbe16b02452b8b9292e8fb091a6e479d82ad3ccdb2ddde53770",
+      "statement": "\\begin{proposition}[Passive distinction with zero controlled quantity]\\label{prop:passive0}\nKeep the known pair, but add independent uniform innovations $w_t\\in[-b,b]$ of variance $s_w^2=b^2/3$ at each price update, observe $\\tilde x_t=x_t+\\nu_t$ with $\\nu_t\\sim N(0,\\sigma^2)$, use independent three-step reset blocks and no probes, with $P_*>3b$. Let $b_1=a+\\kappa q\\eta$, $b_{2,0}=b_1^2+\\kappa q\\eta(1-\\eta)$ and $b_{2,\\delta}=b_{2,0}-\\kappa q\\delta^2$. In each block the covariance of the first and third observations differs by $\\Delta=\\kappa qs_w^2\\delta^2$. With\n\\[\nR=\\max_{r\\in\\{0,\\delta\\}}\\Bigl\\{(s_w^2+\\sigma^2)\\bigl[s_w^2(1+b_1^2+b_{2,r}^2)+\\sigma^2\\bigr]+s_w^4b_{2,r}^2\\Bigr\\},\n\\]\nthe midpoint test of the average product has worst-case error at most $\\alpha$ whenever $n\\ge4R/(\\alpha\\Delta^2)$ blocks are observed: zero controlled quantity and order $\\delta^{-4}$ blocks.\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_passive0_three_step_blocks"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_prop_passive0_three_step_blocks": "\u2200 (a kappa q eta delta b : \u211d),\n  0 < b \u2192\n    have b1 := a + kappa * q * eta;\n    have b2_0 := b1 ^ 2 + kappa * q * eta * (1 - eta);\n    have b2_delta :=\n      b1 ^ 2 + kappa * (q / 2 * (eta - delta) * (1 - (eta - delta)) + q / 2 * (eta + delta) * (1 - (eta + delta)));\n    have s_w_sq := b ^ 2 / 3;\n    have fourth_cumulant := b ^ 4 / 5 - 3 * s_w_sq ^ 2;\n    b2_0 - b2_delta = kappa * q * delta ^ 2 \u2227 fourth_cumulant = -2 * b ^ 4 / 15 \u2227 fourth_cumulant < 0"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Three-step decision reduction has support; observational variance formula and independent block assumptions require written review."
+    },
+    {
+      "label": "prop:primitives",
+      "environment": "proposition",
+      "source_line": 1072,
+      "statement_sha256": "ffaa317b899d1c6858feca62dfa8b65be2d937416b02d3fa17351b523def54d2",
+      "statement": "\\begin{proposition}[Identification in economic primitives]\\label{prop:primitives}\nConsider $K$ Kalman desks (Lemma~\\ref{lem:micro}(i)) with signal-to-noise ratios $s_i\\in[\\underline s,\\bar s]\\subset(0,\\infty)$ and intensities $q_i=\\beta_i/\\lambda_{{\\rm tc},i}$, and write $c_-=\\eta'(\\bar s)$ and $c_+=\\eta'(\\underline s)$.\n\\begin{enumerate}[label=(\\roman*)]\n\\item Prices and aggregate order flow depend on the desks only through the measure\n\\[\n\\sum_iq_i\\,\\eta(s_i)\\,\\delta_{1-\\eta(s_i)}.\n\\]\nDesks are identified through their signal-to-noise ratios and intensities only; expected returns and trading costs enter only through their ratio, and two populations with the same intensity-weighted distribution of signal-to-noise ratios are observationally equivalent.\n\\item Fix a centre $s_c$ and let the ratios lie in $s_c+\\Delta s\\,[-1,1]\\subset[\\underline s,\\bar s]$. Recovering the intensity-weighted distribution of signal-to-noise ratios to Wasserstein accuracy of order $\\Delta s$, or its weights $q_i\\eta(s_i)$, from $N$ noisy reset experiments with worst-case error probability below $1/4$ requires $N\\ge c\\,\\sigma^2(\\Delta s)^{-(4K-2)}$; on separated configurations, Prony's method of Theorem~\\ref{prop:esprit} composed with $\\eta^{-1}$ achieves this order. The constants are those of Theorems~\\ref{thm:kcohort} and~\\ref{prop:esprit} multiplied by powers of $c_-$ and $c_+$.\n\\end{enumerate}\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_primitives"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_prop_primitives": "\u2200 (beta lambda_tc s c_minus c_plus : \u211d),\n  lambda_tc \u2260 0 \u2192\n    0 < c_minus \u2192\n      c_minus \u2264 c_plus \u2192\n        0 < s \u2192\n          have eta := (\u221a(s ^ 2 + 4 * s) - s) / 2;\n          have q := beta / lambda_tc;\n          q * lambda_tc = beta \u2227 c_minus * s \u2264 c_plus * s"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Separate observable price law from assumed known a, impact and fundamental; simultaneous primitive identification is an additional problem."
+    },
+    {
+      "label": "prop:tied",
+      "environment": "proposition",
+      "source_line": 1092,
+      "statement_sha256": "d48ef02cdcfed5ce683358d8ffdfc0fc0eefe769bdfe833a3254b37621e301ae",
+      "statement": "\\begin{proposition}[Intensity tied to information quality]\\label{prop:tied}\nLet each desk's intensity be a known function of its signal-to-noise ratio, $q=\\varphi(s)$ with $\\varphi$ positive and $C^2$ on $[\\underline s,\\bar s]$ (for a mean--variance desk, $\\varphi(s)$ increases with $s$), and let $n_i\\ge0$ denote the mass of desks with ratio $s_i$ (a divisible population, not an integer desk count). Write $s(\\eta)$ for the inverse gain map and $w(\\eta)=\\varphi(s(\\eta))\\,\\eta$ for the weight per desk as a function of its gain.\n\\begin{enumerate}[label=(\\roman*)]\n\\item \\emph{Unknown numbers of desks.} The merged measure is $\\sum_in_i\\,w(\\eta(s_i))\\,\\delta_{1-\\eta(s_i)}$. Every positive measure with finitely many atoms in $[1-\\eta(\\bar s),1-\\eta(\\underline s)]$ is of this form, with $n_i=m_i/w(\\eta_i)$ for an atom of mass $m_i$ at $1-\\eta_i$. So when the numbers of desks of each type are not known, tying intensity to information quality removes no economy, and every lower bound of Proposition~\\ref{prop:primitives}(ii) holds unchanged.\n\\item \\emph{Known numbers of desks.} If the $n_i$ are also known, the set of economies is smaller, but the single-versus-pair problem keeps its order: one type at gain $\\bar\\eta$ with $2n$ desks and two types at $\\bar\\eta\\pm\\delta$ with $n$ desks each have taps that differ by $n\\,\\delta^2\\,\\partial_\\eta^2[w(\\eta)(1-\\eta)^m]_{\\bar\\eta}+o(\\delta^2)$, so separating them needs $N\\ge c\\,\\sigma^2\\delta^{-4}$ reset experiments, the order the symmetric pair has when intensities vary freely.\n\\item \\emph{Self-confirming configurations.} Suppose the ratio each desk perceives is the one implied by the closed-loop dynamics it trades in, through a map $T$ from configurations $(s_1,\\dots,s_K)$ to perceived ratios that is continuous on a box $\\prod_i[\\underline s,\\bar s]$ and maps it into itself. Then a configuration with $T(s)=s$ exists, and parts (i)--(ii) and Proposition~\\ref{prop:primitives} apply at it.\n\\end{enumerate}\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_tied"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_prop_tied": "\u2200 (m w_eta : \u211d),\n  0 < w_eta \u2192\n    have n := m / w_eta;\n    n * w_eta = m \u2227 \u2200 (c sigma_sq delta : \u211d), 0 < c \u2192 0 < sigma_sq \u2192 0 < delta \u2192 0 < c * sigma_sq * delta ^ (-4)"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Exact tied-rate equivalence must preserve positivity and total weight; does not establish a named trader class."
+    },
+    {
+      "label": "prop:crb",
+      "environment": "proposition",
+      "source_line": 1112,
+      "statement_sha256": "1ed13127be4b8f97a2124d8aa607bb9559d99dfbbbdb0770d908f8cf06446169",
+      "statement": "\\begin{proposition}[Cram\\'er--Rao benchmark]\\label{prop:crb}\nLet $\\theta$ collect the weights $w_1,\\ldots,w_K$ and rates $\\eta_1,\\ldots,\\eta_K$. Suppose the impulse response $h_t(\\theta)$, $t\\le T$, is observed with i.i.d.\\ Gaussian error from $N$ reset probes of size $V_{\\rm probe}$ against innovation noise $\\sigma_p$, so the error has standard deviation $\\sigma_h=\\sigma_p/(V_{\\rm probe}\\sqrt N)$. With Jacobian $J_{tj}=\\partial h_t/\\partial\\theta_j$ and $F_{\\rm unit}=J^\\top J$, any regular unbiased estimator has ${\\rm Var}(\\hat w_k)\\ge\\sigma_h^2[F_{\\rm unit}^{-1}]_{kk}$, and a 95\\% interval of half-width ${\\rm tol}$ requires\n\\begin{equation}\\label{eq:Ncrb}\nN^*\\ge\\Bigl(\\frac{1.96}{\\rm tol}\\Bigr)^2\\Bigl(\\frac{\\sigma_p}{V_{\\rm probe}}\\Bigr)^2[F_{\\rm unit}^{-1}]_{kk}.\n\\end{equation}\nFor $K=2$ with spacing $\\Delta\\eta$, $[F_{\\rm unit}^{-1}]_{kk}=\\Theta((\\Delta\\eta)^{-6})$, so $N^*=\\Theta((\\Delta\\eta)^{-6})$.\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_crb_benchmark"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_prop_crb_benchmark": "\u2200 (sigma_p V_probe tol F_inv_kk Delta_eta c_crb : \u211d),\n  0 < sigma_p \u2192\n    0 < V_probe \u2192\n      0 < tol \u2192\n        0 < Delta_eta \u2192\n          0 < c_crb \u2192\n            c_crb / Delta_eta ^ 6 \u2264 F_inv_kk \u2192\n              have N_star := (196 / 100 / tol) ^ 2 * (sigma_p / V_probe) ^ 2 * F_inv_kk;\n              0 < N_star \u2227 (196 / 100 / tol) ^ 2 * (sigma_p / V_probe) ^ 2 * c_crb / Delta_eta ^ 6 \u2264 N_star"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Local unbiased/regular information benchmark is not a minimax bound over biased estimators."
+    },
+    {
+      "label": "prop:tri",
+      "environment": "proposition",
+      "source_line": 1197,
+      "statement_sha256": "ac1ec48de06f381393275528f45e9debd44c886d96e92077fd06623f656cd31c",
+      "statement": "\\begin{proposition}[Tri-region partition and finite-session resolution floor]\\label{prop:tri}\nUnder observation horizon $T$ per pulse, $(\\delta,B)$ space splits into three regions.\n\\begin{enumerate}[label=(\\roman*)]\n\\item \\emph{Feasible single pulse.} For $\\delta\\ge\\delta_{\\min}(T)$ and $B\\ge C^*(\\delta)$ one pulse within capacity suffices. For a simple rate shift ($\\eta_1=\\eta_0+\\delta$) the response difference is $\\Theta(\\delta)$ and $C^*=\\Theta(\\delta^{-2})$; for symmetric splitting the first-order variation cancels, the difference is $\\Theta(\\delta^2)$ and $C^*=\\Theta(\\delta^{-4})$.\n\\item \\emph{Sequential bounded probing.} For $\\delta<\\delta_{\\min}(T)$ the required quantity exceeds $V_{\\rm eff}$. Capped pulses each supply divergence $V_{\\rm eff}^2\\|d_T\\|^2/(2\\sigma^2)$, so\n\\begin{equation}\\label{eq:npulses}\nN_{\\rm pulses}(T,\\delta)=\\Bigl\\lceil\\frac{4\\sigma^2z_\\alpha^2}{V_{\\rm eff}^2\\|d_T\\|_2^2}\\Bigr\\rceil .\n\\end{equation}\n\\item \\emph{Infeasible with isolated pulses.} If the budget cannot finance sequential costs, peak inventory breaches $I_{\\max}$, or a session deadline binds, the finite-session floor $\\delta_{\\min}(T_{\\rm session})$ is the root of $V_{\\rm eff}\\|d_{T_{\\rm cycle}}(\\delta)\\|_2=2\\sigma z_\\alpha/\\sqrt{\\lfloor T_{\\rm session}/T_{\\rm cycle}\\rfloor}$, with small-$\\delta$ approximation $\\delta_{\\min}=\\Theta(T_{\\rm session}^{-1/4})$.\n\\end{enumerate}\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_tri_region_partition"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_prop_tri_region_partition": "\u2200 (sigma z_alpha V_eff d_norm : \u211d),\n  0 < sigma \u2192\n    0 < z_alpha \u2192\n      0 < V_eff \u2192\n        0 < d_norm \u2192\n          have kl_per_pulse := V_eff ^ 2 * d_norm ^ 2 / (2 * sigma ^ 2);\n          have N_cont := 4 * sigma ^ 2 * z_alpha ^ 2 / (V_eff ^ 2 * d_norm ^ 2);\n          0 < kl_per_pulse \u2227 N_cont * kl_per_pulse = 2 * z_alpha ^ 2"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Region algebra is conditional on declared session, capital and observation contracts; do not infer a real trading timescale."
+    },
+    {
+      "label": "thm:spectral",
+      "environment": "theorem",
+      "source_line": 1251,
+      "statement_sha256": "91378216ccd27579a758007406e9a3755cbf956276c7cda2109b798b843ea0a3",
+      "statement": "\\begin{theorem}[Spectral dissipation lower bound]\\label{thm:spectral}\nLet $\\hat H_i(z)=\\sum_{j\\ge0}h_{i,j}z^{-j}$, $\\Delta\\hat H=\\hat H_1-\\hat H_0$, and define the dissipation kernel\n\\begin{equation}\\label{eq:gdiss}\ng_i(\\omega)=\\mathrm{Re}\\,\\hat H_i(e^{i\\omega})-\\kappa/2>0\\qquad\\forall\\omega\\in[-\\pi,\\pi].\n\\end{equation}\n\\begin{enumerate}[label=(\\roman*)]\n\\item \\emph{Toeplitz energy identity.} For any flat round trip, $L_i(v)=\\frac1{2\\pi}\\int_{-\\pi}^{\\pi}g_i(\\omega)|V(e^{i\\omega})|^2d\\omega$.\n\\item \\emph{Lower bound.} $\\|(H_1-H_0)v\\|_2^2\\le\\sup_\\omega\\frac{|\\Delta\\hat H(e^{i\\omega})|^2}{g_i(\\omega)}L_i(v)$, so every deterministic round trip with error at most $\\alpha$ has\n\\begin{equation}\\label{eq:Cdet}\nL_i(v)\\;\\ge\\;4\\sigma^2z_{1-\\alpha}^2\\inf_\\omega\\frac{g_i(\\omega)}{|\\Delta\\hat H(e^{i\\omega})|^2}\\;\\equiv\\;C^*_{\\rm det,quad}(\\delta).\n\\end{equation}\n\\item \\emph{Bracket.} At $\\delta=0.05$, $C^*_{\\rm det,quad}=61.14$ at $\\omega^*=0.2526$; adding the unavoidable fee $\\phi P_*\\cdot2\\sigma z/\\sup_\\omega|\\Delta\\hat H|$ gives the numerical lower estimate $C_{\\rm det}\\ge61.41$. A feasible 240-step sequence attains 64.48, so the fee-paying optimum lies in $[61.41,64.48]$.\n\\item \\emph{Process noise.} Let the price also receive the innovations $w_t\\sim N(0,\\sigma_w^2)$ of \\eqref{eq:price}, independent of observation noise $\\nu_t\\sim N(0,\\sigma_\\nu^2)$, so that from the reset state the observer sees $\\tilde x_t=(h_i*v)_t+\\kappa^{-1}(h_i*w)_t+\\nu_t$, $t<T$. For the known pair of Theorem~\\ref{thm:quantity}, put $\\sigma_{\\rm eff}^2=\\sigma_\\nu^2+\\sigma_w^2/4$, $\\bar M=1/(1-S)$ and $C_w=2\\sigma_w^4\\bar M^2K_*^2(\\sigma_\\nu^2+\\sigma_w^2\\bar M^2)/(\\kappa^2\\sigma_\\nu^2\\sigma_{\\rm eff}^4)$. Every deterministic round trip whose test has errors $\\alpha$ and $\\beta$ under the two hypotheses satisfies\n\\begin{equation}\\label{eq:Cnoise}\nL_i(v)\\;\\ge\\;2\\sigma_{\\rm eff}^2\\bigl[{\\rm kl}(\\alpha,1-\\beta)-C_wT\\delta^4\\bigr]_+\\inf_\\omega\\frac{g_i(\\omega)}{|\\Delta\\hat H(e^{i\\omega})|^2},\n\\end{equation}\nwith ${\\rm kl}$ as in Theorem~\\ref{thm:adaptive}. In-loop noise therefore leaves the $\\delta^{-4}$ capital order intact for every horizon $T\\le{\\rm kl}(\\alpha,1-\\beta)/(2C_w\\delta^4)$; at horizons of order $\\delta^{-4}$ and longer, the noise itself separates the pair without a probe (Theorem~\\ref{prop:passive}).\n\\end{enumerate}\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_spectral_dissipation_bound"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_spectral_dissipation_bound": "\u2200 (w1 lam1 cos_omega L_v ratio_sup sigma z_alpha : \u211d),\n  0 < w1 \u2192\n    0 \u2264 lam1 \u2192\n      lam1 < 1 \u2192\n        -1 \u2264 cos_omega \u2227 cos_omega \u2264 1 \u2192\n          0 < ratio_sup \u2192\n            4 * sigma ^ 2 * z_alpha ^ 2 \u2264 ratio_sup * L_v \u2192\n              have denom := 1 - 2 * lam1 * cos_omega + lam1 ^ 2;\n              0 < denom \u2227 0 < w1 * (1 - lam1 ^ 2) / (2 * denom) \u2227 4 * sigma ^ 2 * z_alpha ^ 2 / ratio_sup \u2264 L_v"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Mapped wrapper verifies positivity and scalar rearrangement. Parseval, information-to-execution reduction, process-noise covariance KL and numerical infimum require separate correspondence checks."
+    },
+    {
+      "label": "thm:adaptive",
+      "environment": "theorem",
+      "source_line": 1283,
+      "statement_sha256": "ee6bd5b34088ef5d1615c0740e95a3767f708407ac485d3abcf55e0469b8b625",
+      "statement": "\\begin{theorem}[Adaptive and sequential probing]\\label{thm:adaptive}\nMaintain a common-variance conditional Gaussian likelihood for the causal reset observations. Require finite expected total squared conditional mean separation, finite expected execution loss, and the stopped likelihood/Kullback--Leibler identity used below. Let $(v_t)_{t\\le\\tau}$ be a non-anticipating policy adapted to that filtration, with an almost surely finite stopping time and $\\sum_{t\\le\\tau}v_t=0$, followed by a terminal test $\\psi_\\tau\\in\\{0,1\\}$ with $P_0(\\psi_\\tau=1)\\le\\alpha$ and $P_1(\\psi_\\tau=0)\\le\\beta$. Then\n\\begin{equation}\\label{eq:adaptive}\n\\E_0[L_0(v)]\\;\\ge\\;2\\sigma^2\\,{\\rm kl}(\\alpha,1-\\beta)\\inf_\\omega\\frac{g_0(\\omega)}{|\\Delta\\hat H(e^{i\\omega})|^2},\n\\end{equation}\nwhere ${\\rm kl}(\\alpha,1-\\beta)=\\alpha\\log\\tfrac{\\alpha}{1-\\beta}+(1-\\alpha)\\log\\tfrac{1-\\alpha}{\\beta}$.\nThe adaptive lower-bound constant divided by the deterministic lower-bound constant is the factor ${\\rm kl}(\\alpha,1-\\beta)/(2z_{1-\\alpha}^2)\\approx0.4897$ at $\\alpha=\\beta=0.05$, under the stated likelihood and execution assumptions. Comparing two lower bounds alone does not bound the achievable savings relative to an optimal deterministic policy.\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_adaptive_sequential_bound"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_adaptive_sequential_bound": "\u2200 (E_L0 sigma kl_ab ratio_sup z_alpha : \u211d),\n  0 < sigma \u2192\n    0 < ratio_sup \u2192\n      0 < z_alpha \u2192\n        kl_ab \u2264 ratio_sup * E_L0 / (2 * sigma ^ 2) \u2192\n          have C_det_quad := 4 * sigma ^ 2 * z_alpha ^ 2 / ratio_sup;\n          have C_adap := 2 * sigma ^ 2 * kl_ab / ratio_sup;\n          C_adap \u2264 E_L0 \u2227 C_adap / C_det_quad = kl_ab / (2 * z_alpha ^ 2)"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Mapped wrapper assumes the information inequality. Added stopped likelihood/integrability conditions; ratio of lower bounds does not bound achievable savings."
+    },
+    {
+      "label": "thm:rh",
+      "environment": "theorem",
+      "source_line": 1315,
+      "statement_sha256": "1b243bb65a70f27ba3c304694e1f83024de1ddbdbf2077445d036452cf16defb",
+      "statement": "\\begin{theorem}[Finite-horizon Rayleigh--H\\\"older duality]\\label{thm:rh}\nFor a horizon of $L\\ge4$ trading periods, let $E\\in\\R^{L\\times(L-1)}$ be the first-difference basis of flat probes ($\\sum_tv_t=0$), $Q_i=\\tfrac12T_{h_i}$ (so that $L_i(v)=v^\\top Q_iv$), $A_{\\rm diff}=(H_1-H_0)^\\top(H_1-H_0)$, and let $G_i=E^\\top Q_iE\\succ0$ and $M=E^\\top A_{\\rm diff}E\\succeq0$ be the reduced execution-loss and information matrices, with $G_i$-orthonormal generalized eigenvectors $e_j$ and eigenvalues $0\\le\\lambda_1\\le\\cdots\\le\\lambda_{L-3}<\\lambda_{L-2}\\le\\lambda_{L-1}$; put $c_{\\rm req}=4\\sigma^2z_{1-\\alpha}^2$ and $c_{\\rm fee}=\\phi P_*$. For $\\theta\\in[0,\\pi)$ let $d(\\theta)=\\cos\\theta\\,e_{L-2}+\\sin\\theta\\,e_{L-1}$, $\\lambda(\\theta)=\\lambda_{L-2}\\cos^2\\theta+\\lambda_{L-1}\\sin^2\\theta$, $s_\\theta={\\rm sign}(Ed(\\theta))$, and\n\\begin{equation}\\label{eq:rhdefs}\n\\begin{gathered}\nF_{\\rm dom}(\\theta)=c_{\\rm fee}\\sqrt{\\frac{c_{\\rm req}}{\\lambda(\\theta)}}\\,\\|Ed(\\theta)\\|_1,\\qquad W_\\perp(\\theta)=c_{\\rm fee}^2\\sum_{j\\le L-3}\\frac{(s_\\theta^\\top Ee_j)^2}{1-\\lambda_j/\\lambda(\\theta)},\\\\\n\\gamma(\\theta)=\\frac{\\lambda(\\theta)\\,\\lambda_{L-3}}{(\\lambda(\\theta)-\\lambda_{L-3})\\,c_{\\rm req}} .\n\\end{gathered}\n\\end{equation}\nThen every flat probe meeting the separation constraint of \\eqref{eq:capprob} satisfies\n\\begin{equation}\\label{eq:rh}\nL_i(v)+c_{\\rm fee}\\|v\\|_1\\;\\ge\\;\\min_{\\theta}\\Bigl\\{\\frac{c_{\\rm req}}{\\lambda(\\theta)}+\\Psi(\\theta)\\Bigr\\}\\;\\equiv\\;C_{\\rm RH}(L)\\;\\ge\\;\\frac{c_{\\rm req}}{\\lambda_{L-1}},\n\\end{equation}\n\\[\n\\Psi(\\theta)=\\min_{x\\ge0}\\Bigl\\{x^2+\\Bigl[F_{\\rm dom}(\\theta)\\bigl(1-\\gamma(\\theta)x^2\\bigr)_+-\\sqrt{W_\\perp(\\theta)}\\,x\\Bigr]_+\\Bigr\\}\\;\\ge0 ,\n\\]\na piecewise-quadratic minimization in closed form; when $\\gamma F_{\\rm dom}<1$ and the minimizer has $\\gamma x^2\\le1$, $\\Psi\\ge\\max\\bigl(0,F_{\\rm dom}-W_\\perp/(4(1-\\gamma F_{\\rm dom}))\\bigr)$, which is what the bound uses.\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_rh_duality",
+        "is_rh_radius_bound",
+        "is_rh_chain"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_rh_duality": "\u2200 (c_req lam_L Delta2 F_dom W_perp gamma : \u211d),\n  0 \u2264 Delta2 \u2192\n    0 \u2264 W_perp \u2192\n      0 < 1 - gamma * F_dom \u2192\n        (1 - gamma * F_dom) * Delta2 + F_dom - \u221aW_perp * \u221aDelta2 \u2265 F_dom - W_perp / (4 * (1 - gamma * F_dom)) \u2227\n          c_req / lam_L + Delta2 + max 0 (F_dom - \u221aW_perp * \u221aDelta2 - gamma * F_dom * Delta2) \u2265\n            c_req / lam_L + max 0 (F_dom - W_perp / (4 * (1 - gamma * F_dom)))",
+        "is_rh_radius_bound": "\u2200 (r L0 s \u03b3 D : \u211d), 0 \u2264 r \u2192 0 \u2264 s \u2192 s ^ 2 = L0 \u2192 0 \u2264 \u03b3 * D \u2192 L0 * (1 - \u03b3 * D) \u2264 r ^ 2 \u2192 s * max 0 (1 - \u03b3 * D) \u2264 r",
+        "is_rh_chain": "\u2200 (L0 x r fee cE s sW \u03b3 : \u211d),\n  0 \u2264 cE \u2192\n    0 \u2264 fee \u2192\n      cE * r - x * sW \u2264 fee \u2192\n        s * max 0 (1 - \u03b3 * x ^ 2) \u2264 r \u2192 L0 + x ^ 2 + max 0 (cE * s * max 0 (1 - \u03b3 * x ^ 2) - sW * x) \u2264 L0 + x ^ 2 + fee"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Mapped scalar completion-of-square result does not certify the full generalized-eigenvector decomposition or numerical optimization. Review degeneracies and all denominators."
+    },
+    {
+      "label": "cor:garch",
+      "environment": "corollary",
+      "source_line": 1359,
+      "statement_sha256": "f7d1d16c43b0b936df26a1be6f665f653017d4b24e251bcfb8e0913b6e8741f5",
+      "statement": "\\begin{corollary}[Invariance under impact-induced heteroskedasticity]\\label{cor:garch}\nSuppose probing inflates innovation variance as $\\sigma^2_{i,t}(v)=\\sigma^2(1+\\xi[(h_i*v)_t]^2)$ and slippage scales as $\\kappa_{\\rm eff}=\\kappa(1+\\xi_0|v_t|)$. For capacity-bounded probes, $\\KL(P_0^v\\|P_1^v)\\le\\frac{1+O(\\xi^2V_{\\rm eff}^2)}{2\\sigma^2}\\|(H_1-H_0)v\\|_2^2=O(\\|v\\|_2^2\\delta^4)$, and convex impact only raises dissipation. Required capital remains $\\Theta(\\delta^{-4})$.\n\\end{corollary}",
+      "historical_mapped_declarations": [
+        "p1_cor_garch_heteroskedastic_invariance"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_cor_garch_heteroskedastic_invariance": "\u2200 (kappa xi0 v_t L_base : \u211d),\n  0 < kappa \u2192\n    0 \u2264 xi0 \u2192\n      have kappa_eff := kappa * (1 + xi0 * |v_t|);\n      have extra_slippage := kappa * xi0 * |v_t| * v_t ^ 2 / 2;\n      kappa \u2264 kappa_eff \u2227 0 \u2264 extra_slippage \u2227 L_base \u2264 L_base + extra_slippage"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Heteroskedastic scaling alone is not a proof under arbitrary conditional volatility or endogenous observation errors."
+    },
+    {
+      "label": "thm:uniformw1",
+      "environment": "theorem",
+      "source_line": 1422,
+      "statement_sha256": "62d6812df9c01b0b4b3af6816a7232e4d45368e5331b5cd28991281115d78e41",
+      "statement": "\\begin{theorem}[Uniform rate without separation]\\label{thm:uniformw1}\nFix $K\\ge1$, a memory bound $\\bar r<1$ and $0<m_{\\min}\\le B$. Let $\\mathcal M_K$ be the merged measures with at most $K$ atoms in $[0,\\bar r]$ and total mass $k_0\\in[m_{\\min},B]$, with no separation condition and no lower bound on individual weights, and write $\\bar M=M/k_0$ for the normalized memory distribution. From $N$ reset experiments as in Theorem~\\ref{prop:esprit}, let $\\hat M$ be any element of $\\mathcal M_K$ whose first $2K$ kernel values are closest in the sup norm to the estimated ones. There is $C$ depending only on $(K,\\bar r,a,\\kappa,B)$ such that, with probability at least $1-\\beta$,\n\\[\nW_1(\\hat{\\bar M},\\bar M)\\;\\le\\;C\\Bigl(\\frac{\\sigma\\sqrt{\\log(4K/\\beta)}}{m_{\\min}\\sqrt N}\\Bigr)^{1/(2K-1)}\\qquad\\text{uniformly over }\\mathcal M_K .\n\\]\nHence $N=O(\\sigma^2m_{\\min}^{-2}\\epsilon^{-(4K-2)})$ experiments give accuracy $\\epsilon$, and with the Wasserstein statement of Theorem~\\ref{thm:kcohort} the minimax rate for the merged memory distribution is $N^{-1/(4K-2)}$, uniformly over near-colliding economies.\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_uniformw1"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_uniformw1": "\u2200 (K : \u2115),\n  1 \u2264 K \u2192\n    \u2200 (sigma m_min beta N : \u211d),\n      0 < sigma \u2192\n        0 < m_min \u2192\n          0 < beta \u2192\n            beta < 1 \u2192\n              0 < N \u2192\n                have exponent := 1 / (2 * \u2191K - 1);\n                have sample_exponent := 4 * \u2191K - 2;\n                0 < exponent \u2227 0 < sample_exponent \u2227 exponent * sample_exponent = 2"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Confirm target Wasserstein class, tail bound and discretization against the typed declaration; no finite-support assumption may be silently transferred."
+    },
+    {
+      "label": "thm:blind",
+      "environment": "theorem",
+      "source_line": 1498,
+      "statement_sha256": "8cb09a8a6ba636d3bbbd6876e8cebec2824584049335c3178219ff2469267903",
+      "statement": "\\begin{theorem}[Spectral blindness]\\label{thm:blind}\nFor any eigenvalues $0<\\lambda_2<\\lambda_1<1$, one-step price variance $s_1>0$ and stationary price variance $V$ large enough, there is a family of two-state markets $J_\\theta=\\begin{psmallmatrix}\\lambda_1&\\theta\\\\0&\\lambda_2\\end{psmallmatrix}$ with shock covariance ${\\rm diag}(s_1,s_2(\\theta))$ such that all members share the eigenvalues, the one-step price variance and the stationary price variance, while the worst-case transient gain $\\sup_k\\|e_1^\\top J_\\theta^k\\|$ grows without bound in $\\theta$.\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_blind_spectral_blindness"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_blind_spectral_blindness": "\u2200 (lam1 lam2 s1 V theta : \u211d),\n  0 < lam2 \u2192\n    lam2 < lam1 \u2192\n      lam1 < 1 \u2192\n        0 < s1 \u2192\n          theta \u2260 0 \u2192\n            s1 / (1 - lam1 ^ 2) \u2264 V \u2192\n              have denom := (1 - lam1 ^ 2) * (1 - lam2 ^ 2) * (1 - lam1 * lam2);\n              have s2_theta := (V - s1 / (1 - lam1 ^ 2)) * denom / (theta ^ 2 * (1 + lam1 * lam2));\n              have P22 := s2_theta / (1 - lam2 ^ 2);\n              have P12 := lam2 * theta * P22 / (1 - lam1 * lam2);\n              have P11 := (s1 + 2 * lam1 * theta * P12 + theta ^ 2 * P22) / (1 - lam1 ^ 2);\n              0 \u2264 s2_theta \u2227 P11 = V \u2227 theta ^ 2 \u2264 lam1 ^ 2 + theta ^ 2"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Constructive variance-matching example within its triangular model; not a general theorem that all volatility information is useless."
+    },
+    {
+      "label": "lem:altpair",
+      "environment": "lemma",
+      "source_line": 1738,
+      "statement_sha256": "ecb840d18c19ed984f39892ab3eba6f0c865c96c22c2fbf0054d125fe9bfbc46",
+      "statement": "\\begin{lemma}[Moment-matched cohort pairs]\\label{lem:altpair}\nFor every $n\\ge2$ there are two probability measures on $[0,\\rho]$, each with exactly $n$ atoms, whose moments of orders $0,\\ldots,2n-2$ coincide and whose Wasserstein-1 distance is at least $\\rho\\,E_{2n-2}(|x|)\\ge c_*\\rho/(2n-2)$.\n\\end{lemma}",
+      "historical_mapped_declarations": [
+        "p1_lem_altpair_moment_matched_wasserstein"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_lem_altpair_moment_matched_wasserstein": "\u2200 (rho E : \u211d),\n  0 < rho \u2192\n    1 / 8 \u2264 E \u2192\n      have m0_A := 1 / 2 + 1 / 2;\n      have m1_A := 1 / 2 * (-1 / 2) + 1 / 2 * (1 / 2);\n      have m2_A := 1 / 2 * (-1 / 2) ^ 2 + 1 / 2 * (1 / 2) ^ 2;\n      have m0_B := 1 / 8 + 3 / 4 + 1 / 8;\n      have m1_B := 1 / 8 * -1 + 3 / 4 * 0 + 1 / 8 * 1;\n      have m2_B := 1 / 8 * (-1) ^ 2 + 3 / 4 * 0 ^ 2 + 1 / 8 * 1 ^ 2;\n      have abs_A := 1 / 2 * (1 / 2) + 1 / 2 * (1 / 2);\n      have abs_B := 1 / 8 * 1 + 3 / 4 * 0 + 1 / 8 * 1;\n      (m0_A = 1 \u2227 m0_B = 1 \u2227 m1_A = m1_B \u2227 m2_A = m2_B) \u2227\n        rho / 2 * (abs_A - abs_B) = rho / 8 \u2227 rho / 2 * (E + E) = rho * E \u2227 rho / 8 \u2264 rho * E"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Explicit matched pair supplies moment/Wasserstein separation; does not automatically give a largest-class action gap."
+    },
+    {
+      "label": "thm:general",
+      "environment": "theorem",
+      "source_line": 1744,
+      "statement_sha256": "31be4077182ce6f0953a61558f2bdaa387162097f401203958c85fc29b36a3e6",
+      "statement": "\\begin{theorem}[Minimax rate for general memory]\\label{thm:general}\nLet $N$ independent reset experiments observe the impulse response with Gaussian noise of variance $\\sigma^2$ per tap, and let $B(\\rho)=(1+\\sqrt2)(1+2/\\rho)$ and $C_h=\\kappa^2/(1-s)^2$.\n\\begin{enumerate}[label=(\\roman*)]\n\\item \\emph{Lower bound.} Let $\\Lambda_N=\\log(N/\\sigma^2)+\\log\\bigl(2C_h^2W^2/((1-\\rho)\\rho)^2\\bigr)$. Whenever $\\Lambda_N>4\\log(1/\\rho)$, every estimator $\\hat\\mu$ satisfies\n\\[\n\\sup_{\\mu\\in\\mathcal M(\\rho,W)}P_\\mu\\Bigl(d(\\hat\\mu,\\mu)\\ge\\frac{c_*\\,\\rho W\\log(1/\\rho)}{\\Lambda_N}\\Bigr)\\;\\ge\\;\\frac1{4e},\n\\]\nand the bound already holds over $n$-cohort economies, for a finite $n$ that grows with $N$.\n\\item \\emph{Upper bound.} With $a$ and $\\kappa$ known, invert the averaged response into kernel values $\\hat k_0,\\ldots,\\hat k_L$, with $L+1=\\lfloor\\log(N/\\sigma^2)/(4\\log B(\\rho))\\rfloor$, and let $\\hat\\mu$ be any measure on $[0,\\rho]$ minimizing $\\max_{j\\le L}|\\int r^jd\\hat\\mu-\\hat k_j|$ (a linear program). For every $\\beta\\in(0,1)$ there is $N_0$ depending only on $(\\rho,W,a,\\kappa,\\beta)$ such that for $N/\\sigma^2\\ge N_0$,\n\\[\n\\sup_{\\mu\\in\\mathcal M(\\rho,W)}P_\\mu\\Bigl(d(\\hat\\mu,\\mu)>\\frac{3\\pi\\rho W\\log B(\\rho)}{\\log(N/\\sigma^2)}\\Bigr)\\;\\le\\;\\beta .\n\\]\n\\end{enumerate}\nHence the minimax accuracy is of exact order $1/\\log(N/\\sigma^2)$, and reaching accuracy $w$ requires and suffices $N/\\sigma^2=\\exp(\\Theta(1/w))$.\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_general_memory_minimax"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_general_memory_minimax": "\u2200 (rho W L delta B_rho s kappa norm_E : \u211d),\n  0 < rho \u2192\n    0 < W \u2192\n      0 \u2264 L \u2192\n        0 \u2264 delta \u2192\n          1 \u2264 B_rho \u2192\n            0 \u2264 s \u2192\n              s < 1 \u2192\n                0 < kappa \u2192\n                  0 \u2264 norm_E \u2192\n                    (1 + s) / kappa * norm_E \u2264 1 / 2 \u2192\n                      have err_approx := Real.pi * rho * (W + delta) / (2 * (L + 1));\n                      have err_moment := 2 * delta * rho * B_rho;\n                      have norm_H_inv := (1 + s) / kappa;\n                      0 < err_approx + err_moment \u2227\n                        0 < kappa / (1 - s) \u2227\n                          norm_H_inv ^ 2 * norm_E / (1 - norm_H_inv * norm_E) \u2264 2 * norm_H_inv ^ 2 * norm_E"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Explicit binomial/cosine and constructive approximation proofs differ from the written approximation route and constants; compare the two versions, not just the order."
+    },
+    {
+      "label": "lem:toeplitz",
+      "environment": "lemma",
+      "source_line": 1987,
+      "statement_sha256": "ef691fb9fdef001050b21e6b968697546be3e240e9ba3a171f5dc6decd79d09f",
+      "statement": "\\begin{lemma}[Fair execution]\\label{lem:toeplitz}\nFor a quote schedule refreshed after the uncontrolled state update, execution at the average price of a linear book costs, relative to the constant fundamental mark,\n\\begin{equation}\\label{eq:cost}\nC(v)=\\tfrac12v^\\top T_hv+c\\|v\\|_1,\\qquad (T_h)_{ij}=h_{|i-j|}.\n\\end{equation}\nIn the positive stable economy $T_h$ is positive definite, so no nonzero round trip produces a deterministic gain.\n\\end{lemma}",
+      "historical_mapped_declarations": [
+        "p1_lem_toeplitz_fair_execution"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_lem_toeplitz_fair_execution": "\u2200 (h0 h1 c v0 v1 : \u211d),\n  |h1| < h0 \u2192\n    0 \u2264 c \u2192\n      v0 \u2260 0 \u2228 v1 \u2260 0 \u2192\n        have C_quad := (h0 * v0 ^ 2 + 2 * h1 * v0 * v1 + h0 * v1 ^ 2) / 2;\n        0 < C_quad + c * (|v0| + |v1|)"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Fundamental-mark round trip and average linear-book execution. Fairness alone does not supply the claimed arbitrary camouflage cost coefficient."
+    },
+    {
+      "label": "thm:cap",
+      "environment": "theorem",
+      "source_line": 1999,
+      "statement_sha256": "241756681e8df26bc10e6990fab8650b159d61218e494049d891955b8e4f0eea",
+      "statement": "\\begin{theorem}[Sharp robust quantity cap from cash and margin]\\label{thm:cap}\nUse the positive, stable, reset economy with constant fundamental price $P_*>0$ and no process noise. A designated dealer fills only nonnegative probes $v_t\\ge0$ at the average price $P^0_{t+1}+\\kappa v_t/2$ of a linear schedule, holds inventory $I_{t+1}=I_t-v_t$ and cash $K_{t+1}=K_t+v_t(P^0_{t+1}+\\kappa v_t/2)-cv_t$, starts with equity $B>0$, and must satisfy $\\mu|I_t|P_t\\le E_t$ at every time. For the robust contract admitting every probe with $\\sum_tv_t\\le V$, the largest allowance guaranteeing margin is\n\\begin{equation}\\label{eq:VB}\nV_B=\\frac{2B}{\\beta+\\sqrt{\\beta^2+4(\\mu+\\tfrac12)\\kappa B}},\\qquad\\beta=c+\\mu P_*,\n\\end{equation}\nequivalently $(\\mu+\\tfrac12)\\kappa V^2+(c+\\mu P_*)V\\le B$. The cap holds across all positive cohort representations with $S<1$, without resolving individual rates. An observer that receives only noisy prices and executed quantities has best error $\\Phi[-V_B\\|d_T\\|_2/(2\\sigma)]$ within this allowance; fixed error $\\alpha<1/2$ requires capital of order at least $\\delta^{-4}$, and a single positive pulse attains that order.\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_cap_counterparty_margin"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_cap_counterparty_margin": "\u2200 (B mu kappa c Pstar : \u211d),\n  0 < B \u2192\n    0 \u2264 mu \u2192\n      0 < kappa \u2192\n        0 \u2264 c \u2192\n          0 < Pstar \u2192\n            have beta := c + mu * Pstar;\n            have a_coef := (mu + 1 / 2) * kappa;\n            have V_B := (-beta + \u221a(beta ^ 2 + 4 * a_coef * B)) / (2 * a_coef);\n            0 < V_B \u2227 a_coef * V_B ^ 2 + beta * V_B = B"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Positive monotone response and specified marking/margin convention; not universal protection of leveraged accounts."
+    },
+    {
+      "label": "prop:disclosure",
+      "environment": "proposition",
+      "source_line": 2017,
+      "statement_sha256": "270a79cbb9dff977c005093928638fd2ab41356bf93c23144f57e15130b419c9",
+      "statement": "\\begin{proposition}[Exact financial disclosure changes the experiment]\\label{prop:disclosure}\nIn this noiseless-state account, exact disclosure of the third equity mark after a single positive pulse $0<A\\le V_B$ distinguishes the known pair with zero error for every $\\delta>0$.\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_disclosure_third_mark"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_prop_disclosure_third_mark": "\u2200 (B kappa A c h2_0 q delta : \u211d),\n  0 < A \u2192\n    0 < kappa \u2192\n      0 < q \u2192\n        0 < delta \u2192\n          have h2_delta := h2_0 - kappa ^ 2 * q * delta ^ 2;\n          have E3_0 := B + kappa * A ^ 2 / 2 - c * A - A ^ 2 * h2_0;\n          have E3_delta := B + kappa * A ^ 2 / 2 - c * A - A ^ 2 * h2_delta;\n          E3_delta - E3_0 = A ^ 2 * kappa ^ 2 * q * delta ^ 2 \u2227 0 < E3_delta - E3_0"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Third-mark identity at common initial receipt, inventory and fee convention; economic utility needs a holding/exit decision."
+    },
+    {
+      "label": "thm:capital",
+      "environment": "lemma",
+      "source_line": 2027,
+      "statement_sha256": "d58e38299398fa0fa3babb1383afad15c26d04d837078d06ed013b40295445e5",
+      "statement": "\\begin{lemma}[Time-domain Toeplitz coercivity: capital order for funded probes]\\label{thm:capital}\nUse the same economy and execution law. The statistical observer receives only noisy prices and executed quantities. The probe trader starts with cash $B>0$ and zero inventory; a finite signed sequence $v$ changes inventory by $+v_t$ and cash by $K_{t+1}=K_t-v_t(P^0_{t+1}+\\kappa v_t/2)-c|v_t|$, after which trading stops and the trader must remain solvent as the price returns to $P_*$. Put\n\\[\nr=1-\\epsilon(1-S)<1,\\qquad m=\\kappa\\frac{1-r}{1+r}>0,\\qquad K_*=\\frac{2\\kappa^2q}{\\epsilon^3(1-S)^2}.\n\\]\nEvery solvent strategy satisfies $\\KL(P_0^v\\|P_\\delta^v)\\le K_*^2B\\delta^4/(\\sigma^2m)$, so error at most $\\alpha<1/2$ requires\n\\begin{equation}\\label{eq:Bmin}\nB\\;\\ge\\;\\frac{2\\sigma^2m(1-2\\alpha)^2}{K_*^2\\delta^4},\n\\end{equation}\nwithout a quantity cap and at any horizon. Conversely, for any margin fraction $0<\\mu\\le1$, the pulse $A$ in \\eqref{eq:pulse} achieves error $\\alpha$ and remains margin-solvent at every later mark with capital $B_A=\\tfrac{\\kappa}{2}A^2+(c+\\mu P_*)A$. Necessary and sufficient capital orders are $\\delta^{-4}$.\n\\end{lemma}",
+      "historical_mapped_declarations": [
+        "p1_thm_capital_funded_probes"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_capital_funded_probes": "\u2200 (kappa r A Pstar mu h_step : \u211d),\n  0 < kappa \u2192\n    0 \u2264 r \u2192\n      r < 1 \u2192\n        0 < A \u2192\n          mu \u2264 1 \u2192\n            0 \u2264 h_step \u2192\n              have m := kappa * (1 - r) / (1 + r);\n              have E_t := mu * A * Pstar + A ^ 2 * h_step;\n              have MM_t := mu * A * (Pstar + A * h_step);\n              0 < m \u2227 MM_t \u2264 E_t"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Formal coercivity constant has the stated form but not necessarily the manuscript explicit modal bound; converse pulse margin remains written."
+    },
+    {
+      "label": "thm:twocohort",
+      "environment": "theorem",
+      "source_line": 2049,
+      "statement_sha256": "4c7f30a064d9995b444f6fbc1b26f0cdb2704e40d9dc69deeebc47f118623227",
+      "statement": "\\begin{theorem}[Global two-point bound and matching upper bound, $K=2$]\\label{thm:twocohort}\nIn this theorem $w_k$ denotes cohort $k$'s trading intensity $q_k$, not the merged weight $q_k\\eta_k$ of Section~\\ref{sec:model}, and $\\Delta\\eta$ is the actual spacing of the two rates. Fix total intensity $q=0.20$, mean rate $\\bar\\eta=0.40$, target separation $\\tau=0.01$, and $\\Delta\\eta\\in(0,8/11)$ (so that $\\bar\\eta-p_+\\Delta\\eta>0$). Let $p_\\mp=\\tfrac12\\mp\\tau/q$ and\n\\begin{equation}\\label{eq:pair}\n\\theta_0=(qp_-,qp_+,\\bar\\eta-p_+\\Delta\\eta,\\bar\\eta+p_-\\Delta\\eta),\\qquad\\theta_1=(qp_+,qp_-,\\bar\\eta-p_-\\Delta\\eta,\\bar\\eta+p_+\\Delta\\eta).\n\\end{equation}\n\\begin{enumerate}[label=(\\roman*)]\n\\item Label cohorts in increasing order of rate, so that weight vectors are compared rate by rate (as unordered sets the two weight vectors coincide). Both economies have spacing $\\Delta\\eta$, weight separation $\\|w(\\theta_1)-w(\\theta_0)\\|_\\infty=2\\tau$ in this labelling, and equal rate moments $M_m=\\sum_kw_k\\eta_k^m$ for $m\\in\\{0,1,2\\}$, while\n\\begin{equation}\\label{eq:dM3}\nM_3(\\theta_1)-M_3(\\theta_0)=4\\tau p_-p_+(\\Delta\\eta)^3 .\n\\end{equation}\nHence $\\|h(\\theta_1)-h(\\theta_0)\\|_2=\\Theta(\\tau(\\Delta\\eta)^3)$.\n\\item For any measurable estimator (including biased, ridge, James--Stein or MAP) that reports weights in the same rate order, the supremum being over the class of two-cohort economies with total weight $q$, mean rate $\\bar\\eta$ and spacing $\\Delta\\eta$,\n\\begin{equation}\\label{eq:lecam2}\n\\sup_\\theta P_\\theta(\\|\\hat w-w(\\theta)\\|_\\infty\\ge\\tau)\\;\\ge\\;1-\\Phi\\!\\Bigl(\\frac{\\sqrt N\\|h(\\theta_1)-h(\\theta_0)\\|_2}{2\\sigma_h}\\Bigr),\n\\end{equation}\nso failure probability at most $0.05$ requires $N\\ge4\\sigma_h^2z_{0.95}^2/\\|h(\\theta_1)-h(\\theta_0)\\|_2^2=\\Omega((\\Delta\\eta)^{-6})$. For $\\Delta\\eta\\ge2\\tau q/(q+2\\tau)$ ($\\approx0.018$ at the stated values) the same bound holds without any labelling convention, for the permutation-invariant loss\n\\[\nd_\\infty(\\hat\\theta,\\theta)=\\min_{\\pi\\in S_2}\\max_{k}\\bigl(|\\hat w_{\\pi(k)}-w_k|+|\\hat\\eta_{\\pi(k)}-\\eta_k|\\bigr),\n\\]\nbecause then $d_\\infty(\\theta_0,\\theta_1)=\\min\\{2\\tau(1+\\Delta\\eta/q),\\,(1+2\\tau/q)\\Delta\\eta\\}\\ge2\\tau$. For smaller spacings the relevant permutation-invariant statement is the Wasserstein bound of Theorem~\\ref{thm:kcohort}.\n\\item Conversely, the matching upper bound $N=O((\\Delta\\eta)^{-6})$ on rich separated two-cohort classes is Theorem~\\ref{prop:esprit} with $K=2$. On the separated class with weights and rates bounded away from the boundary, Toeplitz deconvolution followed by a Prony--Hankel root step has Hankel determinant $g_1g_3-g_2^2=w_1w_2\\eta_1\\eta_2r_1r_2(\\Delta\\eta)^2>0$ for the deconvolved kernel $g_m=\\sum_iw_i\\eta_ir_i^m$, and perturbation analysis gives the same order.\n\\end{enumerate}\n\\end{theorem}",
+      "historical_mapped_declarations": [
+        "p1_thm_twocohort_hankel_and_moment_gap"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_thm_twocohort_hankel_and_moment_gap": "\u2200 (q eta_bar tau Delta_eta w1 w2 eta1 eta2 : \u211d),\n  q \u2260 0 \u2192\n    0 < w1 \u2192\n      0 < w2 \u2192\n        0 < eta1 \u2192\n          eta1 < 1 \u2192\n            0 < eta2 \u2192\n              eta2 < 1 \u2192\n                eta1 \u2260 eta2 \u2192\n                  have p_minus := 1 / 2 - tau / q;\n                  have p_plus := 1 / 2 + tau / q;\n                  have w0_1 := q * p_minus;\n                  have w0_2 := q * p_plus;\n                  have e0_1 := eta_bar - p_plus * Delta_eta;\n                  have e0_2 := eta_bar + p_minus * Delta_eta;\n                  have w1_1 := q * p_plus;\n                  have w1_2 := q * p_minus;\n                  have e1_1 := eta_bar - p_minus * Delta_eta;\n                  have e1_2 := eta_bar + p_plus * Delta_eta;\n                  have r1 := 1 - eta1;\n                  have r2 := 1 - eta2;\n                  have g1 := w1 * eta1 * r1 + w2 * eta2 * r2;\n                  have g2 := w1 * eta1 * r1 ^ 2 + w2 * eta2 * r2 ^ 2;\n                  have g3 := w1 * eta1 * r1 ^ 3 + w2 * eta2 * r2 ^ 3;\n                  (w1_1 + w1_2 = w0_1 + w0_2 \u2227\n                      w1_1 * e1_1 + w1_2 * e1_2 = w0_1 * e0_1 + w0_2 * e0_2 \u2227\n                        w1_1 * e1_1 ^ 2 + w1_2 * e1_2 ^ 2 = w0_1 * e0_1 ^ 2 + w0_2 * e0_2 ^ 2 \u2227\n                          w1_1 * e1_1 ^ 3 + w1_2 * e1_2 ^ 3 - (w0_1 * e0_1 ^ 3 + w0_2 * e0_2 ^ 3) =\n                            4 * tau * p_minus * p_plus * Delta_eta ^ 3) \u2227\n                    g1 * g3 - g2 ^ 2 = w1 * w2 * eta1 * eta2 * r1 * r2 * (eta2 - eta1) ^ 2 \u2227 0 < g1 * g3 - g2 ^ 2"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Known pair/determinant calculation differs from unknown mixture estimation; keep amplitude and experiment horizon fixed."
+    },
+    {
+      "label": "prop:choice",
+      "environment": "proposition",
+      "source_line": 2116,
+      "statement_sha256": "9167a555ca33dd4cddc76d85d04aeb9f6e2ef872ecd0f223f6c3cdcc2b60e1f0",
+      "statement": "\\begin{proposition}[When an audit trail is chosen]\\label{prop:choice}\nLet $K\\ge2$ and $\\Delta\\eta_t<\\Delta\\eta_p$, and let $G(\\Delta\\eta)=\\min\\{\\bar T,T_p(\\Delta\\eta)\\}-\\min\\{\\bar T,T_t(\\Delta\\eta)\\}$ be the attribution delay that disclosure saves.\n\\begin{enumerate}[label=(\\roman*),itemsep=1pt]\n\\item The supervisor strictly prefers disclosure if and only if $F/M+c<\\ell\\,G(\\Delta\\eta)$.\n\\item $G$ vanishes for $\\Delta\\eta\\le\\Delta\\eta_t$, increases on $(\\Delta\\eta_t,\\Delta\\eta_p]$ to its maximum $G^*=\\bar T-T_t(\\Delta\\eta_p)>0$, decreases wherever it is positive beyond $\\Delta\\eta_p$, and is negative for $\\Delta\\eta>(c_p/c_t)^{1/(4K-4)}$, where it returns toward zero from below. Hence the spacings at which disclosure is chosen form an interval around $\\Delta\\eta_p$, possibly empty: disclosure is never chosen for algorithms so similar that even tagged records cannot attribute them within the cycle, nor for algorithms so different that prices attribute them quickly.\n\\item The interval is non-empty if and only if the audit trail covers more than $M^*=F/(\\ell G^*-c)$ markets (with $M^*=\\infty$ if $\\ell G^*\\le c$), and it widens as $M$ grows.\n\\end{enumerate}\n\\end{proposition}",
+      "historical_mapped_declarations": [
+        "p1_prop_choice"
+      ],
+      "additional_review_declarations": [],
+      "historical_types": {
+        "p1_prop_choice": "\u2200 (F M c ell G_star : \u211d),\n  0 < M \u2192\n    0 < ell \u2192\n      0 < G_star \u2192\n        have _M_star := F / (ell * G_star - c);\n        (F / M + c < ell * G_star \u2194 F / M < ell * G_star - c) \u2227 (c < ell * G_star \u2192 0 < ell * G_star - c)"
+      },
+      "status": "HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION",
+      "scope_note": "Stylized fixed-cost sharing and waiting harm. Algebra is conditional accounting, not calibrated regulator welfare."
+    }
+  ],
+  "operational_flow_bridge": "Seven declarations in Paper1FlowDecision.lean; consult the current build receipt. Executable rule soundness remains a correspondence obligation."
+}

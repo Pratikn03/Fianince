@@ -19,6 +19,7 @@ jobs:
           python-version: '3.11'
       - run: pip install numpy
       - run: python studies/paper1_uplift_20261105/flow_decision.py
+      - run: python studies/paper1_uplift_20261105/flow_falsification.py
   accounting:
     runs-on: ubuntu-latest
     steps:
@@ -33,6 +34,8 @@ jobs:
           name: supervisory-accounting
           path: studies/supervisory_release_20261105/results/
   lean:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +51,16 @@ jobs:
         run: |
           python3 ../../studies/supervisory_release_20261105/tools/verify_release.py --project . --repo ../..
           lake env lean ../../studies/supervisory_release_20261105/Robustness.lean
+      - name: Persist source-bound proof receipts
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add research_extension/current_manuscript_lean_20261008/paper1_release_receipt.json research_extension/current_manuscript_lean_20261008/paper1_release_axioms.jsonl research_extension/current_manuscript_lean_20261008/Paper1ReleaseAudit.lean
+          if ! git diff --cached --quiet; then
+            git commit -m 'Record source-bound Paper 1 proof audit [skip ci]'
+            git pull --rebase origin codex/paper1-supervisory-costs-20261105
+            git push origin HEAD:codex/paper1-supervisory-costs-20261105
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: paper1-full-proof-audit
@@ -65,18 +78,6 @@ jobs:
         run: |
           latexmk -pdf -interaction=nonstopmode -halt-on-error paper1_ssrn.tex
           latexmk -pdf -interaction=nonstopmode -halt-on-error paper1.tex
-      - name: Update generated PDFs on the authorized revision branch
-        if: github.event_name == 'push'
-        run: |
-          cp ceiling_suite/papers/paper1/paper1.pdf ceiling_suite/paper1/paper1.pdf
-          cp ceiling_suite/papers/paper1/paper1_ssrn.pdf ceiling_suite/paper1/paper1_ssrn.pdf
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -f ceiling_suite/papers/paper1/paper1.pdf ceiling_suite/papers/paper1/paper1_ssrn.pdf ceiling_suite/paper1/paper1.pdf ceiling_suite/paper1/paper1_ssrn.pdf
-          if ! git diff --cached --quiet; then
-            git commit -m 'Build updated Paper 1 PDFs from revised LaTeX'
-            git push origin HEAD:codex/paper1-supervisory-costs-20261105
-          fi
       - uses: actions/upload-artifact@v4
         with:
           name: updated-paper1-pdfs

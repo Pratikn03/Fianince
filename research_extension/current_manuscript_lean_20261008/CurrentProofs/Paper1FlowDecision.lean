@@ -72,4 +72,38 @@ theorem p1_flow_joint_mean_bound {J : ℕ} (N : ℕ) (hN : 0 < N)
   simpa [p1_impulse_memory_zero] using
     (p1_thm_tagged_recovery_all_classes N hN 0 1 (by norm_num) mean (fun _ => 1) v e he)
 
+theorem p1_flow_identity_inversion (w κ r h : ℝ) (hw : w ≠ 0) (hk : κ ≠ 0) :
+    w * (κ * r + h) / (κ * w) - h / κ = r := by
+  field_simp
+  <;> ring
+
+theorem p1_flow_clipped_interval (lo hi r cap : ℝ)
+    (hl : lo ≤ r) (hh : r ≤ hi) (hr0 : 0 ≤ r) (hrc : r ≤ cap) :
+    max 0 (min cap lo) ≤ r ∧ r ≤ max 0 (min cap hi) := by
+  constructor
+  · exact max_le hr0 (le_trans (min_le_right _ _) hl)
+  · exact le_trans (le_min hrc hh) (le_max_right _ _)
+
+/-- Probability composition for any rule proved safe on simultaneous mean
+coverage. The soundness premise must be established for the concrete rule. -/
+theorem p1_flow_gaussian_decision_bound {J : ℕ} (N : ℕ) (hN : 0 < N)
+    (mean : Fin J → ℝ) (v : ℝ≥0) (e : ℝ) (he : 0 < e)
+    (halt unsafe : (Fin J → Fin N → ℝ) → Prop)
+    (hSound : ∀ x, (∀ j, |(∑ n, x j n) / N - mean j| < e) → halt x → ¬ unsafe x) :
+    (Measure.pi fun j : Fin J => Measure.pi fun _ : Fin N => gaussianReal (mean j) v)
+      {x | halt x ∧ unsafe x} ≤ J * ENNReal.ofReal (v / (N * e ^ 2)) := by
+  classical
+  calc
+    _ ≤ (Measure.pi fun j : Fin J => Measure.pi fun _ : Fin N => gaussianReal (mean j) v)
+        (⋃ j : Fin J, {x : Fin J → Fin N → ℝ | e ≤ |(∑ n, x j n) / N - mean j|}) := by
+      apply measure_mono
+      intro x hx
+      by_contra hb
+      have hGood : ∀ j, |(∑ n, x j n) / N - mean j| < e := by
+        intro j
+        by_contra hn
+        exact hb (Set.mem_iUnion.mpr ⟨j, le_of_not_gt hn⟩)
+      exact hSound x hGood hx.1 hx.2
+    _ ≤ _ := p1_flow_joint_mean_bound N hN mean v e he
+
 end CurrentMM
