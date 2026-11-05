@@ -1,5 +1,14 @@
 # Machine Markets: Auditable Memory, Financial Identification Limits, and Pre-Trade Safety Under Feedback
 
+## Paper 1 working-paper release — 5 November 2026
+
+The current review release adds 16 Lean theorem declarations for the exact two-group supervisory witness, a Gaussian unsafe-halt event bound, robustness and after-cost information acquisition. The full proof project builds and its strict axiom audit covers 803 named declarations across the programme. These counts do not establish complete manuscript equivalence.
+
+- [SSRN working-paper candidate](ceiling_suite/papers/paper1/paper1_ssrn.pdf) and [full development version](ceiling_suite/papers/paper1/paper1.pdf).
+- [Source-bound proof receipt](research_extension/current_manuscript_lean_20261008/paper1_release_receipt.json), [release scope](studies/supervisory_release_20261105/RELEASE_REVIEW.md), and [submission metadata including AI disclosure](studies/supervisory_release_20261105/SSRN_METADATA.md).
+- [Accounting code and 4,608 sensitivity configurations](studies/supervisory_release_20261105/). General-K supervisory dominance remains conditional; the scalar observation contract is hypothetical. Human manuscript review and novelty assessment remain separate obligations.
+
+
 [![CI](https://github.com/Pratikn03/Fianince/actions/workflows/ci.yml/badge.svg)](https://github.com/Pratikn03/Fianince/actions/workflows/ci.yml)
 [![Lean 4](https://img.shields.io/badge/Lean_4-recorded_receipt-blue.svg)](research_extension/current_manuscript_lean_20261008/formal_verification_receipt.json)
 
