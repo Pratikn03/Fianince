@@ -41,7 +41,12 @@ def main():
     audit_path.write_text(audit)
     for command, name in [(['lake', 'build'], 'paper1_release_build.log'), (['lake', 'env', 'lean', 'Paper1ReleaseAudit.lean'], 'paper1_release_axioms.log')]:
         with (project / name).open('w') as handle:
-            subprocess.run(command, cwd=project, env=os.environ.copy(), stdout=handle, stderr=subprocess.STDOUT, check=True, timeout=1800)
+            try:
+                subprocess.run(command, cwd=project, env=os.environ.copy(), stdout=handle, stderr=subprocess.STDOUT, check=True, timeout=1800)
+            except subprocess.CalledProcessError:
+                handle.flush()
+                print((project / name).read_text()[-20000:])
+                raise
     rows = [json.loads(line) for line in (project / 'paper1_release_axioms.log').read_text().splitlines() if line.startswith('{"')]
     named = [row for row in rows if row['kind'] == 'named_theorem']
     summaries = [row for row in rows if row['kind'] == 'audit_summary']

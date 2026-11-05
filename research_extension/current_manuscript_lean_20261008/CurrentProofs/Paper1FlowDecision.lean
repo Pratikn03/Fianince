@@ -88,10 +88,10 @@ theorem p1_flow_clipped_interval (lo hi r cap : ℝ)
 coverage. The soundness premise must be established for the concrete rule. -/
 theorem p1_flow_gaussian_decision_bound {J : ℕ} (N : ℕ) (hN : 0 < N)
     (mean : Fin J → ℝ) (v : ℝ≥0) (e : ℝ) (he : 0 < e)
-    (halt unsafe : (Fin J → Fin N → ℝ) → Prop)
-    (hSound : ∀ x, (∀ j, |(∑ n, x j n) / N - mean j| < e) → halt x → ¬ unsafe x) :
+    (halt violates : (Fin J → Fin N → ℝ) → Prop)
+    (hSound : ∀ x, (∀ j, |(∑ n, x j n) / N - mean j| < e) → halt x → ¬ violates x) :
     (Measure.pi fun j : Fin J => Measure.pi fun _ : Fin N => gaussianReal (mean j) v)
-      {x | halt x ∧ unsafe x} ≤ J * ENNReal.ofReal (v / (N * e ^ 2)) := by
+      {x | halt x ∧ violates x} ≤ J * ENNReal.ofReal (v / (N * e ^ 2)) := by
   classical
   calc
     _ ≤ (Measure.pi fun j : Fin J => Measure.pi fun _ : Fin N => gaussianReal (mean j) v)
