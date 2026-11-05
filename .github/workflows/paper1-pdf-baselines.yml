@@ -1,0 +1,37 @@
+name: Refresh Paper 1 PDF baselines
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/paper1-supervisory-costs-20261105]
+    paths: ['.github/workflows/paper1-pdf-baselines.yml']
+permissions:
+  contents: write
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y texlive-latex-extra texlive-fonts-recommended lmodern poppler-utils
+      - name: Build intentional Paper 1 reference updates from current source
+        run: |
+          baseline_work=$(mktemp -d)
+          cp -a ceiling_suite/papers "$baseline_work/papers"
+          cd "$baseline_work/papers"
+          sh build_p1.sh
+          rm -f versions/Paper1_QE.pdf
+          python3 versions/build_versions.py
+          test -s versions/Paper1_QE.pdf
+          if grep -q '^!' versions/Paper1_QE.log; then exit 1; fi
+          cp paper1/paper1.pdf "$GITHUB_WORKSPACE/ceiling_suite/papers/pdf_delivered/paper1.pdf"
+          cp versions/Paper1_QE.pdf "$GITHUB_WORKSPACE/ceiling_suite/papers/pdf_delivered/Paper1_QE.pdf"
+          cp versions/Paper1_QE.pdf "$GITHUB_WORKSPACE/ceiling_suite/papers/versions/Paper1_QE.pdf"
+          cp versions/Paper1_QE.tex "$GITHUB_WORKSPACE/ceiling_suite/papers/versions/Paper1_QE.tex"
+      - name: Commit the revised Paper 1 references
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f ceiling_suite/papers/pdf_delivered/paper1.pdf ceiling_suite/papers/pdf_delivered/Paper1_QE.pdf ceiling_suite/papers/versions/Paper1_QE.pdf ceiling_suite/papers/versions/Paper1_QE.tex
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh intentional Paper 1 PDF baselines after the verified revision'
+            git push origin HEAD:codex/paper1-supervisory-costs-20261105
+          fi
