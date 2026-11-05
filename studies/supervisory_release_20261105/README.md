@@ -1,36 +1,29 @@
-# Paper 1 supervisory release — 5 November 2026
+# Paper 1 supervisory proof and accounting release
 
-This development revision starts from main commit 5c93dab1ed2e690c65506fbece92aa315b255c47. It is a working draft, not an independently reviewed or SSRN-published release.
+The release builds on main `5c93dab1ed2e690c65506fbece92aa315b255c47` and the subsequent supervisory review branch. See [RELEASE_REVIEW.md](RELEASE_REVIEW.md) for the completed work and remaining review obligations.
 
-## Audit and manuscript changes
+## Proofs
 
-- `Paper1SupervisorySeparation.lean` imports `Paper1LowerBound` and `Paper1MatchedPair`. Its two-cohort theorem concerns actual Gaussian records and a different explicit pair from the numerical Gauss–Radau example. Source inspection is not a new Lean build.
-- `p1_prop_target_every_K` assumes an index, positive intensity gap and dominance inequality. It does not construct those hypotheses. Symmetric binomial odd/even weights have equal maxima. The unconditional decision claim is restricted to two groups; general K requires a separate gap construction.
-- The unsupported smooth-response assertion is removed. A constant smooth response map can erase separation. The replacement requires a declared absolute response allowance and checks the threshold margin explicitly.
-- The prudential target is a row feedback budget, not the state matrix's spectral radius. Already stable economies can fail the tighter prudential ceiling.
-- The action model includes horizon, surplus convention, implementation cost, information fee, per-world error probability, an optional acquisition decision and the same-action no-data benchmark. Surplus is assumed rather than empirically estimated.
-- Literature positioning acknowledges clustered Prony/super-resolution rates (Batenkov et al.; Katz et al.) and control without full identification (van Waarde et al.). The candidate delta is model-specific; exhaustive novelty review remains open.
+- `Paper1GaussRadau.lean`: eight theorems construct the exact K=2 witness used by the numerical example and prove its actual Gaussian-record lower bound. The dominant-intensity result assumes `0 ≤ d ≤ u/3`, which includes the accounting example `d=0.1`, `u=0.4`.
+- `Paper1SupervisoryDecision.lean`: eight theorems cover robustness, an actual product-Gaussian unsafe-halt event, its error budget, the no-data two-action optimum and after-cost acquisition algebra.
+- `tools/verify_release.py`: builds the full project, checks every named theorem and all CurrentMM constants against standard axiom dependencies, records exact new theorem types, and binds the receipt to active manuscript and figure hashes. It explicitly does not claim full manuscript equivalence or independent review.
 
-## Evidence reuse and new check
+The new files live under `research_extension/current_manuscript_lean_20261008/CurrentProofs/` and are imported by the main proof project. The older `Robustness.lean` is retained as an earlier scalar-only check, not the probability theorem.
 
-Run from repository root:
+## Experiment
 
 ```sh
 python studies/supervisory_release_20261105/run_study.py
 ```
 
-Requires NumPy and SciPy. Six archived synthetic rows are independently recomputed from their declared state recursion, with maximum response discrepancy error below 2.1e-17. Existing archived rows contain no measured intervention utility, disclosure prices, or response allowances. GPU runs are not rerun or claimed to validate these absent quantities. Historical and real-noise experiments remain existing evidence with their original limitations; this release does not independently reproduce all of them.
+Requires NumPy and SciPy. Six archived response/decision rows independently reproduce within 2.1e-17 in response discrepancy. The accounting layer assumes a declared scalar Gaussian disclosure contract, common hypothetical sample fees, a response allowance and fixed-menu utility. It does not directly observe tagged flow or class positions.
 
-The remaining gap is evaluated with exact Gaussian integrals in a scalar disclosure contract. It is not the tagged-flow theorem, an observed post-intervention market trial, or a preregistered experiment. `results/study.json` records assumptions, representative results and failures; `results/study.csv` retains all 2,304 deterministic sensitivity configurations, including adverse outcomes. No random seed selection or independent-market interpretation applies. Common per-record prices are assumptions, not cost estimates. Public data in this experiment are paid reset response records, not freely observed passive prices.
+`results/study.csv` retains all 4,608 configurations: 2,304 normal-quantile cases plus 2,304 conservative Chebyshev-gate cases. These are deterministic sensitivity cases, not independent markets. Negative outcomes are retained. `results/study.json` records representative outcomes and explicit failures.
 
-Representative conditional net disclosure value: 0.144087 surplus units after a 0.066 information bill. Positive configurations: 1,207; negative: 1,079; ties: 18. Bias and understated future response invalidate error guarantees. Under drift misspecification the fallback throttle can also fail, so such cases are safety failures rather than fair payoff comparisons.
+For the normal-quantile rule, positive/negative/tied paid-information values number 1,207/1,079/18. For the conservative rule covered by the new actual-event theorem, they number 781/1,499/24. At N=128 the conservative representative has information bill 0.114, loss 1.349034, and conditional net advantage 0.100185 surplus units. These are not real-market profits or estimated social welfare.
 
-## Formal verification status
+## Interpretation and release
 
-`Robustness.lean` contains only scalar deterministic threshold lemmas. No Lean executable was available locally. The targeted GitHub workflow must pass before describing these new lemmas as machine checked. It also compiles `CurrentProofs/Paper1SupervisorySeparation.lean` with the existing dependency project. Historical declaration counts are not a proof-to-manuscript semantic audit.
+`EVIDENCE_INVENTORY.md` records inspected historical results and what they cannot establish. `CLAIM_SCOPE.json` inventories the current manuscript's numbered environments without treating inherited mappings as newly reviewed proofs. General-K supervisory dominance remains an explicit additional condition. No market calibration, complete novelty certificate, coauthor approval or journal acceptance follows from the build.
 
-## Required human proof review
-
-Pratik, Prashant and Sujan should each independently record a verdict on: Gaussian record/horizon scope; the two-group weight-gap construction; hypothetical all-K hypotheses; observability and executability of the chosen class; the robustness allowance; and the acquisition/payoff assumptions. Resolve discrepancies in a written claim ledger before a preprint-ready verdict. No review verdict or SSRN submission is fabricated by this revision.
-
-The supplementary empirical precision-to-years arithmetic is hypothetical and does not establish an equivalent sample requirement for different estimands. Negative empirical tests do not prove the necessity of granular reporting.
+Both PDF variants are rebuilt from synchronized LaTeX. The SSRN variant is the working-paper candidate; the full development variant retains the dated work register. No SSRN submission is performed by this release.
