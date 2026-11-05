@@ -173,6 +173,25 @@ Part (i) follows by scaling the intensities. For (ii), expand $(1-r_c-\Delta\eta
 
 \paragraph{Formal verification scope, 5 November 2026.} This revision builds the pinned Lean 4.34.1/Mathlib project and audits its typed declarations using only standard foundations. The exact two-point Gauss--Radau witness in Table~\ref{tab:target} is now covered by \nolinkurl{Paper1GaussRadau.lean}: positive normalized weights, moments of orders zero through two, the third-moment gap, a dominant-intensity gap of at least $W/(8u)$ for $0\le\Delta\eta\le u/3$, the aggregate-budget gap and the actual finite-Gaussian-record testing bound. Thus this example no longer relies solely on the other matched pair used by the earlier supervisory theorem. The finite-horizon bound has constants depending on the declared record length and response envelope. Its proof does not supply an all-$K$ quadrature construction. \nolinkurl{Paper1SupervisoryDecision.lean} additionally checks the robust threshold/fallback, the actual unsafe-halt event for Proposition~\ref{prop:robust_gate}, the fixed-menu no-data optimum and the acquisition algebra of Proposition~\ref{prop:priced_decision}. The new receipt binds the build to hashes of the active Paper 1 sources. Declaration counts include supporting results across the project and are not counts of fully formalized manuscript statements. Independent human review, novelty and empirical market assumptions are not certified by Lean.
 
+\begin{table}[!htbp]\centering\footnotesize
+\begin{threeparttable}
+\caption{Targeted versus market-wide intervention: two economies that prices barely separate}\label{tab:target}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{ccccccc}
+\toprule
+$K$ & $\Delta\eta$ & $|S^A-S^B|$ & $\kappa q^{G}_{\max}$ & $\kappa q^{R}_{\max}$ & Window for $\bar s$ & $N$ for a correct choice\\
+\midrule
+2 & 0.20 & $3.9\times10^{-3}$ & 0.112 & 0.144 & [0.527, 0.562] & 5\\
+2 & 0.10 & $5.0\times10^{-4}$ & 0.093 & 0.131 & [0.532, 0.570] & 306\\
+2 & 0.05 & $6.5\times10^{-5}$ & 0.086 & 0.125 & [0.536, 0.575] & 18{,}095\\
+3 & 0.20 & $2.8\times10^{-4}$ & 0.073 & 0.092 & [0.583, 0.603] & 1{,}092\\
+3 & 0.10 & $7.8\times10^{-6}$ & 0.071 & 0.076 & [0.587, 0.592] & $1.4\times10^{6}$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Calibration $a=0.5$, $\kappa=0.8$, $W=0.08$, $r_c=0.60$, observation noise $\sigma=0.01$ per tap; G and R are the Gauss and Gauss--Radau economies. Both economies have $S\approx0.66$--$0.68$. ``Window'' is the range of thresholds in which halting the largest group restores $S\le\bar s$ in one economy and not in the other. The last column rounds the continuous Gaussian-shift lower bound for a choice correct with probability $3/4$ in both; an actual integer sample size must round the unrounded requirement upward. Kind: recomputed (\texttt{theory/targeted\_intervention.py} $\to$ \nolinkurl{R_P1_targeted_intervention.json}).\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
 \paragraph{Explicit robustness condition.} Smooth best responses alone do not preserve separation: the constant smooth map $\Phi(M)=0$ sends both post-halt budgets to $a$. Instead assume that, over the stated action and holding horizon, $|\widetilde R_j-R_j|\le\varepsilon$ for $j\in\{G,R\}$, with $R_R<R_G$. Then
 \begin{equation}\label{eq:reopt_gap}
  R_R+\varepsilon\le\bar s<R_G-\varepsilon
