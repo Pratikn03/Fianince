@@ -45,6 +45,8 @@ jobs:
           lake env lean ../../studies/supervisory_release_20261105/Robustness.lean
   manuscript:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - run: sudo apt-get update && sudo apt-get install -y latexmk texlive-latex-extra texlive-fonts-recommended lmodern
@@ -52,6 +54,18 @@ jobs:
         run: |
           latexmk -pdf -interaction=nonstopmode -halt-on-error paper1_ssrn.tex
           latexmk -pdf -interaction=nonstopmode -halt-on-error paper1.tex
+      - name: Update generated PDFs on the authorized revision branch
+        if: github.event_name == 'push'
+        run: |
+          cp ceiling_suite/papers/paper1/paper1.pdf ceiling_suite/paper1/paper1.pdf
+          cp ceiling_suite/papers/paper1/paper1_ssrn.pdf ceiling_suite/paper1/paper1_ssrn.pdf
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f ceiling_suite/papers/paper1/paper1.pdf ceiling_suite/papers/paper1/paper1_ssrn.pdf ceiling_suite/paper1/paper1.pdf ceiling_suite/paper1/paper1_ssrn.pdf
+          if ! git diff --cached --quiet; then
+            git commit -m 'Build updated Paper 1 PDFs from revised LaTeX'
+            git push origin HEAD:codex/paper1-supervisory-costs-20261105
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: updated-paper1-pdfs
