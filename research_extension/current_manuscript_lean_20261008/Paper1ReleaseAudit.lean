@@ -321,6 +321,9 @@ run_cmd do
   `CurrentMM.p1_blind_lyapunov,
   `CurrentMM.p1_blind_lyapunov_unique,
   `CurrentMM.p1_thm_blind,
+  `CurrentMM.p1_endogenous_contraction_sensitivity,
+  `CurrentMM.p1_sybil_share_count_bound,
+  `CurrentMM.p1_camouflage_unprofitable,
   `CurrentMM.p1_crb_theta_order,
   `CurrentMM.p1_lem_altpair_binomial_satisfies_conditions,
   `CurrentMM.passive_variance_formula_R,
@@ -333,6 +336,13 @@ run_cmd do
   `CurrentMM.p1_thm_measure_from_finitely_many_moments,
   `CurrentMM.p1_thm_merged_deconvolution_finite,
   `CurrentMM.p1_thm_merged_model_finite_identification,
+  `CurrentMM.p1_flow_ratio_interval,
+  `CurrentMM.p1_flow_intensity_interval,
+  `CurrentMM.p1_flow_selected_halt_sound,
+  `CurrentMM.p1_flow_joint_mean_bound,
+  `CurrentMM.p1_flow_identity_inversion,
+  `CurrentMM.p1_flow_clipped_interval,
+  `CurrentMM.p1_flow_gaussian_decision_bound,
   `CurrentMM.p1_thm_merged_general_alpha_testing_bound,
   `CurrentMM.p1_thm_quantity_general_alpha,
   `CurrentMM.p1_thm_capital_general_alpha,
@@ -834,4 +844,3 @@ run_cmd do
     ("named_theorems", toJson names.size),
     ("project_constants_scanned", toJson allConstantCount),
     ("status", toJson ("NAMED_DECLARATIONS_KERNEL_CHECKED_STANDARD_FOUNDATIONS_ONLY" : String))]).compress
-
