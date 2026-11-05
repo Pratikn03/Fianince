@@ -18,11 +18,20 @@ jobs:
           cp -a ceiling_suite/papers "$baseline_work/papers"
           cd "$baseline_work/papers"
           sh build_p1.sh
+          cd paper1
+          pdflatex -interaction=nonstopmode -halt-on-error paper1_ssrn.tex > /dev/null
+          pdflatex -interaction=nonstopmode -halt-on-error paper1_ssrn.tex > /dev/null
+          pdflatex -interaction=nonstopmode -halt-on-error paper1_ssrn.tex > /dev/null
+          cd ..
           rm -f versions/Paper1_QE.pdf
           python3 versions/build_versions.py
           test -s versions/Paper1_QE.pdf
           if grep -q '^!' versions/Paper1_QE.log; then exit 1; fi
           cp paper1/paper1.pdf "$GITHUB_WORKSPACE/ceiling_suite/papers/pdf_delivered/paper1.pdf"
+          cp paper1/paper1.pdf "$GITHUB_WORKSPACE/ceiling_suite/papers/paper1/paper1.pdf"
+          cp paper1/paper1.pdf "$GITHUB_WORKSPACE/ceiling_suite/paper1/paper1.pdf"
+          cp paper1/paper1_ssrn.pdf "$GITHUB_WORKSPACE/ceiling_suite/papers/paper1/paper1_ssrn.pdf"
+          cp paper1/paper1_ssrn.pdf "$GITHUB_WORKSPACE/ceiling_suite/paper1/paper1_ssrn.pdf"
           cp versions/Paper1_QE.pdf "$GITHUB_WORKSPACE/ceiling_suite/papers/pdf_delivered/Paper1_QE.pdf"
           cp versions/Paper1_QE.pdf "$GITHUB_WORKSPACE/ceiling_suite/papers/versions/Paper1_QE.pdf"
           cp versions/Paper1_QE.tex "$GITHUB_WORKSPACE/ceiling_suite/papers/versions/Paper1_QE.tex"
@@ -30,7 +39,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -f ceiling_suite/papers/pdf_delivered/paper1.pdf ceiling_suite/papers/pdf_delivered/Paper1_QE.pdf ceiling_suite/papers/versions/Paper1_QE.pdf ceiling_suite/papers/versions/Paper1_QE.tex
+          git add -f ceiling_suite/papers/pdf_delivered/paper1.pdf ceiling_suite/papers/pdf_delivered/Paper1_QE.pdf ceiling_suite/papers/versions/Paper1_QE.pdf ceiling_suite/papers/versions/Paper1_QE.tex ceiling_suite/papers/paper1/paper1.pdf ceiling_suite/paper1/paper1.pdf ceiling_suite/papers/paper1/paper1_ssrn.pdf ceiling_suite/paper1/paper1_ssrn.pdf
           if ! git diff --cached --quiet; then
             git commit -m 'Refresh intentional Paper 1 PDF baselines after the verified revision'
             git push origin HEAD:codex/paper1-supervisory-costs-20261105
