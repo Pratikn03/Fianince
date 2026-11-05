@@ -9,10 +9,6 @@ on:
     paths:
       - '.github/workflows/supervisory-release.yml'
       - 'studies/supervisory_release_20261105/**'
-  pull_request:
-    paths:
-      - 'studies/supervisory_release_20261105/**'
-      - 'ceiling_suite/papers/paper1/**'
 jobs:
   accounting:
     runs-on: ubuntu-latest
@@ -38,11 +34,17 @@ jobs:
       - name: Obtain Mathlib cache
         working-directory: research_extension/current_manuscript_lean_20261008
         run: lake exe cache get
-      - name: Check dependency theorem and scalar robustness
+      - name: Build all proofs and audit every project axiom dependency
         working-directory: research_extension/current_manuscript_lean_20261008
         run: |
-          lake build CurrentProofs.Paper1SupervisorySeparation
+          python3 ../../studies/supervisory_release_20261105/tools/verify_release.py --project . --repo ../..
           lake env lean ../../studies/supervisory_release_20261105/Robustness.lean
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paper1-full-proof-audit
+          path: |
+            research_extension/current_manuscript_lean_20261008/paper1_release_receipt.json
+            research_extension/current_manuscript_lean_20261008/paper1_release_axioms.jsonl
   manuscript:
     runs-on: ubuntu-latest
     permissions:
@@ -70,3 +72,4 @@ jobs:
         with:
           name: updated-paper1-pdfs
           path: ceiling_suite/papers/paper1/paper1*.pdf
+
