@@ -59,7 +59,9 @@ def main():
           no_data = min(no_data, fallback+pmax*(float(lh.mean())-fallback))
          mean_loss = float(loss.mean())
          loss_range = abs((11*H+.02)-min(H+.02,fallback))
-         hoeffding = loss_range*np.sqrt(np.log(40)/(4*reps))
+         # Union bound over all 60 grid cases, including an exploratory winner.
+         # Hoeffding applies to 2*reps independent bounded losses per case.
+         hoeffding = loss_range*np.sqrt(np.log(2*60/.05)/(4*reps))
          se = float(np.sqrt(np.sum(np.var(loss,axis=1,ddof=1)/reps)/4))
          rows.append(dict(N=N,sigma=sigma,H=H,fixed_fee=fee,information_bill=bill,
           loss_no_data=float(no_data),loss_disclosure=mean_loss,net_advantage=float(no_data-mean_loss),
@@ -74,6 +76,7 @@ def main():
       rows=rows,limits=['Independent reset Gaussian channels are assumed, not validated from public positions.',
       'Synthetic fees, surplus and response allowance; no real-market welfare result.',
       'Same paired alternatives and fixed action menu; no optimal experiment design claim.',
+      'Hoeffding intervals have at least 95% simultaneous coverage across the fixed 60-case grid; normal intervals are pointwise diagnostics.',
       'MC intervals describe simulation error of mean loss, not uncertainty in model assumptions.'])
     out.write_text(json.dumps(result,indent=2)+'\n')
     best=max(rows,key=lambda r:r['net_advantage'])

@@ -49,7 +49,8 @@ def main():
     assert {row['name'] for row in named} == {row['name'] for row in entries}
     allowed = {'propext', 'Classical.choice', 'Quot.sound'}
     assert all(set(row['axioms']) <= allowed for row in named)
-    new_files = {'CurrentProofs/Paper1GaussRadau.lean', 'CurrentProofs/Paper1SupervisoryDecision.lean'}
+    new_files = {'CurrentProofs/Paper1GaussRadau.lean', 'CurrentProofs/Paper1SupervisoryDecision.lean',
+                 'CurrentProofs/Paper1FlowDecision.lean', 'CurrentProofs/Paper1ClaimRepairs.lean'}
     new_names = {entry['name'] for entry in entries if entry['source'] in new_files}
     new_types = [row for row in named if row['name'] in new_names]
     mathlib = subprocess.check_output(['git', '-C', str(project / '.lake/packages/mathlib'), 'rev-parse', 'HEAD'], text=True).strip()
@@ -65,3 +66,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
