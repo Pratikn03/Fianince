@@ -171,26 +171,7 @@ Part (i) follows by scaling the intensities. For (ii), expand $(1-r_c-\Delta\eta
 
 \paragraph{General-$K$ scope.} The same reduction gives exponent $4K-2$ only for a pair whose price responses have that moment-matching order \emph{and} whose dominant intensities have a separately established fixed gap. Moment matching alone does not supply the latter. In particular, the symmetric odd/even binomial pair has equal maximal normalized weights. The $K=3$ rows below are numerical examples, not a construction proving this condition for every $K$.
 
-\paragraph{Formal dependency audit, 5 November 2026.} Source inspection of \texttt{Paper1}\allowbreak\texttt{Supervisory}\allowbreak\texttt{Separation.lean} finds an actual two-cohort Gaussian-record theorem, \nolinkurl{p1_prop_target_two_cohorts}, using the paper's other explicit matched pair and importing \texttt{Paper1LowerBound} and \texttt{Paper1MatchedPair}. It is not a machine proof of the Gauss--Radau construction above. The theorem \nolinkurl{p1_prop_target_every_K} takes an index, a positive gap and a dominance inequality as hypotheses; it does not construct them. Historical build receipts do not discharge this semantic obligation. This revision did not rebuild the Lean project locally: Lean is unavailable in the editing environment. The added scalar robustness lemmas and the full dependency build require CI confirmation and review by Pratik, Prashant and Sujan. No independent referee review is claimed.
-
-\begin{table}[!htbp]\centering\footnotesize
-\begin{threeparttable}
-\caption{Targeted versus market-wide intervention: two economies that prices barely separate}\label{tab:target}
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{ccccccc}
-\toprule
-$K$ & $\Delta\eta$ & $|S^A-S^B|$ & $\kappa q^{G}_{\max}$ & $\kappa q^{R}_{\max}$ & Window for $\bar s$ & $N$ for a correct choice\\
-\midrule
-2 & 0.20 & $3.9\times10^{-3}$ & 0.112 & 0.144 & [0.527, 0.562] & 5\\
-2 & 0.10 & $5.0\times10^{-4}$ & 0.093 & 0.131 & [0.532, 0.570] & 306\\
-2 & 0.05 & $6.5\times10^{-5}$ & 0.086 & 0.125 & [0.536, 0.575] & 18{,}095\\
-3 & 0.20 & $2.8\times10^{-4}$ & 0.073 & 0.092 & [0.583, 0.603] & 1{,}092\\
-3 & 0.10 & $7.8\times10^{-6}$ & 0.071 & 0.076 & [0.587, 0.592] & $1.4\times10^{6}$\\
-\bottomrule
-\end{tabular}
-\begin{tablenotes}\footnotesize\item Calibration $a=0.5$, $\kappa=0.8$, $W=0.08$, $r_c=0.60$, observation noise $\sigma=0.01$ per tap; G and R are the Gauss and Gauss--Radau economies. Both economies have $S\approx0.66$--$0.68$. ``Window'' is the range of thresholds in which halting the largest group restores $S\le\bar s$ in one economy and not in the other. The last column is the exact Gaussian-shift requirement for a choice that is correct with probability $3/4$ in both. Kind: recomputed (\texttt{theory/targeted\_intervention.py} $\to$ \nolinkurl{R_P1_targeted_intervention.json}).\end{tablenotes}
-\end{threeparttable}
-\end{table}
+\paragraph{Formal verification scope, 5 November 2026.} This revision builds the pinned Lean 4.34.1/Mathlib project and audits its typed declarations using only standard foundations. The exact two-point Gauss--Radau witness in Table~\ref{tab:target} is now covered by \nolinkurl{Paper1GaussRadau.lean}: positive normalized weights, moments of orders zero through two, the third-moment gap, a dominant-intensity gap of at least $W/(8u)$ for $0\le\Delta\eta\le u/3$, the aggregate-budget gap and the actual finite-Gaussian-record testing bound. Thus this example no longer relies solely on the other matched pair used by the earlier supervisory theorem. The finite-horizon bound has constants depending on the declared record length and response envelope. Its proof does not supply an all-$K$ quadrature construction. \nolinkurl{Paper1SupervisoryDecision.lean} additionally checks the robust threshold/fallback, the actual unsafe-halt event for Proposition~\ref{prop:robust_gate}, the fixed-menu no-data optimum and the acquisition algebra of Proposition~\ref{prop:priced_decision}. The new receipt binds the build to hashes of the active Paper 1 sources. Declaration counts include supporting results across the project and are not counts of fully formalized manuscript statements. Independent human review, novelty and empirical market assumptions are not certified by Lean.
 
 \paragraph{Explicit robustness condition.} Smooth best responses alone do not preserve separation: the constant smooth map $\Phi(M)=0$ sends both post-halt budgets to $a$. Instead assume that, over the stated action and holding horizon, $|\widetilde R_j-R_j|\le\varepsilon$ for $j\in\{G,R\}$, with $R_R<R_G$. Then
 \begin{equation}\label{eq:reopt_gap}
@@ -219,6 +200,31 @@ With $K=2$, $N=32$, $\sigma_t=0.02$, $\varepsilon=0.005$, $\alpha=0.05$, $\pi_R=
 
 Across 2,304 deterministic configurations varying fees, noise, horizon, prior, sample size and allowance, paid disclosure improves on the no-data benchmark in 1,207, worsens it in 1,079, and ties in 18. These counts have no population or statistical-significance interpretation. Negative cases remain in the output. A downward measurement bias of $0.03$ produces false-halt probability $0.418776$; a future response of $0.025$ despite an allowance of $0.005$ makes halting unsafe in R with probability $0.978928$. The latter also invalidates the uniform-action guarantee, so payoff comparisons under that misspecification are not presented as a fair safety comparison. The experiment establishes conditional accounting and failure modes, not real-market gains, a validated equilibrium response, or the general-$K$ theorem.
 
+\begin{proposition}[A robust scalar disclosure gate]\label{prop:robust_gate}
+Let $Z_1,\ldots,Z_N$ be independent $N(R,v)$ readings of the fixed post-halt feedback budget, $N>0$, and let the realized action response $d$ satisfy $d\le\varepsilon$. For $t>0$, halt only if $\bar Z+t+\varepsilon\le\bar s$. Then the probability of halting while the realized budget exceeds the ceiling is at most
+\[
+ \Pr\{\bar Z+t+\varepsilon\le\bar s,\ R+d>\bar s\}
+ \le \frac{v}{Nt^2}.
+\]
+Consequently $v\le\alpha Nt^2$ gives a per-world error bound $\alpha$.
+\end{proposition}
+\begin{proof}
+On an unsafe-halt event, $\bar Z+t+\varepsilon\le\bar s<R+d\le R+\varepsilon$, so $t\le|\bar Z-R|$. Chebyshev's inequality for the actual Gaussian sample mean gives the bound. Lean checks the product Gaussian law, the sample statistic, this event inclusion and the probability inequality in \nolinkurl{p1_supervisory_gaussian_unsafe_halt}; it is not merely a check of a scalar named ``probability bound.'' The response allowance and the interpretation of $Z$ remain explicit assumptions.
+\end{proof}
+
+This conservative gate uses $t=\sigma_t/\sqrt{N\alpha}$. It differs from the sharper Gaussian-quantile gate above, whose exact normal probabilities are numerically evaluated but whose quantile identity is not formalized here. Under the same calibration with $N=128$, the conservative gate has radius $0.007906$, information bill $0.114$, loss $1.349034$ and conditional net advantage $0.100185$. Its halt probabilities are approximately zero in G and $0.998023$ in R. Across the same 2,304 sensitivity configurations it improves on the fixed-menu no-data benchmark in 781, worsens it in 1,499 and ties in 24. Both gates' rows remain in the result file: 4,608 configurations in total. The welfare and error interpretation remains conditional on the declared observation and response contracts.
+
+\begin{proposition}[No-data action and information purchase]\label{prop:priced_decision}
+For the fixed halt/throttle menu, let $\overline L_h=\sum_j\pi_jL_{h,j}$ and let $p_{\max}=\alpha$ if a halt is unsafe in at least one world, otherwise $p_{\max}=1$. Assuming the fallback meets the ceiling, the best constant no-data halt probability is $p=0$ when $\overline L_h\ge L_T$, and $p=p_{\max}$ when $\overline L_h<L_T$. A specified information rule with expected action loss $L_I$ is strictly preferred if and only if
+\[
+ F+Nc<\mathcal L_0-L_I.
+\]
+Allowing refusal to purchase gives loss $\min\{\mathcal L_0,F+Nc+L_I\}\le\mathcal L_0$.
+\end{proposition}
+\begin{proof}
+The no-data loss is affine in its feasible halt probability: $L_T+p(\overline L_h-L_T)$. Its slope determines the minimizing endpoint. Subtracting the information rule's total loss gives the break-even inequality, and the minimum inequality proves the optional-purchase statement. These algebraic decisions are machine checked in \nolinkurl{Paper1SupervisoryDecision.lean}. They do not establish an optimum over other actions, sample sizes, or information contracts.
+\end{proof}
+
 \paragraph{What the data can and cannot test.} The theorems concern experiments that no outside researcher can run: reset initial states, known price persistence and impact, and either controlled probes or stationary data from a known innovation law. Public data meet none of these exactly. Order flow is endogenous, the fundamental value is unobserved and replaced by returns, observations overlap in time, parameters drift, and the class reports are positions aggregated over many accounts rather than tagged flow. The tests below therefore check the theory's observable prediction, that class records restrict persistence which prices leave unrestricted, under a stated mapping from class positions to cohort states. They do not estimate the theorems' rates, and a pass does not show that class persistence is learning memory.
 
 \subsection{Mandated disclosure: the CFTC's trader-class reports}\label{sec:cot}
@@ -235,7 +241,7 @@ The cleanest test uses disclosure mandated by law. The U.S. Commodity Futures Tr
 \begin{table}[t]\centering\small
 \begin{threeparttable}
 \caption{Fitted persistence of trader-class positions, CFTC Commitments of Traders, eight regulated futures markets}\label{tab:cot}
-\setlength{\tabcolsep}{3pt}\footnotesize
+\setlength{\tabcolsep}{2.2pt}\footnotesize
 \begin{tabular}{lrccccr}
 \toprule
 Market & Weeks & Fast $\hat r$ [95\% CI] & Slow $\hat r$ & $\hat r_{\rm fast}-\hat r_{\rm slow}$ [95\% CI] & $\hat w_{\rm fast}$ & Ratio\\
@@ -372,4 +378,5 @@ At $\lambda=(0.8,0.7)$, $s_1=1$ and $V=5$, the gain is $1.77$, $5.10$, $16.95$, 
 \end{figure}
 
 Two clarifications prevent over-reading. First, the cohort economy of Section~\ref{sec:model} is itself non-normal, yet its price output does not amplify (Lemma~\ref{lem:cm}). Large weighted gains can be manufactured by output weights alone: with $C_w=(1,160)$, a price-and-memory functional peaks at $160.003$ at $t=0$, which is the static weight, not dynamic growth (Appendix~\ref{app:coordw}). Second, in a network of $M$ identical cohort economies coupled by symmetric nonnegative cross-impact, the coupled operator stays symmetric in the coordinates of Lemma~\ref{lem:cm}; with cross-impact $0.05$, the spectral radius rises from $0.822$ ($M=1$) to $0.973$ ($M=10$) while the Kreiss constant stays at one, as it must for a stable symmetric operator (\texttt{recompute\_oct20.py}). A stable normal contraction cannot exhibit Euclidean state-norm transient growth. This does not exclude scalar input-output overshoot relative to initial impact, which also depends on the input and output maps. The positive-cohort no-overshoot result is model-specific; the companion paper studies a depth-depletion mechanism.
+
 
