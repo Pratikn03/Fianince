@@ -13,6 +13,10 @@ mapping=next(ast.literal_eval(n.value) for n in tree.body if isinstance(n,ast.As
              and any(isinstance(t,ast.Name) and t.id=='PAPER1_MAP' for t in n.targets))
 typed={r['name']:r for line in (ROOT/'research_extension/current_manuscript_lean_20261008/paper1_release_axioms.jsonl').read_text().splitlines()
        if line.startswith('{') for r in [json.loads(line)] if r.get('kind')=='named_theorem'}
+receipt_path=ROOT/'research_extension/current_manuscript_lean_20261008/paper1_release_receipt.json'
+receipt=json.loads(receipt_path.read_text()) if receipt_path.exists() else {}
+receipt_matches=(receipt.get('status')=='FULL_PROJECT_BUILD_AND_STRICT_AXIOM_AUDIT_PASS' and
+  receipt.get('manuscript_source_sha256',{}).get('ceiling_suite/papers/paper1/paper1_ssrn.tex')==hashlib.sha256(src.encode()).hexdigest())
 notes={
  'lem:micro':'Steady-state filtering/OGD under their distinct information and objective assumptions; not identification of learning from fitted market persistence.',
  'lem:cm':'Positive stable response class; verify initial-state and a=0 boundary conventions before reuse.',
@@ -66,13 +70,13 @@ for m in re.finditer(r'\\begin\{(theorem|lemma|proposition|corollary)\}(.*?)\\en
    statement_sha256=hashlib.sha256(m[0].encode()).hexdigest(),statement=m[0],
    historical_mapped_declarations=old,additional_review_declarations=extra.get(label,[]),
    historical_types={n:typed['CurrentMM.'+n]['type'] for n in names if 'CurrentMM.'+n in typed},
-   status='CONDITIONAL_REWRITE_NEW_BUILD_REQUIRED' if label in ['prop:endogenous_kappa','prop:strategic'] else
+   status=('CONDITIONAL_REWRITE_ALGEBRA_KERNEL_CHECKED_MARKET_PREMISES_ASSUMED' if receipt_matches and all('CurrentMM.'+n in typed for n in extra[label]) else 'CONDITIONAL_REWRITE_NEW_BUILD_REQUIRED') if label in ['prop:endogenous_kappa','prop:strategic'] else
           'PRIOR_RELEASE_CORE_SCOPE_REVIEWED' if label in ['prop:target','prop:robust_gate','prop:priced_decision'] else
           'HISTORICAL_MAPPING_WITH_EXPLICIT_REMAINING_SEMANTIC_OBLIGATION',
    scope_note=notes[label]))
 assert len(rows)==36
 assert set(notes)=={r['label'] for r in rows}
-out=dict(source_sha256=hashlib.sha256(src.encode()).hexdigest(),
+out=dict(source_sha256=hashlib.sha256(src.encode()).hexdigest(),kernel_receipt_matches_manuscript=receipt_matches,
   scope='Standalone SSRN manuscript; exact statement hashes and historical typed signatures. A mapping is not equivalence.',
   full_manuscript_formalization_complete=False,human_independent_review_complete=False,
   rows=rows,operational_flow_bridge='Seven declarations in Paper1FlowDecision.lean; consult the current build receipt. Executable rule soundness remains a correspondence obligation.')

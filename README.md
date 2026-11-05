@@ -100,3 +100,10 @@ SKIP_LEAN=1 sh reproduce_paper_suite.sh
 ## License
 
 Apache 2.0 License. See [`COVERAGE.md`](COVERAGE.md) and [`ceiling_suite/REPLICATION_README.md`](ceiling_suite/REPLICATION_README.md) for detailed formalization and empirical replication documentation.
+
+
+## Paper 1 operational-observation revision (5 November 2026)
+
+The [revision review](studies/paper1_uplift_20261105/NOVELTY_AND_OBSERVATION_REVIEW.md) compares the closest technical and finance results and checks provider observation definitions. The [36-statement ledger](studies/paper1_uplift_20261105/CLAIM_VERIFICATION_LEDGER.md) preserves remaining semantic obligations. A five-channel tagged-flow/price simulation retains all 60 acquisition configurations and six contract stress cases. The pricing and account-evasion propositions now state explicit conditional scope.
+
+The source inventory is 813 named declarations across 85 Lean modules; use the source-bound release receipt for actual build status. Counts are not counts of completely formalized manuscript statements. Full manuscript formalization, the all-K supervisory weight-gap construction, executable decision-rule correspondence and external market validation are not declared complete. The refreshed Paper 1 PDF baselines belong to this intentional source revision.
