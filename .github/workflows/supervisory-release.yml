@@ -1,0 +1,52 @@
+name: Supervisory revision checks
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/paper1-supervisory-costs-20261105]
+  pull_request:
+    paths:
+      - 'studies/supervisory_release_20261105/**'
+      - 'ceiling_suite/papers/paper1/**'
+jobs:
+  accounting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install numpy scipy
+      - run: python studies/supervisory_release_20261105/run_study.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: supervisory-accounting
+          path: studies/supervisory_release_20261105/results/
+  lean:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install declared Lean toolchain
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Obtain Mathlib cache
+        working-directory: research_extension/current_manuscript_lean_20261008
+        run: lake exe cache get
+      - name: Check dependency theorem and scalar robustness
+        working-directory: research_extension/current_manuscript_lean_20261008
+        run: |
+          lake build CurrentProofs.Paper1SupervisorySeparation
+          lake env lean ../../studies/supervisory_release_20261105/Robustness.lean
+  manuscript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y latexmk texlive-latex-extra texlive-fonts-recommended lmodern
+      - working-directory: ceiling_suite/papers/paper1
+        run: |
+          latexmk -pdf -interaction=nonstopmode -halt-on-error paper1_ssrn.tex
+          latexmk -pdf -interaction=nonstopmode -halt-on-error paper1.tex
+      - uses: actions/upload-artifact@v4
+        with:
+          name: updated-paper1-pdfs
+          path: ceiling_suite/papers/paper1/paper1*.pdf
