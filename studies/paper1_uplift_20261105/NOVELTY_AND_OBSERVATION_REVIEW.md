@@ -40,6 +40,8 @@ CFTC COT describes Tuesday open-interest positions generally released Friday. Cl
 
 The original stock–flow bridge is an accounting model. Applying it needs adjustments for valuation, transfers, liquidation, reporting lag and membership. Public prices minus an estimated fundamental proxy also introduce estimation error and potential endogeneity. Neither correlation nor a fitted persistence coefficient identifies an algorithm's update rule.
 
+The acquisition comparison treats reset records as available for a specified purchase fee. It does not establish that the institution can produce those records at that fee. If it conducts the unit-pulse experiments itself, execution losses, reset opportunities and funded-account requirements must be added using the paper's probing account. A positive value of buying supplied records is not a demonstration of profitable self-funded probing.
+
 ## New falsification evidence
 
 `flow_falsification.py` retains six fixed synthetic cases with 20,000 replications per world. At the selected illustrative calibration, downward second-flow biases of 0.003 and 0.006 invalidate mean coverage but do not produce unsafe halts in this run. Bias 0.010 produces unsafe halts in the G world in all replications. Raising the action response to 0.030 while allowing only 0.005 produces unsafe halts in the R world in all replications. Swapping second-response labels makes the rule abstain in both worlds. These are targeted failures of the maintained contracts, not population error estimates or independent market validation.
