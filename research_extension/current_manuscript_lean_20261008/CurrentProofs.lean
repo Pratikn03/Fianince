@@ -86,3 +86,7 @@ import CurrentProofs.StockFlowAndPlugIn
 import CurrentProofs.Paper1Primitives
 import CurrentProofs.Paper1ConditionalClosures
 import CurrentProofs.Paper1FullFrontiers
+
+
+import CurrentProofs.Paper1SupervisoryDecision
+import CurrentProofs.Paper1GaussRadau
