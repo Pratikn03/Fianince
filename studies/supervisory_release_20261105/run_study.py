@@ -60,7 +60,7 @@ def check_archive(archive):
         checked += 1
     return {'rows_checked': checked, 'max_absolute_error': max_error, 'scope': 'Archived synthetic populations and response arithmetic only.'}
 
-def evaluate(row, cal, N=32, tag_sigma=0.02, epsilon=0.005, fee=0.05, per_sample=0.0005, H=1, pR=0.5, halt_fee=0.02, breach=10.0, bias=0.0, realized_drift=None):
+def evaluate(row, cal, N=32, tag_sigma=0.02, epsilon=0.005, fee=0.05, per_sample=0.0005, H=1, pR=0.5, halt_fee=0.02, breach=10.0, bias=0.0, realized_drift=None, gate='normal_quantile'):
     cap = 0.55
     alpha = 0.05
     a = cal['a']
@@ -78,7 +78,11 @@ def evaluate(row, cal, N=32, tag_sigma=0.02, epsilon=0.005, fee=0.05, per_sample
     p0 = limit if expected_halt < Lthrottle else 0.0
     Lno = Lthrottle + p0 * (expected_halt - Lthrottle)
     info = fee + per_sample * N
-    phalt = norm.cdf((cap - epsilon - r - bias) / (tag_sigma / math.sqrt(N)) - norm.ppf(1 - alpha))
+    if gate not in {'normal_quantile', 'chebyshev'}:
+        raise ValueError(gate)
+    critical = norm.ppf(1 - alpha) if gate == 'normal_quantile' else 1 / math.sqrt(alpha)
+    radius = critical * tag_sigma / math.sqrt(N)
+    phalt = norm.cdf((cap - epsilon - r - bias) / (tag_sigma / math.sqrt(N)) - critical)
     Ltag = info + float(prior @ (phalt * Lhalt + (1 - phalt) * Lthrottle))
     unsafe_tag = phalt * unsafe
     assert unsafe[0]
@@ -92,7 +96,7 @@ def evaluate(row, cal, N=32, tag_sigma=0.02, epsilon=0.005, fee=0.05, per_sample
         ppub = np.array([norm.sf((t + d * d / 2) / d), norm.sf((t - d * d / 2) / d)])
     Lpublic = info + float(prior @ (ppub * Lhalt + (1 - ppub) * Lthrottle))
     oracle = float(prior @ np.minimum(Lthrottle, Lhalt))
-    return {'N': N, 'tag_sigma': tag_sigma, 'epsilon': epsilon, 'fee': fee, 'per_sample': per_sample, 'H': H, 'prior_R': pR, 'bias': bias, 'realized_drift': float(drift), 'theta': theta, 'post_halt': r.tolist(), 'loss_throttle': Lthrottle, 'loss_no_data': Lno, 'no_data_halt_probability': p0, 'loss_tagged': Ltag, 'loss_public': Lpublic, 'loss_oracle_before_information_fee': oracle, 'information_bill': info, 'tagged_halt_probabilities': phalt.tolist(), 'tagged_unsafe_probabilities': unsafe_tag.tolist(), 'public_halt_probabilities': ppub.tolist(), 'tagged_advantage_over_no_data': Lno - Ltag, 'public_advantage_over_no_data': Lno - Lpublic, 'tagged_valid': bool(max(unsafe_tag) <= alpha + 1e-12), 'acquire_tagged_under_declared_model': bool(Ltag < Lno), 'loss_with_optional_tag_purchase': min(Lno, Ltag), 'throttle_breach_in_each_world': (a + theta * (S - a) + drift > cap + 1e-12).tolist(), 'loss_comparison_valid_under_declared_contract': bool(bias == 0 and drift <= epsilon), 'assumptions_violated': bool(bias != 0 or drift > epsilon), 'units': 'hypothetical surplus units; b=1 per cohort per period', 'contract': 'Tagged readings are independent Gaussian measurements of fixed post-halt persistence, not observed market flow.'}
+    return {'gate': gate, 'confidence_radius': radius, 'N': N, 'tag_sigma': tag_sigma, 'epsilon': epsilon, 'fee': fee, 'per_sample': per_sample, 'H': H, 'prior_R': pR, 'bias': bias, 'realized_drift': float(drift), 'theta': theta, 'post_halt': r.tolist(), 'loss_throttle': Lthrottle, 'loss_no_data': Lno, 'no_data_halt_probability': p0, 'loss_tagged': Ltag, 'loss_public': Lpublic, 'loss_oracle_before_information_fee': oracle, 'information_bill': info, 'tagged_halt_probabilities': phalt.tolist(), 'tagged_unsafe_probabilities': unsafe_tag.tolist(), 'public_halt_probabilities': ppub.tolist(), 'tagged_advantage_over_no_data': Lno - Ltag, 'public_advantage_over_no_data': Lno - Lpublic, 'tagged_valid': bool(max(unsafe_tag) <= alpha + 1e-12), 'acquire_tagged_under_declared_model': bool(Ltag < Lno), 'loss_with_optional_tag_purchase': min(Lno, Ltag), 'throttle_breach_in_each_world': (a + theta * (S - a) + drift > cap + 1e-12).tolist(), 'loss_comparison_valid_under_declared_contract': bool(bias == 0 and drift <= epsilon), 'assumptions_violated': bool(bias != 0 or drift > epsilon), 'units': 'hypothetical surplus units; b=1 per cohort per period', 'contract': 'Tagged readings are independent Gaussian measurements of fixed post-halt persistence, not observed market flow.'}
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
@@ -106,6 +110,9 @@ def main():
     row = next((r for r in archive['rows'] if r['K'] == 2 and r['delta_eta'] == 0.1))
     cal = archive['calibration']
     representative = evaluate(row, cal)
+    chebyshev_representative = evaluate(row, cal, N=128, gate='chebyshev')
+    assert chebyshev_representative['tagged_valid']
+    assert chebyshev_representative['tagged_advantage_over_no_data'] > 0
     assert representative['tagged_valid'] and representative['tagged_advantage_over_no_data'] > 0
     grid = []
     for N in [8, 32, 128, 512]:
@@ -117,6 +124,8 @@ def main():
                             for prior in [0.25, 0.5, 0.75]:
                                 grid.append(evaluate(row, cal, N, sig, eps, fee, sample_cost, H, prior))
     assert all((r['tagged_valid'] for r in grid))
+    chebyshev_grid = [evaluate(row, cal, N=r['N'], tag_sigma=r['tag_sigma'], epsilon=r['epsilon'], fee=r['fee'], per_sample=r['per_sample'], H=r['H'], pR=r['prior_R'], gate='chebyshev') for r in grid]
+    assert all(r['tagged_valid'] for r in chebyshev_grid)
     assert any((r['tagged_advantage_over_no_data'] < 0 for r in grid))
     assert any((r['public_advantage_over_no_data'] > r['tagged_advantage_over_no_data'] for r in grid))
     failures = {'downward_bias': evaluate(row, cal, bias=-0.03), 'future_drift_exceeds_allowance': evaluate(row, cal, realized_drift=0.025)}
@@ -129,12 +138,13 @@ def main():
     result = {'status': 'COMPLETED_SYNTHETIC_EXPLORATORY', 'archive_sha256': hashlib.sha256(raw).hexdigest(), 'archive_audit': audit, 'representative': representative, 'configuration_rows': len(grid), 'positive_tagged_rows': int(sum((r['tagged_advantage_over_no_data'] > 0 for r in grid))), 'negative_tagged_rows': int(sum((r['tagged_advantage_over_no_data'] < 0 for r in grid))), 'failures': failures, 'smooth_counterexample': smooth_counterexample, 'fixed_threshold_robustness_margin': float(margin), 'grid': grid, 'limits': ['No historical policy intervention, calibrated fees or real profit.', 'Configuration rows are deterministic sensitivity cases, not independent markets.', 'Known alternatives, prior and bounded perturbation are maintained assumptions.', 'The selected tagged confidence rule is not claimed Bayes-optimal.', 'Public and tagged per-sample monetary prices are assumed equal here; sensitivities are conditional.', 'No acquisition optimum over N is claimed; acquisition may be declined.']}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     grid_path = args.output.with_suffix('.csv')
-    columns = ['N', 'tag_sigma', 'epsilon', 'fee', 'per_sample', 'H', 'prior_R', 'loss_no_data', 'loss_tagged', 'loss_public', 'information_bill', 'tagged_advantage_over_no_data', 'public_advantage_over_no_data', 'tagged_valid']
+    result['chebyshev'] = {'representative': chebyshev_representative, 'configuration_rows': len(chebyshev_grid), 'positive_tagged_rows': int(sum(r['tagged_advantage_over_no_data'] > 0 for r in chebyshev_grid)), 'negative_tagged_rows': int(sum(r['tagged_advantage_over_no_data'] < 0 for r in chebyshev_grid)), 'scope': 'Conservative gate covered by the new actual-Gaussian Lean event theorem; no normal-quantile formalization is claimed.'}
+    columns = ['gate', 'N', 'tag_sigma', 'epsilon', 'fee', 'per_sample', 'H', 'prior_R', 'loss_no_data', 'loss_tagged', 'loss_public', 'information_bill', 'tagged_advantage_over_no_data', 'public_advantage_over_no_data', 'tagged_valid']
     columns = [key for key in columns if key in grid[0]]
     with grid_path.open('w', newline='') as handle:
         writer = csv.DictWriter(handle, fieldnames=columns)
         writer.writeheader()
-        writer.writerows({key: row[key] for key in columns} for row in grid)
+        writer.writerows({key: row[key] for key in columns} for row in grid + chebyshev_grid)
     del result['grid']
     result['grid_file'] = grid_path.name
     args.output.write_text(json.dumps(result, indent=2))
