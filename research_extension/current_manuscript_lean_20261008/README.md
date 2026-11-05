@@ -1,8 +1,18 @@
-# Current-manuscript Lean proofs
+# Current manuscript Lean proofs
 
-The current project contains 122 named general mathematical declarations over real and complex numbers, finite trajectories and actual Gaussian laws. Lean 4.34.1 builds the project; the strict audit checks all 304 project constants and records each named theorem type. Only propext, Classical.choice and Quot.sound occur. No admitted proof or project-defined replacement axiom is accepted.
+The 5 November 2026 Paper 1 release adds 16 supervisory-witness and decision theorems and includes them in the main project import. `paper1_release_receipt.json` records the fresh full-project build, strict axiom audit, exact new theorem types and active Paper 1 source hashes. The audited project has 803 named declarations across the research programme; this is not a count or percentage of fully formalized Paper 1 statements. Only `propext`, `Classical.choice` and `Quot.sound` are permitted.
 
-This is a **partial formalization of the current manuscript**. See MANUSCRIPT_COVERAGE.md and MANUSCRIPT_COVERAGE.json for all 15 numbered objects and the additional finite-window quantity gate. Counts of intermediate proofs are not counts of completely formalized manuscript theorems. The older lean_proofs project is preserved and is not imported here.
+The new K=2 Gauss/Radau construction matches the numerical witness. The Gaussian event theorem covers a conservative scalar-measurement gate; it does not identify the scalar reading with observed class stocks or tagged order flow. The market response allowance and economic costs remain assumptions. The all-K supervisory extension remains conditional.
+
+Run the release verifier from repository root:
+
+```sh
+python studies/supervisory_release_20261105/tools/verify_release.py --project research_extension/current_manuscript_lean_20261008 --repo .
+```
+
+See `studies/supervisory_release_20261105/RELEASE_REVIEW.md` and `CLAIM_SCOPE.json` for current scope. The historical coverage files and implementation notes below concern earlier stages; neither a name mapping nor a build replaces semantic review. Independent review, empirical market assumptions and novelty are not certified.
+
+## Historical implementation notes
 
 ## What is checked
 
@@ -36,3 +46,4 @@ formal_verification_receipt.json and checked_theorem_types.json are the acceptan
 ARKernels.lean proves the exact backward factorization of every finite AR kernel, a uniform coercivity bound for positive mixtures, strict nonzero execution cost and the energy bound for the actual solvent trader account. CausalConvolution.lean derives all causal columns, their Euclidean first-column bound and the greatest lifetime-quantity signal norm. GaussianInformation/ProductInformation/GaussianRecords derive actual scalar/product/finite-record Radon-Nikodym likelihoods, equal-variance KL, the lifetime-quantity information bound and pulse attainment for arbitrary baseline means. PriceOutputGain.lean proves the exact price-only peak gain over all signed initial states and time. ComplexTransfers.lean derives the explicit uniform unit-circle difference bound.
 
 The remaining induced L2/Parseval, full Gaussian minimax/Pinsker, actual cohort spectral-mixture, realization, Kalman, passive, Kreiss/network and gate obligations are still explicitly tracked. Named intermediate proof counts are not a percentage of full-paper completion.
+
