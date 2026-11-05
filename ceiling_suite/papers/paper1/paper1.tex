@@ -70,6 +70,7 @@ This paper asks a question that supervisors now face when they decide which trad
 
 The question matters now. Trading is passing to learning algorithms and AI agents \citep{colliard2022,dou2025}, and regulators have begun to require firms to say which algorithm sent each order. Under MiFID II, EU trading venues must keep order records that identify the person or algorithm responsible for each investment and execution decision \citep{rts24,esma2016}. The US Consolidated Audit Trail (CAT) is designed to record each order in US-listed stocks and options, and the account behind it, across exchanges and broker-dealers; its revised 2026 budget, published in March 2026, is about \$147 million \citep{sec2012,catbudget2026}. Such systems serve many purposes, among them enforcement, rebuilding market events after the fact, and surveillance. One question they raise, and the one we study, is how much of the information about who drives price moves could instead be learned from public data, and at what cost.
 
+\begingroup\onehalfspacing
 \begin{center}\fcolorbox{gray!60}{gray!6}{\parbox{0.95\textwidth}{\small
 \textbf{The question.} A supervisor wants to know which group of traders drives prices. What can public prices tell it, what does it cost to learn the rest, and what are trader-class reports worth?\par\smallskip
 \textbf{The answer.}
@@ -81,6 +82,7 @@ The question matters now. Trading is passing to learning algorithms and AI agent
 \item \emph{What the empirical failures reveal.} The tests do not establish that fitted persistence is learning memory, and coarse reporting buckets can mix opposing strategies. Ten of the twenty-two predictions we tested failed (Table~\ref{tab:scorecard}): in equity indices, basis arbitrageurs trade against trend-followers, causing within-class sign cancellation and motivating further tests of more granular records without establishing their necessity.
 \end{enumerate}
 We keep three statements apart throughout: what cannot be learned at all, what can be learned but only at high cost, and where estimates become unstable.}}\end{center}
+\endgroup
 
 \begin{figure}[!t]\centering
 \includegraphics[width=\textwidth]{figs/fig_summary.pdf}
@@ -1376,6 +1378,25 @@ Part (i) follows by scaling the intensities. For (ii), expand $(1-r_c-\Delta\eta
 \paragraph{General-$K$ scope.} The same reduction gives exponent $4K-2$ only for a pair whose price responses have that moment-matching order \emph{and} whose dominant intensities have a separately established fixed gap. Moment matching alone does not supply the latter. In particular, the symmetric odd/even binomial pair has equal maximal normalized weights. The $K=3$ rows below are numerical examples, not a construction proving this condition for every $K$.
 
 \paragraph{Formal verification scope, 5 November 2026.} This revision builds the pinned Lean 4.34.1/Mathlib project and audits its typed declarations using only standard foundations. The exact two-point Gauss--Radau witness in Table~\ref{tab:target} is now covered by \nolinkurl{Paper1GaussRadau.lean}: positive normalized weights, moments of orders zero through two, the third-moment gap, a dominant-intensity gap of at least $W/(8u)$ for $0\le\Delta\eta\le u/3$, the aggregate-budget gap and the actual finite-Gaussian-record testing bound. Thus this example no longer relies solely on the other matched pair used by the earlier supervisory theorem. The finite-horizon bound has constants depending on the declared record length and response envelope. Its proof does not supply an all-$K$ quadrature construction. \nolinkurl{Paper1SupervisoryDecision.lean} additionally checks the robust threshold/fallback, the actual unsafe-halt event for Proposition~\ref{prop:robust_gate}, the fixed-menu no-data optimum and the acquisition algebra of Proposition~\ref{prop:priced_decision}. The new receipt binds the build to hashes of the active Paper 1 sources. Declaration counts include supporting results across the project and are not counts of fully formalized manuscript statements. Independent human review, novelty and empirical market assumptions are not certified by Lean.
+
+\begin{table}[!htbp]\centering\footnotesize
+\begin{threeparttable}
+\caption{Targeted versus market-wide intervention: two economies that prices barely separate}\label{tab:target}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{ccccccc}
+\toprule
+$K$ & $\Delta\eta$ & $|S^A-S^B|$ & $\kappa q^{G}_{\max}$ & $\kappa q^{R}_{\max}$ & Window for $\bar s$ & $N$ for a correct choice\\
+\midrule
+2 & 0.20 & $3.9\times10^{-3}$ & 0.112 & 0.144 & [0.527, 0.562] & 5\\
+2 & 0.10 & $5.0\times10^{-4}$ & 0.093 & 0.131 & [0.532, 0.570] & 306\\
+2 & 0.05 & $6.5\times10^{-5}$ & 0.086 & 0.125 & [0.536, 0.575] & 18{,}095\\
+3 & 0.20 & $2.8\times10^{-4}$ & 0.073 & 0.092 & [0.583, 0.603] & 1{,}092\\
+3 & 0.10 & $7.8\times10^{-6}$ & 0.071 & 0.076 & [0.587, 0.592] & $1.4\times10^{6}$\\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize\item Calibration $a=0.5$, $\kappa=0.8$, $W=0.08$, $r_c=0.60$, observation noise $\sigma=0.01$ per tap; G and R are the Gauss and Gauss--Radau economies. Both economies have $S\approx0.66$--$0.68$. ``Window'' is the range of thresholds in which halting the largest group restores $S\le\bar s$ in one economy and not in the other. The last column rounds the continuous Gaussian-shift lower bound for a choice correct with probability $3/4$ in both; an actual integer sample size must round the unrounded requirement upward. Kind: recomputed (\texttt{theory/targeted\_intervention.py} $\to$ \nolinkurl{R_P1_targeted_intervention.json}).\end{tablenotes}
+\end{threeparttable}
+\end{table}
 
 \paragraph{Explicit robustness condition.} Smooth best responses alone do not preserve separation: the constant smooth map $\Phi(M)=0$ sends both post-halt budgets to $a$. Instead assume that, over the stated action and holding horizon, $|\widetilde R_j-R_j|\le\varepsilon$ for $j\in\{G,R\}$, with $R_R<R_G$. Then
 \begin{equation}\label{eq:reopt_gap}
