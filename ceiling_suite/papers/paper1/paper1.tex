@@ -82,7 +82,7 @@ The question matters now. Trading is passing to learning algorithms and AI agent
 \item \emph{So supervision splits in two.} A market-wide measure depends on an aggregate response, subject to the observation and tail conditions. A targeted decision can require more information: two markets can look almost identical in prices while halting the largest group meets the prudential ceiling in one and not in the other (Proposition~\ref{prop:target}, machine-checked for two groups).
 \item \emph{Learning the groups from prices is very expensive.} The data needed grow as $(\Delta\eta)^{-(4K-2)}$ when the memories of $K$ groups are $\Delta\eta$ apart: halving the gap multiplies the data by 64 for two groups and by 1{,}024 for three (Theorems~\ref{thm:kcohort} and~\ref{prop:esprit}). If memory is a general mixture, accuracy improves only with the logarithm of the data (Theorem~\ref{thm:general}).
 \item \emph{Class records change the information requirement.} When each class's flow is reported separately, the problem stays well conditioned however similar the groups are (Proposition~\ref{prop:tagged}). In 20 futures markets, the CFTC's weekly class report pins down the persistence of speculative positions 9 to 71 times more precisely than prices; a hypothetical common-root-$T$ conversion gives about 1{,}350 at the median, but does not identify an equivalent sample requirement (Figure~\ref{fig:summary}).
-\item \emph{What we do not show.} That fitted persistence is the traders' learning memory: the weekly reports constrain how persistent class positions are, which can also reflect turnover, reporting aggregation or inventory retention. Ten of the twenty-two predictions we tested failed (Table~\ref{tab:scorecard}). One possible reason, which we have not tested, is that a reporting class mixes strategies that respond to prices with opposite signs.
+\item \emph{What we do not show.} That fitted persistence is the traders' learning memory: the weekly reports constrain how persistent class positions are, which can also reflect turnover, reporting aggregation or inventory retention. Of 23 recorded outcomes, 11 failed (10 of the 19 primary ones; Table~\ref{tab:scorecard}). One possible reason, which we have not tested, is that a reporting class mixes strategies that respond to prices with opposite signs.
 \end{enumerate}
 We keep three statements apart throughout: what cannot be learned at all, what can be learned but only at high cost, and where estimates become unstable.}}\end{center}
 \endgroup
@@ -120,38 +120,40 @@ Proposition~\ref{prop:choice} says when each option is the cheapest.
 
 \paragraph{Robustness, a new failure and real noise.} Rerunning the CFTC test with CME futures prices, without contract-roll weeks or with longer bootstrap blocks leaves its primary result unchanged. Read as weekly flows rather than positions, the same reports failed a second pre-specified test: they pin down how each class's flow responds to prices, but not how persistent that flow is. A third test asked whether positions carry a second, faster root that could be learning memory, as the model with inventory costs predicts; it failed too (2 of 8 markets), so these data cannot separate learning memory from the slow turnover of positions. Another pre-specified test gives synthetic groups real Bitcoin price noise instead of Gaussian noise and finds the predicted rates, a slope of $-6.01$ against $-6$ for two groups and $-9.81$ against $-10$ for three, while class-tagged requirements stay flat; at large sample sizes it uses a normal approximation to the real noise (Section~\ref{sec:injection}). These comparisons are descriptive: a position series reveals its own persistence directly, while the price route must infer it. A replication registered on 31 October 2026 reproduces the primary CFTC result on twelve new markets (12 of 12). Two tests on fresh October 2026 Binance data failed: price changes did not forecast a class position beyond its own persistence, and aggregate taker flow did not pin down the combined response, although its uncertainty shrank at the predicted root-$T$ rate. Several predictions failed, and Table~\ref{tab:scorecard} lists them next to the ones that passed. The data therefore show what prices cannot pin down. They do not show that this persistence is the learning memory of the model.
 
-\begin{table}[!htbp]\centering\footnotesize
+\begin{table}[!htbp]\centering\scriptsize\let\footnotesize\scriptsize
 \begin{threeparttable}
 \caption{What the empirical tests found: passes and failures}\label{tab:scorecard}
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.27\textwidth}>{\raggedright\arraybackslash}p{0.38\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}}
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.04\textwidth}>{\raggedright\arraybackslash}p{0.22\textwidth}>{\centering\arraybackslash}p{0.03\textwidth}>{\raggedright\arraybackslash}p{0.34\textwidth}>{\raggedright\arraybackslash}p{0.27\textwidth}}
 \toprule
-Test & Prediction & Result\\
+ID & Test & P/S & Prediction & Result (threshold where pre-specified)\\
 \midrule
-CFTC, 8 markets, H1 & Class positions pin down a persistence that weekly prices leave open & Pass, 8 of 8\\
-CFTC, H2 & The designated speculative class trend-follows & Fail, 4 of 8 (three markets have the opposite sign)\\
-CFTC, H3 & That class has the less persistent positions & Pass, 6 of 8 (two indistinguishable)\\
-CFTC flows (weekly changes), H1 & Class flows pin down their own persistence (95\% interval narrower than 0.5) & Fail, 3 of 8 (6 required); flow response nonzero in 6 of 8\\
-CFTC positions, two-root test, H1 & Positions carry a second, faster root (memory) distinct from the slow turnover root & Fail, 2 of 8 (6 required); where positive, the second root has a half-life under half a week\\
-Real-noise injection, $K=2$ & Price-only requirement grows as $(\Delta\eta)^{-6}$; tagged requirement stays bounded & Pass: slope $-6.01$ (large-$N$ points use a normal approximation); tagged max/min 2.8 ($\le8$ required)\\
-Same test, $K=3$ (secondary) & Price-only requirement grows as $(\Delta\eta)^{-10}$ & Holds: slope $-9.81$\\
-Binance, 30 fresh markets, (i)--(ii) & Class data restrict persistence; price-only intervals wide & Pass, 30 of 30 (one-hour price kernel)\\
-Binance, same test, (iii) & Prices pin down the combined response & Fail, 5 of 30; the test failed its 80\% criterion\\
-Binance, 30 new markets & Horizon-matched: class interval narrower & Pass, 29 of 29 evaluable (median factor 7.3)\\
-Binance, same test, secondary & Class persistence is a stable memory & Not supported: close to a random walk after bias correction\\
-Binance, 105-day follow-up & Combined response far cheaper to learn than the separate rates & Fail, 10 of 30 (23 required)\\
-Binance, 58-day follow-up & Tagging advantage grows with the sample; parametric shrinkage & Pass, 22 of 29; fail, 20 of 29 (22 required)\\
-Binance, return forecasts & Class memory states improve 30-minute return forecasts & Fail ($\Delta R^2=-1.09$ points, inconclusive)\\
-Binance, state tracking & Class data track class positions better than prices & Pass, but explained by persistence of the target\\
-CFTC, 12 new markets, H1 (replication) & Class positions pin down a persistence that weekly prices leave open & Pass, 12 of 12 (tagged widths 0.014--0.042, price-only 0.85--0.96)\\
-Same, H2 & The managed-money or leveraged class trend-follows & Pass, 11 of 12 (Nasdaq-100 has the opposite sign)\\
-Same, H3 & That class has the less persistent positions & Fail, 3 of 12 (6 required)\\
-Binance, Oct.\ 2026, 30 markets, N2 & Prices improve out-of-sample forecasts of the top-trader position beyond its own persistence & Fail, 1 of 30 (18 required); median $R^2$ gain $-0.01$ points\\
-Same, N3 & Taker flow pins down the combined response to past returns & Fail, 5 of 30 (24 required); interval excludes zero in 17\\
-Same, N3 secondary & The sign of that response is stable within the month & Fail, 21 of 30 (24 required)\\
-Same, N3 secondary & Its interval shrinks at the root-$T$ rate & Pass, 30 of 30 (median ratio 1.69, theory 1.73)\\
+E1 & CFTC, 8 markets, H1 & P & Class positions pin down a persistence that weekly prices leave open & Pass, 8 of 8\\
+E2 & CFTC, H2 & P & The designated speculative class trend-follows & Fail, 4 of 8 (three markets have the opposite sign)\\
+E3 & CFTC, H3 & P & That class has the less persistent positions & Pass, 6 of 8 (two indistinguishable)\\
+E4 & CFTC flows (weekly changes), H1 & P & Class flows pin down their own persistence (95\% interval narrower than 0.5) & Fail, 3 of 8 (6 required); flow response nonzero in 6 of 8\\
+E5 & CFTC positions, two-root test, H1 & P & Positions carry a second, faster root (memory) distinct from the slow turnover root & Fail, 2 of 8 (6 required); where positive, the second root has a half-life under half a week\\
+E6 & Real-noise injection, $K=2$ & P & Price-only requirement grows as $(\Delta\eta)^{-6}$; tagged requirement stays bounded & Pass: slope $-6.01$ (large-$N$ points use a normal approximation); tagged max/min 2.8 ($\le8$ required)\\
+E7 & Same test, $K=3$ (secondary) & S & Price-only requirement grows as $(\Delta\eta)^{-10}$ & Holds: slope $-9.81$\\
+E8 & Binance, 30 fresh markets, (i)--(ii) & P & Class data restrict persistence; price-only intervals wide & Pass, 30 of 30 (one-hour price kernel)\\
+E9 & Binance, same test, (iii) & P & Prices pin down the combined response & Fail, 5 of 30; the test failed its 80\% criterion\\
+E10 & Binance, 30 new markets & P & Horizon-matched: class interval narrower & Pass, 29 of 29 evaluable (median factor 7.3)\\
+E11 & Binance, same test, secondary & S & Class persistence is a stable memory & Not supported: close to a random walk after bias correction\\
+E12 & Binance, 105-day follow-up & P & Combined response far cheaper to learn than the separate rates & Fail, 10 of 30 (23 required)\\
+E13 & Binance, 58-day follow-up, P2 & P & Tagging advantage grows with the sample & Pass, 22 of 29 (22 required)\\
+E14 & Same test, P1 & P & Tagged interval shrinks at the parametric rate & Fail, 20 of 29 (22 required)\\
+E15 & Binance, return forecasts & P & Class memory states improve 30-minute return forecasts & Fail ($\Delta R^2=-1.09$ points, inconclusive)\\
+E16 & Binance, state tracking & P & Class data track class positions better than prices & Pass, but explained by persistence of the target\\
+E17 & CFTC, 12 new markets, H1 (replication) & P & Class positions pin down a persistence that weekly prices leave open & Pass, 12 of 12 (tagged widths 0.014--0.042, price-only 0.85--0.96)\\
+E18 & Same, H2 & P & The managed-money or leveraged class trend-follows & Pass, 11 of 12 (Nasdaq-100 has the opposite sign)\\
+E19 & Same, H3 & P & That class has the less persistent positions & Fail, 3 of 12 (6 required)\\
+E20 & Binance, Oct.\ 2026, 30 markets, N2 & P & Prices improve out-of-sample forecasts of the top-trader position beyond its own persistence & Fail, 1 of 30 (18 required); median $R^2$ gain $-0.01$ points\\
+E21 & Same, N3 & P & Taker flow pins down the combined response to past returns & Fail, 5 of 30 (24 required); interval excludes zero in 17\\
+E22 & Same, N3 secondary & S & The sign of that response is stable within the month & Fail, 21 of 30 (24 required)\\
+E23 & Same, N3 secondary & S & Its interval shrinks at the root-$T$ rate & Pass, 30 of 30 (median ratio 1.69, theory 1.73)\\
 \bottomrule
 \end{tabular}
+\begin{tablenotes}\scriptsize\item Each row is one recorded outcome. P marks a primary hypothesis or the single criterion of a test; S marks a secondary prediction reported with it. Of the 23 outcomes, 11 passed or held, 11 failed and 1 was not supported (E11); among the 19 primary outcomes, 9 passed and 10 failed; of the 4 secondary predictions, 2 held, 1 failed and 1 was not supported. Counts in the text use this table. The table reports every outcome of the registered and follow-up tests on CFTC and Binance data; none is excluded.\end{tablenotes}
 \end{threeparttable}
 \end{table}
 
@@ -474,6 +476,8 @@ C(v)=\tfrac12v^\top T_hv+c\|v\|_1,\qquad (T_h)_{ij}=h_{|i-j|}.
 \end{equation}
 In the positive stable economy $T_h$ is positive definite, so no nonzero round trip produces a deterministic gain.
 \end{lemma}
+
+Positivity here means that the response is a positive mixture of decaying exponentials (Lemma~\ref{lem:cm}), whose spectral density is positive. Positive, decreasing taps alone do not suffice: for $h=(1,0.9,0.1)$ the $3\times3$ matrix $T_h$ has determinant $-0.468$, so some round trip earns money. The conclusion concerns modelled execution cost only.
 
 We verify the ledger identity \eqref{eq:cost} against an explicit cash account to $5.7\times10^{-13}$ on 1,000 random probes, and the smallest eigenvalue of $T_h$ over 1,000 random stable positive economies is $0.141$. A direct-only proxy $\sum\tfrac12\kappa v_t^2$ omits cross-time impact: for $v=(+1,-1)$ it gives $0.80$ against a true Toeplitz loss of $h_0-h_1=0.3488$.
 
@@ -1025,7 +1029,7 @@ Price only, $K=3$ (H3) & $-10$ & $-9.81$ & $-9.96$ & slope in $[-12.5,-7.5]$ & h
 \end{threeparttable}
 \end{table}
 
-Both pre-specified hypotheses hold, so the test passes (Table~\ref{tab:injection}). With real noise, the price-only requirement for two groups rises from 64 experiments at $\Delta\eta=0.5$ to $370{,}728$ at $\Delta\eta=0.125$, a factor of about 5{,}800, and the fitted slope is $-6.01$; for three groups it is $-9.81$. Over the same grid the tagged requirement stays between 256 and 724 experiments, and it falls slightly rather than rises as the spacing shrinks. At every spacing the real-noise requirement is within one step of the grid (a factor $\sqrt2$) of the Gaussian control.
+Both pre-specified hypotheses hold, so the test passes (Table~\ref{tab:injection}). With real noise, the price-only requirement for two groups rises from 64 experiments at $\Delta\eta=0.5$ to $370{,}728$ at $\Delta\eta=0.125$, a factor of about 5{,}800, and the fitted slope is $-6.01$; for three groups it is $-9.81$. Over the same grid the tagged requirement stays between 256 and 724 experiments, and it falls slightly rather than rises as the spacing shrinks. At every spacing the real-noise requirement is within one step of the grid (a factor $\sqrt2$) of the Gaussian control. The slopes are least-squares fits of $\log N^*$ on $\log\Delta\eta$ over the stated grids (seven spacings from $0.5$ to $0.125$ for two groups, five from $0.6$ to $0.25$ for three). No uncertainty interval was pre-specified; as a post hoc description, the ordinary least-squares standard errors are $0.17$ and $0.47$ with real noise ($0.12$ and $0.31$ for the Gaussian control, slopes $-6.22$ and $-9.96$), and each $N^*$ is itself read off a grid with steps of $\sqrt2$. For two groups, the last four price-only points lie above $4{,}096$ and use the normal draw, so the heavy tails enter the fit only through the first three.
 
 The test has a limit, stated in its specification. Averages of $N$ real windows are resampled exactly up to $N=4{,}096$; beyond that they are drawn as Gaussian vectors with the real windows' covariance, as the central limit theorem suggests. Real one-minute changes are almost uncorrelated (lag-one autocorrelation between $-0.007$ and $0.009$ within the windows), so beyond $4{,}096$ the real and Gaussian arms differ little by construction. The direct evidence about heavy tails therefore comes from the points in the exact range: every tagged requirement, and the price-only requirements for two groups at the three widest spacings (64, 362 and 1{,}448 experiments, against 64, 362 and 1{,}024 with Gaussian noise). The other four price-only points for two groups, and all points for three groups, check the rate with the real noise's variance and covariance but not its tails. Averaging should make heavy tails matter less as $N$ grows, but the test does not show this.
 
@@ -1595,10 +1599,10 @@ The gain is almost entirely persistence. In an exploratory decomposition on the 
 Even without identification, could a supervisor monitor risk through eigenvalues or volatility?
 
 \begin{theorem}[Spectral blindness]\label{thm:blind}
-For any eigenvalues $0<\lambda_2<\lambda_1<1$, one-step price variance $s_1>0$ and stationary price variance $V$ large enough, there is a family of two-state markets $J_\theta=\begin{psmallmatrix}\lambda_1&\theta\\0&\lambda_2\end{psmallmatrix}$ with shock covariance ${\rm diag}(s_1,s_2(\theta))$ such that all members share the eigenvalues, the one-step price variance and the stationary price variance, while the worst-case transient gain $\sup_k\|e_1^\top J_\theta^k\|$ grows without bound in $\theta$.
+For any eigenvalues $0<\lambda_2<\lambda_1<1$, one-step price variance $s_1>0$ and stationary price variance $V$ large enough, there is a family of two-state markets $J_\theta=\begin{psmallmatrix}\lambda_1&\theta\\0&\lambda_2\end{psmallmatrix}$ with shock covariance ${\rm diag}(s_1,s_2(\theta))$ such that all members share the eigenvalues, the one-step price variance and the stationary price variance, while the worst-case transient gain $\sup_k\|e_1^\top J_\theta^k\|$ grows without bound in $\theta$. Here $s_1$ is the variance of the fresh price shock given the full prior state; a forecaster who sees prices only can face additional uncertainty about the hidden state, and the family is the one with positive coupling $\theta>0$.
 \end{theorem}
 
-\paragraph{In words.} Two markets can look identical by the usual risk measures, the same eigenvalues and the same price variance, and yet one of them can produce far larger losses in the short run. Monitoring eigenvalues or volatility alone therefore cannot certify that a market is safe.
+\paragraph{In words.} Two markets can look identical by the usual risk measures, the same eigenvalues and the same price variance, and yet one of them can produce far larger losses in the short run. Monitoring eigenvalues or volatility alone therefore cannot certify that a market is safe. The gain is measured in the state coordinates of $J_\theta$; rescaling a hidden coordinate changes its numerical value while leaving the price dynamics unchanged, so translating it into market risk needs a specified shock set, units and loss.
 
 At $\lambda=(0.8,0.7)$, $s_1=1$ and $V=5$, the gain is $1.77$, $5.10$, $16.95$, $50.85$ and $169.50$ for $\theta=1,3,10,30,100$, with stationary variance $5.000$ in every case; the cumulative gain rises from $18.3$ to $1{,}667.7$. No monitor that depends only on eigenvalues and second moments of the price can be uniformly safe (Figure~\ref{fig:blind}).
 
@@ -2589,6 +2593,7 @@ reserve and prefunding constraints. The zero-violation no-observation robust opt
 $I_{\rm nd}=I(\overline G,0)$, not an arbitrarily conservative benchmark.
 The response-informed oracle is $I_\circ=I(G,0)$; it knows no future shocks.
 \end{lemma}
+The bounds use the nonnegative taps of the declared positive class. With signed taps the worst-case exposure to bounded shocks over the horizon is governed by the sum of absolute taps $\sum_{t<H}|h_t|$, not by the signed sum $G$.
 
 \begin{proof}
 Let $k_j=\sum_iq_i\eta_i(1-\eta_i)^j$. The normalized price response is

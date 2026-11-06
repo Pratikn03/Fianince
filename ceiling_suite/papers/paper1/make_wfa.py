@@ -131,9 +131,9 @@ if ARGS.ssrn:
          "types are hard to estimate (Supplement~\\ref{app:whomatters}).\n\n"),
         ("\\paragraph{Robustness, a new failure and real noise.}", "\\paragraph{Two supplementary results.}",
          "Robustness checks, the failed tests and real noise}\\label{app:introrobust",
-         "\\paragraph{Passes and failures.} Table~\\ref{tab:scorecard} in the supplement lists all twenty-two empirical "
-         "tests with their predictions and outcomes: eleven passed or held, ten failed and one secondary prediction was "
-         "not supported. The primary CFTC result replicates on twelve new markets (12 of 12). The failures are part of "
+         "\\paragraph{Passes and failures.} Table~\\ref{tab:scorecard} in the supplement lists all 23 recorded "
+         "outcomes with their predictions: 11 passed or held, 11 failed (10 of the 19 primary ones) and one secondary "
+         "prediction was not supported. The primary CFTC result replicates on twelve new markets (12 of 12). The failures are part of "
          "the evidence: the CFTC's designated speculative class trend-followed in only four of the original eight markets "
          "(it did in eleven of the twelve new ones) and was the less persistent class in only three of the new twelve; "
          "the reports read as weekly flows did not pin down how persistent that flow is; positions showed no distinct "
@@ -228,7 +228,7 @@ for lab in FLOAT_MOVES:
     core = core[:b0] + core[e1:]
 if ARGS.ssrn:
     # The full reproducibility and formal-verification statement moves to the supplement; a short version stays.
-    r0 = core.index("\\paragraph{Reproducibility.}"); r1 = core.index("\n", r0)
+    r0 = core.index("\\paragraph{Reproducibility and verification.}"); r1 = core.index("\n", r0)
     full = core[r0:r1]
     short = ("\\paragraph{Reproducibility.} Every number in the paper is produced by a script or notebook cell that writes a "
              "result file from public data or from a closed form; Appendix~\\ref{app:repro} maps each number to its source. "
@@ -239,7 +239,7 @@ if ARGS.ssrn:
              "Supplement~\\ref{app:verification} states exactly what is and is not machine-checked.")
     core = core[:r0] + short + core[r1:]
     moved.append("\\section{Internet appendix: Reproducibility and formal verification}\\label{app:verification}\n"
-                 + full.replace("\\paragraph{Reproducibility.} ", "", 1) + "\n\n")
+                 + full.replace("\\paragraph{Reproducibility and verification.} ", "", 1) + "\n\n")
 if _floats:
     moved.append("\\section{Internet appendix: Further tables and figures for the main text}\\label{app:mainfloats}\n"
                  "These tables and figures belong to the main text; they are collected here to keep it to journal length.\n\n"

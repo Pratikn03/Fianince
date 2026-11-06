@@ -1,0 +1,41 @@
+# Paper 1 claim register (Phase 2 of the revision plan)
+
+Frozen on 6 November 2026 against `paper1_ssrn.tex` (working paper of 5 Nov, with the 6 Nov integrity fixes). Numbers follow the SSRN PDF.
+
+Columns:
+- **Lean**: the `COVERAGE.md` tag.
+- **Prior work**: what earlier research already gives.
+- **Open objection**: what a referee can still press.
+
+Nothing in the abstract or conclusion may go beyond the "Statement" column.
+
+| # | Result | Statement, with quantifiers | Main assumptions | Proof | Lean | Prior work | Open objection |
+|---|---|---|---|---|---|---|---|
+| C1 | Thm 3.1 (i) merged equivalence | For known `a`, `κ ≠ 0` and zero initial state, two economies give identical price responses for **every** input iff they have the same merged rate–weight measure; `2K+1` noise-free taps fix it. | Linear model (1)–(6); finitely many atoms; known primitives | Supplement | conditional (the step from pole count to minimal state dimension is classical, not formalized) | Moment/Vandermonde uniqueness is classical | None substantive |
+| C2 | Thm 3.1 (ii), Thm 4.1 (i) | For the known symmetric pair, a test with both errors ≤ 1/4 needs power horizon `T ≥ σ²/(2C²Pδ⁴)` or quantity `V² ≥ σ²/(2K*²δ⁴)`. | Deterministic probes; Gaussian noise; reset state | Supplement | conditional (1/4-error form formal end to end; Pinsker / general-α form and Thm 4.1 (ii) exact error not formal) | `δ⁻⁴` resolution law (Shahram–Milanfar 2005) | Only deterministic probes; sequential probes are Thm S9.x |
+| C3 | Lemma S24.4 capital | Every trader solvent at the fundamental mark after the probe gives `KL ≤ K*²Bδ⁴/(σ²m)`; a 1/4-error test needs `B ≥ σ²m/(4K*²δ⁴)`. | Positive economy; marking at `P*`; no process noise | Supplement | conditional (formal `m` has the paper's form with some `r < 1`; converse not formal) | — | The constant `m` is very conservative (5 orders below a feasible design) |
+| C4 | Thm 5.1 K-cohort lower bound | Any rule separating two `K`-cohort economies with spacing `Δη` from `N` reset experiments of a fixed horizon needs `N = Ω(σ²(Δη)^{−(4K−2)})`. | Gaussian noise; finite observed horizon; class contains the matched pair | Supplement | full (finite horizon; binomial matched pair; constant depends on horizon) | Exponent equals the squared amplitude condition number for clustered nodes (Heinrich–Kahn 2018; Wu–Yang 2020); **not claimed as new** | Novelty is the closed-loop setting, not the exponent |
+| C5 | Thm 5.2 Prony upper bound | With probability ≥ `1−β`, Prony recovers every merged weight within `C√log(4K/β) ε_N`, constants independent of spacing. | Known primitives; `|r_c|+Δη ≤ 1`; separated ordered nodes | Supplement | full | Katz et al. 2023 (Prony attains min–max for clustered exponents) | — |
+| C6 | Cor 5.3 unknown primitives | **Conditional** on a separate estimator `â` with spacing-independent `O(N^{−1/2})` error, plug-in keeps the order `(Δη)^{−(4K−2)}`. | That estimator exists | Text | arithmetic | — | `a` is confounded with the total merged weight in the price response; the paper does not show how to get `â` from probe records |
+| C7 | Thm 5.4 minimum phase | Zeros of `H` are `0` and the memory rates, all inside the unit disk; with the spectral-factorization step, the spectrum identifies `H` up to scale. | Single innovation; nondegenerate rates | Supplement | conditional (zeros formal; factorization formal only for two cohorts) | Standard spectral factorization | General-`K` factorization rests on the classical theorem |
+| C8 | Thm 5.5 passive cost | Passive stationary data face the same `(Δη)^{−(4K−2)}` sample barrier (parts i, iii formal); divergence-rate form via Whittle. | Gaussian stationary data; known innovation law | Supplement | conditional | Whittle (1953) | Divergence-rate form and matching lower bound on divergence not formal |
+| C9 | Thm S17.2 general memory | Minimax accuracy for completely monotone memory on `[0,ρ]` is `Θ(1/log(N/σ²))`. | `ρ < 1`; Lipschitz functional | Supplement | full (order; Lean constants `16π` and `D` differ from the paper's) | Wu–Yang 2020; Rebafka et al. 2015 (log rates) | Constants |
+| C10 | Prop 6.1 tagged flow | Class-tagged flows recover each weight at `√N` accuracy independent of spacing; rates within `ε·Δη` need `O((Δη)^{−2})`. | Exogenous reporting noise; valid instruments; weights bounded below | Supplement | conditional (finite-sample reset form formal; stationary IV CLT not formal) | Castelli–Cover 1996 (labelled samples) | Small weights weaken the rate signal |
+| C11 | Thm 6.2 value of disclosure | Price-only / tagged requirement ratio grows as `(Δη)^{−(4K−4)}`. | C4 + C10 | Supplement | conditional | — | Inherits C10's assumptions |
+| C12 | Prop 6.4 supervisory separation | The market-wide measure depends only on the merged measure; for matched populations a targeted halt restores stability in one and not the other on a nonempty threshold window, and deciding which needs `N = Ω(σ²(Δη)^{−(4K−2)})`. | Declared action/loss contract; threshold `s̄` | Supplement | conditional (`K=2` formal; every-`K` formal under an explicit dominance hypothesis for the binomial pair) | — | Whether the Gauss/Gauss–Radau pair meets the dominance hypothesis for every `K` |
+| C13 | Props 6.5–6.6 gate and priced decision | Robust threshold gate with fallback; no-data action versus information purchase after costs. | Declared losses (model inputs, not welfare) | Text | see `Paper1SupervisoryDecision.lean` (Gaussian event bound and algebra) | — | Losses are declared inputs; real-market profitability is out of scope |
+| C14 | Prop 3.3 endogenous pricing | Conditional: equal covariance maps with a unique/common fixed point give equal `κ`; Lipschitz contraction bound for closeness. | Covariance-only dealer rule; uniqueness; `L_K L_Γ < 1` | Supplement | arithmetic | — | Does not solve a dealer equilibrium |
+| C15 | Prop (strategic evasion) | Three conditional calculations (sub-account splitting, camouflage cost, chilling). | Fixed linked accounts; bounded execution costs | Supplement | arithmetic | — | Not an equilibrium game; written proof not independently checked |
+| C16 | Thm S12.1 spectral blindness | Families with the same eigenvalues, one-step variance (given the full prior state) and stationary variance have unbounded transient gain. | Positive coupling family; state coordinates | Supplement | full | Trefethen–Embree (non-normality) | Gain depends on state units |
+| E1 | CFTC (20 markets) | Class positions pin down **weekly holdings persistence** 9–71× more tightly than prices (8/8, 12/12). | Labels fixed by class role before estimation | Sec. S18 | — | — | Persistence ≠ learning memory; it can reflect turnover or aggregation |
+| E2 | Real-noise injection | Rates survive Bitcoin noise: slopes −6.01 (s.e. 0.17), −9.81 (s.e. 0.47); tagged flat. | Normal draw above `N = 4,096` | Sec. S16 | — | — | Heavy tails enter only the first three `K=2` points |
+| E3 | Scorecard | 23 outcomes: 11 pass/hold, 11 fail, 1 not supported (19 primary: 9 pass, 10 fail). | — | Table S29 | — | — | — |
+| E4 | Data-equivalence ratio | Hypothetical conversion under common root-`T` scaling only. | Root-`T` scaling | Table S26 | — | — | Not an identified equivalent sample size |
+
+## Things the paper must not say (checked 6 Nov)
+- That prices "cannot" identify trader groups in general. They cannot below the stated noise/sample budget in the stated experiments.
+- That the CFTC persistence is learning memory, or that within-class cancellation explains the failures (now a stated, untested hypothesis).
+- That the real-noise test used exact resampling at all `N`.
+- That Lean formalizes the whole paper (10 full / 17 conditional / 12 arithmetic of 39 rows).
+- That disclosure is welfare-improving in real markets. Losses are declared model inputs.
+- Any dollar figure as a social cost. They are a hypothetical outside prober's modelled execution loss under weekly renewal.
