@@ -98,3 +98,4 @@ import CurrentProofs.Paper1Pinsker
 import CurrentProofs.Paper1GeneralLevel
 import CurrentProofs.Paper1Abstain
 import CurrentProofs.Paper1UnknownPrimitives
+import CurrentProofs.Paper1KalmanTied
