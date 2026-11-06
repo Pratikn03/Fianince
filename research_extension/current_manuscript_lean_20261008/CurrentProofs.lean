@@ -94,3 +94,5 @@ import CurrentProofs.Paper1GaussRadau
 import CurrentProofs.Paper1FlowDecision
 
 import CurrentProofs.Paper1ClaimRepairs
+import CurrentProofs.Paper1Pinsker
+import CurrentProofs.Paper1GeneralLevel
