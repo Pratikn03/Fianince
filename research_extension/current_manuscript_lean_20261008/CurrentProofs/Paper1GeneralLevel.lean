@@ -196,7 +196,7 @@ theorem p1_thm_quantity_worst_error (a κ q ηbar δ ε s : ℝ) (ha : 0 ≤ a) 
     have h4 : (2 * sqrt (variance : ℝ)) ^ 2 = 4 * (variance : ℝ) := by
       rw [mul_pow, sq_sqrt hvpos.le]; norm_num
     have e : K ^ 2 * V ^ 2 * δ ^ 4 / (2 * (variance : ℝ)) / 2 = (K * V * δ ^ 2 / (2 * sqrt (variance : ℝ))) ^ 2 := by
-      rw [div_pow, h4]; ring
+      rw [div_pow (K * V * δ ^ 2) (2 * sqrt (variance : ℝ)) 2, h4]; ring
     rw [e, sqrt_sq (div_nonneg (mul_nonneg (mul_nonneg hK0 hV0) (sq_nonneg δ)) (by positivity))]
   rw [hsq] at h
   exact h
