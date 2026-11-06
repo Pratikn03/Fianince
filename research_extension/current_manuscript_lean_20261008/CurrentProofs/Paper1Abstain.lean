@@ -42,7 +42,7 @@ noncomputable def arPathLaw (n : ℕ) (s : ℝ) (v : ℝ≥0) : Measure (Fin n �
 
 instance (n : ℕ) (s : ℝ) (v : ℝ≥0) : IsProbabilityMeasure (arPathLaw n s v) := by
   unfold arPathLaw
-  exact isProbabilityMeasure_map (p1_measurable_mulVec _).aemeasurable
+  infer_instance
 
 /-- Entries of `A_{s₁} L_{s₀}`. -/
 theorem p1_arA_mul_arL (n : ℕ) (s1 s0 : ℝ) (i j : Fin n) :
@@ -72,7 +72,6 @@ theorem p1_arA_mul_arL (n : ℕ) (s1 s0 : ℝ) (i j : Fin n) :
     have : ¬ (i.val = k.val + 1) := by omega
     rw [if_neg this]
 
-/-- `A_s L_s = 1`. -/
 /-- Entries of `A_{s₁} L_{s₀} - 1`: `(s₀ - s₁) s₀^(i-1-j)` below the diagonal, `0` elsewhere. -/
 theorem p1_arB_sub_one_aux (n : ℕ) (s1 s0 : ℝ) (i j : Fin n) :
     (arA n s1 * arL n s0 - 1) i j = if j < i then (s0 - s1) * s0 ^ (i.val - 1 - j.val) else 0 := by
@@ -105,6 +104,7 @@ theorem p1_arB_sub_one_aux (n : ℕ) (s1 s0 : ℝ) (i j : Fin n) :
         simp [hji, hpos, hnle, heq]
       · simp [hji, hpos, heq]
 
+/-- `A_s L_s = 1`. -/
 theorem p1_arA_mul_arL_self (n : ℕ) (s : ℝ) : arA n s * arL n s = 1 := by
   ext i j
   have h := p1_arB_sub_one_aux n s s i j
@@ -173,11 +173,10 @@ theorem p1_ar_path_kl_le (n : ℕ) (s0 s1 M : ℝ) (v : ℝ≥0) (hv : v ≠ 0) 
     rw [p1_arB_sub_one_aux]
     split_ifs with h
     · have hk : i.val - 1 - j.val < n := by omega
-      have := hM _ hk
-      rw [mul_pow, ← pow_mul, mul_comm 2 (i.val - 1 - j.val)]
+      have hk' : s0 ^ ((i.val - 1 - j.val) * 2) ≤ M := by rw [mul_comm]; exact hM _ hk
       have e : (s0 - s1) ^ 2 = (s1 - s0) ^ 2 := by ring
-      rw [e, mul_comm (i.val - 1 - j.val) 2]
-      exact mul_le_mul_of_nonneg_left this (sq_nonneg _)
+      rw [mul_pow, ← pow_mul, e]
+      exact mul_le_mul_of_nonneg_left hk' (sq_nonneg _)
     · simp
   have hrow : ∀ i : Fin n, ∑ j : Fin n, (if j < i then (s1 - s0) ^ 2 * M else 0) = (s1 - s0) ^ 2 * M * i.val := by
     intro i
@@ -187,8 +186,8 @@ theorem p1_ar_path_kl_le (n : ℕ) (s0 s1 M : ℝ) (v : ℝ≥0) (hv : v ≠ 0) 
   have htot : ∑ i : Fin n, (s1 - s0) ^ 2 * M * (i.val : ℝ) = (s1 - s0) ^ 2 * M * (n * (n - 1)) / 2 := by
     rw [← Finset.mul_sum, Fin.sum_univ_eq_sum_range (fun i => (i : ℝ)) n]
     have := p1_sum_range_cast_id n
-    field_simp
-    linarith
+    have hs : (∑ i ∈ range n, (i : ℝ)) = n * (n - 1) / 2 := by linarith
+    rw [hs]; ring
   have hsum : ∑ i, ∑ j, (arA n s1 * arL n s0 - 1) i j ^ 2 ≤ (s1 - s0) ^ 2 * M * (n * (n - 1)) / 2 := by
     calc ∑ i, ∑ j, (arA n s1 * arL n s0 - 1) i j ^ 2
         ≤ ∑ i : Fin n, ∑ j : Fin n, (if j < i then (s1 - s0) ^ 2 * M else 0) :=

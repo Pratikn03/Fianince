@@ -41,6 +41,7 @@ theorem p1_mergedWeight_mul_rate {ι : Type*} (S : Finset ι) (r w : ι → ℝ)
   unfold mergedWeight
   rw [mul_sum]
   refine sum_congr rfl (fun i hi => ?_)
+  show w i * r i = ρ * w i
   rw [(mem_filter.mp hi).2]; ring
 
 /-- Total mass as a sum of merged weights. -/
