@@ -4,21 +4,14 @@ import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-!
-# Paper 1: Closing solvable `conditional` environments
+# Paper1ConditionalClosures: arithmetic steps only (audit of 6 November 2026)
 
-This module adds the completing theorems that promote seven `conditional`
-Paper 1 environments to `full`:
-
-1. `p1_crb_theta_order`          — Θ-order sandwich for `prop:crb`  (row 14)
-2. `p1_lem_altpair_binomial_full`— binomial pair closes `lem:altpair` (row 18)
-3. `passive_variance_formula_R`  — variance formula for `prop:passive0` (row 26)
-4. `p1_thm_discvalue_ratio_formal`— combined ratio for `thm:discvalue` (row 23)
-5. `p1_fhc_capacity_quadratic_bounds` — quadratic prior bounds for `fhc:capacity` (rows 34/27)
-6. `p1_fhc_decision_amgm_optimal`— AM-GM optimal N for `fhc:decision` (rows 36/29)
-7. `p1_fhc_pair_hellinger_theta_order`— Θ(δ³)/Θ(δ⁻⁶) for `fhc:pair` (rows 37/30)
-8. `p1_fhc_priced_net_positive`  — net value positive for `fhc:priced` (rows 38/31)
-
-Each theorem is self-contained, strictly proven, standard axioms only.
+Every theorem in this file is a real-number rearrangement, positivity fact or closed-form identity.
+Where a theorem names a manuscript result, the divergence, rate, concentration or testing inequality
+that carries that result is a *hypothesis* of the theorem, not something proved here. These theorems
+therefore do not formalize the manuscript statements they are named after, and `COVERAGE.md` does
+not use them to tag any row `full`. An earlier header (2 November 2026) described them as completing
+the formalization; that description was wrong.
 -/
 
 namespace CurrentMM
@@ -52,7 +45,7 @@ and `u₃ = 2` contributes 4).  This gives the upper bound `53 σ²/(Δη)⁶`.
 We take c₁ = 4 (from the existing lower bound) and c₂ = 200 (a safe upper bound
 for the four-polynomial row-norm-squared on [0,1]²).
 -/
-/-- **Θ-order sandwich for the CRB** (`prop:crb`, row 14):
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Θ-order sandwich for the CRB** (`prop:crb`, row 14):
 There exist universal constants `0 < c₁ ≤ c₂` with
 `c₁ * sigma_h² / (Δη)⁶ ≤ V_CRB ≤ c₂ * sigma_h² / (Δη)⁶`.
 The lower bound 4 is the exact Vandermonde Jacobian minimum;
@@ -92,7 +85,7 @@ satisfies every structural condition required by Lemma `lem:altpair`:
 Below we package the arithmetic of condition (c) directly: the cosine
 witness evaluates at the two endpoint atoms and gives a gap of ρ/(8(L+1)).
 -/
-/-- **Binomial pair satisfies Lemma `lem:altpair` conditions** (row 18):
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Binomial pair satisfies Lemma `lem:altpair` conditions** (row 18):
 The binomial grid pair with `L + 1` atoms each at spacings `h = ρ/(2L+1)` satisfies
 moment-matching through order `2L`, equal mass `W`, and 1-Wasserstein gap `≥ W ρ / (8(L+1))`. -/
 theorem p1_lem_altpair_binomial_satisfies_conditions
@@ -134,7 +127,7 @@ The covariance gap uses `E[B_t] ≈ κ q s_w² δ²` and
 We state the exact polynomial identity that proves `R = κ² q² s_w⁴ / σ²`
 from the moment matching:  `σ² R = (κ q s_w²)²`.
 -/
-/-- **Variance formula R for three-step passive block products** (`prop:passive0`, row 26):
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Variance formula R for three-step passive block products** (`prop:passive0`, row 26):
 The block-product variance satisfies `σ² · R = (κ q s_w²)²`,
 i.e., `R = κ² q² s_w⁴ / σ²`.  This is the exact identity connecting the
 fourth-cumulant calculation to the Chebyshev sample bound. -/
@@ -171,7 +164,7 @@ which is Ω((Δη)^{-6}) = Ω((Δη)^{-(4·2-2)}) as claimed.
 
 Below we state the formal ratio inequality for K = 2.
 -/
-/-- **Ratio theorem for class-tagged disclosure** (`thm:discvalue`, row 23):
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Ratio theorem for class-tagged disclosure** (`thm:discvalue`, row 23):
 For K = 2 cohorts, price-only identification needs at least `N_price ≥ c_p σ² (Δη)^{-6}`
 observations, while tagged records need at most `N_tagged ≤ c_t K v / (κ² ε²)`.
 Their ratio is at least `(c_p κ² ε² σ²) / (c_t K v) / (Δη)^6`,
@@ -217,7 +210,7 @@ where G_lower, G_upper are the two roots of the quadratic
 tighter quadratic-root characterization: both roots exist and are real
 when the discriminant `(a + κQ̄)² - 4(1-δ_inv)κHa ≥ 0`.)
 -/
-/-- **Quadratic prior bounds for prefunded capacity** (`fhc:capacity`, rows 34/27):
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Quadratic prior bounds for prefunded capacity** (`fhc:capacity`, rows 34/27):
 The finite-horizon quadratic `f(G) = (1-δ_inv)G² - (a+κQ̄)G + κHa` has
 nonneg discriminant and real roots `G_lower ≤ G_upper` whenever
 `(a + κQ̄)² ≥ 4(1-δ_inv)κHa`. -/
@@ -262,7 +255,7 @@ For the paper's statement we need:
 We prove the AM-GM step: `A N^{-1/2} + D c_H N ≥ (3/2^{2/3}) (A^2 D c_H / 4)^{1/3}`
 via AM-GM applied to `(A N^{-1/2}/2) + (A N^{-1/2}/2) + (D c_H N)`.
 -/
-/-- **AM-GM regret bound for optimal finite-horizon N** (`fhc:decision`, rows 36/29):
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **AM-GM regret bound for optimal finite-horizon N** (`fhc:decision`, rows 36/29):
 For `A, D, c_H > 0` and any `N > 0`, the regret satisfies
 `A N^{-1/2} + D c_H N ≥ 0` with minimizer `N* = (A/(2Dc_H))^(2/3) > 0`
 at which `A(N*)^{-1/2} = 2 D c_H N*` (first-order condition). -/
@@ -300,7 +293,7 @@ lower bound `c₁ δ³ ≤ D_H(δ)` and upper bound `D_H(δ) ≤ c₂ δ³` for 
 `c₁, c₂ > 0` independent of δ, from which the sample order `Θ(δ⁻⁶)` follows
 by squaring and inverting (matching the K = 2 case of the general Prony bound).
 -/
-/-- **Θ-order for the finite-horizon Hellinger kernel gap** (`fhc:pair`, rows 37/30):
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Θ-order for the finite-horizon Hellinger kernel gap** (`fhc:pair`, rows 37/30):
 If `c₁ δ³ ≤ D_H ≤ c₂ δ³` with `0 < c₁ ≤ c₂`, then the sample complexity
 `N = Θ(D_H⁻²)` satisfies `c₂⁻² δ⁻⁶ ≤ N ≤ c₁⁻² δ⁻⁶`. -/
 theorem p1_fhc_pair_hellinger_theta_order
@@ -350,7 +343,7 @@ small relative to `A N*^{-1/2}`.
 We state it as: `V_net > 0` when `C_tag < V_info`,
 i.e., `D c_H N ≤ A N^{-1/2}` which holds at `N ≤ (A/(D c_H))^{2/3}`.
 -/
-/-- **Net information value positive for finite-horizon tagged strategy** (`fhc:priced`, rows 38/31):
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Net information value positive for finite-horizon tagged strategy** (`fhc:priced`, rows 38/31):
 If `N ≤ (A/(D c_H))^{2/3}` then the tagging cost `D c_H N ≤ A N^{-1/2}`,
 so net value `V_net = A N^{-1/2} - D c_H N ≥ 0`. -/
 theorem p1_fhc_priced_net_positive

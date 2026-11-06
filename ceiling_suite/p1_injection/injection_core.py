@@ -92,14 +92,10 @@ class NoisePool:
 
     def mean_of(self, N, R_, rng):
         T = self.W.shape[1]
-        M = len(self.W)
         if N <= self.exact_max:
-            idx = rng.integers(0, M, size=(R_, N))
+            idx = rng.integers(0, len(self.W), size=(R_, N))
             return self.W[idx].mean(axis=1)
-        # Exact empirical resampling for arbitrary N via Multinomial identity
-        p = np.full(M, 1.0 / M)
-        counts = rng.multinomial(N, p, size=R_)
-        return (counts @ self.W) / float(N)
+        return (rng.standard_normal((R_, T)) @ self.chol.T) / np.sqrt(N)
 
 
 def gaussian_pool(T, n=200000, seed=0):

@@ -6,34 +6,14 @@ import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Data.Finset.Basic
 
 /-!
-# Paper 1: Constructive Finite-Sample Formalization of the 10 Frontier Environments
+# Paper1FullFrontiers: arithmetic steps only (audit of 6 November 2026)
 
-This module completes the formalization of the 10 remaining `conditional`
-environments from Paper 1, promoting all of them to `full` via constructive,
-finite-sample, non-asymptotic mathematical methods:
-
-1. `p1_thm_merged_general_alpha_testing_bound`
-   General-α testing bound for `thm:merged` (Theorem 3.1) via Bernoulli KL data processing.
-2. `p1_thm_quantity_general_alpha`
-   General-α quantity requirement for `thm:quantity` (Theorem 4.1).
-3. `p1_thm_capital_general_alpha`
-   General-α capital requirement for `thm:capital` (Lemma 4.3).
-4. `p1_thm_spectral_dissipative_heteroskedastic_invariance`
-   Impact-induced dissipative monotonicity for `thm:spectral` (Theorem 4.2).
-5. `p1_thm_abstain_path_kl_and_decision`
-   Discrete AR(1) path divergence and abstention bound for `thm:abstain` (Theorem S25).
-6. `p1_thm_rh_finite_toeplitz_duality`
-   Finite Toeplitz Rayleigh quotient decomposition for `thm:rh` (Theorem 4.5).
-7. `p1_thm_uniformw1_minimax_lower_bound`
-   1-Wasserstein minimax rate for `thm:uniformw1` (Theorem 5.7) via explicit Lipschitz witness.
-8. `p1_thm_adaptive_stopped_martingale_bound`
-   Bounded stopping time martingale energy bound for `thm:adaptive` (Theorem 4.4).
-9. `p1_prop_passive_cholesky_finite_sample_lower_bound`
-   Non-asymptotic Cholesky innovation lower bound for `prop:passive` (Theorem 5.8).
-10. `p1_prop_tagged_finite_sample_chebyshev`
-    Finite-sample Chebyshev IV concentration for `prop:tagged` (Proposition 6.1).
-
-All theorems are strictly proven over ℝ with standard axioms only.
+Every theorem in this file is a real-number rearrangement, positivity fact or closed-form identity.
+Where a theorem names a manuscript result, the divergence, rate, concentration or testing inequality
+that carries that result is a *hypothesis* of the theorem, not something proved here. These theorems
+therefore do not formalize the manuscript statements they are named after, and `COVERAGE.md` does
+not use them to tag any row `full`. An earlier header (2 November 2026) described them as completing
+the formalization; that description was wrong.
 -/
 
 namespace CurrentMM
@@ -44,7 +24,7 @@ open Real Finset
 -- 1. thm:merged, thm:quantity, thm:capital: General-α Testing Bounds
 -- =========================================================================
 
-/-- **General-α testing sample bound for `thm:merged` (Theorem 3.1):**
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **General-α testing sample bound for `thm:merged` (Theorem 3.1):**
 For any error tolerance `0 < α < 1/2`, two probability measures with
 decision region `A` satisfying `P(A) ≤ α` and `Q(Aᶜ) ≤ α` have total variation
 gap `1 - 2α`. By the information inequality, `KL(P ‖ Q) ≥ 2(1 - 2α)²`.
@@ -70,7 +50,7 @@ theorem p1_thm_merged_general_alpha_testing_bound
     _ ≤ C ^ 2 * delta ^ 4 * N := h1
     _ = N * (C ^ 2 * delta ^ 4) := by ring
 
-/-- **General-α quantity bound for `thm:quantity` (Theorem 4.1):**
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **General-α quantity bound for `thm:quantity` (Theorem 4.1):**
 For any error tolerance `0 < α < 1/2`, a deterministic probe with total
 absolute volume `V` that distinguishes the two cohort economies with error at
 most `α` satisfies `V² ≥ 4(1 - 2α)² σ² / (K*² δ⁴)`. -/
@@ -93,7 +73,7 @@ theorem p1_thm_quantity_general_alpha
     _ ≤ K_star ^ 2 * delta ^ 4 * V ^ 2 := h1
     _ = V ^ 2 * (K_star ^ 2 * delta ^ 4) := by ring
 
-/-- **General-α capital bound for `thm:capital` (Lemma 4.3):**
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **General-α capital bound for `thm:capital` (Lemma 4.3):**
 For any error tolerance `0 < α < 1/2`, a solvent trader with cash `B` and
 margin constant `m > 0` distinguishing the two economies with error at most `α`
 satisfies `B ≥ 2(1 - 2α)² σ² m / (K*² δ⁴)`. -/
@@ -122,7 +102,7 @@ theorem p1_thm_capital_general_alpha
 -- 2. thm:spectral: Dissipative Energy Monotonicity under Heteroskedasticity
 -- =========================================================================
 
-/-- **Dissipative energy monotonicity for `thm:spectral` (Theorem 4.2):**
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Dissipative energy monotonicity for `thm:spectral` (Theorem 4.2):**
 Under impact-induced heteroskedasticity `Δp_t = κ (1 + ξ₀ |v_t|) v_t`, total
 execution drag strictly dominates the linear benchmark:
   `∑ v_t Δp_t = κ ∑ v_t² + κ ξ₀ ∑ |v_t|³ ≥ κ ∑ v_t²`.
@@ -162,7 +142,7 @@ theorem p1_thm_spectral_dissipative_heteroskedastic_invariance
 -- 3. thm:abstain: Finite-Window AR(1) Path Divergence and Abstention
 -- =========================================================================
 
-/-- **Discrete path KL divergence and abstention bound for `thm:abstain` (Theorem S25):**
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Discrete path KL divergence and abstention bound for `thm:abstain` (Theorem S25):**
 For an AR(1) Gaussian process observed over a window of length `T` with state
 variance bounded by `V_state ≤ σ² / (1 - ρ̄²)`, the discrete path log-likelihood
 ratio divergence satisfies `KL(P₀ ‖ P₁) ≤ ½ T (ρ₁ - ρ₀)² / (1 - ρ̄²)`.
@@ -200,7 +180,7 @@ theorem p1_thm_abstain_path_kl_and_decision
 -- 4. thm:rh: Finite Toeplitz Rayleigh–Hölder Duality
 -- =========================================================================
 
-/-- **Finite Toeplitz Rayleigh quotient decomposition for `thm:rh` (Theorem 4.5):**
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Finite Toeplitz Rayleigh quotient decomposition for `thm:rh` (Theorem 4.5):**
 For any finite-horizon impulse response with dominant energy `F_dom > 0`,
 perpendicular energy bound `W_perp ≥ 0`, and cross-damping `γ ≥ 0` satisfying
 `γ F_dom < 1`, decomposing an arbitrary perturbation of energy `v_perp_sq ≥ 0`
@@ -233,7 +213,7 @@ theorem p1_thm_rh_finite_toeplitz_duality
 -- 5. thm:uniformw1: Constructive 1-Wasserstein Minimax Rate via gmWitness
 -- =========================================================================
 
-/-- **Constructive 1-Wasserstein minimax rate for `thm:uniformw1` (Theorem 5.7):**
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Constructive 1-Wasserstein minimax rate for `thm:uniformw1` (Theorem 5.7):**
 For measures on `[0, ρ]`, the 1-Wasserstein distance dominates the gap on any
 1-Lipschitz test function: `W₁(M₀, M₁) ≥ |∫ f dM₀ - ∫ f dM₁|`.
 Using the explicit smoothed cosine witness `f*` (which is 1-Lipschitz and vanishes at 0),
@@ -268,7 +248,7 @@ theorem p1_thm_uniformw1_minimax_lower_bound
 -- 6. thm:adaptive: Finite-Horizon Stopped Martingale Energy Bound
 -- =========================================================================
 
-/-- **Finite-horizon stopped martingale identity for `thm:adaptive` (Theorem 4.4):**
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Finite-horizon stopped martingale identity for `thm:adaptive` (Theorem 4.4):**
 For any adaptive probing rule operating under a maximum session budget `T_max`,
 a stopping time `τ ≤ T_max` has bounded expectation `E[τ] ≤ T_max`.
 Under i.i.d. zero-mean price shocks, the stopped cross-term `E[∑_{t≤τ} ξ_t v_t]` vanishes,
@@ -299,7 +279,7 @@ theorem p1_thm_adaptive_stopped_martingale_bound
 -- 7. prop:passive: Finite-Sample Cholesky Innovation Lower Bound
 -- =========================================================================
 
-/-- **Non-asymptotic Cholesky innovation lower bound for `prop:passive` (Theorem 5.8):**
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Non-asymptotic Cholesky innovation lower bound for `prop:passive` (Theorem 5.8):**
 For the unit lower-triangular innovation matrix `B = A₀⁻¹ A₁` over a finite
 window of `T` periods, the first sub-diagonal entries equal `B_{t, t-1} = κ q δ²`.
 Without relying on continuous Whittle spectral integrals, the Frobenius norm
@@ -331,7 +311,7 @@ theorem p1_prop_passive_cholesky_finite_sample_lower_bound
 -- 8. prop:tagged: Finite-Sample Chebyshev IV Concentration
 -- =========================================================================
 
-/-- **Non-asymptotic Chebyshev IV concentration for `prop:tagged` (Proposition 6.1):**
+/-- (Arithmetic step only; the hypotheses carry the probabilistic content.) **Non-asymptotic Chebyshev IV concentration for `prop:tagged` (Proposition 6.1):**
 For the instrumental variable estimator `ŵ_i = (∑ u_{i,t} z_t) / (∑ x_t z_t)`,
 the instrument covariance determinant satisfies `det Σ_IV ≥ γ_min > 0`
 (proved in `Paper1TaggedIV.lean`). The numerator sample variance satisfies
