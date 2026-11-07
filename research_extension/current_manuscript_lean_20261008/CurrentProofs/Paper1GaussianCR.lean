@@ -54,7 +54,9 @@ theorem p1_cr_direction {n p : ℕ} (h : (Fin p → ℝ) → (Fin n → ℝ)) (�
     simp only [smul_eq_mul, zero_add, zero_smul, add_zero]
   have hcont : ∀ i, Tendsto (fun t : ℝ => h (θ0 + t • a) i - h θ0 i) (𝓝[≠] 0) (𝓝 0) := by
     intro i
-    have c := ((hd i).continuousAt.tendsto.mono_left nhdsWithin_le_nhds).sub_const (h θ0 i)
+    have c : Tendsto (fun t : ℝ => h (θ0 + t • a) i - h θ0 i) (𝓝[≠] 0)
+        (𝓝 (h (θ0 + (0 : ℝ) • a) i - h θ0 i)) :=
+      ((hd i).continuousAt.tendsto.mono_left (nhdsWithin_le_nhds (s := {(0 : ℝ)}ᶜ))).sub_const _
     simpa using c
   have hr : Tendsto (fun t : ℝ => ∑ i, (t⁻¹ * (h (θ0 + t • a) i - h θ0 i)) ^ 2) (𝓝[≠] 0)
       (𝓝 (∑ i, (J *ᵥ a) i ^ 2)) :=

@@ -105,3 +105,5 @@ import CurrentProofs.Paper1GaussianHCR
 import CurrentProofs.Paper1GaussianCR
 import CurrentProofs.Paper1SpectralID
 import CurrentProofs.Paper1CRActual
+import CurrentProofs.Paper1SpectralH
+import CurrentProofs.Paper1CRRaw

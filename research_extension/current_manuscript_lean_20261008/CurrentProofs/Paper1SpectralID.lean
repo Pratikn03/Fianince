@@ -47,7 +47,7 @@ theorem p1_unit_circle_infinite : {z : ℂ | ‖z‖ = 1}.Infinite := by
     linarith
   · intro t
     simp only [Set.mem_setOf_eq]
-    have hc : (1 : ℂ) - (t : ℂ) * I = conj (1 + (t : ℂ) * I) := by simp [map_add, map_mul, conj_ofReal]
+    have hc : (1 : ℂ) - (t : ℂ) * I = conj (1 + (t : ℂ) * I) := by simp [map_add, map_mul, conj_ofReal]; ring
     rw [norm_div, hc, norm_conj, div_self]
     rw [Ne, norm_eq_zero]
     intro h
