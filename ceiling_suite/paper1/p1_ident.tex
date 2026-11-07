@@ -41,6 +41,57 @@ Thus a covariance discrepancy of order $(\Delta\eta)^{2K-1}$ preserves that orde
 
 \paragraph{Limits of the pricing extension.} Anonymous flow alone implies neither a covariance-only dealer objective nor uniqueness or continuity of its equilibrium. Multiple equilibria, threshold quote changes, private information and inventory-dependent rules are outside this proposition; for the question of invariance, Theorem~\ref{thm:eqinv} below covers them. Preserving a price-record testing bound additionally requires a uniformly Lipschitz observation law with the same nondegenerate noise; adding anonymous flow is a different statistical experiment and requires its own divergence bound. We therefore make no unconditional claim that endogenous pricing or additional aggregate-flow observations preserve the price-only lower bound.
 
+\section{Equilibrium foundations}\label{sec:equilibrium}
+
+The identification results take the price impact $\kappa$ and the persistence $a$ of pricing errors as given, and nobody in the model optimizes. This section derives both from dealers who dislike holding inventory. It then shows four things:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item the identification boundary of Theorem~\ref{thm:merged} is an equilibrium object;
+\item a strategic insider cannot change it;
+\item misjudging the aggregate response creates rents of first order;
+\item targeted actions still need group-level information.
+\end{itemize}
+
+\paragraph{An inventory equilibrium.}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{Fundamental and price.} The fundamental $F_t$ is a public random walk with innovation variance $\sigma_F^2$, and the price is $p_t=F_t+x_t$.
+\item \emph{Cohorts.} They trade $u_{i,t+1}=r_iu_{i,t}+w_ix_t$, the paper's exponential memory with $w_i=q_i\eta_i$ and $r_i=1-\eta_i$.
+\item \emph{Exogenous flow.} $\xi_t\sim N(0,\sigma_\xi^2)$, i.i.d., stands for noise trades or the observer's probe. Customer flow is $y_t=\sum_iu_{i,t}+\xi_t$.
+\item \emph{Dealers.} Competitive dealers absorb the flow and lay off a share $1-\bar a$ of their inventory each period, so $H_t=\bar aH_{t-1}-y_t$. Each overlapping generation of dealers has CARA risk aversion $A$ and holds $H_t$ to the next date: $H_t=(E_tp_{t+1}-p_t)/(AV)$, with $V=\mathrm{Var}_t(p_{t+1})$.
+\end{itemize}
+We study stationary equilibria in which $x_t$ is linear in the dealers' inventory and the cohorts' next trades. Write $G(D)=\sum_iw_i/(D-r_i)=\int dM(r)/(D-r)$ for the Stieltjes transform of the merged measure.
+
+\begin{theorem}[Price impact and persistence in an inventory equilibrium]\label{thm:inventory}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Characterization.} The price law
+\[
+ x_t=-\kappa H_t+\kappa\sum_i\frac{u_{i,t+1}}{D-r_i}
+\]
+with $D\ne0$ and $D\ne r_i$, is an equilibrium exactly when the induced dynamics are stable and
+\begin{equation}\label{eq:inventory_eq}
+ D=1-\kappa\,G(D),\qquad \kappa(D-\bar a)=A\,V\,D,\qquad V=\sigma_F^2+\frac{\kappa^2\sigma_\xi^2}{D^2}.
+\end{equation}
+An unexpected unit of flow moves the price by $\kappa/D$.
+\item \emph{No feedback.} Then $D=1$ and the price law is exactly the paper's $x_t=\bar a\,x_{t-1}+\kappa\,y_t$. The persistence of pricing errors is the dealers' carry share, $a=\bar a$, and the impact $\kappa$ solves $\kappa(1-\bar a)=A(\sigma_F^2+\kappa^2\sigma_\xi^2)$. An equilibrium exists if and only if $\Delta=(1-\bar a)^2-4A^2\sigma_F^2\sigma_\xi^2\ge0$. When $\Delta>0$ there are two, $\kappa_\pm=\bigl((1-\bar a)\pm\sqrt\Delta\bigr)/(2A\sigma_\xi^2)$; the low-impact one $\kappa_-\approx A\sigma_F^2/(1-\bar a)$ is the price of dealer inventory risk.
+\item \emph{Invariance.} The coefficients $(\kappa,D,V)$, and hence the price process, depend on the cohorts only through $G$, and so only through the merged measure $M$. This is Theorem~\ref{thm:eqinv} in equilibrium form.
+\item \emph{Small feedback.} Let $\Delta>0$, fix $\delta>0$ with $\max_ir_i<1-\delta$, and let $\epsilon=\sup_{|D-1|\le\delta}(|G(D)|+|G'(D)|)$ be small. Then there is a unique equilibrium near $(\kappa_-,1)$. With $G(1)=\sum_iq_i$, the aggregate feedback intensity,
+\[
+ D=1-\kappa_-G(1)+o(\epsilon),\qquad \kappa=\kappa_-+\frac{\kappa_-^2(\bar a+2A\kappa_-\sigma_\xi^2)}{\sqrt\Delta}\,G(1)+o(\epsilon).
+\]
+Positive feedback raises the impact $\kappa$, and it raises the impact of an unexpected flow shock, $\kappa/D$, by more.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} Dealers set the price impact and the persistence of mispricing. Impact is what they charge for carrying inventory risk; persistence is how slowly they lay that inventory off. Without feedback traders, this equilibrium is exactly the closed loop the paper starts from. Feedback traders enter only through their merged measure, as Theorem~\ref{thm:eqinv} requires. Positive feedback raises price impact, and dealers price their predictable future trades in advance (the terms in $u_{i,t+1}$). In the numerical solution of Supplement~\ref{app:eqinv}, one positive-feedback cohort of weight $0.02$ and memory $r=0.7$, so that $G(1)=\tfrac1{15}$, lowers the largest dealer risk aversion at which an equilibrium exists from $0.40$ to $0.25$. A cohort with $G(1)=\tfrac23$ lowers it to $0.034$. Beyond that threshold no equilibrium with positive impact exists. So feedback trading makes liquidity fragile, not only more expensive.
+
+\paragraph{What this changes for the rest of the paper.}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item Without feedback, the reduced form used in Sections~\ref{sec:resources}--\ref{sec:disclosure} is an equilibrium outcome.
+\item With feedback, dealers' anticipation changes the transfer function from flow to price. The merged-measure boundary survives by Theorem~\ref{thm:eqinv}. The rate constants of Sections~\ref{sec:resources} and~\ref{sec:mixtures} are proved for the reduced form and must be recomputed for the equilibrium transfer function; we do not do that here.
+\item The algebraic core of part (i) is machine-checked: the dealers' first-order condition holds in every state, the next price loads on the next flow shock with coefficient $\kappa/D$, and the no-feedback existence condition (\nolinkurl{Paper1InventoryEquilibrium.lean}).
+\item Parts (iii) and (iv) are proved on paper.
+\end{itemize}
+
+
 \begin{theorem}[Equilibrium invariance]\label{thm:eqinv}
 Consider a market with the following participants and rules.
 \begin{itemize}[itemsep=1pt,topsep=2pt]

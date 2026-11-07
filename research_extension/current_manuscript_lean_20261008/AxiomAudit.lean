@@ -546,6 +546,7 @@ run_cmd do
   `CurrentMM.p1_merged_exp_sums_independent,
   `CurrentMM.p1_thm_merged_measure_identified,
   `CurrentMM.p1_inventory_price_law,
+  `CurrentMM.p1_inventory_sum_aux,
   `CurrentMM.p1_inventory_foc,
   `CurrentMM.p1_inventory_innovation,
   `CurrentMM.p1_inventory_benchmark,

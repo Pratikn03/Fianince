@@ -117,5 +117,20 @@ They combine naturally: a market maker with inventory cost that is also learning
   - post-halt kernel gap W/4 at every spacing.
 
   Proved on paper; numerical check in `e3_halt.py` (pre-halt gap ≈ 3d³, post-halt ≈ 0.19).
-- **Still open.** E4 (endogenous κ through inventory cost) and E5 (disclosure in equilibrium). Lean versions of E2
-  and E3.
+- **E4 done** (Fork A, in a stated form). Theorem `thm:inventory`, now Theorem 4.1, opens the new main-text Section 4,
+  "Equilibrium foundations". E1–E3 follow it as Theorems 4.2–4.4.
+  - Model: overlapping generations of CARA dealers with risk aversion A, who carry inventory with layoff share 1−ā,
+    plus a public random-walk fundamental. No Kyle insider in this part.
+  - (i) Characterization: β_i = κ/(D−r_i), D = 1−κG(D) with G the Stieltjes transform of M, κ(D−ā) = AVD and
+    V = σ_F²+κ²σ_ξ²/D².
+  - (ii) No-feedback closed form, which is exactly Paper 1's x_t = ā x_{t−1} + κ y_t, with the existence condition.
+  - (iii) Invariance through G.
+  - (iv) Small-feedback existence and uniqueness by the implicit function theorem, with first-order formulas.
+  - Lean `Paper1InventoryEquilibrium.lean` proves the FOC in every state, the innovation coefficient κ/D and the
+    benchmark existence iff. Parts (iii)–(iv) are proved on paper.
+  - Numerics in `e4_inventory.py`. Positive feedback raises impact and shrinks the existence region: A* is 0.40,
+    0.255, 0.130, 0.068 and 0.034 for G(1) = 0, 0.067, 0.167, 0.333 and 0.667.
+  - **Not done.** The combination with the Kyle insider (the λ term). The rate constants of Sections 5–6 have not
+    been recomputed for the equilibrium transfer function; the paper says so. The fragility result is numerical,
+    not a theorem.
+- **Still open.** E5 (disclosure in equilibrium). Lean versions of E2, E3 and E4(iii)–(iv).

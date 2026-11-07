@@ -1,6 +1,6 @@
 import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Algebra.QuadraticDiscriminant
-import Mathlib.Data.Real.Sqrt
+import Mathlib.Analysis.Real.Sqrt
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.LinearCombination
 import Mathlib.Tactic.Ring
@@ -40,6 +40,17 @@ theorem p1_inventory_price_law {K : ℕ} (κ D : ℝ) (w r β u : Fin K → ℝ)
   rw [h1]
   linear_combination hx
 
+/-- Summation step used in `p1_inventory_foc`, stated for an arbitrary function `v` so that rewriting cannot look
+inside a `let`-bound definition. -/
+theorem p1_inventory_sum_aux {K : ℕ} (κ ab D H : ℝ) (r β v : Fin K → ℝ)
+    (hc : ∀ i, κ * v i + β i * r i * v i = D * (β i * v i)) :
+    -κ * (ab * H - ∑ i, v i) + ∑ i, β i * r i * v i = -κ * ab * H + D * ∑ i, β i * v i := by
+  have hS : ∑ i, (κ * v i + β i * r i * v i) = D * ∑ i, β i * v i := by
+    rw [mul_sum]; exact sum_congr rfl fun i _ => hc i
+  have e : ∑ i, (κ * v i + β i * r i * v i) = κ * ∑ i, v i + ∑ i, β i * r i * v i := by
+    rw [sum_add_distrib, mul_sum]
+  linear_combination hS - e
+
 /-- **The dealers' first-order condition holds in every state.** -/
 theorem p1_inventory_foc {K : ℕ} (A V ab κ D : ℝ) (w r β u : Fin K → ℝ) (Hprev ξ : ℝ) (hDne : D ≠ 0)
     (hβ : ∀ i, β i * (D - r i) = κ) (hD : D = 1 - ∑ i, β i * w i) (hκ : κ * (D - ab) = A * V * D) :
@@ -60,12 +71,8 @@ theorem p1_inventory_foc {K : ℕ} (A V ab κ D : ℝ) (w r β u : Fin K → ℝ
   have hx'D : D * x' = -κ * H' + ∑ i, β i * r i * u' i := by
     show D * ((-κ * H' + ∑ i, β i * r i * u' i) / D) = _
     field_simp
-  have hsum : -κ * H' + ∑ i, β i * r i * u' i = -κ * ab * H + D * ∑ i, β i * u' i := by
-    show -κ * (ab * H - ∑ i, u' i) + ∑ i, β i * r i * u' i = _
-    have hS : ∑ i, (κ * u' i + β i * r i * u' i) = D * ∑ i, β i * u' i := by
-      rw [mul_sum]; exact sum_congr rfl fun i _ => hcomb i
-    rw [← hS, sum_add_distrib, ← mul_sum]
-    ring
+  have hsum : -κ * H' + ∑ i, β i * r i * u' i = -κ * ab * H + D * ∑ i, β i * u' i :=
+    p1_inventory_sum_aux κ ab D H r β u' hcomb
   have hx'D2 : D * x' = -κ * ab * H + D * ∑ i, β i * u' i := hx'D.trans hsum
   have hlaw' : x = -κ * H + ∑ i, β i * u' i := hlaw
   have : D * (x' - x) = D * (A * V * H) := by

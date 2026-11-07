@@ -44,10 +44,10 @@ from public market data (real data), and audits.
 | Table S9 ($`N^*`$, $`\sigma_{\rm crit}`$) | `recompute_crb.py` $`\to`$ `R_P1_crb.json` | recomputed |
 | Table S9 (ML columns), Table S30 (estimators) | `recompute_p1_estimators.py` | recomputed |
 | Symmetric multi-asset network (Supplement S12) | `recompute_oct20.py` | recomputed |
-| Proof audit: $`K_*`$ bound and $`d_2`$ identity (Theorem 4.1), moment gaps (Theorem S25.1), spectral-blindness example (Theorem S12.1) | `recompute_audit.py` $`\to`$ `R_audit_oct2026.json` | recomputed |
-| Theorem 5.2, Table S35 | `kcohort_upper.py` $`\to`$ `R_P1_kcohort_upper.json` | recomputed |
+| Proof audit: $`K_*`$ bound and $`d_2`$ identity (Theorem 5.1), moment gaps (Theorem S25.1), spectral-blindness example (Theorem S12.1) | `recompute_audit.py` $`\to`$ `R_audit_oct2026.json` | recomputed |
+| Theorem 6.2, Table S35 | `kcohort_upper.py` $`\to`$ `R_P1_kcohort_upper.json` | recomputed |
 | Lem. S17.1, Thm S17.2, Tab. S24 | `general_minimax.py` | recomputed |
-| Theorem 6.2 numbers | `disclosure_value.py` $`\to`$ `R_P1_disclosure_value.json` | recomputed |
+| Theorem 7.2 numbers | `disclosure_value.py` $`\to`$ `R_P1_disclosure_value.json` | recomputed |
 | Tables S18, S19, S22 | Part 8: `V2_spot_panel`, `V3_fee_events` | real data |
 | Table S27, top panel | Part 4: `X9_disclosure_metrics` | real data |
 | Table S27, bottom panel; class-position forecasts | Part 6: `Z6_C_identification`, `Z6_secondary`; `P6_fresh_days.json` (65acda36…) | real data |
@@ -60,7 +60,7 @@ from public market data (real data), and audits.
 | Disclosure in dollars (Table S10) | `recompute_p1_cat_costs.py` $`\to`$ `R_P1_cat_disclosure_dollars.json` | recomputed |
 | Out-of-sample post-shock return test (Supplement S19) | `recompute_prereg_oct21_22nd.py` $`\to`$ `R_P1_disclosure_oos.json`; `P1_disclosure_oos.json` (f0182ce5…) | real data |
 | Out-of-sample cohort-state trajectory test (Table S28) | `recompute_prereg_oct21_followup.py` $`\to`$ `R_P1_disclosure_state_oos.json`; `P1_disclosure_state_oos.json` (5136cc6b…) | real data |
-| Proposition 6.4, Table S36 | `theory/targeted_intervention.py` $`\to`$ `R_P1_targeted_intervention.json` | recomputed |
+| Proposition 7.4, Table S36 | `theory/targeted_intervention.py` $`\to`$ `R_P1_targeted_intervention.json` | recomputed |
 | Table S30, column $`N^*_{\rm CRB}`$; Table S9, spacing-0.10 three-cohort row | `breakthrough_experiments/results_exp17_minimax_lecam_bound.json`, `results_exp15_cohort_information.json` | recomputed (earlier run) |
 | Table S13, best feasible probes and $`L=320,480`$ | `R_P1_capital_ledger.json`, `R_P1_cquadL.json` (reproduced by `hardening/rh_quad.py`) | recomputed |
 | Table S11, peak margins of the eigenvector probes | `breakthrough_experiments/results_exp14_capital_frontier_exact.json` | recomputed (earlier run) |
@@ -74,22 +74,25 @@ from public market data (real data), and audits.
 | Supplement S16, Tables S23, S3 and S29: real-noise injection (slopes $`-6.01`$, $`-9.81`$; tagged 256–724) | , (specification , 596a700d…) | semi-synthetic |
 | Supplement S3.7 and Table S4: numerical stress tests | , | numerical check |
 | Supplement S3.8 and Table S5: probing a running market without resets | , | numerical check |
-| Theorem 3.1(i), Theorem 5.1 and Proposition 6.1 (machine-checked parts) | , , , , , , , , | Lean 4 proof |
-| Theorem 5.2 (machine-checked, every $`K`$) | , , , | Lean 4 proof |
-| Theorems 3.1(ii), S12.1, 5.4 (zeros), 6.2(ii) (tagged upper bound) and Proposition 6.1 (instrument determinant), machine-checked parts | , , , , | Lean 4 proof |
-| Theorem 5.5(i) and (iii), sample bounds for passive data from rest after any warm-up, any moment-matched pair (machine-checked) | `CurrentProofs/Paper1PassiveCost.lean`, `Paper1PassiveKCohort.lean`, `Paper1PassiveMatched.lean`, `Paper1PassiveRecord.lean`, `Paper1GaussianTriangular.lean` | Lean 4 proof |
-| Theorem 5.4, model links: poles of H are the eigenvalues of the market transition; the recursion's impulse response has transfer function H (machine-checked) | `CurrentProofs/Paper1ModelLink.lean` | Lean 4 proof |
-| Theorem 5.1: three-point Gauss and Gauss–Radau rules, matched moments and fifth-moment gap (machine-checked) | `CurrentProofs/Paper1GaussRadau3.lean` | Lean 4 proof |
+| Theorem 3.1(i), Theorem 6.1 and Proposition 7.1 (machine-checked parts) | , , , , , , , , | Lean 4 proof |
+| Theorem 6.2 (machine-checked, every $`K`$) | , , , | Lean 4 proof |
+| Theorems 3.1(ii), S12.1, 5.4 (zeros), 6.2(ii) (tagged upper bound) and Proposition 7.1 (instrument determinant), machine-checked parts | , , , , | Lean 4 proof |
+| Theorem 6.5(i) and (iii), sample bounds for passive data from rest after any warm-up, any moment-matched pair (machine-checked) | `CurrentProofs/Paper1PassiveCost.lean`, `Paper1PassiveKCohort.lean`, `Paper1PassiveMatched.lean`, `Paper1PassiveRecord.lean`, `Paper1GaussianTriangular.lean` | Lean 4 proof |
+| Theorem 6.4, model links: poles of H are the eigenvalues of the market transition; the recursion's impulse response has transfer function H (machine-checked) | `CurrentProofs/Paper1ModelLink.lean` | Lean 4 proof |
+| Theorem 6.1: three-point Gauss and Gauss–Radau rules, matched moments and fifth-moment gap (machine-checked) | `CurrentProofs/Paper1GaussRadau3.lean` | Lean 4 proof |
 | Theorem S17.2, both parts (machine-checked) | , , , , | Lean 4 proof |
-| Proposition 6.4, supervisory separation (machine-checked for two groups; part (i) for every $`K`$) |  | Lean 4 proof |
-| Theorem 4.1(i) and Lemma S24.4, quantity and capital lower bounds (machine-checked) |  | Lean 4 proof |
-| Pinsker's inequality for events; Theorems 5.1, S25.1, 4.1(i) and Lemma S24.4 at every error level (machine-checked) | `CurrentProofs/Paper1Pinsker.lean`, `Paper1GeneralLevel.lean` | Lean 4 proof |
+| Proposition 7.4, supervisory separation (machine-checked for two groups; part (i) for every $`K`$) |  | Lean 4 proof |
+| Theorem 5.1(i) and Lemma S24.4, quantity and capital lower bounds (machine-checked) |  | Lean 4 proof |
+| Pinsker's inequality for events; Theorems 6.1, S25.1, 4.1(i) and Lemma S24.4 at every error level (machine-checked) | `CurrentProofs/Paper1Pinsker.lean`, `Paper1GeneralLevel.lean` | Lean 4 proof |
 | Theorem S3.1, finite-window abstention (machine-checked) | `CurrentProofs/Paper1Abstain.lean` | Lean 4 proof |
-| Corollary 5.3(i)–(ii), identification with unknown (a, κ) (machine-checked) | `CurrentProofs/Paper1UnknownPrimitives.lean` | Lean 4 proof |
+| Corollary 6.3(i)–(ii), identification with unknown (a, κ) (machine-checked) | `CurrentProofs/Paper1UnknownPrimitives.lean` | Lean 4 proof |
 | Proposition S7.1(i), Cramér–Rao bound on the raw records of the actual market (machine-checked) | `CurrentProofs/Paper1GaussianHCR.lean`, `Paper1GaussianCR.lean`, `Paper1CRActual.lean`, `Paper1CRRaw.lean` | Lean 4 proof |
 | Proposition S7.1(iii), two-sided (Δη)^-6 bound on both weight entries of the inverse Fisher matrix, fixed T ≥ 4 (machine-checked) | `CurrentProofs/Paper1FisherBounds.lean`, `Paper1CRTaps.lean`, `Paper1CRS71iii.lean`, `Paper1CRS71iiiEta.lean`, `Paper1CRS71iiiW2.lean` | Lean 4 proof |
-| Theorem 3.4, equilibrium invariance under the merged measure (machine-checked pathwise) | `CurrentProofs/Paper1EquilibriumInvariance.lean`, `ceiling_suite/papers/paper1/equilibrium/e1_demo.py` | Lean 4 proof; numerical illustration |
-| Theorem 5.4(ii) for every K: the spectrum determines σ²κ², H/h₀ and, with κ known, the merged measure (machine-checked) | `CurrentProofs/Paper1SpectralID.lean`, `Paper1SpectralH.lean` | Lean 4 proof |
+| Theorem 4.1, price impact and persistence in an inventory equilibrium (algebraic core machine-checked) | `CurrentProofs/Paper1InventoryEquilibrium.lean`, `ceiling_suite/papers/paper1/equilibrium/e4_inventory.py` | Lean 4 proof of the algebra of parts (i)–(ii); parts (iii)–(iv) on paper; numerical solution |
+| Theorem 4.2, equilibrium invariance under the merged measure (machine-checked pathwise) | `CurrentProofs/Paper1EquilibriumInvariance.lean`, `ceiling_suite/papers/paper1/equilibrium/e1_demo.py` | Lean 4 proof; numerical illustration |
+| Theorem 4.3, rents from a misjudged aggregate response | `ceiling_suite/papers/paper1/equilibrium/e2_rents.py` | Proof on paper; numerical check |
+| Theorem 4.4, targeted intervention in equilibrium | `ceiling_suite/papers/paper1/equilibrium/e3_halt.py` | Proof on paper; numerical check |
+| Theorem 6.4(ii) for every K: the spectrum determines σ²κ², H/h₀ and, with κ known, the merged measure (machine-checked) | `CurrentProofs/Paper1SpectralID.lean`, `Paper1SpectralH.lean` | Lean 4 proof |
 | Proposition S3.2, passive distinction with zero controlled quantity (machine-checked) | `CurrentProofs/Paper1PassiveVariance.lean` | Lean 4 proof |
 | Lemma S24.4, converse: pulse test errors and margin solvency (machine-checked) | `CurrentProofs/Paper1CapitalConverse.lean` | Lean 4 proof |
 | Propositions S5.1(ii) and S5.2(ii), Kalman-desk and tied-intensity lower bounds (machine-checked) | `CurrentProofs/Paper1KalmanTied.lean` | Lean 4 proof |
