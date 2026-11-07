@@ -120,3 +120,4 @@ import CurrentProofs.Paper1CRS71iiiEta
 import CurrentProofs.Paper1CRS71iiiW2
 import CurrentProofs.Paper1EquilibriumInvariance
 import CurrentProofs.Paper1InventoryEquilibrium
+import CurrentProofs.Paper1EquilibriumReducedForm
