@@ -1,8 +1,9 @@
-# P1T: frozen primary-test specification (DRAFT, needs author approval; not yet registered)
+# P1T: frozen primary-test specification (REGISTERED)
 
-- **Status:** DRAFT, 7 November 2026.
-- **Registration:** when approved, this file and `P1T_taiwan_spec.json` are committed with their SHA-256 before any
-  test-period data are requested. Each period is opened once and the unlock counters are recorded.
+- **Status:** REGISTERED. Approved by the author (Pratik Niroula) on 2026-11-07 at 10:29 America/Chicago
+  (16:29 UTC), before any development, validation or holdout data were requested.
+- **Record:** this file, `P1T_taiwan_spec.json` and `P1T_unlocks.json` are committed together, with SHA-256 values in
+  `P1T_SHA256SUMS`. Each period is opened once, and its unlock counter is recorded in `P1T_unlocks.json`.
 - **Basis:** `OBSERVATION_DESIGN.md` (universe, classes, prices, model link), `DATA_DICTIONARY.md` (sources, burned
   days) and `power/POWER_ANALYSIS.md` (why this primary test, and the period lengths).
 
@@ -99,3 +100,39 @@ d_s = [MSE₀ − MSE₁] / Var_fit(ũ_F) over holdout days.
   (`power/POWER_ANALYSIS.md`). If they are run, they are labelled exploratory.
 - Executor: `p1t_executor.py`, still to be written. It is validated on simulated data from `power_sim.py`
   (recovering D ≈ 0 under w = 0 and D > D* under w = 0.1) **before** the validation period is downloaded.
+
+## 10. Implementation clarifications (fixed at registration, before any data)
+
+These make the approved definitions computable. They do not change the question, the statistic or the criteria.
+
+1. **Price level across corporate events.**
+   - The log price level is the cumulative sum of close-to-close log returns.
+   - On an event day (change sign `X`, or listed in `TWT49U`) the stock's return is replaced by β̂ times the index
+     return. Without this, ex-dividend price drops would enter x_t as pricing errors.
+   - Event days and the following day are still excluded from every sample.
+2. **β̂.**
+   - OLS of daily stock log return on TAIEX log return over development days, excluding event days, the following
+     days and limit days.
+   - Fixed per stock thereafter.
+3. **Trailing mean.**
+   - m_t is the mean of (log P̃ − β̂ log TAIEX) over days t−60 … t−1.
+   - It needs 60 prior valid days; x_t is missing until then.
+4. **Classes from T86 fields.**
+   - Foreign = `外陸資買賣超股數(不含外資自營商)` + `外資自營商買賣超股數`.
+   - Investment trusts = `投信買賣超股數`.
+   - Dealers' own account = `自營商買賣超股數(自行買賣)`.
+   - Hedging control = `自營商買賣超股數(避險)`.
+   - Residual = minus the sum of all five reported net series.
+5. **Turnover rank.** Mean daily traded value (`成交金額`) over development days. Ties are broken by code.
+6. **Missing days.**
+   - A stock-day enters the forecast sample only if the stock traded on t, t−1 and t+1 and none of these is an
+     excluded day.
+   - A stock is dropped from a period if fewer than 95% of the period's trading days are usable.
+7. **Fit period for the validation pass.** Development days. For the holdout, the trailing 1,000 trading days before
+   2019-01-02.
+8. **Request integrity.**
+   - Every request is checked against the requested date.
+   - A mismatch stops the run.
+   - Raw responses are stored with their SHA-256.
+9. **Executor.** `p1t_executor.py`, at the commit that records its simulation validation. That commit hash is
+   entered in `P1T_unlocks.json` before the validation download.
