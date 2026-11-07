@@ -180,6 +180,7 @@ theorem p1_recordLR_sq_integrable (v : ℝ≥0) (hv : v ≠ 0) : (n : ℕ) → (
     Integrable (fun x => recordLR n m0 m1 v x ^ 2) (gaussianRecordLaw n m0 v)
   | 0, m0, m1 => by
       simp only [recordLR, one_pow]
+      haveI : IsProbabilityMeasure (gaussianRecordLaw 0 m0 v) := gaussian_record_probability 0 m0 v
       exact integrable_const 1
   | n + 1, m0, m1 => by
       have h := (p1_gaussLR_sq_integrable (m0 0) (m1 0) v hv).mul_prod

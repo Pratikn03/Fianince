@@ -35,7 +35,7 @@ theorem p1_mom_zero (μ : Measure ℝ) [IsProbabilityMeasure μ] : mom μ 0 = 1 
   simp [mom]
 
 /-- The law of one passive reset block: `((w₁, ν₁), ((w₂, w₃), ν₃))`. -/
-abbrev passiveBlockLaw (μW μN : Measure ℝ) : Measure ((ℝ × ℝ) × ((ℝ × ℝ) × ℝ)) :=
+noncomputable abbrev passiveBlockLaw (μW μN : Measure ℝ) : Measure ((ℝ × ℝ) × ((ℝ × ℝ) × ℝ)) :=
   (μW.prod μN).prod ((μW.prod μW).prod μN)
 
 /-- The block statistic `x̃₁ x̃₃`. -/

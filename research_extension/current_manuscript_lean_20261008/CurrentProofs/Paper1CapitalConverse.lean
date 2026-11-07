@@ -61,24 +61,24 @@ theorem p1_gaussian_Iio_shift (μ m : ℝ) (v : ℝ≥0) :
     gaussianReal μ v (Iio m) = gaussianReal 0 v (Iio (m - μ)) := by
   have h := gaussianReal_map_add_const (μ := 0) (v := v) μ
   rw [zero_add] at h
-  rw [← h, Measure.map_apply (measurable_id.add_const μ) measurableSet_Iio]
+  rw [← h, Measure.map_apply (by fun_prop : Measurable fun x : ℝ => x + μ) measurableSet_Iio]
   congr 1
-  ext x; simp only [mem_preimage, mem_Iio, id]; constructor <;> intro hx <;> linarith
+  ext x; simp only [Set.mem_preimage, Set.mem_Iio]; constructor <;> intro hx <;> linarith
 
 theorem p1_gaussian_Ici_shift (μ m : ℝ) (v : ℝ≥0) :
     gaussianReal μ v (Ici m) = gaussianReal 0 v (Ici (m - μ)) := by
   have h := gaussianReal_map_add_const (μ := 0) (v := v) μ
   rw [zero_add] at h
-  rw [← h, Measure.map_apply (measurable_id.add_const μ) measurableSet_Ici]
+  rw [← h, Measure.map_apply (by fun_prop : Measurable fun x : ℝ => x + μ) measurableSet_Ici]
   congr 1
-  ext x; simp only [mem_preimage, mem_Ici, id]; constructor <;> intro hx <;> linarith
+  ext x; simp only [Set.mem_preimage, Set.mem_Ici]; constructor <;> intro hx <;> linarith
 
 theorem p1_gaussian_Ici_symm (c : ℝ) (v : ℝ≥0) : gaussianReal 0 v (Ici c) = gaussianReal 0 v (Iic (-c)) := by
   have h := gaussianReal_map_neg (μ := 0) (v := v)
   rw [neg_zero] at h
   rw [← h, Measure.map_apply measurable_neg measurableSet_Iic]
   congr 1
-  ext x; simp only [mem_preimage, mem_Iic, mem_Ici]; constructor <;> intro hx <;> linarith
+  ext x; simp only [Set.mem_preimage, Set.mem_Iic, Set.mem_Ici]; constructor <;> intro hx <;> linarith
 
 /-- **Converse of Lemma `thm:capital`: the pulse test's errors.** With `μ₀ = A h⁰₂` and `D = A κ² q δ²`, the test that
 declares "pair" when the third observation is below `μ₀ - D/2` has error `N(0,σ²)((-∞,-D/2))` under the single cohort

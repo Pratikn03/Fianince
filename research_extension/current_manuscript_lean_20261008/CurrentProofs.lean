@@ -103,3 +103,5 @@ import CurrentProofs.Paper1CapitalConverse
 import CurrentProofs.Paper1PassiveVariance
 import CurrentProofs.Paper1GaussianHCR
 import CurrentProofs.Paper1GaussianCR
+import CurrentProofs.Paper1SpectralID
+import CurrentProofs.Paper1CRActual
