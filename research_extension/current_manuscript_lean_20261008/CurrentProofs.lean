@@ -112,3 +112,4 @@ import CurrentProofs.Paper1PassiveMatched
 import CurrentProofs.Paper1GaussRadau3
 import CurrentProofs.Paper1ModelLink
 import CurrentProofs.Paper1CRScaling
+import CurrentProofs.Paper1CRScalingH

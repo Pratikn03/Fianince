@@ -1,3 +1,4 @@
+import Mathlib.Analysis.Calculus.Deriv.Add
 import Mathlib.Analysis.Calculus.Deriv.Mul
 import Mathlib.Analysis.Calculus.Deriv.Pow
 import Mathlib.Analysis.Calculus.Deriv.Inv
@@ -31,11 +32,19 @@ theorem p1_K2_dirDeriv (w1 w2 r1 r2 x : ℂ) (hw1 : w1 ≠ 0) (hw2 : w2 ≠ 0) (
       ((r2 - r1) ^ 3 * x ^ 3 / (2 * (1 - r1 * x) ^ 2 * (1 - r2 * x) ^ 2)) 0 := by
   have hA0 : 1 - (r1 + 0 * ((r2 - r1) / (2 * w1))) * x ≠ 0 := by simpa using hA
   have hB0 : 1 - (r2 + 0 * ((r2 - r1) / (2 * w2))) * x ≠ 0 := by simpa using hB
-  have h1 := ((hasDerivAt_id' (0 : ℂ)).const_add w1).div
-    (((((hasDerivAt_id' (0 : ℂ)).mul_const ((r2 - r1) / (2 * w1))).const_add r1).mul_const x).const_sub 1) hA0
-  have h2 := ((hasDerivAt_id' (0 : ℂ)).const_sub w2).div
-    (((((hasDerivAt_id' (0 : ℂ)).mul_const ((r2 - r1) / (2 * w2))).const_add r2).mul_const x).const_sub 1) hB0
-  refine (h1.add h2).congr_deriv ?_
+  have n1 : HasDerivAt (fun s : ℂ => w1 + s) 1 0 := HasDerivAt.const_add w1 (hasDerivAt_id' (0 : ℂ))
+  have n2 : HasDerivAt (fun s : ℂ => w2 - s) (-1) 0 := HasDerivAt.const_sub w2 (hasDerivAt_id' (0 : ℂ))
+  have d1 : HasDerivAt (fun s : ℂ => 1 - (r1 + s * ((r2 - r1) / (2 * w1))) * x)
+      (-(1 * ((r2 - r1) / (2 * w1)) * x)) 0 :=
+    HasDerivAt.const_sub 1 (HasDerivAt.mul_const
+      (HasDerivAt.const_add r1 (HasDerivAt.mul_const (hasDerivAt_id' (0 : ℂ)) ((r2 - r1) / (2 * w1)))) x)
+  have d2 : HasDerivAt (fun s : ℂ => 1 - (r2 + s * ((r2 - r1) / (2 * w2))) * x)
+      (-(1 * ((r2 - r1) / (2 * w2)) * x)) 0 :=
+    HasDerivAt.const_sub 1 (HasDerivAt.mul_const
+      (HasDerivAt.const_add r2 (HasDerivAt.mul_const (hasDerivAt_id' (0 : ℂ)) ((r2 - r1) / (2 * w2)))) x)
+  have h1 := HasDerivAt.fun_div n1 d1 hA0
+  have h2 := HasDerivAt.fun_div n2 d2 hB0
+  refine (HasDerivAt.fun_add h1 h2).congr_deriv ?_
   simp only [add_zero, sub_zero, zero_mul, one_mul]
   first
   | (field_simp; ring)
@@ -60,11 +69,17 @@ theorem p1_K2_moment_dirDeriv (w1 w2 r1 r2 : ℝ) (m : ℕ) (hw1 : w1 ≠ 0) (hw
     HasDerivAt (fun s : ℝ => (w1 + s) * (r1 + s * ((r2 - r1) / (2 * w1))) ^ m +
         (w2 - s) * (r2 + s * ((r2 - r1) / (2 * w2))) ^ m)
       (r1 ^ m - r2 ^ m + (r2 - r1) / 2 * m * (r1 ^ (m - 1) + r2 ^ (m - 1))) 0 := by
-  have g1 := (((hasDerivAt_id' (0 : ℝ)).mul_const ((r2 - r1) / (2 * w1))).const_add r1).pow m
-  have g2 := (((hasDerivAt_id' (0 : ℝ)).mul_const ((r2 - r1) / (2 * w2))).const_add r2).pow m
-  have h1 := ((hasDerivAt_id' (0 : ℝ)).const_add w1).mul g1
-  have h2 := ((hasDerivAt_id' (0 : ℝ)).const_sub w2).mul g2
-  refine (h1.add h2).congr_deriv ?_
+  have e1 : HasDerivAt (fun s : ℝ => r1 + s * ((r2 - r1) / (2 * w1))) (1 * ((r2 - r1) / (2 * w1))) 0 :=
+    HasDerivAt.const_add r1 (HasDerivAt.mul_const (hasDerivAt_id' (0 : ℝ)) ((r2 - r1) / (2 * w1)))
+  have e2 : HasDerivAt (fun s : ℝ => r2 + s * ((r2 - r1) / (2 * w2))) (1 * ((r2 - r1) / (2 * w2))) 0 :=
+    HasDerivAt.const_add r2 (HasDerivAt.mul_const (hasDerivAt_id' (0 : ℝ)) ((r2 - r1) / (2 * w2)))
+  have g1 := HasDerivAt.fun_pow e1 m
+  have g2 := HasDerivAt.fun_pow e2 m
+  have n1 : HasDerivAt (fun s : ℝ => w1 + s) 1 0 := HasDerivAt.const_add w1 (hasDerivAt_id' (0 : ℝ))
+  have n2 : HasDerivAt (fun s : ℝ => w2 - s) (-1) 0 := HasDerivAt.const_sub w2 (hasDerivAt_id' (0 : ℝ))
+  have h1 := HasDerivAt.fun_mul n1 g1
+  have h2 := HasDerivAt.fun_mul n2 g2
+  refine (HasDerivAt.fun_add h1 h2).congr_deriv ?_
   simp only [add_zero, sub_zero, zero_mul, one_mul, mul_one]
   first
   | (field_simp; ring)
