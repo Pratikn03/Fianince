@@ -109,3 +109,5 @@ import CurrentProofs.Paper1SpectralH
 import CurrentProofs.Paper1CRRaw
 import CurrentProofs.Paper1IVBoundary
 import CurrentProofs.Paper1PassiveMatched
+import CurrentProofs.Paper1GaussRadau3
+import CurrentProofs.Paper1ModelLink
