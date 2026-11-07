@@ -24,6 +24,27 @@ the parameter `θ = (w₁, w₂, r₁, r₂)`.
 
 namespace CurrentMM
 
+/-- The quotient-rule algebra behind `p1_K2_dirDeriv`: the first, second and third powers of `d` cancel. -/
+theorem p1_K2_alg (w1 w2 r1 r2 x : ℂ) (hw1 : w1 ≠ 0) (hw2 : w2 ≠ 0) (hA : 1 - r1 * x ≠ 0)
+    (hB : 1 - r2 * x ≠ 0) :
+    (1 * (1 - r1 * x) - w1 * -(1 * ((r2 - r1) / (2 * w1)) * x)) / (1 - r1 * x) ^ 2 +
+        (-1 * (1 - r2 * x) - w2 * -(1 * ((r2 - r1) / (2 * w2)) * x)) / (1 - r2 * x) ^ 2 =
+      (r2 - r1) ^ 3 * x ^ 3 / (2 * (1 - r1 * x) ^ 2 * (1 - r2 * x) ^ 2) := by
+  have e1 : w1 * -(1 * ((r2 - r1) / (2 * w1)) * x) = -((r2 - r1) * x / 2) := by
+    first
+    | (rw [one_mul, mul_neg, ← mul_assoc, mul_div_assoc', mul_comm w1 (r2 - r1), mul_div_mul_right _ _ hw1]; ring)
+    | (field_simp; ring)
+    | field_simp
+  have e2 : w2 * -(1 * ((r2 - r1) / (2 * w2)) * x) = -((r2 - r1) * x / 2) := by
+    first
+    | (rw [one_mul, mul_neg, ← mul_assoc, mul_div_assoc', mul_comm w2 (r2 - r1), mul_div_mul_right _ _ hw2]; ring)
+    | (field_simp; ring)
+    | field_simp
+  rw [e1, e2, div_add_div _ _ (pow_ne_zero 2 hA) (pow_ne_zero 2 hB),
+    div_eq_div_iff (mul_ne_zero (pow_ne_zero 2 hA) (pow_ne_zero 2 hB))
+      (mul_ne_zero (mul_ne_zero two_ne_zero (pow_ne_zero 2 hA)) (pow_ne_zero 2 hB))]
+  ring
+
 /-- **Directional derivative of the two-cohort kernel along `v`, with the cubic cancellation.** -/
 theorem p1_K2_dirDeriv (w1 w2 r1 r2 x : ℂ) (hw1 : w1 ≠ 0) (hw2 : w2 ≠ 0) (hA : 1 - r1 * x ≠ 0)
     (hB : 1 - r2 * x ≠ 0) :
@@ -45,10 +66,10 @@ theorem p1_K2_dirDeriv (w1 w2 r1 r2 x : ℂ) (hw1 : w1 ≠ 0) (hw2 : w2 ≠ 0) (
   have h1 := HasDerivAt.fun_div n1 d1 hA0
   have h2 := HasDerivAt.fun_div n2 d2 hB0
   refine (HasDerivAt.fun_add h1 h2).congr_deriv ?_
-  simp only [add_zero, sub_zero, zero_mul, one_mul]
+  simp only [add_zero, sub_zero, zero_mul]
   first
-  | (field_simp; ring)
-  | field_simp
+  | exact p1_K2_alg w1 w2 r1 r2 x hw1 hw2 hA hB
+  | (rw [← p1_K2_alg w1 w2 r1 r2 x hw1 hw2 hA hB]; ring_nf)
 
 /-- The same derivative along real directions, for real parameters. -/
 theorem p1_K2_dirDeriv_real (w1 w2 r1 r2 : ℝ) (x : ℂ) (hw1 : w1 ≠ 0) (hw2 : w2 ≠ 0)
@@ -80,7 +101,7 @@ theorem p1_K2_moment_dirDeriv (w1 w2 r1 r2 : ℝ) (m : ℕ) (hw1 : w1 ≠ 0) (hw
   have h1 := HasDerivAt.fun_mul n1 g1
   have h2 := HasDerivAt.fun_mul n2 g2
   refine (HasDerivAt.fun_add h1 h2).congr_deriv ?_
-  simp only [add_zero, sub_zero, zero_mul, one_mul, mul_one]
+  simp only [add_zero, sub_zero, zero_mul, one_mul]
   first
   | (field_simp; ring)
   | field_simp

@@ -113,3 +113,6 @@ import CurrentProofs.Paper1GaussRadau3
 import CurrentProofs.Paper1ModelLink
 import CurrentProofs.Paper1CRScaling
 import CurrentProofs.Paper1CRScalingH
+import CurrentProofs.Paper1FisherBounds
+import CurrentProofs.Paper1CRTaps
+import CurrentProofs.Paper1CRS71iii
