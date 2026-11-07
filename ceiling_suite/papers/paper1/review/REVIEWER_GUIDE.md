@@ -111,13 +111,13 @@ repository; offer it.
 | Item | Who | What to do |
 |---|---|---|
 | `prop:primitives`(ii) | Area A/C readers | Check whether the Wasserstein bound transfers to the intensity-weighted distribution or only to the merged-weight one; narrow the statement if only the latter |
-| Rounding and range mismatches | Pratik | **Partly done (7 Nov).**
-  - The eigenvector probe's maximum trade is 1.24 (result file: 1.2411; maximum displacement 2.23 recomputed), now
-    consistent in the text and the table.
+| Rounding and range mismatches | Pratik | **Done (7 Nov).**
+  - The eigenvector probe's maximum trade is 1.24 (result file: 1.2411; maximum displacement 2.23 recomputed).
   - 193.625 is now written 193.63 everywhere.
-  - Still to check: the 99,192/149,901 CAT figures, which are no longer in the SSRN build, and the five-symbol
-    subset range 0.64–0.92 against the registered 0.65–0.99, which are different symbol sets; confirm in the
-    Binance result files. |
-| Editorial leftovers | AI on request | stray commas after removed file names; "Part 13" references to material outside the paper |
+  - The five-symbol range 0.64–0.92 is confirmed against `results_archive/p6res/results/Z6_C_identification.json`:
+    widths 0.645–0.916, ratios 27.6–62.5, median 47.5. It is a different sample from the registered 30-symbol
+    fresh-day range 0.65–0.99, so there is no conflict.
+  - The CAT figures 99,192/149,901 are not in the current build. |
+| Editorial leftovers | AI on request | **Checked (7 Nov):** no "Part 13" references and no stray commas in the SSRN source; the remaining space-before-punctuation hits are display-math punctuation. |
 | Modelling wording | Sujan | the inventory term in the microfoundation remark; "tabular Q-learning has the same form"; the Δη > 1 region in the disclosure-choice proposition |
 | Novelty after the new citations | outside statistics reviewer | with Wu–Yang, Rebafka–Roueff, Shahram–Milanfar, Castelli–Cover and Katz–Diab–Batenkov now cited, is what remains (closed-loop extraction, passive Whittle bound for K clustered modes, sample-to-capital conversion, value of class records) enough for a journal contribution? |

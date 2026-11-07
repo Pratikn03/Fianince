@@ -83,6 +83,20 @@ repository; offer it.
    observer, weekly renewal)?
 3. Is reading CFTC and Binance class positions as "fitted persistence, not learning memory" the right level of
    claim? Would a flow-based test on CFTC data be worth registering?
+4. (Added 7 November 2026.) Section 4, "Equilibrium foundations":
+   - Is the overlapping-generations CARA dealer model with inventory layoff (Theorem 4.1) an acceptable
+     microfoundation for impact and persistence?
+   - Is the pathwise reduction of the equilibrium to the paper's closed loop with effective parameters
+     (Theorem 4.2) correct, and does it really carry the rate results into equilibrium?
+   - Is the fragility threshold (Theorem 4.4) new relative to Grossman–Miller, Brunnermeier–Pedersen and the
+     liquidity-spiral literature?
+   - What would a microstructure referee require before calling this an equilibrium paper? In particular, is the
+     absence of a strategic insider inside the inventory equilibrium a blocking objection?
+5. (Added 7 November 2026.) The Taiwan tagged-flow test (P1T):
+   - Validation pass: D = 0.040, against a minimum effect of 0.0035.
+   - The registered reverse-causality check cannot remove a noisy-report confound (amendment A2).
+   - Is the argument that exchange-counted T86 flows carry little reporting noise convincing? What else would you
+     want to see before the holdout result is believed?
 
 **Recording.** Each reviewer's note goes in `review/external/` with the date. Every point gets a response row
 (point, change made or reason not, page) in `review/response_register.md`.
@@ -97,7 +111,13 @@ repository; offer it.
 | Item | Who | What to do |
 |---|---|---|
 | `prop:primitives`(ii) | Area A/C readers | Check whether the Wasserstein bound transfers to the intensity-weighted distribution or only to the merged-weight one; narrow the statement if only the latter |
-| Rounding and range mismatches | Pratik | 99,192 vs 99,193 and 149,901 vs 149,902 (CAT vs capital tables), 193.62 vs 193.63, max trade 1.24 vs 1.25; "0.64–0.92" (five-symbol subset) vs the registered range 0.65–0.99 — check against the result JSON files and make the text match |
-| Editorial leftovers | AI on request | stray commas after removed file names; "Part 13" references to material outside the paper |
+| Rounding and range mismatches | Pratik | **Done (7 Nov).**
+  - The eigenvector probe's maximum trade is 1.24 (result file: 1.2411; maximum displacement 2.23 recomputed).
+  - 193.625 is now written 193.63 everywhere.
+  - The five-symbol range 0.64–0.92 is confirmed against `results_archive/p6res/results/Z6_C_identification.json`:
+    widths 0.645–0.916, ratios 27.6–62.5, median 47.5. It is a different sample from the registered 30-symbol
+    fresh-day range 0.65–0.99, so there is no conflict.
+  - The CAT figures 99,192/149,901 are not in the current build. |
+| Editorial leftovers | AI on request | **Checked (7 Nov):** no "Part 13" references and no stray commas in the SSRN source; the remaining space-before-punctuation hits are display-math punctuation. |
 | Modelling wording | Sujan | the inventory term in the microfoundation remark; "tabular Q-learning has the same form"; the Δη > 1 region in the disclosure-choice proposition |
 | Novelty after the new citations | outside statistics reviewer | with Wu–Yang, Rebafka–Roueff, Shahram–Milanfar, Castelli–Cover and Katz–Diab–Batenkov now cited, is what remains (closed-loop extraction, passive Whittle bound for K clustered modes, sample-to-capital conversion, value of class records) enough for a journal contribution? |

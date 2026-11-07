@@ -30,3 +30,4 @@ any named theorem whose axioms go beyond {propext, Classical.choice, Quot.sound}
 | 8735e0b | 42416658027 | **success** | EquilibriumReducedForm (Theorem 4.2, fragility bounds) |
 | 29dd037 | 42425469307 | not run | GitHub Actions refused to start any job (account billing). `Paper1EquilibriumExtras.lean` built locally from source with Lean v4.34.1 and the pinned Mathlib: 1,056 jobs, success, no `sorry`, standard axioms only (`#print axioms` on all seven theorems). |
 | (local) | — | **success (local)** | `Paper1EquilibriumInsider.lean` (Theorem 4.6) built locally from source with Lean v4.34.1 and the pinned Mathlib: 1,051 jobs, success, no `sorry`, standard axioms only. |
+| (local) | — | **success (local)** | `Paper1HaltKernelBound.lean` (S28.2(i) kernel bound) built locally: 1,102 jobs, no `sorry`, standard axioms only. |
