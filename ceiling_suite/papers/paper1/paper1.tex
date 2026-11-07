@@ -439,7 +439,7 @@ The identification results take the price impact $\kappa$ and the persistence $a
 \item the equilibrium price is the paper's closed loop with effective parameters, so the identification boundary and the rates hold in equilibrium, and positive feedback creates an explicit fragility threshold;
 \item a strategic insider cannot change it;
 \item misjudging the aggregate response creates rents of first order;
-\item targeted actions still need group-level information.
+\item targeted actions still need group-level information, and class-tagged disclosure keeps its value in equilibrium.
 \end{itemize}
 
 \paragraph{An inventory equilibrium.}
@@ -517,6 +517,16 @@ So the price follows the closed loop \eqref{eq:price}--\eqref{eq:cohort} with pe
 \item One assumption is new: the observer's probe is part of the exogenous flow that dealers price as noise. Dealers who recognized a probe would price it differently.
 \end{itemize}
 
+\begin{corollary}[Disclosure in equilibrium]\label{cor:eqdisclosure}
+Take a positive-impact equilibrium of Theorem~\ref{thm:inventory} with positive weights and $D>\max_ir_i$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The cohorts' flows obey $u_{i,t+1}=r_iu_{i,t}+w_ix_t$ with their \emph{true} weights. The price is the stable closed loop of Theorem~\ref{thm:eqreduced}, driven by $\xi$, with positive effective weights. So Proposition~\ref{prop:tagged} applies: tagged flow identifies each cohort's $(r_i,w_i)$, with a limiting covariance that has no singularity as rates collide.
+\item On classes in which both the true and the effective weights lie in compact positive intervals, Theorem~\ref{thm:discvalue} holds in equilibrium. Tagging cuts the experiments needed by a factor of order $(\Delta\eta)^{-(4K-2)}$ for weights and $(\Delta\eta)^{-(4K-4)}$ for rates.
+\end{enumerate}
+\end{corollary}
+
+\paragraph{In words.} What makes disclosure valuable survives the dealers' optimization. Prices still hide the groups at the same polynomial cost, and each group's own flow still reveals that group's memory and weight directly.
+
 \begin{theorem}[Fragility: where liquidity disappears]\label{thm:fragility}
 Let there be one feedback cohort with weight $w>0$ and memory rate $r\in(0,1)$, with $\bar a\in[0,1)$ and $\sigma_F,\sigma_\xi>0$. Call an equilibrium of Theorem~\ref{thm:inventory} with $\kappa>0$ and $D>0$ a positive-impact equilibrium. For $D\in(m,1)$ with $m=\max(\bar a,r)$, let
 \[
@@ -547,11 +557,12 @@ Let there be one feedback cohort with weight $w>0$ and memory rate $r\in(0,1)$, 
   A<\min\Bigl\{A^*_0,\ \frac{(1-\sqrt{\bar a})^2}{\sigma_F^2\,G(1)}\Bigr\},
  \]
  whatever the number of cohorts and their rates.
+ \item Every such equilibrium is stable.
  \end{itemize}
 \end{enumerate}
 \end{theorem}
 
-\paragraph{In words.} With positive feedback, dealers can make a market only if their dislike of risk is below a threshold, and the threshold falls as feedback grows: for strong feedback it is inversely proportional to the feedback intensity. Past the threshold, no price impact is consistent with dealers' optimization. Below it, every equilibrium has stable prices. Liquidity does not erode through growing instability; it disappears when the two equilibria merge, at a point that stable prices give no warning of. At the calibration of Supplement~\ref{app:eqinv} ($\bar a=0.6$, $r=0.7$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$), $A^*$ is 0.40 without feedback, 0.25 at $G(1)=\tfrac1{15}$ and 0.034 at $G(1)=\tfrac23$, and $w\,A^*$ approaches $\Phi^*=0.00688$. The necessary conditions behind parts (i) and (iii) are machine-checked (\nolinkurl{Paper1EquilibriumReducedForm.lean}). With several cohorts, part (iv) gives a threshold that depends on the population only through its total feedback intensity $G(1)$. At the same calibration, numerically, the exact thresholds for two and three cohorts lie between 28\% and 86\% of that bound, and the equilibria on the threshold curve are stable. Stability with several cohorts is checked numerically, not proved.
+\paragraph{In words.} With positive feedback, dealers can make a market only if their dislike of risk is below a threshold, and the threshold falls as feedback grows: for strong feedback it is inversely proportional to the feedback intensity. Past the threshold, no price impact is consistent with dealers' optimization. Below it, every equilibrium has stable prices. Liquidity does not erode through growing instability; it disappears when the two equilibria merge, at a point that stable prices give no warning of. At the calibration of Supplement~\ref{app:eqinv} ($\bar a=0.6$, $r=0.7$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$), $A^*$ is 0.40 without feedback, 0.25 at $G(1)=\tfrac1{15}$ and 0.034 at $G(1)=\tfrac23$, and $w\,A^*$ approaches $\Phi^*=0.00688$. The necessary conditions behind parts (i) and (iii) are machine-checked (\nolinkurl{Paper1EquilibriumReducedForm.lean}). With several cohorts, part (iv) gives a threshold that depends on the population only through its total feedback intensity $G(1)$. At the same calibration, numerically, the exact thresholds for two and three cohorts lie between 28\% and 86\% of that bound, and the equilibria on the threshold curve are stable. Every such equilibrium is stable (part (iv)), as the scan also shows.
 
 
 
@@ -1104,7 +1115,7 @@ The same requirement holds for the permutation-invariant loss $W_1(\hat M,M)$ be
 
 The two losses have different targets. The weights of the two economies differ by a constant that does not shrink with $\Delta\eta$, so the first statement is about weights at fixed accuracy, which Theorem~\ref{prop:esprit} matches; the Wasserstein statement is about the memory distribution at accuracy proportional to $\Delta\eta$, which Theorem~\ref{thm:uniformw1} matches.
 
-The construction uses the $K$-point Gauss and Gauss--Radau rules of the same weight function: both are positive, have $K$ atoms and integrate polynomials of degree $2K-2$ exactly. For $K=2$ it reproduces the order of Theorem~\ref{thm:twocohort}. Table~\ref{tab:radau} lists the two rules: their low moments agree to machine precision and their moment of order $2K-1$ differs by $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$. The shrinking gap explains why constants deteriorate with $K$ on top of the exponent.
+The construction uses the $K$-point Gauss and Gauss--Radau rules of the same weight function: both are positive, have $K$ atoms and integrate polynomials of degree $2K-2$ exactly. For $K=2$ it reproduces the order of Theorem~\ref{thm:twocohort}. Table~\ref{tab:radau} lists the two rules: their low moments agree to machine precision and their moment of order $2K-1$ differs by $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$. The shrinking gap explains why constants deteriorate with $K$ on top of the exponent. The two rules also differ in their largest weight for every $K$ we checked: for $K=2,\ldots,200$ the largest Gauss--Radau weight exceeds the largest Gauss weight, by $0.25$ at $K=2$ and by about $0.79/K^2$ for large $K$ (\nolinkurl{equilibrium/gauss_radau_maxweight.py}). So the argument given for $K=2$ in Proposition~\ref{prop:target} applies to each such $K$. A proof for every $K$ is open.
 
 \paragraph{What counts as an experiment.} In Theorem~\ref{thm:kcohort} an experiment is a unit impulse from the reset state whose response is observed with noise of variance $\sigma^2$ per tap. The exponent is the same for any probe design of bounded energy. For any probe $v$ the mean difference between the two economies is at most $\sup_\omega|\Delta\hat H(e^{i\omega})|\,\|v\|_2$, and $\sup_\omega|\Delta\hat H|=O((\Delta\eta)^{2K-1})$ because $\Delta\hat H=z^{-1}\hat H_A\hat H_B\,\Delta G$ with both responses bounded on the circle. Experiments with probe energy $E$ each therefore need $NE\gtrsim\sigma^2(\Delta\eta)^{-(4K-2)}$: a larger probe buys the same information with fewer experiments, and Section~\ref{sec:account} prices the capital that a larger probe requires. The bound does not cover information obtained without trading against the groups, such as class records (Section~\ref{sec:disclosure}).
 
@@ -2587,7 +2598,30 @@ The scaled flows inherit the cohort recursion, because the scaling is constant (
  (1-D)(D-\bar a)=D(1-\sqrt{\bar a})^2-(D-\sqrt{\bar a})^2\le D(1-\sqrt{\bar a})^2.
 \]
 Machine-checked as \nolinkurl{p1_fragility_K_bound}. The bound $A^*_0$ follows as in part (iii).
+\item \emph{Stability.} By Theorem~\ref{thm:eqreduced}(i), the dynamics are those of the closed loop with $(a^*,\kappa^*,\tilde w)$. Here $a^*\ge0$, $\kappa^*>0$, $\tilde w_i>0$ and $r_i\ge0$, so its transition matrix in the state $(x_t,y_{1,t},\ldots,y_{K,t})$ is nonnegative.
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item \emph{The spectral radius is the root above the rates.} By Perron--Frobenius, the spectral radius $\rho$ is an eigenvalue. Every eigenvalue $z\notin\{0,r_i\}$ solves $F(z)=1$, where $F(z)=a^*/z+\kappa^*\sum_i\tilde w_i/(z-r_i)$. No $r_i$ is an eigenvalue, because $\tilde w_i\ne0$ (Theorem~\ref{thm:minphase}(i)). $F$ decreases strictly from $+\infty$ to $0$ on $(\max_ir_i,\infty)$, so it has exactly one root $z^*$ there, and $\rho\ge z^*$. Being real and at least $z^*$, $\rho$ equals $z^*$.
+ \item \emph{The criterion.} Hence $\rho<1$ if and only if $F(1)<1$, that is, $a^*+\kappa^*\sum_i\tilde w_i/(1-r_i)<1$. With $g_i=w_i/(D-r_i)$ this reads $\kappa\sum_ig_i/(1-r_i)<1$ (\nolinkurl{p1_eq_effective_stability_iff}).
+ \item \emph{It holds.} Each $1-r_i>1-D>0$ and $\kappa\sum_ig_i=1-D$, so $\kappa\sum_ig_i/(1-r_i)<1$ (\nolinkurl{p1_eq_stability_K}).
+ \end{itemize}
 \end{itemize}
+
+\paragraph{Proof of Corollary~\ref{cor:eqdisclosure}.}
+\emph{Part (i).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item The cohort recursion is part of the model.
+\item By Theorem~\ref{thm:eqreduced}(i), the price is the closed loop with $a^*\ge0$, $\kappa^*>0$ and $\tilde w_i>0$, driven by the i.i.d.\ flow $\xi$.
+\item It is stable by Theorem~\ref{thm:fragility}(iv).
+\item These are the hypotheses of Proposition~\ref{prop:tagged}. Its regression involves only cohort $i$'s own flow and the price, so it delivers the true $(r_i,w_i)$.
+\end{itemize}
+
+\emph{Part (ii).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{Price-only side.} By Theorem~\ref{thm:eqreduced}, the price-only experiment is the reduced form at the effective parameters. The realization of Theorem~\ref{thm:eqreduced}(iv) puts the Gauss and Gauss--Radau pair inside the equilibrium class, so the price-only side of Theorem~\ref{thm:discvalue} holds with the effective weights.
+\item \emph{Tagged side.} Each cohort's flow response to a unit impulse is $f_{i,t}=w_i\sum_{s\le t}r_i^{t-s}h_s$, where $h$ is the equilibrium response and $h_0=\kappa^*>0$. That is the tagged record of Theorem~\ref{thm:discvalue}, and its argument uses only that $h$ is bounded with $h_0>0$.
+\item On the stated classes the true weights are a Lipschitz function of the effective ones, and conversely, so the orders are unchanged.
+\end{itemize}
+
 
 \paragraph{Numerical checks of Theorems~\ref{thm:eqreduced} and~\ref{thm:fragility}.} The script \nolinkurl{equilibrium/e4_reduced_form.py} runs three checks.
 \begin{itemize}[itemsep=1pt,topsep=2pt]
