@@ -91,6 +91,13 @@ days are excluded from every future confirmatory sample.
    - Validation pass 1 (A1 executor, 7 November 2026): Foreign D = 0.0405, 95% interval [0.0226, 0.0542],
      one-sided p < 1/9999, 292 stocks, 75% with a positive gain. That is the 'supportive' pattern, at about 11 times D*.
      This is the validation pass, not the registered result.
+   - The results zip is stored as `results/p1t_validation_results.zip`.
+     - Robustness: mean blocks 10 and 60 give the same D and verdict.
+     - S1 (validation): Investment trusts D = −0.0130, interval [−0.0328, 0.0069], inconclusive; Dealers' own
+       account D = −0.0468, interval [−0.1210, 0.0003], inconsistent with the effect of interest.
+     - T86 accounting in every era: the three-institution total equals the sum of the parts, and the dealer total
+       equals own + hedging, on 100% of stock-days. The foreign-dealer column is zero in E3, so the Foreign
+       definition is the same across all eras.
    - Found in validation: the pre-specified diagnostics of spec §7 are not implemented in the executor. The key
      one is the reverse-causality check, because the price basis can proxy for flow lags that M0 omits. It must be
      implemented, simulation-validated and frozen before the holdout is opened.
