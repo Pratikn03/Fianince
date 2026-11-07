@@ -81,7 +81,8 @@ theorem p1_eq_realize_D {K : ℕ} (as ks W D : ℝ) (wt r : Fin K → ℝ) (hW :
   rw [hfac]
   have hkW : ks * W / (1 - as) = 1 - D := by rw [hDdef]; ring
   have hc : ks * D * (W / (D * (1 - as))) = ks * W / (1 - as) := by
-    calc ks * D * (W / (D * (1 - as))) = ks * W / (1 - as) * (D / D) := by ring
+    calc ks * D * (W / (D * (1 - as))) = ks * W / (1 - as) * (D / D) := by
+          first | (rw [← div_div]; ring) | (field_simp; done) | (field_simp; ring)
       _ = ks * W / (1 - as) := by rw [div_self hD0, mul_one]
   rw [hc, hkW]
   ring
