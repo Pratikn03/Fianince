@@ -33,7 +33,7 @@ theorem p1_etaToR_line (θ x : Fin 4 → ℝ) (s : ℝ) :
 /-- **`J_r D` is the Jacobian in `(w, η)` coordinates**, along every line. -/
 theorem p1_tapEta_line_deriv (a κ : ℝ) (T : ℕ) (θ0 x : Fin 4 → ℝ) (t : Fin (T + 1)) :
     HasDerivAt (fun s : ℝ => p1TapW a κ (p1EtaToR (θ0 + s • x)) t.val)
-      ((p1TapJac a κ T (p1EtaToR θ0) * p1D) *ᵥ x) t) 0 := by
+      (((p1TapJac a κ T (p1EtaToR θ0) * p1D) *ᵥ x) t) 0 := by
   have e : (fun s : ℝ => p1TapW a κ (p1EtaToR (θ0 + s • x)) t.val) =
       fun s : ℝ => p1TapW a κ (p1EtaToR θ0 + s • (p1D *ᵥ x)) t.val := by
     funext s
