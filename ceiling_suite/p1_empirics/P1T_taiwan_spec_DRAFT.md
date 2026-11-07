@@ -73,9 +73,10 @@ d_s = [MSE₀ − MSE₁] / Var_fit(ũ_F) over holdout days.
 
 ## 7. Pre-specified diagnostics (reported whatever the outcome)
 
-1. **Placebo for reverse causality:** repeat with x_{t+1} − E[x_{t+1} | t] replaced by a future shock. Specifically,
-   add x_{t+1} as a regressor in an in-sample check, and report whether past-flow information in prices drives the
-   gain, comparing gains using x_t versus the price-impact residual.
+1. **Reverse-causality check:** recompute D with x_t replaced by its residual from a fit-period regression of x_t on
+   x_{t-1} and the lagged reported flows of all four classes and of dealer hedging. If prices merely reveal past flow
+   (the confound found in the power analysis), the gain disappears with the residual. A gain that survives is not
+   explained by that channel.
 2. Per-stock share of d_s > 0.
 3. Stability: D by calendar year within the holdout, including the 2020 COVID period separately.
 4. Sensitivity:
