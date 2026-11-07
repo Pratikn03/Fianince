@@ -37,7 +37,7 @@ Audit finding: the earlier "spectral factorization" (`p1_thm_minphase_spectral_f
 its hypothesis equates the numerator polynomials, not the spectrum. That is the shortcut the handoff rejects. It is now
 superseded.
 
-Done (`Paper1SpectralID.lean`, `Paper1SpectralH.lean`; both modules built in CI run 42322651256). Every result starts
+Done (`Paper1SpectralID.lean`, `Paper1SpectralH.lean`; full green CI run 42325228369). Every result starts
 from equal spectra `s₁|H₁(e^{iω})|²/(2π) = s₂|H₂(e^{iω})|²/(2π)` at every ω, for any K₁, K₂.
 - `p1_thm_minphase_spectrum_rates`: the sets of memory rates coincide.
 - `p1_thm_minphase_spectrum_H`: `s₁κ₁² = s₂κ₂²`, `∏(z - r₁ᵢ) = ∏(z - r₂ᵢ)` and the denominators of `H` coincide.

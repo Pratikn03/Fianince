@@ -233,7 +233,7 @@ Formalized in [`CurrentProofs/CeilingSuitePaper2.lean`](file:///Users/pratik_n/D
 | Gate | Requirement | Verification Method | Result |
 |---|---|---|---|
 | **G1. Counterexample Elimination** | All Phase 1 mathematical audit issues resolved in LaTeX and Lean 4 | Inspected `prop:esprit`, `eq:gate`, `prop:shape`, `prop:dominance` | **PASS** |
-| **G2. 100% Lean 4 Formalization (Mathlib `ℝ`)** | All 29 Paper 1 + 28 Paper 2 + 3 Bridge = 60 theorems verified over `ℝ` | `verify_formalization.py` & `verify_ceiling_suite_lean_proofs.py` | **PASS (60/60)**  **Correction, 6 Nov 2026: superseded; Paper 1 is mapped, not fully formalized (11 full / 17 conditional / 11 arithmetic of 39, see `COVERAGE.md`).** |
+| **G2. 100% Lean 4 Formalization (Mathlib `ℝ`)** | All 29 Paper 1 + 28 Paper 2 + 3 Bridge = 60 theorems verified over `ℝ` | `verify_formalization.py` & `verify_ceiling_suite_lean_proofs.py` | **PASS (60/60)**  **Correction, 6 Nov 2026: superseded; Paper 1 is mapped, not fully formalized (13 full / 15 conditional / 11 arithmetic of 39 after 7 Nov, see `COVERAGE.md`).** |
 | **G3. 100% Lean 4 Formalization (Core `Rat`)** | All 60 theorems verified constructively over `Rat` | `cd lean_proofs && lake build && lake env lean AxiomAudit.lean` | **PASS (60/60)** |
 | **G4. Zero `sorry` / `admit` / Unapproved Axioms** | No `sorry`, `admit`, `native_decide`, or custom `axiom` in any Lean file | Automated regex + `#print axioms` audit (`checked_theorem_types.json`) | **PASS (0 violations)** |
 | **G5. Theory-Simulation Numerical Reconciliation** | $K=2..5$ Prony slopes and calibrated BTC/ETH disclosure CRB match tables | Executed `kcohort_upper.py`, `disclosure_value.py`, `recompute_oct20.py` | **PASS** |

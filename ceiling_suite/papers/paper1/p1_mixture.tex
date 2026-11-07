@@ -9,11 +9,16 @@ Because the memory rates are zeros of $H$ (Theorem~\ref{thm:merged}), extracting
 \subsection{Local information: the Cram\'er--Rao benchmark}
 
 \begin{proposition}[Cram\'er--Rao benchmark]\label{prop:crb}
-Let $\theta$ collect the weights $w_1,\ldots,w_K$ and rates $\eta_1,\ldots,\eta_K$. Suppose the impulse response $h_t(\theta)$, $t\le T$, is observed with i.i.d.\ Gaussian error from $N$ reset probes of size $V_{\rm probe}$ against innovation noise $\sigma_p$, so the error has standard deviation $\sigma_h=\sigma_p/(V_{\rm probe}\sqrt N)$. With Jacobian $J_{tj}=\partial h_t/\partial\theta_j$ and $F_{\rm unit}=J^\top J$, any regular unbiased estimator has ${\rm Var}(\hat w_k)\ge\sigma_h^2[F_{\rm unit}^{-1}]_{kk}$, and a 95\% interval of half-width ${\rm tol}$ requires
+Let $\theta\in\Theta\subset\R^{2K}$ collect the weights $w_1,\ldots,w_K$ and rates $\eta_1,\ldots,\eta_K$, with $\Theta$ open. Each of $N$ reset probes of size $V_{\rm probe}$ records the taps $h_0,\ldots,h_T$ with independent $N(0,\sigma_p^2)$ errors, so the averaged, rescaled record is $Y=h(\theta)+\sigma_hZ$ with $Z\sim N(0,I_{T+1})$ and $\sigma_h=\sigma_p/(V_{\rm probe}\sqrt N)$. Let $J_{tj}=\partial h_t/\partial\theta_j$ and $F_{\rm unit}=J^\top J$, and assume $T\ge2K$ and that $J$ has full column rank at $\theta$, so that $F_{\rm unit}$ is invertible.
+\begin{enumerate}[label=(\roman*)]
+\item The Fisher information of $Y$ is $I(\theta)=\sigma_h^{-2}F_{\rm unit}$. Every estimator $\hat w_k(Y)$ with finite variance at $\theta$ that is unbiased for $w_k$ on a neighbourhood of $\theta$ satisfies ${\rm Var}_\theta(\hat w_k)\ge\sigma_h^2[F_{\rm unit}^{-1}]_{kk}$. No further regularity is needed: the bound follows from the Hammersley--Chapman--Robbins inequality by letting the alternative approach $\theta$ along a line, without differentiating under the integral.
+\item \emph{Benchmark interpretation.} For an estimator that attains this variance and is approximately normal, a 95\% interval of half-width ${\rm tol}$ needs
 \begin{equation}\label{eq:Ncrb}
-N^*\ge\Bigl(\frac{1.96}{\rm tol}\Bigr)^2\Bigl(\frac{\sigma_p}{V_{\rm probe}}\Bigr)^2[F_{\rm unit}^{-1}]_{kk}.
+N\ge N_{\rm CR}\equiv\Bigl(\frac{1.96}{\rm tol}\Bigr)^2\Bigl(\frac{\sigma_p}{V_{\rm probe}}\Bigr)^2[F_{\rm unit}^{-1}]_{kk}.
 \end{equation}
-For $K=2$ with spacing $\Delta\eta$, $[F_{\rm unit}^{-1}]_{kk}=\Theta((\Delta\eta)^{-6})$, so $N^*=\Theta((\Delta\eta)^{-6})$.
+This is a sample-size benchmark, not a lower bound on the interval width of every procedure.
+\item For $K=2$, with centre, weights and $T$ fixed and spacing $\Delta\eta$, $[F_{\rm unit}^{-1}]_{kk}=\Theta((\Delta\eta)^{-6})$, so $N_{\rm CR}=\Theta((\Delta\eta)^{-6})$. That an estimator attains this order is a separate statement, given by Theorem~\ref{prop:esprit}; the minimax lower bound of the same order is Theorem~\ref{thm:twocohort}.
+\end{enumerate}
 \end{proposition}
 
 \paragraph{In words.} This gives the number of test trades any well-behaved estimator needs to pin down one group's trading weight to a stated precision. Each extra group with a nearby memory raises the number sharply, as Table~\ref{tab:crb} shows.
@@ -42,7 +47,7 @@ At the critical noise level maximum likelihood attains the bound: its RMSE for t
 
 \subsection{A global two-point bound for any estimator}
 
-The Cram\'er--Rao benchmark of Proposition~\ref{prop:crb} applies only to regular unbiased estimators. Could biased, ridge, shrinkage or Bayesian estimators escape the $(\Delta\eta)^{-6}$ scaling? No.
+The Cram\'er--Rao benchmark of Proposition~\ref{prop:crb} applies only to estimators that are unbiased near the true parameter. Could biased, ridge, shrinkage or Bayesian estimators escape the $(\Delta\eta)^{-6}$ scaling? No.
 
 \begin{theorem}[Global two-point bound and matching upper bound, $K=2$]\label{thm:twocohort}
 In this theorem $w_k$ denotes cohort $k$'s trading intensity $q_k$, not the merged weight $q_k\eta_k$ of Section~\ref{sec:model}, and $\Delta\eta$ is the actual spacing of the two rates. Fix total intensity $q=0.20$, mean rate $\bar\eta=0.40$, target separation $\tau=0.01$, and $\Delta\eta\in(0,8/11)$ (so that $\bar\eta-p_+\Delta\eta>0$). Let $p_\mp=\tfrac12\mp\tau/q$ and
@@ -326,7 +331,11 @@ Error $\times\log(N/\sigma^2)$ & 0.202 & 0.245 & 0.179 & 0.226 & 0.229 & 0.276\\
 \subsection{Passive data}
 
 \begin{theorem}[Passive identification: minimum phase]\label{thm:minphase}
-In a stable economy with $0<a<1$, distinct $0<r_i<1$ and nonzero merged weights, the zeros of $H$ are the memory rates $r_i$ together with a structural zero at $z=0$, and $H$ is minimum phase. Degenerate anchor and zero-rate cases require the cancellations described in the merged-equivalence proof. With a single price innovation, the price spectrum identifies $H$ up to scale, hence the memory rates; with $\kappa$ and $a$ known, as in Theorem~\ref{thm:merged}, it identifies the merged measure.
+Consider a stable economy with $0<a<1$, distinct memory rates $0<r_i<1$ and nonzero merged weights.
+\begin{enumerate}[label=(\roman*)]
+\item The zeros of $H$ are the memory rates $r_i$ together with a structural zero at $z=0$; none cancels against the denominator, and all lie in the open unit disk, so $H$ is minimum phase. The degenerate anchor ($a=0$) and zero-rate cases require the cancellations described in the proof of Theorem~\ref{thm:merged}.
+\item Let the price be driven by a single innovation sequence with variance $\sigma_\xi^2>0$, possibly unknown, so that its spectrum is $f(\omega)=\sigma_\xi^2|H(e^{i\omega})|^2/(2\pi)$. Within the class of (i), $f$ determines $\sigma_\xi^2\kappa^2$ and the normalized response $H/h_0$ (recall $h_0=\kappa$); hence it determines the memory rates. If in addition $\kappa$ (or $\sigma_\xi^2$) and $a$ are known, it determines $H$ and, by Theorem~\ref{thm:merged}, the merged measure.
+\end{enumerate}
 \end{theorem}
 
 The result holds for signed weights (mean-reverting cohorts): in 1,733 stable random economies with weights of both signs, the nonstructural zeros equalled the memory rates and lay inside the unit disk. With a second independent shock in the cohorts' memories, the Jacobian of the price spectrum with respect to six model parameters has full rank, with singular values from $34.51$ down to $0.0698$. Passive noise helps identification rather than hindering it.
@@ -338,7 +347,7 @@ Suppose the price is observed passively as the stationary output $x_t=H_\theta(L
 \item For the moment-matched two-cohort economies of Theorem~\ref{thm:twocohort}, $D=\Theta(\tau^2(\Delta\eta)^6)$.
 \item For every $K\ge2$, for the $K$-cohort Gauss and Gauss--Radau economies of Theorem~\ref{thm:kcohort}, $D=\Theta((\Delta\eta)^{4K-2})$.
 \end{enumerate}
-Hence any test based on $T$ passive observations with worst-case error at most $\alpha<1/4$ needs $T=\Omega(\delta^{-4})$, $T=\Omega(\tau^{-2}(\Delta\eta)^{-6})$ and $T=\Omega((\Delta\eta)^{-(4K-2)})$ respectively, uniformly as the separation shrinks: passive data cost at least the same polynomial order as active probing for every number of cohorts. For each fixed pair, at fixed type-I error the likelihood-ratio test's type-II error decays at exponential rate $D$ (Stein's lemma), and both errors decay at the Chernoff-information rate, which is of the same order in the separation; so the orders are the right ones; we do not claim that this attainment is uniform as the separation shrinks.
+Hence any test based on $T$ passive observations with worst-case error at most $\alpha<1/4$ needs $T=\Omega(\delta^{-4})$, $T=\Omega(\tau^{-2}(\Delta\eta)^{-6})$ and $T=\Omega((\Delta\eta)^{-(4K-2)})$ respectively, uniformly as the separation shrinks: passive data cost at least the same polynomial order as active probing for every number of cohorts. For each fixed pair, at fixed type-I error the likelihood-ratio test's type-II error decays at exponential rate $D$ (Stein's lemma), and both errors decay at the Chernoff-information rate, which is of the same order in the separation; so the orders are the right ones; we do not claim that this attainment is uniform as the separation shrinks. All constants depend only on $K$, the stability margin of the family, the rate interval $[\eta_{\min},\eta_{\max}]$, the total weight and the moment-matched construction; they do not depend on $\delta$, $\Delta\eta$ or $T$. In part (ii) $\tau$ is held fixed as $\Delta\eta\to0$. The testing conclusions use a finite-record bound $\KL(P_1^T\|P_0^T)\le C\,T\,\varepsilon^2$, with $\varepsilon$ the leading moment gap ($\delta^2$, $\tau(\Delta\eta)^3$, $(\Delta\eta)^{2K-1}$); the lower bounds on $D$ and the fixed-pair error exponents are separate statements.
 \end{theorem}
 
 \paragraph{In words.} Watching the market without trading does not escape the barrier. A passive observer needs at least the same polynomial order of observations as a prober needs experiments; it pays in time rather than in trading losses. Prices recorded with extra measurement noise that is independent of the price are a garbling of the noiseless record, so by the data-processing inequality they carry less information, and the lower bound holds a fortiori.

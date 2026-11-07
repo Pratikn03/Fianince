@@ -84,6 +84,11 @@ from public market data (real data), and audits.
 | Pinsker's inequality for events; Theorems 5.1, S25.1, 4.1(i) and Lemma S24.4 at every error level (machine-checked) | `CurrentProofs/Paper1Pinsker.lean`, `Paper1GeneralLevel.lean` | Lean 4 proof |
 | Theorem S3.1, finite-window abstention (machine-checked) | `CurrentProofs/Paper1Abstain.lean` | Lean 4 proof |
 | Corollary 5.3(i)–(ii), identification with unknown (a, κ) (machine-checked) | `CurrentProofs/Paper1UnknownPrimitives.lean` | Lean 4 proof |
+| Proposition S7.1(i), Cramér–Rao bound on the raw records of the actual market (machine-checked) | `CurrentProofs/Paper1GaussianHCR.lean`, `Paper1GaussianCR.lean`, `Paper1CRActual.lean`, `Paper1CRRaw.lean` | Lean 4 proof |
+| Theorem 5.4(ii) for every K: the spectrum determines σ²κ², H/h₀ and, with κ known, the merged measure (machine-checked) | `CurrentProofs/Paper1SpectralID.lean`, `Paper1SpectralH.lean` | Lean 4 proof |
+| Proposition S3.2, passive distinction with zero controlled quantity (machine-checked) | `CurrentProofs/Paper1PassiveVariance.lean` | Lean 4 proof |
+| Lemma S24.4, converse: pulse test errors and margin solvency (machine-checked) | `CurrentProofs/Paper1CapitalConverse.lean` | Lean 4 proof |
+| Propositions S5.1(ii) and S5.2(ii), Kalman-desk and tied-intensity lower bounds (machine-checked) | `CurrentProofs/Paper1KalmanTied.lean` | Lean 4 proof |
 | Supplement S18: post hoc robustness (futures prices, roll weeks, 26- and 52-week blocks) | , | real data (post hoc) |
 | Supplement S18 and Table S29: two-root test (2 of 8; smaller root $`-0.16`$ to $`0.21`$) | , (specification , e6633588…) | real data |
 | Supplement S18 and Table S29: replication on 12 new markets (H1 12 of 12, H2 11 of 12, H3 3 of 12) | , result (specification , 591e71c9…) | real data |

@@ -9,3 +9,7 @@ any named theorem whose axioms go beyond {propext, Classical.choice, Quot.sound}
 | f2f64a4 | 42285123772 | success | KalmanTied (S5.1, S5.2) |
 | afd9d6c | 42320205700 | failure | PassiveVariance: noncomputable abbrev. GaussianHCR: instance at `n = 0`. CapitalConverse: rewrite pattern and ambiguous names. |
 | 50f1fb5 | 42321490051 | failure | GaussianCR: implicit arguments of `nhdsWithin_le_nhds`. SpectralID: one `ring` missing. PassiveVariance, GaussianHCR and CapitalConverse built. |
+| 1bff88f | 42322651256 | failure | CRActual: explicit argument of `comp_hasDerivAt_of_eq`. GaussianCR, SpectralID and SpectralH built. |
+| 727ac9c | 42323561223 | failure | IVBoundary: missing `Real` import. CRRaw: `inv_smul` rewrite. CRActual built. |
+| 65847c2 | 42324342693 | failure | CRRaw: `inv_smul` argument order. |
+| cebb5c5 | 42325228369 | **success** | 931 named declarations; `NAMED_PROOFS_BUILD_AND_STRICT_AXIOM_AUDIT_PASS`; only standard axioms. |
