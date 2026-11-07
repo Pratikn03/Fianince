@@ -116,3 +116,5 @@ import CurrentProofs.Paper1CRScalingH
 import CurrentProofs.Paper1FisherBounds
 import CurrentProofs.Paper1CRTaps
 import CurrentProofs.Paper1CRS71iii
+import CurrentProofs.Paper1CRS71iiiEta
+import CurrentProofs.Paper1CRS71iiiW2
