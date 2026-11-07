@@ -561,6 +561,8 @@ run_cmd do
   `CurrentMM.p1_geom_partial_le,
   `CurrentMM.p1_population_kernel_l1,
   `CurrentMM.p1_thm_passive_cost_every_K,
+  `CurrentMM.p1_thm_passive_cost_matched,
+  `CurrentMM.p1_thm_passive_cost_gauss_radau_two,
   `CurrentMM.p1_inner_conv,
   `CurrentMM.p1_recording_factor_N,
   `CurrentMM.p1_recording_factor,
