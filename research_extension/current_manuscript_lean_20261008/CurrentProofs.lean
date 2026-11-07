@@ -111,3 +111,4 @@ import CurrentProofs.Paper1IVBoundary
 import CurrentProofs.Paper1PassiveMatched
 import CurrentProofs.Paper1GaussRadau3
 import CurrentProofs.Paper1ModelLink
+import CurrentProofs.Paper1CRScaling

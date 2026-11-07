@@ -17,18 +17,18 @@ Let $\theta\in\Theta\subset\R^{2K}$ collect the weights $w_1,\ldots,w_K$ and rat
 N\ge N_{\rm CR}\equiv\Bigl(\frac{1.96}{\rm tol}\Bigr)^2\Bigl(\frac{\sigma_p}{V_{\rm probe}}\Bigr)^2[F_{\rm unit}^{-1}]_{kk}.
 \end{equation}
 This is a sample-size benchmark, not a lower bound on the interval width of every procedure.
-\item For $K=2$, with centre, weights and $T$ fixed and spacing $\Delta\eta$, $[F_{\rm unit}^{-1}]_{kk}=\Theta((\Delta\eta)^{-6})$, so $N_{\rm CR}=\Theta((\Delta\eta)^{-6})$. That an estimator attains this order is a separate statement, given by Theorem~\ref{prop:esprit}; the minimax lower bound of the same order is Theorem~\ref{thm:twocohort}.
+\item For $K=2$, with centre, weights and $T$ fixed and spacing $\Delta\eta$, $[F_{\rm unit}^{-1}]_{kk}=\Theta((\Delta\eta)^{-6})$, so the benchmark is $N_{\rm CR}=\Theta((\Delta\eta)^{-6})$. That an estimator attains this order is a separate statement, given by Theorem~\ref{prop:esprit}; the minimax lower bound of the same order is Theorem~\ref{thm:twocohort}.
 \end{enumerate}
 \end{proposition}
 
-\paragraph{In words.} This gives the number of test trades any well-behaved estimator needs to pin down one group's trading weight to a stated precision. Each extra group with a nearby memory raises the number sharply, as Table~\ref{tab:crb} shows.
+\paragraph{In words.} Part (i) bounds the variance of every estimator that is unbiased near the truth; part (ii) turns it into the benchmark number of test trades an efficient estimator needs to pin down one group's trading weight to a stated precision. Each extra group with a nearby memory raises the number sharply, as Table~\ref{tab:crb} shows.
 
 \begin{table}[t]\centering\small
 \begin{threeparttable}
-\caption{Cram\'er--Rao sample sizes for multi-cohort weight recovery ($T=120$ taps)}\label{tab:crb}
+\caption{Cram\'er--Rao sample-size benchmark $N_{\rm CR}$ of~\eqref{eq:Ncrb} for multi-cohort weight recovery ($T=120$ taps)}\label{tab:crb}
 \begin{tabular}{lcrccc}
 \toprule
-Scenario & $K$ & $N^*$ probes & $\sigma_{\rm crit}$ & ML success ($f=1$) & RMSE/CRB\\
+Scenario & $K$ & $N_{\rm CR}$ probes & $\sigma_{\rm crit}$ & ML success ($f=1$) & RMSE/CRB\\
 \midrule
 $\eta=0.30$ & 1 & 0.1 & $6.05\times10^{-3}$ & 94\% & 1.02\\
 $\Delta\eta=0.30$ & 2 & 47.8 & $2.31\times10^{-4}$ & 94\% & 1.01\\
@@ -39,7 +39,7 @@ spacing 0.10 & 3 & 17{,}349{,}791 & $3.84\times10^{-7}$ & 98\% & 1.22\\
 spacing 0.20 & 3 & 27{,}038 & $9.73\times10^{-6}$ & 98\% & 0.88\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item Tolerance $\pm0.01$ at 95\%. $\sigma_{\rm crit}$ is the single-probe noise at which one probe suffices; operational single-probe noise is $1.6\times10^{-3}$. ML columns: least squares over all weights and rates from six generic starts (never the true values), 200 replications per row at $\sigma_{\rm crit}$; success means every weight within $\pm0.01$. Fitted log--log slope of $N^*$ in $\Delta\eta$: $-6.04$. \end{tablenotes}
+\begin{tablenotes}\footnotesize\item Tolerance $\pm0.01$ at 95\%. $\sigma_{\rm crit}$ is the single-probe noise at which one probe suffices; operational single-probe noise is $1.6\times10^{-3}$. ML columns: least squares over all weights and rates from six generic starts (never the true values), 200 replications per row at $\sigma_{\rm crit}$; success means every weight within $\pm0.01$. Fitted log--log slope of $N_{\rm CR}$ in $\Delta\eta$: $-6.04$. $N_{\rm CR}$ is a benchmark for an efficient, approximately normal estimator, not a lower bound for every procedure (Proposition~\ref{prop:crb}(ii)). \end{tablenotes}
 \end{threeparttable}
 \end{table}
 
@@ -82,7 +82,7 @@ We recomputed the two-point quantities exactly (Table~\ref{tab:lecam}): the mome
 \caption{Two-point sample complexity for two-cohort weight recovery}\label{tab:lecam}
 \begin{tabular}{lcccc}
 \toprule
-$\Delta\eta$ & $\Delta M_3$ & $\|\Delta h\|_2$ & $N^*_{\rm LeCam}$ (95\%) & $N^*_{\rm CRB}$\\
+$\Delta\eta$ & $\Delta M_3$ & $\|\Delta h\|_2$ & $N^*_{\rm LeCam}$ (95\%) & $N_{\rm CR}$\\
 \midrule
 0.30 & $2.67\times10^{-4}$ & $1.98\times10^{-3}$ & 7.1 & 47.8\\
 0.20 & $7.92\times10^{-5}$ & $5.60\times10^{-4}$ & 88.2 & 597.0\\
@@ -338,6 +338,8 @@ Consider a stable economy with $0<a<1$, distinct memory rates $0<r_i<1$ and nonz
 \end{enumerate}
 \end{theorem}
 
+\paragraph{Machine check.} For every $K$, Lean checks part (i) and part (ii) starting from equal spectra at every frequency (\texttt{p1\_thm\_minphase\_zeros}, \texttt{p1\_thm\_minphase\_spectrum\_H}, \texttt{p1\_thm\_minphase\_spectrum\_merged}). The check uses $H$ in the rational form $\kappa zD(z)/((z-a)D(z)-\kappa N(z))$ of Theorem~\ref{thm:merged}, and \emph{stable} in the sense that the poles of $H$ lie in the open unit disk. Both are derived from the market recursion. The eigenvalues of the transition of the state $(x_t,y_{1,t},\ldots,y_{K,t})$ are exactly the zeros of the denominator of $H$, so Schur stability of the recursion is the pole condition (\texttt{p1\_eigen\_iff\_bottom\_root}, \texttt{p1\_schur\_stable\_iff\_poles\_in\_disk}). The generating function of the recursion's price response $h_t$ to a unit trade satisfies $\bigl(\sum_th_tx^t\bigr)\,x^{K+1}B(1/x)=x^{K+1}\kappa x^{-1}D(1/x)$ as formal power series, where $B$ is the denominator of $H$; with $x=1/z$ this is $\sum_th_tz^{-t}=H(z)$ (\texttt{p1\_impulse\_generating}, \texttt{p1\_tfBottomRev\_eval}, \texttt{p1\_tfTopRev\_eval}).
+
 The result holds for signed weights (mean-reverting cohorts): in 1,733 stable random economies with weights of both signs, the nonstructural zeros equalled the memory rates and lay inside the unit disk. With a second independent shock in the cohorts' memories, the Jacobian of the price spectrum with respect to six model parameters has full rank, with singular values from $34.51$ down to $0.0698$. Passive noise helps identification rather than hindering it.
 
 \begin{theorem}[Passive cost]\label{prop:passive}
@@ -349,6 +351,8 @@ Suppose the price is observed passively as the stationary output $x_t=H_\theta(L
 \end{enumerate}
 Hence any test based on $T$ passive observations with worst-case error at most $\alpha<1/4$ needs $T=\Omega(\delta^{-4})$, $T=\Omega(\tau^{-2}(\Delta\eta)^{-6})$ and $T=\Omega((\Delta\eta)^{-(4K-2)})$ respectively, uniformly as the separation shrinks: passive data cost at least the same polynomial order as active probing for every number of cohorts. For each fixed pair, at fixed type-I error the likelihood-ratio test's type-II error decays at exponential rate $D$ (Stein's lemma), and both errors decay at the Chernoff-information rate, which is of the same order in the separation; so the orders are the right ones; we do not claim that this attainment is uniform as the separation shrinks. All constants depend only on $K$, the stability margin of the family, the rate interval $[\eta_{\min},\eta_{\max}]$, the total weight and the moment-matched construction; they do not depend on $\delta$, $\Delta\eta$ or $T$. In part (ii) $\tau$ is held fixed as $\Delta\eta\to0$. The testing conclusions use a finite-record bound $\KL(P_1^T\|P_0^T)\le C\,T\,\varepsilon^2$, with $\varepsilon$ the leading moment gap ($\delta^2$, $\tau(\Delta\eta)^3$, $(\Delta\eta)^{2K-1}$); the lower bounds on $D$ and the fixed-pair error exponents are separate statements.
 \end{theorem}
+
+\paragraph{Machine check.} Lean checks the finite-sample consequence of parts (i) and (iii), not the divergence-rate statements. In the checked record the market starts from rest and runs for any number $M$ of warm-up periods before the $T$ recorded prices. The bound does not depend on $M$, but the passage to the stationary law ($M\to\infty$) is not checked. Part (iii) is checked for every pair of populations with nonnegative merged weights of total at most $W$, normalized rates in $[-1,1]$ and equal moments below order $2K-1$ (\texttt{p1\_thm\_passive\_cost\_matched}). This covers the $K$-cohort Gauss and Gauss--Radau economies of Theorem~\ref{thm:kcohort}: both rules are positive with nodes in $[-1,1]$ and integrate polynomials of degree $2K-2$ exactly. Lean proves these properties of the two rules for $K=2$ and $K=3$ (\texttt{p1\_thm\_passive\_cost\_gauss\_radau\_two}, \texttt{p1\_thm\_passive\_cost\_gauss\_radau\_three}), so for these $K$ the check covers the paper's economies with no extra hypothesis. For general $K$, the exactness of the two quadrature rules, a classical property, enters the check as the moment hypothesis. It also covers the binomial pair used in the numerical checks (\texttt{p1\_thm\_passive\_cost\_every\_K}).
 
 \paragraph{In words.} Watching the market without trading does not escape the barrier. A passive observer needs at least the same polynomial order of observations as a prober needs experiments; it pays in time rather than in trading losses. Prices recorded with extra measurement noise that is independent of the price are a garbling of the noiseless record, so by the data-processing inequality they carry less information, and the lower bound holds a fortiori.
 

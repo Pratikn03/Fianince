@@ -592,18 +592,18 @@ Let $\theta\in\Theta\subset\R^{2K}$ collect the weights $w_1,\ldots,w_K$ and rat
 N\ge N_{\rm CR}\equiv\Bigl(\frac{1.96}{\rm tol}\Bigr)^2\Bigl(\frac{\sigma_p}{V_{\rm probe}}\Bigr)^2[F_{\rm unit}^{-1}]_{kk}.
 \end{equation}
 This is a sample-size benchmark, not a lower bound on the interval width of every procedure.
-\item For $K=2$, with centre, weights and $T$ fixed and spacing $\Delta\eta$, $[F_{\rm unit}^{-1}]_{kk}=\Theta((\Delta\eta)^{-6})$, so $N_{\rm CR}=\Theta((\Delta\eta)^{-6})$. That an estimator attains this order is a separate statement, given by Theorem~\ref{prop:esprit}; the minimax lower bound of the same order is Theorem~\ref{thm:twocohort}.
+\item For $K=2$, with centre, weights and $T$ fixed and spacing $\Delta\eta$, $[F_{\rm unit}^{-1}]_{kk}=\Theta((\Delta\eta)^{-6})$, so the benchmark is $N_{\rm CR}=\Theta((\Delta\eta)^{-6})$. That an estimator attains this order is a separate statement, given by Theorem~\ref{prop:esprit}; the minimax lower bound of the same order is Theorem~\ref{thm:twocohort}.
 \end{enumerate}
 \end{proposition}
 
-\paragraph{In words.} This gives the number of test trades any well-behaved estimator needs to pin down one group's trading weight to a stated precision. Each extra group with a nearby memory raises the number sharply, as Table~\ref{tab:crb} shows.
+\paragraph{In words.} Part (i) bounds the variance of every estimator that is unbiased near the truth; part (ii) turns it into the benchmark number of test trades an efficient estimator needs to pin down one group's trading weight to a stated precision. Each extra group with a nearby memory raises the number sharply, as Table~\ref{tab:crb} shows.
 
 \begin{table}[t]\centering\small
 \begin{threeparttable}
-\caption{Cram\'er--Rao sample sizes for multi-cohort weight recovery ($T=120$ taps)}\label{tab:crb}
+\caption{Cram\'er--Rao sample-size benchmark $N_{\rm CR}$ of~\eqref{eq:Ncrb} for multi-cohort weight recovery ($T=120$ taps)}\label{tab:crb}
 \begin{tabular}{lcrccc}
 \toprule
-Scenario & $K$ & $N^*$ probes & $\sigma_{\rm crit}$ & ML success ($f=1$) & RMSE/CRB\\
+Scenario & $K$ & $N_{\rm CR}$ probes & $\sigma_{\rm crit}$ & ML success ($f=1$) & RMSE/CRB\\
 \midrule
 $\eta=0.30$ & 1 & 0.1 & $6.05\times10^{-3}$ & 94\% & 1.02\\
 $\Delta\eta=0.30$ & 2 & 47.8 & $2.31\times10^{-4}$ & 94\% & 1.01\\
@@ -614,7 +614,7 @@ spacing 0.10 & 3 & 17{,}349{,}791 & $3.84\times10^{-7}$ & 98\% & 1.22\\
 spacing 0.20 & 3 & 27{,}038 & $9.73\times10^{-6}$ & 98\% & 0.88\\
 \bottomrule
 \end{tabular}
-\begin{tablenotes}\footnotesize\item Tolerance $\pm0.01$ at 95\%. $\sigma_{\rm crit}$ is the single-probe noise at which one probe suffices; operational single-probe noise is $1.6\times10^{-3}$. ML columns: least squares over all weights and rates from six generic starts (never the true values), 200 replications per row at $\sigma_{\rm crit}$; success means every weight within $\pm0.01$. Fitted log--log slope of $N^*$ in $\Delta\eta$: $-6.04$. \end{tablenotes}
+\begin{tablenotes}\footnotesize\item Tolerance $\pm0.01$ at 95\%. $\sigma_{\rm crit}$ is the single-probe noise at which one probe suffices; operational single-probe noise is $1.6\times10^{-3}$. ML columns: least squares over all weights and rates from six generic starts (never the true values), 200 replications per row at $\sigma_{\rm crit}$; success means every weight within $\pm0.01$. Fitted log--log slope of $N_{\rm CR}$ in $\Delta\eta$: $-6.04$. $N_{\rm CR}$ is a benchmark for an efficient, approximately normal estimator, not a lower bound for every procedure (Proposition~\ref{prop:crb}(ii)). \end{tablenotes}
 \end{threeparttable}
 \end{table}
 
@@ -657,7 +657,7 @@ We recomputed the two-point quantities exactly (Table~\ref{tab:lecam}): the mome
 \caption{Two-point sample complexity for two-cohort weight recovery}\label{tab:lecam}
 \begin{tabular}{lcccc}
 \toprule
-$\Delta\eta$ & $\Delta M_3$ & $\|\Delta h\|_2$ & $N^*_{\rm LeCam}$ (95\%) & $N^*_{\rm CRB}$\\
+$\Delta\eta$ & $\Delta M_3$ & $\|\Delta h\|_2$ & $N^*_{\rm LeCam}$ (95\%) & $N_{\rm CR}$\\
 \midrule
 0.30 & $2.67\times10^{-4}$ & $1.98\times10^{-3}$ & 7.1 & 47.8\\
 0.20 & $7.92\times10^{-5}$ & $5.60\times10^{-4}$ & 88.2 & 597.0\\
@@ -893,6 +893,8 @@ Consider a stable economy with $0<a<1$, distinct memory rates $0<r_i<1$ and nonz
 \end{enumerate}
 \end{theorem}
 
+\paragraph{Machine check.} For every $K$, Lean checks part (i) and part (ii) starting from equal spectra at every frequency. The check uses $H$ in the rational form $\kappa zD(z)/((z-a)D(z)-\kappa N(z))$ of Theorem~\ref{thm:merged}, and \emph{stable} in the sense that the poles of $H$ lie in the open unit disk. Both are derived from the market recursion. The eigenvalues of the transition of the state $(x_t,y_{1,t},\ldots,y_{K,t})$ are exactly the zeros of the denominator of $H$, so Schur stability of the recursion is the pole condition. The generating function of the recursion's price response $h_t$ to a unit trade satisfies $\bigl(\sum_th_tx^t\bigr)\,x^{K+1}B(1/x)=x^{K+1}\kappa x^{-1}D(1/x)$ as formal power series, where $B$ is the denominator of $H$; with $x=1/z$ this is $\sum_th_tz^{-t}=H(z)$.
+
 The result holds for signed weights (mean-reverting cohorts): in 1,733 stable random economies with weights of both signs, the nonstructural zeros equalled the memory rates and lay inside the unit disk. With a second independent shock in the cohorts' memories, the Jacobian of the price spectrum with respect to six model parameters has full rank, with singular values from $34.51$ down to $0.0698$. Passive noise helps identification rather than hindering it.
 
 \begin{theorem}[Passive cost]\label{prop:passive}
@@ -904,6 +906,8 @@ Suppose the price is observed passively as the stationary output $x_t=H_\theta(L
 \end{enumerate}
 Hence any test based on $T$ passive observations with worst-case error at most $\alpha<1/4$ needs $T=\Omega(\delta^{-4})$, $T=\Omega(\tau^{-2}(\Delta\eta)^{-6})$ and $T=\Omega((\Delta\eta)^{-(4K-2)})$ respectively, uniformly as the separation shrinks: passive data cost at least the same polynomial order as active probing for every number of cohorts. For each fixed pair, at fixed type-I error the likelihood-ratio test's type-II error decays at exponential rate $D$ (Stein's lemma), and both errors decay at the Chernoff-information rate, which is of the same order in the separation; so the orders are the right ones; we do not claim that this attainment is uniform as the separation shrinks. All constants depend only on $K$, the stability margin of the family, the rate interval $[\eta_{\min},\eta_{\max}]$, the total weight and the moment-matched construction; they do not depend on $\delta$, $\Delta\eta$ or $T$. In part (ii) $\tau$ is held fixed as $\Delta\eta\to0$. The testing conclusions use a finite-record bound $\KL(P_1^T\|P_0^T)\le C\,T\,\varepsilon^2$, with $\varepsilon$ the leading moment gap ($\delta^2$, $\tau(\Delta\eta)^3$, $(\Delta\eta)^{2K-1}$); the lower bounds on $D$ and the fixed-pair error exponents are separate statements.
 \end{theorem}
+
+\paragraph{Machine check.} Lean checks the finite-sample consequence of parts (i) and (iii), not the divergence-rate statements. In the checked record the market starts from rest and runs for any number $M$ of warm-up periods before the $T$ recorded prices. The bound does not depend on $M$, but the passage to the stationary law ($M\to\infty$) is not checked. Part (iii) is checked for every pair of populations with nonnegative merged weights of total at most $W$, normalized rates in $[-1,1]$ and equal moments below order $2K-1$. This covers the $K$-cohort Gauss and Gauss--Radau economies of Theorem~\ref{thm:kcohort}: both rules are positive with nodes in $[-1,1]$ and integrate polynomials of degree $2K-2$ exactly. Lean proves these properties of the two rules for $K=2$ and $K=3$, so for these $K$ the check covers the paper's economies with no extra hypothesis. For general $K$, the exactness of the two quadrature rules, a classical property, enters the check as the moment hypothesis. It also covers the binomial pair used in the numerical checks.
 
 \paragraph{In words.} Watching the market without trading does not escape the barrier. A passive observer needs at least the same polynomial order of observations as a prober needs experiments; it pays in time rather than in trading losses. Prices recorded with extra measurement noise that is independent of the price are a garbling of the noiseless record, so by the data-processing inequality they carry less information, and the lower bound holds a fortiori.
 
@@ -958,7 +962,7 @@ where $A_m=\sum_{s\ge0}r_i^s\gamma_x(s+m)$, $\Gamma_0=\begin{psmallmatrix}\gamma
 \begin{equation}\label{eq:ivdet}
 \det\Sigma_i=w_i\sum_{\ell,m}c_\ell c_m\frac{1-\lambda_\ell\lambda_m}{1-r_i\lambda_m}\;>\;0 .
 \end{equation}
-$V_i$ depends only on cohort $i$'s own $(w_i,r_i)$, $\sigma_f^2$ and the price autocovariances. Two conclusions are distinct: (a) for each admissible economy, $\hat\beta_i$ has the stated limiting normal law; (b) on a uniformly stable family with stationary price variance at least $\gamma_{\min}>0$ and merged weights at least $w_{\min}>0$, the limiting covariance $V_i$ is bounded by a constant that does not depend on $|r_i-r_j|$. Statement (b) bounds the limit; it is not a central limit theorem that holds uniformly over the family. The machine-checked part is the finite-sample reset-experiment version, with an error bound that does not depend on the spacing.
+$V_i$ depends only on cohort $i$'s own $(w_i,r_i)$, $\sigma_f^2$ and the price autocovariances. Two conclusions are distinct: (a) for each admissible economy, $\hat\beta_i$ has the stated limiting normal law; (b) on a uniformly stable family with stationary price variance at least $\gamma_{\min}>0$ and merged weights at least $w_{\min}>0$, the limiting covariance $V_i$ is bounded by a constant that does not depend on $|r_i-r_j|$. Statement (b) bounds the limit; it is not a central limit theorem that holds uniformly over the family. Three pieces are machine-checked: the finite-sample reset-experiment version, with an error bound that does not depend on the spacing; the lower bound on the determinant of the population instrument matrix that does not depend on the spacing; and the exact decomposition of the IV score into reporting-error terms with coefficients fixed by the price path plus two boundary terms. The stationary law of large numbers and the central limit theorem behind (a) are not machine-checked.
 \end{proposition}
 
 \paragraph{In words.} If each group's trading is reported separately, each group becomes an ordinary regression. Its precision depends on the group's own rate and on the price dynamics, but it has no singularity as the groups' rates approach each other.
@@ -2242,7 +2246,7 @@ Data integrity (111 files) & \nolinkurl{R2-T9_data_integrity} & audit\\
 Tables~\ref{tab:ledger}, \ref{tab:capbounds} (certified, feasible, adaptive columns) & \nolinkurl{recompute_p1_capital.py} $\to$ \nolinkurl{R_P1_capital_ledger.json} & recomputed\\
 Table~\ref{tab:contracts}; resolution floors; Table~\ref{tab:protocols} & \nolinkurl{recompute_p1_protocols.py} $\to$ \nolinkurl{R_P1_protocols.json} & recomputed\\
 SPRT capital figures & \nolinkurl{recompute_p1_sprt.py} $\to$ \nolinkurl{R_P1_sprt.json} & recomputed\\
-Table~\ref{tab:crb} ($N^*$, $\sigma_{\rm crit}$) & \nolinkurl{recompute_crb.py} $\to$ \nolinkurl{R_P1_crb.json} & recomputed\\
+Table~\ref{tab:crb} ($N_{\rm CR}$, $\sigma_{\rm crit}$) & \nolinkurl{recompute_crb.py} $\to$ \nolinkurl{R_P1_crb.json} & recomputed\\
 Table~\ref{tab:crb} (ML columns), Table~\ref{tab:lecam} (estimators) & \nolinkurl{recompute_p1_estimators.py} & recomputed\\
 Symmetric multi-asset network (Appendix~\ref{sec:blind}) & \nolinkurl{recompute_oct20.py} & recomputed\\
 Proof audit: $K_*$ bound and $d_2$ identity (Theorem~\ref{thm:quantity}), moment gaps (Theorem~\ref{thm:twocohort}), spectral-blindness example (Theorem~\ref{thm:blind}) & \nolinkurl{recompute_audit.py} $\to$ \nolinkurl{R_audit_oct2026.json} & recomputed\\
@@ -2263,7 +2267,7 @@ Out-of-sample post-shock return test (Section~\ref{sec:disc_data}) & \texttt{rec
 Out-of-sample cohort-state trajectory test (Table~\ref{tab:disc_state_oos}) & \texttt{recompute\_\allowbreak prereg\_\allowbreak oct21\_\allowbreak followup.py} $\to$ \texttt{R\_P1\_\allowbreak disclosure\_\allowbreak state\_\allowbreak oos.json}; \texttt{P1\_\allowbreak disclosure\_\allowbreak state\_\allowbreak oos.json} (5136cc6b\ldots) & real data\\
 \bottomrule
 Proposition~\ref{prop:target}, Table~\ref{tab:target} & \nolinkurl{theory/targeted_intervention.py} $\to$ \nolinkurl{R_P1_targeted_intervention.json} & recomputed\\
-Table~\ref{tab:lecam}, column $N^*_{\rm CRB}$; Table~\ref{tab:crb}, spacing-0.10 three-cohort row & \nolinkurl{breakthrough_experiments/results_exp17_minimax_lecam_bound.json}, \nolinkurl{results_exp15_cohort_information.json} & recomputed (earlier run)\\
+Table~\ref{tab:lecam}, column $N_{\rm CR}$; Table~\ref{tab:crb}, spacing-0.10 three-cohort row & \nolinkurl{breakthrough_experiments/results_exp17_minimax_lecam_bound.json}, \nolinkurl{results_exp15_cohort_information.json} & recomputed (earlier run)\\
 Table~\ref{tab:rh}, best feasible probes and $L=320,480$ & \nolinkurl{R_P1_capital_ledger.json}, \nolinkurl{R_P1_cquadL.json} (reproduced by \nolinkurl{hardening/rh_quad.py}) & recomputed\\
 Table~\ref{tab:ledger}, peak margins of the eigenvector probes & \nolinkurl{breakthrough_experiments/results_exp14_capital_frontier_exact.json} & recomputed (earlier run)\\
 Table~\ref{tab:general} & \nolinkurl{theory/R_P1_general_minimax.json} & recomputed\\
@@ -2279,7 +2283,9 @@ Appendix~\ref{app:running} and Table~\ref{tab:running}: probing a running market
 Theorem~\ref{thm:merged}(i), Theorem~\ref{thm:kcohort} and Proposition~\ref{prop:tagged} (machine-checked parts) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1MergedModel.lean}, \path{Paper1Identification.lean}, \path{Paper1MomentGap.lean}, \path{Paper1PoleCount.lean}, \path{Paper1FiniteIdentification.lean}, \path{Paper1Tagged.lean}, \path{Paper1Testing.lean}, \path{Paper1LowerBound.lean}, \path{Paper1MatchedPair.lean} & Lean 4 proof\\
 Theorem~\ref{prop:esprit} (machine-checked, every $K$) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1PronyUpper.lean}, \path{Paper1PronyMoment.lean}, \path{Paper1PronyDeconv.lean}, \path{Paper1UniformInverse.lean} & Lean 4 proof\\
 Theorems~\ref{thm:merged}(ii), \ref{thm:blind}, \ref{thm:minphase} (zeros), \ref{thm:discvalue}(ii) (tagged upper bound) and Proposition~\ref{prop:tagged} (instrument determinant), machine-checked parts & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1MergedSeparation.lean}, \path{Paper1Blind.lean}, \path{Paper1MinPhase.lean}, \path{Paper1TaggedRates.lean}, \path{Paper1TaggedIV.lean} & Lean 4 proof\\
-Theorem~\ref{prop:passive}(i) and (iii), sample bounds for passive data (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1PassiveCost.lean}, \path{Paper1PassiveKCohort.lean}, \path{Paper1PassiveRecord.lean}, \path{Paper1GaussianTriangular.lean} & Lean 4 proof\\
+Theorem~\ref{prop:passive}(i) and (iii), sample bounds for passive data from rest after any warm-up, any moment-matched pair (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1PassiveCost.lean}, \path{Paper1PassiveKCohort.lean}, \path{Paper1PassiveMatched.lean}, \path{Paper1PassiveRecord.lean}, \path{Paper1GaussianTriangular.lean} & Lean 4 proof\\
+Theorem~\ref{thm:minphase}, model links: poles of $H$ are the eigenvalues of the market transition, and the recursion's impulse response has transfer function $H$ (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1ModelLink.lean} & Lean 4 proof\\
+Theorem~\ref{thm:kcohort}: the three-point Gauss and Gauss--Radau rules, their matched moments and fifth-moment gap (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1GaussRadau3.lean} & Lean 4 proof\\
 Theorem~\ref{thm:general}, both parts (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1GeneralMemoryLower.lean}, \path{Paper1Jackson.lean}, \path{Paper1JacksonPoly.lean}, \path{Paper1GeneralMemoryUpper.lean}, \path{Paper1GeneralMemoryRate.lean} & Lean 4 proof\\
 Proposition~\ref{prop:target}, supervisory separation (machine-checked for two groups; part (i) for every $K$) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1SupervisorySeparation.lean} & Lean 4 proof\\
 Theorem~\ref{thm:quantity}(i) and Lemma~\ref{thm:capital}, quantity and capital lower bounds (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1QuantityCapital.lean} & Lean 4 proof\\

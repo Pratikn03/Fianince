@@ -77,7 +77,9 @@ from public market data (real data), and audits.
 | Theorem 3.1(i), Theorem 5.1 and Proposition 6.1 (machine-checked parts) | , , , , , , , , | Lean 4 proof |
 | Theorem 5.2 (machine-checked, every $`K`$) | , , , | Lean 4 proof |
 | Theorems 3.1(ii), S12.1, 5.4 (zeros), 6.2(ii) (tagged upper bound) and Proposition 6.1 (instrument determinant), machine-checked parts | , , , , | Lean 4 proof |
-| Theorem 5.5(i) and (iii), sample bounds for passive data (machine-checked) | , , , | Lean 4 proof |
+| Theorem 5.5(i) and (iii), sample bounds for passive data from rest after any warm-up, any moment-matched pair (machine-checked) | `CurrentProofs/Paper1PassiveCost.lean`, `Paper1PassiveKCohort.lean`, `Paper1PassiveMatched.lean`, `Paper1PassiveRecord.lean`, `Paper1GaussianTriangular.lean` | Lean 4 proof |
+| Theorem 5.4, model links: poles of H are the eigenvalues of the market transition; the recursion's impulse response has transfer function H (machine-checked) | `CurrentProofs/Paper1ModelLink.lean` | Lean 4 proof |
+| Theorem 5.1: three-point Gauss and Gauss–Radau rules, matched moments and fifth-moment gap (machine-checked) | `CurrentProofs/Paper1GaussRadau3.lean` | Lean 4 proof |
 | Theorem S17.2, both parts (machine-checked) | , , , , | Lean 4 proof |
 | Proposition 6.4, supervisory separation (machine-checked for two groups; part (i) for every $`K`$) |  | Lean 4 proof |
 | Theorem 4.1(i) and Lemma S24.4, quantity and capital lower bounds (machine-checked) |  | Lean 4 proof |

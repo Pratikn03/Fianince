@@ -13,3 +13,5 @@ any named theorem whose axioms go beyond {propext, Classical.choice, Quot.sound}
 | 727ac9c | 42323561223 | failure | IVBoundary: missing `Real` import. CRRaw: `inv_smul` rewrite. CRActual built. |
 | 65847c2 | 42324342693 | failure | CRRaw: `inv_smul` argument order. |
 | cebb5c5 | 42325228369 | **success** | 931 named declarations; `NAMED_PROOFS_BUILD_AND_STRICT_AXIOM_AUDIT_PASS`; only standard axioms. |
+| 4d6adfc | 42339802397 | **success** | PassiveMatched (any moment-matched pair; K = 2 Gauss/Gauss–Radau) |
+| 51e0896 | 42340738038 | **success** | ModelLink (eigenvalues = poles; impulse transfer function), GaussRadau3 |
