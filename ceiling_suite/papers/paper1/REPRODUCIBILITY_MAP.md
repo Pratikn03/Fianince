@@ -87,6 +87,7 @@ from public market data (real data), and audits.
 | Theorem S3.1, finite-window abstention (machine-checked) | `CurrentProofs/Paper1Abstain.lean` | Lean 4 proof |
 | Corollary 5.3(i)–(ii), identification with unknown (a, κ) (machine-checked) | `CurrentProofs/Paper1UnknownPrimitives.lean` | Lean 4 proof |
 | Proposition S7.1(i), Cramér–Rao bound on the raw records of the actual market (machine-checked) | `CurrentProofs/Paper1GaussianHCR.lean`, `Paper1GaussianCR.lean`, `Paper1CRActual.lean`, `Paper1CRRaw.lean` | Lean 4 proof |
+| Proposition S7.1(iii), two-sided (Δη)^-6 bound on both weight entries of the inverse Fisher matrix, fixed T ≥ 4 (machine-checked) | `CurrentProofs/Paper1FisherBounds.lean`, `Paper1CRTaps.lean`, `Paper1CRS71iii.lean`, `Paper1CRS71iiiEta.lean`, `Paper1CRS71iiiW2.lean` | Lean 4 proof |
 | Theorem 5.4(ii) for every K: the spectrum determines σ²κ², H/h₀ and, with κ known, the merged measure (machine-checked) | `CurrentProofs/Paper1SpectralID.lean`, `Paper1SpectralH.lean` | Lean 4 proof |
 | Proposition S3.2, passive distinction with zero controlled quantity (machine-checked) | `CurrentProofs/Paper1PassiveVariance.lean` | Lean 4 proof |
 | Lemma S24.4, converse: pulse test errors and margin solvency (machine-checked) | `CurrentProofs/Paper1CapitalConverse.lean` | Lean 4 proof |

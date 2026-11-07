@@ -22,7 +22,9 @@ Done:
 - `p1_rawJac_gram`, `p1_thm_cramer_rao_raw_actual`: the bound holds on all N·T raw reset records, not only their
   average. The raw Gram matrix is `N V² JᵀJ`, which gives `σ_p²[(JᵀJ)⁻¹]_kk/(N V²) = σ_h²[(JᵀJ)⁻¹]_kk`.
 
-First unresolved item (C4): the size of the actual `[(JᵀJ)⁻¹]_kk`, i.e. two-sided bounds `c d⁻⁶ ≤ [(JᵀJ)⁻¹]_kk ≤ C d⁻⁶`
+C4 DONE (7 Nov 2026, CI 42347257874): `p1_prop_S7_1_iii`, `p1_prop_S7_1_iii_two` and `p1_prop_S7_1_iii_eta` give `c d⁻⁶ ≤ [(JᵀJ)⁻¹]_kk ≤ C d⁻⁶` for both weights, fixed `T ≥ 4`. Remaining: a `T`-uniform constant (Parseval route, using `Paper1CRScalingH`). Next package: Proposition 6.1 (IV CLT, steps I1–I9), then Theorem 5.5 (W targets).
+
+Historical note on C4: the size of the actual `[(JᵀJ)⁻¹]_kk`, i.e. two-sided bounds `c d⁻⁶ ≤ [(JᵀJ)⁻¹]_kk ≤ C d⁻⁶`
 for the weight coordinate. This needs a fixed horizon, at least 4 informative taps, and a compact stable family.
 - Route: factor J = (∂h/∂moments)·(∂moments/∂θ). The second factor is the confluent Vandermonde, whose inverse row is
   computed exactly in `SpectralCapital.lean`.

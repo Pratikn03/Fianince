@@ -15,3 +15,9 @@ any named theorem whose axioms go beyond {propext, Classical.choice, Quot.sound}
 | cebb5c5 | 42325228369 | **success** | 931 named declarations; `NAMED_PROOFS_BUILD_AND_STRICT_AXIOM_AUDIT_PASS`; only standard axioms. |
 | 4d6adfc | 42339802397 | **success** | PassiveMatched (any moment-matched pair; K = 2 Gauss/Gauss–Radau) |
 | 51e0896 | 42340738038 | **success** | ModelLink (eigenvalues = poles; impulse transfer function), GaussRadau3 |
+| 21ff920 | — | failure | CRScaling: `HasDerivAt.div`/`.pow` resolved to `HasFDerivAtFilter` (Deriv.Add not imported). |
+| c0b2d45 | 42342953769 | failure | CRScaling: `field_simp` could not clear squared denominators; replaced by `p1_K2_alg`. |
+| 1687175 | 42344595527 | failure | FisherBounds: missing `Real` import. CRScaling, CRScalingH built. |
+| 26f8995 | 42345445176 | failure | CRS71iii: higher-order unification in range reduction; `ring` on powers. FisherBounds, CRTaps built. |
+| c18188b | 42346346197 | failure | CRS71iiiEta: stray parenthesis. CRS71iii built. |
+| 7059b69 | 42347257874 | **success** | 1026 named declarations, 109 modules; `NAMED_DECLARATIONS_KERNEL_CHECKED_STANDARD_FOUNDATIONS_ONLY`. S7.1(iii) end to end. |

@@ -47,3 +47,7 @@ with `V = 1`).
 | 6 | Cauchy–Schwarz in the `F_T` inner product, `(e₁ᵀv)² ≤ [F_T⁻¹]_{11} vᵀF_Tv` with `v₁ = 1`. Gives the lower bound `[F_T⁻¹]_{11} ≥ B⁻² d⁻⁶`. |
 | 7 | Upper bound. Construct `b` with `J_Tᵀb = e₁` and `‖b‖ ≤ L C₀ d⁻³`, from the map taps → moments and the confluent-Vandermonde inverse row. |
 | 8 | Assemble and audit. |
+
+## Status (7 November 2026)
+
+Phases 3–8 are complete and pass CI run 42347257874 (commit 7059b69) under the strict axiom audit. The delivered theorem needs no stability margin and no small-spacing threshold: it holds for every `0 ≤ r₁ < r₂ ≤ 1`. The constants depend on `T`, `|a|`, `κ_min`, `κ_max` and `w_max`. `w_min` is needed only for `wᵢ ≠ 0`. The Phase 4 bound is proved but unused by the fixed-`T` route.
