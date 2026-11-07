@@ -80,3 +80,19 @@ workspace cannot reach the exchanges. Reproduction therefore requires a Colab ru
 
 The schema probe in `SCHEMA_PROBE.md` looks only at field layouts on two declared days. It is not a test, and those
 days are excluded from every future confirmatory sample.
+
+## Empirical runs still missing (7 November 2026)
+
+1. **P1T validation, then holdout.** The validation run is in progress in the author's Colab. The holdout is opened
+   once, after validation is checked and any bug fixes are logged. This is the first direct test on tagged flow.
+2. **P1T replication on TPEx.** A separate registered specification with the same frozen procedure on the OTC
+   market. It must be registered before the TPEx test data are requested.
+3. **Calibrated cost illustration for Taiwan.**
+   - Fit (a, κ, r_i, w_i) on development data.
+   - Report the sample, quantity and capital requirements for price-only versus tagged observation.
+   - Carry the fitted parameters' uncertainty through.
+   - Label it a model-based illustration, with lower bounds labelled as lower bounds.
+4. **Independent reproduction of the Binance results E10 and E23.** This is a labelled check, and the recorded
+   outcomes do not change. It needs the author's ruling on reruns.
+5. **S3 of P1T.** The formula-based standard error of r̂_F against the holdout bootstrap standard error. This is the
+   paper's quantitative holdout prediction and comes with the holdout run.
