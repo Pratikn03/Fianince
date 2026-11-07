@@ -83,8 +83,14 @@ days are excluded from every future confirmatory sample.
 
 ## Empirical runs still missing (7 November 2026)
 
-1. **P1T validation, then holdout.** The validation run is in progress in the author's Colab. The holdout is opened
-   once, after validation is checked and any bug fixes are logged. This is the first direct test on tagged flow.
+1. **P1T validation, then holdout.**
+   - First attempt (7 November 2026): the download completed, and the run stopped at parsing because TWSE's T86
+     report has three column schemas over 2013–2018. No statistic was computed.
+   - Amendment A1 (`P1T_amendment_A1.md`) maps the schemas to the registered classes without changing the
+     hypothesis, statistic or criteria. It is validated on simulation, and the Foreign verdicts are unchanged.
+   - The rerun with `P1T_Validation_A1_Colab.ipynb` is pending.
+   - The holdout is opened once, after validation is checked and any bug fixes are logged. This is the first
+     direct test on tagged flow.
 2. **P1T replication on TPEx.** A separate registered specification with the same frozen procedure on the OTC
    market. It must be registered before the TPEx test data are requested.
 3. **Calibrated cost illustration for Taiwan.**

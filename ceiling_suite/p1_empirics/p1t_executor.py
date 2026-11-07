@@ -44,7 +44,10 @@ def stock_losses(u, x, lim, usable, fit_mask, eval_mask):
     """
     T = len(u)
     t_all = np.arange(1, T - 1)
-    ok = usable[1:T - 1]
+    fin = np.isfinite(u)
+    # Amendment A1: an origin needs finite flows at t-1, t, t+1 (a no-op for Foreign; needed for classes that a
+    # T86 schema era does not report).
+    ok = usable[1:T - 1] & fin[0:T - 2] & fin[1:T - 1] & fin[2:T]
     fit = t_all[ok & fit_mask[1:T - 1]]
     ev = t_all[ok & eval_mask[1:T - 1]]
     ell = np.full(T, np.nan)
@@ -113,13 +116,24 @@ def decide(D, boot):
 # 2. Data
 # ----------------------------------------------------------------------------------------------------------------
 
+# Amendment A1 (7 November 2026, before any statistic was computed). TWSE's T86 report has three schema eras in the
+# registered sample (census of every stored response, schema_census.json):
+#   E1 2013-01-02 .. 2014-11-28: 外資買賣超股數, 投信買賣超股數, 自營商買賣超股數 (no own/hedging split)
+#   E2 2014-12-01 .. 2017-12-15: as E1 plus 自營商買賣超股數(自行買賣) and 自營商買賣超股數(避險)
+#   E3 2017-12-18 ..           : 外陸資買賣超股數(不含外資自營商) and 外資自營商買賣超股數 replace 外資買賣超股數
+# Each series is read from the first name in its list that the day's schema contains. Foreign is the reported foreign
+# total in E1-E2 and the sum of its two parts in E3 (spec: "Foreign (including foreign dealers)"). A series that a
+# day's schema does not report is NaN for every stock that day (never zero). An unknown schema stops the run.
 T86_FIELDS = {
-    "foreign_ex": "外陸資買賣超股數(不含外資自營商)",
-    "foreign_dealer": "外資自營商買賣超股數",
-    "trust": "投信買賣超股數",
-    "dealer_own": "自營商買賣超股數(自行買賣)",
-    "dealer_hedge": "自營商買賣超股數(避險)",
+    "foreign_ex": ["外陸資買賣超股數(不含外資自營商)", "外資買賣超股數"],
+    "foreign_dealer": ["外資自營商買賣超股數", None],     # None: contained in the E1-E2 foreign total, read as 0
+    "trust": ["投信買賣超股數"],
+    "dealer_total": ["自營商買賣超股數"],
+    "dealer_own": ["自營商買賣超股數(自行買賣)"],
+    "dealer_hedge": ["自營商買賣超股數(避險)"],
+    "total3": ["三大法人買賣超股數"],
 }
+REQUIRED = ("foreign_ex", "trust", "dealer_total")
 QUOTE_TITLE_SUFFIX = "權證、牛熊證、可展延牛熊證))"
 INDEX_NAME = "發行量加權股價指數"
 
@@ -134,14 +148,64 @@ def _num(s):
         return math.nan
 
 
+def t86_positions(fields):
+    """Column index per series for one schema, None if the series is contained elsewhere (read as 0), -1 if absent."""
+    pos = {}
+    for k, names in T86_FIELDS.items():
+        hit = next((n for n in names if n is not None and n in fields), "absent")
+        if hit == "absent" and None in names and any(n in fields for n in T86_FIELDS["foreign_ex"][1:]):
+            pos[k] = None
+        else:
+            pos[k] = fields.index(hit) if hit != "absent" else -1
+    for k in REQUIRED:
+        if pos[k] is None or pos[k] < 0:
+            raise ValueError(f"unknown T86 schema: required series {k} not found in {fields}")
+    return pos
+
+
 def parse_t86(j):
-    f = j["fields"]
-    pos = {k: f.index(v) for k, v in T86_FIELDS.items()}
+    """Returns (records, unavailable): records[code][series] and the set of series this day's schema lacks."""
+    pos = t86_positions(j["fields"])
+    unavailable = {k for k, i in pos.items() if i is not None and i < 0}
     out = {}
     for row in j.get("data", []):
         code = row[0].strip()
         if len(code) == 4 and code.isdigit():
-            out[code] = {k: _num(row[i]) for k, i in pos.items()}
+            out[code] = {k: (0.0 if i is None else (math.nan if i < 0 else _num(row[i]))) for k, i in pos.items()}
+    return out, unavailable
+
+
+def t86_diagnostics(day_files):
+    """Flow-only accounting checks per schema era (no prices, no forecasts). Shares of stock-days on which the
+    three-institution total equals the sum of the parts, with and without the foreign dealers, and on which the dealer
+    total equals own + hedging; and the foreign dealers' share of absolute foreign net flow."""
+    eras = {}
+    for d, t86, _ in day_files:
+        key = tuple(t86["fields"])
+        e = eras.setdefault(key, {"first": d, "last": d, "days": 0, "rows": 0, "total_with_fd": 0, "total_without_fd": 0,
+                                  "dealer_rows": 0, "dealer_sum_ok": 0, "abs_fd": 0.0, "abs_foreign": 0.0})
+        e["last"] = d; e["days"] += 1
+        rec, unavail = parse_t86(t86)
+        for r in rec.values():
+            vals = [r["foreign_ex"], r["foreign_dealer"], r["trust"], r["dealer_total"], r["total3"]]
+            if not all(np.isfinite(v) for v in vals):
+                continue
+            e["rows"] += 1
+            e["total_with_fd"] += abs(r["total3"] - (r["foreign_ex"] + r["foreign_dealer"] + r["trust"] + r["dealer_total"])) < 0.5
+            e["total_without_fd"] += abs(r["total3"] - (r["foreign_ex"] + r["trust"] + r["dealer_total"])) < 0.5
+            if np.isfinite(r["dealer_own"]) and np.isfinite(r["dealer_hedge"]):
+                e["dealer_rows"] += 1
+                e["dealer_sum_ok"] += abs(r["dealer_total"] - r["dealer_own"] - r["dealer_hedge"]) < 0.5
+            e["abs_fd"] += abs(r["foreign_dealer"]); e["abs_foreign"] += abs(r["foreign_ex"] + r["foreign_dealer"])
+    out = []
+    for key, e in eras.items():
+        n = max(e["rows"], 1)
+        out.append({"first": e["first"], "last": e["last"], "days": e["days"], "rows": e["rows"],
+                    "share_total_eq_parts_with_foreign_dealers": e["total_with_fd"] / n,
+                    "share_total_eq_parts_without_foreign_dealers": e["total_without_fd"] / n,
+                    "share_dealer_total_eq_own_plus_hedge": (e["dealer_sum_ok"] / e["dealer_rows"]) if e["dealer_rows"] else None,
+                    "foreign_dealer_share_of_abs_foreign_flow": e["abs_fd"] / e["abs_foreign"] if e["abs_foreign"] else None,
+                    "fields": list(key)})
     return out
 
 
@@ -203,9 +267,9 @@ def build_panel(day_files, extra_events=None):
     parsed = []
     codes = set()
     for d, t86, mi in day_files:
-        fl = parse_t86(t86)
+        fl, unavail = parse_t86(t86)
         q, idx = parse_mi_index(mi)
-        parsed.append((d, fl, q, idx))
+        parsed.append((d, (fl, unavail), q, idx))
         codes |= set(q)
     codes = sorted(codes)
     ci = {c: i for i, c in enumerate(codes)}
@@ -215,7 +279,7 @@ def build_panel(day_files, extra_events=None):
     event = np.zeros((N, T), bool)
     flows = {k: nan() for k in T86_FIELDS}
     index = np.full(T, np.nan)
-    for t, (d, fl, q, idx) in enumerate(parsed):
+    for t, (d, (fl, unavail), q, idx) in enumerate(parsed):
         index[t] = idx
         for c, rec in q.items():
             i = ci[c]
@@ -223,7 +287,8 @@ def build_panel(day_files, extra_events=None):
             if rec["vol"] and rec["vol"] > 0:
                 f = fl.get(c)
                 for k in T86_FIELDS:
-                    flows[k][i, t] = 0.0 if f is None else f[k]
+                    # absent from the day's report = no institutional trade (0); a series the schema lacks = NaN
+                    flows[k][i, t] = math.nan if k in unavail else (0.0 if f is None else f[k])
     x_only = int(event.sum())
     if extra_events:
         di = {p[0]: t for t, p in enumerate(parsed)}
@@ -243,7 +308,9 @@ def class_flows(P):
         "DealerOwn": F["dealer_own"],
         "Hedge": F["dealer_hedge"],
     }
-    out["Residual"] = -(out["Foreign"] + out["Trust"] + out["DealerOwn"] + out["Hedge"])
+    # Residual = minus all reported institutional flow. The dealer total replaces own + hedging, which it equals
+    # wherever the split is reported (checked by t86_diagnostics), and exists in every schema era.
+    out["Residual"] = -(out["Foreign"] + out["Trust"] + F["dealer_total"])
     return out
 
 

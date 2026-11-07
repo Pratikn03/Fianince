@@ -11,11 +11,19 @@ import numpy as np
 
 import p1t_executor as ex
 
-FIELDS_T86 = ["證券代號", "證券名稱", "外陸資買進股數(不含外資自營商)", "外陸資賣出股數(不含外資自營商)",
-              ex.T86_FIELDS["foreign_ex"], "外資自營商買進股數", "外資自營商賣出股數", ex.T86_FIELDS["foreign_dealer"],
-              "投信買進股數", "投信賣出股數", ex.T86_FIELDS["trust"], "自營商買賣超股數",
-              "自營商買進股數(自行買賣)", "自營商賣出股數(自行買賣)", ex.T86_FIELDS["dealer_own"],
-              "自營商買進股數(避險)", "自營商賣出股數(避險)", ex.T86_FIELDS["dealer_hedge"], "三大法人買賣超股數"]
+# The three T86 schema eras found by the census of the stored 2013-2018 responses (amendment A1), verbatim.
+ERA_FIELDS = [
+    ["證券代號", "證券名稱", "外資買進股數", "外資賣出股數", "外資買賣超股數", "投信買進股數", "投信賣出股數", "投信買賣超股數",
+     "自營商買賣超股數", "自營商買進股數", "自營商賣出股數", "三大法人買賣超股數"],
+    ["證券代號", "證券名稱", "外資買進股數", "外資賣出股數", "外資買賣超股數", "投信買進股數", "投信賣出股數", "投信買賣超股數",
+     "自營商買賣超股數", "自營商買進股數(自行買賣)", "自營商賣出股數(自行買賣)", "自營商買賣超股數(自行買賣)",
+     "自營商買進股數(避險)", "自營商賣出股數(避險)", "自營商買賣超股數(避險)", "三大法人買賣超股數"],
+    ["證券代號", "證券名稱", "外陸資買進股數(不含外資自營商)", "外陸資賣出股數(不含外資自營商)", "外陸資買賣超股數(不含外資自營商)",
+     "外資自營商買進股數", "外資自營商賣出股數", "外資自營商買賣超股數", "投信買進股數", "投信賣出股數", "投信買賣超股數",
+     "自營商買賣超股數", "自營商買進股數(自行買賣)", "自營商賣出股數(自行買賣)", "自營商買賣超股數(自行買賣)",
+     "自營商買進股數(避險)", "自營商賣出股數(避險)", "自營商買賣超股數(避險)", "三大法人買賣超股數"],
+]
+FIELDS_T86 = ERA_FIELDS[2]
 FIELDS_Q = ["證券代號", "證券名稱", "成交股數", "成交筆數", "成交金額", "開盤價", "最高價", "最低價", "收盤價",
             "漲跌(+/-)", "漲跌價差", "最後揭示買價", "最後揭示買量", "最後揭示賣價", "最後揭示賣量", "本益比"]
 
@@ -43,13 +51,21 @@ def fake_days(N, T, w, seed):
     close = np.round(np.exp(logp), 2)
     for t in range(T):
         d = f"D{t:05d}"
-        t86 = {"fields": FIELDS_T86, "data": []}
+        era = 0 if t < T // 3 else (1 if t < 2 * T // 3 else 2)
+        fields = ERA_FIELDS[era]
+        t86 = {"fields": fields, "data": []}
         q = {"fields": FIELDS_Q, "data": []}
         for i, c in enumerate(codes):
             fF = int(round(uF[i, t] * vol[i, t] / 10)); fO = int(round(uO[i, t] * vol[i, t] / 10))
-            row = [c, "x"] + ["0"] * (len(FIELDS_T86) - 2)
-            row[FIELDS_T86.index(ex.T86_FIELDS["foreign_ex"])] = f"{fF:,}"
-            row[FIELDS_T86.index(ex.T86_FIELDS["trust"])] = f"{fO:,}"
+            row = [c, "x"] + ["0"] * (len(fields) - 2)
+            if era == 2:   # split the foreign flow into its two E3 parts
+                fd = int(round(0.05 * fF))
+                row[fields.index("外陸資買賣超股數(不含外資自營商)")] = f"{fF - fd:,}"
+                row[fields.index("外資自營商買賣超股數")] = f"{fd:,}"
+            else:
+                row[fields.index("外資買賣超股數")] = f"{fF:,}"
+            row[fields.index("投信買賣超股數")] = f"{fO:,}"
+            row[fields.index("三大法人買賣超股數")] = f"{fF + fO:,}"
             t86["data"].append(row)
             prev = close[i, t - 1] if t > 0 else close[i, t]
             sign = "<p style= color:red>+</p>" if close[i, t] >= prev else "<p style= color:green>-</p>"
@@ -73,13 +89,41 @@ def one(w, seed, N=40, T_dev=985, T_eval=490, B=499):
     return ex.run_period(prep, dev, ~dev, B=B, mean_block=20)
 
 
+def schema_checks():
+    """Amendment A1 unit checks: each era parses, unavailable series are NaN, Foreign sums its parts."""
+    out = {}
+    for e, f in enumerate(ERA_FIELDS):
+        row = ["1101", "x"] + [str(10 * (k + 1)) for k in range(len(f) - 2)]
+        rec, unavail = ex.parse_t86({"fields": f, "data": [row]})
+        r = rec["1101"]
+        foreign = r["foreign_ex"] + r["foreign_dealer"]
+        expect = (float(row[f.index("外資買賣超股數")]) if e < 2 else
+                  float(row[f.index("外陸資買賣超股數(不含外資自營商)")]) + float(row[f.index("外資自營商買賣超股數")]))
+        out[f"E{e + 1}"] = {"unavailable": sorted(unavail), "foreign_ok": foreign == expect,
+                            "own_nan": bool(np.isnan(r["dealer_own"]))}
+    try:
+        ex.parse_t86({"fields": ["證券代號", "證券名稱", "something"], "data": []}); out["unknown_schema_stops"] = False
+    except ValueError:
+        out["unknown_schema_stops"] = True
+    ok = (out["E1"]["unavailable"] == ["dealer_hedge", "dealer_own"] and out["E2"]["unavailable"] == []
+          and out["E3"]["unavailable"] == [] and all(out[k]["foreign_ok"] for k in ("E1", "E2", "E3"))
+          and out["E1"]["own_nan"] and out["unknown_schema_stops"])
+    out["passed"] = ok
+    return out
+
+
 if __name__ == "__main__":
     reps = int(sys.argv[1]) if len(sys.argv) > 1 else 3
-    res = {"w0": [], "w01": []}
+    res = {"schema_checks": schema_checks(), "w0": [], "w01": []}
+    print("schema checks", res["schema_checks"], flush=True)
+    d = fake_days(20, 300, 0.0, 7)
+    res["diagnostics_on_simulated_eras"] = [{k: v for k, v in e.items() if k != "fields"} for e in ex.t86_diagnostics(d)]
+    print("diagnostics", res["diagnostics_on_simulated_eras"], flush=True)
     for k in range(reps):
         res["w0"].append(one(0.0, 100 + k)); print("w=0  ", res["w0"][-1], flush=True)
         res["w01"].append(one(0.1, 200 + k)); print("w=0.1", res["w01"][-1], flush=True)
-    ok = all(r["verdict"] != "supportive" for r in res["w0"]) and all(r["verdict"] == "supportive" for r in res["w01"])
+    ok = (res["schema_checks"]["passed"] and all(r["verdict"] != "supportive" for r in res["w0"])
+          and all(r["verdict"] == "supportive" for r in res["w01"]))
     res["passed"] = ok
     json.dump(res, open("validate_executor_results.json", "w"), indent=1, ensure_ascii=False)
     print("VALIDATION", "PASSED" if ok else "FAILED")
