@@ -130,7 +130,19 @@ They combine naturally: a market maker with inventory cost that is also learning
     benchmark existence iff. Parts (iii)–(iv) are proved on paper.
   - Numerics in `e4_inventory.py`. Positive feedback raises impact and shrinks the existence region: A* is 0.40,
     0.255, 0.130, 0.068 and 0.034 for G(1) = 0, 0.067, 0.167, 0.333 and 0.667.
-  - **Not done.** The combination with the Kyle insider (the λ term). The rate constants of Sections 5–6 have not
-    been recomputed for the equilibrium transfer function; the paper says so. The fragility result is numerical,
-    not a theorem.
+  - **Not done.** The combination with the Kyle insider (the λ term).
+- **Rate in equilibrium done.** Theorem `thm:eqreduced` (now 4.2). Pathwise, the equilibrium price is the paper's
+  closed loop with a* = ā/D, κ* = κ/D and w̃_i = (D−ā)w_i/(D−r_i), at the same memory rates.
+  - So the zeros, the merged-measure boundary and every flow-to-price result transfer, with constants at the
+    effective parameters.
+  - The Gauss/Radau lower-bound pair of Theorem kcohort is realized by two equilibria with identical primitives:
+    D = 1 − κ*W/(1−a*), and the kcohort stability condition gives D > every rate.
+  - Lean `Paper1EquilibriumReducedForm.lean` covers the pathwise identity and the realization. Numerics in
+    `e4_reduced_form.py`: paths agree to 4e-16, and the pair's gap is ≈ 1.25 d³.
+  - New assumption, stated in the paper: dealers price the probe as part of exogenous noise.
+- **Fragility done for one cohort.** Theorem `thm:fragility` (now 4.3).
+  - A positive-impact equilibrium exists iff A ≤ A*(w) = max Ψ_w, and every such equilibrium is stable.
+  - A* is strictly decreasing in w, with A* → (1−ā)/(2σ_Fσ_ξ) as w → 0.
+  - A* < min{A*_0, Φ*/(σ_F² w)}, and w A* → Φ*/σ_F². In terms of G(1): A* < (1−ā)(1−r)/(4σ_F²G(1)).
+  - The Lean necessary conditions are in the same file. Several cohorts: numerical only.
 - **Still open.** E5 (disclosure in equilibrium). Lean versions of E2, E3 and E4(iii)–(iv).

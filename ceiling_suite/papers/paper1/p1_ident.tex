@@ -45,7 +45,7 @@ Thus a covariance discrepancy of order $(\Delta\eta)^{2K-1}$ preserves that orde
 
 The identification results take the price impact $\kappa$ and the persistence $a$ of pricing errors as given, and nobody in the model optimizes. This section derives both from dealers who dislike holding inventory. It then shows four things:
 \begin{itemize}[itemsep=1pt,topsep=2pt]
-\item the identification boundary of Theorem~\ref{thm:merged} is an equilibrium object;
+\item the equilibrium price is the paper's closed loop with effective parameters, so the identification boundary and the rates hold in equilibrium, and positive feedback creates an explicit fragility threshold;
 \item a strategic insider cannot change it;
 \item misjudging the aggregate response creates rents of first order;
 \item targeted actions still need group-level information.
@@ -61,6 +61,7 @@ The identification results take the price impact $\kappa$ and the persistence $a
 We study stationary equilibria in which $x_t$ is linear in the dealers' inventory and the cohorts' next trades. Write $G(D)=\sum_iw_i/(D-r_i)=\int dM(r)/(D-r)$ for the Stieltjes transform of the merged measure.
 
 \begin{theorem}[Price impact and persistence in an inventory equilibrium]\label{thm:inventory}
+Consider stationary linear equilibria of the model above.
 \begin{enumerate}[label=(\roman*),itemsep=1pt]
 \item \emph{Characterization.} The price law
 \[
@@ -81,15 +82,77 @@ Positive feedback raises the impact $\kappa$, and it raises the impact of an une
 \end{enumerate}
 \end{theorem}
 
-\paragraph{In words.} Dealers set the price impact and the persistence of mispricing. Impact is what they charge for carrying inventory risk; persistence is how slowly they lay that inventory off. Without feedback traders, this equilibrium is exactly the closed loop the paper starts from. Feedback traders enter only through their merged measure, as Theorem~\ref{thm:eqinv} requires. Positive feedback raises price impact, and dealers price their predictable future trades in advance (the terms in $u_{i,t+1}$). In the numerical solution of Supplement~\ref{app:eqinv}, one positive-feedback cohort of weight $0.02$ and memory $r=0.7$, so that $G(1)=\tfrac1{15}$, lowers the largest dealer risk aversion at which an equilibrium exists from $0.40$ to $0.25$. A cohort with $G(1)=\tfrac23$ lowers it to $0.034$. Beyond that threshold no equilibrium with positive impact exists. So feedback trading makes liquidity fragile, not only more expensive.
+\paragraph{In words.} Dealers set the price impact and the persistence of mispricing. Impact is what they charge for carrying inventory risk; persistence is how slowly they lay that inventory off. Without feedback traders, this equilibrium is exactly the closed loop the paper starts from. Feedback traders enter only through their merged measure, as Theorem~\ref{thm:eqinv} requires. Positive feedback raises price impact, and dealers price their predictable future trades in advance (the terms in $u_{i,t+1}$). Feedback trading also makes liquidity fragile, not only more expensive: beyond a threshold in dealer risk aversion that falls with the feedback intensity, no equilibrium exists (Theorem~\ref{thm:fragility}).
 
-\paragraph{What this changes for the rest of the paper.}
+\paragraph{Machine check.} \nolinkurl{Paper1InventoryEquilibrium.lean} checks the algebraic core of part (i):
 \begin{itemize}[itemsep=1pt,topsep=2pt]
-\item Without feedback, the reduced form used in Sections~\ref{sec:resources}--\ref{sec:disclosure} is an equilibrium outcome.
-\item With feedback, dealers' anticipation changes the transfer function from flow to price. The merged-measure boundary survives by Theorem~\ref{thm:eqinv}. The rate constants of Sections~\ref{sec:resources} and~\ref{sec:mixtures} are proved for the reduced form and must be recomputed for the equilibrium transfer function; we do not do that here.
-\item The algebraic core of part (i) is machine-checked: the dealers' first-order condition holds in every state, the next price loads on the next flow shock with coefficient $\kappa/D$, and the no-feedback existence condition (\nolinkurl{Paper1InventoryEquilibrium.lean}).
-\item Parts (iii) and (iv) are proved on paper.
+\item the dealers' first-order condition holds in every state;
+\item the next price loads on the next flow shock with coefficient $\kappa/D$;
+\item the no-feedback existence condition.
 \end{itemize}
+Parts (iii) and (iv) are proved on paper.
+
+\paragraph{The identification results hold in equilibrium.} With feedback, dealers price the cohorts' predictable trades in advance, so the response of prices to flow is no longer the reduced form of Section~\ref{sec:model} with the primitive $(a,\kappa)$. The next theorem shows that it is still that closed loop, exactly and path by path, with new parameters and the same memory rates.
+
+\begin{theorem}[The equilibrium is the paper's closed loop]\label{thm:eqreduced}
+Take an equilibrium of Theorem~\ref{thm:inventory} with $D\ne\bar a$, and set
+\[
+ a^*=\frac{\bar a}{D},\qquad \kappa^*=\frac{\kappa}{D},\qquad \tilde w_i=\frac{D-\bar a}{D-r_i}\,w_i .
+\]
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Reduced form, pathwise.} Let $\tilde u_{i,t}=\frac{D-\bar a}{D-r_i}u_{i,t}$. For every realization, every initial state and every $t$,
+\[
+ x_t=a^*x_{t-1}+\kappa^*\Bigl(\xi_t+\sum_i\tilde u_{i,t}\Bigr),\qquad \tilde u_{i,t+1}=r_i\tilde u_{i,t}+\tilde w_ix_t .
+\]
+So the price follows the closed loop \eqref{eq:price}--\eqref{eq:cohort} with persistence $a^*$, impact $\kappa^*$, exogenous flow $\xi$ in place of the probe, and cohorts with the same memory rates and merged weights $\tilde w_i$. Its transfer function from flow to price is \eqref{eq:H} with $(a^*,\kappa^*,\tilde w)$. The equilibrium is stable if and only if this closed loop is.
+\item \emph{Zeros.} For $\bar a>0$, distinct rates in $(0,1)$ and nonzero weights, the memory rates are the transmission zeros of the equilibrium price response, and none cancels (Theorem~\ref{thm:minphase}(i) with the effective parameters).
+\item \emph{Boundary.} The effective merged measure is $\tilde M=h\,M$, where $h(r)=(D-\bar a)/(D-r)$ is positive. The effective parameters determine the equilibrium ones: $D=1-\kappa^*\tilde M([0,1])/(1-a^*)$, $\bar a=a^*D$ and $\kappa=\kappa^*D$. So the merged measure remains exactly what equilibrium prices identify (Theorem~\ref{thm:merged}).
+\item \emph{The rates survive.} Let $(a^*,\kappa^*,W,r_c,\Delta\eta)$ satisfy the hypotheses of Theorem~\ref{thm:kcohort} with $(a,\kappa)=(a^*,\kappa^*)$. Then the two $K$-cohort economies of that theorem are the price responses of two inventory equilibria with identical primitives $(A,\sigma_F^2,\sigma_\xi^2,\bar a)$ and identical $(\kappa,D)$:
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item $D=1-\kappa^*W/(1-a^*)$, which exceeds every rate;
+ \item $\bar a=a^*D$ and $\kappa=\kappa^*D$;
+ \item any $\sigma_F^2,\sigma_\xi^2>0$, with $A=\kappa^*D(1-a^*)/(\sigma_F^2+\kappa^{*2}\sigma_\xi^2)$;
+ \item cohort weights $w_i=\tilde w_i(D-r_i)/(D-\bar a)>0$.
+ \end{itemize}
+ Hence an observer of equilibrium prices who knows the primitives needs $N\ge c\,\sigma^2(\Delta\eta)^{-(4K-2)}$ experiments. Theorem~\ref{prop:esprit} applies to the effective parameters, and the true weights follow from the effective ones by a Lipschitz map. So $N^*\asymp\sigma^2(\Delta\eta)^{-(4K-2)}$ in equilibrium.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} Dealers' anticipation does not hide the cohorts and does not move them. It replaces the persistence and impact by $\bar a/D$ and $\kappa/D$, and it rescales each cohort's weight by $(D-\bar a)/(D-r_i)$. Because that factor rises with $r_i$, slow-memory cohorts weigh more in equilibrium prices. The memory rates are untouched.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item Every result of Sections~\ref{sec:ident}, \ref{sec:resources} and~\ref{sec:mixtures} that concerns the map from order flow to prices therefore holds in equilibrium: identification, sample complexity, passive observation, and probing costs computed from the price path. Its constants are evaluated at the effective parameters.
+\item The lower-bound pair is not an artefact of the reduced form. Two economies with the same dealers, the same risk aversion and the same impact differ only in their cohorts, and they are as hard to tell apart as Theorem~\ref{thm:kcohort} says.
+\item Part (i), the realization in part (iv) and the effective cohort recursion are machine-checked (\nolinkurl{Paper1EquilibriumReducedForm.lean}).
+\item One assumption is new: the observer's probe is part of the exogenous flow that dealers price as noise. Dealers who recognized a probe would price it differently.
+\end{itemize}
+
+\begin{theorem}[Fragility: where liquidity disappears]\label{thm:fragility}
+Let there be one feedback cohort with weight $w>0$ and memory rate $r\in(0,1)$, with $\bar a\in[0,1)$ and $\sigma_F,\sigma_\xi>0$. Call an equilibrium of Theorem~\ref{thm:inventory} with $\kappa>0$ and $D>0$ a positive-impact equilibrium. For $D\in(m,1)$ with $m=\max(\bar a,r)$, let
+\[
+ \kappa_w(D)=\frac{(1-D)(D-r)}{w},\qquad \Psi_w(D)=\frac{\kappa_w(D)\,(D-\bar a)\,D}{\sigma_F^2D^2+\kappa_w(D)^2\sigma_\xi^2},\qquad A^*(w)=\max_{D\in(m,1)}\Psi_w(D).
+\]
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Threshold.}
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item The positive-impact equilibria are exactly the pairs $(\kappa_w(D),D)$ with $D\in(m,1)$ and $\Psi_w(D)=A$, and every one of them is stable.
+ \item A positive-impact equilibrium exists if and only if $A\le A^*(w)$.
+ \item For $A<A^*(w)$ there are at least two; for $A>A^*(w)$ there are none.
+ \end{itemize}
+\item \emph{Monotonicity.} $A^*(w)$ is strictly decreasing in $w$. As $w\downarrow0$ it tends to $A^*_0=(1-\bar a)/(2\sigma_F\sigma_\xi)$, the threshold of Theorem~\ref{thm:inventory}(ii).
+\item \emph{Bounds and rate.} For every $w>0$,
+\[
+ A^*(w)<\min\Bigl\{A^*_0,\ \frac{\Phi^*}{\sigma_F^2\,w}\Bigr\},
+\]
+ where
+\[
+ \Phi^*=\max_{D\in[m,1]}\frac{(1-D)(D-r)(D-\bar a)}{D}\le\frac{(1-\bar a)(1-r)^2}{4},
+\]
+ and $w\,A^*(w)\to\Phi^*/\sigma_F^2$ as $w\to\infty$. In terms of the feedback intensity $G(1)=w/(1-r)$, strong feedback gives $A^*\approx\Phi^*/(\sigma_F^2(1-r)G(1))$, and always $A^*<(1-\bar a)(1-r)/(4\sigma_F^2G(1))$.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} With positive feedback, dealers can make a market only if their dislike of risk is below a threshold, and the threshold falls as feedback grows: for strong feedback it is inversely proportional to the feedback intensity. Past the threshold, no price impact is consistent with dealers' optimization. Below it, every equilibrium has stable prices. Liquidity does not erode through growing instability; it disappears when the two equilibria merge, at a point that stable prices give no warning of. At the calibration of Supplement~\ref{app:eqinv} ($\bar a=0.6$, $r=0.7$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$), $A^*$ is 0.40 without feedback, 0.25 at $G(1)=\tfrac1{15}$ and 0.034 at $G(1)=\tfrac23$, and $w\,A^*$ approaches $\Phi^*=0.00688$. The necessary conditions behind parts (i) and (iii) are machine-checked (\nolinkurl{Paper1EquilibriumReducedForm.lean}). With several cohorts the threshold is computed numerically only.
+
 
 
 \begin{theorem}[Equilibrium invariance]\label{thm:eqinv}

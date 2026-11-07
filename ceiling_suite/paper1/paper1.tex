@@ -39,13 +39,14 @@
 \date{Working paper, 5 November 2026}
 
 \usepackage{array}
+\makeatletter\g@addto@macro\UrlBreaks{\do\_}\makeatother
 \begin{document}
 \maketitle
 \thispagestyle{empty}
 \begingroup\onehalfspacing
 
 \begin{abstract}
-\noindent Prices in a market with feedback trading reveal the combined response of all trader groups, not the groups themselves. We characterize what public prices identify and what learning the rest costs. In a linear closed-loop market where each group tracks prices with exponential memory, prices identify only a merged response measure: groups with equal memories are inseparable however much data is collected, and separating $K$ groups whose memories are $\Delta\eta$ apart takes of order $(\Delta\eta)^{-(4K-2)}$ experiments. That rate is the known mixture rate; we show that it survives the feedback loop, where the memories enter as zeros of the observed transfer function. The contributions are what the market setting adds. Passive observation of a running market is no cheaper than active probing, because the closed loop is minimum phase. For an observer who trades to learn, the sample requirements become executed quantity of order $\delta^{-2}$ and capital of order $\delta^{-4}$. With a strategic insider and any causal dealer rule, economies with the same merged measure are outcome-equivalent, so what prices cannot identify is worth nothing to price-based traders; a dealer that misjudges the aggregate response pays or earns rents of first order in its error, which public data shrink at the ordinary rate. In an equilibrium with inventory-averse dealers, price impact and the persistence of mispricing are derived, and positive feedback raises impact and makes liquidity fragile. Class-tagged flow removes the spacing penalty, and a supervisory example shows attribution changing the right action when prices are nearly identical. Several identification and Fisher-information results are machine-checked in Lean~4. Pre-registered tests on CFTC and Binance trader-class reports are mixed: 11 of 23 recorded outcomes pass; class reports constrain persistence far more tightly than prices but do not identify learning memory.
+\noindent Prices in a market with feedback trading reveal the combined response of all trader groups, not the groups themselves. We characterize what public prices identify and what learning the rest costs. In a linear closed-loop market where each group tracks prices with exponential memory, prices identify only a merged response measure: groups with equal memories are inseparable however much data is collected, and separating $K$ groups whose memories are $\Delta\eta$ apart takes of order $(\Delta\eta)^{-(4K-2)}$ experiments. That rate is the known mixture rate; we show that it survives the feedback loop, where the memories enter as zeros of the observed transfer function. The contributions are what the market setting adds. Passive observation of a running market is no cheaper than active probing, because the closed loop is minimum phase. For an observer who trades to learn, the sample requirements become executed quantity of order $\delta^{-2}$ and capital of order $\delta^{-4}$. With a strategic insider and any causal dealer rule, economies with the same merged measure are outcome-equivalent, so what prices cannot identify is worth nothing to price-based traders; a dealer that misjudges the aggregate response pays or earns rents of first order in its error, which public data shrink at the ordinary rate. In an equilibrium with inventory-averse dealers, price impact and the persistence of mispricing are derived, and the equilibrium price is the same closed loop with effective parameters and unchanged memory rates, so every rate holds in equilibrium. Positive feedback raises impact, and an explicit threshold in dealer risk aversion, inversely proportional to the feedback intensity, marks where liquidity disappears. Class-tagged flow removes the spacing penalty, and a supervisory example shows attribution changing the right action when prices are nearly identical. Several identification and Fisher-information results are machine-checked in Lean~4. Pre-registered tests on CFTC and Binance trader-class reports are mixed: 11 of 23 recorded outcomes pass; class reports constrain persistence far more tightly than prices but do not identify learning memory.
 \end{abstract}
 
 \noindent\textbf{AI-use disclosure.} Claude, ChatGPT/Codex and Gemini provided material assistance with research development, code, numerical checks, manuscript drafting and internal critique. ChatGPT/Codex additionally developed and checked Lean proofs in this revision. Human authors remain responsible for verifying the content and its scholarly contribution before submission; AI checks do not constitute independent review.
@@ -184,7 +185,7 @@ Par units & The model's own unit of quantity and money, before conversion to USD
 \end{threeparttable}
 \end{table}
 
-\paragraph{What we do not claim.} The identification results hold for the stated linear model and for the stated observation contracts, that is, for what the observer is assumed to see. Sections~\ref{sec:resources}--\ref{sec:disclosure} treat price impact and the persistence of pricing errors as known primitives. Section~\ref{sec:equilibrium} derives them in a dealer equilibrium, but the rate constants are proved for the reduced form only. The model also assumes the observer knows the fundamental value. Real data meet neither assumption. They are not general limits on surveillance with participant-level records, which can be far more informative (Propositions~\ref{prop:disclosure} and~\ref{prop:tagged}). The matching upper bound holds on a class with separated rescaled rates and weights bounded away from zero. Capital figures depend on the observation-noise calibration, which we estimate rather than assume. The empirical results are reduced-form diagnostics; they do not identify structural learning parameters. Our pre-specified real-data test of the identification boundary failed its criterion on one of its three parts: on 42 days of data the merged response was precisely estimated in only 5 of 30 markets (Section~\ref{sec:disc_data}). Binance's class ratios are positions, not tagged order flow, so they are the closest public analogue to the disclosure of Proposition~\ref{prop:tagged}, not an instance of it. We hold the algorithms' memories and intensities fixed across disclosure regimes; disclosure that reveals positions may lead informed desks to trade less or to split orders across accounts, which we do not model.
+\paragraph{What we do not claim.} The identification results hold for the stated linear model and for the stated observation contracts, that is, for what the observer is assumed to see. Sections~\ref{sec:resources}--\ref{sec:disclosure} treat price impact and the persistence of pricing errors as known primitives. Section~\ref{sec:equilibrium} derives them in a dealer equilibrium, in which the price follows the same closed loop with effective parameters, so the results hold there (Theorem~\ref{thm:eqreduced}); that equilibrium has one dealer sector and no strategic insider. The model also assumes the observer knows the fundamental value. Real data meet neither assumption. They are not general limits on surveillance with participant-level records, which can be far more informative (Propositions~\ref{prop:disclosure} and~\ref{prop:tagged}). The matching upper bound holds on a class with separated rescaled rates and weights bounded away from zero. Capital figures depend on the observation-noise calibration, which we estimate rather than assume. The empirical results are reduced-form diagnostics; they do not identify structural learning parameters. Our pre-specified real-data test of the identification boundary failed its criterion on one of its three parts: on 42 days of data the merged response was precisely estimated in only 5 of 30 markets (Section~\ref{sec:disc_data}). Binance's class ratios are positions, not tagged order flow, so they are the closest public analogue to the disclosure of Proposition~\ref{prop:tagged}, not an instance of it. We hold the algorithms' memories and intensities fixed across disclosure regimes; disclosure that reveals positions may lead informed desks to trade less or to split orders across accounts, which we do not model.
 
 \subsection{Related literature}\label{sec:lit}
 
@@ -410,7 +411,7 @@ Thus a covariance discrepancy of order $(\Delta\eta)^{2K-1}$ preserves that orde
 
 The identification results take the price impact $\kappa$ and the persistence $a$ of pricing errors as given, and nobody in the model optimizes. This section derives both from dealers who dislike holding inventory. It then shows four things:
 \begin{itemize}[itemsep=1pt,topsep=2pt]
-\item the identification boundary of Theorem~\ref{thm:merged} is an equilibrium object;
+\item the equilibrium price is the paper's closed loop with effective parameters, so the identification boundary and the rates hold in equilibrium, and positive feedback creates an explicit fragility threshold;
 \item a strategic insider cannot change it;
 \item misjudging the aggregate response creates rents of first order;
 \item targeted actions still need group-level information.
@@ -426,6 +427,7 @@ The identification results take the price impact $\kappa$ and the persistence $a
 We study stationary equilibria in which $x_t$ is linear in the dealers' inventory and the cohorts' next trades. Write $G(D)=\sum_iw_i/(D-r_i)=\int dM(r)/(D-r)$ for the Stieltjes transform of the merged measure.
 
 \begin{theorem}[Price impact and persistence in an inventory equilibrium]\label{thm:inventory}
+Consider stationary linear equilibria of the model above.
 \begin{enumerate}[label=(\roman*),itemsep=1pt]
 \item \emph{Characterization.} The price law
 \[
@@ -446,15 +448,77 @@ Positive feedback raises the impact $\kappa$, and it raises the impact of an une
 \end{enumerate}
 \end{theorem}
 
-\paragraph{In words.} Dealers set the price impact and the persistence of mispricing. Impact is what they charge for carrying inventory risk; persistence is how slowly they lay that inventory off. Without feedback traders, this equilibrium is exactly the closed loop the paper starts from. Feedback traders enter only through their merged measure, as Theorem~\ref{thm:eqinv} requires. Positive feedback raises price impact, and dealers price their predictable future trades in advance (the terms in $u_{i,t+1}$). In the numerical solution of Supplement~\ref{app:eqinv}, one positive-feedback cohort of weight $0.02$ and memory $r=0.7$, so that $G(1)=\tfrac1{15}$, lowers the largest dealer risk aversion at which an equilibrium exists from $0.40$ to $0.25$. A cohort with $G(1)=\tfrac23$ lowers it to $0.034$. Beyond that threshold no equilibrium with positive impact exists. So feedback trading makes liquidity fragile, not only more expensive.
+\paragraph{In words.} Dealers set the price impact and the persistence of mispricing. Impact is what they charge for carrying inventory risk; persistence is how slowly they lay that inventory off. Without feedback traders, this equilibrium is exactly the closed loop the paper starts from. Feedback traders enter only through their merged measure, as Theorem~\ref{thm:eqinv} requires. Positive feedback raises price impact, and dealers price their predictable future trades in advance (the terms in $u_{i,t+1}$). Feedback trading also makes liquidity fragile, not only more expensive: beyond a threshold in dealer risk aversion that falls with the feedback intensity, no equilibrium exists (Theorem~\ref{thm:fragility}).
 
-\paragraph{What this changes for the rest of the paper.}
+\paragraph{Machine check.} \nolinkurl{Paper1InventoryEquilibrium.lean} checks the algebraic core of part (i):
 \begin{itemize}[itemsep=1pt,topsep=2pt]
-\item Without feedback, the reduced form used in Sections~\ref{sec:resources}--\ref{sec:disclosure} is an equilibrium outcome.
-\item With feedback, dealers' anticipation changes the transfer function from flow to price. The merged-measure boundary survives by Theorem~\ref{thm:eqinv}. The rate constants of Sections~\ref{sec:resources} and~\ref{sec:mixtures} are proved for the reduced form and must be recomputed for the equilibrium transfer function; we do not do that here.
-\item The algebraic core of part (i) is machine-checked: the dealers' first-order condition holds in every state, the next price loads on the next flow shock with coefficient $\kappa/D$, and the no-feedback existence condition (\nolinkurl{Paper1InventoryEquilibrium.lean}).
-\item Parts (iii) and (iv) are proved on paper.
+\item the dealers' first-order condition holds in every state;
+\item the next price loads on the next flow shock with coefficient $\kappa/D$;
+\item the no-feedback existence condition.
 \end{itemize}
+Parts (iii) and (iv) are proved on paper.
+
+\paragraph{The identification results hold in equilibrium.} With feedback, dealers price the cohorts' predictable trades in advance, so the response of prices to flow is no longer the reduced form of Section~\ref{sec:model} with the primitive $(a,\kappa)$. The next theorem shows that it is still that closed loop, exactly and path by path, with new parameters and the same memory rates.
+
+\begin{theorem}[The equilibrium is the paper's closed loop]\label{thm:eqreduced}
+Take an equilibrium of Theorem~\ref{thm:inventory} with $D\ne\bar a$, and set
+\[
+ a^*=\frac{\bar a}{D},\qquad \kappa^*=\frac{\kappa}{D},\qquad \tilde w_i=\frac{D-\bar a}{D-r_i}\,w_i .
+\]
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Reduced form, pathwise.} Let $\tilde u_{i,t}=\frac{D-\bar a}{D-r_i}u_{i,t}$. For every realization, every initial state and every $t$,
+\[
+ x_t=a^*x_{t-1}+\kappa^*\Bigl(\xi_t+\sum_i\tilde u_{i,t}\Bigr),\qquad \tilde u_{i,t+1}=r_i\tilde u_{i,t}+\tilde w_ix_t .
+\]
+So the price follows the closed loop \eqref{eq:price}--\eqref{eq:cohort} with persistence $a^*$, impact $\kappa^*$, exogenous flow $\xi$ in place of the probe, and cohorts with the same memory rates and merged weights $\tilde w_i$. Its transfer function from flow to price is \eqref{eq:H} with $(a^*,\kappa^*,\tilde w)$. The equilibrium is stable if and only if this closed loop is.
+\item \emph{Zeros.} For $\bar a>0$, distinct rates in $(0,1)$ and nonzero weights, the memory rates are the transmission zeros of the equilibrium price response, and none cancels (Theorem~\ref{thm:minphase}(i) with the effective parameters).
+\item \emph{Boundary.} The effective merged measure is $\tilde M=h\,M$, where $h(r)=(D-\bar a)/(D-r)$ is positive. The effective parameters determine the equilibrium ones: $D=1-\kappa^*\tilde M([0,1])/(1-a^*)$, $\bar a=a^*D$ and $\kappa=\kappa^*D$. So the merged measure remains exactly what equilibrium prices identify (Theorem~\ref{thm:merged}).
+\item \emph{The rates survive.} Let $(a^*,\kappa^*,W,r_c,\Delta\eta)$ satisfy the hypotheses of Theorem~\ref{thm:kcohort} with $(a,\kappa)=(a^*,\kappa^*)$. Then the two $K$-cohort economies of that theorem are the price responses of two inventory equilibria with identical primitives $(A,\sigma_F^2,\sigma_\xi^2,\bar a)$ and identical $(\kappa,D)$:
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item $D=1-\kappa^*W/(1-a^*)$, which exceeds every rate;
+ \item $\bar a=a^*D$ and $\kappa=\kappa^*D$;
+ \item any $\sigma_F^2,\sigma_\xi^2>0$, with $A=\kappa^*D(1-a^*)/(\sigma_F^2+\kappa^{*2}\sigma_\xi^2)$;
+ \item cohort weights $w_i=\tilde w_i(D-r_i)/(D-\bar a)>0$.
+ \end{itemize}
+ Hence an observer of equilibrium prices who knows the primitives needs $N\ge c\,\sigma^2(\Delta\eta)^{-(4K-2)}$ experiments. Theorem~\ref{prop:esprit} applies to the effective parameters, and the true weights follow from the effective ones by a Lipschitz map. So $N^*\asymp\sigma^2(\Delta\eta)^{-(4K-2)}$ in equilibrium.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} Dealers' anticipation does not hide the cohorts and does not move them. It replaces the persistence and impact by $\bar a/D$ and $\kappa/D$, and it rescales each cohort's weight by $(D-\bar a)/(D-r_i)$. Because that factor rises with $r_i$, slow-memory cohorts weigh more in equilibrium prices. The memory rates are untouched.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item Every result of Sections~\ref{sec:ident}, \ref{sec:resources} and~\ref{sec:mixtures} that concerns the map from order flow to prices therefore holds in equilibrium: identification, sample complexity, passive observation, and probing costs computed from the price path. Its constants are evaluated at the effective parameters.
+\item The lower-bound pair is not an artefact of the reduced form. Two economies with the same dealers, the same risk aversion and the same impact differ only in their cohorts, and they are as hard to tell apart as Theorem~\ref{thm:kcohort} says.
+\item Part (i), the realization in part (iv) and the effective cohort recursion are machine-checked (\nolinkurl{Paper1EquilibriumReducedForm.lean}).
+\item One assumption is new: the observer's probe is part of the exogenous flow that dealers price as noise. Dealers who recognized a probe would price it differently.
+\end{itemize}
+
+\begin{theorem}[Fragility: where liquidity disappears]\label{thm:fragility}
+Let there be one feedback cohort with weight $w>0$ and memory rate $r\in(0,1)$, with $\bar a\in[0,1)$ and $\sigma_F,\sigma_\xi>0$. Call an equilibrium of Theorem~\ref{thm:inventory} with $\kappa>0$ and $D>0$ a positive-impact equilibrium. For $D\in(m,1)$ with $m=\max(\bar a,r)$, let
+\[
+ \kappa_w(D)=\frac{(1-D)(D-r)}{w},\qquad \Psi_w(D)=\frac{\kappa_w(D)\,(D-\bar a)\,D}{\sigma_F^2D^2+\kappa_w(D)^2\sigma_\xi^2},\qquad A^*(w)=\max_{D\in(m,1)}\Psi_w(D).
+\]
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Threshold.}
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item The positive-impact equilibria are exactly the pairs $(\kappa_w(D),D)$ with $D\in(m,1)$ and $\Psi_w(D)=A$, and every one of them is stable.
+ \item A positive-impact equilibrium exists if and only if $A\le A^*(w)$.
+ \item For $A<A^*(w)$ there are at least two; for $A>A^*(w)$ there are none.
+ \end{itemize}
+\item \emph{Monotonicity.} $A^*(w)$ is strictly decreasing in $w$. As $w\downarrow0$ it tends to $A^*_0=(1-\bar a)/(2\sigma_F\sigma_\xi)$, the threshold of Theorem~\ref{thm:inventory}(ii).
+\item \emph{Bounds and rate.} For every $w>0$,
+\[
+ A^*(w)<\min\Bigl\{A^*_0,\ \frac{\Phi^*}{\sigma_F^2\,w}\Bigr\},
+\]
+ where
+\[
+ \Phi^*=\max_{D\in[m,1]}\frac{(1-D)(D-r)(D-\bar a)}{D}\le\frac{(1-\bar a)(1-r)^2}{4},
+\]
+ and $w\,A^*(w)\to\Phi^*/\sigma_F^2$ as $w\to\infty$. In terms of the feedback intensity $G(1)=w/(1-r)$, strong feedback gives $A^*\approx\Phi^*/(\sigma_F^2(1-r)G(1))$, and always $A^*<(1-\bar a)(1-r)/(4\sigma_F^2G(1))$.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} With positive feedback, dealers can make a market only if their dislike of risk is below a threshold, and the threshold falls as feedback grows: for strong feedback it is inversely proportional to the feedback intensity. Past the threshold, no price impact is consistent with dealers' optimization. Below it, every equilibrium has stable prices. Liquidity does not erode through growing instability; it disappears when the two equilibria merge, at a point that stable prices give no warning of. At the calibration of Supplement~\ref{app:eqinv} ($\bar a=0.6$, $r=0.7$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$), $A^*$ is 0.40 without feedback, 0.25 at $G(1)=\tfrac1{15}$ and 0.034 at $G(1)=\tfrac23$, and $w\,A^*$ approaches $\Phi^*=0.00688$. The necessary conditions behind parts (i) and (iii) are machine-checked (\nolinkurl{Paper1EquilibriumReducedForm.lean}). With several cohorts the threshold is computed numerically only.
+
 
 
 \begin{theorem}[Equilibrium invariance]\label{thm:eqinv}
@@ -1942,7 +2006,7 @@ Third, the audit trail does not reach the markets we study. Crypto perpetual fut
 
 \section{Conclusion and an open problem}\label{sec:conclusion}
 
-In a linear market with exponential-memory cohorts and known impact parameters, prices reveal a merged summary of algorithmic feedback. Resolving the model cohorts costs executed quantity of order $\delta^{-2}$ and trading capital of order $\delta^{-4}$ for a known pair, with a numerically evaluated constant of about 61 par units at the calibration, and a number of experiments of exact order $(\Delta\eta)^{-(4K-2)}$ for $K$ unknown cohorts, and at least that order of passive observations; in simulations of stylized nonlinear rules and of online learners trained in the closed loop the same costs hold when the competing populations' feedback weights match, populations whose learned weights differ are told apart by those weights instead, and hard thresholds hide cohorts from small probes altogether. Without the exponential form, accuracy improves only as $1/\log N$, with matching lower and upper bounds. Class-tagged disclosure removes the barrier under the stated contract, and its value can be stated in samples: a factor of order $(\Delta\eta)^{-(4K-4)}$ for resolving rates (and $(\Delta\eta)^{-(4K-2)}$ at fixed accuracy), an illustrative model-calibration factor of about 333 using the published BTCUSDT ratio persistences, without establishing that the actual reporting series meet the theorem's observation contract. The CFTC's class reports restrict a fitted position persistence that prices leave unrestricted in all eight regulated markets we examined; this persistence is not shown to be learning memory, a pre-specified test of what prices do reveal failed, and class-tagged memory states did not improve 30-minute post-shock return forecasts ($\Delta R^2=-1.09$ points, inconclusive). Differencing weekly CFTC position stocks under an additional stock--flow interpretation gives descriptive response regressions, which failed a pre-specified precision test, and a pre-specified test for a second, faster root in positions, which would have been the learning memory, failed as well. With real Bitcoin price noise in place of Gaussian noise, the predicted rates held in a pre-specified test, at the sample sizes where the real noise could be used directly. Under the specified Roll-noise calibration the model capital bound for a moderate separation is about $10^5$ USDT; this is not a measured real-market identification bill. Estimated feedback associations in crypto markets are small, rises with depth, does not move when fees change trading volume severalfold, and is easily confused with filtering and timing artefacts. Finally, eigenvalues and volatility cannot certify safety, because transient loss can be arbitrarily large at fixed spectrum and variance. In an equilibrium with inventory-averse dealers, price impact is the price of inventory risk and persistence is the dealers' layoff speed. Without feedback this equilibrium is the paper's closed loop. Positive feedback raises impact and shrinks the region where an equilibrium exists. Economies with the same merged measure are outcome-equivalent for every causal insider and dealer, so what prices cannot identify matters only for actions aimed at a particular group.
+In a linear market with exponential-memory cohorts and known impact parameters, prices reveal a merged summary of algorithmic feedback. Resolving the model cohorts costs executed quantity of order $\delta^{-2}$ and trading capital of order $\delta^{-4}$ for a known pair, with a numerically evaluated constant of about 61 par units at the calibration, and a number of experiments of exact order $(\Delta\eta)^{-(4K-2)}$ for $K$ unknown cohorts, and at least that order of passive observations; in simulations of stylized nonlinear rules and of online learners trained in the closed loop the same costs hold when the competing populations' feedback weights match, populations whose learned weights differ are told apart by those weights instead, and hard thresholds hide cohorts from small probes altogether. Without the exponential form, accuracy improves only as $1/\log N$, with matching lower and upper bounds. Class-tagged disclosure removes the barrier under the stated contract, and its value can be stated in samples: a factor of order $(\Delta\eta)^{-(4K-4)}$ for resolving rates (and $(\Delta\eta)^{-(4K-2)}$ at fixed accuracy), an illustrative model-calibration factor of about 333 using the published BTCUSDT ratio persistences, without establishing that the actual reporting series meet the theorem's observation contract. The CFTC's class reports restrict a fitted position persistence that prices leave unrestricted in all eight regulated markets we examined; this persistence is not shown to be learning memory, a pre-specified test of what prices do reveal failed, and class-tagged memory states did not improve 30-minute post-shock return forecasts ($\Delta R^2=-1.09$ points, inconclusive). Differencing weekly CFTC position stocks under an additional stock--flow interpretation gives descriptive response regressions, which failed a pre-specified precision test, and a pre-specified test for a second, faster root in positions, which would have been the learning memory, failed as well. With real Bitcoin price noise in place of Gaussian noise, the predicted rates held in a pre-specified test, at the sample sizes where the real noise could be used directly. Under the specified Roll-noise calibration the model capital bound for a moderate separation is about $10^5$ USDT; this is not a measured real-market identification bill. Estimated feedback associations in crypto markets are small, rises with depth, does not move when fees change trading volume severalfold, and is easily confused with filtering and timing artefacts. Finally, eigenvalues and volatility cannot certify safety, because transient loss can be arbitrarily large at fixed spectrum and variance. In an equilibrium with inventory-averse dealers, price impact is the price of inventory risk and persistence is the dealers' layoff speed. Without feedback this equilibrium is the paper's closed loop. The equilibrium price is the same closed loop with effective parameters and unchanged memory rates, so the identification boundary and the rates hold in equilibrium. Positive feedback raises impact, and an equilibrium exists only below a risk-aversion threshold that falls in inverse proportion to the feedback intensity. Economies with the same merged measure are outcome-equivalent for every causal insider and dealer, so what prices cannot identify matters only for actions aimed at a particular group.
 
 Two open questions remain. The first is economic: Proposition~\ref{prop:target} gives one stylised decision in which knowing the individual groups changes the right action, but turning the information costs here into a value of disclosure needs a supervisory loss function estimated from real interventions. The second is for supervision: \emph{what can be measured and controlled without identifying the algorithms?} The impulse response and the transfer function, and finite-sample confidence sets for them, are identified from public data even when cohorts are not. The structural matrix $J$ is not: economies with the same merged measure can have different state dimensions, so $J$ is identified only up to the equivalence class of minimal realizations of the same transfer function. A well-posed next question is: for a stated class of stable closed-loop markets, given an estimated transfer function and a finite-sample confidence set, which intervention policy of least cost guarantees a stated bound on future price displacement without recovering individual cohorts? The companion paper uses exactly this interface to build an identification-free pre-trade control.
 
@@ -2416,9 +2480,9 @@ The dealers' condition $x_t=E_tx_{t+1}-AVH_t$ must hold for all states. Matching
 
 For the variance, $x_{t+1}$ depends on $\xi_{t+1}$ through $H_{t+1}$ and through its own effect on $u_{i,t+2}$. Its innovation $\delta$ therefore satisfies $\delta=\kappa\xi_{t+1}+\sum_i\beta_iw_i\delta$, so $\delta=\kappa\xi_{t+1}/D$ and $V=\sigma_F^2+\kappa^2\sigma_\xi^2/D^2$.
 
-Conversely, take a solution of \eqref{eq:inventory_eq}. Then the conjectured law satisfies the dealers' condition in every state (\texttt{p1\_inventory\_foc}), and $V$ is consistent with it (\texttt{p1\_inventory\_innovation}). If the induced dynamics are stable, the process is stationary and the solution is an equilibrium.
+Conversely, take a solution of \eqref{eq:inventory_eq}. Then the conjectured law satisfies the dealers' condition in every state (\nolinkurl{p1_inventory_foc}), and $V$ is consistent with it (\nolinkurl{p1_inventory_innovation}). If the induced dynamics are stable, the process is stationary and the solution is an equilibrium.
 
-\emph{Part (ii).} With no cohorts, $\beta$ is empty and $D=1$. Then $x_t=-\kappa H_t$ and $H_t=\bar aH_{t-1}-y_t$ give $x_t=\bar ax_{t-1}+\kappa y_t$. The quadratic $A\sigma_\xi^2\kappa^2-(1-\bar a)\kappa+A\sigma_F^2=0$ has discriminant $\Delta$ (\texttt{p1\_inventory\_benchmark}).
+\emph{Part (ii).} With no cohorts, $\beta$ is empty and $D=1$. Then $x_t=-\kappa H_t$ and $H_t=\bar aH_{t-1}-y_t$ give $x_t=\bar ax_{t-1}+\kappa y_t$. The quadratic $A\sigma_\xi^2\kappa^2-(1-\bar a)\kappa+A\sigma_F^2=0$ has discriminant $\Delta$ (\nolinkurl{p1_inventory_benchmark}).
 
 \emph{Part (iii).} The system \eqref{eq:inventory_eq} involves the cohorts only through $G$. The price process is a function of the history of flows, and by Theorem~\ref{thm:eqinv}(i) it depends on the cohorts only through the kernel $k_m=\int r^m\,dM$. A finite measure on $[0,1]$ is determined by $G$ off its support, and also by its moments.
 
@@ -2427,6 +2491,68 @@ Conversely, take a solution of \eqref{eq:inventory_eq}. Then the conjectured law
 Linearizing, $dD=-\kappa_-G(1)$. Differentiating the second equation and using $A(\sigma_F^2+\kappa_-^2\sigma_\xi^2)=\kappa_-(1-\bar a)$ gives $d\kappa=-\kappa_-(\bar a+2A\kappa_-\sigma_\xi^2)\,dD/\sqrt\Delta$, and so the stated formula. Finally, $G(1)=\sum_iw_i/(1-r_i)=\sum_iq_i$.
 
 At $M=0$ the transition matrix has eigenvalues $\bar a$ and the $r_i$, all inside the unit disk, so the dynamics remain stable for small $M$.
+
+\paragraph{Proof of Theorem~\ref{thm:eqreduced}.}
+\emph{Part (i).} Write the implicit form of the price at $t$, $Dx_t=-\kappa H_t+\sum_i\beta_ir_iu_{i,t}$, and the price law at $t-1$, $x_{t-1}=-\kappa H_{t-1}+\sum_i\beta_iu_{i,t}$. Use $H_t=\bar aH_{t-1}-\sum_iu_{i,t}-\xi_t$. Then
+\[
+ Dx_t-\bar ax_{t-1}=\kappa\xi_t+\sum_i\bigl(\kappa+\beta_i(r_i-\bar a)\bigr)u_{i,t}.
+\]
+Since $\kappa=\beta_i(D-r_i)$, the coefficient is $\beta_i(D-\bar a)=\kappa(D-\bar a)/(D-r_i)$. Divide by $D$.
+
+The scaled flows inherit the cohort recursion, because the scaling is constant (\nolinkurl{p1_eq_scaled_cohort}). The states $(H_t,u_{\cdot,t+1})$ and $(x_t,\tilde u_{\cdot,t+1})$ are related by an invertible linear map, since $\kappa\ne0$ and every scale factor is nonzero. So the two dynamics are conjugate and have the same eigenvalues.
+
+\emph{Part (ii).} The effective weights are nonzero because $D\ne\bar a$. Apply Theorem~\ref{thm:minphase}(i) to the closed loop of part (i).
+
+\emph{Part (iii).} Since $G(D)=\sum_iw_i/(D-r_i)=\sum_i\tilde w_i/(D-\bar a)$, the equation $D=1-\kappa G(D)$ reads $D=1-\kappa^*D\,\tilde M([0,1])/(D(1-a^*))$. Solve for $D$; then $\bar a=a^*D$ and $\kappa=\kappa^*D$. Conversely, $(\bar a,\kappa,D,M)$ determine the effective objects. So two equilibria give the same price response if and only if their effective objects agree, and then their merged measures agree. This is consistent with Theorem~\ref{thm:eqinv}.
+
+\emph{Part (iv).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{$D$ exceeds every rate.} The hypothesis of Theorem~\ref{thm:kcohort} is $a^*+\kappa^*W/(1-r_c-\Delta\eta)<1$. It gives $\kappa^*W/(1-a^*)<1-r_c-\Delta\eta$, so $D>r_c+\Delta\eta$, which is at least every rate.
+\item \emph{Each economy is an equilibrium.} With the stated choices, $D+\kappa G(D)=1$ holds (\nolinkurl{p1_eq_realize_D}), and so does $\kappa(D-\bar a)=AVD$ with $V=\sigma_F^2+\kappa^{*2}\sigma_\xi^2$ (\nolinkurl{p1_eq_realize_dealer}). By part (i) the equilibrium price response is the given closed loop, which is stable. So each economy is an equilibrium by Theorem~\ref{thm:inventory}(i).
+\item \emph{The two economies share everything but the cohorts.} They have the same total effective weight $W$, so they share $D$, $\kappa$ and the primitives, and their price responses are those of Theorem~\ref{thm:kcohort}.
+\item \emph{Upper bound.} On a class where the effective parameters are known or estimated at the parametric rate (Corollary~\ref{cor:unknown_primitives}), Theorem~\ref{prop:esprit} recovers $\tilde w$. Then $D$ follows from part (iii), and $w_i=\tilde w_i(D-r_i)/(D-\bar a)$ is Lipschitz on the class.
+\end{itemize}
+
+\paragraph{Proof of Theorem~\ref{thm:fragility}.}
+\emph{Part (i).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{$D$ lies in $(m,1)$.} Let $\kappa>0$ and $D>0$. The dealer equation $\kappa(D-\bar a)=AVD>0$ gives $D>\bar a$. The cohort equation is $(D-1)(D-r)+\kappa w=0$. If $D<r$, it forces $D>1$, which is impossible; and $D=r$ is excluded. So $D\in(r,1)$, and $\kappa=\kappa_w(D)$.
+\item \emph{The equilibria are the solutions of $\Psi_w(D)=A$.} Multiplying the dealer equation by $D$ gives $\kappa(D-\bar a)D=A(\sigma_F^2D^2+\kappa^2\sigma_\xi^2)$, which is $\Psi_w(D)=A$. Conversely, every such $D$ solves the system.
+\item \emph{Stability.} By Theorem~\ref{thm:eqreduced}(i) the dynamics are those of the closed loop with $c=\kappa^*\tilde w=(1-D)(D-\bar a)/D\in(0,1)$. Its characteristic polynomial is $p(\lambda)=\lambda^2-(a^*+r+c)\lambda+a^*r$. The roots are real and nonnegative, because the discriminant is at least $(a^*-r)^2$ and the coefficients alternate in sign. Next, $p(1)=(1-a^*)(1-r)-c=(D-\bar a)(D-r)/D>0$, so $1$ lies outside the interval between the roots. Their product $a^*r$ is below $1$, so both roots are below $1$.
+\item \emph{Existence and count.} $\Psi_w$ is continuous and positive on $(m,1)$ and tends to $0$ at both ends: as $D\to1$, $\kappa_w\to0$; as $D\to m$, either $D-\bar a\to0$ or $\kappa_w\to0$. So its maximum $A^*$ is attained. Every $A\in(0,A^*)$ is taken at least twice, once on each side of a maximizer, and no $A>A^*$ is taken.
+\end{itemize}
+
+\emph{Part (ii).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{A parametrization by $\kappa$.} For fixed $\kappa\in(0,(1-r)^2/(4w)]$, the solutions of $\kappa_w(D)=\kappa$ are $D_\pm(\kappa,w)=\bigl((1+r)\pm\sqrt{(1-r)^2-4\kappa w}\bigr)/2$.
+\item \emph{The larger root gives the maximum.} $\tilde\Psi(\kappa,D)=\kappa(D-\bar a)D/(\sigma_F^2D^2+\kappa^2\sigma_\xi^2)$ is strictly increasing in $D$ for $D>\bar a$. The numerator of its $D$-derivative is $\bar a\sigma_F^2D^2+(2D-\bar a)\kappa^2\sigma_\xi^2>0$. So $A^*(w)=\max_\kappa\tilde\Psi(\kappa,D_+(\kappa,w))$.
+\item \emph{Strict decrease.} Let $w_1<w_2$, and let $\kappa^\circ$ attain $A^*(w_2)$. Then $\kappa^\circ$ is feasible at $w_1$, and $D_+(\kappa^\circ,w_1)>D_+(\kappa^\circ,w_2)$. So $A^*(w_1)\ge\tilde\Psi(\kappa^\circ,D_+(\kappa^\circ,w_1))>A^*(w_2)$.
+\item \emph{The limit as $w\downarrow0$.} The bound $A^*<A^*_0$ of part (iii) is one half. For the other, fix $\kappa_0=\sigma_F/\sigma_\xi$. As $w\downarrow0$, $D_+(\kappa_0,w)\to1$, and $\tilde\Psi(\kappa_0,D_+)\to(1-\bar a)/(2\sigma_F\sigma_\xi)$.
+\end{itemize}
+
+\emph{Part (iii).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{The bound $A^*_0$.} By the arithmetic--geometric mean inequality, $\sigma_F^2D^2+\kappa^2\sigma_\xi^2\ge2\sigma_F\sigma_\xi\kappa D$. So $\Psi_w(D)\le(D-\bar a)/(2\sigma_F\sigma_\xi)<A^*_0$. Machine-checked in squared form as $4A^2\sigma_F^2\sigma_\xi^2\le(D-\bar a)^2$ (\nolinkurl{p1_fragility_benchmark_bound}).
+\item \emph{The bound $\Phi^*/(\sigma_F^2w)$.} Dropping $\kappa^2\sigma_\xi^2>0$ from the denominator gives $\Psi_w(D)<(1-D)(D-r)(D-\bar a)/(\sigma_F^2wD)\le\Phi^*/(\sigma_F^2w)$. Machine-checked as $A\sigma_F^2wD\le(1-D)(D-r)(D-\bar a)$ (\nolinkurl{p1_fragility_feedback_bound}).
+\item \emph{The bound on $\Phi^*$.} It uses $(1-D)(D-r)\le(1-r)^2/4$ and $(D-\bar a)/D\le1-\bar a$.
+\item \emph{The limit as $w\to\infty$.} We have $\kappa_w=O(1/w)$ uniformly on $[m,1]$. So $w\Psi_w(D)\to(1-D)(D-r)(D-\bar a)/(\sigma_F^2D)$ uniformly, and the maxima converge.
+\end{itemize}
+
+\paragraph{Numerical checks of Theorems~\ref{thm:eqreduced} and~\ref{thm:fragility}.} The script \nolinkurl{equilibrium/e4_reduced_form.py} runs three checks.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{Reduced form.} For four solved equilibria, the equilibrium price path and the reduced-form path with $(a^*,\kappa^*,\tilde w)$ agree to $4.4\times10^{-16}$ over $5{,}000$ simulated periods. The four are: one cohort with positive feedback, one with negative feedback, two cohorts, and the Gauss pair. Their impulse responses agree to $10^{-16}$. For one cohort of weight $0.02$ at $r=0.7$, for example, $a^*=0.629$, $\kappa^*=0.621$ and $\tilde w=0.0279$.
+\item \emph{Realization.} Take the Gauss and Gauss--Radau pair with $K=2$, $a^*=0.5$, $\kappa^*=0.5$, $W=0.2$, $r_c=0.6$ and $\Delta\eta=0.1$, so that the stability index of Theorem~\ref{thm:kcohort} is $0.833$. Both economies are equilibria with $D=0.8$, $\bar a=0.4$, $\kappa=0.4$ and $A=0.188$, and both equilibrium equations hold to machine precision.
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item Their true cohort weights are $(0.064,0.036)$ and $(0.0375,0.0625)$.
+ \item Their equilibrium impulse responses differ in $\ell_2$ by $1.22\,d^3$, $1.25\,d^3$ and $1.29\,d^3$ at $d=0.1$, $0.05$ and $0.025$. That is the order $(\Delta\eta)^{2K-1}$.
+ \end{itemize}
+\item \emph{Fragility.} The maximum of $\Psi_w$ reproduces the bisection thresholds of the solver to $10^{-12}$ ($A^*=0.2547$, $0.1297$, $0.0677$, $0.0342$ at $w=0.02$, $0.05$, $0.1$, $0.2$).
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item $A^*=0.3967$ at $w=5\times10^{-4}$, against the limit $0.4$.
+ \item $w\,A^*=0.006875$ at $w=1$ and $0.0068764$ at $w=10$, against $\Phi^*=0.0068764$.
+ \end{itemize}
+\end{itemize}
+The results file is \nolinkurl{equilibrium/e4_reduced_form_results.json}.
 
 \paragraph{Numerical solution of Theorem~\ref{thm:inventory}.} The script \nolinkurl{equilibrium/e4_inventory.py} solves the system \eqref{eq:inventory_eq} at $A=0.2$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$ and $\bar a=0.6$.
 
@@ -2585,6 +2711,8 @@ Proposition~\ref{prop:crb}(i), Cram\'er--Rao bound on the raw records of the act
 Proposition~\ref{prop:crb}(iii), two-sided $(\Delta\eta)^{-6}$ bound on both weight entries of the inverse Fisher matrix, fixed $T\ge4$ (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1FisherBounds.lean}, \path{Paper1CRTaps.lean}, \path{Paper1CRS71iii.lean}, \path{Paper1CRS71iiiEta.lean}, \path{Paper1CRS71iiiW2.lean} & Lean 4 proof\\
 Theorem~\ref{thm:eqinv}, equilibrium invariance under the merged measure (machine-checked pathwise) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumInvariance.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e1_demo.py} & Lean 4 proof; numerical illustration\\
 Theorem~\ref{thm:inventory}, price impact and persistence in an inventory equilibrium (algebraic core machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1InventoryEquilibrium.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_inventory.py} & Lean 4 proof of parts (i)--(ii) algebra; parts (iii)--(iv) on paper; numerical solution\\
+Theorem~\ref{thm:eqreduced}, the equilibrium is the paper's closed loop; realization of the lower-bound pair (machine-checked pathwise identity and realization) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumReducedForm.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py} & Lean 4 proof of parts (i) and (iv) algebra; parts (ii)--(iii) and the rate transfer on paper; numerical check\\
+Theorem~\ref{thm:fragility}, fragility threshold for one cohort (necessary conditions machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumReducedForm.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py} & Lean 4 bounds; characterization and limits on paper; numerical check\\
 Theorem~\ref{thm:rents}, rents from a misjudged aggregate response & \path{ceiling_suite/papers/paper1/equilibrium/e2_rents.py} & Proof on paper; numerical check\\
 Theorem~\ref{thm:eqhalt}, targeted intervention in equilibrium & \path{ceiling_suite/papers/paper1/equilibrium/e3_halt.py} & Proof on paper; numerical check\\
 Theorem~\ref{thm:minphase}(ii) for every $K$: the spectrum determines $\sigma_\xi^2\kappa^2$, $H/h_0$ and, with $\kappa$ known, the merged measure (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1SpectralID.lean}, \path{Paper1SpectralH.lean} & Lean 4 proof\\
