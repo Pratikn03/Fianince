@@ -114,3 +114,18 @@ The TPEx quote request still needs a working date parameter before TPEx can serv
 It returned "no matching data" for 2024-01-02 to 2024-01-03. Two explanations remain open: no events in those two
 days, or a wrong query. The `X` change-sign flag in `MI_INDEX` gives an independent event marker. The spec will use
 both and report disagreements.
+
+## Probe 3: TPEx date parameter (7 November 2026, author's Colab run)
+
+| Endpoint | Date honoured | Rows |
+|---|---|---|
+| Legacy `.../daily_close_quotes/stk_quote_result.php` with `d=113/01/02&se=EW` | **No.** Returns 2026-11-06 again. The body was discarded unread; that day was already burned. | — |
+| New `https://www.tpex.org.tw/www/zh-tw/afterTrading/dailyQ` (GET and POST) | No date field returned | — |
+| **New `https://www.tpex.org.tw/www/zh-tw/afterTrading/otc?date=YYYY/MM/DD&type=EW&response=json`** | **Yes** | 911 on each burned date |
+| **New `https://www.tpex.org.tw/www/zh-tw/insti/dailyTrade?type=Daily&sect=EW&date=YYYY/MM/DD&response=json`** | **Yes** | 790 and 795, matching the legacy institutional file in probe 1 |
+
+**Resolution.**
+- TPEx quotes: use the new `afterTrading/otc` endpoint with a Gregorian `YYYY/MM/DD` date.
+- TPEx institutional flows: use the new `insti/dailyTrade` endpoint. The legacy one also works.
+- Every executor request checks the returned date against the requested date and stops on a mismatch.
+- TPEx can now serve as the replication venue.
