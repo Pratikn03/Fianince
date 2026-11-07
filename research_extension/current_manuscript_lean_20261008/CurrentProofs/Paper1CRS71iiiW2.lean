@@ -42,7 +42,9 @@ theorem p1_S71iii_recover_two (a κ w1 w2 r1 r2 : ℝ) (T : ℕ) (hT : 4 ≤ T) 
         ring
     _ = ∑ n ∈ range 5, p1C a κ (p1K2 ![w1, w2, r1, r2]) (p1U r2 r1) n *
           p1TapD a κ (p1K2 ![w1, w2, r1, r2]) (p1K2D ![w1, w2, r1, r2] (Pi.single i 1)) n / (r1 - r2) ^ 3 :=
-        p1_sum_fin_range5 T hT _ fun n hn => by simp [p1_C_ge a κ (p1K2 ![w1, w2, r1, r2]) (p1U r2 r1) n hn]
+        p1_sum_fin_range5 T hT (fun n : ℕ => p1C a κ (p1K2 ![w1, w2, r1, r2]) (p1U r2 r1) n *
+          p1TapD a κ (p1K2 ![w1, w2, r1, r2]) (p1K2D ![w1, w2, r1, r2] (Pi.single i 1)) n / (r1 - r2) ^ 3)
+          fun n hn => by simp only [p1_C_ge a κ (p1K2 ![w1, w2, r1, r2]) (p1U r2 r1) n hn, zero_mul, zero_div]
     _ = (∑ m ∈ range 4, p1U r2 r1 m * p1K2D ![w1, w2, r1, r2] (Pi.single i 1) m) / (r1 - r2) ^ 3 := by
         rw [← Finset.sum_div, p1_C_identity a κ hκ _ _ _ (p1_U_ge r2 r1)]
     _ = (Pi.single 1 1 : Fin 4 → ℝ) i := by
@@ -80,13 +82,14 @@ theorem p1_S71iii_b_norm_two (a κ κmin κm wm w1 w2 r1 r2 : ℝ) (T : ℕ) (hT
       rwa [abs_mul_abs_self] at h
     have e : (p1C a κ k (p1U r2 r1) n / (r1 - r2) ^ 3) * (p1C a κ k (p1U r2 r1) n / (r1 - r2) ^ 3) =
         p1C a κ k (p1U r2 r1) n * p1C a κ k (p1U r2 r1) n / (r2 - r1) ^ 6 := by
-      rw [← hd6']; ring
+      (rw [div_mul_div_comm, ← pow_add, ← hd6']) <;> norm_num
     rw [e]
     exact div_le_div_of_nonneg_right h1 hd6.le
   calc _ = ∑ t : Fin (T + 1), (fun n : ℕ => (p1C a κ k (p1U r2 r1) n / (r1 - r2) ^ 3) *
         (p1C a κ k (p1U r2 r1) n / (r1 - r2) ^ 3)) t.val := rfl
     _ = ∑ n ∈ range 5, (p1C a κ k (p1U r2 r1) n / (r1 - r2) ^ 3) * (p1C a κ k (p1U r2 r1) n / (r1 - r2) ^ 3) :=
-        p1_sum_fin_range5 T hT _ fun n hn => by simp [p1_C_ge a κ k (p1U r2 r1) n hn]
+        p1_sum_fin_range5 T hT (fun n : ℕ => (p1C a κ k (p1U r2 r1) n / (r1 - r2) ^ 3) * (p1C a κ k (p1U r2 r1) n / (r1 - r2) ^ 3))
+          fun n hn => by simp only [p1_C_ge a κ k (p1U r2 r1) n hn, zero_div, mul_zero]
     _ ≤ ∑ _n ∈ range 5, Cb * Cb / (r2 - r1) ^ 6 := sum_le_sum fun n _ => hterm n
     _ = 5 * (Cb * Cb) / (r2 - r1) ^ 6 := by
         rw [sum_const, card_range, nsmul_eq_mul]; first | (push_cast; ring) | push_cast | norm_num
