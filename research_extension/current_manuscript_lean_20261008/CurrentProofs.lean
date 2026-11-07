@@ -99,3 +99,7 @@ import CurrentProofs.Paper1GeneralLevel
 import CurrentProofs.Paper1Abstain
 import CurrentProofs.Paper1UnknownPrimitives
 import CurrentProofs.Paper1KalmanTied
+import CurrentProofs.Paper1CapitalConverse
+import CurrentProofs.Paper1PassiveVariance
+import CurrentProofs.Paper1GaussianHCR
+import CurrentProofs.Paper1GaussianCR
