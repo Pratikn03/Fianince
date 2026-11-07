@@ -60,7 +60,7 @@ theorem p1_thm_cramer_rao_raw {p T : ℕ} (N : ℕ) (hN : 0 < N) (V : ℝ) (hV :
     (p1_rawMean_line_deriv N V μh θ0 J hd)
   rw [hG] at h
   haveI : Invertible ((N : ℝ) * V ^ 2) := invertibleOfNonzero hc
-  rw [Matrix.inv_smul ((N : ℝ) * V ^ 2) hJ, Matrix.smul_apply, smul_eq_mul, invOf_eq_inv] at h
+  rw [Matrix.inv_smul (A := Jᵀ * J) (k := (N : ℝ) * V ^ 2) hJ, Matrix.smul_apply, smul_eq_mul, invOf_eq_inv] at h
   calc (v : ℝ) / (N * V ^ 2) * (Jᵀ * J)⁻¹ k k = (v : ℝ) * (((N : ℝ) * V ^ 2)⁻¹ * (Jᵀ * J)⁻¹ k k) := by ring
     _ ≤ _ := h
 
