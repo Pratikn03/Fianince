@@ -88,7 +88,12 @@ days are excluded from every future confirmatory sample.
      report has three column schemas over 2013–2018. No statistic was computed.
    - Amendment A1 (`P1T_amendment_A1.md`) maps the schemas to the registered classes without changing the
      hypothesis, statistic or criteria. It is validated on simulation, and the Foreign verdicts are unchanged.
-   - The rerun with `P1T_Validation_A1_Colab.ipynb` is pending.
+   - Validation pass 1 (A1 executor, 7 November 2026): Foreign D = 0.0405, 95% interval [0.0226, 0.0542],
+     one-sided p < 1/9999, 292 stocks, 75% with a positive gain. That is the 'supportive' pattern, at about 11 times D*.
+     This is the validation pass, not the registered result.
+   - Found in validation: the pre-specified diagnostics of spec §7 are not implemented in the executor. The key
+     one is the reverse-causality check, because the price basis can proxy for flow lags that M0 omits. It must be
+     implemented, simulation-validated and frozen before the holdout is opened.
    - The holdout is opened once, after validation is checked and any bug fixes are logged. This is the first
      direct test on tagged flow.
 2. **P1T replication on TPEx (P1R).** A separate registered specification with the same frozen procedure on the
