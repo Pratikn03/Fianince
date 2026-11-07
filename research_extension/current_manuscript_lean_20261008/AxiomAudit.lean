@@ -448,6 +448,7 @@ run_cmd do
   `CurrentMM.p1_deconv_error_explicit,
   `CurrentMM.p1_moment_kernel_abs_le,
   `CurrentMM.p1_thm_general_memory_upper,
+  `CurrentMM.p1_iv_boundary_decomposition,
   `CurrentMM.p1_thm_merged_deconvolution,
   `CurrentMM.p1_thm_merged_kernel_from_measure,
   `CurrentMM.p1_merged_exp_sums_independent,

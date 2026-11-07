@@ -69,7 +69,7 @@ theorem p1_probeMean_line_deriv {n : ℕ} (a κ V : ℝ) (T : ℕ) (θ0 : Fin (n
   have hL := (hf θ0).hasFDerivAt
   have hγ : HasDerivAt (fun s : ℝ => θ0 + s • d) ((1 : ℝ) • d) 0 :=
     ((hasDerivAt_id' (0 : ℝ)).smul_const d).const_add θ0
-  have hc := hL.comp_hasDerivAt_of_eq hγ (by simp)
+  have hc := hL.comp_hasDerivAt_of_eq (x := (0 : ℝ)) hγ (by simp)
   refine hc.congr_deriv ?_
   rw [one_smul]
   conv_lhs => rw [pi_eq_sum_univ' d]
