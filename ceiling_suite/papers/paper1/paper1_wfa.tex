@@ -43,7 +43,7 @@
 \begingroup\onehalfspacing
 
 \begin{abstract}
-\noindent Prices in a market with feedback trading reveal the combined response of all trader groups, not the groups themselves. We characterize what public prices identify and what learning the rest costs. In a linear closed-loop market where each group tracks prices with exponential memory, prices identify only a merged response measure: groups with equal memories are inseparable however much data is collected, and separating $K$ groups whose memories are $\Delta\eta$ apart takes of order $(\Delta\eta)^{-(4K-2)}$ experiments. That rate is the known mixture rate; we show that it survives the feedback loop, where the memories enter as zeros of the observed transfer function. The contributions are what the market setting adds. Passive observation of a running market is no cheaper than active probing, because the closed loop is minimum phase. For an observer who trades to learn, the sample requirements become executed quantity of order $\delta^{-2}$ and capital of order $\delta^{-4}$. Class-tagged flow removes the spacing penalty, and a supervisory example shows attribution changing the right action when prices are nearly identical. Several identification and Fisher-information results are machine-checked in Lean~4. Pre-registered tests on CFTC and Binance trader-class reports are mixed: 11 of 23 recorded outcomes pass; class reports constrain persistence far more tightly than prices but do not identify learning memory.
+\noindent Prices in a market with feedback trading reveal the combined response of all trader groups, not the groups themselves. We characterize what public prices identify and what learning the rest costs. In a linear closed-loop market where each group tracks prices with exponential memory, prices identify only a merged response measure: groups with equal memories are inseparable however much data is collected, and separating $K$ groups whose memories are $\Delta\eta$ apart takes of order $(\Delta\eta)^{-(4K-2)}$ experiments. That rate is the known mixture rate; we show that it survives the feedback loop, where the memories enter as zeros of the observed transfer function. The contributions are what the market setting adds. Passive observation of a running market is no cheaper than active probing, because the closed loop is minimum phase. For an observer who trades to learn, the sample requirements become executed quantity of order $\delta^{-2}$ and capital of order $\delta^{-4}$. With a strategic insider and any causal dealer rule, economies with the same merged measure are outcome-equivalent, so what prices cannot identify is worth nothing to price-based traders; a dealer that misjudges the aggregate response pays or earns rents of first order in its error, which public data shrink at the ordinary rate. Class-tagged flow removes the spacing penalty, and a supervisory example shows attribution changing the right action when prices are nearly identical. Several identification and Fisher-information results are machine-checked in Lean~4. Pre-registered tests on CFTC and Binance trader-class reports are mixed: 11 of 23 recorded outcomes pass; class reports constrain persistence far more tightly than prices but do not identify learning memory.
 \end{abstract}
 
 \noindent\textbf{AI-use disclosure.} Claude, ChatGPT/Codex and Gemini provided material assistance with research development, code, numerical checks, manuscript drafting and internal critique. ChatGPT/Codex additionally developed and checked Lean proofs in this revision. Human authors remain responsible for verifying the content and its scholarly contribution before submission; AI checks do not constitute independent review.
@@ -400,7 +400,62 @@ Thus a covariance discrepancy of order $(\Delta\eta)^{2K-1}$ preserves that orde
 \end{enumerate}
 \end{proposition}
 
-\paragraph{Limits of the pricing extension.} Anonymous flow alone implies neither a covariance-only dealer objective nor uniqueness or continuity of its equilibrium. Multiple equilibria, threshold quote changes, private information and inventory-dependent rules are outside this proposition. Preserving a price-record testing bound additionally requires a uniformly Lipschitz observation law with the same nondegenerate noise; adding anonymous flow is a different statistical experiment and requires its own divergence bound. We therefore make no unconditional claim that endogenous pricing or additional aggregate-flow observations preserve the price-only lower bound.
+\paragraph{Limits of the pricing extension.} Anonymous flow alone implies neither a covariance-only dealer objective nor uniqueness or continuity of its equilibrium. Multiple equilibria, threshold quote changes, private information and inventory-dependent rules are outside this proposition; for the question of invariance, Theorem~\ref{thm:eqinv} below covers them. Preserving a price-record testing bound additionally requires a uniformly Lipschitz observation law with the same nondegenerate noise; adding anonymous flow is a different statistical experiment and requires its own divergence bound. We therefore make no unconditional claim that endogenous pricing or additional aggregate-flow observations preserve the price-only lower bound.
+
+\begin{theorem}[Equilibrium invariance]\label{thm:eqinv}
+Consider a market with the following participants and rules.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item A value $v$ and noise trades $z_t$.
+\item An insider who submits $x_t=X_t(v,\mathcal H_{t-1})$.
+\item A dealer who sets $p_t=P_t(\mathcal H_{t-1},y_t)$ from the public history $\mathcal H_{t-1}$ and the total order flow $y_t=x_t+z_t+f_t$.
+\item Feedback cohorts whose memory states update on a public price statistic $s_t=S_t(p_0,\ldots,p_t)$ by $m_{i,t+1}=r_im_{i,t}+s_t$ from $m_{i,0}=0$, with $r_i=1-\eta_i$ and aggregate flow $f_t=\sum_iw_im_{i,t}$, $w_i=q_i\eta_i$.
+\end{itemize}
+The rules $X$, $P$ and $S$ are arbitrary causal maps. This covers Kyle, inventory-averse, learning and misspecified dealers, and any insider strategy.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item $f_t=\sum_{m<t}k_m\,s_{t-1-m}$, with $k_m=\sum_iw_ir_i^m$, the moments of the merged measure $M$.
+\item Two cohort configurations produce the same aggregate flow for every price path on dates $t\le T$ if and only if $k_m=k'_m$ for all $m<T$. On an unbounded horizon this holds if and only if their merged measures coincide.
+\item If $k_m=k'_m$ for $m<T$, then for every strategy profile and every realization of $(v,z)$ the following coincide on $t\le T$: the price and order-flow paths, the insider's trades and realized profit, and the dealer's inventory. The two games therefore have the same strategy sets and the same payoff for every profile. They have the same equilibria, with the same outcomes, under any equilibrium concept defined from these payoffs and the public history.
+\item Group-level quantities are not invariant. A Gauss and a Radau two-point configuration agree on $k_0,k_1,k_2$, so they are outcome-equivalent for $T=3$, while their largest cohorts carry weights $\tfrac12$ and $\tfrac34$.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} Whatever the insider and the dealer do, two markets whose trader groups have the same merged response produce the same prices, the same order flow and the same insider and dealer outcomes. So the part of the population that prices cannot identify (Theorem~\ref{thm:merged}) is worth nothing to anyone who trades on public information. It matters only for actions aimed at a particular group, such as halting it (Proposition~\ref{prop:target}). Parts (i)--(iv) are machine-checked pathwise for every causal insider, dealer and signal rule (\nolinkurl{Paper1EquilibriumInvariance.lean}). Supplement~\ref{app:eqinv} gives the proof, the unbounded-horizon statement, the extension to cohort-specific demand shocks and a numerical illustration.
+
+\paragraph{A misjudged dealer and a targeted halt.} The next two results use the simplest linear market inside Theorem~\ref{thm:eqinv}.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item Dates are $t=0,\ldots,T-1$ and the price change is $s_t=p_t-p_{t-1}$, with $p_{-1}=0$.
+\item The dealer moves the price by $s_t=\lambda(y_t-\hat f_t)$, with $\lambda>0$, where $\hat f_t=\sum_{m<t}\hat k_ms_{t-1-m}$ is the feedback flow it predicts from its kernel $\hat k$.
+\item The insider, with value $v$ of mean zero and variance $\Sigma_0$ independent of the noise, commits to a schedule $x=bv$, $b\in\R^T$. Schedules may change sign, so pump-and-dump patterns are allowed.
+\item The kernel error is $\Delta k=k-\hat k$, with $\varepsilon=\sum_{m\le T-2}|\Delta k_m|$.
+\end{itemize}
+Let $C$ be the lower-triangular matrix of ones and $D$ the strictly lower Toeplitz matrix with $D_{t,t-1-m}=\Delta k_m$.
+
+\begin{theorem}[Rents from a misjudged aggregate response]\label{thm:rents}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The insider's expected profit is $J(b)=\Sigma_0\bigl(\mathbf 1^\top b-b^\top A b\bigr)$, with $A=\lambda C(I-\lambda D)^{-1}$. If $Q=\tfrac12(A+A^\top)\succ0$, the optimal schedule is $b^*=\tfrac12Q^{-1}\mathbf1$ and the value is $V(\Delta k)=\tfrac{\Sigma_0}4\mathbf1^\top Q^{-1}\mathbf1$.
+\item If $\lambda T\varepsilon\le\tfrac14(1-\lambda\varepsilon)$, then $Q\succ0$ and
+\[
+ |V(\Delta k)-V(0)|\le\frac{2\Sigma_0T^2\varepsilon}{1-\lambda\varepsilon}.
+\]
+\item To first order, $V(\Delta k)=V(0)-\Sigma_0\sum_m\omega_m\Delta k_m+O(\varepsilon^2)$, with $\omega_m=\frac{(T-m)(T-m-1)}{2(T+1)^2}>0$ and $V(0)=\frac{\Sigma_0T}{2\lambda(T+1)}$. The rent is therefore of exact order $\varepsilon$. The insider gains when the dealer overstates the feedback ($\Delta k<0$) and loses when it understates it.
+\item If the dealer estimates the aggregate kernel from $n$ observations with error $\varepsilon_n=O_p(n^{-1/2})$, the rent is $O_p(n^{-1/2})$. Separating the groups behind the same kernel still needs order $(\Delta\eta)^{-(4K-2)}$ experiments (Theorem~\ref{thm:kcohort}).
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} A dealer that misjudges how strongly feedback traders respond hands the insider a rent, or charges it one, in proportion to the error. That error concerns only the aggregate response, which public data reveal at the ordinary rate. So the information that protects price formation is cheap to learn, while the information about who the groups are stays expensive. The dealer's coefficient $\lambda$ is held fixed: this is the insider's best response to a misspecified dealer, not a re-solved equilibrium.
+
+\begin{theorem}[Targeted intervention in equilibrium]\label{thm:eqhalt}
+Take the Gauss and Radau pairs of Theorem~\ref{thm:eqinv}(iv), with total weight $W$, on rates $c+ds$ with $\rho=|c|+|d|<1$. Place them in the market above, with the same dealer rule $(\lambda,\hat k)$, the same insider schedule and the same draws.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The kernels agree for $m\le2$, and $|k^G_m-k^R_m|\le2W\binom m3|d|^3\rho^{m-3}$ for $m\ge3$. Hence $\|k^G-k^R\|_1\le2W|d|^3/(1-\rho)^4$.
+\item Before any intervention, the price paths differ by at most $\lambda^2T\|k^G-k^R\|_1\|x+z\|$ divided by $(1-\lambda\|k^G-\hat k\|_1)(1-\lambda\|k^R-\hat k\|_1)$, which is $O(|d|^3)$. The insider's values differ by $O(|d|^3)$.
+\item Halting the largest cohort leaves kernels $\tfrac W2(c-d\sigma)^m$ (the Gauss weights tie; we remove the cohort at $c+d\sigma$) and $\tfrac W4(c-d)^m$, which differ by $\tfrac W4$ at $m=0$ for every spacing. The post-halt responses therefore differ at order one, and so do the post-halt feedback budgets $\sum_mk_m$.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} Two markets can look the same in equilibrium to within the cube of the memory spacing, yet halting their largest group leaves feedback that differs at order one. Equilibrium does not remove the case for targeted information; it sharpens it. In the simulation of Supplement~\ref{app:eqinv}, the pre-halt price gap is about $3d^3$ at all three spacings tried, while the post-halt gap stays near $0.19$.
+
+
 
 \section{Probing resources, memory resolution and money}\label{sec:resources}
 
@@ -1354,6 +1409,8 @@ Two open questions remain. The first is economic: Proposition~\ref{prop:target} 
 \bibitem[Alfonsi et~al.(2012)]{alfonsi2012} Alfonsi, A., A. Schied, and A. Slynko (2012). Order book resilience, price manipulation, and the positive portfolio problem. \emph{SIAM Journal on Financial Mathematics} 3. doi:10.1137/110822098.
 \bibitem[Alfonsi et~al.(2016)]{alfonsi2016} Alfonsi, A., A. Schied, and F. Kl\"ock (2016). Multivariate transient price impact and matrix-valued positive definite functions. \emph{Mathematics of Operations Research} 41, 914--934.
 \bibitem[Almgren and Chriss(2001)]{almgren2001} Almgren, R., and N. Chriss (2001). Optimal execution of portfolio transactions. \emph{Journal of Risk} 3, 5--39.
+\bibitem[Allen and Gale(1992)]{allen1992} Allen, F., and D. Gale (1992). Stock-price manipulation. \emph{Review of Financial Studies} 5, 503--529.
+
 \bibitem[Amilon(2008)]{amilon2008} Amilon, H. (2008). Estimation of an adaptive stock market model with heterogeneous agents. \emph{Journal of Empirical Finance} 15, 342--362.
 \bibitem[Andrews and Cheng(2012)]{andrews2012} Andrews, D.\,W.\,K., and X. Cheng (2012). Estimation and inference with weak, semi-strong, and strong identification. \emph{Econometrica} 80, 2153--2211.
 
@@ -1378,6 +1435,8 @@ Two open questions remain. The first is economic: Proposition~\ref{prop:target} 
 \bibitem[Cochrane and Orcutt(1949)]{cochrane1949} Cochrane, D., and G. H. Orcutt (1949). Application of least squares regression to relationships containing auto-correlated error terms. \emph{Journal of the American Statistical Association} 44, 32--61.
 \bibitem[Colliard et~al.(2022)]{colliard2022} Colliard, J.-E., T. Foucault, and S. Lovo (2022). Algorithmic pricing and liquidity in securities markets. CEPR Discussion Paper 17606.
 \bibitem[Crouzet et~al.(2020)]{crouzet2020} Crouzet, N., I. Dew-Becker, and C.\,G. Nathanson (2020). On the effects of restricting short-term investment. \emph{Review of Financial Studies} 33, 1--43.
+\bibitem[De Long et~al.(1990)]{delong1990} De Long, J. B., A. Shleifer, L. H. Summers, and R. J. Waldmann (1990). Positive feedback investment strategies and destabilizing rational speculation. \emph{Journal of Finance} 45, 379--395.
+
 \bibitem[Dou et~al.(2025)]{dou2025} Dou, W.~W., I. Goldstein, and Y. Ji (2025). AI-powered trading, algorithmic collusion, and price efficiency. NBER Working Paper 34054.
 \bibitem[Duarte and Young(2009)]{duarte2009} Duarte, J., and L. Young (2009). Why is PIN priced? \emph{Journal of Financial Economics} 91, 119--138.
 \bibitem[Easley et~al.(1996)]{easley1996} Easley, D., N.~M. Kiefer, M. O'Hara, and J.~B. Paperman (1996). Liquidity, information, and infrequently traded stocks. \emph{Journal of Finance} 51, 1405--1436.
@@ -1411,6 +1470,8 @@ Two open questions remain. The first is economic: Proposition~\ref{prop:target} 
 \bibitem[Moitra(2015)]{moitra2015} Moitra, A. (2015). Super-resolution, extremal functions and the condition number of Vandermonde matrices. In \emph{Proceedings of the 47th Annual ACM Symposium on Theory of Computing (STOC)}, 821--830.
 \bibitem[Moskowitz et~al.(2012)]{moskowitz2012} Moskowitz, T. J., Y. H. Ooi, and L. H. Pedersen (2012). Time series momentum. \emph{Journal of Financial Economics} 104, 228--250.
 \bibitem[Anonymous(2026)]{niroula2026b} Anonymous (2026). Companion paper on transient amplification and pre-trade guards in closed-loop markets. Working paper, withheld for anonymous review.
+\bibitem[Noh(2026)]{noh2026} Noh, E. (2026). A continuous-time Kyle model with price-responsive traders. Working paper, arXiv:2601.09872.
+
 \bibitem[Obizhaeva and Wang(2013)]{obizhaeva2013} Obizhaeva, A. A., and J. Wang (2013). Optimal trading strategy and supply/demand dynamics. \emph{Journal of Financial Markets} 16, 1--32.
 \bibitem[Pagano and R\"oell(1996)]{pagano1996} Pagano, M., and A. R\"oell (1996). Transparency and liquidity: A comparison of auction and dealer markets with informed trading. \emph{Journal of Finance} 51, 579--611.
 \bibitem[Park and Van Roy(2015)]{parkvanroy2015} Park, B., and B. Van Roy (2015). Adaptive execution: Exploration and learning of price impact. \emph{Operations Research}, doi:10.1287/opre.2015.1415.
@@ -1712,6 +1773,94 @@ Fitted slope in $\Delta\eta$ & $-5.87$ & $-6.26$ & $-6.22$\\
 \begin{tablenotes}\footnotesize\item Numerical check, not pre-specified. $K=2$ Gauss-node economy of Table~\ref{tab:injection}; i.i.d.\ $\pm1$ probe; least squares on 200 probe lags; Prony estimator and success rule as in Table~\ref{tab:kupper}.\end{tablenotes}
 \end{threeparttable}
 \end{table}
+
+\section{Equilibrium results: proofs and illustrations}\label{app:eqinv}
+
+\begin{proof}[Proof of Theorem~\ref{thm:eqinv}]
+\emph{Part (i).} By induction, $m_{i,t}=\sum_{m<t}r_i^m s_{t-1-m}$. Multiplying by $w_i$ and summing over $i$ gives $f_t=\sum_{m<t}k_ms_{t-1-m}$.
+
+\emph{Part (ii).} If $k_m=k'_m$ for $m<T$, then by (i) the two aggregate flows agree on $t\le T$ for every signal. Conversely, the impulse signal $s_j=\mathbf 1\{j=0\}$ gives $f_{m+1}=k_m$, so equal flows on $t\le T$ force $k_m=k'_m$ for $m<T$.
+
+On an unbounded horizon, equality of all $k_m=\int r^m\,dM(r)$ is equality of all moments of two finite signed measures on $[0,1]$. Polynomials are dense in $C[0,1]$, so the measures coincide. In terms of $\eta$ this is the condition \eqref{eq:merged} of Theorem~\ref{thm:merged}.
+
+\emph{Part (iii).} Fix a strategy profile and a realization. We argue by strong induction on $t\le T$. If prices and flows agree before $t$:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item the signals agree before $t$, because $S_j$ depends on prices up to $j$;
+\item the aggregate flows at $t$ agree, by part (i) and the equal kernels, since $f_t$ uses signals before $t$ only;
+\item the insider's orders at $t$ agree, by causality;
+\item hence the total flows $y_t$ agree, and then the prices $p_t$ agree, by causality of the dealer's rule.
+\end{itemize}
+The insider's profit $\sum_{t<T}(v-p_t)x_t$ and the dealer's inventory $-\sum_{t<T}y_t$ are functions of these paths.
+
+Strategy sets are the same in the two games, because the rules are defined on the same histories. Every payoff is an expectation of the same function of $(v,z)$, so best responses coincide and so do the equilibria.
+
+\emph{Part (iv).} The Gauss rule has weights $\tfrac12,\tfrac12$ and nodes $\pm\sigma$ with $\sigma^2=\tfrac13$. The Radau rule has weights $\tfrac14,\tfrac34$ and nodes $-1,\tfrac13$. Both integrate $1,s,s^2$ exactly, so on rates $c+ds$ the kernels agree for $m\le2$. The largest weights are $\tfrac12$ and $\tfrac34$.
+\end{proof}
+
+\paragraph{Machine check.} \nolinkurl{Paper1EquilibriumInvariance.lean} proves the following:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item part (i): \texttt{p1\_eqAggFlow\_kernel};
+\item both directions of part (ii) on a finite horizon: \texttt{p1\_eqAggFlow\_of\_kernel} and \texttt{p1\_kernel\_of\_eqAggFlow};
+\item the pathwise statement of part (iii) for arbitrary causal insider, dealer and signal rules: \texttt{p1\_eq\_market\_invariance} and \texttt{p1\_eq\_insider\_profit\_invariance};
+\item part (iv): \texttt{p1\_eq\_group\_level\_differs}.
+\end{itemize}
+The unbounded-horizon moment statement and the passage from pathwise equality to equal equilibria are on paper.
+
+\paragraph{Cohort-specific demand shocks.} Suppose cohort $i$ also trades an idiosyncratic shock $\epsilon_{i,t}$ through its memory, so that $f_t$ gains the term $\sum_iw_i\sum_{m<t}r_i^m\epsilon_{i,t-1-m}$. The same induction shows that the equilibrium depends on the cohorts only through the kernel and the law of this aggregate shock process. For independent Gaussian shocks with variances $\sigma_i^2$, that law is determined by the spectral density $\sum_iw_i^2\sigma_i^2|1-r_ie^{i\omega}|^{-2}$. This is a second merged object, and the invariance class shrinks accordingly. The paper's cohorts have no idiosyncratic shocks.
+
+\paragraph{The textbook benchmark.} Take a risk-neutral, competitive dealer that knows the kernel. It can compute $f_t$ from public prices and price only $y_t-f_t$, so predictable feedback flow then has no price impact, and the closed loop of Section~\ref{sec:model} is absent in that equilibrium. The theorem holds in that benchmark as well. Feedback reaches prices in equilibrium when the dealer bears inventory risk, or when it does not know the kernel and must learn it. These are the cases studied in the equilibrium extension.
+
+\paragraph{Numerical illustration.} \nolinkurl{equilibrium/e1_demo.py} runs one market. The insider submits $x_t=0.3(v-p_{t-1})$. The dealer sets $p_t=p_{t-1}+0.3\,y_t-0.05\,(I_t-I_{t-1})$. The signal is $s_t=p_t-p_{t-1}$. Two cohort configurations are compared, the Gauss and Radau pairs of part (iv) on rates $0.6+0.2s$, with total weight $0.5$, under the same $(v,z)$ draws. Over 200 draws:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item price paths coincide to machine precision on the first four dates ($t\le3$), with largest gap $2\times10^{-16}$;
+\item from date five, where $k_3$ first differs (by $\tfrac29d^3$ times the total weight), they separate, with largest gap $1.8\times10^{-4}$ at date five and $1.9\times10^{-2}$ by date twenty;
+\item the largest group's share of feedback positions stays at medians of $0.59$ and $0.79$.
+\end{itemize}
+The result file is \nolinkurl{equilibrium/e1_demo_results.json}.
+
+\paragraph{Proof of Theorem~\ref{thm:rents}.}
+\emph{Part (i).} Total flow is $y=x+z+f$. The dealer subtracts $\hat f$, so $s=\lambda(x+z+Ds)$. The matrix $D$ is strictly lower triangular, so $I-\lambda D$ is invertible and $s=\lambda(I-\lambda D)^{-1}(x+z)$. Prices are $p=Cs$. With $x=bv$, realized profit is $\sum_t(v-p_t)x_t=v^2\mathbf1^\top b-v\,b^\top Cs$. Taking expectations with $E[v]=0$ and $v$ independent of $z$ gives $J(b)$. When $Q\succ0$, $J$ is strictly concave, and its maximizer and value are as stated.
+
+\emph{Part (ii).} A Toeplitz operator is bounded by the $\ell_1$ norm of its symbol, so $\|D\|\le\varepsilon$. For $\lambda\varepsilon<1$ this gives $\|(I-\lambda D)^{-1}\|\le1/(1-\lambda\varepsilon)$ and $(I-\lambda D)^{-1}-I=\lambda D(I-\lambda D)^{-1}$. Since $\|C\|\le T$, we get $\|Q-Q_0\|\le\|A-A_0\|\le\lambda^2T\varepsilon/(1-\lambda\varepsilon)$. Moreover $Q_0=\tfrac\lambda2(I+\mathbf1\mathbf1^\top)\succeq\tfrac\lambda2I$. Under the stated condition $\|Q-Q_0\|\le\lambda/4$, so $Q\succeq\tfrac\lambda4I$. Then
+\[
+|V-V_0|=\tfrac{\Sigma_0}4|\mathbf1^\top Q^{-1}(Q_0-Q)Q_0^{-1}\mathbf1|\le\tfrac{\Sigma_0}4\,T\cdot\tfrac4\lambda\cdot\tfrac2\lambda\cdot\tfrac{\lambda^2T\varepsilon}{1-\lambda\varepsilon}.
+\]
+
+\emph{Part (iii).} $Q_0^{-1}\mathbf1=\frac{2}{\lambda(T+1)}\mathbf1$, which gives $V(0)$. Since $A=A_0+\lambda^2CD+O(\varepsilon^2)$, the derivative of $\mathbf1^\top Q^{-1}\mathbf1$ is $-u^\top(\lambda^2CD)u$ with $u=Q_0^{-1}\mathbf1$. Using $\mathbf1^\top C=(T,T-1,\ldots,1)$ and $(D\mathbf1)_t=\sum_{m<t}\Delta k_m$, we get $\mathbf1^\top CD\mathbf1=\sum_m\Delta k_m\frac{(T-m)(T-m-1)}2$. Multiplying by $\tfrac{\Sigma_0}4\cdot\frac{4}{\lambda^2(T+1)^2}\cdot\lambda^2$ gives $\omega_m$.
+
+\emph{Part (iv).} This is part (ii) with $\varepsilon=\varepsilon_n$. The rate for $\varepsilon_n$ is an assumption on the dealer's estimator, for example least squares of order flow on lagged price changes in a stationary market. It is not proved here.
+
+\paragraph{Proof of Theorem~\ref{thm:eqhalt}.}
+\emph{Part (i).} Write $\mu_j^G,\mu_j^R$ for the $j$th moments of the two rules, which are at most one in absolute value. Expanding $(c+ds)^m$ gives
+\[
+k_m^G-k_m^R=W\sum_{j\ge3}\binom mj c^{m-j}d^j(\mu_j^G-\mu_j^R).
+\]
+The terms with $j\le2$ vanish because both rules are exact for those degrees. Since $\binom mj\le\binom m3\binom{m-3}{j-3}$, the sum is at most $2W\binom m3|d|^3\rho^{m-3}$. Finally, $\sum_{m\ge3}\binom m3\rho^{m-3}=(1-\rho)^{-4}$.
+
+\emph{Part (ii).} With residual matrices $D_G,D_R$ built from $k^G-\hat k$ and $k^R-\hat k$,
+\[
+p^G-p^R=\lambda C\bigl[(I-\lambda D_G)^{-1}-(I-\lambda D_R)^{-1}\bigr](x+z)=\lambda^2C(I-\lambda D_G)^{-1}(D_G-D_R)(I-\lambda D_R)^{-1}(x+z).
+\]
+Bound each factor as in the proof of Theorem~\ref{thm:rents}. The value comparison follows from the same perturbation argument, with base point $D_R$ instead of $0$.
+
+\emph{Part (iii).} Removing one of the two Gauss cohorts leaves weight $W/2$. Removing the Radau cohort with weight $3/4$ leaves $W/4$. At $m=0$ the kernel is the remaining weight.
+
+\paragraph{Numerical checks.}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \nolinkurl{equilibrium/e2_rents.py}, with $T=10$, $\lambda=0.5$ and $\Delta k_m=\pm0.4\,\epsilon\,(0.7)^m$:
+  \begin{itemize}[itemsep=1pt,topsep=1pt]
+  \item the exact rent is $-0.322\epsilon$ when the dealer understates feedback and $+0.322\epsilon$ when it overstates it, as $\epsilon\to0$;
+  \item this matches the first-order formula $\mp\Sigma_0\sum_m\omega_m|\Delta k_m|$ to three digits at $\epsilon=0.0125$, and to within 6\% at $\epsilon=0.4$.
+  \end{itemize}
+\item \nolinkurl{equilibrium/e3_halt.py}, with the market of \nolinkurl{e1_demo.py}, $c=0.6$, $W=0.5$, 200 draws and 40 dates:
+  \begin{itemize}[itemsep=1pt,topsep=1pt]
+  \item the largest pre-halt price gap is $3.8\times10^{-4}$, $2.9\times10^{-3}$ and $2.3\times10^{-2}$ for $d=0.05$, $0.1$ and $0.2$, a ratio to $d^3$ of $3.0$, $2.9$ and $2.8$;
+  \item the largest post-halt gap is $0.196$, $0.190$ and $0.177$.
+  \end{itemize}
+\end{itemize}
+The result files are \nolinkurl{e2_rents_results.json} and \nolinkurl{e3_halt_results.json}. Theorems~\ref{thm:rents} and~\ref{thm:eqhalt} are proved on paper and are not machine-checked.
+
+
 
 \section{Internet appendix: Account-level capital}\label{sec:account}
 
@@ -2294,6 +2443,7 @@ Theorem~\ref{thm:abstain}, finite-window abstention (machine-checked) & \path{re
 Corollary~\ref{cor:unknown_primitives}(i)--(ii), identification with unknown $(a,\kappa)$ (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1UnknownPrimitives.lean} & Lean 4 proof\\
 Proposition~\ref{prop:crb}(i), Cram\'er--Rao bound on the raw records of the actual market (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1GaussianHCR.lean}, \path{Paper1GaussianCR.lean}, \path{Paper1CRActual.lean}, \path{Paper1CRRaw.lean} & Lean 4 proof\\
 Proposition~\ref{prop:crb}(iii), two-sided $(\Delta\eta)^{-6}$ bound on both weight entries of the inverse Fisher matrix, fixed $T\ge4$ (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1FisherBounds.lean}, \path{Paper1CRTaps.lean}, \path{Paper1CRS71iii.lean}, \path{Paper1CRS71iiiEta.lean}, \path{Paper1CRS71iiiW2.lean} & Lean 4 proof\\
+Theorem~\ref{thm:eqinv}, equilibrium invariance under the merged measure (machine-checked pathwise) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumInvariance.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e1_demo.py} & Lean 4 proof; numerical illustration\\
 Theorem~\ref{thm:minphase}(ii) for every $K$: the spectrum determines $\sigma_\xi^2\kappa^2$, $H/h_0$ and, with $\kappa$ known, the merged measure (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1SpectralID.lean}, \path{Paper1SpectralH.lean} & Lean 4 proof\\
 Proposition~\ref{prop:passive0}, passive distinction with zero controlled quantity (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1PassiveVariance.lean} & Lean 4 proof\\
 Lemma~\ref{thm:capital}, converse: pulse test errors and margin solvency (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1CapitalConverse.lean} & Lean 4 proof\\

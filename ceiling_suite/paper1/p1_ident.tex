@@ -58,7 +58,42 @@ The rules $X$, $P$ and $S$ are arbitrary causal maps. This covers Kyle, inventor
 \end{enumerate}
 \end{theorem}
 
-\paragraph{In words.} Whatever the insider and the dealer do, two markets whose trader groups have the same merged response produce the same prices, the same order flow and the same profits. So the part of the population that prices cannot identify (Theorem~\ref{thm:merged}) is worth nothing to anyone who trades on public information. It matters only for actions aimed at a particular group, such as halting it (Proposition~\ref{prop:target}). Parts (i)--(iv) are machine-checked pathwise for every causal insider, dealer and signal rule (\nolinkurl{Paper1EquilibriumInvariance.lean}). Supplement~\ref{app:eqinv} gives the proof, the unbounded-horizon statement, the extension to cohort-specific demand shocks and a numerical illustration.
+\paragraph{In words.} Whatever the insider and the dealer do, two markets whose trader groups have the same merged response produce the same prices, the same order flow and the same insider and dealer outcomes. So the part of the population that prices cannot identify (Theorem~\ref{thm:merged}) is worth nothing to anyone who trades on public information. It matters only for actions aimed at a particular group, such as halting it (Proposition~\ref{prop:target}). Parts (i)--(iv) are machine-checked pathwise for every causal insider, dealer and signal rule (\nolinkurl{Paper1EquilibriumInvariance.lean}). Supplement~\ref{app:eqinv} gives the proof, the unbounded-horizon statement, the extension to cohort-specific demand shocks and a numerical illustration.
+
+\paragraph{A misjudged dealer and a targeted halt.} The next two results use the simplest linear market inside Theorem~\ref{thm:eqinv}.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item Dates are $t=0,\ldots,T-1$ and the price change is $s_t=p_t-p_{t-1}$, with $p_{-1}=0$.
+\item The dealer moves the price by $s_t=\lambda(y_t-\hat f_t)$, with $\lambda>0$, where $\hat f_t=\sum_{m<t}\hat k_ms_{t-1-m}$ is the feedback flow it predicts from its kernel $\hat k$.
+\item The insider, with value $v$ of mean zero and variance $\Sigma_0$ independent of the noise, commits to a schedule $x=bv$, $b\in\R^T$. Schedules may change sign, so pump-and-dump patterns are allowed.
+\item The kernel error is $\Delta k=k-\hat k$, with $\varepsilon=\sum_{m\le T-2}|\Delta k_m|$.
+\end{itemize}
+Let $C$ be the lower-triangular matrix of ones and $D$ the strictly lower Toeplitz matrix with $D_{t,t-1-m}=\Delta k_m$.
+
+\begin{theorem}[Rents from a misjudged aggregate response]\label{thm:rents}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The insider's expected profit is $J(b)=\Sigma_0\bigl(\mathbf 1^\top b-b^\top A b\bigr)$, with $A=\lambda C(I-\lambda D)^{-1}$. If $Q=\tfrac12(A+A^\top)\succ0$, the optimal schedule is $b^*=\tfrac12Q^{-1}\mathbf1$ and the value is $V(\Delta k)=\tfrac{\Sigma_0}4\mathbf1^\top Q^{-1}\mathbf1$.
+\item If $\lambda T\varepsilon\le\tfrac14(1-\lambda\varepsilon)$, then $Q\succ0$ and
+\[
+ |V(\Delta k)-V(0)|\le\frac{2\Sigma_0T^2\varepsilon}{1-\lambda\varepsilon}.
+\]
+\item To first order, $V(\Delta k)=V(0)-\Sigma_0\sum_m\omega_m\Delta k_m+O(\varepsilon^2)$, with $\omega_m=\frac{(T-m)(T-m-1)}{2(T+1)^2}>0$ and $V(0)=\frac{\Sigma_0T}{2\lambda(T+1)}$. The rent is therefore of exact order $\varepsilon$. The insider gains when the dealer overstates the feedback ($\Delta k<0$) and loses when it understates it.
+\item If the dealer estimates the aggregate kernel from $n$ observations with error $\varepsilon_n=O_p(n^{-1/2})$, the rent is $O_p(n^{-1/2})$. Separating the groups behind the same kernel still needs order $(\Delta\eta)^{-(4K-2)}$ experiments (Theorem~\ref{thm:kcohort}).
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} A dealer that misjudges how strongly feedback traders respond hands the insider a rent, or charges it one, in proportion to the error. That error concerns only the aggregate response, which public data reveal at the ordinary rate. So the information that protects price formation is cheap to learn, while the information about who the groups are stays expensive. The dealer's coefficient $\lambda$ is held fixed: this is the insider's best response to a misspecified dealer, not a re-solved equilibrium.
+
+\begin{theorem}[Targeted intervention in equilibrium]\label{thm:eqhalt}
+Take the Gauss and Radau pairs of Theorem~\ref{thm:eqinv}(iv), with total weight $W$, on rates $c+ds$ with $\rho=|c|+|d|<1$. Place them in the market above, with the same dealer rule $(\lambda,\hat k)$, the same insider schedule and the same draws.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The kernels agree for $m\le2$, and $|k^G_m-k^R_m|\le2W\binom m3|d|^3\rho^{m-3}$ for $m\ge3$. Hence $\|k^G-k^R\|_1\le2W|d|^3/(1-\rho)^4$.
+\item Before any intervention, the price paths differ by at most $\lambda^2T\|k^G-k^R\|_1\|x+z\|$ divided by $(1-\lambda\|k^G-\hat k\|_1)(1-\lambda\|k^R-\hat k\|_1)$, which is $O(|d|^3)$. The insider's values differ by $O(|d|^3)$.
+\item Halting the largest cohort leaves kernels $\tfrac W2(c-d\sigma)^m$ (the Gauss weights tie; we remove the cohort at $c+d\sigma$) and $\tfrac W4(c-d)^m$, which differ by $\tfrac W4$ at $m=0$ for every spacing. The post-halt responses therefore differ at order one, and so do the post-halt feedback budgets $\sum_mk_m$.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} Two markets can look the same in equilibrium to within the cube of the memory spacing, yet halting their largest group leaves feedback that differs at order one. Equilibrium does not remove the case for targeted information; it sharpens it. In the simulation of Supplement~\ref{app:eqinv}, the pre-halt price gap is about $3d^3$ at all three spacings tried, while the post-halt gap stays near $0.19$.
+
 
 
 \section{Probing resources, memory resolution and money}\label{sec:resources}

@@ -97,3 +97,25 @@ They combine naturally: a market maker with inventory cost that is also learning
 
 - Noh (2026), "A continuous-time Kyle model with price-responsive traders", arXiv 2601.09872.
 - Caldentey and Stacchetti (2010), "Insider trading with a random deadline", Econometrica 78(1), 245–283.
+
+## Status (7 November 2026, evening)
+
+- **E1 done.** Theorem `thm:eqinv` (main text) with its proof in Supplement S28. Machine-checked pathwise in
+  `Paper1EquilibriumInvariance.lean`, CI pending at commit 708beda. Numerical illustration in `e1_demo.py`.
+- **E2 done in a stated partial-equilibrium form.** Theorem `thm:rents` gives the insider's best response to a
+  dealer with a fixed coefficient λ and a misjudged kernel:
+  - exact value;
+  - an explicit bound |ΔV| ≤ 2Σ₀T²ε/(1−λε);
+  - the first-order coefficient;
+  - the learning corollary, which rests on an assumed √n estimator rate.
+
+  Proved on paper; numerical check in `e2_rents.py`. Not done: re-solving the dealer's λ, adaptive (non-committed)
+  insider strategies, and a proof of the estimator rate.
+- **E3 done.** Theorem `thm:eqhalt`:
+  - kernel gap O(d³) with an explicit constant;
+  - pre-halt price gap O(d³);
+  - post-halt kernel gap W/4 at every spacing.
+
+  Proved on paper; numerical check in `e3_halt.py` (pre-halt gap ≈ 3d³, post-halt ≈ 0.19).
+- **Still open.** E4 (endogenous κ through inventory cost) and E5 (disclosure in equilibrium). Lean versions of E2
+  and E3.
