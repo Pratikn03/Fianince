@@ -307,6 +307,7 @@ def class_flows(P):
         "Trust": F["trust"],
         "DealerOwn": F["dealer_own"],
         "Hedge": F["dealer_hedge"],
+        "DealerTotal": F["dealer_total"],   # amendment A2: the "hedging included in the dealer class" sensitivity
     }
     # Residual = minus all reported institutional flow. The dealer total replaces own + hedging, which it equals
     # wherever the split is reported (checked by t86_diagnostics), and exists in every schema era.
@@ -390,6 +391,303 @@ def run_period(prep, fit_mask, eval_mask, cls="Foreign", min_share=0.95, B=9999,
     out.update({"class": cls, "n_stocks": int(L.shape[0]), "share_stocks_positive": float((per > 0).mean()),
                 "mean_block": mean_block, "B": B})
     return out
+
+
+# ----------------------------------------------------------------------------------------------------------------
+# 4. Pre-specified diagnostics and secondary outcomes (amendment A2, P1T_amendment_A2.md)
+#    Nothing above this block is changed by A2 except the extra DealerTotal class. The primary statistic is
+#    computed only by run_period.
+# ----------------------------------------------------------------------------------------------------------------
+
+DIAG_B = 1999
+
+
+def panel_L(prep, fit_mask, eval_mask, cls="Foreign", x=None, usable=None, min_share=0.95):
+    """Stocks x dates loss-gain matrix, as in run_period, with optional replacement basis x and usable mask."""
+    X = prep["x"] if x is None else x
+    US = prep["usable"] if usable is None else usable
+    rows = []
+    for i in prep["U"]:
+        if US[i][eval_mask].mean() < min_share:
+            continue
+        ell, _ = stock_losses(prep["u"][cls][i], X[i], prep["limit"][i], US[i], fit_mask, eval_mask)
+        if np.isfinite(ell).any():
+            rows.append(ell)
+    return np.vstack(rows) if rows else np.zeros((0, len(eval_mask)))
+
+
+def fast_stationary_indices(n, mean_block, rng):
+    """Vectorized stationary-bootstrap indices (same law as stationary_indices, different random stream)."""
+    restart = rng.random(n) < 1.0 / mean_block
+    restart[0] = True
+    starts = rng.integers(n, size=n)
+    pos = np.arange(n)
+    last = np.maximum.accumulate(np.where(restart, pos, 0))
+    return (starts[last] + (pos - last)) % n
+
+
+def bootstrap_D_fast(L, mean_block=20, B=DIAG_B, seed=SEED):
+    cols = np.where(np.isfinite(L).any(axis=0))[0]
+    Lc = L[:, cols]; rng = np.random.default_rng(seed); n = Lc.shape[1]
+    S = np.nan_to_num(Lc); C = np.isfinite(Lc).astype(float)
+    out = np.empty(B)
+    for b in range(B):
+        idx = fast_stationary_indices(n, mean_block, rng)
+        num = S[:, idx].sum(1); cnt = C[:, idx].sum(1)
+        out[b] = (num[cnt > 0] / cnt[cnt > 0]).mean()
+    return out
+
+
+def summarize_L(L, mean_block=20, B=DIAG_B, seed=SEED):
+    if L.shape[0] == 0 or not np.isfinite(L).any():
+        return {"D": None, "verdict": "not computable", "n_stocks": int(L.shape[0])}
+    D, per = panel_D(L)
+    out = decide(D, bootstrap_D_fast(L, mean_block=mean_block, B=B, seed=seed))
+    out.update({"n_stocks": int(L.shape[0]), "share_stocks_positive": float((per > 0).mean()), "B": B,
+                "mean_block": mean_block})
+    return out
+
+
+def residual_basis(prep, fit_mask, classes=("Foreign", "Trust", "DealerOwn", "Residual", "Hedge")):
+    """Spec 7.1. Per stock, OLS of x_t on a constant, x_{t-1} and the reported flows u_{c,t}, u_{c,t-1} of the four
+    classes and of dealer hedging, fitted on fit-period days where all are finite; returns x_t minus the fitted value
+    (NaN where a regressor is missing). Under the confound (prices reveal past flow) the residual carries no
+    information about future flow; under feedback it keeps the price news that flows respond to."""
+    x = prep["x"]; N, T = x.shape
+    xr = np.full((N, T), np.nan)
+    for i in prep["U"]:
+        cols = [np.ones(T), np.r_[np.nan, x[i, :-1]]]
+        for c in classes:
+            u = prep["u"][c][i]
+            cols += [u, np.r_[np.nan, u[:-1]]]
+        Xm = np.column_stack(cols)
+        ok = np.isfinite(Xm).all(1) & np.isfinite(x[i])
+        fit = ok & fit_mask
+        if fit.sum() < 50:
+            continue
+        b = np.linalg.lstsq(Xm[fit], x[i, fit], rcond=None)[0]
+        xr[i, ok] = x[i, ok] - Xm[ok] @ b
+    us = prep["usable"].copy()
+    us[:, 1:] &= np.isfinite(xr[:, 1:]) & np.isfinite(xr[:, :-1])
+    us[:, 0] = False
+    return xr, us
+
+
+def limit_free_usable(prep):
+    """Spec 7.4: limit days and the following day dropped. An origin t is dropped if t-1, t or t+1 is a limit day or
+    the day after one."""
+    lim = prep["limit"].astype(bool)
+    bad = lim.copy(); bad[:, 1:] |= lim[:, :-1]
+    us = prep["usable"].copy()
+    us[:, 1:-1] &= ~bad[:, :-2] & ~bad[:, 1:-1] & ~bad[:, 2:]
+    return us
+
+
+def aggregate_k(prep, k, fit_mask, eval_mask, cls="Foreign"):
+    """Spec 7.4: k-day periods. Non-overlapping blocks of k trading days from the first date; flow = sum over the
+    block, basis = x on the block's last day, limit = any limit day in the block. A block is valid if every day is a
+    finite in u (missing or excluded days are NaN) and x is finite on the block's last day. A stock enters if at least
+    80% of its evaluation blocks are usable. Fit and evaluation blocks are those whose last day is in the mask."""
+    u_all = prep["u"][cls]; x = prep["x"]; lim = prep["limit"]
+    N, T = x.shape; nb = T // k
+    last = np.arange(nb) * k + (k - 1)
+    fit_b, ev_b = fit_mask[last], eval_mask[last]
+    rows = []
+    for i in prep["U"]:
+        ub = u_all[i, :nb * k].reshape(nb, k).sum(1)               # NaN if any day missing
+        xb = x[i, last]
+        lb = lim[i, :nb * k].reshape(nb, k).max(1)
+        val = np.isfinite(ub) & np.isfinite(xb)
+        usb = np.zeros(nb, bool)
+        usb[1:-1] = val[:-2] & val[1:-1] & val[2:]
+        if usb[ev_b].mean() < 0.80:   # a block is lost if any of its days is; threshold 80% of evaluation blocks
+            continue
+        ell, _ = stock_losses(ub, xb, lb, usb, fit_b, ev_b)
+        if np.isfinite(ell).any():
+            rows.append(ell)
+    L = np.vstack(rows) if rows else np.zeros((0, nb))
+    return L, max(2, int(round(20 / k)))
+
+
+def iv_tagged(u, x, ok, hac_lag=None):
+    """Proposition 6.1 tagged IV for one stock: u_t = c + r u_{t-1} + w x_t + e_t, instruments (1, x_{t-1}, x_t).
+    ok[t] marks usable equations. Returns beta = (c, r, w), Newey-West HAC covariance, residuals and T."""
+    t = np.where(ok)[0]
+    t = t[t >= 1]
+    if len(t) < 60:
+        return None
+    y = u[t]; X = np.column_stack([np.ones(len(t)), u[t - 1], x[t]]); Z = np.column_stack([np.ones(len(t)), x[t - 1], x[t]])
+    ZX = Z.T @ X
+    if abs(np.linalg.det(ZX)) < 1e-12:
+        return None
+    b = np.linalg.solve(ZX, Z.T @ y)
+    e = y - X @ b
+    n = len(t)
+    L = hac_lag if hac_lag is not None else int(np.floor(4 * (n / 100) ** (2 / 9)))
+    g = Z * e[:, None]
+    S = g.T @ g
+    for l in range(1, L + 1):
+        G = g[l:].T @ g[:-l]
+        S += (1 - l / (L + 1)) * (G + G.T)
+    Ainv = np.linalg.inv(ZX)
+    V = Ainv @ S @ Ainv.T
+    return {"beta": b, "V": V, "resid": e, "T": n, "rows": t}
+
+
+def _iv_ok(prep, i, cls, mask):
+    u = prep["u"][cls][i]; x = prep["x"][i]
+    ok = prep["usable"][i] & mask & np.isfinite(u)
+    ok[1:] &= np.isfinite(u[:-1]) & np.isfinite(x[:-1])
+    ok[0] = False
+    return ok
+
+
+def secondary_S2(prep, fit_mask, eval_mask, classes=("Foreign", "Trust", "DealerOwn")):
+    """Spec 8, S2: tagged IV estimates (r_i, w_i) per class with HAC 95% intervals, in the fit and evaluation periods;
+    for Foreign, the share of stocks whose evaluation-period r_F lies in its fit-period 95% interval."""
+    out = {}
+    for c in classes:
+        rec = {"fit": [], "eval": []}
+        inside = []
+        for i in prep["U"]:
+            r = {}
+            for name, m in (("fit", fit_mask), ("eval", eval_mask)):
+                est = iv_tagged(prep["u"][c][i], prep["x"][i], _iv_ok(prep, i, c, m))
+                if est is not None:
+                    se = np.sqrt(np.diag(est["V"]))
+                    r[name] = (est["beta"][1], se[1], est["beta"][2], se[2])
+                    rec[name].append(r[name])
+            if c == "Foreign" and "fit" in r and "eval" in r:
+                rf, sf = r["fit"][0], r["fit"][1]
+                inside.append(abs(r["eval"][0] - rf) <= 1.96 * sf)
+        summ = {}
+        for name in ("fit", "eval"):
+            a = np.array(rec[name]) if rec[name] else np.zeros((0, 4))
+            if len(a):
+                summ[name] = {"n_stocks": int(len(a)), "r_median": float(np.median(a[:, 0])),
+                              "r_iqr": [float(np.percentile(a[:, 0], 25)), float(np.percentile(a[:, 0], 75))],
+                              "w_median": float(np.median(a[:, 2])),
+                              "w_iqr": [float(np.percentile(a[:, 2], 25)), float(np.percentile(a[:, 2], 75))],
+                              "share_w_positive_significant": float(np.mean(a[:, 2] - 1.96 * a[:, 3] > 0)),
+                              "share_w_negative_significant": float(np.mean(a[:, 2] + 1.96 * a[:, 3] < 0))}
+        if c == "Foreign":
+            summ["share_eval_rF_in_fit_interval"] = float(np.mean(inside)) if inside else None
+        out[c] = summ
+    return out
+
+
+def formula_se_r(beta, resid, x, ok_fit, T_eval, S=200):
+    """Eq. (ivvar) evaluated with fit-period estimates: gamma_x from the fit-period basis (demeaned), r, w from the
+    fit-period IV, sigma_f^2 = Var(e)/(1 + r^2). Returns the predicted standard error of r_hat for T_eval equations."""
+    r, w = beta[1], beta[2]
+    xs = x[ok_fit]; xs = xs - xs.mean(); n = len(xs)
+    if n < 2 * S:
+        S = n // 4
+    gam = np.array([np.dot(xs[:n - s], xs[s:]) / n for s in range(S + 2)])
+    A = lambda m: sum((r ** s) * gam[s + m] for s in range(S + 1 - m))
+    Sig = np.array([[w * A(0), gam[1]], [w * A(1), gam[0]]])
+    sf2 = np.var(resid) / (1 + r * r)
+    G0 = np.array([[gam[0], gam[1]], [gam[1], gam[0]]])
+    G1 = np.array([[gam[1], gam[0]], [gam[2], gam[1]]])
+    Om = sf2 * ((1 + r * r) * G0 - r * (G1 + G1.T))
+    try:
+        Si = np.linalg.inv(Sig)
+    except np.linalg.LinAlgError:
+        return None
+    V = Si @ Om @ Si.T
+    return float(np.sqrt(max(V[0, 0], 0) / T_eval))
+
+
+def secondary_S3(prep, fit_mask, eval_mask, B=199, mean_block=20, seed=SEED):
+    """Spec 8, S3: for each stock, the eq. (ivvar) prediction of the evaluation-period standard error of r_F from
+    fit-period estimates, against a stationary block bootstrap standard error of r_F over evaluation equations.
+    Outcome: the median ratio across stocks, with agreement if it lies in [0.67, 1.5]."""
+    rng = np.random.default_rng(seed)
+    ratios = []
+    for i in prep["U"]:
+        okf = _iv_ok(prep, i, "Foreign", fit_mask); oke = _iv_ok(prep, i, "Foreign", eval_mask)
+        f = iv_tagged(prep["u"]["Foreign"][i], prep["x"][i], okf)
+        e = iv_tagged(prep["u"]["Foreign"][i], prep["x"][i], oke)
+        if f is None or e is None:
+            continue
+        pred = formula_se_r(f["beta"], f["resid"], prep["x"][i], okf, e["T"])
+        if pred is None or not np.isfinite(pred) or pred <= 0:
+            continue
+        t = e["rows"]; u = prep["u"]["Foreign"][i]; x = prep["x"][i]
+        y = u[t]; X = np.column_stack([np.ones(len(t)), u[t - 1], x[t]]); Z = np.column_stack([np.ones(len(t)), x[t - 1], x[t]])
+        bs = []
+        for _ in range(B):
+            idx = fast_stationary_indices(len(t), mean_block, rng)
+            ZX = Z[idx].T @ X[idx]
+            if abs(np.linalg.det(ZX)) < 1e-12:
+                continue
+            bs.append(np.linalg.solve(ZX, Z[idx].T @ y[idx])[1])
+        if len(bs) < B // 2:
+            continue
+        ratios.append(pred / float(np.std(bs)))
+    ratios = np.array(ratios)
+    if not len(ratios):
+        return {"n_stocks": 0, "verdict": "not computable"}
+    med = float(np.median(ratios))
+    return {"n_stocks": int(len(ratios)), "median_ratio_formula_to_bootstrap": med,
+            "iqr_ratio": [float(np.percentile(ratios, 25)), float(np.percentile(ratios, 75))],
+            "share_stocks_in_range": float(np.mean((ratios >= 0.67) & (ratios <= 1.5))),
+            "agreement": bool(0.67 <= med <= 1.5), "B_per_stock": B}
+
+
+def holm(pvals):
+    """Holm step-down adjusted p-values for a dict name -> p."""
+    items = sorted(pvals.items(), key=lambda kv: kv[1]); m = len(items); out = {}; run = 0.0
+    for j, (k, p) in enumerate(items):
+        run = max(run, min(1.0, (m - j) * p)); out[k] = run
+    return out
+
+
+def diagnostics(prep, dates, fit_mask, eval_mask, B=DIAG_B, seed=SEED):
+    """All pre-specified diagnostics (spec 7) and secondary outcomes (spec 8) for one period. dates: 'YYYYMMDD'."""
+    dates = np.array(dates)
+    res = {"B": B}
+    # 7.1 reverse-causality check
+    xr, usr = residual_basis(prep, fit_mask)
+    res["reverse_causality"] = summarize_L(panel_L(prep, fit_mask, eval_mask, "Foreign", x=xr, usable=usr), B=B, seed=seed)
+    # 7.2 per-stock share (with the primary L)
+    L = panel_L(prep, fit_mask, eval_mask, "Foreign")
+    per = np.nanmean(L, axis=1)
+    res["per_stock"] = {"share_positive": float(np.mean(per > 0)), "median_d": float(np.median(per)),
+                        "quartiles_d": [float(np.percentile(per, 25)), float(np.percentile(per, 75))]}
+    # 7.3 stability by calendar year, and Feb-Jun 2020 separately
+    years = sorted({d[:4] for d in dates[eval_mask]})
+    subs = {y: np.array([d[:4] == y for d in dates]) & eval_mask for y in years}
+    subs["2020-02_to_2020-06"] = np.array(["20200201" <= d <= "20200630" for d in dates]) & eval_mask
+    stab = {}
+    for name, m in subs.items():
+        if m.sum() < 20:
+            continue
+        Ls = np.where(m[None, :], L, np.nan)
+        keep = np.isfinite(Ls).sum(1) >= 10
+        stab[name] = summarize_L(Ls[keep], B=B, seed=seed)
+    res["stability"] = stab
+    # 7.4 sensitivity
+    sens = {}
+    sens["hedging_in_dealer_class"] = summarize_L(panel_L(prep, fit_mask, eval_mask, "DealerTotal"), B=B, seed=seed)
+    sens["net_value_or_market_cap_scaling"] = {"verdict": "not computable",
+                                               "reason": "shares outstanding are not in the registered sources"}
+    sens["limit_days_dropped"] = summarize_L(panel_L(prep, fit_mask, eval_mask, "Foreign", usable=limit_free_usable(prep)), B=B, seed=seed)
+    for k in (2, 5):
+        Lk, mb = aggregate_k(prep, k, fit_mask, eval_mask)
+        sens[f"{k}_day_periods"] = summarize_L(Lk, mean_block=mb, B=B, seed=seed)
+    res["sensitivity"] = sens
+    # 8 secondary outcomes
+    S1 = {}
+    for c in ("Trust", "DealerOwn"):
+        Lc = panel_L(prep, fit_mask, eval_mask, c)
+        S1[c] = run_period(prep, fit_mask, eval_mask, c) if Lc.shape[0] else {"D": None, "verdict": "not computable",
+                                                                              "p_one_sided": 1.0, "n_stocks": 0}
+    pv = {c: S1[c]["p_one_sided"] for c in S1}
+    res["S1"] = {"by_class": S1, "holm_adjusted_p": holm(pv)}
+    res["S2"] = secondary_S2(prep, fit_mask, eval_mask)
+    res["S3"] = secondary_S3(prep, fit_mask, eval_mask)
+    return res
 
 
 if __name__ == "__main__":
