@@ -93,6 +93,7 @@ from public market data (real data), and audits.
 | Corollary 4.3, disclosure in equilibrium | `CurrentProofs/Paper1EquilibriumExtras.lean` (stability core used in the proof) | Proof on paper |
 | Theorem 4.4, fragility threshold for one cohort | `CurrentProofs/Paper1EquilibriumReducedForm.lean`, `ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py` | Lean 4 necessary conditions; characterization and limits on paper; numerical check |
 | Theorem 4.5, equilibrium invariance under the merged measure (machine-checked pathwise) | `CurrentProofs/Paper1EquilibriumInvariance.lean`, `ceiling_suite/papers/paper1/equilibrium/e1_demo.py` | Lean 4 proof; numerical illustration |
+| Theorem 4.6, strategic insider in the inventory equilibrium | `CurrentProofs/Paper1EquilibriumInsider.lean`, `ceiling_suite/papers/paper1/equilibrium/e6_insider.py` | Lean 4 proof of the observer's reduced form, best response, Kyle limit and posterior variance; characterization on paper; numerical check |
 | Theorem S28.1, rents from a misjudged aggregate response | `ceiling_suite/papers/paper1/equilibrium/e2_rents.py` | Proof on paper; numerical check |
 | Theorem S28.2, targeted intervention in equilibrium | `ceiling_suite/papers/paper1/equilibrium/e3_halt.py` | Proof on paper; numerical check |
 | Theorem 6.4(ii) for every K: the spectrum determines σ²κ², H/h₀ and, with κ known, the merged measure (machine-checked) | `CurrentProofs/Paper1SpectralID.lean`, `Paper1SpectralH.lean` | Lean 4 proof |

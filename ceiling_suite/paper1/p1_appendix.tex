@@ -601,6 +601,55 @@ Machine-checked as \nolinkurl{p1_fragility_K_bound}. The bound $A^*_0$ follows a
 \end{itemize}
 The result files are \nolinkurl{equilibrium/e4_reduced_form_results.json} and \nolinkurl{equilibrium/e4_fragility_K_results.json}.
 
+\paragraph{Proof of Theorem~\ref{thm:insider}.}
+\emph{Part (i).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{Dealers' information.} The cohorts' flow is predictable. So the dealers' information about $\theta_t$ is $\nu_t$, and $E[\theta_t\mid\nu_t]=\lambda\nu_t$ with $\lambda=\mathrm{Cov}(\theta,\nu)/\mathrm{Var}(\nu)=b\sigma_\theta^2/\sigma_\nu^2$.
+\item \emph{The price decomposes.} $E_tF_{t+1}=F_t+\lambda\nu_t$ and $E_t\nu_{t+1}=0$, so $E_tp_{t+1}-p_t=E_tx_{t+1}-x_t$. The dealers' condition is therefore the one of Theorem~\ref{thm:inventory}. Its state is $(H_t,u_{\cdot,t+1})$, and $E_tu_{i,t+2}=r_iu_{i,t+1}+w_iE_tx_{t+1}$. Coefficient matching gives the same equations for $\beta$, $D$ and $\kappa$ (\nolinkurl{p1_inventory_necessity}).
+\item \emph{The price's response to $\nu_t$.} Since the cohorts trade on $s_t=x_t+\lambda\nu_t$ and $\sum_i\beta_iw_i=1-D$, the implicit form is $Dx_t=-\kappa H_t+\sum_i\beta_ir_iu_{i,t}+(1-D)\lambda\nu_t$. The response of $s_t$ to $\nu_t$ is therefore $(\kappa+(1-D)\lambda)/D+\lambda=(\kappa+\lambda)/D$.
+\item \emph{The insider.} $F_{t+1}-p_t=\theta_t+\varepsilon_{t+1}-m_t-c\,\xi_t-c\,d_t$, where $c=(\kappa+\lambda)/D$ and $m_t$ is the predictable part of $s_t$. The insider does not observe the public state, and $m_t$ has mean zero and is independent of $\theta_t$. So she maximizes $(\theta-c\,d)\,d$. So $d=\theta/(2c)$ and the profit is $\theta^2/(4c)$ (\nolinkurl{p1_insider_best_response}). Taking expectations, $b\sigma_\theta^2/2$.
+\item \emph{The variance.} The innovation of $p_{t+1}$ given dealers' information is $(\theta_t-\lambda\nu_t)+\varepsilon_{t+1}+c\,\nu_{t+1}$, which gives $V$ (\nolinkurl{p1_insider_posterior_variance}).
+\item \emph{Converse.} A solution of the system satisfies every condition just used.
+\end{itemize}
+
+\emph{Part (ii).} With $A=0$, $\kappa(D-\bar a)=0$ forces $\kappa=0$, and then $D=1$. Then $b=1/(2\lambda)$ and $\lambda\sigma_\nu^2=b\sigma_\theta^2$ give $4\lambda^2\sigma_\xi^2=\sigma_\theta^2$ (\nolinkurl{p1_insider_kyle_limit}).
+
+\emph{Part (iii).} The cohorts enter only through $D=1-\kappa G(D)$.
+
+\emph{Part (iv).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{The reduced form.} Combine the implicit form at $t$, the price law at $t-1$ and $H_t=\bar aH_{t-1}-\sum_iu_{i,t}-\nu_t$, as in Theorem~\ref{thm:eqreduced}. This gives $Ds_t-\bar as_{t-1}=\sum_i\beta_i(D-\bar a)u_{i,t}+(\kappa+\lambda)\nu_t-\bar a\lambda\nu_{t-1}$ (\nolinkurl{p1_insider_reduced_form}).
+\item \emph{The filter is invertible.} $c_1<c_0$ because $\bar a<1$, $\lambda\ge0$ and $\kappa\ge0$. So the observer, knowing the primitives, inverts the filter, and is left with the closed loop of Theorem~\ref{thm:eqreduced}.
+\item \emph{Realization.} Proceed as in Theorem~\ref{thm:eqreduced}(iv):
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item set $D=1-\kappa^*W/(1-a^*)$, $\bar a=a^*D$ and $\kappa=\kappa^*D$;
+ \item solve the insider's pair $(\lambda,b)$ given $(\kappa,D)$;
+ \item set $A=\kappa(D-\bar a)/(VD)$.
+ \end{itemize}
+ The two economies then share every primitive.
+\end{itemize}
+
+\paragraph{Numerical check of Theorem~\ref{thm:insider}.} The script \nolinkurl{equilibrium/e6_insider.py} solves the system at $A=0.05$, $\sigma_\varepsilon^2=1$, $\sigma_\theta^2=\sigma_\xi^2=0.25$ and $\bar a=0.6$, and simulates $2\times10^5$ dates for each solution.
+\begin{center}\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccccc}
+\hline
+Cohorts & $\kappa$ & $D$ & $\lambda$ & $b$ & $(\kappa+\lambda)/D$ & profit & inform.\\
+\hline
+none & 0.1656 & 1 & 0.4835 & 0.7704 & 0.6490 & 0.0963 & 0.372\\
+$+0.02$ at $0.7$ & 0.1692 & 0.9883 & 0.4816 & 0.7592 & 0.6586 & 0.0949 & 0.366\\
+$-0.2$ at $0.7$ & 0.1463 & 1.0775 & 0.4928 & 0.8430 & 0.5931 & 0.1054 & 0.415\\
+two cohorts, or split$^\dagger$ & 0.1679 & 0.9924 & 0.4823 & 0.7632 & 0.6552 & 0.0954 & 0.368\\
+\hline
+\end{tabular}
+\end{center}
+Informativeness (inform.) is $b^2\sigma_\theta^2/\sigma_\nu^2$, the share of $\mathrm{Var}(\theta)$ resolved by the price. $^\dagger$Weights $0.005,0.005$ at rates $0.5,0.85$, or the same merged measure split into three cohorts; both give identical coefficients.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item In every case, the dealers' first-order residual is below $5\times10^{-17}$, and the observer's reduced form holds to $4.4\times10^{-16}$.
+\item The regression of $\theta$ on $\nu$ reproduces $\lambda$ to the third decimal.
+\item The simulated profit at $b'=0.6b,\ldots,1.4b$ peaks at $b$, as does the analytic profit.
+\item As $A\downarrow0$ (from $0.05$ to $0.001$), $(\lambda,b)$ moves from $(0.482,0.759)$ to $(0.49999,0.994)$, toward Kyle's $(0.5,1)$.
+\end{itemize}
+
 \paragraph{Numerical solution of Theorem~\ref{thm:inventory}.} The script \nolinkurl{equilibrium/e4_inventory.py} solves the system \eqref{eq:inventory_eq} at $A=0.2$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$ and $\bar a=0.6$.
 
 \emph{How the solver finds equilibria.}
@@ -761,6 +810,7 @@ Theorem~\ref{thm:inventory}, price impact and persistence in an inventory equili
 Theorem~\ref{thm:eqreduced}, the equilibrium is the paper's closed loop; realization of the lower-bound pair (machine-checked pathwise identity and realization) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumReducedForm.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py} & Lean 4 proof of parts (i) and (iv) algebra; parts (ii)--(iii) and the rate transfer on paper; numerical check\\
 Theorem~\ref{thm:fragility}, fragility threshold for one cohort (necessary conditions machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumReducedForm.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py} & Lean 4 bounds; characterization and limits on paper; numerical check\\
 Corollary~\ref{cor:eqdisclosure}, disclosure in equilibrium & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumExtras.lean} & Proof on paper; stability core machine-checked\\
+Theorem~\ref{thm:insider}, strategic insider in the inventory equilibrium & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumInsider.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e6_insider.py} & Lean 4 algebraic core; characterization on paper; numerical check\\
 Theorem~\ref{thm:rents}, rents from a misjudged aggregate response & \path{ceiling_suite/papers/paper1/equilibrium/e2_rents.py} & Proof on paper; numerical check\\
 Theorem~\ref{thm:eqhalt}, targeted intervention in equilibrium & \path{ceiling_suite/papers/paper1/equilibrium/e3_halt.py} & Proof on paper; numerical check\\
 Theorem~\ref{thm:minphase}(ii) for every $K$: the spectrum determines $\sigma_\xi^2\kappa^2$, $H/h_0$ and, with $\kappa$ known, the merged measure (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1SpectralID.lean}, \path{Paper1SpectralH.lean} & Lean 4 proof\\

@@ -122,3 +122,4 @@ import CurrentProofs.Paper1EquilibriumInvariance
 import CurrentProofs.Paper1InventoryEquilibrium
 import CurrentProofs.Paper1EquilibriumReducedForm
 import CurrentProofs.Paper1EquilibriumExtras
+import CurrentProofs.Paper1EquilibriumInsider

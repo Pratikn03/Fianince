@@ -46,7 +46,7 @@
 \begingroup\onehalfspacing
 
 \begin{abstract}
-\noindent Prices in a market with feedback trading reveal the combined response of all trader groups, not the groups themselves. We characterize what public prices identify and what learning the rest costs. In a linear closed-loop market where each group tracks prices with exponential memory, prices identify only a merged response measure: groups with equal memories are inseparable however much data is collected, and separating $K$ groups whose memories are $\Delta\eta$ apart takes of order $(\Delta\eta)^{-(4K-2)}$ experiments. That rate is the known mixture rate; we show that it survives the feedback loop, where the memories enter as zeros of the observed transfer function. The contributions are what the market setting adds. Passive observation of a running market is no cheaper than active probing, because the closed loop is minimum phase. For an observer who trades to learn, the sample requirements become executed quantity of order $\delta^{-2}$ and capital of order $\delta^{-4}$. With a strategic insider and any causal dealer rule, economies with the same merged measure are outcome-equivalent, so what prices cannot identify is worth nothing to price-based traders; a dealer that misjudges the aggregate response pays or earns rents of first order in its error, which public data shrink at the ordinary rate. In an equilibrium with inventory-averse dealers, price impact and the persistence of mispricing are derived, and the equilibrium price is the same closed loop with effective parameters and unchanged memory rates, so every rate holds in equilibrium. Positive feedback raises impact, and an explicit threshold in dealer risk aversion, inversely proportional to the feedback intensity, marks where liquidity disappears. Class-tagged flow removes the spacing penalty, and a supervisory example shows attribution changing the right action when prices are nearly identical. Several identification and Fisher-information results are machine-checked in Lean~4. Pre-registered tests on CFTC and Binance trader-class reports are mixed: 11 of 23 recorded outcomes pass; class reports constrain persistence far more tightly than prices but do not identify learning memory.
+\noindent Prices in a market with feedback trading reveal the combined response of all trader groups, not the groups themselves. We characterize what public prices identify and what learning the rest costs. In a linear closed-loop market where each group tracks prices with exponential memory, prices identify only a merged response measure: groups with equal memories are inseparable however much data is collected, and separating $K$ groups whose memories are $\Delta\eta$ apart takes of order $(\Delta\eta)^{-(4K-2)}$ experiments. That rate is the known mixture rate; we show that it survives the feedback loop, where the memories enter as zeros of the observed transfer function. The contributions are what the market setting adds. Passive observation of a running market is no cheaper than active probing, because the closed loop is minimum phase. For an observer who trades to learn, the sample requirements become executed quantity of order $\delta^{-2}$ and capital of order $\delta^{-4}$. With a strategic insider and any causal dealer rule, economies with the same merged measure are outcome-equivalent, so what prices cannot identify is worth nothing to price-based traders; a dealer that misjudges the aggregate response pays or earns rents of first order in its error, which public data shrink at the ordinary rate. In an equilibrium with inventory-averse dealers, price impact and the persistence of mispricing are derived, and the equilibrium price is the same closed loop with effective parameters and unchanged memory rates, so every rate holds in equilibrium, also with a strategic insider. Positive feedback raises impact, and an explicit threshold in dealer risk aversion, inversely proportional to the feedback intensity, marks where liquidity disappears. Class-tagged flow removes the spacing penalty, and a supervisory example shows attribution changing the right action when prices are nearly identical. Several identification and Fisher-information results are machine-checked in Lean~4. Pre-registered tests on CFTC and Binance trader-class reports are mixed: 11 of 23 recorded outcomes pass; class reports constrain persistence far more tightly than prices but do not identify learning memory.
 \end{abstract}
 
 \noindent\textbf{AI-use disclosure.} Claude, ChatGPT/Codex and Gemini provided material assistance with research development, code, numerical checks, manuscript drafting and internal critique. ChatGPT/Codex additionally developed and checked Lean proofs in this revision. Human authors remain responsible for verifying the content and its scholarly contribution before submission; AI checks do not constitute independent review.
@@ -106,6 +106,7 @@ Result & Status & What the market setting adds, and the closest prior work\\
 Prices identify only a merged response measure; equal-memory groups are inseparable (Theorem~\ref{thm:merged}) & Model-specific & The equivalence class of economies with the same public response, made exact for a closed loop; closed-loop identification \citep{ljung1999,forssell1999}\\
 Separating $K$ groups takes $(\Delta\eta)^{-(4K-2)}$ experiments; Prony's method attains it (Theorems~\ref{thm:kcohort}, \ref{prop:esprit}) & Known rate & Memories are zeros, not poles, of the observed transfer function, so they must first be extracted from the loop \citep{heinrich2018,wu2020,katz2023}\\
 General memory: accuracy grows only with $\log N$ (Theorem~\ref{thm:general}) & Known type & Logarithmic rates for exponential mixtures \citep{rebafka2015}; here for closed-loop price data\\
+\textbf{With a strategic insider inside the inventory equilibrium, the identification boundary and the rates hold; positive feedback raises impact and makes prices less informative} (Theorem~\ref{thm:insider}) & \textbf{New} & Kyle with risk-averse market makers \citep{kyle1985}; new is the joint equilibrium with feedback cohorts and the observer's reduced form\\
 \textbf{The equilibrium price is the paper's closed loop with effective parameters and the same memory rates, so the identification boundary and the $(\Delta\eta)^{-(4K-2)}$ rate hold in equilibrium} (Theorem~\ref{thm:eqreduced}) & \textbf{New} & Removes the reduced-form caveat: the lower-bound pair is realized by two equilibria with identical dealers\\
 \textbf{Fragility: an equilibrium exists iff dealer risk aversion is below an explicit threshold that falls as $1/G(1)$} (Theorem~\ref{thm:fragility}) & \textbf{New} & Liquidity breakdown with feedback traders; new is the closed-form threshold and its rate\\
 \textbf{Price impact and the persistence of mispricing are equilibrium outcomes of inventory-averse dealers; feedback raises impact } (Theorem~\ref{thm:inventory}) & \textbf{New} & Inventory models of liquidity \citep{grossman1988,hostoll1981}; new is the closed form with exponential-memory feedback, in which the cohorts enter through the Stieltjes transform of the merged measure\\
@@ -136,7 +137,7 @@ Two supplementary results, on markets that share eigenvalues and price variance 
 
 \paragraph{How to read the paper.} Every main result is followed by a short paragraph headed ``In words''; Supplement~\ref{app:howtoread} gives a reading guide and the main symbols in plain words.
 
-\paragraph{What we do not claim.} The identification results hold for the stated linear model and for the stated observation contracts, that is, for what the observer is assumed to see. Sections~\ref{sec:resources}--\ref{sec:disclosure} treat price impact and the persistence of pricing errors as known primitives. Section~\ref{sec:equilibrium} derives them in a dealer equilibrium, in which the price follows the same closed loop with effective parameters, so the results hold there (Theorem~\ref{thm:eqreduced}); that equilibrium has one dealer sector and no strategic insider. The model also assumes the observer knows the fundamental value. Real data meet neither assumption. They are not general limits on surveillance with participant-level records, which can be far more informative (Propositions~\ref{prop:disclosure} and~\ref{prop:tagged}). The matching upper bound holds on a class with separated rescaled rates and weights bounded away from zero. Capital figures depend on the observation-noise calibration, which we estimate rather than assume. The empirical results are reduced-form diagnostics; they do not identify structural learning parameters. Our pre-specified real-data test of the identification boundary failed its criterion on one of its three parts: on 42 days of data the merged response was precisely estimated in only 5 of 30 markets (Supplement~\ref{sec:disc_data}). Binance's class ratios are positions, not tagged order flow, so they are the closest public analogue to the disclosure of Proposition~\ref{prop:tagged}, not an instance of it. We hold the algorithms' memories and intensities fixed across disclosure regimes; disclosure that reveals positions may lead informed desks to trade less or to split orders across accounts, which we do not model.
+\paragraph{What we do not claim.} The identification results hold for the stated linear model and for the stated observation contracts, that is, for what the observer is assumed to see. Sections~\ref{sec:resources}--\ref{sec:disclosure} treat price impact and the persistence of pricing errors as known primitives. Section~\ref{sec:equilibrium} derives them in a dealer equilibrium, in which the price follows the same closed loop with effective parameters, so the results hold there (Theorem~\ref{thm:eqreduced}); that equilibrium has one dealer sector and, in Theorem~\ref{thm:insider}, a strategic insider with short-lived information only. The model also assumes the observer knows the fundamental value. Real data meet neither assumption. They are not general limits on surveillance with participant-level records, which can be far more informative (Propositions~\ref{prop:disclosure} and~\ref{prop:tagged}). The matching upper bound holds on a class with separated rescaled rates and weights bounded away from zero. Capital figures depend on the observation-noise calibration, which we estimate rather than assume. The empirical results are reduced-form diagnostics; they do not identify structural learning parameters. Our pre-specified real-data test of the identification boundary failed its criterion on one of its three parts: on 42 days of data the merged response was precisely estimated in only 5 of 30 markets (Supplement~\ref{sec:disc_data}). Binance's class ratios are positions, not tagged order flow, so they are the closest public analogue to the disclosure of Proposition~\ref{prop:tagged}, not an instance of it. We hold the algorithms' memories and intensities fixed across disclosure regimes; disclosure that reveals positions may lead informed desks to trade less or to split orders across accounts, which we do not model.
 
 \subsection{Relation to the literature}\label{sec:litmain}
 Three literatures meet here. In finance, learning algorithms and AI agents in markets are studied by simulating or modelling them \citep{colliard2022,dou2025}; traders who differ in horizon or speed are studied in equilibrium \citep{cespa2015,biais2015,crouzet2020}; the exponentially fading beliefs we use are the extrapolative beliefs of \citet{barberis2015,barberis2018}; and heterogeneous-agent models estimated from prices often leave the type-separating parameters imprecise \citep{brock1998,amilon2008,kukacka2017}, for which our results give one reason. Price formation follows the linear-impact tradition \citep{kyle1985,glosten1985,hasbrouck1991} and the transient-impact literature \citep{obizhaeva2013,gatheral2010,alfonsi2012}; trader types have been inferred from public data, as in the probability of informed trading \citep{easley1996}, and from account data \citep{kirilenko2017}. Learning by trading has an equilibrium counterpart in price experimentation \citep{leach1993}, and execution that learns impact while trading is studied by \citet{moallemi2008} and \citet{parkvanroy2015}. Technically, the closest work is closed-loop identification \citep{ljung1999,forssell1999}, weak identification \citep{andrews2012}, and super-resolution and mixture estimation \citep{moitra2015,heinrich2018,wu2020,batenkov2021,katz2023}. We do not claim the $K$-group exponent as new: in mixture language it is the square of the condition number for $K$ clustered nodes \citep{heinrich2018,wu2020}, and Prony's method attains it \citep{katz2023}; the $\delta^{-4}$ law for one against two close components is classical in resolution analysis \citep{shahram2005}; logarithmic rates are known for mixtures of exponentials \citep{rebafka2015}; and labelled samples are known to be more informative than unlabelled ones \citep{castelli1996}. The model-specific contribution proposed here is the closed-loop form (the memories are zeros, not poles, of the observed transfer function, so they must first be extracted from the loop), the passive equivalence, the translation of sample sizes into executed quantity, capital and money, and the value of class records, including a decision in which attribution changes the right action. Supplement~\ref{sec:lit} gives the full comparison, with tables of the closest results.
@@ -270,6 +271,7 @@ The identification results take the price impact $\kappa$ and the persistence $a
 \item a strategic insider cannot change it;
 \item misjudging the aggregate response creates rents of first order;
 \item targeted actions still need group-level information, and class-tagged disclosure keeps its value in equilibrium.
+\item a strategic insider with short-lived information changes neither conclusion, while positive feedback makes prices less informative about her news.
 \end{itemize}
 
 \paragraph{An inventory equilibrium.}
@@ -414,6 +416,46 @@ The rules $X$, $P$ and $S$ are arbitrary causal maps. This covers Kyle, inventor
 \end{theorem}
 
 \paragraph{In words.} Whatever the insider and the dealer do, two markets whose trader groups have the same merged response produce the same prices, the same order flow and the same insider and dealer outcomes. So the part of the population that prices cannot identify (Theorem~\ref{thm:merged}) is worth nothing to anyone who trades on public information. It matters only for actions aimed at a particular group, such as halting it (Proposition~\ref{prop:target}). Parts (i)--(iv) are machine-checked pathwise for every causal insider, dealer and signal rule (\nolinkurl{Paper1EquilibriumInvariance.lean}). Supplement~\ref{app:eqinv} gives the proof, the unbounded-horizon statement, the extension to cohort-specific demand shocks and a numerical illustration.
+
+\begin{theorem}[A strategic insider in the inventory equilibrium]\label{thm:insider}
+Add three things to the model of Theorem~\ref{thm:inventory}:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{News.} The fundamental moves by $F_{t+1}=F_t+\theta_t+\varepsilon_{t+1}$, with $\theta_t\sim N(0,\sigma_\theta^2)$ and $\varepsilon_t$ i.i.d.\ of variance $\sigma_\varepsilon^2$.
+\item \emph{An insider.} At date $t$ a short-lived insider privately observes $\theta_t$, and nothing else, submits $d_t$, and values the position at $F_{t+1}$.
+\item \emph{What cohorts and dealers see.} The cohorts trade on the observed deviation $s_t=p_t-F_t$. The dealers price from total flow.
+\end{itemize}
+Let $\nu_t=\xi_t+d_t$ be the unexpected flow.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Characterization.} The strategy $d_t=b\theta_t$ and the price $p_t=F_t+\lambda\nu_t+x_t$, with $x_t$ the price law of Theorem~\ref{thm:inventory}, form an equilibrium exactly when the induced dynamics are stable and
+\[
+ D=1-\kappa G(D),\quad \kappa(D-\bar a)=AVD,\quad \lambda=\frac{b\sigma_\theta^2}{\sigma_\nu^2},\quad b=\frac{D}{2(\kappa+\lambda)},
+\]
+\[
+ \sigma_\nu^2=\sigma_\xi^2+b^2\sigma_\theta^2,\qquad V=\sigma_\varepsilon^2+\frac{\sigma_\theta^2\sigma_\xi^2}{\sigma_\nu^2}+\Bigl(\frac{\kappa+\lambda}{D}\Bigr)^2\sigma_\nu^2 .
+\]
+One unit of unexpected flow moves the price by $(\kappa+\lambda)/D$, and the insider's expected profit per date is $b\sigma_\theta^2/2$.
+\item \emph{Kyle limit.} Without inventory risk ($A=0$), $\kappa=0$, $D=1$, $\lambda=\sigma_\theta/(2\sigma_\xi)$ and $b=\sigma_\xi/\sigma_\theta$. These are Kyle's one-period values at every date, and the feedback cohorts do not move prices.
+\item \emph{Invariance.} The coefficients depend on the cohorts only through $G$, as Theorem~\ref{thm:eqinv} requires.
+\item \emph{Observer.} The observed deviation follows
+\[
+ s_t=a^*s_{t-1}+\kappa^*\sum_i\tilde u_{i,t}+c_0\nu_t-c_1\nu_{t-1},\qquad c_0=\frac{\kappa+\lambda}{D},\quad c_1=\frac{\bar a\lambda}{D},
+\]
+with $(a^*,\kappa^*,\tilde u)$ as in Theorem~\ref{thm:eqreduced}. This is the closed loop of Section~\ref{sec:model} driven through a known moving-average filter $c_0-c_1z^{-1}$, which is invertible because $c_1<c_0$.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item The memory rates remain the transmission zeros of the feedback part.
+\item The lower-bound pair of Theorem~\ref{thm:kcohort} is realized by two such equilibria with identical primitives.
+\item So the identification boundary and the $(\Delta\eta)^{-(4K-2)}$ rate hold with an insider present.
+\end{itemize}
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} A short-lived insider who knows the next piece of news trades against noise traders and against the feedback traders' predictable flow. Dealers net the predictable flow out. So the insider's trades move prices through two channels: an information part $\lambda$ and an inventory part, both amplified by feedback through $D$. Positive feedback raises the total impact. The insider then trades less and earns less, and prices reveal less of her news. Negative feedback does the opposite.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{An example from Supplement~\ref{app:eqinv}.} One positive-feedback cohort lowers the share of the insider's information impounded in prices from $0.372$ to $0.366$. One negative-feedback cohort raises it to $0.415$.
+\item \emph{What prices cannot identify.} It is still worth nothing to anyone trading on public information.
+\item \emph{Machine check.} \nolinkurl{Paper1EquilibriumInsider.lean} checks the observer's pathwise reduced form, the insider's best response, the Kyle limit and the posterior variance.
+\item \emph{Scope.} The insider's information is short-lived, and she conditions only on her news. Two cases are not solved: an insider who also saw the public state, who would trade against the predictable mispricing; and a long-lived Kyle insider, who would also time her trades against the cohorts' memory.
+\end{itemize}
 
 \paragraph{A misjudged dealer and a targeted halt.} Supplement~\ref{app:eqinv} adds two results in the simplest linear market covered by Theorem~\ref{thm:eqinv}.
 \begin{itemize}[itemsep=1pt,topsep=2pt]
@@ -2520,6 +2562,55 @@ Machine-checked as \nolinkurl{p1_fragility_K_bound}. The bound $A^*_0$ follows a
 \end{itemize}
 The result files are \nolinkurl{equilibrium/e4_reduced_form_results.json} and \nolinkurl{equilibrium/e4_fragility_K_results.json}.
 
+\paragraph{Proof of Theorem~\ref{thm:insider}.}
+\emph{Part (i).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{Dealers' information.} The cohorts' flow is predictable. So the dealers' information about $\theta_t$ is $\nu_t$, and $E[\theta_t\mid\nu_t]=\lambda\nu_t$ with $\lambda=\mathrm{Cov}(\theta,\nu)/\mathrm{Var}(\nu)=b\sigma_\theta^2/\sigma_\nu^2$.
+\item \emph{The price decomposes.} $E_tF_{t+1}=F_t+\lambda\nu_t$ and $E_t\nu_{t+1}=0$, so $E_tp_{t+1}-p_t=E_tx_{t+1}-x_t$. The dealers' condition is therefore the one of Theorem~\ref{thm:inventory}. Its state is $(H_t,u_{\cdot,t+1})$, and $E_tu_{i,t+2}=r_iu_{i,t+1}+w_iE_tx_{t+1}$. Coefficient matching gives the same equations for $\beta$, $D$ and $\kappa$ (\nolinkurl{p1_inventory_necessity}).
+\item \emph{The price's response to $\nu_t$.} Since the cohorts trade on $s_t=x_t+\lambda\nu_t$ and $\sum_i\beta_iw_i=1-D$, the implicit form is $Dx_t=-\kappa H_t+\sum_i\beta_ir_iu_{i,t}+(1-D)\lambda\nu_t$. The response of $s_t$ to $\nu_t$ is therefore $(\kappa+(1-D)\lambda)/D+\lambda=(\kappa+\lambda)/D$.
+\item \emph{The insider.} $F_{t+1}-p_t=\theta_t+\varepsilon_{t+1}-m_t-c\,\xi_t-c\,d_t$, where $c=(\kappa+\lambda)/D$ and $m_t$ is the predictable part of $s_t$. The insider does not observe the public state, and $m_t$ has mean zero and is independent of $\theta_t$. So she maximizes $(\theta-c\,d)\,d$. So $d=\theta/(2c)$ and the profit is $\theta^2/(4c)$ (\nolinkurl{p1_insider_best_response}). Taking expectations, $b\sigma_\theta^2/2$.
+\item \emph{The variance.} The innovation of $p_{t+1}$ given dealers' information is $(\theta_t-\lambda\nu_t)+\varepsilon_{t+1}+c\,\nu_{t+1}$, which gives $V$ (\nolinkurl{p1_insider_posterior_variance}).
+\item \emph{Converse.} A solution of the system satisfies every condition just used.
+\end{itemize}
+
+\emph{Part (ii).} With $A=0$, $\kappa(D-\bar a)=0$ forces $\kappa=0$, and then $D=1$. Then $b=1/(2\lambda)$ and $\lambda\sigma_\nu^2=b\sigma_\theta^2$ give $4\lambda^2\sigma_\xi^2=\sigma_\theta^2$ (\nolinkurl{p1_insider_kyle_limit}).
+
+\emph{Part (iii).} The cohorts enter only through $D=1-\kappa G(D)$.
+
+\emph{Part (iv).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{The reduced form.} Combine the implicit form at $t$, the price law at $t-1$ and $H_t=\bar aH_{t-1}-\sum_iu_{i,t}-\nu_t$, as in Theorem~\ref{thm:eqreduced}. This gives $Ds_t-\bar as_{t-1}=\sum_i\beta_i(D-\bar a)u_{i,t}+(\kappa+\lambda)\nu_t-\bar a\lambda\nu_{t-1}$ (\nolinkurl{p1_insider_reduced_form}).
+\item \emph{The filter is invertible.} $c_1<c_0$ because $\bar a<1$, $\lambda\ge0$ and $\kappa\ge0$. So the observer, knowing the primitives, inverts the filter, and is left with the closed loop of Theorem~\ref{thm:eqreduced}.
+\item \emph{Realization.} Proceed as in Theorem~\ref{thm:eqreduced}(iv):
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item set $D=1-\kappa^*W/(1-a^*)$, $\bar a=a^*D$ and $\kappa=\kappa^*D$;
+ \item solve the insider's pair $(\lambda,b)$ given $(\kappa,D)$;
+ \item set $A=\kappa(D-\bar a)/(VD)$.
+ \end{itemize}
+ The two economies then share every primitive.
+\end{itemize}
+
+\paragraph{Numerical check of Theorem~\ref{thm:insider}.} The script \nolinkurl{equilibrium/e6_insider.py} solves the system at $A=0.05$, $\sigma_\varepsilon^2=1$, $\sigma_\theta^2=\sigma_\xi^2=0.25$ and $\bar a=0.6$, and simulates $2\times10^5$ dates for each solution.
+\begin{center}\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccccc}
+\hline
+Cohorts & $\kappa$ & $D$ & $\lambda$ & $b$ & $(\kappa+\lambda)/D$ & profit & inform.\\
+\hline
+none & 0.1656 & 1 & 0.4835 & 0.7704 & 0.6490 & 0.0963 & 0.372\\
+$+0.02$ at $0.7$ & 0.1692 & 0.9883 & 0.4816 & 0.7592 & 0.6586 & 0.0949 & 0.366\\
+$-0.2$ at $0.7$ & 0.1463 & 1.0775 & 0.4928 & 0.8430 & 0.5931 & 0.1054 & 0.415\\
+two cohorts, or split$^\dagger$ & 0.1679 & 0.9924 & 0.4823 & 0.7632 & 0.6552 & 0.0954 & 0.368\\
+\hline
+\end{tabular}
+\end{center}
+Informativeness (inform.) is $b^2\sigma_\theta^2/\sigma_\nu^2$, the share of $\mathrm{Var}(\theta)$ resolved by the price. $^\dagger$Weights $0.005,0.005$ at rates $0.5,0.85$, or the same merged measure split into three cohorts; both give identical coefficients.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item In every case, the dealers' first-order residual is below $5\times10^{-17}$, and the observer's reduced form holds to $4.4\times10^{-16}$.
+\item The regression of $\theta$ on $\nu$ reproduces $\lambda$ to the third decimal.
+\item The simulated profit at $b'=0.6b,\ldots,1.4b$ peaks at $b$, as does the analytic profit.
+\item As $A\downarrow0$ (from $0.05$ to $0.001$), $(\lambda,b)$ moves from $(0.482,0.759)$ to $(0.49999,0.994)$, toward Kyle's $(0.5,1)$.
+\end{itemize}
+
 \paragraph{Numerical solution of Theorem~\ref{thm:inventory}.} The script \nolinkurl{equilibrium/e4_inventory.py} solves the system \eqref{eq:inventory_eq} at $A=0.2$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$ and $\bar a=0.6$.
 
 \emph{How the solver finds equilibria.}
@@ -2656,7 +2747,9 @@ Assume known impact, verified stable class membership, $0\le r_i\le0.95$, indepe
 
 The separate Lean module \nolinkurl{Paper1FlowDecision.lean} covers exact flow inversion, ratio and clipped intervals, the intensity interval, selected-halt inequality, actual product-Gaussian joint mean bound and a probability-composition theorem with an explicit rule-soundness premise. Their deterministic composition, clipping implementation and executable simulation still require separate correspondence checks; no claim of a fully formalized executable decision algorithm is made. The pinned build receipt records the checked declarations.
 
-The exploratory script \nolinkurl{studies/paper1_uplift_20261105/flow_decision.py} runs 20,000 independent replications per world in each of 60 configurations: $N\in\{32,128,512,2048,8192\}$, $\sigma_f\in\{0.0005,0.002,0.005\}$, $H\in\{1,10\}$ and $F\in\{0.05,0.25\}$. Other quantities use the two-group calibration above, a per-channel-vector record fee $0.0005$, and the same class-halt or throttle action menu. Fourteen configurations have positive estimated net information value; the others are retained. The largest observed gain is exploratory, selected from the grid: at $N=128$, $\sigma_f=0.0005$, $H=10$ and $F=0.05$, no-data loss is $14.492188$, information-inclusive loss $12.370094$ and net gain $2.122094$ surplus units. A simultaneous grid-adjusted Hoeffding interval is reported in the result file; zero observed unsafe halts is not a proof of zero probability. Costs, horizons and response bounds are synthetic, and no real-market gain or calibrated welfare conclusion follows. Six additional fixed stress cases retain both smaller biases with no observed unsafe halt and failures: a downward second-flow bias of $0.010$ produces unsafe halts in G in all 20,000 replications, while a response $0.030$ exceeding the allowance $0.005$ produces unsafe halts in R in all replications. Swapped second-flow labels lead to abstention in both worlds. These are synthetic contract falsifications, not guarantees under misspecification.
+The exploratory script
+\nolinkurl{studies/paper1_uplift_20261105/flow_decision.py}
+runs 20,000 independent replications per world in each of 60 configurations: $N\in\{32,\allowbreak128,\allowbreak512,\allowbreak2048,\allowbreak8192\}$, $\sigma_f\in\{0.0005,0.002,0.005\}$, $H\in\{1,10\}$ and $F\in\{0.05,0.25\}$. Other quantities use the two-group calibration above, a per-channel-vector record fee $0.0005$, and the same class-halt or throttle action menu. Fourteen configurations have positive estimated net information value; the others are retained. The largest observed gain is exploratory, selected from the grid: at $N=128$, $\sigma_f=0.0005$, $H=10$ and $F=0.05$, no-data loss is $14.492188$, information-inclusive loss $12.370094$ and net gain $2.122094$ surplus units. A simultaneous grid-adjusted Hoeffding interval is reported in the result file; zero observed unsafe halts is not a proof of zero probability. Costs, horizons and response bounds are synthetic, and no real-market gain or calibrated welfare conclusion follows. Six additional fixed stress cases retain both smaller biases with no observed unsafe halt and failures: a downward second-flow bias of $0.010$ produces unsafe halts in G in all 20,000 replications, while a response $0.030$ exceeding the allowance $0.005$ produces unsafe halts in R in all replications. Swapped second-flow labels lead to abstention in both worlds. These are synthetic contract falsifications, not guarantees under misspecification.
 
 \paragraph{Observation assumptions in market data.}
 The required class records are signed executed quantities with stable verified labels, synchronized timing, known probe history and a justified error model. Public position ratios and weekly position stocks do not satisfy this contract. Binance's top-position ratio concerns the top 20 percent of users by margin balance; the top-account ratio counts accounts once. Their populations can change and overlap with the all-account population, so those series are not disjoint cohorts or algorithm labels. CFTC reports describe Tuesday positions generally published on Friday, and business-purpose categories can contain different trading motives. Provider definitions are available at \url{https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm} and \url{https://developers.binance.info/en/docs/catalog/core-trading-derivatives-trading-usd-s-m-futures/api/rest-api/market-data}. Neither source identifies a learning update rule. Their fitted persistence and sample-size ratios remain descriptive diagnostics. Converting stock persistence to flow response also requires holdings, valuation, transfers, liquidations, reporting delay and changing-membership adjustments; a stock--flow identity alone supplies no causal identification. Real-market use requires verified event-level class records or a justified observation model, external excitation or valid instruments, and a separately tested post-action response allowance.

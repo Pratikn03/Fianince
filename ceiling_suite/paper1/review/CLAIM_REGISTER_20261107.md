@@ -35,6 +35,7 @@ Nothing in the abstract or conclusion may go beyond the "Statement" column.
 | Q5 | Thm 4.5 equilibrium invariance | Same merged measure ⇒ identical paths and payoffs for every causal insider, dealer and signal rule; group-level quantities differ. | Deterministic cohort rules | Supplement S28 | full (finite horizon) | Noh (2026) | Cohort-specific shocks add a second merged object |
 | Q6 | Thm S28.1 rents | Committed insider vs dealer with misjudged kernel: rent of exact order `ε`; first-order coefficient explicit. | Fixed λ; committed linear schedule | Supplement S28 | arithmetic (part i) | De Long et al.; Allen–Gale | Partial equilibrium |
 | Q7 | Thm S28.2 targeted halt | Pre-halt gap `O(d³)`; post-halt kernel gap `W/4` at every spacing. | Same dealer rule and draws | Supplement S28 | arithmetic (part iii) | — | — |
+| Q8 | Thm 4.6 strategic insider | Short-lived insider observing only her news: `d=bθ`, `p=F+λν+x`, with `λ=bσ_θ²/σ_ν²` and `b=D/(2(κ+λ))`; Kyle limit at `A=0`; invariance; the observer's deviation is the closed loop through a known invertible MA(1) filter, and the rates hold. | Linear strategies; insider sees only `θ_t` | Supplement S28 | arithmetic (reduced form, best response, Kyle limit) | Kyle (1985); Subrahmanyam (1991) | An insider who saw the public state, or a long-lived insider, is not solved |
 | E1 | CFTC (20 markets) | Class positions pin down **weekly holdings persistence** 9–71× more tightly than prices (8/8, 12/12). | Labels fixed by class role before estimation | Sec. S18 | — | — | Persistence ≠ learning memory; it can reflect turnover or aggregation |
 | E2 | Real-noise injection | Rates survive Bitcoin noise: slopes −6.01 (s.e. 0.17), −9.81 (s.e. 0.47); tagged flat. | Normal draw above `N = 4,096` | Sec. S16 | — | — | Heavy tails enter only the first three `K=2` points |
 | E3 | Scorecard | 23 outcomes: 11 pass/hold, 11 fail, 1 not supported (19 primary: 9 pass, 10 fail). | — | Table S29 | — | — | — |
@@ -47,6 +48,6 @@ Nothing in the abstract or conclusion may go beyond the "Statement" column.
 - That the real-noise test used exact resampling at all `N`.
 - That Lean formalizes the whole paper (15 full / 14 conditional / 17 arithmetic of 46 rows, 7 November).
 - That the P1T validation pass is evidence for feedback. Only the holdout is the registered result, and the noisy-report confound is not ruled out.
-- That Section 4 is a full Kyle equilibrium. There is no strategic insider in the inventory equilibrium.
+- That Section 4 solves a long-lived Kyle insider. Theorem 4.6 has a short-lived insider who observes only her news.
 - That disclosure is welfare-improving in real markets. Losses are declared model inputs.
 - Any dollar figure as a social cost. They are a hypothetical outside prober's modelled execution loss under weekly renewal.

@@ -49,6 +49,7 @@ The identification results take the price impact $\kappa$ and the persistence $a
 \item a strategic insider cannot change it;
 \item misjudging the aggregate response creates rents of first order;
 \item targeted actions still need group-level information, and class-tagged disclosure keeps its value in equilibrium.
+\item a strategic insider with short-lived information changes neither conclusion, while positive feedback makes prices less informative about her news.
 \end{itemize}
 
 \paragraph{An inventory equilibrium.}
@@ -193,6 +194,46 @@ The rules $X$, $P$ and $S$ are arbitrary causal maps. This covers Kyle, inventor
 \end{theorem}
 
 \paragraph{In words.} Whatever the insider and the dealer do, two markets whose trader groups have the same merged response produce the same prices, the same order flow and the same insider and dealer outcomes. So the part of the population that prices cannot identify (Theorem~\ref{thm:merged}) is worth nothing to anyone who trades on public information. It matters only for actions aimed at a particular group, such as halting it (Proposition~\ref{prop:target}). Parts (i)--(iv) are machine-checked pathwise for every causal insider, dealer and signal rule (\nolinkurl{Paper1EquilibriumInvariance.lean}). Supplement~\ref{app:eqinv} gives the proof, the unbounded-horizon statement, the extension to cohort-specific demand shocks and a numerical illustration.
+
+\begin{theorem}[A strategic insider in the inventory equilibrium]\label{thm:insider}
+Add three things to the model of Theorem~\ref{thm:inventory}:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{News.} The fundamental moves by $F_{t+1}=F_t+\theta_t+\varepsilon_{t+1}$, with $\theta_t\sim N(0,\sigma_\theta^2)$ and $\varepsilon_t$ i.i.d.\ of variance $\sigma_\varepsilon^2$.
+\item \emph{An insider.} At date $t$ a short-lived insider privately observes $\theta_t$, and nothing else, submits $d_t$, and values the position at $F_{t+1}$.
+\item \emph{What cohorts and dealers see.} The cohorts trade on the observed deviation $s_t=p_t-F_t$. The dealers price from total flow.
+\end{itemize}
+Let $\nu_t=\xi_t+d_t$ be the unexpected flow.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Characterization.} The strategy $d_t=b\theta_t$ and the price $p_t=F_t+\lambda\nu_t+x_t$, with $x_t$ the price law of Theorem~\ref{thm:inventory}, form an equilibrium exactly when the induced dynamics are stable and
+\[
+ D=1-\kappa G(D),\quad \kappa(D-\bar a)=AVD,\quad \lambda=\frac{b\sigma_\theta^2}{\sigma_\nu^2},\quad b=\frac{D}{2(\kappa+\lambda)},
+\]
+\[
+ \sigma_\nu^2=\sigma_\xi^2+b^2\sigma_\theta^2,\qquad V=\sigma_\varepsilon^2+\frac{\sigma_\theta^2\sigma_\xi^2}{\sigma_\nu^2}+\Bigl(\frac{\kappa+\lambda}{D}\Bigr)^2\sigma_\nu^2 .
+\]
+One unit of unexpected flow moves the price by $(\kappa+\lambda)/D$, and the insider's expected profit per date is $b\sigma_\theta^2/2$.
+\item \emph{Kyle limit.} Without inventory risk ($A=0$), $\kappa=0$, $D=1$, $\lambda=\sigma_\theta/(2\sigma_\xi)$ and $b=\sigma_\xi/\sigma_\theta$. These are Kyle's one-period values at every date, and the feedback cohorts do not move prices.
+\item \emph{Invariance.} The coefficients depend on the cohorts only through $G$, as Theorem~\ref{thm:eqinv} requires.
+\item \emph{Observer.} The observed deviation follows
+\[
+ s_t=a^*s_{t-1}+\kappa^*\sum_i\tilde u_{i,t}+c_0\nu_t-c_1\nu_{t-1},\qquad c_0=\frac{\kappa+\lambda}{D},\quad c_1=\frac{\bar a\lambda}{D},
+\]
+with $(a^*,\kappa^*,\tilde u)$ as in Theorem~\ref{thm:eqreduced}. This is the closed loop of Section~\ref{sec:model} driven through a known moving-average filter $c_0-c_1z^{-1}$, which is invertible because $c_1<c_0$.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item The memory rates remain the transmission zeros of the feedback part.
+\item The lower-bound pair of Theorem~\ref{thm:kcohort} is realized by two such equilibria with identical primitives.
+\item So the identification boundary and the $(\Delta\eta)^{-(4K-2)}$ rate hold with an insider present.
+\end{itemize}
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} A short-lived insider who knows the next piece of news trades against noise traders and against the feedback traders' predictable flow. Dealers net the predictable flow out. So the insider's trades move prices through two channels: an information part $\lambda$ and an inventory part, both amplified by feedback through $D$. Positive feedback raises the total impact. The insider then trades less and earns less, and prices reveal less of her news. Negative feedback does the opposite.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{An example from Supplement~\ref{app:eqinv}.} One positive-feedback cohort lowers the share of the insider's information impounded in prices from $0.372$ to $0.366$. One negative-feedback cohort raises it to $0.415$.
+\item \emph{What prices cannot identify.} It is still worth nothing to anyone trading on public information.
+\item \emph{Machine check.} \nolinkurl{Paper1EquilibriumInsider.lean} checks the observer's pathwise reduced form, the insider's best response, the Kyle limit and the posterior variance.
+\item \emph{Scope.} The insider's information is short-lived, and she conditions only on her news. Two cases are not solved: an insider who also saw the public state, who would trade against the predictable mispricing; and a long-lived Kyle insider, who would also time her trades against the cohorts' memory.
+\end{itemize}
 
 \paragraph{A misjudged dealer and a targeted halt.} Supplement~\ref{app:eqinv} adds two results in the simplest linear market covered by Theorem~\ref{thm:eqinv}.
 \begin{itemize}[itemsep=1pt,topsep=2pt]

@@ -165,3 +165,14 @@ They combine naturally: a market maker with inventory cost that is also learning
   - the implicit function theorem of Theorem 4.1(iv) in Lean;
   - Perron–Frobenius in Lean;
   - the O(d³) kernel bound of S28.2(i) in Lean.
+
+## Status addendum (7 November 2026, night)
+
+- **Insider inside the inventory equilibrium, done in a stated form** (Theorem 4.6, `thm:insider`):
+  - a short-lived insider who observes only her news;
+  - the characterization, and the Kyle limit;
+  - invariance, and the observer's reduced form with a known MA(1) input, so the rates hold.
+  - Positive feedback raises impact and lowers informativeness.
+  - Lean: `Paper1EquilibriumInsider.lean`, built locally. Numerics: `e6_insider.py`.
+- **Not solved:** an insider who also uses the public state, which adds an arbitrage term against predictable
+  mispricing; and a long-lived Kyle insider.
