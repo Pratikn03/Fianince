@@ -12,65 +12,57 @@ model-theorem-checked, reviewed. Nothing is marked "reviewed": no human speciali
 ## Package C: Gaussian Cramér–Rao (Proposition S7.1)
 
 Done:
-- `p1_thm_gaussian_hcr` (`Paper1GaussianHCR.lean`): the Hammersley–Chapman–Robbins inequality for the Gaussian record.
-- `p1_thm_gaussian_cramer_rao` (`Paper1GaussianCR.lean`): `Var_θ₀(T) ≥ σ_h² [(JᵀJ)⁻¹]_kk`. It holds for every `L²`
-  statistic that is unbiased on a neighbourhood of θ₀. The mean map `h` is abstract and must be differentiable
-  along lines with Jacobian `J`.
-- Route choice: HCR followed by a limit along a line. This avoids differentiating under the integral, so the
-  theorem needs no "regular estimator" condition at all.
+- `p1_thm_gaussian_hcr`: the Hammersley–Chapman–Robbins inequality for the Gaussian record. It holds for every L²
+  statistic.
+- `p1_thm_gaussian_cramer_rao`: `Var_θ₀(T) ≥ σ_h²[(JᵀJ)⁻¹]_kk` for every L² statistic that is unbiased near θ₀, given
+  line-differentiability with Jacobian J. The route is HCR followed by a limit along a line, so no regularity condition
+  and no differentiation under the integral are needed.
+- `p1_impulse_differentiable`, `p1_thm_cramer_rao_actual`: the actual closed-loop response is differentiable in
+  θ = (q, rate), and the bound holds with J its true Jacobian (`fderiv`).
+- `p1_rawJac_gram`, `p1_thm_cramer_rao_raw_actual`: the bound holds on all N·T raw reset records, not only their
+  average. The raw Gram matrix is `N V² JᵀJ`, which gives `σ_p²[(JᵀJ)⁻¹]_kk/(N V²) = σ_h²[(JᵀJ)⁻¹]_kk`.
 
-First unresolved lemma (C-inst): the actual averaged response map is differentiable along lines.
-```lean
-theorem p1_actual_response_hasDerivAt {K T : ℕ} (a κ : ℝ) (θ0 a' : Fin (2 * K) → ℝ) (t : Fin T) :
-    HasDerivAt (fun s : ℝ => actualCohortImpulse a κ (weights (θ0 + s • a')) (rates (θ0 + s • a')) t)
-      (∑ j, a' j * partialImpulse a κ θ0 t j) 0
-```
-- Prerequisites: `actualCohortImpulse` is a finite recursion (`p1_impulse_closed_loop_recursion`), so each tap is a
-  polynomial in the parameters. Proof by induction on `t`, using `HasDerivAt.mul`, `HasDerivAt.sum` and `pow`.
-- Still to define: `weights`, `rates` and `partialImpulse`.
-
-C4 (inverse-sixth scaling of the actual `[(JᵀJ)⁻¹]_kk`) remains conditional-support:
-- Needed: two-sided bounds `c d⁻⁶ ≤ [(JᵀJ)⁻¹]_kk ≤ C d⁻⁶` for the weight coordinate, with fixed horizon, ≥ 4
-  informative taps and a compact stable family.
-- Route: J = (∂h/∂moments)·(∂moments/∂θ). The first factor is uniformly well conditioned on the compact family. The
-  second is the confluent Vandermonde already computed exactly in `SpectralCapital.lean`.
-- Missing: the uniform conditioning of the first factor, and the transfer of the diagonal entry under that
-  factorization.
-
-Raw-record reduction (all N·T reset observations, not only their average):
-- The CR theorem already applies to any Gaussian record.
-- Missing: the stacked Gram identity `J_rawᵀ J_raw = N V² JᵀJ` under the `Fin (N*T)` indexing (`finProdFinEquiv`).
+First unresolved item (C4): the size of the actual `[(JᵀJ)⁻¹]_kk`, i.e. two-sided bounds `c d⁻⁶ ≤ [(JᵀJ)⁻¹]_kk ≤ C d⁻⁶`
+for the weight coordinate. This needs a fixed horizon, at least 4 informative taps, and a compact stable family.
+- Route: factor J = (∂h/∂moments)·(∂moments/∂θ). The second factor is the confluent Vandermonde, whose inverse row is
+  computed exactly in `SpectralCapital.lean`.
+- Missing: uniform conditioning of the moment-to-tap map on the compact family, and the transfer of the diagonal
+  entry through that factorization. A smallest-singular-value bound gives only the upper bound.
+- Intended signature:
+  `theorem p1_crb_diag_two_sided (K := 2) ... : ∃ c C d₀ > 0, ∀ d ∈ Ioo 0 d₀, c * d^(-6) ≤ ((J d)ᵀ * J d)⁻¹ k k ∧ ... ≤ C * d^(-6)`.
 
 ## Package S: general-K spectral identification (Theorem 5.4)
 
-Audit finding: the earlier "spectral factorization" (`p1_thm_minphase_spectral_factorization`) covers K = 2 only. Its
-hypothesis equates the numerator polynomials, not the spectrum. That is exactly the shortcut the handoff rejects, so
-it is recorded as conditional-support.
+Audit finding: the earlier "spectral factorization" (`p1_thm_minphase_spectral_factorization`) covers K = 2 only, and
+its hypothesis equates the numerator polynomials, not the spectrum. That is the shortcut the handoff rejects. It is now
+superseded.
 
-New (`Paper1SpectralID.lean`), pending CI: `p1_thm_minphase_spectrum_rates`.
-- It starts from equal spectra `s₁|H₁(e^{iω})|²/(2π) = s₂|H₂(e^{iω})|²/(2π)` at every ω.
-- It holds for any K₁, K₂, anchors, impacts, weights and innovation variances.
-- It concludes `Set.range r₁ = Set.range r₂`.
-- Method: the polynomial identity on the circle extends to all of ℂ; reversed polynomials vanish only outside the
-  disk; there is no cancellation.
+Done (`Paper1SpectralID.lean`, `Paper1SpectralH.lean`; both modules built in CI run 42322651256). Every result starts
+from equal spectra `s₁|H₁(e^{iω})|²/(2π) = s₂|H₂(e^{iω})|²/(2π)` at every ω, for any K₁, K₂.
+- `p1_thm_minphase_spectrum_rates`: the sets of memory rates coincide.
+- `p1_thm_minphase_spectrum_H`: `s₁κ₁² = s₂κ₂²`, `∏(z - r₁ᵢ) = ∏(z - r₂ᵢ)` and the denominators of `H` coincide.
+  Together these give equal `H/h₀`.
+- `p1_thm_minphase_spectrum_merged`: with κ known, `s₁ = s₂`, `a₁ = a₂`, the rates coincide, and `w₁ᵢ = w₂ⱼ` whenever
+  `r₁ᵢ = r₂ⱼ`.
+- Method:
+  - the polynomial identity on the circle extends to all of ℂ;
+  - root multiplicities balance in the punctured disk;
+  - coprimality, which follows from `p1_thm_minphase_zeros`, separates numerator and denominator;
+  - monic complex polynomials with equal multiplicities are equal.
 
-First unresolved lemma (S-B: the spectrum fixes `sκ²` and `H/h₀`):
-```lean
-theorem p1_spectral_multiplicity (n1 d1 n2 d2 : ℝ[X]) ... (α : ℂ) (hα : ‖α‖ < 1) (hα0 : α ≠ 0) :
-    rootMultiplicity α (n1.map φ) + rootMultiplicity α (d2.map φ) =
-      rootMultiplicity α (n2.map φ) + rootMultiplicity α (d1.map φ)
-```
-- Route: take `rootMultiplicity` of `L = R` (`Polynomial.rootMultiplicity_mul`). The reversed factors have
-  multiplicity 0 at α (`p1_rev_ne_zero`). Coprimality then splits the equation. Both sides split over ℂ
-  (`IsAlgClosed.splits`), which gives `n1 = c n2` and `d1 = d2` (monic).
-- Then `H₁ = c H₂`. With `h₀ = κ` known this gives `H₁ = H₂`, and `p1_cor_unknown_primitives_identification` /
-  `thm:merged` gives the merged measure.
-- Also open: link the stability hypothesis "zeros of `tfBottom` inside the disk" to the paper's definition of a
-  stable economy (spectral radius of the companion matrix below 1).
+Remaining model links, neither of which is a hypothesis about the conclusion:
+- (S1) Prove that the z-transform of the recursion's impulse response (`actualCohortImpulse`) equals
+  `tfTop/tfBottom`. The rational function is the paper's stated formula and is not re-derived from recursion (1)–(6).
+  First lemma: `∑ k, (tfBottom a κ w r).coeff k * actualCohortImpulse a κ q rate (n + k) = 0` for `n ≥ 1`, with
+  `w_i = q_i η_i` and `r_i = 1 - η_i`.
+- (S2) Prove that "zeros of `tfBottom` in the open disk" is equivalent to the companion matrix having spectral radius
+  below 1.
 
 ## Package I: stationary IV limit (Proposition 6.1)
 
-Status: determinant bound only, as conditional-support. The reset-experiment analogue is a different experiment.
+Status: two pieces are done, but neither is the limit theorem. The reset-experiment analogue is a different experiment.
+- The determinant bound (conditional-support).
+- I3, the exact boundary decomposition (`p1_iv_boundary_decomposition`; algebra only).
 
 Infrastructure checked in the pinned Mathlib:
 - Present: i.i.d. CLT `tendstoInDistribution_inv_sqrt_mul_sum`; Lévy continuity

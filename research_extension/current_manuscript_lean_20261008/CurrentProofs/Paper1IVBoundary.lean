@@ -1,6 +1,7 @@
 import Mathlib.Algebra.BigOperators.Intervals
 import Mathlib.Algebra.Module.Basic
 import Mathlib.Tactic.Module
+import Mathlib.Data.Real.Basic
 
 /-!
 # Paper 1, Proposition `prop:tagged`, step I3: the exact boundary decomposition of the IV score
