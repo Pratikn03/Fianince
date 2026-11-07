@@ -7,7 +7,7 @@ This document resolves the five open items in `DATA_DICTIONARY.md`.
 
 Nothing here has been run on test data.
 
-## 1. Missing versus zero
+## 1. Missing versus zero (checked by probe 2: rule consistent with the data, see DATA_DICTIONARY.md)
 
 The security-day universe comes from the daily price file, not from the institutional-flow file.
 
@@ -43,13 +43,13 @@ Classes (i = 1, …, 4):
 - Four-digit common-stock codes only. This excludes ETFs (codes starting `00`), leveraged and inverse ETFs (`L`, `R`),
   foreign-currency ETFs (`K`, `M`, `S`, `C`), warrants, TDRs and preferred shares.
 - Exclude the first 60 trading days after listing.
-- Exclude ex-dividend and ex-rights days and the following day, from the TWSE/TPEx ex-rights calculation tables.
+- Exclude ex-dividend and ex-rights days and the following day. Event days come from the `X` change-sign flag in `MI_INDEX` and from `TWT49U`; disagreements between the two are reported.
 - Exclude full-day suspensions and the five days after any suspension of at least five days.
 - Liquidity filter: trading on at least 95% of days and in the top 300 by average daily turnover. This is computed on
   the development period only and then frozen.
 - TWSE (main board) is the primary universe. TPEx (OTC) is the replication universe.
 
-## 4. Prices and the ±10% limit
+## 4. Prices and the ±10% limit (fields confirmed by probe 2)
 
 - Prices are daily closes from the TWSE all-securities quote table, which probe 2 inspects. Returns are close-to-close
   log returns, with event days removed under item 3.
@@ -57,7 +57,7 @@ Classes (i = 1, …, 4):
   - Primary analysis: limit days stay in, with an indicator in every regression.
   - Declared robustness check: drop limit days and the following day.
   - The share of limit days is reported.
-- The TAIEX daily close, from the same quote table or the index table, is the market reference.
+- The market reference is TAIEX (`發行量加權股價指數`) from the `MI_INDEX` index table. The total-return index is used when the reference must include dividends.
 
 ## 5. Model link
 
