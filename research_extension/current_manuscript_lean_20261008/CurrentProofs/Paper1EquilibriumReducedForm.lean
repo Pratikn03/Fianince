@@ -74,7 +74,9 @@ theorem p1_eq_realize_D {K : ℕ} (as ks W D : ℝ) (wt r : Fin K → ℝ) (hW :
     intro i
     rw [div_div, div_eq_div_iff (mul_ne_zero hDa (hDr i)) hDa]
     ring
-  rw [sum_congr rfl fun i _ => hterm i, ← sum_div, hW]
+  have hsd : ∑ i, wt i / (D - as * D) = (∑ i, wt i) / (D - as * D) := by
+    simp only [div_eq_mul_inv]; rw [← sum_mul]
+  rw [sum_congr rfl fun i _ => hterm i, hsd, hW]
   have hfac : D - as * D = D * (1 - as) := by ring
   rw [hfac]
   have hkW : ks * W / (1 - as) = 1 - D := by rw [hDdef]; ring
