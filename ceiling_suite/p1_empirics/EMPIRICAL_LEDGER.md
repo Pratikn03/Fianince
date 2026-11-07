@@ -91,8 +91,12 @@ days are excluded from every future confirmatory sample.
    - The rerun with `P1T_Validation_A1_Colab.ipynb` is pending.
    - The holdout is opened once, after validation is checked and any bug fixes are logged. This is the first
      direct test on tagged flow.
-2. **P1T replication on TPEx.** A separate registered specification with the same frozen procedure on the OTC
-   market. It must be registered before the TPEx test data are requested.
+2. **P1T replication on TPEx (P1R).** A separate registered specification with the same frozen procedure on the
+   OTC market. It must be registered before the TPEx test data are requested.
+   - Draft: `P1R_TPEx_spec_DRAFT.md`, not registered.
+   - Probe 4 (`P1_Schema_Probe4_TPEx_Colab.ipynb`, burned days only) must first find an index source and an
+     ex-rights source.
+   - Registration needs the author's approval and is best done after the P1T validation pass is checked.
 3. **Calibrated cost illustration for Taiwan.**
    - Fit (a, κ, r_i, w_i) on development data.
    - Report the sample, quantity and capital requirements for price-only versus tagged observation.

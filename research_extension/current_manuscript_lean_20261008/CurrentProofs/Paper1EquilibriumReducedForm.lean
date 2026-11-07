@@ -1,4 +1,5 @@
 import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.LinearCombination
 import Mathlib.Tactic.Linarith
@@ -19,6 +20,7 @@ with `β_i (D - r_i) = κ`, implicit form `D x_t = -κ H_t + Σ_i β_i r_i u_{i,
 * `p1_eq_realize_D`, `p1_eq_realize_dealer`: any reduced form `(a*, κ*, w̃, r)` with total weight `W` is realized by
   an inventory equilibrium with `D = 1 - κ* W/(1-a*)`, `ā = a* D`, `κ = κ* D`, `w_i = w̃_i (D - r_i)/(D - ā)` and
   `A = κ* D (1-a*)/V`. Two reduced forms with the same `(a*, κ*, W)` are therefore realized with identical primitives.
+* `p1_fragility_K_bound`: several positive cohorts, `A σ_F² G(1) ≤ (1-√ā)²`.
 * `p1_fragility_feedback_bound`, `p1_fragility_benchmark_bound`: necessary conditions for a positive-impact
   equilibrium with one cohort, `A σ_F² w D ≤ (1-D)(D-r)(D-ā)` and `4 A² σ_F² σ_ξ² ≤ (D-ā)²`.
 -/
@@ -118,5 +120,25 @@ theorem p1_fragility_benchmark_bound (A sF2 sX2 ab κ D : ℝ) (hκD : κ * D �
     rw [l, rr, e]; exact h0
   have hp : 0 < (κ * D) ^ 2 := lt_of_le_of_ne (sq_nonneg _) (Ne.symm (pow_ne_zero 2 hκD))
   exact le_of_mul_le_mul_right h hp
+
+/-- **Fragility, several cohorts.** Positive weights and `D > max r_i` give `G(D) ≥ G(1) > 0` (hypothesis `hGG`).
+With `κ G(D) = 1 - D` and the dealer equation, `A σ_F² G(1) ≤ (1 - √ā)²` (with `s = √ā`). -/
+theorem p1_fragility_K_bound (A sF2 sX2 ab s κ D G G1 : ℝ) (hD : 0 < D) (hκ : 0 < κ) (hA : 0 ≤ A)
+    (hsF : 0 ≤ sF2) (hsX : 0 ≤ sX2) (hG1 : 0 < G1) (hGG : G1 ≤ G) (hs : s ^ 2 = ab)
+    (hcoh : κ * G = 1 - D) (hdealer : κ * (D - ab) * D = A * (sF2 * D ^ 2 + κ ^ 2 * sX2)) :
+    A * sF2 * G1 ≤ (1 - s) ^ 2 := by
+  have hpos : 0 ≤ A * (κ ^ 2 * sX2) := mul_nonneg hA (mul_nonneg (sq_nonneg κ) hsX)
+  have h1 : A * sF2 * D ^ 2 ≤ κ * (D - ab) * D := by nlinarith [hdealer, hpos]
+  have h1a : (A * sF2 * D) * D ≤ (κ * (D - ab)) * D := by linarith [h1]
+  have h1' : A * sF2 * D ≤ κ * (D - ab) := le_of_mul_le_mul_right h1a hD
+  have hAF : 0 ≤ A * sF2 * D := mul_nonneg (mul_nonneg hA hsF) hD.le
+  have hDab : 0 ≤ D - ab := by nlinarith [h1', hAF, hκ]
+  have h2 : κ * G1 ≤ 1 - D := by rw [← hcoh]; exact mul_le_mul_of_nonneg_left hGG hκ.le
+  have h3 : κ * G1 * (D - ab) ≤ (1 - D) * (D - ab) := mul_le_mul_of_nonneg_right h2 hDab
+  have h4 : A * sF2 * D * G1 ≤ κ * (D - ab) * G1 := mul_le_mul_of_nonneg_right h1' hG1.le
+  have h5 : (1 - D) * (D - ab) ≤ D * (1 - s) ^ 2 := by
+    rw [← hs]; nlinarith [sq_nonneg (D - s)]
+  have h6 : (A * sF2 * G1) * D ≤ (1 - s) ^ 2 * D := by nlinarith [h3, h4, h5]
+  exact le_of_mul_le_mul_right h6 hD
 
 end CurrentMM

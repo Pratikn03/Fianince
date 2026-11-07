@@ -444,6 +444,7 @@ run_cmd do
   `CurrentMM.p1_eq_realize_dealer,
   `CurrentMM.p1_fragility_feedback_bound,
   `CurrentMM.p1_fragility_benchmark_bound,
+  `CurrentMM.p1_fragility_K_bound,
   `CurrentMM.p1_finite_exp_sums_independent,
   `CurrentMM.p1_thm_measure_from_finitely_many_moments,
   `CurrentMM.p1_thm_merged_deconvolution_finite,

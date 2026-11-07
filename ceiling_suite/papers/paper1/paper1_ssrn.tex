@@ -369,10 +369,19 @@ Let there be one feedback cohort with weight $w>0$ and memory rate $r\in(0,1)$, 
  \Phi^*=\max_{D\in[m,1]}\frac{(1-D)(D-r)(D-\bar a)}{D}\le\frac{(1-\bar a)(1-r)^2}{4},
 \]
  and $w\,A^*(w)\to\Phi^*/\sigma_F^2$ as $w\to\infty$. In terms of the feedback intensity $G(1)=w/(1-r)$, strong feedback gives $A^*\approx\Phi^*/(\sigma_F^2(1-r)G(1))$, and always $A^*<(1-\bar a)(1-r)/(4\sigma_F^2G(1))$.
+\item \emph{Several cohorts.} Let all weights be positive.
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item The positive-impact equilibria with $D>\max_ir_i$ are exactly the pairs $((1-D)/G(D),D)$ with $D\in(\max(\bar a,\max_ir_i),1)$ at which the analogue of $\Psi_w$, with $\kappa=(1-D)/G(D)$, equals $A$.
+ \item Every such equilibrium has
+ \[
+  A<\min\Bigl\{A^*_0,\ \frac{(1-\sqrt{\bar a})^2}{\sigma_F^2\,G(1)}\Bigr\},
+ \]
+ whatever the number of cohorts and their rates.
+ \end{itemize}
 \end{enumerate}
 \end{theorem}
 
-\paragraph{In words.} With positive feedback, dealers can make a market only if their dislike of risk is below a threshold, and the threshold falls as feedback grows: for strong feedback it is inversely proportional to the feedback intensity. Past the threshold, no price impact is consistent with dealers' optimization. Below it, every equilibrium has stable prices. Liquidity does not erode through growing instability; it disappears when the two equilibria merge, at a point that stable prices give no warning of. At the calibration of Supplement~\ref{app:eqinv} ($\bar a=0.6$, $r=0.7$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$), $A^*$ is 0.40 without feedback, 0.25 at $G(1)=\tfrac1{15}$ and 0.034 at $G(1)=\tfrac23$, and $w\,A^*$ approaches $\Phi^*=0.00688$. The necessary conditions behind parts (i) and (iii) are machine-checked (\nolinkurl{Paper1EquilibriumReducedForm.lean}). With several cohorts the threshold is computed numerically only.
+\paragraph{In words.} With positive feedback, dealers can make a market only if their dislike of risk is below a threshold, and the threshold falls as feedback grows: for strong feedback it is inversely proportional to the feedback intensity. Past the threshold, no price impact is consistent with dealers' optimization. Below it, every equilibrium has stable prices. Liquidity does not erode through growing instability; it disappears when the two equilibria merge, at a point that stable prices give no warning of. At the calibration of Supplement~\ref{app:eqinv} ($\bar a=0.6$, $r=0.7$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$), $A^*$ is 0.40 without feedback, 0.25 at $G(1)=\tfrac1{15}$ and 0.034 at $G(1)=\tfrac23$, and $w\,A^*$ approaches $\Phi^*=0.00688$. The necessary conditions behind parts (i) and (iii) are machine-checked (\nolinkurl{Paper1EquilibriumReducedForm.lean}). With several cohorts, part (iv) gives a threshold that depends on the population only through its total feedback intensity $G(1)$. At the same calibration, numerically, the exact thresholds for two and three cohorts lie between 28\% and 86\% of that bound, and the equilibria on the threshold curve are stable. Stability with several cohorts is checked numerically, not proved.
 
 
 
@@ -395,41 +404,11 @@ The rules $X$, $P$ and $S$ are arbitrary causal maps. This covers Kyle, inventor
 
 \paragraph{In words.} Whatever the insider and the dealer do, two markets whose trader groups have the same merged response produce the same prices, the same order flow and the same insider and dealer outcomes. So the part of the population that prices cannot identify (Theorem~\ref{thm:merged}) is worth nothing to anyone who trades on public information. It matters only for actions aimed at a particular group, such as halting it (Proposition~\ref{prop:target}). Parts (i)--(iv) are machine-checked pathwise for every causal insider, dealer and signal rule (\nolinkurl{Paper1EquilibriumInvariance.lean}). Supplement~\ref{app:eqinv} gives the proof, the unbounded-horizon statement, the extension to cohort-specific demand shocks and a numerical illustration.
 
-\paragraph{A misjudged dealer and a targeted halt.} The next two results use the simplest linear market inside Theorem~\ref{thm:eqinv}.
+\paragraph{A misjudged dealer and a targeted halt.} Supplement~\ref{app:eqinv} adds two results in the simplest linear market covered by Theorem~\ref{thm:eqinv}.
 \begin{itemize}[itemsep=1pt,topsep=2pt]
-\item Dates are $t=0,\ldots,T-1$ and the price change is $s_t=p_t-p_{t-1}$, with $p_{-1}=0$.
-\item The dealer moves the price by $s_t=\lambda(y_t-\hat f_t)$, with $\lambda>0$, where $\hat f_t=\sum_{m<t}\hat k_ms_{t-1-m}$ is the feedback flow it predicts from its kernel $\hat k$.
-\item The insider, with value $v$ of mean zero and variance $\Sigma_0$ independent of the noise, commits to a schedule $x=bv$, $b\in\R^T$. Schedules may change sign, so pump-and-dump patterns are allowed.
-\item The kernel error is $\Delta k=k-\hat k$, with $\varepsilon=\sum_{m\le T-2}|\Delta k_m|$.
+\item \emph{Rents.} A dealer that misjudges the aggregate feedback response by $\varepsilon$ hands an insider with a committed schedule a rent of exact order $\varepsilon$, or charges it one (Theorem~\ref{thm:rents}). Public data reveal the aggregate response at the ordinary rate. So the information that protects price formation is cheap to learn, while who the groups are stays expensive.
+\item \emph{A targeted halt.} Two markets that agree in equilibrium to within the cube of the memory spacing can differ at order one after their largest group is halted (Theorem~\ref{thm:eqhalt}). Equilibrium sharpens the case for targeted information rather than removing it.
 \end{itemize}
-Let $C$ be the lower-triangular matrix of ones and $D$ the strictly lower Toeplitz matrix with $D_{t,t-1-m}=\Delta k_m$.
-
-\begin{theorem}[Rents from a misjudged aggregate response]\label{thm:rents}
-\begin{enumerate}[label=(\roman*),itemsep=1pt]
-\item The insider's expected profit is $J(b)=\Sigma_0\bigl(\mathbf 1^\top b-b^\top A b\bigr)$, with $A=\lambda C(I-\lambda D)^{-1}$. If $Q=\tfrac12(A+A^\top)\succ0$, the optimal schedule is $b^*=\tfrac12Q^{-1}\mathbf1$ and the value is $V(\Delta k)=\tfrac{\Sigma_0}4\mathbf1^\top Q^{-1}\mathbf1$.
-\item If $\lambda T\varepsilon\le\tfrac14(1-\lambda\varepsilon)$, then $Q\succ0$ and
-\[
- |V(\Delta k)-V(0)|\le\frac{2\Sigma_0T^2\varepsilon}{1-\lambda\varepsilon}.
-\]
-\item To first order, $V(\Delta k)=V(0)-\Sigma_0\sum_m\omega_m\Delta k_m+O(\varepsilon^2)$, with $\omega_m=\frac{(T-m)(T-m-1)}{2(T+1)^2}>0$ and $V(0)=\frac{\Sigma_0T}{2\lambda(T+1)}$. The rent is therefore of exact order $\varepsilon$. The insider gains when the dealer overstates the feedback ($\Delta k<0$) and loses when it understates it.
-\item If the dealer estimates the aggregate kernel from $n$ observations with error $\varepsilon_n=O_p(n^{-1/2})$, the rent is $O_p(n^{-1/2})$. Separating the groups behind the same kernel still needs order $(\Delta\eta)^{-(4K-2)}$ experiments (Theorem~\ref{thm:kcohort}).
-\end{enumerate}
-\end{theorem}
-
-\paragraph{In words.} A dealer that misjudges how strongly feedback traders respond hands the insider a rent, or charges it one, in proportion to the error. That error concerns only the aggregate response, which public data reveal at the ordinary rate. So the information that protects price formation is cheap to learn, while the information about who the groups are stays expensive. The dealer's coefficient $\lambda$ is held fixed: this is the insider's best response to a misspecified dealer, not a re-solved equilibrium.
-
-\begin{theorem}[Targeted intervention in equilibrium]\label{thm:eqhalt}
-Take the Gauss and Radau pairs of Theorem~\ref{thm:eqinv}(iv), with total weight $W$, on rates $c+ds$ with $\rho=|c|+|d|<1$. Place them in the market above, with the same dealer rule $(\lambda,\hat k)$, the same insider schedule and the same draws.
-\begin{enumerate}[label=(\roman*),itemsep=1pt]
-\item The kernels agree for $m\le2$, and $|k^G_m-k^R_m|\le2W\binom m3|d|^3\rho^{m-3}$ for $m\ge3$. Hence $\|k^G-k^R\|_1\le2W|d|^3/(1-\rho)^4$.
-\item Before any intervention, the price paths differ by at most $\lambda^2T\|k^G-k^R\|_1\|x+z\|$ divided by $(1-\lambda\|k^G-\hat k\|_1)(1-\lambda\|k^R-\hat k\|_1)$, which is $O(|d|^3)$. The insider's values differ by $O(|d|^3)$.
-\item Halting the largest cohort leaves kernels $\tfrac W2(c-d\sigma)^m$ (the Gauss weights tie; we remove the cohort at $c+d\sigma$) and $\tfrac W4(c-d)^m$, which differ by $\tfrac W4$ at $m=0$ for every spacing. The post-halt responses therefore differ at order one, and so do the post-halt feedback budgets $\sum_mk_m$.
-\end{enumerate}
-\end{theorem}
-
-\paragraph{In words.} Two markets can look the same in equilibrium to within the cube of the memory spacing, yet halting their largest group leaves feedback that differs at order one. Equilibrium does not remove the case for targeted information; it sharpens it. In the simulation of Supplement~\ref{app:eqinv}, the pre-halt price gap is about $3d^3$ at all three spacings tried, while the post-halt gap stays near $0.19$.
-
-
 
 \section{Probing resources, memory resolution and money}\label{sec:resources}
 
@@ -2291,6 +2270,41 @@ Part (i) restates the comparison of losses. Part (ii) says that disclosure is va
 
 \section{Equilibrium results: proofs and illustrations}\label{app:eqinv}
 
+\paragraph{A misjudged dealer and a targeted halt.} The next two results use the simplest linear market inside Theorem~\ref{thm:eqinv}. They are summarized in Section~\ref{sec:equilibrium}.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item Dates are $t=0,\ldots,T-1$ and the price change is $s_t=p_t-p_{t-1}$, with $p_{-1}=0$.
+\item The dealer moves the price by $s_t=\lambda(y_t-\hat f_t)$, with $\lambda>0$, where $\hat f_t=\sum_{m<t}\hat k_ms_{t-1-m}$ is the feedback flow it predicts from its kernel $\hat k$.
+\item The insider, with value $v$ of mean zero and variance $\Sigma_0$ independent of the noise, commits to a schedule $x=bv$, $b\in\R^T$. Schedules may change sign, so pump-and-dump patterns are allowed.
+\item The kernel error is $\Delta k=k-\hat k$, with $\varepsilon=\sum_{m\le T-2}|\Delta k_m|$.
+\end{itemize}
+Let $C$ be the lower-triangular matrix of ones and $L$ the strictly lower Toeplitz matrix with $L_{t,t-1-m}=\Delta k_m$.
+
+\begin{theorem}[Rents from a misjudged aggregate response]\label{thm:rents}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The insider's expected profit is $J(b)=\Sigma_0\bigl(\mathbf 1^\top b-b^\top A b\bigr)$, with $A=\lambda C(I-\lambda L)^{-1}$. If $Q=\tfrac12(A+A^\top)\succ0$, the optimal schedule is $b^*=\tfrac12Q^{-1}\mathbf1$ and the value is $V(\Delta k)=\tfrac{\Sigma_0}4\mathbf1^\top Q^{-1}\mathbf1$.
+\item If $\lambda T\varepsilon\le\tfrac14(1-\lambda\varepsilon)$, then $Q\succ0$ and
+\[
+ |V(\Delta k)-V(0)|\le\frac{2\Sigma_0T^2\varepsilon}{1-\lambda\varepsilon}.
+\]
+\item To first order, $V(\Delta k)=V(0)-\Sigma_0\sum_m\omega_m\Delta k_m+O(\varepsilon^2)$, with $\omega_m=\frac{(T-m)(T-m-1)}{2(T+1)^2}>0$ and $V(0)=\frac{\Sigma_0T}{2\lambda(T+1)}$. The rent is therefore of exact order $\varepsilon$. The insider gains when the dealer overstates the feedback ($\Delta k<0$) and loses when it understates it.
+\item If the dealer estimates the aggregate kernel from $n$ observations with error $\varepsilon_n=O_p(n^{-1/2})$, the rent is $O_p(n^{-1/2})$. Separating the groups behind the same kernel still needs order $(\Delta\eta)^{-(4K-2)}$ experiments (Theorem~\ref{thm:kcohort}).
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} A dealer that misjudges how strongly feedback traders respond hands the insider a rent, or charges it one, in proportion to the error. That error concerns only the aggregate response, which public data reveal at the ordinary rate. So the information that protects price formation is cheap to learn, while the information about who the groups are stays expensive. The dealer's coefficient $\lambda$ is held fixed: this is the insider's best response to a misspecified dealer, not a re-solved equilibrium.
+
+\begin{theorem}[Targeted intervention in equilibrium]\label{thm:eqhalt}
+Take the Gauss and Radau pairs of Theorem~\ref{thm:eqinv}(iv), with total weight $W$, on rates $c+ds$ with $\rho=|c|+|d|<1$. Place them in the market above, with the same dealer rule $(\lambda,\hat k)$, the same insider schedule and the same draws.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The kernels agree for $m\le2$, and $|k^G_m-k^R_m|\le2W\binom m3|d|^3\rho^{m-3}$ for $m\ge3$. Hence $\|k^G-k^R\|_1\le2W|d|^3/(1-\rho)^4$.
+\item Before any intervention, the price paths differ by at most $\lambda^2T\|k^G-k^R\|_1\|x+z\|$ divided by $(1-\lambda\|k^G-\hat k\|_1)(1-\lambda\|k^R-\hat k\|_1)$, which is $O(|d|^3)$. The insider's values differ by $O(|d|^3)$.
+\item Halting the largest cohort leaves kernels $\tfrac W2(c-d\sigma)^m$ (the Gauss weights tie; we remove the cohort at $c+d\sigma$) and $\tfrac W4(c-d)^m$, which differ by $\tfrac W4$ at $m=0$ for every spacing. The post-halt responses therefore differ at order one, and so do the post-halt feedback budgets $\sum_mk_m$.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} Two markets can look the same in equilibrium to within the cube of the memory spacing, yet halting their largest group leaves feedback that differs at order one. Equilibrium does not remove the case for targeted information; it sharpens it. In the simulation below, the pre-halt price gap is about $3d^3$ at all three spacings tried, while the post-halt gap stays near $0.19$.
+
+
 \begin{proof}[Proof of Theorem~\ref{thm:eqinv}]
 \emph{Part (i).} By induction, $m_{i,t}=\sum_{m<t}r_i^m s_{t-1-m}$. Multiplying by $w_i$ and summing over $i$ gives $f_t=\sum_{m<t}k_ms_{t-1-m}$.
 
@@ -2334,14 +2348,14 @@ The unbounded-horizon moment statement and the passage from pathwise equality to
 The result file is \nolinkurl{equilibrium/e1_demo_results.json}.
 
 \paragraph{Proof of Theorem~\ref{thm:rents}.}
-\emph{Part (i).} Total flow is $y=x+z+f$. The dealer subtracts $\hat f$, so $s=\lambda(x+z+Ds)$. The matrix $D$ is strictly lower triangular, so $I-\lambda D$ is invertible and $s=\lambda(I-\lambda D)^{-1}(x+z)$. Prices are $p=Cs$. With $x=bv$, realized profit is $\sum_t(v-p_t)x_t=v^2\mathbf1^\top b-v\,b^\top Cs$. Taking expectations with $E[v]=0$ and $v$ independent of $z$ gives $J(b)$. When $Q\succ0$, $J$ is strictly concave, and its maximizer and value are as stated.
+\emph{Part (i).} Total flow is $y=x+z+f$. The dealer subtracts $\hat f$, so $s=\lambda(x+z+Ls)$. The matrix $L$ is strictly lower triangular, so $I-\lambda L$ is invertible and $s=\lambda(I-\lambda L)^{-1}(x+z)$. Prices are $p=Cs$. With $x=bv$, realized profit is $\sum_t(v-p_t)x_t=v^2\mathbf1^\top b-v\,b^\top Cs$. Taking expectations with $E[v]=0$ and $v$ independent of $z$ gives $J(b)$. When $Q\succ0$, $J$ is strictly concave, and its maximizer and value are as stated.
 
-\emph{Part (ii).} A Toeplitz operator is bounded by the $\ell_1$ norm of its symbol, so $\|D\|\le\varepsilon$. For $\lambda\varepsilon<1$ this gives $\|(I-\lambda D)^{-1}\|\le1/(1-\lambda\varepsilon)$ and $(I-\lambda D)^{-1}-I=\lambda D(I-\lambda D)^{-1}$. Since $\|C\|\le T$, we get $\|Q-Q_0\|\le\|A-A_0\|\le\lambda^2T\varepsilon/(1-\lambda\varepsilon)$. Moreover $Q_0=\tfrac\lambda2(I+\mathbf1\mathbf1^\top)\succeq\tfrac\lambda2I$. Under the stated condition $\|Q-Q_0\|\le\lambda/4$, so $Q\succeq\tfrac\lambda4I$. Then
+\emph{Part (ii).} A Toeplitz operator is bounded by the $\ell_1$ norm of its symbol, so $\|L\|\le\varepsilon$. For $\lambda\varepsilon<1$ this gives $\|(I-\lambda L)^{-1}\|\le1/(1-\lambda\varepsilon)$ and $(I-\lambda L)^{-1}-I=\lambda L(I-\lambda L)^{-1}$. Since $\|C\|\le T$, we get $\|Q-Q_0\|\le\|A-A_0\|\le\lambda^2T\varepsilon/(1-\lambda\varepsilon)$. Moreover $Q_0=\tfrac\lambda2(I+\mathbf1\mathbf1^\top)\succeq\tfrac\lambda2I$. Under the stated condition $\|Q-Q_0\|\le\lambda/4$, so $Q\succeq\tfrac\lambda4I$. Then
 \[
 |V-V_0|=\tfrac{\Sigma_0}4|\mathbf1^\top Q^{-1}(Q_0-Q)Q_0^{-1}\mathbf1|\le\tfrac{\Sigma_0}4\,T\cdot\tfrac4\lambda\cdot\tfrac2\lambda\cdot\tfrac{\lambda^2T\varepsilon}{1-\lambda\varepsilon}.
 \]
 
-\emph{Part (iii).} $Q_0^{-1}\mathbf1=\frac{2}{\lambda(T+1)}\mathbf1$, which gives $V(0)$. Since $A=A_0+\lambda^2CD+O(\varepsilon^2)$, the derivative of $\mathbf1^\top Q^{-1}\mathbf1$ is $-u^\top(\lambda^2CD)u$ with $u=Q_0^{-1}\mathbf1$. Using $\mathbf1^\top C=(T,T-1,\ldots,1)$ and $(D\mathbf1)_t=\sum_{m<t}\Delta k_m$, we get $\mathbf1^\top CD\mathbf1=\sum_m\Delta k_m\frac{(T-m)(T-m-1)}2$. Multiplying by $\tfrac{\Sigma_0}4\cdot\frac{4}{\lambda^2(T+1)^2}\cdot\lambda^2$ gives $\omega_m$.
+\emph{Part (iii).} $Q_0^{-1}\mathbf1=\frac{2}{\lambda(T+1)}\mathbf1$, which gives $V(0)$. Since $A=A_0+\lambda^2CD+O(\varepsilon^2)$, the derivative of $\mathbf1^\top Q^{-1}\mathbf1$ is $-u^\top(\lambda^2CD)u$ with $u=Q_0^{-1}\mathbf1$. Using $\mathbf1^\top C=(T,T-1,\ldots,1)$ and $(L\mathbf1)_t=\sum_{m<t}\Delta k_m$, we get $\mathbf1^\top CL\mathbf1=\sum_m\Delta k_m\frac{(T-m)(T-m-1)}2$. Multiplying by $\tfrac{\Sigma_0}4\cdot\frac{4}{\lambda^2(T+1)^2}\cdot\lambda^2$ gives $\omega_m$.
 
 \emph{Part (iv).} This is part (ii) with $\varepsilon=\varepsilon_n$. The rate for $\varepsilon_n$ is an assumption on the dealer's estimator, for example least squares of order flow on lagged price changes in a stationary market. It is not proved here.
 
@@ -2352,11 +2366,11 @@ k_m^G-k_m^R=W\sum_{j\ge3}\binom mj c^{m-j}d^j(\mu_j^G-\mu_j^R).
 \]
 The terms with $j\le2$ vanish because both rules are exact for those degrees. Since $\binom mj\le\binom m3\binom{m-3}{j-3}$, the sum is at most $2W\binom m3|d|^3\rho^{m-3}$. Finally, $\sum_{m\ge3}\binom m3\rho^{m-3}=(1-\rho)^{-4}$.
 
-\emph{Part (ii).} With residual matrices $D_G,D_R$ built from $k^G-\hat k$ and $k^R-\hat k$,
+\emph{Part (ii).} With residual matrices $L_G,L_R$ built from $k^G-\hat k$ and $k^R-\hat k$,
 \[
-p^G-p^R=\lambda C\bigl[(I-\lambda D_G)^{-1}-(I-\lambda D_R)^{-1}\bigr](x+z)=\lambda^2C(I-\lambda D_G)^{-1}(D_G-D_R)(I-\lambda D_R)^{-1}(x+z).
+p^G-p^R=\lambda C\bigl[(I-\lambda L_G)^{-1}-(I-\lambda L_R)^{-1}\bigr](x+z)=\lambda^2C(I-\lambda L_G)^{-1}(L_G-L_R)(I-\lambda L_R)^{-1}(x+z).
 \]
-Bound each factor as in the proof of Theorem~\ref{thm:rents}. The value comparison follows from the same perturbation argument, with base point $D_R$ instead of $0$.
+Bound each factor as in the proof of Theorem~\ref{thm:rents}. The value comparison follows from the same perturbation argument, with base point $L_R$ instead of $0$.
 
 \emph{Part (iii).} Removing one of the two Gauss cohorts leaves weight $W/2$. Removing the Radau cohort with weight $3/4$ leaves $W/4$. At $m=0$ the kernel is the remaining weight.
 
@@ -2428,6 +2442,17 @@ The scaled flows inherit the cohort recursion, because the scaling is constant (
 \item \emph{The limit as $w\to\infty$.} We have $\kappa_w=O(1/w)$ uniformly on $[m,1]$. So $w\Psi_w(D)\to(1-D)(D-r)(D-\bar a)/(\sigma_F^2D)$ uniformly, and the maxima converge.
 \end{itemize}
 
+\emph{Part (iv).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{$\kappa$ is determined by $D$.} Let $D>\max_ir_i$. All weights are positive, so $G(D)>0$. Then $D=1-\kappa G(D)$ with $\kappa>0$ gives $D<1$ and $\kappa=(1-D)/G(D)$. The dealer equation then reads as in part (i), and $D>\bar a$ as there.
+\item \emph{Comparison with $G(1)$.} For $D\in(\max_ir_i,1)$, each $D-r_i<1-r_i$, so $G(D)>G(1)$.
+\item \emph{The bound.} The dealer equation gives $A\sigma_F^2D<\kappa(D-\bar a)<(1-D)(D-\bar a)/G(1)$. Moreover
+\[
+ (1-D)(D-\bar a)=D(1-\sqrt{\bar a})^2-(D-\sqrt{\bar a})^2\le D(1-\sqrt{\bar a})^2.
+\]
+Machine-checked as \nolinkurl{p1_fragility_K_bound}. The bound $A^*_0$ follows as in part (iii).
+\end{itemize}
+
 \paragraph{Numerical checks of Theorems~\ref{thm:eqreduced} and~\ref{thm:fragility}.} The script \nolinkurl{equilibrium/e4_reduced_form.py} runs three checks.
 \begin{itemize}[itemsep=1pt,topsep=2pt]
 \item \emph{Reduced form.} For four solved equilibria, the equilibrium price path and the reduced-form path with $(a^*,\kappa^*,\tilde w)$ agree to $4.4\times10^{-16}$ over $5{,}000$ simulated periods. The four are: one cohort with positive feedback, one with negative feedback, two cohorts, and the Gauss pair. Their impulse responses agree to $10^{-16}$. For one cohort of weight $0.02$ at $r=0.7$, for example, $a^*=0.629$, $\kappa^*=0.621$ and $\tilde w=0.0279$.
@@ -2442,7 +2467,12 @@ The scaled flows inherit the cohort recursion, because the scaling is constant (
  \item $w\,A^*=0.006875$ at $w=1$ and $0.0068764$ at $w=10$, against $\Phi^*=0.0068764$.
  \end{itemize}
 \end{itemize}
-The results file is \nolinkurl{equilibrium/e4_reduced_form_results.json}.
+\emph{Several cohorts.} \nolinkurl{equilibrium/e4_fragility_K.py} scans $D$ for three populations at weights $0.005$ to $1$ per cohort. The populations are two cohorts at rates $0.5$ and $0.85$, three at $0.3$, $0.6$ and $0.8$, and the Gauss pair.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item The exact threshold $A^*$ lies below the part (iv) bound in all 15 cases, at 28\% to 86\% of it. For example, for two cohorts with $G(1)=1.73$, $A^*=0.0084$ against a bound of $0.0293$.
+\item Every equilibrium on the threshold curve is stable. At the threshold the spectral radius is between $0.79$ and $0.93$; it approaches $1$ only at the end of the curve where $D\to\max_ir_i$ and $A\to0$.
+\end{itemize}
+The result files are \nolinkurl{equilibrium/e4_reduced_form_results.json} and \nolinkurl{equilibrium/e4_fragility_K_results.json}.
 
 \paragraph{Numerical solution of Theorem~\ref{thm:inventory}.} The script \nolinkurl{equilibrium/e4_inventory.py} solves the system \eqref{eq:inventory_eq} at $A=0.2$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$ and $\bar a=0.6$.
 

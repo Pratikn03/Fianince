@@ -92,8 +92,8 @@ from public market data (real data), and audits.
 | Theorem 4.2, the equilibrium is the paper's closed loop; realization of the lower-bound pair | `CurrentProofs/Paper1EquilibriumReducedForm.lean`, `ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py` | Lean 4 proof of the pathwise identity and the realization; rate transfer on paper; numerical check |
 | Theorem 4.3, fragility threshold for one cohort | `CurrentProofs/Paper1EquilibriumReducedForm.lean`, `ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py` | Lean 4 necessary conditions; characterization and limits on paper; numerical check |
 | Theorem 4.4, equilibrium invariance under the merged measure (machine-checked pathwise) | `CurrentProofs/Paper1EquilibriumInvariance.lean`, `ceiling_suite/papers/paper1/equilibrium/e1_demo.py` | Lean 4 proof; numerical illustration |
-| Theorem 4.5, rents from a misjudged aggregate response | `ceiling_suite/papers/paper1/equilibrium/e2_rents.py` | Proof on paper; numerical check |
-| Theorem 4.6, targeted intervention in equilibrium | `ceiling_suite/papers/paper1/equilibrium/e3_halt.py` | Proof on paper; numerical check |
+| Theorem S28.1, rents from a misjudged aggregate response | `ceiling_suite/papers/paper1/equilibrium/e2_rents.py` | Proof on paper; numerical check |
+| Theorem S28.2, targeted intervention in equilibrium | `ceiling_suite/papers/paper1/equilibrium/e3_halt.py` | Proof on paper; numerical check |
 | Theorem 6.4(ii) for every K: the spectrum determines σ²κ², H/h₀ and, with κ known, the merged measure (machine-checked) | `CurrentProofs/Paper1SpectralID.lean`, `Paper1SpectralH.lean` | Lean 4 proof |
 | Proposition S3.2, passive distinction with zero controlled quantity (machine-checked) | `CurrentProofs/Paper1PassiveVariance.lean` | Lean 4 proof |
 | Lemma S24.4, converse: pulse test errors and margin solvency (machine-checked) | `CurrentProofs/Paper1CapitalConverse.lean` | Lean 4 proof |
