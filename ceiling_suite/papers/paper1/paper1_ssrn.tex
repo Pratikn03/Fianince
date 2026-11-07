@@ -45,7 +45,7 @@
 \begingroup\onehalfspacing
 
 \begin{abstract}
-\noindent Prices in a market with feedback trading reveal the combined response of all trader groups, not the groups themselves. We characterize what public prices identify and what learning the rest costs. In a linear closed-loop market where each group tracks prices with exponential memory, prices identify only a merged response measure: groups with equal memories are inseparable however much data is collected, and separating $K$ groups whose memories are $\Delta\eta$ apart takes of order $(\Delta\eta)^{-(4K-2)}$ experiments. That rate is the known mixture rate; we show that it survives the feedback loop, where the memories enter as zeros of the observed transfer function. The contributions are what the market setting adds. Passive observation of a running market is no cheaper than active probing, because the closed loop is minimum phase. For an observer who trades to learn, the sample requirements become executed quantity of order $\delta^{-2}$ and capital of order $\delta^{-4}$. Class-tagged flow removes the spacing penalty, and a supervisory example shows attribution changing the right action when prices are nearly identical. Several identification and Fisher-information results are machine-checked in Lean~4. Pre-registered tests on CFTC and Binance trader-class reports are mixed: 11 of 23 recorded outcomes pass; class reports constrain persistence far more tightly than prices but do not identify learning memory.
+\noindent Prices in a market with feedback trading reveal the combined response of all trader groups, not the groups themselves. We characterize what public prices identify and what learning the rest costs. In a linear closed-loop market where each group tracks prices with exponential memory, prices identify only a merged response measure: groups with equal memories are inseparable however much data is collected, and separating $K$ groups whose memories are $\Delta\eta$ apart takes of order $(\Delta\eta)^{-(4K-2)}$ experiments. That rate is the known mixture rate; we show that it survives the feedback loop, where the memories enter as zeros of the observed transfer function. The contributions are what the market setting adds. Passive observation of a running market is no cheaper than active probing, because the closed loop is minimum phase. For an observer who trades to learn, the sample requirements become executed quantity of order $\delta^{-2}$ and capital of order $\delta^{-4}$. With a strategic insider and any causal dealer rule, economies with the same merged measure are outcome-equivalent, so what prices cannot identify is worth nothing to price-based traders. Class-tagged flow removes the spacing penalty, and a supervisory example shows attribution changing the right action when prices are nearly identical. Several identification and Fisher-information results are machine-checked in Lean~4. Pre-registered tests on CFTC and Binance trader-class reports are mixed: 11 of 23 recorded outcomes pass; class reports constrain persistence far more tightly than prices but do not identify learning memory.
 \end{abstract}
 
 \noindent\textbf{AI-use disclosure.} Claude, ChatGPT/Codex and Gemini provided material assistance with research development, code, numerical checks, manuscript drafting and internal critique. ChatGPT/Codex additionally developed and checked Lean proofs in this revision. Human authors remain responsible for verifying the content and its scholarly contribution before submission; AI checks do not constitute independent review.
@@ -105,6 +105,7 @@ Result & Status & What the market setting adds, and the closest prior work\\
 Prices identify only a merged response measure; equal-memory groups are inseparable (Theorem~\ref{thm:merged}) & Model-specific & The equivalence class of economies with the same public response, made exact for a closed loop; closed-loop identification \citep{ljung1999,forssell1999}\\
 Separating $K$ groups takes $(\Delta\eta)^{-(4K-2)}$ experiments; Prony's method attains it (Theorems~\ref{thm:kcohort}, \ref{prop:esprit}) & Known rate & Memories are zeros, not poles, of the observed transfer function, so they must first be extracted from the loop \citep{heinrich2018,wu2020,katz2023}\\
 General memory: accuracy grows only with $\log N$ (Theorem~\ref{thm:general}) & Known type & Logarithmic rates for exponential mixtures \citep{rebafka2015}; here for closed-loop price data\\
+\textbf{With a strategic insider and any causal dealer rule, economies with the same merged measure are outcome-equivalent; group-level quantities are not} (Theorem~\ref{thm:eqinv}) & \textbf{New} & Links the identification boundary to equilibrium: what prices cannot identify is worth nothing to price-based traders and matters only for targeted actions. Kyle insiders with feedback traders whose rule the dealer knows: \citet{noh2026}\\
 \textbf{Passive observation needs at least as many observations as active probing} (Theorem~\ref{prop:passive}) & \textbf{New} & Requires the closed loop to be minimum phase (Theorem~\ref{thm:minphase}); it rules out waiting as a cheap substitute for experiments\\
 \textbf{Executed quantity $\propto\delta^{-2}$ and capital $\propto\delta^{-4}$ to separate a known pair} (Theorem~\ref{thm:cap}) & \textbf{New} & Converts statistical difficulty into the trading and capital of an observer that trades to learn; the $\delta^{-4}$ resolution law itself is classical \citep{shahram2005}\\
 \textbf{Class-tagged flow removes the spacing penalty; the saving is $(\Delta\eta)^{-(4K-4)}$} (Proposition~\ref{prop:tagged}, Theorem~\ref{thm:discvalue}) & \textbf{New size} & That labelled data are more informative is classical \citep{castelli1996}; new are the exact size of the saving and a tagged IV estimator valid inside the loop\\
@@ -253,7 +254,27 @@ Thus a covariance discrepancy of order $(\Delta\eta)^{2K-1}$ preserves that orde
 \end{enumerate}
 \end{proposition}
 
-\paragraph{Limits of the pricing extension.} Anonymous flow alone implies neither a covariance-only dealer objective nor uniqueness or continuity of its equilibrium. Multiple equilibria, threshold quote changes, private information and inventory-dependent rules are outside this proposition. Preserving a price-record testing bound additionally requires a uniformly Lipschitz observation law with the same nondegenerate noise; adding anonymous flow is a different statistical experiment and requires its own divergence bound. We therefore make no unconditional claim that endogenous pricing or additional aggregate-flow observations preserve the price-only lower bound.
+\paragraph{Limits of the pricing extension.} Anonymous flow alone implies neither a covariance-only dealer objective nor uniqueness or continuity of its equilibrium. Multiple equilibria, threshold quote changes, private information and inventory-dependent rules are outside this proposition; for the question of invariance, Theorem~\ref{thm:eqinv} below covers them. Preserving a price-record testing bound additionally requires a uniformly Lipschitz observation law with the same nondegenerate noise; adding anonymous flow is a different statistical experiment and requires its own divergence bound. We therefore make no unconditional claim that endogenous pricing or additional aggregate-flow observations preserve the price-only lower bound.
+
+\begin{theorem}[Equilibrium invariance]\label{thm:eqinv}
+Consider a market with the following participants and rules.
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item A value $v$ and noise trades $z_t$.
+\item An insider who submits $x_t=X_t(v,\mathcal H_{t-1})$.
+\item A dealer who sets $p_t=P_t(\mathcal H_{t-1},y_t)$ from the public history $\mathcal H_{t-1}$ and the total order flow $y_t=x_t+z_t+f_t$.
+\item Feedback cohorts whose memory states update on a public price statistic $s_t=S_t(p_0,\ldots,p_t)$ by $m_{i,t+1}=r_im_{i,t}+s_t$ from $m_{i,0}=0$, with $r_i=1-\eta_i$ and aggregate flow $f_t=\sum_iw_im_{i,t}$, $w_i=q_i\eta_i$.
+\end{itemize}
+The rules $X$, $P$ and $S$ are arbitrary causal maps. This covers Kyle, inventory-averse, learning and misspecified dealers, and any insider strategy.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item $f_t=\sum_{m<t}k_m\,s_{t-1-m}$, with $k_m=\sum_iw_ir_i^m$, the moments of the merged measure $M$.
+\item Two cohort configurations produce the same aggregate flow for every price path on dates $t\le T$ if and only if $k_m=k'_m$ for all $m<T$. On an unbounded horizon this holds if and only if their merged measures coincide.
+\item If $k_m=k'_m$ for $m<T$, then for every strategy profile and every realization of $(v,z)$ the following coincide on $t\le T$: the price and order-flow paths, the insider's trades and realized profit, and the dealer's inventory. The two games therefore have the same strategy sets and the same payoff for every profile. They have the same equilibria, with the same outcomes, under any equilibrium concept defined from these payoffs and the public history.
+\item Group-level quantities are not invariant. A Gauss and a Radau two-point configuration agree on $k_0,k_1,k_2$, so they are outcome-equivalent for $T=3$, while their largest cohorts carry weights $\tfrac12$ and $\tfrac34$.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{In words.} Whatever the insider and the dealer do, two markets whose trader groups have the same merged response produce the same prices, the same order flow and the same insider and dealer outcomes. So the part of the population that prices cannot identify (Theorem~\ref{thm:merged}) is worth nothing to anyone who trades on public information. It matters only for actions aimed at a particular group, such as halting it (Proposition~\ref{prop:target}). Parts (i)--(iv) are machine-checked pathwise for every causal insider, dealer and signal rule (\nolinkurl{Paper1EquilibriumInvariance.lean}). Supplement~\ref{app:eqinv} gives the proof, the unbounded-horizon statement, the extension to cohort-specific demand shocks and a numerical illustration.
+
 
 \section{Probing resources, memory resolution and money}\label{sec:resources}
 
@@ -627,6 +648,8 @@ Two open questions remain. The first is economic: Proposition~\ref{prop:target} 
 \bibitem[Moitra(2015)]{moitra2015} Moitra, A. (2015). Super-resolution, extremal functions and the condition number of Vandermonde matrices. In \emph{Proceedings of the 47th Annual ACM Symposium on Theory of Computing (STOC)}, 821--830.
 \bibitem[Moskowitz et~al.(2012)]{moskowitz2012} Moskowitz, T. J., Y. H. Ooi, and L. H. Pedersen (2012). Time series momentum. \emph{Journal of Financial Economics} 104, 228--250.
 \bibitem[Niroula et~al.(2026)]{niroula2026b} Niroula, P., S. Alkhushayni, Y. Chen, M. Bhavsar, and P. Niroula (2026). From human markets to machine markets: Transient amplification, an exact depth condition, and a maximal pre-trade guard. Working paper, Minnesota State University, Mankato.
+\bibitem[Noh(2026)]{noh2026} Noh, E. (2026). A continuous-time Kyle model with price-responsive traders. Working paper, arXiv:2601.09872.
+
 \bibitem[Obizhaeva and Wang(2013)]{obizhaeva2013} Obizhaeva, A. A., and J. Wang (2013). Optimal trading strategy and supply/demand dynamics. \emph{Journal of Financial Markets} 16, 1--32.
 \bibitem[Pagano and R\"oell(1996)]{pagano1996} Pagano, M., and A. R\"oell (1996). Transparency and liquidity: A comparison of auction and dealer markets with informed trading. \emph{Journal of Finance} 51, 579--611.
 \bibitem[Park and Van Roy(2015)]{parkvanroy2015} Park, B., and B. Van Roy (2015). Adaptive execution: Exploration and learning of price impact. \emph{Operations Research}, doi:10.1287/opre.2015.1415.
@@ -2102,6 +2125,50 @@ Let $K\ge2$ and $\Delta\eta_t<\Delta\eta_p$, and let $G(\Delta\eta)=\min\{\bar T
 \end{proposition}
 
 Part (i) restates the comparison of losses. Part (ii) says that disclosure is valuable in a middle band, where algorithms are close enough that prices cannot attribute them within the cycle but far enough apart that tagged records can; the polynomial gap between the two delays, $(\Delta\eta)^{-(4K-2)}$ against $(\Delta\eta)^{-2}$, is what makes the band wide. Part (iii) is an economies-of-scale result: an audit trail with a fixed operating cost pays only when it spans enough markets. This illustrates a possible economy of scale for market-wide reporting; the cost function is stylised, not estimated from CAT, and the result neither explains CAT's legal architecture nor shows that it is optimal. A supervisor that can trade has a second option, active probing, whose cost is the frontier of Table~\ref{tab:cat_dollars}; because that cost grows at the same polynomial order, it shortens price-only attribution only for well-separated algorithms and leaves the comparison for close ones unchanged. The model takes the harm $\ell$ as given and holds the algorithms' behaviour fixed across regimes; Section~\ref{sec:conclusion} returns to both.
+
+\section{Equilibrium invariance: proof and illustration}\label{app:eqinv}
+
+\begin{proof}[Proof of Theorem~\ref{thm:eqinv}]
+\emph{Part (i).} By induction, $m_{i,t}=\sum_{m<t}r_i^m s_{t-1-m}$. Multiplying by $w_i$ and summing over $i$ gives $f_t=\sum_{m<t}k_ms_{t-1-m}$.
+
+\emph{Part (ii).} If $k_m=k'_m$ for $m<T$, then by (i) the two aggregate flows agree on $t\le T$ for every signal. Conversely, the impulse signal $s_j=\mathbf 1\{j=0\}$ gives $f_{m+1}=k_m$, so equal flows on $t\le T$ force $k_m=k'_m$ for $m<T$.
+
+On an unbounded horizon, equality of all $k_m=\int r^m\,dM(r)$ is equality of all moments of two finite signed measures on $[0,1]$. Polynomials are dense in $C[0,1]$, so the measures coincide. In terms of $\eta$ this is the condition \eqref{eq:merged} of Theorem~\ref{thm:merged}.
+
+\emph{Part (iii).} Fix a strategy profile and a realization. We argue by strong induction on $t\le T$. If prices and flows agree before $t$:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item the signals agree before $t$, because $S_j$ depends on prices up to $j$;
+\item the aggregate flows at $t$ agree, by part (i) and the equal kernels, since $f_t$ uses signals before $t$ only;
+\item the insider's orders at $t$ agree, by causality;
+\item hence the total flows $y_t$ agree, and then the prices $p_t$ agree, by causality of the dealer's rule.
+\end{itemize}
+The insider's profit $\sum_{t<T}(v-p_t)x_t$ and the dealer's inventory $-\sum_{t<T}y_t$ are functions of these paths.
+
+Strategy sets are the same in the two games, because the rules are defined on the same histories. Every payoff is an expectation of the same function of $(v,z)$, so best responses coincide and so do the equilibria.
+
+\emph{Part (iv).} The Gauss rule has weights $\tfrac12,\tfrac12$ and nodes $\pm\sigma$ with $\sigma^2=\tfrac13$. The Radau rule has weights $\tfrac14,\tfrac34$ and nodes $-1,\tfrac13$. Both integrate $1,s,s^2$ exactly, so on rates $c+ds$ the kernels agree for $m\le2$. The largest weights are $\tfrac12$ and $\tfrac34$.
+\end{proof}
+
+\paragraph{Machine check.} \nolinkurl{Paper1EquilibriumInvariance.lean} proves the following:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item part (i): \texttt{p1\_eqAggFlow\_kernel};
+\item both directions of part (ii) on a finite horizon: \texttt{p1\_eqAggFlow\_of\_kernel} and \texttt{p1\_kernel\_of\_eqAggFlow};
+\item the pathwise statement of part (iii) for arbitrary causal insider, dealer and signal rules: \texttt{p1\_eq\_market\_invariance} and \texttt{p1\_eq\_insider\_profit\_invariance};
+\item part (iv): \texttt{p1\_eq\_group\_level\_differs}.
+\end{itemize}
+The unbounded-horizon moment statement and the passage from pathwise equality to equal equilibria are on paper.
+
+\paragraph{Cohort-specific demand shocks.} Suppose cohort $i$ also trades an idiosyncratic shock $\epsilon_{i,t}$ through its memory, so that $f_t$ gains the term $\sum_iw_i\sum_{m<t}r_i^m\epsilon_{i,t-1-m}$. The same induction shows that the equilibrium depends on the cohorts only through the kernel and the law of this aggregate shock process. For independent Gaussian shocks with variances $\sigma_i^2$, that law is determined by the spectral density $\sum_iw_i^2\sigma_i^2|1-r_ie^{i\omega}|^{-2}$. This is a second merged object, and the invariance class shrinks accordingly. The paper's cohorts have no idiosyncratic shocks.
+
+\paragraph{The textbook benchmark.} Take a risk-neutral, competitive dealer that knows the kernel. It can compute $f_t$ from public prices and price only $y_t-f_t$, so predictable feedback flow then has no price impact, and the closed loop of Section~\ref{sec:model} is absent in that equilibrium. The theorem holds in that benchmark as well. Feedback reaches prices in equilibrium when the dealer bears inventory risk, or when it does not know the kernel and must learn it. These are the cases studied in the equilibrium extension.
+
+\paragraph{Numerical illustration.} \nolinkurl{equilibrium/e1_demo.py} runs one market. The insider submits $x_t=0.3(v-p_{t-1})$. The dealer sets $p_t=p_{t-1}+0.3\,y_t-0.05\,(I_t-I_{t-1})$. The signal is $s_t=p_t-p_{t-1}$. Two cohort configurations are compared, the Gauss and Radau pairs of part (iv) on rates $0.6+0.2s$, with total weight $0.5$, under the same $(v,z)$ draws. Over 200 draws:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item price paths coincide to machine precision on the first four dates ($t\le3$), with largest gap $2\times10^{-16}$;
+\item from date five, where $k_3$ first differs (by $\tfrac29d^3$ times the total weight), they separate, with largest gap $1.8\times10^{-4}$ at date five and $1.9\times10^{-2}$ by date twenty;
+\item the largest group's share of feedback positions stays at medians of $0.59$ and $0.79$.
+\end{itemize}
+The result file is \nolinkurl{equilibrium/e1_demo_results.json}.
 
 \section{The supervisory decision in detail}\label{app:decisionfull}
 This section completes Section~\ref{sec:decision}. It was moved from the main text to keep that text to journal length; nothing was removed.

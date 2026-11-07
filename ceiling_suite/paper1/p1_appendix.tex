@@ -59,6 +59,8 @@
 \bibitem[Moitra(2015)]{moitra2015} Moitra, A. (2015). Super-resolution, extremal functions and the condition number of Vandermonde matrices. In \emph{Proceedings of the 47th Annual ACM Symposium on Theory of Computing (STOC)}, 821--830.
 \bibitem[Moskowitz et~al.(2012)]{moskowitz2012} Moskowitz, T. J., Y. H. Ooi, and L. H. Pedersen (2012). Time series momentum. \emph{Journal of Financial Economics} 104, 228--250.
 \bibitem[Niroula et~al.(2026)]{niroula2026b} Niroula, P., S. Alkhushayni, Y. Chen, M. Bhavsar, and P. Niroula (2026). From human markets to machine markets: Transient amplification, an exact depth condition, and a maximal pre-trade guard. Working paper, Minnesota State University, Mankato.
+\bibitem[Noh(2026)]{noh2026} Noh, E. (2026). A continuous-time Kyle model with price-responsive traders. Working paper, arXiv:2601.09872.
+
 \bibitem[Obizhaeva and Wang(2013)]{obizhaeva2013} Obizhaeva, A. A., and J. Wang (2013). Optimal trading strategy and supply/demand dynamics. \emph{Journal of Financial Markets} 16, 1--32.
 \bibitem[Pagano and R\"oell(1996)]{pagano1996} Pagano, M., and A. R\"oell (1996). Transparency and liquidity: A comparison of auction and dealer markets with informed trading. \emph{Journal of Finance} 51, 579--611.
 \bibitem[Park and Van Roy(2015)]{parkvanroy2015} Park, B., and B. Van Roy (2015). Adaptive execution: Exploration and learning of price impact. \emph{Operations Research}, doi:10.1287/opre.2015.1415.
@@ -360,6 +362,50 @@ Fitted slope in $\Delta\eta$ & $-5.87$ & $-6.26$ & $-6.22$\\
 \begin{tablenotes}\footnotesize\item Numerical check, not pre-specified. $K=2$ Gauss-node economy of Table~\ref{tab:injection}; i.i.d.\ $\pm1$ probe; least squares on 200 probe lags; Prony estimator and success rule as in Table~\ref{tab:kupper}.\end{tablenotes}
 \end{threeparttable}
 \end{table}
+
+\section{Equilibrium invariance: proof and illustration}\label{app:eqinv}
+
+\begin{proof}[Proof of Theorem~\ref{thm:eqinv}]
+\emph{Part (i).} By induction, $m_{i,t}=\sum_{m<t}r_i^m s_{t-1-m}$. Multiplying by $w_i$ and summing over $i$ gives $f_t=\sum_{m<t}k_ms_{t-1-m}$.
+
+\emph{Part (ii).} If $k_m=k'_m$ for $m<T$, then by (i) the two aggregate flows agree on $t\le T$ for every signal. Conversely, the impulse signal $s_j=\mathbf 1\{j=0\}$ gives $f_{m+1}=k_m$, so equal flows on $t\le T$ force $k_m=k'_m$ for $m<T$.
+
+On an unbounded horizon, equality of all $k_m=\int r^m\,dM(r)$ is equality of all moments of two finite signed measures on $[0,1]$. Polynomials are dense in $C[0,1]$, so the measures coincide. In terms of $\eta$ this is the condition \eqref{eq:merged} of Theorem~\ref{thm:merged}.
+
+\emph{Part (iii).} Fix a strategy profile and a realization. We argue by strong induction on $t\le T$. If prices and flows agree before $t$:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item the signals agree before $t$, because $S_j$ depends on prices up to $j$;
+\item the aggregate flows at $t$ agree, by part (i) and the equal kernels, since $f_t$ uses signals before $t$ only;
+\item the insider's orders at $t$ agree, by causality;
+\item hence the total flows $y_t$ agree, and then the prices $p_t$ agree, by causality of the dealer's rule.
+\end{itemize}
+The insider's profit $\sum_{t<T}(v-p_t)x_t$ and the dealer's inventory $-\sum_{t<T}y_t$ are functions of these paths.
+
+Strategy sets are the same in the two games, because the rules are defined on the same histories. Every payoff is an expectation of the same function of $(v,z)$, so best responses coincide and so do the equilibria.
+
+\emph{Part (iv).} The Gauss rule has weights $\tfrac12,\tfrac12$ and nodes $\pm\sigma$ with $\sigma^2=\tfrac13$. The Radau rule has weights $\tfrac14,\tfrac34$ and nodes $-1,\tfrac13$. Both integrate $1,s,s^2$ exactly, so on rates $c+ds$ the kernels agree for $m\le2$. The largest weights are $\tfrac12$ and $\tfrac34$.
+\end{proof}
+
+\paragraph{Machine check.} \nolinkurl{Paper1EquilibriumInvariance.lean} proves the following:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item part (i): \texttt{p1\_eqAggFlow\_kernel};
+\item both directions of part (ii) on a finite horizon: \texttt{p1\_eqAggFlow\_of\_kernel} and \texttt{p1\_kernel\_of\_eqAggFlow};
+\item the pathwise statement of part (iii) for arbitrary causal insider, dealer and signal rules: \texttt{p1\_eq\_market\_invariance} and \texttt{p1\_eq\_insider\_profit\_invariance};
+\item part (iv): \texttt{p1\_eq\_group\_level\_differs}.
+\end{itemize}
+The unbounded-horizon moment statement and the passage from pathwise equality to equal equilibria are on paper.
+
+\paragraph{Cohort-specific demand shocks.} Suppose cohort $i$ also trades an idiosyncratic shock $\epsilon_{i,t}$ through its memory, so that $f_t$ gains the term $\sum_iw_i\sum_{m<t}r_i^m\epsilon_{i,t-1-m}$. The same induction shows that the equilibrium depends on the cohorts only through the kernel and the law of this aggregate shock process. For independent Gaussian shocks with variances $\sigma_i^2$, that law is determined by the spectral density $\sum_iw_i^2\sigma_i^2|1-r_ie^{i\omega}|^{-2}$. This is a second merged object, and the invariance class shrinks accordingly. The paper's cohorts have no idiosyncratic shocks.
+
+\paragraph{The textbook benchmark.} Take a risk-neutral, competitive dealer that knows the kernel. It can compute $f_t$ from public prices and price only $y_t-f_t$, so predictable feedback flow then has no price impact, and the closed loop of Section~\ref{sec:model} is absent in that equilibrium. The theorem holds in that benchmark as well. Feedback reaches prices in equilibrium when the dealer bears inventory risk, or when it does not know the kernel and must learn it. These are the cases studied in the equilibrium extension.
+
+\paragraph{Numerical illustration.} \nolinkurl{equilibrium/e1_demo.py} runs one market. The insider submits $x_t=0.3(v-p_{t-1})$. The dealer sets $p_t=p_{t-1}+0.3\,y_t-0.05\,(I_t-I_{t-1})$. The signal is $s_t=p_t-p_{t-1}$. Two cohort configurations are compared, the Gauss and Radau pairs of part (iv) on rates $0.6+0.2s$, with total weight $0.5$, under the same $(v,z)$ draws. Over 200 draws:
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item price paths coincide to machine precision on the first four dates ($t\le3$), with largest gap $2\times10^{-16}$;
+\item from date five, where $k_3$ first differs (by $\tfrac29d^3$ times the total weight), they separate, with largest gap $1.8\times10^{-4}$ at date five and $1.9\times10^{-2}$ by date twenty;
+\item the largest group's share of feedback positions stays at medians of $0.59$ and $0.79$.
+\end{itemize}
+The result file is \nolinkurl{equilibrium/e1_demo_results.json}.
 
 \section{Reproducibility: source of every number}\label{app:repro}
 
