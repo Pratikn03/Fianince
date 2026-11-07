@@ -101,6 +101,11 @@ days are excluded from every future confirmatory sample.
    - Found in validation: the pre-specified diagnostics of spec §7 are not implemented in the executor. The key
      one is the reverse-causality check, because the price basis can proxy for flow lags that M0 omits. It must be
      implemented, simulation-validated and frozen before the holdout is opened.
+   - Amendment A2 (`P1T_amendment_A2.md`, approved) implements them.
+     - In simulation, the reverse-causality check removes the long-memory proxy confound.
+     - It does **not** remove the noisy-report confound, in which prices reveal true flow better than the
+       reports do. That remaining channel requires misreported flow of about the size of the flow itself.
+     - Diagnostics on the validation period: `P1T_Diagnostics_A2_Colab.ipynb`, labelled exploratory.
    - The holdout is opened once, after validation is checked and any bug fixes are logged. This is the first
      direct test on tagged flow.
 2. **P1T replication on TPEx (P1R).** A separate registered specification with the same frozen procedure on the
