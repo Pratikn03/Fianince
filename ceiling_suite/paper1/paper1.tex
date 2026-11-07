@@ -371,7 +371,7 @@ As an illustration of the lemma (not part of its proof), $(-1)^n\Delta^nh_j\ge0$
 
 \paragraph{Exponential memory.} Lemma~\ref{lem:micro} justifies exponential memory for filtering and regularized learning. Neural and reinforcement-learning policies are not exponential filters. Rules whose orders are smooth functions of an exponential-memory state are exponential filters to first order, so the results hold for small probes; Section~\ref{sec:learners} checks this in stylized simulations and finds where it fails, and how closely production algorithms follow such rules remains an empirical question we do not settle. Mixtures of exponentials can approximate any completely monotone kernel, so a power-law memory corresponds to a continuum of cohorts, for which Theorem~\ref{thm:general} shows that accuracy improves only logarithmically in the data.
 
-\paragraph{Algorithms that react to being probed.} The probing results assume that the cohorts keep their memories while they are probed. An algorithm that detects a probe could pause, shorten its memory or trade against the probe. Four observations limit what this does to our conclusions. First, a reaction that all cohorts share does not help separate them, and an algorithm that mimics another group's memory rate only brings the hypotheses closer, so neither lowers the costs we derive. A reaction that differs across cohorts is a new signature, but one the observer must specify and estimate, so it shifts the identification problem rather than solving it. Second, the passive route needs no probe: Theorem~\ref{prop:passive} shows that natural price variation faces a lower bound of the same polynomial order, so an observer who avoids detection by not trading does not escape the barrier; it pays in time instead of money. We do not show that passive data attain that order. Third, detection is itself a testing problem against the same noise: the generalized-eigenvector probe of Section~\ref{sec:account} trades at most 1.25 par units in any period, and a probe sized within normal flow variation is hard to tell from noise, so the threat bites mainly for large single pulses, which our ledger shows are not optimal anyway. Fourth, what we cannot rule out is an algorithm designed to defeat surveillance, which turns identification into a game between observer and observed; our results are the benchmark against which such a game would be measured, and we leave it to future work.
+\paragraph{Algorithms that react to being probed.} The probing results assume that the cohorts keep their memories while they are probed. An algorithm that detects a probe could pause, shorten its memory or trade against the probe. Four observations limit what this does to our conclusions. First, a reaction that all cohorts share does not help separate them, and an algorithm that mimics another group's memory rate only brings the hypotheses closer, so neither lowers the costs we derive. A reaction that differs across cohorts is a new signature, but one the observer must specify and estimate, so it shifts the identification problem rather than solving it. Second, the passive route needs no probe: Theorem~\ref{prop:passive} shows that natural price variation faces a lower bound of the same polynomial order, so an observer who avoids detection by not trading does not escape the barrier; it pays in time instead of money. We do not show that passive data attain that order. Third, detection is itself a testing problem against the same noise: the generalized-eigenvector probe of Section~\ref{sec:account} trades at most 1.24 par units in any period, and a probe sized within normal flow variation is hard to tell from noise, so the threat bites mainly for large single pulses, which our ledger shows are not optimal anyway. Fourth, what we cannot rule out is an algorithm designed to defeat surveillance, which turns identification into a game between observer and observed; our results are the benchmark against which such a game would be measured, and we leave it to future work.
 
 \paragraph{Known primitives.} The resource theorems take $\kappa$, $a$ and the noise law as known. Unknown primitives can only make separation harder, so the lower bounds remain valid. Assuming known primitives simplifies the baseline statements and strengthens the lower bounds; Corollary~\ref{cor:unknown_primitives} shows that estimating them leaves the order of the upper bound unchanged when memory rates are bounded away from zero: the pre-probe price removes $p^*$, the impact tap gives $\kappa$, and $a$ is recovered from one further tap because it acts as an extra group with memory rate zero. In an equilibrium in which dealers set the impact $\kappa$ from the order flow they see, as in \citet{kyle1985}, a prober's unexpected trades would also move $\kappa$; we do not model this, and expect it to raise the cost of probing rather than lower it.
 
@@ -439,7 +439,7 @@ The identification results take the price impact $\kappa$ and the persistence $a
 \item the equilibrium price is the paper's closed loop with effective parameters, so the identification boundary and the rates hold in equilibrium, and positive feedback creates an explicit fragility threshold;
 \item a strategic insider cannot change it;
 \item misjudging the aggregate response creates rents of first order;
-\item targeted actions still need group-level information.
+\item targeted actions still need group-level information, and class-tagged disclosure keeps its value in equilibrium.
 \end{itemize}
 
 \paragraph{An inventory equilibrium.}
@@ -517,6 +517,16 @@ So the price follows the closed loop \eqref{eq:price}--\eqref{eq:cohort} with pe
 \item One assumption is new: the observer's probe is part of the exogenous flow that dealers price as noise. Dealers who recognized a probe would price it differently.
 \end{itemize}
 
+\begin{corollary}[Disclosure in equilibrium]\label{cor:eqdisclosure}
+Take a positive-impact equilibrium of Theorem~\ref{thm:inventory} with positive weights and $D>\max_ir_i$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The cohorts' flows obey $u_{i,t+1}=r_iu_{i,t}+w_ix_t$ with their \emph{true} weights. The price is the stable closed loop of Theorem~\ref{thm:eqreduced}, driven by $\xi$, with positive effective weights. So Proposition~\ref{prop:tagged} applies: tagged flow identifies each cohort's $(r_i,w_i)$, with a limiting covariance that has no singularity as rates collide.
+\item On classes in which both the true and the effective weights lie in compact positive intervals, Theorem~\ref{thm:discvalue} holds in equilibrium. Tagging cuts the experiments needed by a factor of order $(\Delta\eta)^{-(4K-2)}$ for weights and $(\Delta\eta)^{-(4K-4)}$ for rates.
+\end{enumerate}
+\end{corollary}
+
+\paragraph{In words.} What makes disclosure valuable survives the dealers' optimization. Prices still hide the groups at the same polynomial cost, and each group's own flow still reveals that group's memory and weight directly.
+
 \begin{theorem}[Fragility: where liquidity disappears]\label{thm:fragility}
 Let there be one feedback cohort with weight $w>0$ and memory rate $r\in(0,1)$, with $\bar a\in[0,1)$ and $\sigma_F,\sigma_\xi>0$. Call an equilibrium of Theorem~\ref{thm:inventory} with $\kappa>0$ and $D>0$ a positive-impact equilibrium. For $D\in(m,1)$ with $m=\max(\bar a,r)$, let
 \[
@@ -547,11 +557,12 @@ Let there be one feedback cohort with weight $w>0$ and memory rate $r\in(0,1)$, 
   A<\min\Bigl\{A^*_0,\ \frac{(1-\sqrt{\bar a})^2}{\sigma_F^2\,G(1)}\Bigr\},
  \]
  whatever the number of cohorts and their rates.
+ \item Every such equilibrium is stable.
  \end{itemize}
 \end{enumerate}
 \end{theorem}
 
-\paragraph{In words.} With positive feedback, dealers can make a market only if their dislike of risk is below a threshold, and the threshold falls as feedback grows: for strong feedback it is inversely proportional to the feedback intensity. Past the threshold, no price impact is consistent with dealers' optimization. Below it, every equilibrium has stable prices. Liquidity does not erode through growing instability; it disappears when the two equilibria merge, at a point that stable prices give no warning of. At the calibration of Supplement~\ref{app:eqinv} ($\bar a=0.6$, $r=0.7$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$), $A^*$ is 0.40 without feedback, 0.25 at $G(1)=\tfrac1{15}$ and 0.034 at $G(1)=\tfrac23$, and $w\,A^*$ approaches $\Phi^*=0.00688$. The necessary conditions behind parts (i) and (iii) are machine-checked (\nolinkurl{Paper1EquilibriumReducedForm.lean}). With several cohorts, part (iv) gives a threshold that depends on the population only through its total feedback intensity $G(1)$. At the same calibration, numerically, the exact thresholds for two and three cohorts lie between 28\% and 86\% of that bound, and the equilibria on the threshold curve are stable. Stability with several cohorts is checked numerically, not proved.
+\paragraph{In words.} With positive feedback, dealers can make a market only if their dislike of risk is below a threshold, and the threshold falls as feedback grows: for strong feedback it is inversely proportional to the feedback intensity. Past the threshold, no price impact is consistent with dealers' optimization. Below it, every equilibrium has stable prices. Liquidity does not erode through growing instability; it disappears when the two equilibria merge, at a point that stable prices give no warning of. At the calibration of Supplement~\ref{app:eqinv} ($\bar a=0.6$, $r=0.7$, $\sigma_F^2=1$, $\sigma_\xi^2=0.25$), $A^*$ is 0.40 without feedback, 0.25 at $G(1)=\tfrac1{15}$ and 0.034 at $G(1)=\tfrac23$, and $w\,A^*$ approaches $\Phi^*=0.00688$. The necessary conditions behind parts (i) and (iii) are machine-checked (\nolinkurl{Paper1EquilibriumReducedForm.lean}). With several cohorts, part (iv) gives a threshold that depends on the population only through its total feedback intensity $G(1)$. At the same calibration, numerically, the exact thresholds for two and three cohorts lie between 28\% and 86\% of that bound, and the equilibria on the threshold curve are stable. Every such equilibrium is stable (part (iv)), as the scan also shows.
 
 
 
@@ -811,7 +822,7 @@ Fee-refined probe ($L=240$) & 64.48 & 0.0500 & 0.00 & --- & 1.30 & 240\\
 \end{threeparttable}
 \end{table}
 
-Table~\ref{tab:ledger} gives three conclusions. First, twelve buys that are never unwound fail the 5\% target once the test uses the joint price path (divergence $4.95<5.41$) and end with 75 units of inventory. Second, if every unwind leg is itself informative, five or six round trips meet the target with zero terminal inventory. Third, pulses are not optimal: a generalized-eigenvector probe, which maximizes divergence per unit of fee-free round-trip cost, needs about 65 par units with maximum trade 1.25 and maximum displacement 2.23, well inside limits.
+Table~\ref{tab:ledger} gives three conclusions. First, twelve buys that are never unwound fail the 5\% target once the test uses the joint price path (divergence $4.95<5.41$) and end with 75 units of inventory. Second, if every unwind leg is itself informative, five or six round trips meet the target with zero terminal inventory. Third, pulses are not optimal: a generalized-eigenvector probe, which maximizes divergence per unit of fee-free round-trip cost, needs about 65 par units with maximum trade 1.24 and maximum displacement 2.23, well inside limits.
 
 For flat fee-paying policies $v\in\R^L$ with $\sum_tv_t=0$, the capital problem is
 \begin{equation}\label{eq:capprob}
@@ -1104,7 +1115,7 @@ The same requirement holds for the permutation-invariant loss $W_1(\hat M,M)$ be
 
 The two losses have different targets. The weights of the two economies differ by a constant that does not shrink with $\Delta\eta$, so the first statement is about weights at fixed accuracy, which Theorem~\ref{prop:esprit} matches; the Wasserstein statement is about the memory distribution at accuracy proportional to $\Delta\eta$, which Theorem~\ref{thm:uniformw1} matches.
 
-The construction uses the $K$-point Gauss and Gauss--Radau rules of the same weight function: both are positive, have $K$ atoms and integrate polynomials of degree $2K-2$ exactly. For $K=2$ it reproduces the order of Theorem~\ref{thm:twocohort}. Table~\ref{tab:radau} lists the two rules: their low moments agree to machine precision and their moment of order $2K-1$ differs by $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$. The shrinking gap explains why constants deteriorate with $K$ on top of the exponent.
+The construction uses the $K$-point Gauss and Gauss--Radau rules of the same weight function: both are positive, have $K$ atoms and integrate polynomials of degree $2K-2$ exactly. For $K=2$ it reproduces the order of Theorem~\ref{thm:twocohort}. Table~\ref{tab:radau} lists the two rules: their low moments agree to machine precision and their moment of order $2K-1$ differs by $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$. The shrinking gap explains why constants deteriorate with $K$ on top of the exponent. The two rules also differ in their largest weight for every $K$ we checked: for $K=2,\ldots,200$ the largest Gauss--Radau weight exceeds the largest Gauss weight, by $0.25$ at $K=2$ and by about $0.79/K^2$ for large $K$ (\nolinkurl{equilibrium/gauss_radau_maxweight.py}). So the argument given for $K=2$ in Proposition~\ref{prop:target} applies to each such $K$. A proof for every $K$ is open.
 
 \paragraph{What counts as an experiment.} In Theorem~\ref{thm:kcohort} an experiment is a unit impulse from the reset state whose response is observed with noise of variance $\sigma^2$ per tap. The exponent is the same for any probe design of bounded energy. For any probe $v$ the mean difference between the two economies is at most $\sup_\omega|\Delta\hat H(e^{i\omega})|\,\|v\|_2$, and $\sup_\omega|\Delta\hat H|=O((\Delta\eta)^{2K-1})$ because $\Delta\hat H=z^{-1}\hat H_A\hat H_B\,\Delta G$ with both responses bounded on the circle. Experiments with probe energy $E$ each therefore need $NE\gtrsim\sigma^2(\Delta\eta)^{-(4K-2)}$: a larger probe buys the same information with fewer experiments, and Section~\ref{sec:account} prices the capital that a larger probe requires. The bound does not cover information obtained without trading against the groups, such as class records (Section~\ref{sec:disclosure}).
 
@@ -1425,12 +1436,12 @@ Because active probing is costly and passive data are slow, the natural policy q
 Contract & Channel & Pulses & Benchmark & Saving vs.\ $T=20$\\
 \midrule
 $I_0$: prices, $T=3$ & public prices & 271 & 4{,}305.25 & $-2{,}123.5\%$\\
-$I_0^*$: prices, $T=20$ & full price path & 12 & 193.62 & 0.0\%\\
-$I_1$: prices and signed flow & public flow & 12 & 193.62 & 0.0\%\\
-$I_2$: noisy equity ($\sigma_E=0.5$) & statement & 12 & 193.62 & 0.0\%\\
+$I_0^*$: prices, $T=20$ & full price path & 12 & 193.63 & 0.0\%\\
+$I_1$: prices and signed flow & public flow & 12 & 193.63 & 0.0\%\\
+$I_2$: noisy equity ($\sigma_E=0.5$) & statement & 12 & 193.63 & 0.0\%\\
 $I_3$: exact equity, 5-unit lot & audited equity & 1 & 12.70 & 93.4\%\\
 $I_3$: exact equity, 0.01 rounding & rounded report & 1 & 15.52 & 92.0\%\\
-$I_4$: timestamps only & no likelihood & 12 & 193.62 & 0.0\%\\
+$I_4$: timestamps only & no likelihood & 12 & 193.63 & 0.0\%\\
 $I_5$: audit registry & internal states & 0 & 0.00 & 100.0\%\\
 \bottomrule
 \end{tabular}
@@ -1743,6 +1754,17 @@ Together with Table~\ref{tab:disc}, the evidence now covers two disclosure regim
 \subsection{Voluntary disclosure: Binance's trader-class ratios}\label{sec:disc_data}
 
 Binance publishes voluntarily, for one venue but every five minutes, long/short ratios for its top-trader group, by position and by account, and for all accounts. These are class-level positions, the closest public analogue to the tagged data of Proposition~\ref{prop:tagged}, but not homogeneous cohorts: the top-trader position ratio is built from position sizes, the all-account ratio from counts of long and short accounts, the top-trader group is a subset of all accounts, and its membership can change. We treat a class's reported net position as the observable counterpart of its cohort state: it obeys the same one-lag recursion class by class, so the block-diagonal information structure of Proposition~\ref{prop:tagged} carries over. The mapping is an assumption, because the reports are positions rather than flows and returns stand in for the unobserved deviation $x_t$. For each class $c$ we estimate $n_{c,t}=r_cn_{c,t-1}+w_c\,{\rm ret}_t$, with $n=(R-1)/(R+1)$ from the ratio $R$. The price-only alternative regresses signed five-minute taker flow on twelve lagged five-minute returns and fits two exponentials to the kernel; it estimates the memory rates without class information. Intervals come from a day bootstrap with 200 draws.
+
+\paragraph{Reading guide.} The tests below were run in the order described, but each answers one of three questions. Every outcome is in the scorecard.
+\begin{enumerate}[label=(\arabic*),itemsep=1pt,topsep=2pt]
+\item \emph{Do class ratios restrict persistence that prices leave open?} Yes. See Table~\ref{tab:disc}; on the fairest, horizon-matched comparison, over 30 fresh markets, the price-only intervals are a median 7.3 times wider.
+\item \emph{Do class-identified memories improve return forecasts?} No. Neither pre-specified out-of-sample test finds a gain.
+\item \emph{Do class data track or respond to prices?}
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item Prices and flow cannot reconstruct where the classes are positioned: the state-tracking test passes (Table~\ref{tab:disc_state_oos}), but its gain is persistence.
+ \item The October 2026 feedback and flow tests failed.
+ \end{itemize}
+\end{enumerate}
 
 \begin{table}[t]\centering\small
 \begin{threeparttable}
@@ -2587,7 +2609,30 @@ The scaled flows inherit the cohort recursion, because the scaling is constant (
  (1-D)(D-\bar a)=D(1-\sqrt{\bar a})^2-(D-\sqrt{\bar a})^2\le D(1-\sqrt{\bar a})^2.
 \]
 Machine-checked as \nolinkurl{p1_fragility_K_bound}. The bound $A^*_0$ follows as in part (iii).
+\item \emph{Stability.} By Theorem~\ref{thm:eqreduced}(i), the dynamics are those of the closed loop with $(a^*,\kappa^*,\tilde w)$. Here $a^*\ge0$, $\kappa^*>0$, $\tilde w_i>0$ and $r_i\ge0$, so its transition matrix in the state $(x_t,y_{1,t},\ldots,y_{K,t})$ is nonnegative.
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item \emph{The spectral radius is the root above the rates.} By Perron--Frobenius, the spectral radius $\rho$ is an eigenvalue. Every eigenvalue $z\notin\{0,r_i\}$ solves $F(z)=1$, where $F(z)=a^*/z+\kappa^*\sum_i\tilde w_i/(z-r_i)$. No $r_i$ is an eigenvalue, because $\tilde w_i\ne0$ (Theorem~\ref{thm:minphase}(i)). $F$ decreases strictly from $+\infty$ to $0$ on $(\max_ir_i,\infty)$, so it has exactly one root $z^*$ there, and $\rho\ge z^*$. Being real and at least $z^*$, $\rho$ equals $z^*$.
+ \item \emph{The criterion.} Hence $\rho<1$ if and only if $F(1)<1$, that is, $a^*+\kappa^*\sum_i\tilde w_i/(1-r_i)<1$. With $g_i=w_i/(D-r_i)$ this reads $\kappa\sum_ig_i/(1-r_i)<1$ (\nolinkurl{p1_eq_effective_stability_iff}).
+ \item \emph{It holds.} Each $1-r_i>1-D>0$ and $\kappa\sum_ig_i=1-D$, so $\kappa\sum_ig_i/(1-r_i)<1$ (\nolinkurl{p1_eq_stability_K}).
+ \end{itemize}
 \end{itemize}
+
+\paragraph{Proof of Corollary~\ref{cor:eqdisclosure}.}
+\emph{Part (i).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item The cohort recursion is part of the model.
+\item By Theorem~\ref{thm:eqreduced}(i), the price is the closed loop with $a^*\ge0$, $\kappa^*>0$ and $\tilde w_i>0$, driven by the i.i.d.\ flow $\xi$.
+\item It is stable by Theorem~\ref{thm:fragility}(iv).
+\item These are the hypotheses of Proposition~\ref{prop:tagged}. Its regression involves only cohort $i$'s own flow and the price, so it delivers the true $(r_i,w_i)$.
+\end{itemize}
+
+\emph{Part (ii).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{Price-only side.} By Theorem~\ref{thm:eqreduced}, the price-only experiment is the reduced form at the effective parameters. The realization of Theorem~\ref{thm:eqreduced}(iv) puts the Gauss and Gauss--Radau pair inside the equilibrium class, so the price-only side of Theorem~\ref{thm:discvalue} holds with the effective weights.
+\item \emph{Tagged side.} Each cohort's flow response to a unit impulse is $f_{i,t}=w_i\sum_{s\le t}r_i^{t-s}h_s$, where $h$ is the equilibrium response and $h_0=\kappa^*>0$. That is the tagged record of Theorem~\ref{thm:discvalue}, and its argument uses only that $h$ is bounded with $h_0>0$.
+\item On the stated classes the true weights are a Lipschitz function of the effective ones, and conversely, so the orders are unchanged.
+\end{itemize}
+
 
 \paragraph{Numerical checks of Theorems~\ref{thm:eqreduced} and~\ref{thm:fragility}.} The script \nolinkurl{equilibrium/e4_reduced_form.py} runs three checks.
 \begin{itemize}[itemsep=1pt,topsep=2pt]
@@ -2769,6 +2814,7 @@ Theorem~\ref{thm:eqinv}, equilibrium invariance under the merged measure (machin
 Theorem~\ref{thm:inventory}, price impact and persistence in an inventory equilibrium (algebraic core machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1InventoryEquilibrium.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_inventory.py} & Lean 4 proof of parts (i)--(ii) algebra; parts (iii)--(iv) on paper; numerical solution\\
 Theorem~\ref{thm:eqreduced}, the equilibrium is the paper's closed loop; realization of the lower-bound pair (machine-checked pathwise identity and realization) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumReducedForm.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py} & Lean 4 proof of parts (i) and (iv) algebra; parts (ii)--(iii) and the rate transfer on paper; numerical check\\
 Theorem~\ref{thm:fragility}, fragility threshold for one cohort (necessary conditions machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumReducedForm.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py} & Lean 4 bounds; characterization and limits on paper; numerical check\\
+Corollary~\ref{cor:eqdisclosure}, disclosure in equilibrium & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumExtras.lean} & Proof on paper; stability core machine-checked\\
 Theorem~\ref{thm:rents}, rents from a misjudged aggregate response & \path{ceiling_suite/papers/paper1/equilibrium/e2_rents.py} & Proof on paper; numerical check\\
 Theorem~\ref{thm:eqhalt}, targeted intervention in equilibrium & \path{ceiling_suite/papers/paper1/equilibrium/e3_halt.py} & Proof on paper; numerical check\\
 Theorem~\ref{thm:minphase}(ii) for every $K$: the spectrum determines $\sigma_\xi^2\kappa^2$, $H/h_0$ and, with $\kappa$ known, the merged measure (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1SpectralID.lean}, \path{Paper1SpectralH.lean} & Lean 4 proof\\

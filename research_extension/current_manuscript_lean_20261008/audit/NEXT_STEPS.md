@@ -117,3 +117,29 @@ W2 (entropy-rate limit):
   theorem's axioms ⊆ {propext, Classical.choice, Quot.sound}. CI runs it.
 - `audit/coverage.tsv` lists exact declaration names.
 - Independent human review: outstanding.
+
+
+## Update, 7 November 2026 (evening)
+
+- **Package S model links S1 and S2: done earlier** in `Paper1ModelLink.lean` (CI 42340738038):
+  - `p1_eigen_iff_bottom_root`;
+  - `p1_schur_stable_iff_poles_in_disk`;
+  - the generating-function identity for the recursion's impulse response.
+
+  The "Remaining model links" paragraph above is superseded.
+- **Equilibrium section:**
+  - `Paper1EquilibriumInvariance.lean` (Theorem 4.5);
+  - `Paper1InventoryEquilibrium.lean` (Theorem 4.1 core);
+  - `Paper1EquilibriumReducedForm.lean` (Theorem 4.2 pathwise identity and realization; fragility bounds);
+  - `Paper1EquilibriumExtras.lean`: multi-cohort stability core, Theorem 4.1 necessity, S28.1(i) optimum and value,
+    S28.2(iii).
+- **Still open, with the reason:**
+  - **Package I** (stationary IV CLT): Mathlib has no Lindeberg or martingale CLT.
+  - **The T-uniform constant for S7.1(iii)**: the Parseval route needs uniform conditioning on the compact family.
+  - **Theorem 4.1(iv)**: the implicit function theorem in Banach spaces; feasible but long.
+  - **The Perron–Frobenius step of Theorem 4.4(iv)**: Mathlib has no Perron–Frobenius theorem for nonnegative
+    matrices.
+  - **The O(d³) kernel bound of S28.2(i)**: a finite Taylor argument; feasible.
+- **CI.** GitHub Actions stopped starting jobs on 7 November at about 23:29 UTC, because of a billing error on the
+  account. `Paper1EquilibriumExtras.lean` was therefore built locally from source: Lean v4.34.1, the pinned Mathlib,
+  1,056 jobs, no errors, no `sorry`, and every new theorem uses only `propext`, `Classical.choice` and `Quot.sound`.

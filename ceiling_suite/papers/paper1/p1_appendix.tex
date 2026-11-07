@@ -555,7 +555,30 @@ The scaled flows inherit the cohort recursion, because the scaling is constant (
  (1-D)(D-\bar a)=D(1-\sqrt{\bar a})^2-(D-\sqrt{\bar a})^2\le D(1-\sqrt{\bar a})^2.
 \]
 Machine-checked as \nolinkurl{p1_fragility_K_bound}. The bound $A^*_0$ follows as in part (iii).
+\item \emph{Stability.} By Theorem~\ref{thm:eqreduced}(i), the dynamics are those of the closed loop with $(a^*,\kappa^*,\tilde w)$. Here $a^*\ge0$, $\kappa^*>0$, $\tilde w_i>0$ and $r_i\ge0$, so its transition matrix in the state $(x_t,y_{1,t},\ldots,y_{K,t})$ is nonnegative.
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item \emph{The spectral radius is the root above the rates.} By Perron--Frobenius, the spectral radius $\rho$ is an eigenvalue. Every eigenvalue $z\notin\{0,r_i\}$ solves $F(z)=1$, where $F(z)=a^*/z+\kappa^*\sum_i\tilde w_i/(z-r_i)$. No $r_i$ is an eigenvalue, because $\tilde w_i\ne0$ (Theorem~\ref{thm:minphase}(i)). $F$ decreases strictly from $+\infty$ to $0$ on $(\max_ir_i,\infty)$, so it has exactly one root $z^*$ there, and $\rho\ge z^*$. Being real and at least $z^*$, $\rho$ equals $z^*$.
+ \item \emph{The criterion.} Hence $\rho<1$ if and only if $F(1)<1$, that is, $a^*+\kappa^*\sum_i\tilde w_i/(1-r_i)<1$. With $g_i=w_i/(D-r_i)$ this reads $\kappa\sum_ig_i/(1-r_i)<1$ (\nolinkurl{p1_eq_effective_stability_iff}).
+ \item \emph{It holds.} Each $1-r_i>1-D>0$ and $\kappa\sum_ig_i=1-D$, so $\kappa\sum_ig_i/(1-r_i)<1$ (\nolinkurl{p1_eq_stability_K}).
+ \end{itemize}
 \end{itemize}
+
+\paragraph{Proof of Corollary~\ref{cor:eqdisclosure}.}
+\emph{Part (i).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item The cohort recursion is part of the model.
+\item By Theorem~\ref{thm:eqreduced}(i), the price is the closed loop with $a^*\ge0$, $\kappa^*>0$ and $\tilde w_i>0$, driven by the i.i.d.\ flow $\xi$.
+\item It is stable by Theorem~\ref{thm:fragility}(iv).
+\item These are the hypotheses of Proposition~\ref{prop:tagged}. Its regression involves only cohort $i$'s own flow and the price, so it delivers the true $(r_i,w_i)$.
+\end{itemize}
+
+\emph{Part (ii).}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{Price-only side.} By Theorem~\ref{thm:eqreduced}, the price-only experiment is the reduced form at the effective parameters. The realization of Theorem~\ref{thm:eqreduced}(iv) puts the Gauss and Gauss--Radau pair inside the equilibrium class, so the price-only side of Theorem~\ref{thm:discvalue} holds with the effective weights.
+\item \emph{Tagged side.} Each cohort's flow response to a unit impulse is $f_{i,t}=w_i\sum_{s\le t}r_i^{t-s}h_s$, where $h$ is the equilibrium response and $h_0=\kappa^*>0$. That is the tagged record of Theorem~\ref{thm:discvalue}, and its argument uses only that $h$ is bounded with $h_0>0$.
+\item On the stated classes the true weights are a Lipschitz function of the effective ones, and conversely, so the orders are unchanged.
+\end{itemize}
+
 
 \paragraph{Numerical checks of Theorems~\ref{thm:eqreduced} and~\ref{thm:fragility}.} The script \nolinkurl{equilibrium/e4_reduced_form.py} runs three checks.
 \begin{itemize}[itemsep=1pt,topsep=2pt]
@@ -737,6 +760,7 @@ Theorem~\ref{thm:eqinv}, equilibrium invariance under the merged measure (machin
 Theorem~\ref{thm:inventory}, price impact and persistence in an inventory equilibrium (algebraic core machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1InventoryEquilibrium.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_inventory.py} & Lean 4 proof of parts (i)--(ii) algebra; parts (iii)--(iv) on paper; numerical solution\\
 Theorem~\ref{thm:eqreduced}, the equilibrium is the paper's closed loop; realization of the lower-bound pair (machine-checked pathwise identity and realization) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumReducedForm.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py} & Lean 4 proof of parts (i) and (iv) algebra; parts (ii)--(iii) and the rate transfer on paper; numerical check\\
 Theorem~\ref{thm:fragility}, fragility threshold for one cohort (necessary conditions machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumReducedForm.lean}, \path{ceiling_suite/papers/paper1/equilibrium/e4_reduced_form.py} & Lean 4 bounds; characterization and limits on paper; numerical check\\
+Corollary~\ref{cor:eqdisclosure}, disclosure in equilibrium & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1EquilibriumExtras.lean} & Proof on paper; stability core machine-checked\\
 Theorem~\ref{thm:rents}, rents from a misjudged aggregate response & \path{ceiling_suite/papers/paper1/equilibrium/e2_rents.py} & Proof on paper; numerical check\\
 Theorem~\ref{thm:eqhalt}, targeted intervention in equilibrium & \path{ceiling_suite/papers/paper1/equilibrium/e3_halt.py} & Proof on paper; numerical check\\
 Theorem~\ref{thm:minphase}(ii) for every $K$: the spectrum determines $\sigma_\xi^2\kappa^2$, $H/h_0$ and, with $\kappa$ known, the merged measure (machine-checked) & \path{research_extension/current_manuscript_lean_20261008/CurrentProofs/Paper1SpectralID.lean}, \path{Paper1SpectralH.lean} & Lean 4 proof\\

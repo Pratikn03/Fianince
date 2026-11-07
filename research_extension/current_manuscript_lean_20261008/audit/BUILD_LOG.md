@@ -21,3 +21,11 @@ any named theorem whose axioms go beyond {propext, Classical.choice, Quot.sound}
 | 26f8995 | 42345445176 | failure | CRS71iii: higher-order unification in range reduction; `ring` on powers. FisherBounds, CRTaps built. |
 | c18188b | 42346346197 | failure | CRS71iiiEta: stray parenthesis. CRS71iii built. |
 | 7059b69 | 42347257874 | **success** | 1026 named declarations, 109 modules; `NAMED_DECLARATIONS_KERNEL_CHECKED_STANDARD_FOUNDATIONS_ONLY`. S7.1(iii) end to end. |
+| 708beda | — | **success** | EquilibriumInvariance (Theorem 4.5, E1) |
+| 8a741c0 | — | failure | InventoryEquilibrium: rewrite looked inside a `let`; fixed with a helper lemma |
+| a06a62e | 42412283005 | **success** | InventoryEquilibrium (Theorem 4.1 core) |
+| 5fa3427 | 42413617975 | failure | EquilibriumReducedForm: missing `Real` import |
+| 36f5042 | 42414734205 | failure | EquilibriumReducedForm: `sum_div` not imported |
+| 9351733 | 42415594000 | failure | EquilibriumReducedForm: `ring` could not split a product denominator |
+| 8735e0b | 42416658027 | **success** | EquilibriumReducedForm (Theorem 4.2, fragility bounds) |
+| 29dd037 | 42425469307 | not run | GitHub Actions refused to start any job (account billing). `Paper1EquilibriumExtras.lean` built locally from source with Lean v4.34.1 and the pinned Mathlib: 1,056 jobs, success, no `sorry`, standard axioms only (`#print axioms` on all seven theorems). |

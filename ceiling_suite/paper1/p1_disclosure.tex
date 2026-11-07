@@ -18,12 +18,12 @@ Because active probing is costly and passive data are slow, the natural policy q
 Contract & Channel & Pulses & Benchmark & Saving vs.\ $T=20$\\
 \midrule
 $I_0$: prices, $T=3$ & public prices & 271 & 4{,}305.25 & $-2{,}123.5\%$\\
-$I_0^*$: prices, $T=20$ & full price path & 12 & 193.62 & 0.0\%\\
-$I_1$: prices and signed flow & public flow & 12 & 193.62 & 0.0\%\\
-$I_2$: noisy equity ($\sigma_E=0.5$) & statement & 12 & 193.62 & 0.0\%\\
+$I_0^*$: prices, $T=20$ & full price path & 12 & 193.63 & 0.0\%\\
+$I_1$: prices and signed flow & public flow & 12 & 193.63 & 0.0\%\\
+$I_2$: noisy equity ($\sigma_E=0.5$) & statement & 12 & 193.63 & 0.0\%\\
 $I_3$: exact equity, 5-unit lot & audited equity & 1 & 12.70 & 93.4\%\\
 $I_3$: exact equity, 0.01 rounding & rounded report & 1 & 15.52 & 92.0\%\\
-$I_4$: timestamps only & no likelihood & 12 & 193.62 & 0.0\%\\
+$I_4$: timestamps only & no likelihood & 12 & 193.63 & 0.0\%\\
 $I_5$: audit registry & internal states & 0 & 0.00 & 100.0\%\\
 \bottomrule
 \end{tabular}
@@ -336,6 +336,17 @@ Together with Table~\ref{tab:disc}, the evidence now covers two disclosure regim
 \subsection{Voluntary disclosure: Binance's trader-class ratios}\label{sec:disc_data}
 
 Binance publishes voluntarily, for one venue but every five minutes, long/short ratios for its top-trader group, by position and by account, and for all accounts. These are class-level positions, the closest public analogue to the tagged data of Proposition~\ref{prop:tagged}, but not homogeneous cohorts: the top-trader position ratio is built from position sizes, the all-account ratio from counts of long and short accounts, the top-trader group is a subset of all accounts, and its membership can change. We treat a class's reported net position as the observable counterpart of its cohort state: it obeys the same one-lag recursion class by class, so the block-diagonal information structure of Proposition~\ref{prop:tagged} carries over. The mapping is an assumption, because the reports are positions rather than flows and returns stand in for the unobserved deviation $x_t$. For each class $c$ we estimate $n_{c,t}=r_cn_{c,t-1}+w_c\,{\rm ret}_t$, with $n=(R-1)/(R+1)$ from the ratio $R$. The price-only alternative regresses signed five-minute taker flow on twelve lagged five-minute returns and fits two exponentials to the kernel; it estimates the memory rates without class information. Intervals come from a day bootstrap with 200 draws.
+
+\paragraph{Reading guide.} The tests below were run in the order described, but each answers one of three questions. Every outcome is in the scorecard.
+\begin{enumerate}[label=(\arabic*),itemsep=1pt,topsep=2pt]
+\item \emph{Do class ratios restrict persistence that prices leave open?} Yes. See Table~\ref{tab:disc}; on the fairest, horizon-matched comparison, over 30 fresh markets, the price-only intervals are a median 7.3 times wider.
+\item \emph{Do class-identified memories improve return forecasts?} No. Neither pre-specified out-of-sample test finds a gain.
+\item \emph{Do class data track or respond to prices?}
+ \begin{itemize}[itemsep=1pt,topsep=2pt]
+ \item Prices and flow cannot reconstruct where the classes are positioned: the state-tracking test passes (Table~\ref{tab:disc_state_oos}), but its gain is persistence.
+ \item The October 2026 feedback and flow tests failed.
+ \end{itemize}
+\end{enumerate}
 
 \begin{table}[t]\centering\small
 \begin{threeparttable}

@@ -146,3 +146,22 @@ They combine naturally: a market maker with inventory cost that is also learning
   - A* < min{A*_0, Φ*/(σ_F² w)}, and w A* → Φ*/σ_F². In terms of G(1): A* < (1−ā)(1−r)/(4σ_F²G(1)).
   - The Lean necessary conditions are in the same file. Several cohorts: numerical only.
 - **Still open.** E5 (disclosure in equilibrium). Lean versions of E2, E3 and E4(iii)–(iv).
+
+## Status (7 November 2026, late evening)
+
+- **Numbering now:** 4.1 inventory, 4.2 closed loop, 4.3 disclosure corollary, 4.4 fragility, 4.5 invariance;
+  S28.1 rents; S28.2 halt.
+- **Stability of every positive multi-cohort equilibrium proved** (Theorem 4.4(iv)): Perron–Frobenius at the
+  effective parameters, plus κΣ g_i/(1−r_i) < 1. The inequality core is in Lean (`Paper1EquilibriumExtras.lean`).
+- **E5, partial (Corollary 4.3).** Tagged-flow identification and the value of disclosure hold in equilibrium, with
+  the true weights. The Huddart–Hughes–Levine dissimulation channel needs an insider and is not covered.
+- **Lean** (`Paper1EquilibriumExtras.lean`), built locally because GitHub Actions is blocked by billing:
+  - the necessity direction of Theorem 4.1(i);
+  - S28.1(i) optimum and value;
+  - S28.2(iii).
+- **Gauss/Radau largest weights differ for K = 2..200** (numerical); a proof for every K is open.
+- **Still open:**
+  - the strategic insider inside the inventory equilibrium;
+  - the implicit function theorem of Theorem 4.1(iv) in Lean;
+  - Perron–Frobenius in Lean;
+  - the O(d³) kernel bound of S28.2(i) in Lean.
