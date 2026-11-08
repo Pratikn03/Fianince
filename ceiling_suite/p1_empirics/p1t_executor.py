@@ -448,17 +448,28 @@ def summarize_L(L, mean_block=20, B=DIAG_B, seed=SEED):
     return out
 
 
-def residual_basis(prep, fit_mask, classes=("Foreign", "Trust", "DealerOwn", "Residual", "Hedge")):
-    """Spec 7.1. Per stock, OLS of x_t on a constant, x_{t-1} and the reported flows u_{c,t}, u_{c,t-1} of the four
+def residual_basis(prep, fit_mask, classes=("Foreign", "Trust", "DealerOwn", "Hedge"), max_zero_share=0.5):
+    """Spec 7.1. Per stock, OLS of x_t on a constant, x_{t-1} and the reported flows u_{c,t}, u_{c,t-1} of the
     classes and of dealer hedging, fitted on fit-period days where all are finite; returns x_t minus the fitted value
     (NaN where a regressor is missing). Under the confound (prices reveal past flow) the residual carries no
-    information about future flow; under feedback it keeps the price news that flows respond to."""
+    information about future flow; under feedback it keeps the price news that flows respond to.
+
+    Amendment A3 (validation finding, approved before the holdout):
+    - The Residual class is not a regressor. It equals minus the sum of the other reported flows wherever the dealer
+      split is reported, so it adds no column space; with it the design is exactly singular.
+    - A class whose flow is exactly zero on more than `max_zero_share` of the stock's fit-period days is not a
+      regressor for that stock: its coefficient would be estimated from a handful of days and extrapolated to an
+      evaluation period in which the class may be active (dealer hedging, 2014-16 vs 2017-18)."""
     x = prep["x"]; N, T = x.shape
     xr = np.full((N, T), np.nan)
     for i in prep["U"]:
         cols = [np.ones(T), np.r_[np.nan, x[i, :-1]]]
+        base_ok = np.isfinite(x[i]) & np.isfinite(cols[1]) & fit_mask
         for c in classes:
             u = prep["u"][c][i]
+            fin = base_ok & np.isfinite(u)
+            if fin.sum() == 0 or np.mean(u[fin] == 0) > max_zero_share:
+                continue
             cols += [u, np.r_[np.nan, u[:-1]]]
         Xm = np.column_stack(cols)
         ok = np.isfinite(Xm).all(1) & np.isfinite(x[i])
@@ -604,11 +615,15 @@ def secondary_S3(prep, fit_mask, eval_mask, B=199, mean_block=20, seed=SEED):
     Outcome: the median ratio across stocks, with agreement if it lies in [0.67, 1.5]."""
     rng = np.random.default_rng(seed)
     ratios = []
+    n_nonstat = 0
     for i in prep["U"]:
         okf = _iv_ok(prep, i, "Foreign", fit_mask); oke = _iv_ok(prep, i, "Foreign", eval_mask)
         f = iv_tagged(prep["u"]["Foreign"][i], prep["x"][i], okf)
         e = iv_tagged(prep["u"]["Foreign"][i], prep["x"][i], oke)
         if f is None or e is None:
+            continue
+        if not abs(f["beta"][1]) < 1:          # amendment A3: eq. (ivvar) is defined only for |r| < 1
+            n_nonstat += 1
             continue
         pred = formula_se_r(f["beta"], f["resid"], prep["x"][i], okf, e["T"])
         if pred is None or not np.isfinite(pred) or pred <= 0:
@@ -627,12 +642,12 @@ def secondary_S3(prep, fit_mask, eval_mask, B=199, mean_block=20, seed=SEED):
         ratios.append(pred / float(np.std(bs)))
     ratios = np.array(ratios)
     if not len(ratios):
-        return {"n_stocks": 0, "verdict": "not computable"}
+        return {"n_stocks": 0, "verdict": "not computable", "n_excluded_abs_r_ge_1": n_nonstat}
     med = float(np.median(ratios))
     return {"n_stocks": int(len(ratios)), "median_ratio_formula_to_bootstrap": med,
             "iqr_ratio": [float(np.percentile(ratios, 25)), float(np.percentile(ratios, 75))],
             "share_stocks_in_range": float(np.mean((ratios >= 0.67) & (ratios <= 1.5))),
-            "agreement": bool(0.67 <= med <= 1.5), "B_per_stock": B}
+            "agreement": bool(0.67 <= med <= 1.5), "B_per_stock": B, "n_excluded_abs_r_ge_1": n_nonstat}
 
 
 def holm(pvals):
@@ -649,7 +664,10 @@ def diagnostics(prep, dates, fit_mask, eval_mask, B=DIAG_B, seed=SEED):
     res = {"B": B}
     # 7.1 reverse-causality check
     xr, usr = residual_basis(prep, fit_mask)
-    res["reverse_causality"] = summarize_L(panel_L(prep, fit_mask, eval_mask, "Foreign", x=xr, usable=usr), B=B, seed=seed)
+    Lr = panel_L(prep, fit_mask, eval_mask, "Foreign", x=xr, usable=usr)
+    res["reverse_causality"] = summarize_L(Lr, B=B, seed=seed)
+    if Lr.shape[0]:                            # amendment A3: descriptive only; the verdict stays on D
+        res["reverse_causality"]["median_d_descriptive"] = float(np.median(np.nanmean(Lr, axis=1)))
     # 7.2 per-stock share (with the primary L)
     L = panel_L(prep, fit_mask, eval_mask, "Foreign")
     per = np.nanmean(L, axis=1)
