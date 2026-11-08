@@ -1,0 +1,155 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,enumitem,array}
+\usepackage[hidelinks]{hyperref}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{claim}{Claim}
+\setlength{\parskip}{4pt}\setlength{\parindent}{0pt}
+\title{Proof-check packet: the $K$-group lower bound\\[2pt]\large Paper 1, ``Auditable Memory and Financial Identification Limits'', Theorem 6.1 (\texttt{thm:kcohort})}
+\author{Prepared for an independent reader \quad$\cdot$\quad 8 November 2026}
+\date{}
+\begin{document}
+\maketitle
+
+\section*{What we are asking}
+
+This is the headline result of the paper: separating $K$ trader groups whose memories are $\Delta\eta$ apart takes of order $(\Delta\eta)^{-(4K-2)}$ experiments, and the feedback loop does not change that order. We ask you to do two things, which should take two to three hours.
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{Check the proof} in Section~\ref{sec:proof}. It is split into numbered claims. For each, record \emph{checked}, \emph{objection}, \emph{corrected} or \emph{open} in the table on the last page.
+\item \textbf{Check that the machine-checked statement says what the paper says} (Section~\ref{sec:lean}). Lean has verified a version of the bound. The question we cannot answer ourselves is whether its hypotheses and conclusion match the paper's claim, and where they differ, whether the difference matters.
+\end{enumerate}
+
+\textbf{Why an outside reader.} The paper was written with substantial AI assistance, and its internal reviews were AI-generated. Those do not count as independent review. The co-authors are not independent either. Your check would be the first independent one. You will be acknowledged by name only if you agree.
+
+\section{Setting}
+
+\textbf{Market.} A single asset has pricing error $x_t$. A dealer moves the price by $\kappa>0$ per unit of unexpected flow, and the error persists with coefficient $a\ge0$. $K$ groups of feedback traders each hold a position that tracks past pricing errors with exponential memory:
+\[
+u_{i,t}=r_iu_{i,t-1}+w_ix_{t-1},\qquad 0<r_i<1,\ w_i>0 .
+\]
+Their combined effect on the price enters only through the \emph{kernel} $k_m=\sum_iw_ir_i^m$ (the power moments of the merged measure $\sum_iw_i\delta_{r_i}$).
+
+\textbf{Reset experiment.} From rest, an observer injects a unit impulse and records the price response
+\[
+h_0=\kappa,\qquad h_{t+1}=a\,h_t+\kappa\sum_{j=0}^{t}k_j\,h_{t-j},
+\]
+observed with i.i.d.\ $N(0,\sigma^2)$ noise on each of $T$ taps. $N$ independent experiments are run.
+
+\textbf{Spacing.} The rates lie in $r_c+\Delta\eta[-1,1]$, written $r_i=r_c+\Delta\eta\,s_i$ with $|s_i|\le1$.
+
+\begin{theorem*}[\label{thm}$K$-cohort two-point lower bound; paper's statement]
+Fix $K\ge2$, $r_c\in(0,1)$, $W>0$ and $0<\Delta\eta<\min(r_c,1-r_c)$, and assume
+\[
+a+\kappa W/(1-r_c-\Delta\eta)<1 .
+\]
+Each reset experiment observes $T\ge2K$ noisy taps ($T=\infty$ allowed). Then there exist two $K$-group economies with the following properties:
+\begin{itemize}
+\item their rates lie in $r_c+\Delta\eta[-1,1]$ and their weights are positive;
+\item the moments of their merged measures of order $0,\dots,2K-2$ coincide, and the moments of order $2K-1$ differ by a constant times $(\Delta\eta)^{2K-1}$;
+\item their impulse responses differ by $\|h^A-h^B\|_2\asymp(\Delta\eta)^{2K-1}$.
+\end{itemize}
+Recovering the weights from $N$ independent noisy reset experiments, with worst-case error probability below $1/4$, therefore requires $N\ge c\,\sigma^2(\Delta\eta)^{-(4K-2)}$. The same holds for the loss $W_1(\hat M,M)$ between estimated and true merged measures, at accuracy $c_KW\Delta\eta$.
+\end{theorem*}
+
+\section{Proof, step by step}\label{sec:proof}
+
+\textbf{Step 1: the pair.} Let $(s^A,\omega^A)$ and $(s^B,\omega^B)$ be the $K$-point Gauss and Gauss--Radau rules for the uniform weight on $[-1,1]$, normalized to unit mass. Put $r^X_i=r_c+\Delta\eta\,s^X_i$ and weights $W\omega^X_i$. Write $\mu^X_j=W\sum_i\omega^X_i(s^X_i)^j$.
+
+\begin{claim}\label{c:pair} Both rules have positive weights and nodes in $[-1,1]$. Both integrate polynomials of degree $\le2K-2$ exactly, so $\mu^A_j=\mu^B_j$ for $j\le2K-2$. Their moments of degree $2K-1$ differ, $\mu^A_{2K-1}-\mu^B_{2K-1}=Wg_K$ with $g_K\ne0$. Also $|\mu^X_j|\le W$ for all $j$.\end{claim}
+\textit{Notes.} Gauss is exact to degree $2K-1$ and Gauss--Radau to degree $2K-2$. So their difference at degree $2K-1$ is minus the Radau error functional applied to $x^{2K-1}$, which is nonzero. Numerically, $|g_K|=0.222,\,0.0533,\,0.0131$ for $K=2,3,4$. \emph{Please check} that the Radau error at degree $2K-1$ is nonzero for every $K$, not just numerically.
+
+\textbf{Step 2: kernel gap.}
+\begin{claim}\label{c:expand} $k^X_m=\sum_{j=0}^m\binom mj r_c^{\,m-j}(\Delta\eta)^j\mu^X_j$.\end{claim}
+\begin{claim}\label{c:choose} For $j\ge n$: $\binom mj\le\binom mn\binom{m-n}{j-n}$. Hence, with $n=2K-1$,
+\[
+|\Delta k_m|=|k^A_m-k^B_m|\le2W\binom mn(\Delta\eta)^n(r_c+\Delta\eta)^{m-n}\quad(m\ge n),\qquad \Delta k_m=0\quad(m<n).
+\]\end{claim}
+\textit{Hint.} $\binom mj\binom jn=\binom mn\binom{m-n}{j-n}$ and $\binom jn\ge1$.
+\begin{claim}\label{c:l1} $\sum_{m\ge0}|\Delta k_m|\le2W(\Delta\eta)^{2K-1}/(1-r_c-\Delta\eta)^{2K}$, using $\sum_{m\ge n}\binom mn x^{m-n}=(1-x)^{-(n+1)}$ for $0\le x<1$.\end{claim}
+
+\textbf{Step 3: response gap, upper order.} Let $\varsigma=a+\kappa W/(1-r_c-\Delta\eta)<1$.
+\begin{claim}\label{c:h1} $\sum_m|k^X_m|\le W/(1-r_c-\Delta\eta)$. Every partial sum $\sum_{t<n}|h^B_t|\le\kappa/(1-\varsigma)$.\end{claim}
+\textit{Hint.} Sum the recursion over $t<n$. Then $\sum_{t\le n}|h_t|\le\kappa+\varsigma\sum_{t<n}|h_t|$, and induct.
+\begin{claim}\label{c:dh} $\Delta h=h^A-h^B$ satisfies $\Delta h_0=0$ and
+\[
+\Delta h_{t+1}=a\,\Delta h_t+\kappa\sum_{j\le t}\bigl(k^A_j\,\Delta h_{t-j}+\Delta k_j\,h^B_{t-j}\bigr).
+\]
+Hence every partial sum of $|\Delta h|$ is at most $\kappa\|\Delta k\|_1\|h^B\|_1/(1-\varsigma)$.\end{claim}
+\begin{claim}\label{c:upper} For every horizon, $\|h^A-h^B\|_2\le\|h^A-h^B\|_1\le C_U(\Delta\eta)^{2K-1}$, where
+\[
+C_U=\frac{2\kappa^2W}{(1-r_c-\Delta\eta)^{2K}(1-\varsigma)^2}.
+\]\end{claim}
+
+\textbf{Step 4: response gap, lower order.}
+\begin{claim}\label{c:lower} $\Delta h_t=0$ for $t\le2K-1$, and $\Delta h_{2K}=\kappa^2Wg_K(\Delta\eta)^{2K-1}$. So with $T\ge2K$ taps, $\|h^A-h^B\|_2\ge\kappa^2W|g_K|(\Delta\eta)^{2K-1}$.\end{claim}
+\textit{Hint.} $\Delta h_{t+1}$ involves only $\Delta k_j$ with $j\le t$, and $\Delta k_{2K-1}=(\Delta\eta)^{2K-1}Wg_K$ by Claim~\ref{c:expand}.
+
+\textbf{Step 5: from the response gap to the sample bound.}
+\begin{claim}\label{c:kl} The laws of $N$ independent experiments with $T$ taps have Kullback--Leibler divergence $N\sum_{t<T}(h^A_t-h^B_t)^2/(2\sigma^2)$.\end{claim}
+\begin{claim}\label{c:pinsker} If a test has error probabilities $\alpha_0$ under $A$ and $\beta_0$ under $B$ with $\alpha_0+\beta_0\le1$, then the divergence is at least $2(1-\alpha_0-\beta_0)^2$. This is Pinsker's inequality applied to the rejection event.\end{claim}
+\begin{claim}\label{c:N} Combining Claims~\ref{c:upper}, \ref{c:kl} and~\ref{c:pinsker}:
+\[
+4\sigma^2(1-\alpha_0-\beta_0)^2\le N\,C_U^2(\Delta\eta)^{4K-2},
+\]
+uniformly in $T$.\end{claim}
+\begin{claim}\label{c:reduce} An estimator that recovers the weights to within half their (fixed, $\Delta\eta$-free) difference between the two economies, with probability $\ge3/4$ under each, gives a test with both errors $\le1/4$. So $N\ge\sigma^2(\Delta\eta)^{-(4K-2)}/C_U^2$.\end{claim}
+\textit{Question.} The two rules have different nodes, so ``the weights'' must be compared after ordering the atoms by rate. Is the reduction sound as stated, or should the paper say ``an ordered weight vector''?
+
+\textbf{Step 6: Wasserstein version.}
+\begin{claim}\label{c:w1} The two merged measures are images of the fixed normalized rules under $s\mapsto r_c+\Delta\eta s$, scaled to mass $W$. Their $W_1$ distance is $2c_KW\Delta\eta$ with $2c_K=W_1(\text{Gauss},\text{Gauss--Radau})>0$. An estimator with $W_1$ error below $c_KW\Delta\eta$ (probability $\ge3/4$ under each) gives a test with errors $\le1/4$, and Claim~\ref{c:N} applies.\end{claim}
+
+\section{What Lean has checked, and what it has not}\label{sec:lean}
+
+The theorem \texttt{p1\_thm\_kcohort\_lower\_bound\_uniform} in \texttt{Paper1KCohortUniform.lean} was built from source with Lean~4 and Mathlib. It uses no \texttt{sorry} and only Lean's standard axioms. In mathematical notation it states the following.
+
+\begin{quote}
+Let $K=L+1\ge1$, $c,d\ge0$ with $0<c+d<1$, $W\ge0$, and $|a|+|\kappa|W/(1-c-d)\le\varsigma<1$. Let the two economies have memory rates $c+d\,x_k$ at the $2K$ equally spaced nodes $x_k=2k/(2K-1)-1$ of $[-1,1]$: economy $A$ takes the odd-indexed nodes, economy $B$ the even-indexed ones. Give node $k$ the weight $W\binom{2K-1}{k}/2^{2K-2}$. Let $P_A,P_B$ be the laws of $N$ independent reset experiments of $T$ taps with $N(0,\sigma^2)$ noise, where the responses are computed from the paper's actual state-space model. Then for every measurable event $R$ with $P_A(R)\le\alpha_0$, $P_B(R^c)\le\beta_0$ and $\alpha_0+\beta_0\le1$, and for every $T$ and $N$,
+\[
+4\sigma^2(1-\alpha_0-\beta_0)^2\le N\Bigl(\frac{2\kappa^2W}{(1-c-d)^{2K}(1-\varsigma)^2}\,d^{\,2K-1}\Bigr)^2 .
+\]
+\end{quote}
+
+\textbf{Correspondence.} Here $c=r_c$ and $d=\Delta\eta$, and $c+d$ is the largest memory rate. The constant equals $C_U$ of Claim~\ref{c:upper}. In the code the ``rate'' variable is the gain $\eta=1-$memory, so the memory is \texttt{1 - rate}.
+
+\textbf{Differences from the paper, for you to judge.}
+\begin{enumerate}[leftmargin=*]
+\item \textbf{A different pair.} Lean uses the binomial odd/even split of an equally spaced grid, not Gauss/Gauss--Radau. It has matched moments below order $2K-1$ by the vanishing of the $(2K-1)$-th forward difference. The theorem asserts existence of \emph{some} pair, so any valid pair proves it. Lean checks the Gauss and Gauss--Radau rules themselves only for $K=3$.
+\item \textbf{The conclusion is about tests, not estimators.} The reductions in Claims~\ref{c:reduce} and~\ref{c:w1} are on paper.
+\item \textbf{Only the upper order.} The lower order of the response gap (Claim~\ref{c:lower}) is on paper. It is not needed for the sample bound.
+\item \textbf{Absolute values in the stability condition} ($|a|$, $|\kappa|$). The paper has $a\ge0$ and $\kappa>0$, so the conditions coincide.
+\item \textbf{The observation model} (Gaussian noise, i.i.d.\ across taps and experiments, reset from rest) is as in the paper.
+\end{enumerate}
+Earlier formal versions (\texttt{p1\_thm\_kcohort\_lower\_bound\_every\_K\_general}) had a constant that grew with $T$ (a factor $4^T$). The version above removes that dependence. The paper's earlier proof said only that ``analyticity of the kernel-to-response map gives'' the response gap. Steps~2--4 above replace that sentence.
+
+\section{Questions most likely to expose a gap}
+
+\begin{enumerate}[leftmargin=*]
+\item Is Gauss--Radau's error at degree $2K-1$ nonzero for every $K$ (Claim~\ref{c:pair})?
+\item The proof uses the hypothesis as an $\ell_1$ small-gain bound, $a+\kappa\|k\|_1<1$, not only as Schur stability. The paper says the hypothesis makes every economy ``Schur stable''. Is anything in the proof, or in later uses of the theorem, relying on Schur stability alone, where the small-gain bound might fail?
+\item In Claim~\ref{c:reduce}, does ``recovering the weights'' need an ordering convention to be well defined?
+\item Is anything lost by stating the bound for a test rather than for the estimation loss?
+\item Does $T=\infty$ need separate treatment, for example to define the law of an infinite record? Or is the uniform-in-$T$ bound enough?
+\item The paper says the same order holds for any probe of bounded energy, through $\sup_\omega|\Delta\hat H|$. Is that argument complete as written (main text, ``What counts as an experiment'')?
+\end{enumerate}
+
+\section*{Response table}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.62\textwidth}@{}}
+\toprule
+Claim & Status & Comment\\
+\midrule
+\ref{c:pair}--\ref{c:l1} (kernel) & & \\
+\ref{c:h1}--\ref{c:upper} (response) & & \\
+\ref{c:lower} (lower order) & & \\
+\ref{c:kl}--\ref{c:N} (testing) & & \\
+\ref{c:reduce}--\ref{c:w1} (reductions) & & \\
+Lean statement vs paper & & \\
+Questions 1--6 & & \\
+\bottomrule
+\end{tabular}
+
+\medskip
+Name (optional): \hrulefill\quad Date: \rule{3cm}{0.4pt}\\[4pt]
+Please return to Pratik Niroula. Status options: checked / objection / corrected / open.
+\end{document}
