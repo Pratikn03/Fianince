@@ -128,3 +128,4 @@ import CurrentProofs.Paper1InventoryIFT
 import CurrentProofs.Paper1CRUniform
 import CurrentProofs.Paper1CRUniformW2
 import CurrentProofs.Paper1KCohortUniform
+import CurrentProofs.Paper1KCohortEstimators
