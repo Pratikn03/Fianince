@@ -1,8 +1,7 @@
-# P1T amendment A4: one index-row label on 2019-04-29 (PENDING the author's approval)
+# P1T amendment A4: one index-row label on 2019-04-29 (APPROVED 8 November 2026)
 
 **Status.** Proposed on 8 November 2026, after the holdout notebook's integrity gate stopped the run and before any
-statistic was computed. The holdout counter is 0. A4 is in force only once the author's approval is logged in
-`P1T_unlocks.json`.
+statistic was computed. The holdout counter is 0. Approved by the author ("approve", 8 November 2026) and logged in `P1T_unlocks.json`. In force.
 
 ## What happened (logged as it came out)
 
