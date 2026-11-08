@@ -6,7 +6,7 @@ Line ranges are checked against the first characters of each block, so a change 
 """
 import re
 
-SRC = open("../paper1/paper1_ssrn.tex", encoding="utf-8").read().split("\n")
+SRC = open("src/ssrn_source_20261108.tex", encoding="utf-8").read().split("\n")  # frozen SSRN source, 8 Nov 2026, before the Taiwan section
 
 
 def L(a, b, starts=None):
