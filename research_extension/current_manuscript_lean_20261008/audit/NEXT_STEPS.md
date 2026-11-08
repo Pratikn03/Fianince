@@ -135,8 +135,8 @@ W2 (entropy-rate limit):
     S28.2(iii).
 - **Still open, with the reason:**
   - **Package I** (stationary IV CLT): Mathlib has no Lindeberg or martingale CLT.
-  - **The T-uniform constant for S7.1(iii)**: the Parseval route needs uniform conditioning on the compact family.
-  - **Theorem 4.1(iv)**: the implicit function theorem in Banach spaces; feasible but long.
+  - **The T-uniform constant for S7.1(iii)**: DONE (8 Nov 2026) under a small-gain margin, by geometric majorants rather than Parseval (`p1_prop_S7_1_iii_uniform`, `p1_prop_S7_1_iii_two_uniform`). Open: the sharp stability region instead of the ℓ¹ margin.
+  - **Theorem 4.1(iv)**: DONE (8 Nov 2026) along one-parameter families `G = εg` via Mathlib's inverse function theorem (`p1_inventory_small_feedback`). Open: uniformity over all small cohort measures in the statement's norm.
   - **The Perron–Frobenius step of Theorem 4.4(iv)**: Mathlib has no Perron–Frobenius theorem for nonnegative
     matrices.
   - **The O(d³) kernel bound of S28.2(i)**: a finite Taylor argument; feasible.

@@ -124,3 +124,6 @@ import CurrentProofs.Paper1EquilibriumReducedForm
 import CurrentProofs.Paper1EquilibriumExtras
 import CurrentProofs.Paper1EquilibriumInsider
 import CurrentProofs.Paper1HaltKernelBound
+import CurrentProofs.Paper1InventoryIFT
+import CurrentProofs.Paper1CRUniform
+import CurrentProofs.Paper1CRUniformW2
