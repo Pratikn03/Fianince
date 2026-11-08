@@ -14,6 +14,12 @@ outcome that price-based trading determines, and it is all that prices identify.
     only), the analogy paragraph, the scope section and the conclusion.
   - Literature check on the aggregation framing, with new references: Granger (1980), Zaffaroni (2004), Celov, Leipus
     and Philippe (2008), and Auclert, Rognlie and Straub (2024).
+- **New, later the same day.** Section 7, "Beyond the kernel: saturating traders and stress".
+  - Theorem 7.1: sufficiency of the capacity-weighted measure ν.
+  - Theorem 7.2: no information without stress.
+  - Proposition 7.3: smooth saturation, where information grows like A⁶.
+  - Machine-checked: 7.1, and the pathwise part (i) of 7.2, in `Paper1SaturatingSufficiency.lean`. The rest is proved
+    on paper.
 - **Not in this version.** Account-level capital, general memory, spectral blindness, robustness to nonlinear rules
   and every empirical test. They are in the full working paper.
 

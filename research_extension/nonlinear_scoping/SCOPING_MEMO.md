@@ -107,3 +107,18 @@ The bet is worth making, in this order:
 3. **Class 2** (strategic deleveraging) as the open problem, possibly with Kyle's input.
 
 Decide after step 1. If C comes out with clean matching rates, this becomes the lead project.
+
+## Update (8 November 2026, later): step 1 done, written into the core paper
+
+- **Theorem A** is now Theorem 7.1 of the core version. It is machine-checked pathwise for every shape ψ and every
+  causal insider, dealer and signal rule (`p1_sat_sufficiency`).
+- **Theorem C** is now Theorem 7.2.
+  - Part (i), the pathwise statement, is machine-checked (`p1_sat_stress_invariance`, `p1_sat_follows_linear`).
+  - Parts (ii)–(iv), the total-variation, Gaussian and probe bounds, are proved on paper.
+  - `sim_passive_clip.py`: the simulated exceedance probability lies below the bound at every noise level tested. The
+    bound is loose in its constant (a union bound over dates).
+- **Theorem D** (smooth case) is now Proposition 7.3, proved on paper: a cubic response gap, an N ≳ σ²/A⁶ lower bound,
+  and the order attained through the first tap.
+- **Theorem B** (the full identification hierarchy) remains open, and the paper says so.
+- **Lean module:** `Paper1SaturatingSufficiency.lean`, standard axioms only. There are now 1093 named declarations
+  across 121 modules.

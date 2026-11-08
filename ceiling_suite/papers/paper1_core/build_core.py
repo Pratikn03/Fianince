@@ -67,6 +67,7 @@ main.append(L(657, 672, "\\begin{proposition}[Tagged flow"))
 main.append(L(676, 684, "Proposition~\\ref{prop:tagged} says"))
 main.append(L(690, 693, "\\paragraph{In words.} This is the value"))
 # Sections 7-8
+main.append(F("sat"))
 main.append(F("scope"))
 main.append(F("conclusion"))
 main.append(re.sub(r"\\paragraph\{Data availability\.\}[^\n]*", lambda m: r"\paragraph{Data availability.} This version uses no market data. The data used by the full working paper are public and are listed in its data statement.", L(763, 777, "\\subsection*{Declarations}")))
