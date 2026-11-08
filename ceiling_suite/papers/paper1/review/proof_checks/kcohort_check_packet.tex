@@ -43,7 +43,7 @@ Fix $K\ge2$, $r_c\in(0,1)$, $W>0$ and $0<\Delta\eta<\min(r_c,1-r_c)$, and assume
 \[
 a+\kappa W/(1-r_c-\Delta\eta)<1 .
 \]
-Each reset experiment observes $T\ge2K$ noisy taps ($T=\infty$ allowed). Then there exist two $K$-group economies with the following properties:
+Each reset experiment observes the noisy taps $h_0,\ldots,h_{T-1}$ with $T\ge2K+1$ ($T=\infty$ allowed), so that the first differing tap $h_{2K}$ is observed. Then there exist two $K$-group economies with the following properties:
 \begin{itemize}
 \item their rates lie in $r_c+\Delta\eta[-1,1]$ and their weights are positive;
 \item the moments of their merged measures of order $0,\dots,2K-2$ coincide, and the moments of order $2K-1$ differ by a constant times $(\Delta\eta)^{2K-1}$;
@@ -57,7 +57,7 @@ Recovering the weights from $N$ independent noisy reset experiments, with worst-
 \textbf{Step 1: the pair.} Let $(s^A,\omega^A)$ and $(s^B,\omega^B)$ be the $K$-point Gauss and Gauss--Radau rules for the uniform weight on $[-1,1]$, normalized to unit mass. Put $r^X_i=r_c+\Delta\eta\,s^X_i$ and weights $W\omega^X_i$. Write $\mu^X_j=W\sum_i\omega^X_i(s^X_i)^j$.
 
 \begin{claim}\label{c:pair} Both rules have positive weights and nodes in $[-1,1]$. Both integrate polynomials of degree $\le2K-2$ exactly, so $\mu^A_j=\mu^B_j$ for $j\le2K-2$. Their moments of degree $2K-1$ differ, $\mu^A_{2K-1}-\mu^B_{2K-1}=Wg_K$ with $g_K\ne0$. Also $|\mu^X_j|\le W$ for all $j$.\end{claim}
-\textit{Notes.} Gauss is exact to degree $2K-1$ and Gauss--Radau to degree $2K-2$. So their difference at degree $2K-1$ is minus the Radau error functional applied to $x^{2K-1}$, which is nonzero. Numerically, $|g_K|=0.222,\,0.0533,\,0.0131$ for $K=2,3,4$. \emph{Please check} that the Radau error at degree $2K-1$ is nonzero for every $K$, not just numerically.
+\textit{Notes.} Gauss is exact to degree $2K-1$ and Gauss--Radau to degree $2K-2$. So their difference at degree $2K-1$ is minus the Radau error functional applied to $x^{2K-1}$, which is nonzero. Numerically, $|g_K|=0.222,\,0.0533,\,0.0131$ for $K=2,3,4$. Analytically, for every $K$: with Radau nodes $-1,s_2,\ldots,s_K$, the polynomial $P(s)=(s+1)\prod_{j\ge2}(s-s_j)^2$ is monic of degree $2K-1$ and vanishes at every Radau node. It is nonnegative on $[-1,1]$, so Gauss (exact to degree $2K-1$) gives it $\int P\,d\mu>0$, while Radau gives it $0$. The rules agree on lower degrees, so $g_K\ne0$. (This argument was suggested by an AI-assisted review.)
 
 \textbf{Step 2: kernel gap.}
 \begin{claim}\label{c:expand} $k^X_m=\sum_{j=0}^m\binom mj r_c^{\,m-j}(\Delta\eta)^j\mu^X_j$.\end{claim}
@@ -82,7 +82,7 @@ C_U=\frac{2\kappa^2W}{(1-r_c-\Delta\eta)^{2K}(1-\varsigma)^2}.
 \]\end{claim}
 
 \textbf{Step 4: response gap, lower order.}
-\begin{claim}\label{c:lower} $\Delta h_t=0$ for $t\le2K-1$, and $\Delta h_{2K}=\kappa^2Wg_K(\Delta\eta)^{2K-1}$. So with $T\ge2K$ taps, $\|h^A-h^B\|_2\ge\kappa^2W|g_K|(\Delta\eta)^{2K-1}$.\end{claim}
+\begin{claim}\label{c:lower} $\Delta h_t=0$ for $t\le2K-1$, and $\Delta h_{2K}=\kappa^2Wg_K(\Delta\eta)^{2K-1}$. So when the taps $h_0,\ldots,h_{T-1}$ are observed with $T\ge2K+1$, $\|h^A-h^B\|_2\ge\kappa^2W|g_K|(\Delta\eta)^{2K-1}$. With $T\le2K$ the observed responses coincide. (An earlier version of this packet said $T\ge2K$, which is off by one.)\end{claim}
 \textit{Hint.} $\Delta h_{t+1}$ involves only $\Delta k_j$ with $j\le t$, and $\Delta k_{2K-1}=(\Delta\eta)^{2K-1}Wg_K$ by Claim~\ref{c:expand}.
 
 \textbf{Step 5: from the response gap to the sample bound.}
@@ -94,7 +94,7 @@ C_U=\frac{2\kappa^2W}{(1-r_c-\Delta\eta)^{2K}(1-\varsigma)^2}.
 \]
 uniformly in $T$.\end{claim}
 \begin{claim}\label{c:reduce} An estimator that recovers the weights to within half their (fixed, $\Delta\eta$-free) difference between the two economies, with probability $\ge3/4$ under each, gives a test with both errors $\le1/4$. So $N\ge\sigma^2(\Delta\eta)^{-(4K-2)}/C_U^2$.\end{claim}
-\textit{Question.} The two rules have different nodes, so ``the weights'' must be compared after ordering the atoms by rate. Is the reduction sound as stated, or should the paper say ``an ordered weight vector''?
+\textit{Precise form.} ``The weights'' means the weight vector listed in increasing order of rate. The two economies' smallest-rate weights differ by a fixed amount that does not shrink with $\Delta\eta$ (for the Lean pair, $2LW/4^L$ with $L=K-1$). Accuracy is strict: error $<$ half that difference in every coordinate. Is this the right reading of the paper's statement?
 
 \textbf{Step 6: Wasserstein version.}
 \begin{claim}\label{c:w1} The two merged measures are images of the fixed normalized rules under $s\mapsto r_c+\Delta\eta s$, scaled to mass $W$. Their $W_1$ distance is $2c_KW\Delta\eta$ with $2c_K=W_1(\text{Gauss},\text{Gauss--Radau})>0$. An estimator with $W_1$ error below $c_KW\Delta\eta$ (probability $\ge3/4$ under each) gives a test with errors $\le1/4$, and Claim~\ref{c:N} applies.\end{claim}
@@ -125,11 +125,11 @@ Earlier formal versions (\texttt{p1\_thm\_kcohort\_lower\_bound\_every\_K\_gener
 \section{Questions most likely to expose a gap}
 
 \begin{enumerate}[leftmargin=*]
-\item Is Gauss--Radau's error at degree $2K-1$ nonzero for every $K$ (Claim~\ref{c:pair})?
+\item The constants are uniform only on a spacing range where the stability index $\varsigma$ stays below $1$ by a fixed margin. Is that restriction stated clearly enough?
 \item The proof uses the hypothesis as an $\ell_1$ small-gain bound, $a+\kappa\|k\|_1<1$, not only as Schur stability. The paper says the hypothesis makes every economy ``Schur stable''. Is anything in the proof, or in later uses of the theorem, relying on Schur stability alone, where the small-gain bound might fail?
 \item In Claim~\ref{c:reduce}, does ``recovering the weights'' need an ordering convention to be well defined?
 \item Is anything lost by stating the bound for a test rather than for the estimation loss?
-\item Does $T=\infty$ need separate treatment, for example to define the law of an infinite record? Or is the uniform-in-$T$ bound enough?
+\item The case $T=\infty$ is covered as the limit of the uniform-in-$T$ bound: every finite-record experiment obeys it. A literal infinite record would need an infinite Gaussian product experiment and its divergence formula. Is the limiting reading acceptable?
 \item The paper says the same order holds for any probe of bounded energy, through $\sup_\omega|\Delta\hat H|$. Is that argument complete as written (main text, ``What counts as an experiment'')?
 \end{enumerate}
 
