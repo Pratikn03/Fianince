@@ -122,3 +122,22 @@ Decide after step 1. If C comes out with clean matching rates, this becomes the 
 - **Theorem B** (the full identification hierarchy) remains open, and the paper says so.
 - **Lean module:** `Paper1SaturatingSufficiency.lean`, standard axioms only. There are now 1093 named declarations
   across 121 modules.
+
+## Update 2 (8 November 2026): identification closed, deleveraging, dealers
+
+- **Theorem B, the identification, is closed qualitatively** as Theorem 7.4 of the core version, proved on paper.
+  - **Statement:** for tanh or hard limits, responses to all probes identify exactly the signed measure
+    μ̃ = Σ c_i sgn(ℓ_i) δ_(r_i, |ℓ_i|). That is the whole equivalence class.
+  - **Proof:** probes steer the price along any path. Two dates of prices then give a sum of scaled copies of ψ. The
+    copies are separated by the poles of tanh, or by the kinks of the hard limit.
+  - **Rates beyond the third order remain open.**
+  - **Recovery check:** kinks found at 3.702 and 14.813; net capacities recovered as 0.24989 and 0.99988, against
+    true values 0.25 and 1.
+- **Deleveraging traders (Proposition 7.5).** Theorem 7.2 holds for any causal rule outside the bands. This is
+  machine-checked in `Paper1CoreExtensions.lean`.
+- **Dealers (Proposition 7.6).**
+  - Kernel-only dealers preserve every Section 7 result.
+  - An informed forward-looking dealer leaks leverage information into calm prices, but only at the scale of the
+    probability of a breach. The bound is checked numerically.
+  - A full equilibrium of this kind is open.
+- **Proposition 3.2** is now machine-checked for arbitrary kernels.

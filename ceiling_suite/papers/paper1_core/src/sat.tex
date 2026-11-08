@@ -16,9 +16,8 @@ for the capacity-weighted measure on memory and leverage.
 For any shape $\psi$, aggregate feedback flow is $f_t=\sum_ic_i\psi(\ell_im_{i,t})=\int\psi\bigl(\ell\,m_t(r)\bigr)\,\nu(dr,d\ell)$, with $m_t(r)=\sum_{j<t}r^{t-1-j}s_j$, so it depends on the population only through $\nu$. If two populations have the same $\nu$, that is $\sum_ic_ig(r_i,\ell_i)=\sum_jc'_jg(r'_j,\ell'_j)$ for every function $g$, then for every strategy profile and every realization the price and order-flow paths, the insider's trades and profit and the dealer's inventory coincide at every date. The two games have the same equilibria under any equilibrium concept defined from payoffs and the public history. The kernel is the first leverage moment of $\nu$ at each memory, $k_m=\int r^m\ell\,d\nu$, and in general it does not determine $\nu$.
 \end{theorem}
 
-\begin{proof}
-$f_t=\sum_ic_ig_t(r_i,\ell_i)$ with $g_t(r,\ell)=\psi\bigl(\ell\sum_{j<t}r^{t-1-j}s_j\bigr)$, so equal measures give equal flows for every signal. The rest is the induction of Theorem~\ref{thm:eqinv}(iii), which uses only that the two flow maps agree and depend on signals before $t$. The last sentence follows from the example below Theorem~\ref{thm:stress}.
-\end{proof}
+
+The proofs of Theorems~\ref{thm:satsuff}--\ref{thm:stress} and Proposition~\ref{prop:smooth} are in Supplement~\ref{app:saturating}.
 
 \paragraph{Machine check.} \nolinkurl{Paper1SaturatingSufficiency.lean} proves the pathwise statement for every shape $\psi$ and every causal insider, dealer and signal rule (\texttt{p1\_sat\_sufficiency}, through the generic \texttt{p1\_flow\_market\_invariance}). The passage to equilibria is on paper, as in Theorem~\ref{thm:eqinv}.
 
@@ -44,16 +43,15 @@ with $h$ the linear impulse response.
 \end{enumerate}
 \end{theorem}
 
-\begin{proof}
-(i) By strong induction on $t<\tau$. If the paths agree before $t$, the signals agree before $t$, so every trader of either population has the same state in both markets. All are inside their bands, so both aggregate flows equal the linear flow $\sum_{j<t}k_{t-1-j}s_j$, which is the same for $P$ and $P'$ because the kernels agree. The insider's order and the dealer's price are causal, so they agree at $t$. The same argument with $P'$ replaced by the linear market (the band-linear shape $\psi'(u)=u$) gives the second statement.
-(ii) Build both markets, and the record noise, on one probability space. By (i) the records coincide on $\{\tau\ge T\}$, so the total-variation distance is at most $\Pr(\tau<T)$, and $\tau$ is computed on the linear market.
-(iii) In the linear market from rest, $x=g*w$ with $g=h/\kappa$, and $m_t(r)=(\varphi_r*x)_t$ with $\varphi_r(j)=r^{j}$ shifted by one date. So $m_t(r)$ is centred Gaussian with variance at most $s_r^2\le\sigma_w^2\|\varphi_r\|_1^2\|g\|_1^2$. Here $\|\varphi_r\|_1=1/(1-r)$. Also $|h_t|$ is dominated by the response of the positive economy with persistence $a$ and kernel $|k_m|$, whose total mass is $\kappa/(1-S_{\rm abs})$, so $\|g\|_1\le1/(1-S_{\rm abs})$. For a standard normal $Z$ and $z\ge0$, $\Pr(|Z|>z)\le e^{-z^2/2}$. A union bound over the $T$ dates and $n+n'$ traders gives the bound. A test with both errors at most $\alpha$ needs $\mathrm{TV}\ge1-2\alpha$.
-(iv) Without process noise, the linear path is deterministic, so $\tau\ge T$ surely and (ii) gives distance zero. For a pulse, the linear state is $m_t(r)=A\sum_{j<t}r^{t-1-j}h_j$.
-\end{proof}
 
 \paragraph{Machine check.} The pathwise part (i), including the statement that the market follows the linear market until the first exceedance, is machine-checked for every pair of band-linear shapes and every causal insider, dealer and signal rule (\texttt{p1\_sat\_stress\_invariance}, \texttt{p1\_sat\_follows\_linear}, \texttt{p1\_satAggFlow\_linear\_of\_band}). Parts (ii)--(iv) are on paper.
 
-\paragraph{An example, and what differs at stress.} At memory $r=0.7$, take $P=\{(c,\ell)=(1,0.1)\}$ and $P'=\{(0.25,0.2),(1,0.05)\}$. Both have merged weight $0.1$, so they have the same kernel and are equivalent until stress. Under a hard limit, their total capacities, the largest aggregate flow they can deliver, are $1$ and $1.25$ (\texttt{p1\_sat\_capacity\_differs}). In the market of Section~\ref{sec:model} with $a=0.5$ and $\kappa=0.8$, single pulses up to size $4$ give exactly identical responses. Larger pulses push the most levered trader of $P'$ to its limit, and the responses separate by $0.072$ at size $6$ and $0.364$ at size $12$. Under Gaussian innovations, the simulated probability that some trader leaves its band within $1{,}000$ dates lies below the bound of part (iii) at every noise level tested. It is zero up to $\sigma_w=0.3$, and $0.0175$, $0.0875$ and $0.63$ at $\sigma_w=0.35$, $0.4$ and $0.5$. The scripts are \nolinkurl{research_extension/nonlinear_scoping/sim_wiener.py} and \nolinkurl{sim_passive_clip.py}.
+\paragraph{An example, and what differs at stress.} At memory $r=0.7$, take $P=\{(c,\ell)=(1,0.1)\}$ and $P'=\{(0.25,0.2),(1,0.05)\}$. Both have merged weight $0.1$, so they have the same kernel and are equivalent until stress. Under a hard limit, their total capacities, the largest aggregate flow they can deliver, are $1$ and $1.25$ (\texttt{p1\_sat\_capacity\_differs}). In the market of Section~\ref{sec:model} with $a=0.5$ and $\kappa=0.8$, single pulses up to size $4$ give exactly identical responses. Larger pulses push the most levered trader of $P'$ to its limit, and the responses separate by $0.072$ at size $6$ and $0.364$ at size $12$. Under Gaussian innovations, the simulated probability that some trader leaves its band within $1{,}000$ dates lies below the bound of part (iii) at every noise level tested. It is zero up to $\sigma_w=0.3$, and $0.0175$, $0.0875$ and $0.63$ at $\sigma_w=0.35$, $0.4$ and $0.5$. The scripts are \nolinkurl{research_extension/nonlinear_scoping/sim_wiener.py} and \nolinkurl{sim_passive_clip.py}. Figure~\ref{fig:twolayer} shows the two layers.
+
+\begin{figure}[t]\centering
+\includegraphics[width=\textwidth]{figs_core/fig_twolayer.pdf}
+\caption{The two layers. Populations $P=\{(c,\ell)=(1,0.1)\}$ and $P'=\{(0.25,0.2),(1,0.05)\}$ at memory $0.7$ have the same kernel ($a=0.5$, $\kappa=0.8$). (a)~Under hard limits, a calm probe gives identical responses. (b)~A stress probe pushes the most levered trader to its limit and the responses separate. (c)~Information per probe about the difference (Kullback--Leibler divergence over 30 taps, unit noise): under smooth limits it grows like the sixth power of the probe size (fitted slope $6.00$); under hard limits it is exactly zero below the size at which the first trader reaches its limit ($5.38$, dotted).}\label{fig:twolayer}
+\end{figure}
 
 \begin{proposition}[Smooth saturation: information grows like the sixth power of the probe]\label{prop:smooth}
 Let $\psi=\tanh$. In the probing experiment of Section~\ref{sec:model}, with reset state, no process noise, a single pulse of size $A$ and taps observed with independent $N(0,\sigma^2)$ noise, compare two populations $P$ and $P'$ with the same kernel and with $\rho_P=a+\kappa\sum_ic_i|\ell_i|/(1-r_i)<1$, and likewise $\rho_{P'}<1$. Let $\hat S=\max(\rho_P,\rho_{P'})$, $\Lambda_P=\tfrac13\sum_ic_i|\ell_i|^3/(1-r_i)^3$, and $\Delta M_3=\sum_ic_i\ell_i^3-\sum_jc'_j\ell_j'^{\,3}$.
@@ -66,15 +64,54 @@ Let $\psi=\tanh$. In the probing experiment of Section~\ref{sec:model}, with res
 \end{enumerate}
 \end{proposition}
 
-\begin{proof}
-For $u\ge0$, $\phi(u)=u-\tanh u$ has $\phi(0)=0$ and $\phi'(u)=\tanh^2u\in[0,u^2]$. So $0\le u-\tanh u\le u^3/3$, and by oddness $|\tanh u|\le|u|$ and $|\tanh u-u|\le|u|^3/3$ for all $u$.
-(i) \emph{Size of each path.} Since $|\tanh u|\le|u|$, $|x_t|\le a|x_{t-1}|+\kappa\sum_ic_i|\ell_i|\,(\varphi_{r_i}*|x|)_t$ for $t\ge1$, with $|x_0|=\kappa|A|$. So $|x|$ is dominated by the pulse response of the positive economy with weights $c_i|\ell_i|$. That response has peak $\kappa|A|$ (Lemma~\ref{lem:cm}) and total mass $\kappa|A|/(1-\rho_P)$. Hence $\|x\|_\infty\le\kappa|A|$ and $\|x\|_2\le\|x\|_1\le\kappa|A|/(1-\rho_P)$, and the same holds for the memory states, with an extra factor $1/(1-r_i)$.
-\emph{Difference.} Write $c_i\tanh(\ell_im_{i,t})=c_i\ell_im_{i,t}+R_{i,t}$ with $|R_{i,t}|\le c_i|\ell_i|^3|m_{i,t}|^3/3$. The linear parts give $(k*x)_t$ with the common kernel. So $e=x^P-x^{P'}$ solves the linear closed loop driven by $u_t=\sum_iR_{i,t}-\sum_jR'_{j,t}$ in place of the probe, and $e=h*u$. By Young's inequality, $\|e\|_2\le\|h\|_1\|u\|_2$, and $\|h\|_1\le\kappa/(1-S_{\rm abs})\le\kappa/(1-\hat S)$ as in Theorem~\ref{thm:stress}(iii). Also $\|\,|m_i|^3\|_2\le\|m_i\|_\infty^2\|m_i\|_2\le\kappa^3|A|^3/((1-r_i)^3(1-\rho_P))$, so $\|\sum_iR_i\|_2\le\Lambda_P\kappa^3|A|^3/(1-\rho_P)$. Combining gives the bound on $\|e\|_2$. For $N$ experiments, the Kullback--Leibler divergence is $N\|e\|_2^2/(2\sigma^2)$. Pinsker's inequality and $\mathrm{TV}\ge1-2\alpha$ give the requirement.
-(ii) Both markets have $x_0=\kappa A$ and $m_{i,1}=x_0$, so $x_1^P-x_1^{P'}=\kappa\bigl(\sum_ic_i\tanh(\ell_i\kappa A)-\sum_jc'_j\tanh(\ell'_j\kappa A)\bigr)$. The linear terms cancel because $k_0$ is common, and $\tanh u=u-u^3/3+O(u^5)$ gives the expansion. For $|A|$ small, $|x_1^P-x_1^{P'}|\ge\kappa^4|\Delta M_3||A|^3/6$. The test that compares the average of $N$ first taps with the midpoint has error $\Phi(-\sqrt N\,|x_1^P-x_1^{P'}|/(2\sigma))$, which gives the stated $N$.
-\end{proof}
 
 \paragraph{In words.} Smooth saturation lets a prober learn about leverage, but slowly. Each doubling of the probe buys $64$ times the information, and the large probes that make learning cheap are the ones that push the market toward the limits being measured. Hard limits are starker: no information at all until some trader is pushed to its limit. In the example above, the first-tap gap divided by $A^3$ is $1.5359\times10^{-4}$ at $A=0.05$, against $-\tfrac13\kappa^4\Delta M_3=1.5360\times10^{-4}$.
 
+
+\subsection{What stress reveals}
+
+Theorem~\ref{thm:stress} says what calm data cannot show. The next result says what stress does show: everything that matters. Write
+\[
+ \tilde\mu=\sum_ic_i\,\mathrm{sgn}(\ell_i)\,\delta_{(r_i,|\ell_i|)}
+\]
+for the signed capacity at each memory and each leverage level. A trend follower and a contrarian with the same memory and the same leverage magnitude offset exactly, since $c\,\psi(-\ell m)=-c\,\psi(\ell m)$ for odd $\psi$.
+
+\begin{theorem}[Stress identifies the leverage distribution]\label{thm:satident}
+Let $\psi$ be $\tanh$ or the hard limit. In the probing experiment of Section~\ref{sec:model}, with reset state and exactly observed responses, two populations give identical price responses to every probe sequence if and only if $\tilde\mu_P=\tilde\mu_{P'}$. Probe responses therefore identify, within each memory class, the net capacity at every leverage level. The kernel $k_m=\int\lambda r^m\,\tilde\mu(dr,d\lambda)$ is one linear functional of this measure.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Smooth limits.} For $\psi=\tanh$, identical responses to all probes in an arbitrarily small neighbourhood of zero already imply $\tilde\mu_P=\tilde\mu_{P'}$.
+\item \emph{Hard limits.} For the hard limit, the traders at leverage $|\ell|$ are identified only by probes that move some memory state beyond $1/|\ell|$. Probes that keep every state inside its band identify only the kernel (Theorem~\ref{thm:stress}(iv)).
+\end{enumerate}
+\end{theorem}
+
+The proof (Supplement~\ref{app:saturating}) uses three facts. First, probes can steer the price along any path, so identical responses mean identical maps from past prices to flow. Second, two dates of prices turn that map into a sum of scaled copies of $\psi$, one per memory--leverage pair, with distinct scales for a suitable direction. Third, the copies can be separated: for $\tanh$ by the poles of its analytic continuation, and for the hard limit by the kinks where each pair saturates. The kink argument is constructive. In the example of Figure~\ref{fig:twolayer}, read along one direction, the flow map has kinks at $3.702$ and $14.813$, and their slope jumps return net capacities $0.24989$ and $0.99988$, against true values $0.25$ and $1$. Recovering the second needs a memory state of almost $15$, about four times the stress level at which the first trader saturates.
+
+Theorem~\ref{thm:satident} turns Section~\ref{sec:saturating} into a two-layer theory. Prices in calm markets identify the kernel. Prices under stress identify the full signed measure $\tilde\mu$, which by Theorem~\ref{thm:satsuff} is all that any price-based outcome depends on. Nothing in between can be learned: under hard limits, the information arrives only at the stress level at which each group saturates. Under smooth limits, the order-$n$ information is suppressed by the probe size to the power $2(2n+1)$; Proposition~\ref{prop:smooth} proves the case $n=1$.
+
+\subsection{Deleveraging traders and dealers who anticipate}
+
+\begin{proposition}[Deleveraging traders]\label{prop:delever}
+Let each trader follow any causal rule, for example deleveraging gradually, liquidating, or switching strategy after a loss, provided it trades linearly, $w_im_{i,t}$, as long as its state has stayed inside its band on every date up to $t$. Then Theorem~\ref{thm:stress} holds verbatim for two such populations with the same kernel. Up to the first date at which some trader leaves its band, the paths coincide and equal the linear market's path, and parts (ii)--(iv) follow.
+\end{proposition}
+
+The proof of the pathwise part is the induction of Theorem~\ref{thm:stress}(i). It is machine-checked for arbitrary causal rules outside the bands (\texttt{p1\_delever\_stress\_invariance}). Deleveraging that starts before a hard limit only moves the band edge inward. Calm data remain silent until the first trader starts to cut its position. What happens after that, in a fire sale, is outside these results.
+
+\begin{proposition}[Who sets prices matters]\label{prop:dealers}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item Theorems~\ref{thm:stress} and~\ref{thm:satident} and Proposition~\ref{prop:delever} hold for any causal dealer rule that is the same in the two markets. This covers every rule that depends on the population only through its kernel, for example a dealer who knows only the kernel, or one who prices current flow.
+\item A dealer who knows the population and quotes on the expected next-period feedback flow uses more than the kernel. Suppose the next memory states are Gaussian, $m^+_g\sim N(\bar m_g,s_g^2)$, with every trader inside its band in expectation, $|\ell_g\bar m_g|<1$, and hard limits. Then the expected next-period flows under two populations with the same kernel differ by at most
+\[
+ \sum_{g\in P\cup P'}c_g\sqrt{2/\pi}\;\sigma_g\,e^{-\delta_g^2/(2\sigma_g^2)},\qquad \sigma_g=|\ell_g|s_g,\quad\delta_g=1-|\ell_g\bar m_g|.
+\]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) The proofs of these results use the dealer's rule only through causality and through its being the same map in both markets. (ii) The linear parts of the two expected flows agree because the kernels agree, so the merged weight at each memory is the same. For each trader, $|\mathbb E[c\,\mathrm{clip}(Y)]-c\,\mathbb EY|\le c\,\mathbb E[(|Y|-1)_+]$ with $Y=\ell m^+\sim N(\ell\bar m,\sigma^2)$. Since $|Y|\le|\ell\bar m|+\sigma|Z|$, this is at most $c\,\mathbb E[(\sigma|Z|-\delta)_+]=c\bigl(2\sigma\phi(\delta/\sigma)-2\delta(1-\Phi(\delta/\sigma))\bigr)\le c\sqrt{2/\pi}\,\sigma e^{-\delta^2/(2\sigma^2)}$.
+\end{proof}
+
+\paragraph{In words.} An informed, forward-looking dealer leaks some leverage information into calm prices, because its quote prices the chance of a breach next period. The leak is of the order of the probability of a breach, so it is exponentially small in calm markets. In the example, with expected state $2$ and standard deviation $1$, the two expected flows differ by $1.9\times10^{-5}$, within the bound $4.4\times10^{-4}$. With standard deviation $2$ they differ by $2.9\times10^{-3}$. A full equilibrium with forward-looking dealers and saturating traders is not solved here. This proposition prices only the anticipation channel.
+
 \paragraph{What the supervisor can and cannot learn.} The two results split the population into a part prices reveal in calm markets, the kernel, and a part they reveal only under stress: the distribution of leverage within each memory, weighted by capacity. The second part decides how the market behaves when traders hit their limits, through the total capacity and through how many traders are near their limits. Calm-market price data are therefore the wrong instrument for it, however long the record and however sophisticated the estimator. The options are stress probes, whose cost and risk Proposition~\ref{prop:smooth} prices, actual stress episodes, or disclosure of capacities: position limits, margins and risk budgets. This is a different disclosure from the class-tagged flow of Section~\ref{sec:supervision}. Tagged flow reveals each group's memory and weight. Capacity disclosure reveals how far each group is from its limit.
 
-\paragraph{What is open.} The full identification hierarchy is open. Probes of all small amplitudes should identify the measure $\sum_ic_i\ell_i\,\delta_{(r_i,\ell_i^2)}$, which separates the leverage distribution within each memory up to exactly offsetting trend-follower and contrarian pairs. Proposition~\ref{prop:smooth}(ii) proves only its first nonlinear moment, aggregated across memories. Traders who cut leverage as they approach their limits change $\nu$ along the path. That case, which matters most for fire sales, is not covered by these results. Related ideas appear in the literature on funding constraints and liquidity spirals \citep{brunnermeier2009} and in evidence that crowding predicts tail risk \citep{barroso2022}. The identification of sums of nonlinear branches is a known problem in system identification \citep{dreesen2017}. What is new here is the sufficient measure $\nu$ inside a strategic market, and the exact absence of calm-market information about it.
+\paragraph{What is open.} Three questions remain open. The first is rates for the higher orders of Theorem~\ref{thm:satident}: Proposition~\ref{prop:smooth} gives the first nonlinear moment, and the general order is not proved. The second is a full equilibrium with forward-looking dealers and saturating or deleveraging traders, including what happens after the first breach, in a fire sale. The third is learning agents whose rules change continuously, not only at a band edge. Related ideas appear in the literature on funding constraints and liquidity spirals \citep{brunnermeier2009} and in evidence that crowding predicts tail risk \citep{barroso2022}. The identification of sums of nonlinear branches is a known problem in system identification \citep{dreesen2017}. What is new here is the sufficient measure inside a strategic market, the exact absence of calm-market information about it, and its exact recovery under stress.

@@ -1,0 +1,37 @@
+\section{Saturating traders: proofs and checks}\label{app:saturating}
+
+\paragraph{Theorem~\ref{thm:satsuff}.}
+\begin{proof}
+$f_t=\sum_ic_ig_t(r_i,\ell_i)$ with $g_t(r,\ell)=\psi\bigl(\ell\sum_{j<t}r^{t-1-j}s_j\bigr)$, so equal measures give equal flows for every signal. The rest is the induction of Theorem~\ref{thm:eqinv}(iii), which uses only that the two flow maps agree and depend on signals before $t$. The last sentence follows from the example below Theorem~\ref{thm:stress}.
+\end{proof}
+
+\paragraph{Theorem~\ref{thm:stress}.}
+\begin{proof}
+(i) By strong induction on $t<\tau$. If the paths agree before $t$, the signals agree before $t$, so every trader of either population has the same state in both markets. All are inside their bands, so both aggregate flows equal the linear flow $\sum_{j<t}k_{t-1-j}s_j$, which is the same for $P$ and $P'$ because the kernels agree. The insider's order and the dealer's price are causal, so they agree at $t$. The same argument with $P'$ replaced by the linear market (the band-linear shape $\psi'(u)=u$) gives the second statement.
+(ii) Build both markets, and the record noise, on one probability space. By (i) the records coincide on $\{\tau\ge T\}$, so the total-variation distance is at most $\Pr(\tau<T)$, and $\tau$ is computed on the linear market.
+(iii) In the linear market from rest, $x=g*w$ with $g=h/\kappa$, and $m_t(r)=(\varphi_r*x)_t$ with $\varphi_r(j)=r^{j}$ shifted by one date. So $m_t(r)$ is centred Gaussian with variance at most $s_r^2\le\sigma_w^2\|\varphi_r\|_1^2\|g\|_1^2$. Here $\|\varphi_r\|_1=1/(1-r)$. Also $|h_t|$ is dominated by the response of the positive economy with persistence $a$ and kernel $|k_m|$, whose total mass is $\kappa/(1-S_{\rm abs})$, so $\|g\|_1\le1/(1-S_{\rm abs})$. For a standard normal $Z$ and $z\ge0$, $\Pr(|Z|>z)\le e^{-z^2/2}$. A union bound over the $T$ dates and $n+n'$ traders gives the bound. A test with both errors at most $\alpha$ needs $\mathrm{TV}\ge1-2\alpha$.
+(iv) Without process noise, the linear path is deterministic, so $\tau\ge T$ surely and (ii) gives distance zero. For a pulse, the linear state is $m_t(r)=A\sum_{j<t}r^{t-1-j}h_j$.
+\end{proof}
+
+\paragraph{Proposition~\ref{prop:smooth}.}
+\begin{proof}
+For $u\ge0$, $\phi(u)=u-\tanh u$ has $\phi(0)=0$ and $\phi'(u)=\tanh^2u\in[0,u^2]$. So $0\le u-\tanh u\le u^3/3$, and by oddness $|\tanh u|\le|u|$ and $|\tanh u-u|\le|u|^3/3$ for all $u$.
+(i) \emph{Size of each path.} Since $|\tanh u|\le|u|$, $|x_t|\le a|x_{t-1}|+\kappa\sum_ic_i|\ell_i|\,(\varphi_{r_i}*|x|)_t$ for $t\ge1$, with $|x_0|=\kappa|A|$. So $|x|$ is dominated by the pulse response of the positive economy with weights $c_i|\ell_i|$. That response has peak $\kappa|A|$ (Lemma~\ref{lem:cm}) and total mass $\kappa|A|/(1-\rho_P)$. Hence $\|x\|_\infty\le\kappa|A|$ and $\|x\|_2\le\|x\|_1\le\kappa|A|/(1-\rho_P)$, and the same holds for the memory states, with an extra factor $1/(1-r_i)$.
+\emph{Difference.} Write $c_i\tanh(\ell_im_{i,t})=c_i\ell_im_{i,t}+R_{i,t}$ with $|R_{i,t}|\le c_i|\ell_i|^3|m_{i,t}|^3/3$. The linear parts give $(k*x)_t$ with the common kernel. So $e=x^P-x^{P'}$ solves the linear closed loop driven by $u_t=\sum_iR_{i,t}-\sum_jR'_{j,t}$ in place of the probe, and $e=h*u$. By Young's inequality, $\|e\|_2\le\|h\|_1\|u\|_2$, and $\|h\|_1\le\kappa/(1-S_{\rm abs})\le\kappa/(1-\hat S)$ as in Theorem~\ref{thm:stress}(iii). Also $\|\,|m_i|^3\|_2\le\|m_i\|_\infty^2\|m_i\|_2\le\kappa^3|A|^3/((1-r_i)^3(1-\rho_P))$, so $\|\sum_iR_i\|_2\le\Lambda_P\kappa^3|A|^3/(1-\rho_P)$. Combining gives the bound on $\|e\|_2$. For $N$ experiments, the Kullback--Leibler divergence is $N\|e\|_2^2/(2\sigma^2)$. Pinsker's inequality and $\mathrm{TV}\ge1-2\alpha$ give the requirement.
+(ii) Both markets have $x_0=\kappa A$ and $m_{i,1}=x_0$, so $x_1^P-x_1^{P'}=\kappa\bigl(\sum_ic_i\tanh(\ell_i\kappa A)-\sum_jc'_j\tanh(\ell'_j\kappa A)\bigr)$. The linear terms cancel because $k_0$ is common, and $\tanh u=u-u^3/3+O(u^5)$ gives the expansion. For $|A|$ small, $|x_1^P-x_1^{P'}|\ge\kappa^4|\Delta M_3||A|^3/6$. The test that compares the average of $N$ first taps with the midpoint has error $\Phi(-\sqrt N\,|x_1^P-x_1^{P'}|/(2\sigma))$, which gives the stated $N$.
+\end{proof}
+
+\paragraph{Theorem~\ref{thm:satident}.}
+\begin{proof}
+\emph{Step 1: probes steer the price.} Write $F_t$ for aggregate feedback flow, a function of $x_0,\ldots,x_{t-1}$. Since $x_t=ax_{t-1}+\kappa(F_t+v_t)$ with $\kappa>0$, the probe $v_t=(x^*_t-ax^*_{t-1})/\kappa-F_t(x^*_{<t})$ realizes any target path $x^*$, and $F_t=(x_t-ax_{t-1})/\kappa-v_t$ is read from the response. So two populations give identical responses to all probes if and only if their flow maps agree on all paths. Because $|F_t|\le\sum_ic_i|\ell_i||m_{i,t}|$, small target paths need only small probes, which gives the version of part (i).
+
+\emph{Step 2: sufficiency of $\tilde\mu$.} Both shapes are odd, so $c\,\psi(\ell m)=c\,\mathrm{sgn}(\ell)\,\psi(|\ell|m)$ and $F_t=\int\psi(\lambda\,m_t(r))\,\tilde\mu(dr,d\lambda)$. Equal $\tilde\mu$ give equal flow maps, hence identical responses.
+
+\emph{Step 3: identification.} Let $D=\tilde\mu_P-\tilde\mu_{P'}=\sum_kd_k\delta_{(r_k,\lambda_k)}$ with distinct atoms and $\lambda_k>0$. Take the path with $x_0=\theta u$ and $x_1=u$. Then $m_2(r)=r\theta u+u$, and equal flow maps at date $2$ give $g(u)=\sum_kd_k\psi(s_ku)=0$ with $s_k=\lambda_k(r_k\theta+1)$. This holds for all $u$ (hard limit) or for all $u$ near $0$ ($\tanh$, part (i)). For two distinct atoms, $\lambda_k(r_k\theta+1)=\lambda_j(r_j\theta+1)$ is an affine equation in $\theta$ that is not an identity, so it has at most one root. Fix $\theta>0$ outside these finitely many roots; then the $s_k>0$ are distinct.
+
+\emph{$\tanh$.} $g$ is meromorphic on $\mathbb C$ and vanishes near $0$, so it vanishes identically and has zero residue at every point. Suppose some $d_k\ne0$, and let $S$ be the largest $s_k$ with $d_k\ne0$. At $u^*=i\pi/(2S)$, the term $\tanh(Su)$ has a simple pole with residue $1/S$. For $s_k<S$, $s_ku^*=i\pi s_k/(2S)$ with $0<s_k/(2S)<\tfrac12$, which is not a pole of $\tanh$. So the residue of $g$ at $u^*$ is $d_k/S\ne0$, a contradiction. Hence $D=0$.
+
+\emph{Hard limit.} $g$ is piecewise linear on $u\ge0$. At $u=1/s_k$ only the $k$-th term changes slope, by $-d_ks_k$, because the $s_k$ are distinct. $g\equiv0$ forces every slope change to vanish, so $D=0$. The slope change at $1/s_k$ is visible only on paths with $u\ge1/s_k$: the state $m_2(r_k)$ must reach the band edge of the traders at $(r_k,\lambda_k)$. This proves part (ii).
+\end{proof}
+
+\paragraph{Numerical checks.} The scripts are \nolinkurl{research_extension/nonlinear_scoping/identification_and_figure.py}, \nolinkurl{sim_wiener.py}, \nolinkurl{sim_passive_clip.py} and \nolinkurl{dealer_anticipation.py}. Two populations with the same $\tilde\mu$ (a trend follower of capacity $2$ and a contrarian of capacity $1$, against one trend follower of capacity $1$, all at $r=0.7$ and $|\ell|=0.1$) give identical responses to 50 random probe sequences of standard deviation $10$, with gap exactly $0$, under both shapes. The constructive recovery in the main text locates the kinks at $3.702$ and $14.813$ (true $3.704$ and $14.815$) and returns net capacities $0.24989$ and $0.99988$.

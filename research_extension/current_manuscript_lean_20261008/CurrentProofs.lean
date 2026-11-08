@@ -130,3 +130,4 @@ import CurrentProofs.Paper1CRUniformW2
 import CurrentProofs.Paper1KCohortUniform
 import CurrentProofs.Paper1KCohortEstimators
 import CurrentProofs.Paper1SaturatingSufficiency
+import CurrentProofs.Paper1CoreExtensions
