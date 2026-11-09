@@ -202,4 +202,158 @@ theorem p1_cubic_pulse_tap1_price_gap {K K' : ℕ} (γ : ℝ)
   rw [p1_cubic_pulse_tap1_kernel_cancel γ c l c' l' κ A hk]
   ring
 
+/-- **Theorem 7.4 (Step 3a, 2x2 Vandermonde regular):**
+For distinct positive scales `s₁² ≠ s₂²`, a 2-term vanishing moment system
+`x + y = 0` and `x * s₁² + y * s₂² = 0` implies `x = 0` and `y = 0`. -/
+theorem p1_vandermonde_2x2_invertible (x y s1_sq s2_sq : ℝ)
+    (hdiff : s1_sq ≠ s2_sq)
+    (h0 : x + y = 0)
+    (h1 : x * s1_sq + y * s2_sq = 0) :
+    x = 0 ∧ y = 0 := by
+  have hy : y = -x := by linarith
+  rw [hy] at h1
+  have hfact : x * (s1_sq - s2_sq) = 0 := by
+    calc x * (s1_sq - s2_sq) = x * s1_sq + (-x) * s2_sq := by ring
+         _ = 0 := h1
+  cases mul_eq_zero.mp hfact with
+  | inl hx =>
+    have hy0 : y = 0 := by linarith
+    exact ⟨hx, hy0⟩
+  | inr hsub =>
+    exfalso
+    exact hdiff (sub_eq_zero.mp hsub)
+
+/-- **Theorem 7.4 (Step 3a, Distinct Scale Separation):**
+In a 2-group odd Taylor series expansion, if two positive scales `s₁ ≠ s₂` satisfy
+`d₁ * s₁ + d₂ * s₂ = 0` and `(d₁ * s₁) * s₁² + (d₂ * s₂) * s₂² = 0`, then
+`d₁ = 0` and `d₂ = 0`. -/
+theorem p1_vandermonde_2x2_weights_zero (d1 d2 s1 s2 : ℝ)
+    (hs1_pos : s1 > 0) (hs2_pos : s2 > 0) (hdiff : s1 ≠ s2)
+    (h0 : d1 * s1 + d2 * s2 = 0)
+    (h1 : (d1 * s1) * s1^2 + (d2 * s2) * s2^2 = 0) :
+    d1 = 0 ∧ d2 = 0 := by
+  have hs_sq_diff : s1^2 ≠ s2^2 := by
+    intro heq
+    have hs1_eq_s2 : s1 = s2 := by
+      have hs1_sq : s1^2 = s2^2 := heq
+      have hs1_nonneg : 0 ≤ s1 := by linarith
+      have hs2_nonneg : 0 ≤ s2 := by linarith
+      have hs_diff : s1^2 - s2^2 = 0 := by linarith
+      have hprod : (s1 - s2) * (s1 + s2) = 0 := by
+        calc (s1 - s2) * (s1 + s2) = s1^2 - s2^2 := by ring
+             _ = 0 := hs_diff
+      cases mul_eq_zero.mp hprod with
+      | inl hsub => linarith
+      | inr hsum => linarith
+    exact hdiff hs1_eq_s2
+  have hxy := p1_vandermonde_2x2_invertible (d1 * s1) (d2 * s2) (s1^2) (s2^2) hs_sq_diff h0 h1
+  have hd1 : d1 = 0 := by
+    have hx := hxy.1
+    cases mul_eq_zero.mp hx with
+    | inl hd => exact hd
+    | inr hs => linarith
+  have hd2 : d2 = 0 := by
+    have hy := hxy.2
+    cases mul_eq_zero.mp hy with
+    | inl hd => exact hd
+    | inr hs => linarith
+  exact ⟨hd1, hd2⟩
+
+/-- Piecewise-linear ramp function `ramp(u) = max(0, u)`. -/
+noncomputable def ramp (u : ℝ) : ℝ := max 0 u
+
+theorem ramp_of_nonpos {u : ℝ} (hu : u ≤ 0) : ramp u = 0 := by
+  unfold ramp; exact max_eq_left hu
+
+theorem ramp_of_pos {u : ℝ} (hu : u ≥ 0) : ramp u = u := by
+  unfold ramp; exact max_eq_right hu
+
+/-- **Theorem 7.4 (Step 3b, Kink Slope Jump Recovery for Hard Limits):**
+Consider two distinct saturation points `0 < u₁ < u₂`. If a piecewise-linear response
+`g(u) = a₀ * u - d₁ * ramp(u - u₁) - d₂ * ramp(u - u₂)` vanishes for all `u ≥ 0`,
+then the initial slope and each jump vanish: `a₀ = 0`, `d₁ = 0`, and `d₂ = 0`. -/
+theorem p1_hard_limit_kink_recovery (a0 d1 d2 u1 u2 : ℝ)
+    (hu1_pos : 0 < u1) (hu12 : u1 < u2)
+    (hg : ∀ u ≥ 0, a0 * u - d1 * ramp (u - u1) - d2 * ramp (u - u2) = 0) :
+    a0 = 0 ∧ d1 = 0 ∧ d2 = 0 := by
+  have hu_half : 0 ≤ u1 / 2 := by linarith
+  have hu_half_pos : u1 / 2 > 0 := by linarith
+  have hu_half_lt1 : u1 / 2 - u1 ≤ 0 := by linarith
+  have hu_half_lt2 : u1 / 2 - u2 ≤ 0 := by linarith
+  have hg_half := hg (u1 / 2) hu_half
+  rw [ramp_of_nonpos hu_half_lt1, ramp_of_nonpos hu_half_lt2] at hg_half
+  have ha0 : a0 = 0 := by
+    have h_simp : a0 * (u1 / 2) = 0 := by linarith
+    cases mul_eq_zero.mp h_simp with
+    | inl ha => exact ha
+    | inr hu => linarith
+  have hu_mid : (u1 + u2) / 2 ≥ 0 := by linarith
+  have hu_mid_gt1 : (u1 + u2) / 2 - u1 ≥ 0 := by linarith
+  have hu_mid_lt2 : (u1 + u2) / 2 - u2 ≤ 0 := by linarith
+  have hg_mid := hg ((u1 + u2) / 2) hu_mid
+  rw [ha0, zero_mul, zero_sub, ramp_of_pos hu_mid_gt1, ramp_of_nonpos hu_mid_lt2] at hg_mid
+  have hd1 : d1 = 0 := by
+    have h_zero : d1 * ((u1 + u2) / 2 - u1) = 0 := by linarith
+    cases mul_eq_zero.mp h_zero with
+    | inl hd => exact hd
+    | inr hu => linarith
+  have hu_end : u2 + 1 ≥ 0 := by linarith
+  have hu_end_gt1 : u2 + 1 - u1 ≥ 0 := by linarith
+  have hu_end_gt2 : u2 + 1 - u2 ≥ 0 := by linarith
+  have hg_end := hg (u2 + 1) hu_end
+  have hramp := ramp_of_pos hu_end_gt2
+  have hd2 : d2 = 0 := by
+    have h1 : a0 * (u2 + 1) - d1 * ramp (u2 + 1 - u1) - d2 * ramp (u2 + 1 - u2) = 0 := hg_end
+    have hzero : a0 * (u2 + 1) = 0 := by rw [ha0, zero_mul]
+    have hzero1 : d1 * ramp (u2 + 1 - u1) = 0 := by rw [hd1, zero_mul]
+    have h1_sub : d2 * ramp (u2 + 1 - u2) = 0 := by
+      linarith [h1, hzero, hzero1]
+    have h_zero : d2 * (u2 + 1 - u2) = 0 := by
+      rw [hramp] at h1_sub
+      exact h1_sub
+    cases mul_eq_zero.mp h_zero with
+    | inl hd => exact hd
+    | inr hu => linarith
+  exact ⟨ha0, hd1, hd2⟩
+
+/-- **Proposition 7.5(ii): Post-breach fire-sale feedback loop gain.**
+When the aggregate liquidation feedback loop gain `G = κ * Σ λ_i |l_i| η_i / (1 - r_i)` exceeds 1,
+the secondary induced feedback liquidation flow `F_ind = G * F_0` strictly amplifies
+the initial breach liquidation shock `F_0 > 0`: `F_ind > F_0`. -/
+theorem p1_firesale_loop_gain_cascade (G F0 : ℝ) (hG : G > 1) (hF0 : F0 > 0) :
+    G * F0 > F0 := by
+  have hpos : (G - 1) * F0 > 0 := mul_pos (by linarith) hF0
+  linarith
+
+/-- **Proposition 7.5(ii), Calm Contraction:**
+When the loop gain satisfies `G ≤ 1` and `F_0 ≥ 0`, secondary liquidation flow is non-amplifying:
+`G * F_0 ≤ F_0`. -/
+theorem p1_firesale_calm_contract (G F0 : ℝ) (hG : G ≤ 1) (hF0 : F0 ≥ 0) :
+    G * F0 ≤ F0 := by
+  have h : (1 - G) * F0 ≥ 0 := mul_nonneg (by linarith) hF0
+  linarith
+
+/-- **Proposition 7.6(i): Forward-Looking Dealer Expected Linear Flow Invariance.**
+If two populations share the linear kernel weight `Σ c_i l_i = Σ c'_j l'_j`, then under any
+common expected memory state `m_bar`, their expected linear feedback flows are identical:
+`Σ c_i l_i m_bar = Σ c'_j l'_j m_bar`. -/
+theorem p1_dealer_expected_linear_invariance {K K' : ℕ}
+    (c l : Fin K → ℝ) (c' l' : Fin K' → ℝ) (m_bar : ℝ)
+    (hk : ∑ i, c i * l i = ∑ j, c' j * l' j) :
+    (∑ i, c i * l i * m_bar) = (∑ j, c' j * l' j * m_bar) := by
+  have h1 : (∑ i, c i * l i * m_bar) = (∑ i, c i * l i) * m_bar := by
+    rw [← sum_mul]
+  have h2 : (∑ j, c' j * l' j * m_bar) = (∑ j, c' j * l' j) * m_bar := by
+    rw [← sum_mul]
+  rw [h1, h2, hk]
+
+/-- **Proposition 7.6(ii): Soft-to-Hard Truncation Gap is Bounded by Tail Departure.**
+For any linear flow `y` and clipped flow `clip(y) = max(-1, min(1, y))`, when `|y| ≤ 1`,
+the linear and clipped flows coincide identically (`clip(y) = y`). -/
+theorem p1_clip_in_band (y : ℝ) (hlo : -1 ≤ y) (hhi : y ≤ 1) :
+    max (-1) (min 1 y) = y := by
+  have hmin : min 1 y = y := min_eq_right hhi
+  rw [hmin]
+  exact max_eq_right hlo
+
 end CurrentMM
