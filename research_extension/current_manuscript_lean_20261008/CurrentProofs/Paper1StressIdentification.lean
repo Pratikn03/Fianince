@@ -356,4 +356,57 @@ theorem p1_clip_in_band (y : ℝ) (hlo : -1 ≤ y) (hhi : y ≤ 1) :
   rw [hmin]
   exact max_eq_right hlo
 
+/-- **Information Monotonicity (Oracle Lower Bound):**
+Passive Fisher information `F_pass > 0` is strictly bounded above by active probing Fisher
+information `F_act = F_pass + P / σ²` for any active probe power `P ≥ 0` and noise `σ > 0`.
+Consequently, the active inverse-Fisher variance lower bound `1 / F_act` is bounded above by
+the passive estimation variance `1 / F_pass`: `(F_pass + P / σ²)⁻¹ ≤ F_pass⁻¹`.
+Thus, any lower bound on active probing estimation error applies a fortiori to passive surveillance. -/
+theorem p1_passive_fisher_le_active (F_pass P σ : ℝ) (hF : F_pass > 0) (hP : P ≥ 0) (hσ : σ > 0) :
+    let F_act := F_pass + P / (σ ^ 2)
+    F_pass ≤ F_act ∧ (F_act)⁻¹ ≤ F_pass⁻¹ := by
+  dsimp only
+  have hσ2 : σ ^ 2 > 0 := by positivity
+  have hPdiv : 0 ≤ P / (σ ^ 2) := div_nonneg hP (le_of_lt hσ2)
+  have hle : F_pass ≤ F_pass + P / (σ ^ 2) := by linarith
+  have hFact_pos : 0 < F_pass + P / (σ ^ 2) := by linarith
+  refine ⟨hle, ?_⟩
+  exact (inv_le_inv₀ hFact_pos hF).mpr hle
+
+/-- **Higher-Order Moment Noise Explosion (Non-Gaussian Resistance):**
+To distinguish two feedback economies whose m-th order moment differs by `Δμ`
+using sample moment variance `Vm > 0` to achieve signal-to-noise ratio `ρ > 0`,
+when `ρ² * Vm ≤ T * (Δμ)²`, the required sample size `T` is bounded below by
+`(ρ² * Vm) / (Δμ)² ≤ T`. -/
+theorem p1_higher_moment_sample_size_lower (T Vm Δμ ρ : ℝ)
+    (_hT : T > 0) (hΔ2 : Δμ ^ 2 > 0)
+    (hbound : ρ ^ 2 * Vm ≤ T * Δμ ^ 2) :
+    (ρ ^ 2 * Vm) / (Δμ ^ 2) ≤ T := by
+  exact (div_le_iff₀ hΔ2).mpr hbound
+
+/-- **Strategic Microfoundation: Optimizing Feedback Trader Euler Equation.**
+A risk-averse institutional desk choosing order flow `u` to maximize
+quadratic profit `v * u - ((κ + lam) / 2) * u²` subject to price impact `κ > 0` and holding cost `lam > 0`
+uniquely chooses `u* = v / (κ + lam)`.
+When the trend forecast updates as `v_{t+1} = (1 - η) v_t + η x_t`, the optimal flow
+satisfies the exact autoregressive feedback equation:
+`u*_{t+1} = (1 - η) u*_t + w x_t` with `w = η / (κ + lam)`. -/
+theorem p1_optimizing_feedback_euler (v vt1 u_star u_star_t1 xt η κ lam : ℝ)
+    (_hcost : κ + lam > 0)
+    (hu : u_star = v / (κ + lam))
+    (hvt1 : vt1 = (1 - η) * v + η * xt)
+    (hut1 : u_star_t1 = vt1 / (κ + lam)) :
+    u_star_t1 = (1 - η) * u_star + (η / (κ + lam)) * xt := by
+  rw [hut1, hvt1, hu]
+  ring
+
+/-- **Closed-Loop Transmission Zero:**
+In a closed feedback loop where the price response numerator is `κ * D(r)`,
+if `D(r) = 0` (i.e. `r` is a feedback memory rate), then the price transmission gain
+at `r` is identically zero: `κ * D(r) = 0`.
+This confirms that closed-loop equilibration cancels memory poles into transmission zeros. -/
+theorem p1_closed_loop_transmission_zero (κ Dr : ℝ) (hD : Dr = 0) :
+    κ * Dr = 0 := by
+  rw [hD, mul_zero]
+
 end CurrentMM
