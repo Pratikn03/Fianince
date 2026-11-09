@@ -131,3 +131,4 @@ import CurrentProofs.Paper1KCohortUniform
 import CurrentProofs.Paper1KCohortEstimators
 import CurrentProofs.Paper1SaturatingSufficiency
 import CurrentProofs.Paper1CoreExtensions
+import CurrentProofs.Paper1StressIdentification

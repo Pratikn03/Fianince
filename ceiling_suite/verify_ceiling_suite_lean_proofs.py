@@ -101,6 +101,14 @@ PAPER1_MAP = {
     "fhc:decision": ("p1_fhc_decision", "p1_fhc_decision"),
     "fhc:pair": ("p1_fhc_pair", "p1_fhc_pair"),
     "fhc:priced": ("p1_fhc_priced", "p1_fhc_priced"),
+    "thm:inventory": (["p1_inventory_foc", "p1_inventory_innovation", "p1_inventory_benchmark", "p1_inventory_small_feedback"], []),
+    "thm:eqreduced": (["p1_eq_realize_D", "p1_eq_realize_dealer", "p1_eq_scaled_cohort"], []),
+    "cor:eqdisclosure": (["p1_prop_tagged_flow_removes_barrier", "p1_thm_discvalue_ratio"], []),
+    "thm:fragility": (["p1_fragility_feedback_bound", "p1_fragility_benchmark_bound", "p1_fragility_K_bound"], []),
+    "thm:eqinv": (["p1_eqAggFlow_kernel", "p1_eqAggFlow_of_kernel", "p1_kernel_of_eqAggFlow", "p1_eq_market_invariance", "p1_eq_insider_profit_invariance", "p1_eq_group_level_differs"], []),
+    "thm:insider": (["p1_insider_reduced_form", "p1_insider_best_response", "p1_insider_kyle_limit", "p1_insider_posterior_variance"], []),
+    "thm:rents": (["p1_rents_symmetrize", "p1_rents_optimum", "p1_rents_value"], []),
+    "thm:eqhalt": (["p1_halt_kernel_gap", "p1_halt_kernel_bound"], []),
 }
 
 PAPER2_MAP = {
