@@ -49,6 +49,7 @@ workspace cannot reach the exchanges. Reproduction therefore requires a Colab ru
 | E22 | same, N3 secondary | P | sign stable within month | Fail 21/30 | same | registered | same |
 | E23 | same, N3 secondary | P | interval shrinks at root-T | Pass 30/30, median ratio 1.69 vs 1.73 | same | registered | same |
 | E24 (P1T) | TWSE tagged flows, holdout 2019-2023 | B | price deviation improves out-of-sample forecasts of foreign flow (D > 0) | Supportive: D = 0.0426 [0.0206, 0.0643]; pre-specified reverse-causality check D = -0.0065 [-0.0316, 0.0165], not supportive (reading B) | `results/p1t_holdout_A4_printed_output.txt` (results zip pending) | registered (P1T, A1-A4) | run once, 8 Nov 2026 |
+| E25 (P7S) | Binance USDT perpetuals 5m, prospective 2026-11-16 to 2027-02-14 | P | Stress moves reveal limit proximity (DiD != 0) while calm moves remain silent (|beta_calm| < E) | Registered; burned schema probe passed (2024-01-02); validation executor passed | `P7S_stress_spec.md` (SHA 780a1d70...), `P7S_SHA256SUMS` | registered prospective holdout | executor validated |
 
 ## Findings of the audit
 
