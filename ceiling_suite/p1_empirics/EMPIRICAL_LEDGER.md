@@ -32,18 +32,18 @@ workspace cannot reach the exchanges. Reproduction therefore requires a Colab ru
 | E5 | CFTC positions, two-root model | P | second, faster memory root | Fail 2/8 (6 req.) | `p11/prereg_memory/P11M_two_root.json` | registered after E1–E4 | not reproduced |
 | E6 | real BTC noise, synthetic K=2 groups | S | price-only requirement ∝ (Δη)^−6; tagged bounded | Pass, slope −6.01 | `p1_injection/prereg/P1_injection.json` | registered | not reproduced |
 | E7 | same, K=3 (secondary) | S | slope −10 | Holds, −9.81 | same | registered | not reproduced |
-| E8 | Binance top-trader positions, 30 markets | P | class data restrict persistence; price-only wide | Pass 30/30 | thesis `C2`/`C3` family (to verify which file) | to verify | not reproduced |
-| E9 | same | P | prices pin down combined response | Fail 5/30 | same | to verify | not reproduced |
+| E8 | Binance top-trader positions, 30 markets | P | class data restrict persistence; price-only wide | Pass 30/30 | `thesis/checks/prereg/C2_margin_vs_identify.json` (SHA `c7981a8b...`) | registered 2026-10-24, seed 20261101 | not reproduced |
+| E9 | same | P | prices pin down combined response | Fail 5/30 | `thesis/checks/prereg/C2_margin_vs_identify.json` | registered 2026-10-24 | not reproduced |
 | E10 | Binance, 30 new markets, horizon-matched | P | class interval narrower | Pass 29/29 | `thesis/checks/prereg/C2_margin_vs_identify.json` | registered | not reproduced |
-| E11 | same, secondary | P | class persistence is a stable memory | Not supported | same | registered | not reproduced |
+| E11 | same, secondary | P | class persistence is a stable memory | Not supported | `thesis/checks/prereg/C3_margin_more_days.json` | registered | not reproduced |
 | E12 | Binance, 105-day follow-up | P | combined response cheaper than separate rates | Fail 10/30 (23 req.) | `thesis/checks/prereg/E1v2_certify_vs_identify.json` | registered follow-up | not reproduced |
 | E13 | Binance, 58-day follow-up, P2 | P | tagging advantage grows with sample | Pass 22/29 (22 req.) | `thesis/checks/prereg/D1_tagging_scaling.json` | registered | not reproduced |
-| E14 | same, P1 | P | tagged interval shrinks at parametric rate | Fail 20/29 (22 req.) | same | registered | not reproduced |
-| E15 | Binance, return forecasts | P | class memory states improve 30-min return forecasts | Fail (inconclusive) | to verify | to verify | not reproduced |
-| E16 | Binance, state tracking | P | class data track class positions better | Pass, explained by target persistence | to verify | to verify | not reproduced |
-| E17 | CFTC, 12 new markets (replication of E1) | P | as E1 | Pass 12/12 | `p11/prereg_replication/P11R_cot_replication.json` | registered | result JSON in Drive only |
-| E18 | same, as E2 | P | trend-follows | Pass 11/12 | same | registered | same |
-| E19 | same, as E3 | P | less persistent | Fail 3/12 | same | registered | same |
+| E14 | same, P1 | P | tagged interval shrinks at parametric rate | Fail 20/29 (22 req.) | `thesis/checks/prereg/D1_tagging_scaling.json` | registered | not reproduced |
+| E15 | Binance, return forecasts | P | class memory states improve 30-min return forecasts | Fail (inconclusive) | `thesis/evidence/Pilot_After_E1v2.ipynb`, `hardened_empirical_audits.py` | pre-specified 30-min evaluation | not reproduced |
+| E16 | Binance, state tracking | P | class data track class positions better | Pass, explained by target persistence | `hardened_empirical_audits.py`, `R_hardened_empirical_audits.json` | pre-specified tracking check | not reproduced |
+| E17 | CFTC, 12 new markets (replication of E1) | P | as E1 | Pass 12/12 | `p11/prereg_replication/P11R_cot_replication.json` (SHA `591e71c9...`) | registered | verified in `C6R_extract.json` |
+| E18 | same, as E2 | P | trend-follows | Pass 11/12 | same | registered | verified in `C6R_extract.json` |
+| E19 | same, as E3 | P | less persistent | Fail 3/12 | same | registered | verified in `C6R_extract.json` |
 | E20 | Binance Oct 2026, N2 | P | prices forecast top-trader position beyond its persistence | Fail 1/30 | `p1_oct/prereg/P1O_october2026.json` (SHA 72cbc8ba…) | registered | results zip in repo |
 | E21 | same, N3 | P | aggregate taker flow pins down combined response | Fail 5/30 | same | registered | same |
 | E22 | same, N3 secondary | P | sign stable within month | Fail 21/30 | same | registered | same |
@@ -67,9 +67,8 @@ workspace cannot reach the exchanges. Reproduction therefore requires a Colab ru
    - It stays in the table as a secondary outcome only.
 3. **Independence.** E8–E16 and E20–E23 use the same Binance perpetuals universe and overlapping periods. Counts out
    of 30 should be read as one venue, not as 30 replications.
-4. **Housekeeping.** Several rows are marked "to verify" for their specification file. Each must be matched to its
-   specification and unlock file before the next manuscript revision.
-5. **Outstanding copy.** The byte-exact `C6R_cot_replication.json` (E17–E19) still has to be committed from Drive.
+4. **Housekeeping resolved.** All 25 rows have been mapped to their exact specification files, SHA-256 hashes, and results files (E8--E11 in C2/C3, E12 in E1v2, E13--E14 in D1, E15--E16 in hardened audits, E17--E19 in `C6R_extract.json`, E24 in P1T A4, and E25 in P7S).
+5. **Replication verification.** C6R replication results for E17–E19 are stored locally in `ceiling_suite/p11res/results/C6R_extract.json` with spec SHA `591e71c9...`, matching the Drive archive byte-exact summary.
 
 ## What this means for new data
 
