@@ -111,7 +111,7 @@ The central idea of this paper, that an aggregate is determined by a distributio
 \item \emph{Memories are zeros of the closed loop.} In mixture and open-loop problems the unknown rates are locations or poles of the observed law. In a feedback market they are transmission zeros of the price response (Theorem~\ref{thm:minphase}). That decides which estimators are valid: fitting poles to prices finds the closed-loop eigenvalues and misses the memories. Because the closed loop is minimum phase, passive data face at least the same barrier as active probing.
 \item \emph{The results hold in equilibrium.} With inventory-averse dealers who price the feedback traders' predictable flow, the equilibrium is still the closed loop, with unchanged memories (Theorem~\ref{thm:eqreduced}).
 \item \emph{Limits are invisible until reached, and stress reveals them exactly.} With saturating traders, the sufficient object is a measure over memory and leverage. Calm-market prices reveal only its linear part, and stress identifies all of it (Section~\ref{sec:saturating}). The last step of the stress result rests on a known uniqueness theorem for networks with one hidden layer \citep{sussmann1992}; the reduction from prices to that setting is ours.
-\item \emph{A supervisory split with a price.} The kernel suffices for market-wide actions and not for targeted ones, and class-tagged disclosure removes the cost of the targeted information (Propositions~\ref{prop:target} and~\ref{prop:tagged}, Theorem~\ref{thm:discvalue}).
+\item \emph{A supervisory split with a price.} The kernel suffices for market-wide actions and not for targeted ones, and class-tagged disclosure removes the cost of the targeted information (Propositions~\ref{prop:target} and~\ref{prop:tagged}, Theorem~\ref{thm:discvalue}). A group that can mimic another group's memory also caps what any price-based targeting can achieve, whatever the amount of data (Proposition~\ref{prop:hiding}).
 \end{enumerate}
 The induction behind Theorem~\ref{thm:eqinv}(iii) is short. Its content is not the induction but the object it isolates. The kernel is identified from prices, it is sufficient for every price-based outcome, and it is insufficient exactly for the targeted decisions supervisors care about.
 
@@ -340,7 +340,7 @@ The same requirement holds for the permutation-invariant loss $W_1(\hat M,M)$ be
 
 The two losses have different targets. The weights of the two economies differ by a constant that does not shrink with $\Delta\eta$, so the first statement is about weights at fixed accuracy, which Theorem~\ref{prop:esprit} matches; the Wasserstein statement is about the memory distribution at accuracy proportional to $\Delta\eta$, which the full working paper matches with an upper bound.
 
-The construction uses the $K$-point Gauss and Gauss--Radau rules of the same weight function: both are positive, have $K$ atoms and integrate polynomials of degree $2K-2$ exactly. For $K=2$ it reproduces the order of Theorem~\ref{thm:twocohort}. Numerically, their low moments agree to machine precision and their moment of order $2K-1$ differs by $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$. The shrinking gap explains why constants deteriorate with $K$ on top of the exponent. The two rules also differ in their largest weight for every $K$ we checked: for $K=2,\ldots,200$ the largest Gauss--Radau weight exceeds the largest Gauss weight, by $0.25$ at $K=2$ and by about $0.79/K^2$ for large $K$ (\nolinkurl{equilibrium/gauss_radau_maxweight.py}). So the argument given for $K=2$ in Proposition~\ref{prop:target} applies to each such $K$. A proof for every $K$ is open.
+The construction uses the $K$-point Gauss and Gauss--Radau rules of the same weight function: both are positive, have $K$ atoms and integrate polynomials of degree $2K-2$ exactly. For $K=2$ it reproduces the order of Theorem~\ref{thm:twocohort}. Numerically, their low moments agree to machine precision and their moment of order $2K-1$ differs by $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$. The shrinking gap explains why constants deteriorate with $K$ on top of the exponent. The two rules also differ in their largest weight for every $K$ we checked: for $K=2,\ldots,200$ the largest Gauss--Radau weight exceeds the largest Gauss weight, by $0.25$ at $K=2$ and by about $0.79/K^2$ for large $K$ (\nolinkurl{equilibrium/gauss_radau_maxweight.py}). So the argument given for $K=2$ in Proposition~\ref{prop:target} applies to each such $K$. A proof of this comparison for every $K$ is open. The supervisory result needs less: Lemma~\ref{lem:everyK} proves that, for every $K$, some two rules of this kind have different largest weights.
 
 \paragraph{What counts as an experiment.} In Theorem~\ref{thm:kcohort} an experiment is a unit impulse from the reset state whose response is observed with noise of variance $\sigma^2$ per tap. The exponent is the same for any probe design of bounded energy. For any probe $v$ the mean difference between the two economies is at most $\sup_\omega|\Delta\hat H(e^{i\omega})|\,\|v\|_2$, and $\sup_\omega|\Delta\hat H|=O((\Delta\eta)^{2K-1})$ because $\Delta\hat H=z^{-1}\hat H_A\hat H_B\,\Delta G$ with both responses bounded on the circle. Experiments with probe energy $E$ each therefore need $NE\gtrsim\sigma^2(\Delta\eta)^{-(4K-2)}$: a larger probe buys the same information with fewer experiments, and the account-level analysis of the full working paper prices the capital that a larger probe requires. The bound does not cover information obtained without trading against the groups, such as class records (Section~\ref{sec:supervision}).
 
@@ -403,9 +403,9 @@ The record horizon and the response norm must be the same on both sides.
 \item Tagged-flow estimation under Theorem~\ref{thm:discvalue}, a rate bound away from one, and a fixed nonzero decision margin gives a bounded sample requirement as the spacing shrinks. The target class must be mapped to an executable, verified class label; a largest latent atom alone supplies no such identity.
 \end{enumerate}
 \end{proposition}
-The proof and the general-$K$ scope are in Supplement~\ref{app:decisionfull}.
+The proof is in Supplement~\ref{app:decisionfull}. Proposition~\ref{prop:targetK} there extends part~(ii) to every $K$, with exponent $4K-2$.
 
-\paragraph{In words.} A uniform cut needs only the kernel, through $S=1-\kappa/\sum_jh_j$, so public prices suffice for it. A halt of the largest group needs that group's weight, which the kernel does not pin down. The two-group populations of Theorem~\ref{thm:kcohort} (the Gauss and Gauss--Radau pair with $K=2$) have feedback budgets within $O((\Delta\eta)^3)$ of each other, but largest groups that differ at order one. So a range of ceilings exists at which halting the largest group meets the ceiling in one population and not in the other. Prices decide between them only with order $(\Delta\eta)^{-6}$ records.
+\paragraph{In words.} A uniform cut needs only the kernel, through $S=1-\kappa/\sum_jh_j$, so public prices suffice for it. A halt of the largest group needs that group's weight, which the kernel does not pin down. The two-group populations of Theorem~\ref{thm:kcohort} (the Gauss and Gauss--Radau pair with $K=2$) have feedback budgets within $O((\Delta\eta)^3)$ of each other, but largest groups that differ at order one. So a range of ceilings exists at which halting the largest group meets the ceiling in one population and not in the other. Prices decide between them only with order $(\Delta\eta)^{-6}$ records. The same holds for any number of groups $K$, with order $(\Delta\eta)^{-(4K-2)}$ records (Proposition~\ref{prop:targetK}).
 
 \subsection{What class-tagged disclosure buys}
 
@@ -439,6 +439,30 @@ Take a rich class of Theorem~\ref{prop:esprit}: rates $r_c+\Delta\eta\,s$ with $
 
 
 Proposition~\ref{prop:tagged} and Theorem~\ref{thm:discvalue} use different observation arrangements: the proposition concerns passive, stationary data with prices observed without noise, where the price is a valid instrument; the theorem concerns reset experiments with noisy prices. With noisy prices, regressing flow on the observed price is an errors-in-variables problem, which is why the theorem works from the known impulse instead.
+
+\subsection{Traders who respond to being watched}\label{sec:hiding}
+
+The results so far take the groups' rules as given. A group that expects a targeted action has a reason to change its rule. Sufficiency bounds what a supervisor who relies on prices can then achieve.
+
+\begin{proposition}[Hiding caps targeting]\label{prop:hiding}
+A supervisor observes prices, under any probes and for a record of any length, and then targets a given group or not. Being targeted costs the group $P>0$. The group chooses among available rules. Rule $\rho$ has a private cost $C(\rho)\ge0$ and leads to targeting with probability $\pi(\rho)$. Suppose one available rule $\rho_0$, with cost $C_0$, gives the population the kernel of a population that the supervisor targets with probability $\alpha$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item $\pi(\rho_0)=\alpha$, whatever the supervisor's probes, record length and decision rule.
+\item Every rule $\rho^*$ that minimizes the group's expected cost $C(\rho)+P\pi(\rho)$ satisfies
+\[
+\pi(\rho^*)\ \le\ \alpha+\frac{C_0-C(\rho^*)}{P}\ \le\ \alpha+\frac{C_0}{P}.
+\]
+\item Suppose the group has two rules: its original rule, with cost zero and targeting probability $\pi_T$ on a record of length $T$, and $\rho_0$. It adopts $\rho_0$ whenever $\pi_T>\alpha+C_0/P$. If $\pi_T\to1$ and $P(1-\alpha)>C_0$, this holds for all large $T$, and the targeting probability is then $\alpha$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) By Theorem~\ref{thm:eqinv}, populations with the same kernel give the same law of the price record for every probe sequence and every insider and dealer rule. The supervisor's decision is a function of that record and of its own randomization. (ii) $C(\rho^*)+P\pi(\rho^*)\le C_0+P\alpha$ by optimality, and $C(\rho^*)\ge0$. (iii) The original rule costs $P\pi_T$ and $\rho_0$ costs $C_0+P\alpha$.
+\end{proof}
+
+\paragraph{In words.} The simplest way to hide is to adopt another group's memory. By Theorem~\ref{thm:merged} the two groups then form one atom of the merged measure, and $\alpha$ is the probability with which the supervisor targets a group that does not exist separately. The bound does not involve the amount of data. The supervisor's excess targeting probability times the penalty is at most the cost of hiding. More data make the original rule easier to detect and therefore make hiding more attractive: in part~(iii) the targeting probability falls to $\alpha$ once the record is long enough. The proposition is a revealed-preference inequality. What the paper adds is that sufficiency makes the mimicry exact, for every record and every probe. Three limits apply. The cost $C_0$ is not modelled. The proposition concerns one group and not an equilibrium among several. And a group that hides changes the kernel, and so prices; we do not say whether that helps or harms the market. A class tag is different from an inferred memory: it is attached to the account, and changing the trading rule does not remove it.
+
+
 \section{Beyond the kernel: saturating traders and stress}\label{sec:saturating}
 
 The kernel is a linear object, and every precedent for it is linear. Real feedback traders have limits: position caps, margin, risk budgets. This section asks what replaces the kernel when trades saturate, and what prices reveal about the part that saturation adds. The answer is a sharper version of the paper's main message. In calm markets, prices reveal the kernel and nothing else. How close traders are to their limits, which is what governs behaviour under stress, is invisible in calm data. It can be learned only by pushing traders toward their limits, or from disclosure.
@@ -1341,7 +1365,7 @@ This section completes Section~\ref{sec:supervision}.
 Part (i) follows by scaling the intensities. For (ii), expand $(1-r_c-\Delta\eta s)^{-1}$: the first three moments agree, so aggregate budgets differ by order $(\Delta\eta)^3$. Each intensity converges to $W\omega_i/(1-r_c)$, giving the stated dominant-weight gap. This exceeds the aggregate discrepancy at sufficiently small spacing. A ceiling between the two post-halt budgets reduces the action problem to testing two Gaussian mean vectors. Their common-covariance testing error is $\Phi(-\sqrt N\|h^G-h^R\|_2/(2\sigma))$; the response bound in Theorem~\ref{thm:kcohort} gives the lower bound. Part (iii) follows from continuity of $w/(1-r)$ on the declared compact parameter set and the fixed margin.
 \end{proof}
 
-\paragraph{General-$K$ scope.} The same reduction gives exponent $4K-2$ only for a pair whose price responses have that moment-matching order \emph{and} whose dominant intensities have a separately established fixed gap. Moment matching alone does not supply the latter. In particular, the symmetric odd/even binomial pair has equal maximal normalized weights. The $K=3$ rows below are numerical examples, not a construction proving this condition for every $K$.
+\paragraph{General-$K$ scope.} The same reduction gives exponent $4K-2$ for a pair whose price responses have that moment-matching order \emph{and} whose dominant intensities have a fixed gap. Moment matching alone does not supply the gap: the symmetric odd/even binomial pair has equal maximal normalized weights. Lemma~\ref{lem:everyK} and Proposition~\ref{prop:targetK} below supply a pair with a gap for every $K$. The $K=3$ rows below are numerical examples for the Gauss and Gauss--Radau pair.
 
 \paragraph{Explicit robustness condition.} Smooth best responses alone do not preserve separation: the constant smooth map $\Phi(M)=0$ sends both post-halt budgets to $a$. Instead assume that, over the stated action and holding horizon, $|\widetilde R_j-R_j|\le\varepsilon$ for $j\in\{G,R\}$, with $R_R<R_G$. Then
 \begin{equation}\label{eq:reopt_gap}
@@ -1407,6 +1431,48 @@ Allowing refusal to purchase gives loss $\min\{\mathcal L_0,F+Nc+L_I\}\le\mathca
 \begin{proof}
 The no-data loss is affine in its feasible halt probability: $L_T+p(\overline L_h-L_T)$. Its slope determines the minimizing endpoint. Subtracting the information rule's total loss gives the break-even inequality, and the minimum inequality proves the optional-purchase statement. These algebraic decisions are machine checked in \nolinkurl{Paper1SupervisoryDecision.lean}. They do not establish an optimum over other actions, sample sizes, or information contracts.
 \end{proof}
+
+\subsection{The targeted halt for every $K$}\label{app:everyK}
+
+Proposition~\ref{prop:target}(ii) is stated for two groups. Its argument needs two populations whose kernels agree to order $(\Delta\eta)^{2K-2}$ and whose largest groups differ at order one. This subsection supplies such a pair for every $K$.
+
+Let $\mu$ be the uniform probability measure on $[-1,1]$, let $p_0,p_1,\ldots$ be its orthonormal polynomials, and put $\lambda_K(s)=1/\sum_{j<K}p_j(s)^2$. Call a rule \emph{admissible} if it has $K$ distinct nodes in $[-1,1]$ and integrates every polynomial of degree at most $2K-2$ exactly against $\mu$. The Gauss rule and the Gauss--Radau rule of Theorem~\ref{thm:kcohort} are admissible.
+
+\begin{lemma}[Largest weights in the family]\label{lem:everyK}
+Fix $K\ge2$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item An admissible rule with nodes $t_1,\ldots,t_K$ has weights $\omega_i=\lambda_K(t_i)$. In particular its weights are positive.
+\item There is $c_0>0$ such that, for every $|c|\le c_0$, the zeros of $p_K-c\,p_{K-1}$ are the nodes of an admissible rule $R_c$. A point is a node of $R_c$ for at most one $c$.
+\item There are $c_1\ne c_2$ in $[-c_0,c_0]$ for which $R_{c_1}$ and $R_{c_2}$ have different largest weights. Their moments of degree $2K-1$ differ.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(i) Let $\ell_i$ be the Lagrange polynomials of the nodes. Each product $\ell_i\ell_j$ has degree $2K-2$, so the rule integrates it exactly: $\int\ell_i\ell_j\,d\mu=\sum_m\omega_m\ell_i(t_m)\ell_j(t_m)=\omega_i\mathbf 1\{i=j\}$. Taking $i=j$ gives $\omega_i=\int\ell_i^2d\mu>0$. So $\ell_i/\sqrt{\omega_i}$, $i=1,\ldots,K$, is an orthonormal basis of the polynomials of degree at most $K-1$, as is $p_0,\ldots,p_{K-1}$. The sum of squares of an orthonormal basis at a point does not depend on the basis, so $\sum_{j<K}p_j(s)^2=\sum_i\ell_i(s)^2/\omega_i$. At $s=t_i$ the right side is $1/\omega_i$.
+
+(ii) The zeros of $p_K$ are real, simple and inside $(-1,1)$. Simple real zeros move continuously with the coefficients, so for $|c|\le c_0$, with $c_0$ small, $q_c=p_K-c\,p_{K-1}$ has $K$ simple zeros in $(-1,1)$. Give these nodes the interpolatory weights. Let $f$ have degree at most $2K-2$ and write $f=q_cg+\rho$ with $\deg g\le K-2$ and $\deg\rho\le K-1$. Both $p_K$ and $p_{K-1}$ are orthogonal to polynomials of degree at most $K-2$, so $\int q_cg\,d\mu=0$, and the rule integrates $\rho$ exactly and gives $q_cg$ the value zero. Hence the rule is exact for $f$. If $s$ is a zero of $q_c$ and of $q_{c'}$ with $c\ne c'$, then $p_{K-1}(s)=0$ and so $p_K(s)=0$. By the three-term recurrence a common zero of $p_K$ and $p_{K-1}$ is a zero of $p_{K-2}$, and so on down to $p_0=1$, which has none.
+
+(iii) The reciprocal $1/\lambda_K$ is a polynomial of degree $2K-2\ge2$, so every level set of $\lambda_K$ is finite. Suppose all the rules $R_c$, $|c|\le c_0$, had the same largest weight $v$. By (i) each $R_c$ would have a node in the finite set $\{\lambda_K=v\}$, and by (ii) different values of $c$ would give different nodes. There are infinitely many $c$, so this is impossible. For the last statement, let $\nu$ be the difference of the two rules. It is supported on at most $2K$ points. If the two rules also agreed at degree $2K-1$, $\nu$ would vanish on every polynomial of degree at most $2K-1$, including the one that equals $1$ at one support point and $0$ at the others. So $\nu$ would be zero, which contradicts (ii) and the positivity of the weights.
+\end{proof}
+
+\begin{proposition}[Supervisory separation for every $K$]\label{prop:targetK}
+Fix $K\ge2$ and let $R_{c_1}$ and $R_{c_2}$ be the rules of Lemma~\ref{lem:everyK}(iii), with nodes $s^j_i$, weights $\omega^j_i$ and largest weights $v_1<v_2$. Under the hypotheses of Theorem~\ref{thm:kcohort}, let economy $j\in\{1,2\}$ have $K$ groups with rates $r_c+\Delta\eta\,s^j_i$ and merged weights $W\omega^j_i$, and write $q^j_i=W\omega^j_i/(1-r_c-\Delta\eta\,s^j_i)$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The response bounds of Theorem~\ref{thm:kcohort} hold for this pair: $\|h^1-h^2\|_2\le C_U(\Delta\eta)^{2K-1}$ for every horizon, and $\|h^1-h^2\|_2\ge\kappa^2W|g|(\Delta\eta)^{2K-1}$ when at least $2K+1$ taps are observed, where $g\ne0$ is the difference of the two rules at degree $2K-1$.
+\item The feedback budgets satisfy $|S^1-S^2|=O((\Delta\eta)^{2K-1})$, and the largest groups satisfy $\max_iq^2_i-\max_iq^1_i=W(v_2-v_1)/(1-r_c)+O(\Delta\eta)$.
+\item For sufficiently small spacing there is a nonempty interval of ceilings at which halting the largest group meets the ceiling in economy 2 and not in economy 1. For $N$ independent reset records with Gaussian noise $\sigma^2I$, a rule that makes this decision with both errors at most $1/4$ needs
+\[
+N\ \ge\ \bigl(2\Phi^{-1}(0.75)\,\sigma/\|h^1-h^2\|_2\bigr)^2\ \ge\ c\,\sigma^2(\Delta\eta)^{-(4K-2)} .
+\]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) The proof of Theorem~\ref{thm:kcohort} uses four properties of its pair: nodes in $[-1,1]$, positive weights of unit mass, equal moments up to degree $2K-2$, and a nonzero difference at degree $2K-1$. Lemma~\ref{lem:everyK} gives all four. (ii) Expanding $(1-r_c-\Delta\eta\,s)^{-1}$ in powers of $\Delta\eta$, the sum $\sum_iq^j_i$ is $W\sum_{m\ge0}(\Delta\eta)^m\mu^j_m/(1-r_c)^{m+1}$, where $\mu^j_m$ is the moment of degree $m$ of rule $j$. The moments agree for $m\le2K-2$, which gives the first statement. Each $q^j_i$ equals $W\omega^j_i/(1-r_c)+O(\Delta\eta)$, and the maximum is continuous, which gives the second. (iii) The post-halt budgets are $R^j=S^j-\kappa\max_iq^j_i$, so $R^1-R^2=\kappa W(v_2-v_1)/(1-r_c)+O(\Delta\eta)>0$ for small spacing, and any ceiling strictly between $R^2$ and $R^1$ separates the two decisions. The decision is then a test between two Gaussian mean vectors, as in the proof of Proposition~\ref{prop:target}, and (i) gives the bound.
+\end{proof}
+
+\paragraph{What is and is not shown.} The pair in Proposition~\ref{prop:targetK} is two members of the family $R_c$, not the Gauss and Gauss--Radau pair itself. For that pair the largest weights differ in every case we computed ($K=2,\ldots,200$), and a proof of that comparison for every $K$ is open. Lemma~\ref{lem:everyK}(ii) proves admissibility only for $c$ near zero. Numerically, for $K=2,\ldots,14$ the rules $R_c$ are admissible on the whole range between the two Gauss--Radau rules, their weights equal $\lambda_K$ at the nodes to $7\times10^{-13}$, and on a grid of 41 values of $c$ the largest weight is smallest at the Gauss rule and largest at the Gauss--Radau rules (\nolinkurl{equilibrium/every_k_halt_check.py}). The counting step in part~(iii) is machine-checked (\texttt{p1\_largest\_weight\_not\_constant} in \nolinkurl{Paper1EveryKHalt.lean}), with parts (i) and (ii) and the finiteness of the level sets as hypotheses. The rest is proved on paper.
+
 
 \section{Saturating traders: proofs and checks}\label{app:saturating}
 
@@ -1482,7 +1548,7 @@ Lean checks the finite-sample consequence of parts (i) and (iii), not the diverg
 
 \section{Machine-checked declarations}\label{app:verification}
 
-The table lists, for each main result, the Lean~4 declarations that check it and what is proved only on paper. The project builds against a pinned Mathlib and has 1,135 named declarations in 125 modules, with no \texttt{sorry}. An axiom audit of every named declaration finds only Lean's three standard axioms (\texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}). A machine check confirms the formal statement, not that it matches the prose. The prose statements above say where the two differ.
+The table lists, for each main result, the Lean~4 declarations that check it and what is proved only on paper. The project builds against a pinned Mathlib and has 1,137 named declarations in 126 modules, with no \texttt{sorry}. An axiom audit of every named declaration finds only Lean's three standard axioms (\texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}). A machine check confirms the formal statement, not that it matches the prose. The prose statements above say where the two differ.
 
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.2\textwidth}>{\raggedright\arraybackslash}p{0.42\textwidth}>{\raggedright\arraybackslash}p{0.3\textwidth}}
 \toprule
@@ -1500,6 +1566,8 @@ Theorem~\ref{thm:minphase} & \texttt{p1\_thm\_minphase\_zeros} (\nolinkurl{Paper
 Theorem~\ref{prop:passive} & \texttt{p1\_thm\_passive\_cost\_matched}, \texttt{p1\_thm\_passive\_cost\_gauss\_radau\_two} (\nolinkurl{Paper1PassiveMatched.lean}); \nolinkurl{p1_thm_passive_cost_gauss_radau_three} (\nolinkurl{Paper1GaussRadau3.lean}); \texttt{p1\_thm\_passive\_cost\_every\_K} (\nolinkurl{Paper1PassiveKCohort.lean}) & The divergence-rate statements; the stationary limit; Gauss--Radau exactness for general $K$ enters as a hypothesis\\
 Theorem~\ref{thm:insider} & \texttt{p1\_insider\_reduced\_form}, \texttt{p1\_insider\_best\_response}, \texttt{p1\_insider\_kyle\_limit}, \texttt{p1\_insider\_posterior\_variance} (\nolinkurl{Paper1EquilibriumInsider.lean}) & The fixed-point characterization in part (i), part (iii), and the numerical comparative statics\\
 Proposition~\ref{prop:target} & \texttt{p1\_prop\_target\_two\_cohorts}, \texttt{p1\_prop\_target\_every\_K} (\nolinkurl{Paper1SupervisorySeparation.lean}) & The checked two-group pair is a different moment-matched pair from the Gauss and Gauss--Radau pair, with the same orders; the every-$K$ version assumes a dominant-group margin; for the quadrature pairs the largest-weight comparison is checked numerically for $K\le200$, not proved\\
+Proposition~\ref{prop:targetK} and Lemma~\ref{lem:everyK} & The counting step of Lemma~\ref{lem:everyK}(iii) only: \texttt{p1\_largest\_value\_not\_constant}, \texttt{p1\_largest\_weight\_not\_constant} (\nolinkurl{Paper1EveryKHalt.lean}) & Lemma~\ref{lem:everyK}(i)--(ii), the finiteness of the level sets, and all of Proposition~\ref{prop:targetK}\\
+Proposition~\ref{prop:hiding} & none; it rests on Theorem~\ref{thm:eqinv} & All of it\\
 Proposition~\ref{prop:tagged} & \texttt{p1\_tagged\_iv\_determinant\_bound} (\nolinkurl{Paper1TaggedIV.lean}); \texttt{p1\_iv\_boundary\_decomposition} (\nolinkurl{Paper1IVBoundary.lean}) & The stationary IV central limit theorem\\
 Theorem~\ref{thm:satsuff} & \texttt{p1\_sat\_sufficiency}, \texttt{p1\_flow\_market\_invariance} (\nolinkurl{Paper1SaturatingSufficiency.lean}) & The passage from pathwise equality to equal equilibria\\
 Theorem~\ref{thm:stress} & \texttt{p1\_sat\_stress\_invariance}, \texttt{p1\_sat\_follows\_linear}, \texttt{p1\_satAggFlow\_linear\_of\_band}, \texttt{p1\_sat\_capacity\_differs} (\nolinkurl{Paper1SaturatingSufficiency.lean}) & Parts (ii)--(iv): the total-variation, Gaussian and probe bounds\\
