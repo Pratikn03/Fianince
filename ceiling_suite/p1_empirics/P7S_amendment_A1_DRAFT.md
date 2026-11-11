@@ -1,6 +1,10 @@
-# P7S amendment A1 (DRAFT: not approved, not registered)
+# P7S amendment A1 (approved by the author; not yet hashed or registered)
 
-**Status.** Drafted 11 November 2026 for the author's approval. Nothing here is in force.
+**Status.** Drafted 11 November 2026. The author approved it the same day ("i approve all of above work").
+- The approval is read as covering the recommended choices: window option B, margin `E = 0.10`, and the universe
+  rule. The author can still change any of them before hashing.
+- It is not registered yet. Under option B the dates are fixed only after the availability check (section 5), and
+  the amendment is hashed after that. Until then nothing here is in force and no data may be read.
 - No development or holdout data have been downloaded or read for P7S. The only Binance futures files read for P7S
   are the schema-probe files for the burned day 2024-01-02 (three symbols, columns only).
 - The registered holdout window opens on 2026-11-16. An amendment approved and hashed before that date is made
