@@ -86,28 +86,60 @@ except Exception:
 EVAL_MD = """# P7S amendment A1: evaluation stage (the single run)
 
 **This is the registered test. It is run once.** It reads the evaluation window (2024-07-01 to 2026-10-28) for
-the universe and thresholds fixed in the development stage, and refuses any other development outputs.
+the universe and thresholds fixed in the development stage.
 
-1. Put `p7s_dev_outputs.zip` (from the development notebook) in the Colab files pane, or upload it when asked.
-2. Run the cell (about 20 to 30 minutes). If the connection drops during the downloads, run it again: finished
-   downloads are kept, and no statistic is computed until every file is in.
-3. Send back the printed output and `p7s_eval_results.zip`.
+1. Run the cell. Nothing needs to be uploaded.
+   - If `p7s_dev_outputs.zip` from the development run is in this session, it is used.
+   - If not, the notebook first runs the development stage again (development data only, about 20 to 30 minutes)
+     and checks that it reproduces the registered development run. If it does not, it stops.
+2. The evaluation itself takes another 20 to 30 minutes. If the connection drops during downloads, run the cell
+   again: finished downloads are kept, and no statistic is computed until every file is in.
+3. Send back the printed output and the two files that download at the end, `p7s_eval_results.zip` and
+   `p7s_dev_outputs.zip`.
 
+Use a computer, not a phone: the run is long and a sleeping browser tab disconnects it.
 Whatever the verdict, it is reported as it comes out.
 """
 
 EVAL_RUN = r'''
 DEV_SHA = '__DEV_SHA__'
+DEV_RECORD = __DEV_RECORD__
 if os.path.exists('p7s_eval_results.json'):
     raise SystemExit('The evaluation has already been run in this session. The results are in p7s_eval_results.json. It is not run twice.')
-if not os.path.exists('p7s_dev_outputs.zip'):
-    from google.colab import files
-    files.upload()
-with zipfile.ZipFile('p7s_dev_outputs.zip') as z:
-    raw_dev = z.read('p7s_dev_outputs.json')
-assert hashlib.sha256(raw_dev).hexdigest() == DEV_SHA, 'These are not the registered development outputs. Stop.'
-dev_out = json.loads(raw_dev)
+
+# Development outputs (second logged addition of 11 November 2026, before any evaluation data were read).
+# If the file from the registered development run is in this session, it is used. If it is not, the registered
+# development stage is run again here; it reads warm-up and development data only and is deterministic. Either
+# way the outputs must reproduce what the registered development run printed, or the run stops.
+dev_out, dev_source = None, None
+if os.path.exists('p7s_dev_outputs.zip'):
+    with zipfile.ZipFile('p7s_dev_outputs.zip') as z:
+        raw_dev = z.read('p7s_dev_outputs.json')
+    if hashlib.sha256(raw_dev).hexdigest() == DEV_SHA:
+        dev_out, dev_source = json.loads(raw_dev), 'file with the registered fingerprint'
+if dev_out is None:
+    print('The development outputs of the registered run are not in this session.')
+    print('Running the registered development stage again (warm-up and development data only) ...')
+    dev_new = pl.run_development(CFG, arch, arch.list_symbol_folders())
+    dev_new['utc'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    dev_new['code_sha256'] = SHA
+    dev_new['downloads'] = {'downloaded': arch.n_downloaded, 'from_cache': arch.n_cached, 'absent_404': arch.n_absent}
+    raw_dev = json.dumps(dev_new, indent=1, sort_keys=True, default=float).encode('utf-8')
+    open('p7s_dev_outputs.json', 'wb').write(raw_dev)
+    with zipfile.ZipFile('p7s_dev_outputs.zip', 'w', zipfile.ZIP_DEFLATED) as z:
+        z.write('p7s_dev_outputs.json')
+    dev_out, dev_source = json.loads(raw_dev), 'regenerated in this session'
 assert dev_out['code_sha256'] == SHA, 'The development stage ran with other code. Stop.'
+_bp = dev_out['blinded_precision_development']
+dev_seen = {'universe': list(dev_out['universe']), 'skipped': sorted(dev_out['skipped_for_missing_files']),
+            'events': {k: int(v) for k, v in _bp['events_per_cell_total'].items()},
+            'se_calm': '%.4f' % _bp['se_beta_calm'], 'se_did': '%.4f' % _bp['se_did']}
+if dev_seen != DEV_RECORD:
+    print('registered development run:', DEV_RECORD)
+    print('this session              :', dev_seen)
+    raise SystemExit('DEVELOPMENT OUTPUTS DO NOT MATCH the registered development run. Nothing was evaluated. Send this output; do not rerun.')
+DEV_USED_SHA = hashlib.sha256(raw_dev).hexdigest()
+print('development outputs:', dev_source, '| they reproduce the registered run | SHA-256', DEV_USED_SHA)
 
 # Format gate (logged addition of 11 November 2026, made before any evaluation data were read). It checks the
 # layout of a sample of evaluation files, one day a month for the two largest symbols, and can only stop the run.
@@ -145,7 +177,9 @@ res = pl.run_evaluation(CFG, arch, dev_out)
 res['format_gate'] = {'sampled': len(gate), 'problems': gate_fail}
 res['utc'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
 res['code_sha256'] = SHA
-res['dev_outputs_sha256'] = DEV_SHA
+res['dev_outputs_sha256'] = DEV_USED_SHA
+res['dev_outputs_source'] = dev_source
+res['dev_outputs_registered_sha256'] = DEV_SHA
 res['downloads'] = {'downloaded': arch.n_downloaded, 'from_cache': arch.n_cached, 'absent_404': arch.n_absent}
 raw = json.dumps(res, indent=1, sort_keys=True, default=float).encode('utf-8')
 open('p7s_eval_results.json', 'wb').write(raw)
@@ -185,6 +219,7 @@ print('downloads:', res['downloads'], '| minutes: %.1f' % ((time.time() - t0) / 
 try:
     from google.colab import files
     files.download('p7s_eval_results.zip')
+    files.download('p7s_dev_outputs.zip')
 except Exception:
     pass
 '''
@@ -208,12 +243,23 @@ def notebook(md: str, code: str) -> dict:
                        "source": code.lstrip("\n").splitlines(keepends=True)}]}
 
 
+# What the registered development run of 11 November 2026 printed (results/p7s_dev_printed_output.txt).
+DEV_RECORD_REGISTERED = {
+    "universe": ["BTCUSDT", "ETHUSDT", "SOLUSDT", "1000PEPEUSDT", "DOGEUSDT", "XRPUSDT", "BNBUSDT", "ORDIUSDT",
+                 "1000SHIBUSDT", "AVAXUSDT", "ARBUSDT", "FILUSDT", "PEOPLEUSDT", "BCHUSDT", "LINKUSDT", "MATICUSDT",
+                 "ADAUSDT", "TRBUSDT", "1000BONKUSDT", "OPUSDT", "ETCUSDT", "LTCUSDT", "1000FLOKIUSDT", "FTMUSDT",
+                 "TIAUSDT", "INJUSDT", "DOTUSDT", "SEIUSDT", "APTUSDT", "FETUSDT"],
+    "skipped": ["NEARUSDT", "SUIUSDT", "WLDUSDT"],
+    "events": {"calm_high": 140511, "calm_low": 151319, "stress_high": 6660, "stress_low": 4481},
+    "se_calm": "0.0068", "se_did": "0.0945"}
+
+
 def build(dev_sha: str | None = None) -> None:
     (HERE / "P7S_A1_Development_Colab.ipynb").write_text(json.dumps(notebook(DEV_MD, setup_cell() + DEV_RUN), indent=1))
     print("wrote P7S_A1_Development_Colab.ipynb")
     if dev_sha:
         assert len(dev_sha) == 64 and all(c in "0123456789abcdef" for c in dev_sha)
-        code = setup_cell() + EVAL_RUN.replace("__DEV_SHA__", dev_sha)
+        code = setup_cell() + EVAL_RUN.replace("__DEV_SHA__", dev_sha).replace("__DEV_RECORD__", repr(DEV_RECORD_REGISTERED))
         (HERE / "P7S_A1_Evaluation_Colab.ipynb").write_text(json.dumps(notebook(EVAL_MD, code), indent=1))
         print("wrote P7S_A1_Evaluation_Colab.ipynb for development outputs", dev_sha[:12])
 

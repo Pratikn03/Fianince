@@ -228,4 +228,15 @@ a replication; the verdict of P7S is the primary test's.
 - **What changed in the hashed files.** `make_p7s_A1_notebooks.py` (the gate) and this file (this section). The
   executor, the data layer, the pipeline and the development notebook are unchanged, and their hashes are the
   registered ones. `P7S_SHA256SUMS` lists the old and new hashes.
-
+- **Second addition, same day, also before any evaluation data were read: no upload step.** The Colab session of
+  the development run was reset before the author had saved `p7s_dev_outputs.zip`, so the file with fingerprint
+  `7330ef3d…beae43` no longer exists. The evaluation notebook now works as follows.
+  - If a file with that fingerprint is in the session, it is used.
+  - If not, the notebook runs the registered development stage again. That stage reads warm-up and development
+    data only, uses the registered code and is deterministic.
+  - In both cases the outputs must reproduce what the registered development run printed: the 30 symbols in
+    order, the three skipped symbols, the four event counts (140,511; 151,319; 6,660; 4,481) and the two standard
+    errors (0.0068 and 0.0945). If anything differs, the run stops before any evaluation data are read.
+  - The fingerprint of the outputs actually used is written into the results, with their source.
+  The check is on printed quantities, not on the full file, because the full file is lost. Thresholds that differed
+  would change the event counts. The executor, the data layer and the pipeline are again unchanged.
