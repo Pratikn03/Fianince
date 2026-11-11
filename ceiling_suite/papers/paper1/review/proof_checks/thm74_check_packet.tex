@@ -5,49 +5,73 @@
 \newtheorem*{claim}{Claim}
 \title{Proof check request: Theorem 7.4\\[2pt]\large ``Stress identifies the leverage distribution''}
 \author{Pratik Niroula, Prashant Niroula and Sujan Khatiwada}
-\date{8 November 2026}
+\date{10 November 2026}
 \begin{document}
 \maketitle
 
-\noindent\textbf{What we ask.} Please read the proof in Section~2, which is about two pages, and fill in the table in Section~4. The theorem is new. It appears as Theorem~7.4 in the core version of our working paper, ``A Sufficient Statistic for Algorithmic Feedback''. An AI system (Claude) drafted the proof, and so far only that system has checked it. That is why we ask for a human check. A numerical check (Section~3) passes, but it is not a proof.
+\noindent\textbf{What we ask.} Please check two things and fill in the table in Section~5.
+\begin{itemize}[itemsep=1pt]
+\item Does the Lean statement in Section~2 say what the prose theorem in Section~1 says?
+\item Is the one part proved only on paper, the small-probe statement, correct (Section~3)?
+\end{itemize}
+The theorem is new. It is Theorem~7.4 of our working paper, ``A Sufficient Statistic for Algorithmic Feedback''. An AI system (Claude) drafted the statement, the proofs and the Lean code. The Lean proofs compile against Mathlib with the three standard axioms only, so the question for a human reader is no longer whether the main argument has a gap. It is whether the formal statement is the right one.
 
 \section{Setting and statement}
 
-\paragraph{Market.} Prices follow $x_t=ax_{t-1}+\kappa(F_t+v_t)$ for $t\ge0$, with $x_{-1}=0$, $a\in[0,1)$ and $\kappa>0$. Here $v_t$ is a probe sequence chosen by the experimenter, and the response $(x_t)$ is observed exactly.
+\paragraph{Market.} Prices follow $x_t=ax_{t-1}+\kappa(F_t+v_t)$ for $t\ge0$, with $x_{-1}=0$ and $\kappa\ne0$. Here $v_t$ is a probe sequence chosen by the experimenter, and the response $(x_t)$ is observed exactly.
 
-\paragraph{Traders.} There are finitely many traders. Trader $i$ has a memory rate $r_i\in[0,1)$, a capacity $c_i>0$ and a leverage $\ell_i\in\mathbb R$. Its memory state is $m_{i,t}=\sum_{j<t}r_i^{\,t-1-j}x_j$, and its flow is $c_i\psi(\ell_im_{i,t})$. Aggregate flow is $F_t=\sum_ic_i\psi(\ell_im_{i,t})$. The shape $\psi$ is common to all traders and is either $\tanh$ or the hard limit $\mathrm{clip}(u)=\max(-1,\min(1,u))$.
+\paragraph{Traders.} There are finitely many traders. Trader $i$ has a memory rate $r_i\ge0$, a capacity $c_i$ and a leverage $\ell_i\ne0$. Its memory state is $m_{i,t}=\sum_{j<t}r_i^{\,t-1-j}x_j$, and its flow is $c_i\psi(\ell_im_{i,t})$. Aggregate flow is $F_t=\sum_ic_i\psi(\ell_im_{i,t})$, for an odd shape $\psi$ common to all traders.
 
-\paragraph{Object.} The signed capacity measure is $\tilde\mu=\sum_ic_i\,\mathrm{sgn}(\ell_i)\,\delta_{(r_i,|\ell_i|)}$ on $[0,1)\times(0,\infty)$. Traders with $\ell_i=0$ contribute nothing.
+\paragraph{Objects.} The signed capacity measure is $\tilde\mu=\sum_ic_i\,\mathrm{sgn}(\ell_i)\,\delta_{(r_i,|\ell_i|)}$. A shape has \emph{independent dilations} if, for distinct $s_1,\ldots,s_n>0$, $\sum_kw_k\psi(s_ku)=0$ for every real $u$ implies every $w_k=0$.
 
 \begin{theorem}
-Two populations give identical responses to every probe sequence if and only if $\tilde\mu_P=\tilde\mu_{P'}$.
+Let $\psi$ be odd with independent dilations. Two populations give identical responses to every probe sequence if and only if $\tilde\mu_P=\tilde\mu_{P'}$.
 \begin{enumerate}[label=(\roman*)]
-\item For $\psi=\tanh$, identical responses to all probes in an arbitrarily small neighbourhood of zero already imply $\tilde\mu_P=\tilde\mu_{P'}$.
-\item For $\psi=\mathrm{clip}$, probes of all sizes are needed. Probes that keep every memory state inside every band ($|\ell_im_{i,t}|\le1$) identify only the kernel $k_m=\sum_ic_i\ell_ir_i^m$. The constructive recovery reads the atom at $(r,\lambda)$ from a kink at that atom's band edge.
+\item The hard limit $\mathrm{clip}(u)=\max(-1,\min(1,u))$ has independent dilations.
+\item $\tanh$ has independent dilations. Moreover, identical responses to all probes in an arbitrarily small neighbourhood of zero already imply $\tilde\mu_P=\tilde\mu_{P'}$.
+\item A cubic shape $u-\gamma u^3$ does not have independent dilations.
 \end{enumerate}
 \end{theorem}
 
-\noindent\emph{A correction already made.} An earlier draft of part (ii) said that the traders at leverage $|\ell|$ are identified \emph{only} by probes that reach their own band edge. That is false. When two atoms at the same memory differ and the kernel is fixed, the difference already shows once the higher-leverage atom saturates (Section~3, check T5). The statement above is the corrected one.
+\section{What Lean checks}
 
-\section{Proof}
+The following is the type of the formal theorem for $\tanh$, as printed by Lean (\texttt{p1\_thm\_stress\_identification\_tanh}). The general theorem and the hard-limit theorem have the same form.
+{\small
+\begin{verbatim}
+forall {K K' : Nat} (a kappa : Real), kappa != 0 ->
+  forall (c l r : Fin K -> Real) (c' l' r' : Fin K' -> Real),
+    (forall i, 0 <= r i) -> (forall j, 0 <= r' j) ->
+    (forall i, l i != 0) -> (forall j, l' j != 0) ->
+    ((forall (v x : Nat -> Real),
+        ProbePricePath a kappa (satAggFlow tanh c l r) v x ->
+        ProbePricePath a kappa (satAggFlow tanh c' l' r') v x)
+     <->
+     forall (g : Real -> Real -> Real),
+       Sum_i c i * realSgn (l i) * g (r i) |l i|
+         = Sum_j c' j * realSgn (l' j) * g (r' j) |l' j|)
+\end{verbatim}}
+\noindent Here \texttt{ProbePricePath a kappa F v x} says $x_0=\kappa(F_0(x)+v_0)$ and $x_{t+1}=ax_t+\kappa(F_{t+1}(x)+v_{t+1})$ for all $t$; \texttt{satAggFlow psi c l r x t} is $\sum_ic_i\psi(\ell_im_{i,t})$ with $m_{i,0}=0$ and $m_{i,t+1}=r_im_{i,t}+x_t$.
 
-\paragraph{Step 1: probes steer the price.} $F_t$ is a function of $x_0,\ldots,x_{t-1}$. For any target path $x^*$, the probe $v_t=(x^*_t-ax^*_{t-1})/\kappa-F^P_t(x^*_{<t})$ makes population $P$ produce $x^*$. If $P'$ gives the same response to every probe, it also produces $x^*$ under this $v$. Then $F^P_t(x^*_{<t})=(x^*_t-ax^*_{t-1})/\kappa-v_t=F^{P'}_t(x^*_{<t})$, so the two flow maps agree on every path. For (i): $|F_t|\le\sum_ic_i|\ell_i||m_{i,t}|$, so small target paths need only small probes.
+\paragraph{Points where the formal statement differs from the prose.}
+\begin{itemize}[itemsep=1pt]
+\item ``Identical responses'' is formalized as: every (probe, path) pair of the first market is a pair of the second. Uniqueness of the path for a given probe is not used and not proved.
+\item Equality of the measures is formalized as equality of the integrals of every function $g$ of (memory, leverage).
+\item Capacities $c_i$ are arbitrary reals in Lean. The prose has $c_i>0$.
+\item Independent dilations quantifies over all real $u$, so the Lean theorems use probes of every size.
+\end{itemize}
 
-\paragraph{Step 2: $\tilde\mu$ suffices.} $\psi$ is odd, so $c\,\psi(\ell m)=c\,\mathrm{sgn}(\ell)\psi(|\ell|m)$ and $F_t=\int\psi(\lambda\,m_t(r))\,\tilde\mu(dr,d\lambda)$, where $m_t(r)=\sum_{j<t}r^{t-1-j}x_j$. So equal $\tilde\mu$ give equal flow maps, hence identical closed-loop responses.
+\paragraph{Proof outline (all machine-checked).} Probes steer the price along any path, so identical responses give equal flow maps. On the path $x_0=\theta u$, $x_1=u$, the date-2 flow is $\sum_kd_k\psi(s_ku)$ with $s_k=\lambda_k(r_k\theta+1)$, and a direction $\theta>0$ exists for which distinct atoms have distinct scales. Independent dilations then give $d_k=0$. For the hard limit, the largest scale is isolated at $u=1/s_1$ and $u=1/s_2$. For $\tanh$, $1-\tanh y=2e^{-2y}/(1+e^{-2y})$, so the smallest scale has the slowest tail and is isolated by multiplying by $e^{2s_1u}$ and letting $u\to\infty$.
 
-\paragraph{Step 3: identification.} Let $D=\tilde\mu_P-\tilde\mu_{P'}=\sum_{k=1}^Kd_k\delta_{(r_k,\lambda_k)}$, with distinct atoms and $\lambda_k>0$. Take $x_0=\theta u$ and $x_1=u$. Then $m_2(r)=(r\theta+1)u$, and equal flow maps at date~2 give
-\[
- g(u)=\sum_kd_k\,\psi(s_ku)=0,\qquad s_k=\lambda_k(r_k\theta+1),
-\]
-for all $u$ (clip), or for all $u$ near $0$ ($\tanh$). For distinct atoms $k\ne j$, the equation $\lambda_k(r_k\theta+1)=\lambda_j(r_j\theta+1)$ is affine in $\theta$ and not an identity: if both coefficients matched, then $\lambda_k=\lambda_j$ and $r_k=r_j$. So it has at most one root. Choose $\theta>0$ outside these finitely many roots. Then the $s_k$ are positive and distinct.
+\section{The part proved only on paper: small probes}
 
-\emph{tanh, route A (poles).} $g$ is meromorphic on $\mathbb C$ and vanishes on a real interval, so it vanishes identically and has zero residue everywhere. Let $S$ be the largest $s_k$ with $d_k\ne0$. At $u^*=i\pi/(2S)$, $\tanh(Su)$ has a simple pole with residue $1/S$. For $s_k<S$, $s_ku^*=i\pi s_k/(2S)$ lies strictly between $0$ and $i\pi/2$ on the imaginary axis, which is not a pole. So $\mathrm{Res}_{u^*}g=d_k/S\ne0$, a contradiction.
+\begin{claim}
+If $g(u)=\sum_kw_k\tanh(s_ku)=0$ for all $u$ in a neighbourhood of $0$, with distinct $s_k>0$, then every $w_k=0$.
+\end{claim}
+\noindent\emph{Proof A.} $g$ is real-analytic on $\mathbb R$, so it vanishes on all of $\mathbb R$, and the machine-checked result applies.
 
-\emph{tanh, route B (Taylor).} $\tanh u=\sum_{n\ge1}\tau_{2n-1}u^{2n-1}$ with $\tau_{2n-1}=2^{2n}(2^{2n}-1)B_{2n}/(2n)!\ne0$. If $g\equiv0$ near $0$, then $\sum_k(d_ks_k)(s_k^2)^{n-1}=0$ for $n=1,\ldots,K$, a Vandermonde system in the distinct numbers $s_k^2$. So $d_k=0$.
+\noindent\emph{Proof B.} $\tanh u=\sum_{n\ge1}\tau_{2n-1}u^{2n-1}$ with $\tau_{2n-1}=2^{2n}(2^{2n}-1)B_{2n}/(2n)!\ne0$. So $\sum_k(w_ks_k)(s_k^2)^{n-1}=0$ for $n=1,\ldots,K$, a Vandermonde system in the distinct numbers $s_k^2$.
 
-\emph{clip.} On $u\ge0$, the function $\mathrm{clip}(s_ku)$ has slope $s_k$ on $[0,1/s_k)$ and slope $0$ after. Since the $s_k$ are distinct, the slope of $g$ changes at $u=1/s_k$ by exactly $-d_ks_k$. If $g\equiv0$, every slope change vanishes, so $d_k=0$. The change at $1/s_k$ is visible only on paths with $u\ge1/s_k$.
-
-\paragraph{Necessity part of (ii).} This is Theorem 7.2(iv) of the paper. While every state is inside every band, both populations trade linearly with the same kernel, so their responses coincide.
+\noindent For the theorem, small target paths need only small probes, because $|F_t|\le\sum_i|c_i||\ell_i||m_{i,t}|$.
 
 \section{Numerical check (not a proof)}
 
@@ -63,12 +87,12 @@ The script \texttt{research\_extension/nonlinear\_scoping/thm74\_numeric\_check.
 \section{Questions and response table}
 
 \begin{enumerate}[itemsep=2pt]
-\item Is Step 1 (steering) valid as stated, including the small-probe version used for (i)?
-\item Is the choice of $\theta$ in Step 3 correct, and does the reduction to $g(u)=0$ lose anything?
-\item Is route A correct? In particular, is it correct that no smaller $s_k$ has a pole at $u^*$? Is route B correct? Is either route preferable?
-\item Is the clip argument complete? Is the corrected wording of (ii) accurate?
-\item Is $\tilde\mu$ exactly the equivalence class, that is, is Step 2 complete?
-\item Is there an odd analytic $\psi$ for which the result fails? We expect failure when $\psi$ has only finitely many nonzero odd Taylor coefficients, for example a cubic, because route B then gives only finitely many moments.
+\item Does the Lean statement in Section~2 match the prose theorem, given the four listed differences? Is any of them a real weakening?
+\item Is ``every pair of the first market is a pair of the second'' an acceptable reading of ``identical responses to every probe''?
+\item Is the definition of independent dilations the right hypothesis? Is there a natural weaker one?
+\item Is the small-probe claim correct, by Proof A or Proof B?
+\item Is $\tilde\mu$ exactly the equivalence class for odd shapes with independent dilations?
+\item Do you know this result, or the dilation-independence facts for clip and $\tanh$, from the literature on ridge functions or neural-network identifiability? A reference would help us position it.
 \end{enumerate}
 
 \vspace{4pt}
