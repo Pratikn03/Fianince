@@ -50,10 +50,11 @@ def run(K, rc=0.5, dEta=0.1, W=0.3, kappa=0.5):
     fp = np.polyfit(g[-4:], np.log([o["passive_kl_rate"] for o in out][-4:]), 1)[0]
     return out, fa, fp
 
-res = {}
-for K in (2, 3):
-    out, fa, fp = run(K)
-    res[K] = {"rows": out, "active_exponent_in_1-S": fa, "passive_exponent_in_1-S": fp}
-    print(f"K={K}: active info ~ (1-S)^{fa:.2f}   passive KL rate ~ (1-S)^{fp:.2f}")
-    for o in out: print("   1-S=%.5f  dS=%.2e  active=%.3e  passiveKL=%.3e" % (o["1-S"], o["S_B-S_A"], o["active_sq_norm"], o["passive_kl_rate"]))
-json.dump(res, open("fragility_scan_results.json", "w"), indent=1)
+if __name__ == "__main__":
+    res = {}
+    for K in (2, 3):
+        out, fa, fp = run(K)
+        res[K] = {"rows": out, "active_exponent_in_1-S": fa, "passive_exponent_in_1-S": fp}
+        print(f"K={K}: active info ~ (1-S)^{fa:.2f}   passive KL rate ~ (1-S)^{fp:.2f}")
+        for o in out: print("   1-S=%.5f  dS=%.2e  active=%.3e  passiveKL=%.3e" % (o["1-S"], o["S_B-S_A"], o["active_sq_norm"], o["passive_kl_rate"]))
+    json.dump(res, open("fragility_scan_results.json", "w"), indent=1)

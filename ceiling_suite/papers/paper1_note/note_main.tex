@@ -18,13 +18,13 @@
 
 Trend-following funds, execution algorithms and AI trading agents read recent prices, decide what to trade and, by trading, move the prices they read. When such a market misbehaves, supervisors ask who was trading and how fast those traders react. This note asks a prior question: what does a market's price record reveal about its population of feedback traders, and for which decisions is that enough?
 
-\paragraph{The answer.} Prices reveal the market's \emph{feedback kernel}, the response, $m$ periods later, of total feedback flow to a unit move in the price signal. The kernel is all that prices identify, and it is all that anyone trading on public information needs. The composition of the trader population matters only for actions aimed at one group, and learning it from prices is very expensive.
+\paragraph{The answer.} Prices reveal the market's \emph{feedback kernel}, the response, $m$ periods later, of total feedback flow to a unit move in the price signal. The kernel is all that prices identify, and it is all that anyone trading on public information needs. The composition of the trader population matters only for actions aimed at one group, and learning it from prices is very expensive, even on the eve of a crash. This leaves a supervisor with a problem that the note states precisely at the end: keeping a market safe without knowing who trades in it.
 
 \paragraph{Results.}
 \begin{enumerate}[label=(\arabic*),leftmargin=*,itemsep=2pt]
 \item \emph{Sufficiency} (Theorem~\ref{n:suff}). With a value, noise traders, an insider and a dealer, each following an arbitrary causal rule, two populations with the same kernel give the same prices, order flows, insider profits and dealer inventories, realization by realization. The two games therefore have the same equilibria.
 \item \emph{Identification} (Theorem~\ref{n:ident}). Two populations give identical price responses to every trade sequence exactly when their \emph{merged measures}, the trading weight at each memory rate, coincide. Groups with the same memory cannot be separated however long the record.
-\item \emph{Cost} (Theorem~\ref{n:cost}). Separating $K$ groups whose memories lie within $\Delta\eta$ takes of order $(\Delta\eta)^{-(4K-2)}$ experiments; Prony's method attains this order, and passive observation needs at least as much data.
+\item \emph{Cost} (Theorem~\ref{n:cost}, Proposition~\ref{n:nearcrit}). Separating $K$ groups whose memories lie within $\Delta\eta$ takes of order $(\Delta\eta)^{-(4K-2)}$ experiments; Prony's method attains this order, and passive observation needs at least as much data. The barrier does not lift as the market approaches instability: prices then reveal how close the market is to breaking, not who is trading.
 \item \emph{Supervision} (Section~\ref{n:sup}). A uniform cut in feedback activity needs only the kernel. Halting the largest group needs composition, at the cost above. Class-tagged flow reports remove the cost. A group that can mimic another group's memory caps what any price-based targeting can achieve.
 \item \emph{Limits} (Section~\ref{n:sat}). With position limits the sufficient object becomes a measure over memory and leverage. Calm prices reveal only its linear part, the kernel. Probes large enough to reach the limits identify the rest.
 \item \emph{Evidence} (Section~\ref{n:evidence}). We report two pre-registered tests, each run once, with the wording fixed before the results were known.
@@ -38,9 +38,9 @@ Trend-following funds, execution algorithms and AI trading agents read recent pr
 
 Time is discrete. Let $x_t$ be the pricing error, the gap between the price and the fundamental value. A reduced-form dealer sector absorbs net order flow with price impact $\kappa>0$, and arbitrage pulls the error toward zero with persistence $a\in[0,1)$. There are $K$ groups of feedback traders. Group $i$ keeps an exponentially weighted average $y_{i,t}$ of past pricing errors and trades $q_iy_{i,t}$:
 \begin{equation}\label{n:eq:model}
-x_t=ax_{t-1}+\kappa\sum_{i=1}^Kq_iy_{i,t-1}+\kappa v_t+w_t,\qquad y_{i,t}=(1-\eta_i)y_{i,t-1}+\eta_ix_t,
+x_t=ax_{t-1}+\kappa\sum_{i=1}^Kq_iy_{i,t-1}+\kappa v_t+\varepsilon_t,\qquad y_{i,t}=(1-\eta_i)y_{i,t-1}+\eta_ix_t,
 \end{equation}
-where $v_t$ is a probe, a trade by an observer, and $w_t$ is news. A desk that tracks a trend with a steady-state Kalman filter, or that learns by regularized online gradient descent, updates exactly this way (Supplement Lemma~\ref{lem:micro}). Write $r_i=1-\eta_i$ for the memory rate and $w_i=q_i\eta_i$ for the trading weight. The \emph{merged measure} $M=\sum_iw_i\delta_{r_i}$ puts weight $w_i$ at rate $r_i$, merging groups with equal rates, and the \emph{feedback kernel} is its sequence of moments,
+where $v_t$ is a probe, a trade by an observer, and $\varepsilon_t$ is news. A desk that tracks a trend with a steady-state Kalman filter, or that learns by regularized online gradient descent, updates exactly this way (Supplement Lemma~\ref{lem:micro}). Write $r_i=1-\eta_i$ for the memory rate and $w_i=q_i\eta_i$ for the trading weight. The \emph{merged measure} $M=\sum_iw_i\delta_{r_i}$ puts weight $w_i$ at rate $r_i$, merging groups with equal rates, and the \emph{feedback kernel} is its sequence of moments,
 \[
 k_m=\sum_iw_ir_i^{\,m},\qquad m=0,1,2,\ldots
 \]
@@ -77,7 +77,13 @@ Fix $K\ge2$, a center rate $r_c$, a total weight $W$ and a spacing $\Delta\eta$,
 \end{enumerate}
 \end{theorem}
 
-Parts (i)--(iii) are Supplement Theorems~\ref{thm:kcohort}, \ref{prop:esprit} and~\ref{prop:passive}. For two groups, halving the spread of memories multiplies the data needed by $64$; for three groups, by $1{,}024$. The pair in (i) consists of the Gauss and Gauss--Radau quadrature rules, which match moments as far as $K$ nodes allow. Part~(iii) uses that the memory rates are zeros of the closed-loop response, so passive data face the same near-cancellation as probes.
+Parts (i)--(iii) are Supplement Theorems~\ref{thm:kcohort}, \ref{prop:esprit} and~\ref{prop:passive}. Part~(iii) does not weaken as the market approaches instability (Proposition~\ref{n:nearcrit}). For two groups, halving the spread of memories multiplies the data needed by $64$; for three groups, by $1{,}024$. The pair in (i) consists of the Gauss and Gauss--Radau quadrature rules, which match moments as far as $K$ nodes allow. Part~(iii) uses that the memory rates are zeros of the closed-loop response, so passive data face the same near-cancellation as probes.
+
+\begin{proposition}[The barrier does not lift near instability]\label{n:nearcrit}
+Hold the pair of Theorem~\ref{n:cost}(i) at a common feedback budget $S=1-\epsilon$. The passive information per observation between them is at most $C(\Delta\eta)^{4K-2}$, with $C$ independent of $\epsilon$, however close the market is to instability.
+\end{proposition}
+
+This is Supplement Proposition~\ref{prop:nearcrit}, new to this version. One might expect a market near instability to reveal its traders, since the loop amplifies every difference. It reveals instead how close it is to instability: with a common persistence rather than a common budget, the information grows without bound as $\epsilon\to0$, and all of the growth comes from the budget. The bound is per observation; a finite-sample version uniform in $\epsilon$ is not proved.
 
 \section{Who needs composition, and what disclosure buys}\label{n:sup}
 
@@ -132,5 +138,7 @@ The theory concerns tagged flows and limits that are rarely observed. We ran two
 \section{Scope and conclusion}\label{n:concl}
 
 The sufficiency results need aggregate feedback flow to be linear in past public signals, or saturating as in Section~\ref{n:sat}. The identification and cost results need exponential memory; for general completely monotone memory the minimax accuracy is of order $1/\log(N/\sigma^2)$ (full working paper). The passive results assume Gaussian news. Traders who change their rules as they learn are outside the theorems, apart from Proposition~\ref{n:hiding}.
+
+\paragraph{The problem this leaves.} Together the results pose a problem. A supervisor who must keep a market stable cannot learn who trades in it from prices, at any reasonable cost, in calm conditions or near a crash; the traders can hide if it tries; and the information that would identify them arrives, if at all, only when limits are already being hit. Whether a market can be kept safe without that knowledge, using only what prices do reveal, is the question taken up in the companion paper \citep{niroula2026b}.
 
 Within these limits the message is simple. Prices tell a supervisor the kernel and nothing more, and the kernel is enough for any action that treats the market as a whole. Actions aimed at one group need composition, which prices supply only at a steep and known price and which a group can hide at a bounded cost. Disclosure tagged by trader class removes that price. The same split recurs with position limits: calm markets reveal the kernel, and only stress or disclosure reveals how close traders are to their limits.
