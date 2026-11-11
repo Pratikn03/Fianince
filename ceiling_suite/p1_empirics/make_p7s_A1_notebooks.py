@@ -109,7 +109,40 @@ assert hashlib.sha256(raw_dev).hexdigest() == DEV_SHA, 'These are not the regist
 dev_out = json.loads(raw_dev)
 assert dev_out['code_sha256'] == SHA, 'The development stage ran with other code. Stop.'
 
+# Format gate (logged addition of 11 November 2026, made before any evaluation data were read). It checks the
+# layout of a sample of evaluation files, one day a month for the two largest symbols, and can only stop the run.
+# It computes no statistic and prints no price or open-interest value.
+def _format_problem(sym, day):
+    ku, mu = pdz.kline_url(sym, day), pdz.metrics_url(sym, day)
+    got = arch.get_many([ku, mu])
+    if got[ku] is None or got[mu] is None:
+        return 'file missing'
+    t0 = pdz.day_start_ms(day)
+    try:
+        k = pdz.parse_klines(got[ku]); m = pdz.parse_metrics(got[mu])
+    except Exception as e:
+        return 'parse error: ' + type(e).__name__
+    ko = k['open_ms'].to_numpy(); mt = m['ts_ms'].to_numpy()
+    if len(ko) < 280 or ko.min() < t0 or ko.max() >= t0 + 288 * pdz.BAR_MS or ((ko - t0) % pdz.BAR_MS).any():
+        return 'kline time stamps are not on the 5-minute grid of the day'
+    if not (k['close'].to_numpy() > 0).all():
+        return 'kline close is not a positive number'
+    if len(mt) < 250 or mt.min() < t0 or mt.max() >= t0 + 288 * pdz.BAR_MS:
+        return 'metrics time stamps are outside the day'
+    if (m['oi_value'].to_numpy() > 0).mean() < 0.9 or (m['top_ratio'].to_numpy() > 0).mean() < 0.9:
+        return 'metrics values are missing'
+    return None
+
+gate_days = sorted({d for d in pdz.days(CFG['eval_start'], CFG['eval_end']) if d.endswith('-01')}
+                   | {CFG['eval_start'], CFG['eval_end']})
+gate = {(s, d): _format_problem(s, d) for s in dev_out['universe'][:2] for d in gate_days}
+gate_fail = {f'{s} {d}': r for (s, d), r in gate.items() if r}
+print(f'format gate: {len(gate) - len(gate_fail)} of {len(gate)} sampled files pass; problems: {gate_fail}')
+if len(gate_fail) > 0.1 * len(gate):
+    raise SystemExit('FORMAT GATE FAILED before any statistic was computed. Send this output; do not rerun.')
+
 res = pl.run_evaluation(CFG, arch, dev_out)
+res['format_gate'] = {'sampled': len(gate), 'problems': gate_fail}
 res['utc'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
 res['code_sha256'] = SHA
 res['dev_outputs_sha256'] = DEV_SHA

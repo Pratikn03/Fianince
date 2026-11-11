@@ -211,3 +211,21 @@ a replication; the verdict of P7S is the primary test's.
 6. *Sensitivity checks* use 999 bootstrap draws. The volume check uses the 5-minute quote volume of the event bar.
 7. *One run.* The evaluation notebook accepts only the development outputs whose SHA-256 it carries, and it
    refuses to compute a second time in the same session. A run that stops during downloads is resumed, not rerun.
+
+## 11. Addendum of 11 November 2026, after the development stage and before any evaluation data were read
+
+- **Development stage run.** The author ran `P7S_A1_Development_Colab.ipynb`. The printed output is in
+  `results/p7s_dev_printed_output.txt`. The development outputs have SHA-256 `7330ef3d…beae43`. The universe has 30
+  symbols; `NEARUSDT`, `SUIUSDT` and `WLDUSDT` ranked high enough but were skipped by the rule because a warm-up or
+  development file is missing. The universe includes `MATICUSDT` and `FTMUSDT`, which stop trading during the
+  evaluation window; by section 10, item 4, they contribute no events after that.
+- **A format gate was added to the evaluation notebook.** Before the evaluation it checks the layout of a sample
+  of evaluation files: one day a month, and the first and last day, for the two largest symbols. It checks that the
+  files exist and parse, that time stamps lie on the day's 5-minute grid, and that prices and metrics are present.
+  If more than 10% of the sampled files fail, the run stops before any statistic. The gate can only stop the run.
+  It computes no statistic and prints no price or open-interest value. The reason is that file layouts may have
+  changed after the development period, and a layout change would otherwise lose data silently.
+- **What changed in the hashed files.** `make_p7s_A1_notebooks.py` (the gate) and this file (this section). The
+  executor, the data layer, the pipeline and the development notebook are unchanged, and their hashes are the
+  registered ones. `P7S_SHA256SUMS` lists the old and new hashes.
+
