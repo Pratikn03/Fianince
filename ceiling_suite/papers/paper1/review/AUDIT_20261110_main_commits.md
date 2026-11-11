@@ -118,3 +118,16 @@ The holdout window starts 2026-11-16 and no holdout data exist yet. An amendment
    two-atom and cubic checks as such.
 5. P7S amendment A1 before 2026-11-16: implement the registered bootstrap and Π, draw the universe by rule from
    development data, set `E` by a written rule, add a readout and an unlock log, and re-freeze.
+
+## Status on 11 November 2026
+
+The author asked for the audit items to be fixed first ("Fix the audit items first").
+
+| Fix | Status |
+|---|---|
+| 1. Reading-B text in the core version | Applied (commit `0182810`) |
+| 2. Proposition 7.5(ii) | Applied. The proposition is the pathwise statement again; the post-breach question is stated as open |
+| 3. "The observer" paragraph | Applied |
+| 4. Trivial Lean declarations | Applied. Seven removed, one renamed. Theorem 7.4 is now machine-checked in general form, so the "two atoms only" limit in item 6 no longer applies |
+| 5. P7S amendment A1 | Drafted (`p1_empirics/P7S_amendment_A1_DRAFT.md`). Not approved, not registered |
+| 6. Smaller items | The C2 hash note is still open. The whole-project Lean receipt is still the 9 November run and needs a rerun on a machine with the Mathlib cache |
