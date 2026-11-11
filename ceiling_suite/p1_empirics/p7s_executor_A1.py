@@ -149,11 +149,13 @@ def shift_test(bars: list[dict], n_days: int, step_days: int = SHIFT_STEP_DAYS) 
         raise ValueError(f"n_days={n_days} must be a multiple of step_days={step_days}")
     _, did = _did_bars(bars, 0)
     shifts = list(range(step_days, n_days, step_days))
-    null = np.array([_did_bars(bars, k * BARS_PER_DAY)[1] for k in shifts])
-    null = null[np.isfinite(null)]
+    null_all = np.array([_did_bars(bars, k * BARS_PER_DAY)[1] for k in shifts])
+    null = null_all[np.isfinite(null_all)]
     p = float((1 + np.sum(np.abs(null) >= abs(did))) / (1 + len(null)))
     return {"did": did, "p_shift": p, "n_shifts": int(len(null)), "step_days": int(step_days), "null_sd": float(np.std(null)),
-            "null_quantiles_2.5_50_97.5": [float(x) for x in np.percentile(null, [2.5, 50, 97.5])]}
+            "null_quantiles_2.5_50_97.5": [float(x) for x in np.percentile(null, [2.5, 50, 97.5])],
+            "shift_days": [int(k) for k in shifts],
+            "did_by_shift": [float(x) if np.isfinite(x) else None for x in null_all]}
 
 
 def stationary_weights(n_days: int, B: int, mean_block: float, rng: np.random.Generator) -> np.ndarray:
@@ -197,6 +199,9 @@ def evaluate(S: np.ndarray, N: np.ndarray, symbols: list[str], bars: list[dict] 
         c, s = _betas(Sb, Nb)
         boot_calm[a:a + len(W)] = np.nanmean(c, axis=1)
         boot_did[a:a + len(W)] = np.nanmean(s, axis=1) - np.nanmean(c, axis=1)
+    finite = np.isfinite(boot_calm) & np.isfinite(boot_did)     # a draw with an empty cell for every symbol is dropped
+    n_dropped = int((~finite).sum())
+    boot_calm, boot_did = boot_calm[finite], boot_did[finite]
     ci90_calm = [float(x) for x in np.percentile(boot_calm, [5, 95])]
     ci95_calm = [float(x) for x in np.percentile(boot_calm, [2.5, 97.5])]
     ci95_did = [float(x) for x in np.percentile(boot_did, [2.5, 97.5])]
@@ -220,7 +225,8 @@ def evaluate(S: np.ndarray, N: np.ndarray, symbols: list[str], bars: list[dict] 
             "share_symbols_beta_stress_positive": float(np.mean(bs > 0)),
             "h1_calm_silence": bool(h1), "p_h2_stress_reveals": p_h2, "h2_stress_reveals": bool(h2),
             "shift_test": st, "p_did_percentile_bootstrap_descriptive": p_boot,
-            "verdict": verdict, "E_margin": e_margin, "B": int(B), "mean_block_days": mean_block, "seed": int(seed),
+            "verdict": verdict, "E_margin": e_margin, "B": int(B), "bootstrap_draws_dropped": n_dropped,
+            "mean_block_days": mean_block, "seed": int(seed),
             "min_events": int(min_events),
             "per_symbol": {s: {"beta_calm": float(a), "beta_stress": float(b)} for s, a, b in
                            zip([s for s, k in zip(symbols, keep) if k], bc, bs)}}

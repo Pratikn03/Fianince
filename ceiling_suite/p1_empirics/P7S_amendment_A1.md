@@ -1,18 +1,19 @@
-# P7S amendment A1 (approved by the author; not yet hashed or registered)
+# P7S amendment A1 (approved by the author; registered 11 November 2026)
 
-**Status.** Drafted 11 November 2026. The author approved it the same day ("i approve all of above work").
+**Status.** Drafted and approved by the author on 11 November 2026 ("i approve all of above work"). Registered the
+same day by hashing this file and the code into `P7S_SHA256SUMS`, before any development or evaluation data were
+read.
 - The approval is read as covering the recommended choices: window option B, margin `E = 0.10`, and the universe
-  rule. The author can still change any of them before hashing.
-- It is not registered yet. Under option B the dates are fixed only after the availability check (section 5), and
-  the amendment is hashed after that. Until then nothing here is in force and no data may be read.
-- No development or holdout data have been downloaded or read for P7S. The only Binance futures files read for P7S
-  are the schema-probe files for the burned day 2024-01-02 (three symbols, columns only).
-- The registered holdout window opens on 2026-11-16. An amendment approved and hashed before that date is made
-  before any outcome data exist.
-- The frozen files `P7S_stress_spec.md` and `p7s_executor.py` are unchanged and keep their hashes
-  (`P7S_SHA256SUMS`). The frozen executor has not been run on market data.
+  rule. Section 10 lists the details fixed after the approval; they are within those choices.
+- The availability check ran on 11 November (`results/p7s_availability_printed_output.txt`). It confirmed that
+  files exist for the proposed dates, so the dates of option B stand unchanged.
+- Before registration the only Binance futures files read for P7S were the schema-probe files for the burned day
+  2024-01-02 (three symbols). The availability check downloaded no file content.
+- The frozen files `P7S_stress_spec.md` and `p7s_executor.py` are unchanged and keep their hashes. The frozen
+  executor has not been run on market data.
+- The primary evaluation window is retrospective. The paper must say so (section 5).
 
-This draft was written by an AI system. It is not independent review.
+This amendment was written by an AI system. It is not independent review.
 
 ## 1. Why an amendment is needed
 
@@ -128,8 +129,7 @@ What the simulations show:
   sample period, and run once."
 - Under any option the test is run once. A failed or inconclusive result is reported as it comes out.
 
-**Recommendation.** Option B, with the wording above. It is the only option that gives a properly powered test
-this year. The author decides.
+**Decision.** Option B, approved by the author on 11 November 2026. The dates are final (section 10).
 
 ## 6. Readout fixed in advance
 
@@ -156,18 +156,58 @@ Any further sentence about the result is limited to stating numbers from the res
   known feature of crypto futures, and they predict the same sign under stress.
 - The equivalence margin is a choice. A reader who wants a stricter margin can read the interval.
 
-## 8. Before registration (after approval)
+## 8. Order of work
 
-1. The author approves or changes: the margin `E`, the window option, the universe rule.
-2. Under option B: run the availability check; fix the dates.
-3. Build the notebooks (universe and thresholds from development data; a blinded precision check that prints
-   standard errors and event counts only; the single evaluation run).
-4. Hash the amendment, the executor, the tests and the notebooks into `P7S_SHA256SUMS`, and commit before any
-   evaluation data are read.
+1. Done: approval, availability check, registration (this file and the code hashed and committed).
+2. The author runs `P7S_A1_Development_Colab.ipynb` once. It reads warm-up and development data only.
+3. The development outputs are committed with their SHA-256, and `P7S_unlocks.json` is updated.
+4. `P7S_A1_Evaluation_Colab.ipynb` is then built for exactly those outputs and run once.
+5. The result is reported as it comes out, with the readout of section 6.
 
 ## 9. Files
 
 - `p7s_executor_A1.py`: the amended executor. Downloads nothing.
-- `test_p7s_executor_A1.py`: 7 unit tests on made-up arrays.
+- `p7s_data.py`: archive addresses, the cached downloader, the parsers and the grid. Computes no statistic.
+- `p7s_pipeline_A1.py`: the development stage and the evaluation stage, and the two window configurations.
+- `make_p7s_A1_notebooks.py`: builds the notebooks. Each notebook carries the three code files and checks their
+  SHA-256 before it runs.
+- `test_p7s_executor_A1.py` (7 tests) and `test_p7s_pipeline_A1.py` (9 tests, including both stages run end to
+  end on simulated markets served by a fake archive and compared with a direct computation).
 - `validate_p7s_A1.py`, `validate_p7s_A1_results_hold90.json`, `…_hold540.json`, `…_hold850.json`: the simulations.
+  The executor changed after those runs in two ways that do not alter any statistic (the shift test also returns
+  its null values; bootstrap draws with an empty cell for every symbol are dropped). A rerun of 18 data sets with
+  the final executor reproduced the stored p-values exactly.
 - `make_p7s_availability_notebook.py`, `P7S_Availability_Colab.ipynb`: the listing-only availability check.
+- `P7S_unlocks.json`: the unlock log.
+
+## 10. Final specification (fixed at registration)
+
+**Primary test (retrospective).**
+- Warm-up: 2023-12-04 to 2024-01-02 (30 days). It includes the burned schema-probe day and enters no sample.
+- Development: 2024-01-03 to 2024-06-30 (180 days).
+- Evaluation: 2024-07-01 to 2026-10-28 (850 days). Shift step 5 days, so the test has 170 group elements and the
+  smallest possible p is 0.0059. Bootstrap draws: 9,999. Seed: 20261108.
+
+**Replication (prospective).** The registered window, 2026-11-16 to 2027-02-14 (91 days, shift step 1 day), with
+development 2026-08-01 to 2026-10-31 and warm-up from 2026-07-02. Same code, universe drawn by the same rule from
+its own development period. It is run once after the window closes and reported next to the primary result. It is
+a replication; the verdict of P7S is the primary test's.
+
+**Details fixed after the approval** (all within the approved rules):
+1. *Exclusions by name.* Bases `USDC`, `BUSD`, `TUSD`, `FDUSD`, `USDP`, `DAI`, `EUR` (stablecoins and fiat) and
+   `BTCDOM`, `DEFI`, `FOOTBALL`, `BLUEBIRD` (index products). Dated contracts (a `_` in the name), symbols not
+   ending in `USDT` and names with non-ASCII characters are not candidates.
+2. *Complete files.* A symbol is complete if the archive has its 5-minute kline file and its metrics file for
+   every day of the warm-up and development periods. The top 30 complete symbols by development quote volume
+   enter. "Not found" means a 404 answer, or a 403 answer for a file the bucket listing does not name. A download that
+   fails for any other reason stops the run; it is never read as missing.
+3. *Timing of the state.* The bar that opens at time t carries the return over the next five minutes. Its state
+   is the metrics snapshot stamped t, which precedes that return. A missing snapshot is filled forward for at
+   most 30 minutes.
+4. *Missing data in the evaluation window.* The universe is fixed. A symbol with missing files or bars (for
+   example after a delisting) contributes no events on those bars.
+5. *Gate before any statistic.* The evaluation first downloads every file. It then counts events. If fewer than
+   20 symbols have 20 events in every cell, it stops and reports "not evaluable" without computing a statistic.
+6. *Sensitivity checks* use 999 bootstrap draws. The volume check uses the 5-minute quote volume of the event bar.
+7. *One run.* The evaluation notebook accepts only the development outputs whose SHA-256 it carries, and it
+   refuses to compute a second time in the same session. A run that stops during downloads is resumed, not rerun.
