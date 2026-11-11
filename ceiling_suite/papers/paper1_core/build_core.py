@@ -146,5 +146,21 @@ for f in FIX:
     assert n >= 1, f"fix not found: {old[:80]}"
     body = body.replace(old, "" if new_ == "<DELETE>" else new_)
 
+# terminology: this version says "group" throughout; the copied text says "cohort". Labels, file names, Lean names,
+# citations and the bibliography are left alone.
+PROTECT = re.compile(r"\\(?:label|ref|eqref|texttt|nolinkurl|url|includegraphics|bibitem|cite[a-z]*\*?)(?:\[[^\]]*\])*\{[^{}]*\}")
+def _swap(seg):
+    seg = re.sub(r"\bCohort(s?)\b", r"Group\1", seg)
+    return re.sub(r"\bcohort(s?)\b", r"group\1", seg)
+_head, _bibpart, _tail = body.partition("\\begin{thebibliography}")
+_bib, _endb, _rest = _tail.partition("\\end{thebibliography}")
+def _unify(text):
+    out, pos = [], 0
+    for m in PROTECT.finditer(text):
+        out.append(_swap(text[pos:m.start()])); out.append(m.group(0)); pos = m.end()
+    out.append(_swap(text[pos:]))
+    return "".join(out)
+body = _unify(_head) + _bibpart + _bib + _endb + _unify(_rest)
+
 open("paper1_core.tex", "w", encoding="utf-8").write(body)
 print("written paper1_core.tex,", len(body.split("\n")), "lines;", len(keep), "references")
