@@ -29,18 +29,19 @@ def other_solutions(x0, K, D, L, starts=400):
     return found
 
 
-out = {}
-for K, D in ((2, 2), (3, 2), (3, 3), (4, 2), (4, 4)):
-    lstar = K - 1 + math.ceil(K / D)
-    res = {}
-    for trial in range(3):
-        s = np.sort(rng.uniform(-0.9, 0.9, K)); W = rng.uniform(0.4, 1.6, (D, K))
-        x0 = np.r_[s, W.ravel()]
-        for L in range(lstar, 2 * K):
-            n_other = len(other_solutions(x0, K, D, L))
-            res.setdefault(L, []).append(n_other)
-            if n_other == 0:
-                break
-    out[f"{K},{D}"] = {"lstar": lstar, "other_solutions_by_order": res}
-    print(f"K={K} D={D} l*={lstar}: other positive configurations by order {res}", flush=True)
-json.dump(out, open("global_fibres_results.json", "w"), indent=1)
+if __name__ == "__main__":
+    out = {}
+    for K, D in ((2, 2), (3, 2), (3, 3), (4, 2), (4, 4)):
+        lstar = K - 1 + math.ceil(K / D)
+        res = {}
+        for trial in range(3):
+            s = np.sort(rng.uniform(-0.9, 0.9, K)); W = rng.uniform(0.4, 1.6, (D, K))
+            x0 = np.r_[s, W.ravel()]
+            for L in range(lstar, 2 * K):
+                n_other = len(other_solutions(x0, K, D, L))
+                res.setdefault(L, []).append(n_other)
+                if n_other == 0:
+                    break
+        out[f"{K},{D}"] = {"lstar": lstar, "other_solutions_by_order": res}
+        print(f"K={K} D={D} l*={lstar}: other positive configurations by order {res}", flush=True)
+    json.dump(out, open("global_fibres_results.json", "w"), indent=1)

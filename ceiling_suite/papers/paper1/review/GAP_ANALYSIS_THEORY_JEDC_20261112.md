@@ -95,9 +95,8 @@ Estimate: about 86-88. Judgement, not data.
 
 ## Sixth pass (12 November 2026): locking the theorems
 
-- Pooling, globally: Theorem `thm:pool`(iv) added. Over a compact class the order is (Delta eta)^-2 l_g with
-  l* <= l_g <= 2K-1; pooling never needs more data than one market. Numerical searches give l_g = l* for
-  (2,2),(3,2),(4,2),(4,4) and l_g <= l*+1 for (3,3).
+- Pooling, globally: Theorem `thm:pool`(iv) added; pooling never needs more data than one market. (Statement and
+  numerical reading corrected in the seventh pass below.)
 - Lean: partial-disclosure lower bound in full on joint price and tagged-flow records
   (`Paper1PartialDisclosureLower.lean`); pooling lower bound on joint records of all markets for any matched pair,
   and an explicit K = D = 2 pair (`Paper1PoolingLower.lean`). Project: 1,156 declarations in 131 modules; standard
@@ -109,3 +108,22 @@ Estimate: about 86-88. Judgement, not data.
   robustness), guide added, duplicate proof sketch removed.
 - Still open: the authors' own check of the new proofs (`AUTHOR_PROOF_CHECKLIST_20261112.md`); the whole-project
   Lean receipt (the notebook produces it); data (P1X draft awaits approval).
+
+## Seventh pass (12 November 2026): line-by-line proof check and the cross-market test
+
+Full report: `PROOF_CHECK_20261112.md`. Five gaps found and fixed: `thm:pool`(iv) claimed an exact global order but
+proved only the upper bound (now two orders, l_c below and l_g above, equal when condition (R) holds on the class);
+`thm:anypop`(iii) embedded the linear pair in band-linear classes also for passive records, where it fails (now an
+approximation argument); `prop:nearcrit` did not show its constants are uniform in Delta eta (now shown); the cubic
+case of `thm:satident` proved only half of its claim (other half added); `thm:pool` used market stability without
+stating it. Three overstatements corrected (Lean scope of `thm:partial`, global search, Monte Carlo wording).
+One numerical claim was wrong: the "other solutions" for (3,3), and those found for (4,2) by a longer search, all sit
+at configurations with two nearly coincident nodes and are ill-conditioning, not collisions. With that read
+correctly, no collision is found in any of the five cases at separated configurations.
+
+Cross-market test P1X: two designs failed the simulation check (design 1 rejects a true premise 10-66% of the time;
+design 2 detects a large violation at most 1% of the time). Not registered. Weekly class positions cannot test the
+pooling premise; no other public data can. Data status unchanged.
+
+Estimate unchanged at about 86 (85-88). The fixes remove five places a careful referee could have stopped; the
+failed data design removes the hope of a quick empirical confirmation. Judgement, not data.

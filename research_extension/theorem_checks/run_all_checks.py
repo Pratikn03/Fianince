@@ -2,7 +2,8 @@
 Usage (from the repository root): python3 research_extension/theorem_checks/run_all_checks.py [--slow]
 --slow adds the global-fibre search and the two-market worst-case table (about 30-60 minutes).
 Prints PASS or FAIL for each claim and writes research_extension/theorem_checks/run_all_checks_results.json."""
-import json, os, subprocess, sys, time
+import json
+import numpy as np, os, subprocess, sys, time
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 SLOW = "--slow" in sys.argv
@@ -81,6 +82,17 @@ check("any population: a different flow map departs from the path", ap["other_po
 if SLOW:
     print("7. Pooling markets: global fibres and the two-market worst case (slow)")
     run(CM, "global_fibres.py"); run(CM, "pooling_table.py")
+    import itertools
+    sols = load(CM, "global_fibres_extended_solutions_upto_4_2.json"); worst = 0.0; ok = True
+    for key, cases in sols.items():
+        K, D = map(int, key.split(","))
+        for c in cases:
+            x0 = np.asarray(c["x0"]); gap = float(np.min(np.diff(np.sort(x0[:K]))))
+            perms = [np.r_[x0[:K][list(q)], x0[K:].reshape(D, K)[:, list(q)].ravel()] for q in itertools.permutations(range(K))]
+            for x in c["at_lstar"] + c["at_lstar_plus_1"]:
+                dist = min(float(np.max(np.abs(np.asarray(x) - q))) for q in perms)
+                worst = max(worst, dist); ok = ok and gap < 0.04 and dist < 0.06
+    check("global search: every apparent other solution sits at nearly coincident nodes (gap < 0.04, distance < 0.06)", ok, f"largest distance {worst:.3f}")
     tab = load(CM, "pooling_table_results.json")
     r = [x for x in tab if x["d"] == 0.025 and x["diversity"] == 0.5][0]
     check("two markets, shares 50 points apart: about 90 years against about 7,000", r["years_two_markets"] < 200 and r["years_one_market"] > 6000, f"{r['years_two_markets']:.0f} vs {r['years_one_market']:.0f}")
