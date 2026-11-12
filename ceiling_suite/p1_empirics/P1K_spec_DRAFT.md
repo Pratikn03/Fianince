@@ -80,3 +80,35 @@ a market where the theorem is false. The draft must not be registered or run on 
 What a workable design needs (not yet done): class memories estimated by pooling across stocks rather than per
 stock-year; an outcome the kernel moves strongly; and a simulation showing low false "supportive" rates when the
 theorem is false and real power when it is true, before anything is registered.
+
+## 9. Design 2 and its simulation check (12 November 2026): still not ready
+
+`p1k_executor_v2.py` changes three things from design 1: one memory per class pooled across stocks (grid search
+over r of the stock-year regressions of u_t on (1, x_t, m_{t-1}(r)), so that same-day reverse causality touches
+only the x_t coefficient); x autocorrelations at lags 1, 2, 5, 10, 20 as the outcome; and each stock's own
+development-period mean outcome as an offset. `validate_p1k_v2.py` simulates 120 stocks with 11 classes whose
+memories are common across stocks (jitter 0.1), class activity that drifts year to year, and traders who update on
+the same public price statistic the executor computes. Three runs per case, 299 bootstrap draws
+(`validate_p1k_v2_results.json`).
+
+| Case | Verdicts | Kernel gain G_A, 95% interval excludes zero | Largest memory error |
+|---|---|---|---|
+| sufficient (theorem true) | 3 inconclusive | 1 of 3 | 0.018 |
+| composition (theorem false) | 3 inconclusive | 1 of 3 | 0.024 |
+| null (no feedback) | 3 inconclusive | 0 of 3 | not defined (no memory to find) |
+
+Reading.
+- **Memories: solved.** Pooling recovers every class's memory to within 0.024 when feedback is present. A test of
+  "investor classes have different memories" (H1) would have power.
+- **Sufficiency (H2): not solved.** The kernel predicts the outcome reliably in only one of three runs where the
+  theorem holds, so the test has little power.
+- **A hazard.** With no feedback at all, composition shares still "predict" the outcome (G_BA up to 0.0016,
+  interval excluding zero in two of three runs), because estimated weights then measure noise that differs across
+  stocks. Had the kernel also shown a gain, the rule would have returned a false "inconsistent".
+- **A rule problem.** The equivalence rule asks the 90% interval of G_BA to lie inside (-E, E). Composition that
+  makes forecasts worse (G_BA below -E) is not evidence against sufficiency; a one-sided rule (upper bound below E)
+  is the right form. This alone would not fix the power.
+
+Neither design may be registered or run on KRX data. A design 3, if pursued, would test sufficiency where it bites,
+in the pooled price equation (whether lagged class flows enter the price response only through their sum), and
+must pass the same three-case simulation, including the null case, before the author is asked to approve it.

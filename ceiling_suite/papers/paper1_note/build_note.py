@@ -5,7 +5,7 @@ import re
 core = open("../paper1_core/paper1_core.tex", encoding="utf-8").read()
 pre = core[:core.index("\\begin{document}")]
 pre = pre.replace("\\begin{document}", "") + "\\graphicspath{{../paper1_core/}}\n"
-pre = pre.replace("\\date{Working paper, core version: 11 November 2026}", "\\date{11 November 2026}")
+pre = pre.replace("\\date{Working paper, core version: 12 November 2026}", "\\date{12 November 2026}")
 pre = pre.replace("\\title{A Sufficient Statistic for Algorithmic Feedback:\\\\ What Prices Reveal About Trader Groups, and Who Needs the Rest}",
                   "\\title{Observationally Equivalent Algorithms:\\\\ What Prices Reveal About Trader Populations,\\\\ and What Supervisors Need}")
 pre = pre.replace("\\fancyhead[R]{\\small A Sufficient Statistic for Algorithmic Feedback}", "\\fancyhead[R]{\\small Observationally Equivalent Algorithms}")
@@ -17,8 +17,8 @@ supp = core[core.index("\\appendix"):core.index("\\end{document}")]
 i = supp.index("\\begin{center}{\\Large Online Supplement}"); j = supp.index("\n\n", supp.index("\\noindent The supplement contains", i))
 head = supp[:i]
 front = ("\\begin{center}{\\Large Online Supplement}\\\\[4pt]{\\large Observationally Equivalent Algorithms}\\\\[2pt]"
-         "{\\normalsize Niroula, Niroula and Khatiwada, 11 November 2026}\\end{center}\n\n"
-         "\\noindent Sections~S1--S7 reproduce Sections~2--8 of the longer core version of this paper (11 November 2026): "
+         "{\\normalsize Niroula, Niroula and Khatiwada, 12 November 2026}\\end{center}\n\n"
+         "\\noindent Sections~S1--S7 reproduce Sections~2--8 of the longer core version of this paper (12 November 2026): "
          "every result in full, with the remarks, machine-check notes and the results that the note omits. "
          "The remaining sections give the proofs, further results, machine checks and notation. "
          "Theorem numbers in the supplement are those of these sections, not of the note. "

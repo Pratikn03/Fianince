@@ -19,6 +19,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from scipy import stats
+from scipy.signal import lfilter
 
 import p1k_executor as v1
 
@@ -40,10 +41,8 @@ R_GRID = np.round(np.arange(0.0, 0.991, 0.01), 2)
 
 def _lagfilter(x: np.ndarray, r: float) -> np.ndarray:
     """m_{t-1}(r) = sum_{j>=1} r^(j-1) x_{t-j}, started at zero; NaN inputs count as zero."""
-    out = np.zeros_like(x); acc = 0.0; xx = np.nan_to_num(x)
-    for t in range(len(x)):
-        out[t] = acc
-        acc = r * acc + xx[t]
+    acc = lfilter([1.0], [1.0, -r], np.nan_to_num(x))
+    out = np.empty_like(acc); out[0] = 0.0; out[1:] = acc[:-1]
     return out
 
 
