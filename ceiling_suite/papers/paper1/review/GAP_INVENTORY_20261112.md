@@ -100,3 +100,17 @@ wrong, they are unused by this version and stay in the full working paper.
 - Evidence C: nothing feasible before the February 2027 replication.
 
 Estimate after A, D and the C4 clarification: about 86-87, roughly 55% at JEDC. Judgement, not data.
+
+## Status after the fixes of 12 November 2026 (afternoon)
+
+- A1 done: the Taiwan reading-B abstract sentence and "what we do not claim" sentences are in the JEDC abstract and
+  main text, word for word; the Binance result is in the abstract too.
+- A2 done: "pre-registered" now only for the Taiwan holdout; the Binance test is "registered", and the main text
+  says it was specified after its sample period, before its data were read. Same change in the note, the core and
+  the RFS cover letter.
+- C4 framing done: "None is a direct test of a result in this paper" added after the 11-of-23 count.
+- D partly done: account-level capital and the dollar illustration cut (they remain in the full working paper);
+  the capital order the main text cites is in Section "Execution cost and capital". Supplement 90 -> 81 pages.
+  The two-group section (S11) is kept: Theorem prop:passive(ii) uses it. Natural excitation is kept (one page, part
+  of the economic-primitives block). Tightening S1-S7 is not done: it would need a restructuring of the build.
+- A3 and A4 remain with the authors: the proof check and the Colab Lean receipt.

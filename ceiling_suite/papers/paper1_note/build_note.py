@@ -68,7 +68,10 @@ ABS_THEORY = ("Algorithmic traders read prices and, by trading, move them. One o
     "apart. Two remedies follow. Tagging all but one memory class removes the barrier, and the last tag is worth "
     "nothing. Without any tags, pooling $D$ markets in which the same algorithms trade in different proportions "
     "lowers the exponent near generic configurations to $2(K-1+\\lceil K/D\\rceil)$, because an algorithm's memory is the same everywhere it "
-    "trades. Core results are machine-checked in Lean~4.")
+    "trades. In a pre-registered out-of-sample test on Taiwan's tagged exchange flows (2019--2023), prices improve "
+    "forecasts of foreign investors' flow as the registered criterion requires, but a pre-specified check attributes "
+    "the gain to prices revealing past flow rather than to feedback. A registered test of the position-limit "
+    "prediction on Binance perpetual futures is inconclusive. Core results are machine-checked in Lean~4.")
 CAL = r"""
 \paragraph{How large is the barrier?} Table~\ref{n:tab_cal} puts numbers on part~(iii) for two groups. What matters is the spread of memories relative to their size. Populations whose memories all have half-lives between 5 and 9 days cannot be told apart with both error probabilities at $5\%$ from less than $4{,}000$ years of daily prices, however close the market is to instability. When half-lives differ by a factor of three or more, a century of daily data can suffice. With three groups the numbers grow to the order of $10^8$ years. The numbers bound every test, for the passive record; probing faces the same order (part~(i)). The exponents do not depend on Gaussian noise: with real Bitcoin price noise injected into synthetic groups, the fitted slopes are $-6.01$ and $-9.81$, against $-6$ and $-10$ (Supplement Section~\ref{sec:injection}).
 
@@ -111,11 +114,11 @@ THEORY_EDITS = [
      "is very expensive, even on the eve of a crash: at illustrative parameters, more than 4{,}000 years of daily prices when the traders' memories have half-lives between 5 and 9 days (Table~\\ref{n:tab_cal})."),
     ("prices then reveal how close the market is to breaking, not who is trading.",
      "prices then reveal how close the market is to breaking, not who is trading. Table~\\ref{n:tab_cal} gives the data this takes at illustrative parameters."),
-    ("\\item \\emph{Evidence} (Section~\\ref{n:concl}). We report two pre-registered tests, each run once, with the wording fixed before the results were known.\n", ""),
+    ("\\item \\emph{Evidence} (Section~\\ref{n:concl}). We report two registered tests, each run once, with the wording fixed before the results were known.\n", ""),
     ("Figure~\\ref{n:fig_barrier} shows both statements.\n\n", "Figure~\\ref{n:fig_barrier} shows both statements.\n\n"),
     ("\\end{figure}\n\n\n\\section{Who needs composition", "\\end{figure}\n" + CAL + "\n\\section{Who needs composition"),
-    (note[note.index("\\paragraph{Evidence.}"):note.index("The sufficiency results hold whenever")],
-     "\\paragraph{Evidence.} The contribution is theoretical. Supplement Section~\\ref{sec:scope} reports two pre-registered tests on public data, on Taiwan's tagged exchange flows and on Binance perpetual futures, with their readouts as registered.\n\n"),
+    ("\\paragraph{Evidence.} The theory concerns tagged flows and position limits that are rarely observed.",
+     "\\paragraph{Evidence.} The contribution is theoretical, and the tagged flows and position limits it concerns are rarely observed."),
 ]
 th = note
 for old, new in THEORY_EDITS:

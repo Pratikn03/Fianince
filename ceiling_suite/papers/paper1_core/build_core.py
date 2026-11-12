@@ -106,6 +106,9 @@ for start, lab in [("\\paragraph{Theorem", "thm:quantity"), ("\\paragraph{Lemma"
                    ("\\paragraph{Lemma", "thm:capital")]:
     supp.append(para(start, lab) + "\n")
 # two unknown cohorts (used by Theorem prop:passive(ii))
+supp.append("\\paragraph{Account-level capital.} The full working paper refines these orders at the level of a "
+            "single trading account (a three-region partition of probe designs, adaptive probing, heteroskedastic "
+            "impact) and gives a hypothetical illustration in dollars. No result here uses them.\n\n")
 supp.append(L(2262, 2324, "\\section{Two unknown cohorts"))
 # S4: supervisory decision in detail
 supp.append(L(2709, 2772, "\\section{The supervisory decision in detail}"))
@@ -143,12 +146,9 @@ supp.append(L(695, 705, "\\begin{proposition}[Conditional limits of three evasio
 supp.append("\\paragraph{Proof of Proposition~\\ref{prop:strategic}.}\n" + para("\\paragraph{Proposition", "prop:strategic").split("}", 2)[-1] + "\n")
 supp.append(L(2335, 2347))
 supp.append("\\paragraph{Proof of Proposition~\\ref{prop:choice}.}\n" + para("\\paragraph{Proposition", "prop:choice").split("}", 2)[-1] + "\n")
-supp.append(L(1389, 1623, "\\section{Account-level capital}"))
-supp.append("\\paragraph{Proofs.}\n\n")
-for start, lab in [("\\paragraph{Proposition", "prop:tri"), ("\\paragraph{Theorems", "thm:spectral"),
-                   ("\\paragraph{Theorem", "thm:rh"), ("\\paragraph{Corollary", "cor:garch")]:
-    supp.append(para(start, lab) + "\n")
-supp.append(L(1350, 1388, "\\section{A hypothetical scale illustration"))
+# Account-level capital and the hypothetical dollar illustration (SSRN lines 1350-1623) were restored on 12 November
+# and cut again the same day: no result of the main text uses them, and Section app:capital already gives the
+# necessary and sufficient capital order. They remain in the full working paper.
 # Part 4: robustness beyond the linear model (simulations).
 supp.append(L(1644, 1699, "\\section{Robustness to nonlinear and adaptive trading rules}"))
 supp.append("\\section{Machine checks in detail}\\label{app:mc}\n\n")

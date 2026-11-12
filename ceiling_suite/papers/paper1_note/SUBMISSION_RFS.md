@@ -53,7 +53,7 @@ without a full restructuring.
 > class, which is what the new identification regimes collect. With position limits, calm prices reveal the
 > kernel and nothing more.
 >
-> We report two pre-registered tests, each run once with its wording fixed in advance. On Taiwan's tagged
+> We report two registered tests, each run once with its wording fixed in advance. On Taiwan's tagged
 > exchange flows, prices improve forecasts of foreign investors' flow as the registered criterion requires, but a
 > pre-specified check attributes the gain to prices revealing past flow rather than to feedback. A test of the
 > position-limit prediction on Binance perpetual futures is inconclusive. We report both as they came out.
