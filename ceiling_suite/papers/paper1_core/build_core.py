@@ -114,17 +114,28 @@ supp.append(F("supp_everyK"))
 supp.append(F("supp_nearcrit"))
 supp.append(F("supp_noisystress"))
 supp.append(F("supp_sat"))
-# Results restored from the full working paper (12 November 2026), verbatim by line range, with their proofs.
-supp.append(L(1936, 2005, "\\section{General memory: the minimax rate is logarithmic}"))
+# Further results (restored from the full working paper, 12 November 2026), grouped by theme, verbatim by line range
+# with their proofs.
+# Part 1: identification and cost.
+_gen = L(1936, 2005, "\\section{General memory: the minimax rate is logarithmic}")
+_gen = re.sub(r"\\begin\{proof\}\[Proof sketch\].*?\\end\{proof\}\n?",
+              "The full proofs of Lemma~\\ref{lem:altpair} and Theorem~\\ref{thm:general} follow.\n\n", _gen, count=1, flags=re.S)
+supp.append(_gen)
 supp.append("\\paragraph{Full proofs.}\n\n")
 for start, lab in [("\\paragraph{Lemma", "lem:altpair"), ("\\paragraph{Theorem", "thm:general")]:
     supp.append(para(start, lab) + "\n")
 supp.append(L(1624, 1643, "\\section{Near-colliding rates"))
-supp.append(L(1700, 1717, "\\section{A spectral blind spot}"))
-supp.append("\\paragraph{Proof of Theorem~\\ref{thm:blind}.}\n" + para("\\paragraph{Theorem", "thm:blind").split("}", 2)[-1] + "\n")
-supp.append(L(1265, 1310, "\\section{What prices hide, in economic terms}"))
 supp.append(L(1311, 1349, "\\section{Local information: the Cram"))
 supp.append("\\paragraph{Proof of Proposition~\\ref{prop:crb}.}\n" + para("\\paragraph{Proposition", "prop:crb").split("}", 2)[-1] + "\n")
+supp.append("\\section{Finite-sample surveillance bounds}\\label{app:restored_finite}\n\n")
+supp.append(L(1015, 1045, "\\subsection{A finite-window price-surveillance bound}"))
+supp.append(L(1910, 1935, "\\section{Do the rates survive real market noise?}"))
+# Part 2: what prices hide, in economic terms.
+supp.append(L(1265, 1310, "\\section{What prices hide, in economic terms}"))
+supp.append(L(1904, 1909, "\\section{A worked example: two Kalman desks}"))
+supp.append(L(1700, 1717, "\\section{A spectral blind spot}"))
+supp.append("\\paragraph{Proof of Theorem~\\ref{thm:blind}.}\n" + para("\\paragraph{Theorem", "thm:blind").split("}", 2)[-1] + "\n")
+# Part 3: supervision, money and policy.
 supp.append("\\section{Pricing, evasion and the choice of an audit trail}\\label{app:restored_policy}\n\n")
 supp.append(L(252, 264, "\\begin{proposition}[Conditional endogenous-pricing invariance]"))
 supp.append("\\paragraph{Proof of Proposition~\\ref{prop:endogenous_kappa}.}\n" + para("\\paragraph{Proposition", "prop:endogenous_kappa").split("}", 2)[-1] + "\n")
@@ -132,16 +143,14 @@ supp.append(L(695, 705, "\\begin{proposition}[Conditional limits of three evasio
 supp.append("\\paragraph{Proof of Proposition~\\ref{prop:strategic}.}\n" + para("\\paragraph{Proposition", "prop:strategic").split("}", 2)[-1] + "\n")
 supp.append(L(2335, 2347))
 supp.append("\\paragraph{Proof of Proposition~\\ref{prop:choice}.}\n" + para("\\paragraph{Proposition", "prop:choice").split("}", 2)[-1] + "\n")
-supp.append("\\section{Finite-sample surveillance bounds}\\label{app:restored_finite}\n\n")
-supp.append(L(1015, 1045, "\\subsection{A finite-window price-surveillance bound}"))
 supp.append(L(1389, 1623, "\\section{Account-level capital}"))
 supp.append("\\paragraph{Proofs.}\n\n")
 for start, lab in [("\\paragraph{Proposition", "prop:tri"), ("\\paragraph{Theorems", "thm:spectral"),
                    ("\\paragraph{Theorem", "thm:rh"), ("\\paragraph{Corollary", "cor:garch")]:
     supp.append(para(start, lab) + "\n")
 supp.append(L(1350, 1388, "\\section{A hypothetical scale illustration"))
+# Part 4: robustness beyond the linear model (simulations).
 supp.append(L(1644, 1699, "\\section{Robustness to nonlinear and adaptive trading rules}"))
-supp.append(L(1904, 1935, "\\section{A worked example: two Kalman desks}"))
 supp.append("\\section{Machine checks in detail}\\label{app:mc}\n\n")
 supp.append("\\paragraph{Theorem~\\ref{thm:inventory}.}\n" + L(310, 316, "\\paragraph{Machine check.}").replace("\\paragraph{Machine check.} ", "", 1))
 supp.append("\\paragraph{Theorem~\\ref{thm:kcohort}.}\n" + L(534, 534, "\\paragraph{Machine check.}").replace("\\paragraph{Machine check.} ", "", 1) + "\n")

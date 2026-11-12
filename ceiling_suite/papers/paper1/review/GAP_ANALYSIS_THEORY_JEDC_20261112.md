@@ -92,3 +92,20 @@ cross-market surveillance substitutes for tagging; hiding requires identical pro
 
 Open: global identification; markets with cross-impact; condition (R) for K > 8 (conjectured).
 Estimate: about 86-88. Judgement, not data.
+
+## Sixth pass (12 November 2026): locking the theorems
+
+- Pooling, globally: Theorem `thm:pool`(iv) added. Over a compact class the order is (Delta eta)^-2 l_g with
+  l* <= l_g <= 2K-1; pooling never needs more data than one market. Numerical searches give l_g = l* for
+  (2,2),(3,2),(4,2),(4,4) and l_g <= l*+1 for (3,3).
+- Lean: partial-disclosure lower bound in full on joint price and tagged-flow records
+  (`Paper1PartialDisclosureLower.lean`); pooling lower bound on joint records of all markets for any matched pair,
+  and an explicit K = D = 2 pair (`Paper1PoolingLower.lean`). Project: 1,156 declarations in 131 modules; standard
+  axioms only.
+- Upper bounds by Monte Carlo (`research_extension/theorem_checks/mc_rates.py`): all seven slopes within 0.1 of
+  theory except the flat case (0.36 vs 0). Noisy stress consistency and any-population identification checked.
+- `run_all_checks.py`: 17 of 17 checks pass. Colab notebook re-runs them and builds the whole Lean project.
+- Supplement reorganized: further results grouped (identification and cost; economics; supervision and policy;
+  robustness), guide added, duplicate proof sketch removed.
+- Still open: the authors' own check of the new proofs (`AUTHOR_PROOF_CHECKLIST_20261112.md`); the whole-project
+  Lean receipt (the notebook produces it); data (P1X draft awaits approval).

@@ -138,3 +138,5 @@ import CurrentProofs.Paper1EveryKHalt
 import CurrentProofs.Paper1GeneralIdentification
 import CurrentProofs.Paper1PartialDisclosure
 import CurrentProofs.Paper1PoolingMarkets
+import CurrentProofs.Paper1PartialDisclosureLower
+import CurrentProofs.Paper1PoolingLower
