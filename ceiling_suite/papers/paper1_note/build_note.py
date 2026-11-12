@@ -31,7 +31,8 @@ rest = supp[j:]
 # Leaner supplement: the note's main text gives the reading of each result, so the supplement drops the expository
 # paragraphs below when they carry no label, environment or figure (statements, proofs and checks are kept).
 DROP = ("In words.", "The model in words.", "What the exponential case adds.", "The analogy with aggregate demand.",
-        "Relation to network identifiability.")
+        "Relation to network identifiability.", "What the supervisor can and cannot learn.",
+        "Existing runs and the remaining synthetic check.", "In executed quantity and money.", "The value of each tag.")
 def _lean(t):
     def keep(m):
         b = m.group(0)
@@ -65,7 +66,9 @@ ABS_THEORY = ("Algorithmic traders read prices and, by trading, move them. One o
     "equilibria, and prices identify nothing finer. Learning the composition of the population costs data of order "
     "$(\\Delta\\eta)^{-(4K-2)}$ for $K$ groups whose memories lie within $\\Delta\\eta$, even near instability: "
     "two-group populations with half-lives of 5 to 9 days need more than 4{,}000 years of daily prices to be told "
-    "apart. Two remedies follow. Tagging all but one memory class removes the barrier, and the last tag is worth "
+    "apart. More generally, a linear question about the population is answered at the usual statistical rate, "
+    "whatever the number of groups, exactly when its kernel has square-summable coefficients: market-wide quantities "
+    "are cheap, composition is not. Two remedies follow. Tagging all but one memory class removes the barrier, and the last tag is worth "
     "nothing. Without any tags, pooling $D$ markets in which the same algorithms trade in different proportions "
     "lowers the exponent near generic configurations to $2(K-1+\\lceil K/D\\rceil)$, because an algorithm's memory is the same everywhere it "
     "trades. Core results are machine-checked in Lean~4.")

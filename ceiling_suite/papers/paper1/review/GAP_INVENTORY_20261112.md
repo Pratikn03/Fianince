@@ -124,3 +124,17 @@ amendment: the test is public in the cited repository.
 
 Revised the same afternoon: the Taiwan test is back in Supplement S7 (reading-B text), not in the abstract or the
 main-text results; the main text points to S7 for both registered tests. Supplement 81 pages.
+
+## Evening of 12 November: both levers pulled
+
+- Thesis chapter 4 imported (authors' decision): Theorem `thm:questions` (exact cost of any linear question, by a
+  modulus with a polynomial-approximation dual) and Proposition `prop:parametric` (cheap exactly for square-summable
+  coefficients), with proofs, re-checked step by step on import; new main-text Theorem "Which questions prices answer
+  cheaply"; abstract sentence; Monte Carlo (slopes -0.02 and -3.02). The safety boundary case is cited to Paper 2,
+  not proved here. Costs recorded: uses up the planned Paper 3's lead result; the thesis chapter is the first author's
+  own work and now appears under three authors; the cover letter's "shares no results" with Paper 2 still holds (the
+  boundary case is cited).
+- Hostile-referee pass (`HOSTILE_REFEREE_PASS_20261112.md`); "What is new" rewritten as six results with no
+  counterpart in the cited literatures; robustness sentence in the opening.
+- Supplement: four duplicated expository paragraphs dropped. Net 83 pages (the new section adds three).
+- run_all_checks.py: 19 of 19 checks pass (two new dichotomy checks).

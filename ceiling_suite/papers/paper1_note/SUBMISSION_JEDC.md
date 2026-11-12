@@ -18,7 +18,7 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
   heterogeneous-agent models (Boswijk, Hommes and Manzan 2007; Franke and Westerhoff 2012; Lux and Zwinkels 2018);
   the full working paper cited as Niroula et al. (2026a) instead of "the full working paper".
 
-Files: `Paper1_theory_main.pdf` (17 pages) and `Paper1_theory_supplement.pdf` (81 pages), built from
+Files: `Paper1_theory_main.pdf` (18 pages) and `Paper1_theory_supplement.pdf` (83 pages), built from
 `paper1_theory.tex` by `build_note.py`.
 
 ## Journal requirements
@@ -27,7 +27,7 @@ The Elsevier guide for authors could not be loaded from this session. The points
 standard requirements and a third-party summary of the JEDC template. **Check them on the JEDC guide before
 submitting.**
 - Highlights: 3 to 5 bullets of at most 85 characters each, as a separate file (below).
-- Abstract: 142 words. By the authors' decision of 12 November 2026 the Taiwan and Binance tests are reported in
+- Abstract: 176 words. By the authors' decision of 12 November 2026 the Taiwan and Binance tests are reported in
   Supplement S7 only (`p1_empirics/P1T_readout_amendment_R1.md`).
 - Keywords and JEL codes: on the title page.
 - Declarations: competing interests, funding, data availability, CRediT contributions, and Elsevier's
@@ -42,8 +42,9 @@ submitting.**
 - Learning composition costs data of order (Δη)^-(4K-2), even near instability
 - Memories with half-lives of 5 to 9 days need 4,000+ years of daily prices to separate
 - Tagging all but one memory class recovers composition at bounded cost
+- Market-wide questions cost the usual statistical rate; composition does not
 
-(Character counts: 78, 77, 76, 85, 69.)
+(Character counts: 78, 77, 76, 85, 69, 77. Elsevier allows 3 to 5: drop one.)
 
 ## Cover letter (draft)
 
@@ -59,7 +60,9 @@ submitting.**
 > inventories for any insider strategy and any causal dealer rule, so they share every equilibrium; and the kernel
 > is all that prices identify.
 >
-> Learning anything finer is very expensive. Separating K groups whose memories lie within Δη takes data of order
+> Learning anything finer is very expensive, and the paper says exactly which questions are cheap: a linear
+> question about the population costs the usual statistical rate, whatever the number of groups, exactly when its
+> kernel has square-summable coefficients. Composition is not such a question. Separating K groups whose memories lie within Δη takes data of order
 > (Δη)^-(4K-2), whether the observer probes the market or waits, and the barrier does not lift as the market
 > approaches instability. At illustrative parameters, two-group populations whose memories all have half-lives
 > between 5 and 9 days need more than 4,000 years of daily prices to be told apart. With position limits, calm prices reveal the kernel and

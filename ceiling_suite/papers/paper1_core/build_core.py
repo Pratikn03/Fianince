@@ -117,6 +117,7 @@ supp.append(F("supp_everyK"))
 supp.append(F("supp_nearcrit"))
 supp.append(F("supp_noisystress"))
 supp.append(F("supp_sat"))
+supp.append(F("supp_questions"))
 # Further results (restored from the full working paper, 12 November 2026), grouped by theme, verbatim by line range
 # with their proofs.
 # Part 1: identification and cost.

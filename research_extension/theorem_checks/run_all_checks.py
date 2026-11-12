@@ -79,6 +79,12 @@ ap = sg["any_population"]
 check("any population: steering probe hits the target and recovers the flow map", ap["steer_hits_target_maxerr"] < 1e-12 and ap["flow_recovered_maxerr"] < 1e-12, f"{ap['steer_hits_target_maxerr']:.1e}, {ap['flow_recovered_maxerr']:.1e}")
 check("any population: a different flow map departs from the path", ap["other_population_deviates_maxdiff"] > 1e-4, f"{ap['other_population_deviates_maxdiff']:.3g}")
 
+print("6b. Which questions prices answer cheaply (dichotomy)")
+run(TC, "mc_questions.py")
+mq = load(TC, "mc_questions_results.json")
+check("discounted feedback: error flat in the memory spacing (slope within 0.1 of 0)", abs(mq["slope_discounted_feedback"]) < 0.1, f"{mq['slope_discounted_feedback']:.3f}")
+check("group weights: error grows like spacing^-3 (slope within 0.1 of -3)", abs(mq["slope_weights"] + 3) < 0.1, f"{mq['slope_weights']:.3f}")
+
 if SLOW:
     print("7. Pooling markets: global fibres and the two-market worst case (slow)")
     run(CM, "global_fibres.py"); run(CM, "pooling_table.py")
