@@ -41,9 +41,9 @@ submitting.**
 - Prices identify the kernel and nothing finer, for any insider and dealer rule
 - Learning composition costs data of order (Δη)^-(4K-2), even near instability
 - Memories with half-lives of 5 to 9 days need 4,000+ years of daily prices to separate
-- Tagging all but one memory class gives the full composition at no extra cost
+- Tagging all but one memory class recovers composition at bounded cost
 
-(Character counts: 78, 77, 76, 85, 76.)
+(Character counts: 78, 77, 76, 85, 69.)
 
 ## Cover letter (draft)
 
