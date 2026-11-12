@@ -59,3 +59,24 @@ inconclusive. Each is reported as it comes out.
 
 It would be the first evidence, on real tagged flows, that price dynamics depend on trader classes through the
 kernel. It would not test intraday algorithmic feedback, and daily flows mix many motives besides feedback.
+
+## 8. Simulation check of this draft (11-12 November 2026): the design is not ready
+
+`p1k_executor.py` implements sections 3-5; `validate_p1k.py` simulates markets with 11 tagged classes in which the
+sufficiency theorem holds exactly ("sufficient"), and markets in which it fails ("composition": one class trades
+on the price five days back).
+
+| Outcome measure | Case | Runs | Verdicts |
+|---|---|---|---|
+| Return autocorrelations, lags 1-10 | sufficient | 2 | 2 inconclusive |
+| Return autocorrelations, lags 1-10 | composition (theorem false) | 2 | 1 **supportive**, 1 inconclusive |
+| Autocorrelations of x, lags 1, 2, 5, 10, 20 | sufficient | 3 | 3 inconclusive |
+| Autocorrelations of x, lags 1, 2, 5, 10, 20 | composition (theorem false) | 3 | 3 inconclusive |
+
+Reading: per stock-year IV estimates for 11 classes, with lagged instruments, are too noisy for the estimated
+kernel to predict anything, even when the theorem is true by construction. And one run returned "supportive" in
+a market where the theorem is false. The draft must not be registered or run on KRX data in this form.
+
+What a workable design needs (not yet done): class memories estimated by pooling across stocks rather than per
+stock-year; an outcome the kernel moves strongly; and a simulation showing low false "supportive" rates when the
+theorem is false and real power when it is true, before anything is registered.
