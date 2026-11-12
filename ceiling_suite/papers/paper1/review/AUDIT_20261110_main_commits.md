@@ -131,3 +131,7 @@ The author asked for the audit items to be fixed first ("Fix the audit items fir
 | 4. Trivial Lean declarations | Applied. Seven removed, one renamed. Theorem 7.4 is now machine-checked in general form, so the "two atoms only" limit in item 6 no longer applies |
 | 5. P7S amendment A1 | Drafted (`p1_empirics/P7S_amendment_A1_DRAFT.md`). Not approved, not registered |
 | 6. Smaller items | The C2 hash note is still open. The whole-project Lean receipt is still the 9 November run and needs a rerun on a machine with the Mathlib cache |
+
+## Author verification (11 November 2026)
+
+The author stated in chat that all three authors (Pratik Niroula, Prashant Niroula, Sujan Khatiwada) have checked every proof, including the three results added on 11 November (Supplement S5.1, Propositions 5.5 and 6.4), the Lean formalizations and the empirical calculations. At the author's instruction the manuscripts now say so. No response table from an outside reader has been received, and the whole-project Lean receipt is still the 9 November run.
