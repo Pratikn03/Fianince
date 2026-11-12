@@ -18,7 +18,7 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
   heterogeneous-agent models (Boswijk, Hommes and Manzan 2007; Franke and Westerhoff 2012; Lux and Zwinkels 2018);
   the full working paper cited as Niroula et al. (2026a) instead of "the full working paper".
 
-Files: `Paper1_theory_main.pdf` (17 pages) and `Paper1_theory_supplement.pdf` (80 pages), built from
+Files: `Paper1_theory_main.pdf` (17 pages) and `Paper1_theory_supplement.pdf` (81 pages), built from
 `paper1_theory.tex` by `build_note.py`.
 
 ## Journal requirements
@@ -27,8 +27,8 @@ The Elsevier guide for authors could not be loaded from this session. The points
 standard requirements and a third-party summary of the JEDC template. **Check them on the JEDC guide before
 submitting.**
 - Highlights: 3 to 5 bullets of at most 85 characters each, as a separate file (below).
-- Abstract: 142 words. By the authors' decision of 12 November 2026 this version does not report the Taiwan test
-  (`p1_empirics/P1T_readout_amendment_R1.md`); the Binance test is reported in the main text and Supplement S7.
+- Abstract: 142 words. By the authors' decision of 12 November 2026 the Taiwan and Binance tests are reported in
+  Supplement S7 only (`p1_empirics/P1T_readout_amendment_R1.md`).
 - Keywords and JEL codes: on the title page.
 - Declarations: competing interests, funding, data availability, CRediT contributions, and Elsevier's
   "Declaration of generative AI and AI-assisted technologies" (all in the manuscript).

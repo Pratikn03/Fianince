@@ -116,11 +116,8 @@ THEORY_EDITS = [
     ("\\end{figure}\n\n\n\\section{Who needs composition", "\\end{figure}\n" + CAL + "\n\\section{Who needs composition"),
     (note[note.index("\\paragraph{Evidence.}"):note.index("The sufficiency results hold whenever")],
      "\\paragraph{Evidence.} The contribution is theoretical, and the tagged flows and position limits it concerns are "
-     "rarely observed. Supplement Section~\\ref{sec:scope} reports a registered test of the prediction of "
-     "Section~\\ref{n:sat} on Binance perpetual futures, specified after its sample period and before its data were "
-     "read. A pre-specified test on Binance perpetual futures was inconclusive (calm difference $-0.002$, 90\\% "
-     "interval $[-0.007, 0.004]$; difference-in-differences $0.041$, $p=0.553$). It neither supports nor contradicts "
-     "the prediction of Section~\\ref{n:sat}.\n\n"),
+     "rarely observed. Supplement Section~\\ref{sec:scope} reports two registered tests on public data, on Taiwan's "
+     "tagged exchange flows and on Binance perpetual futures, with their readouts as registered.\n\n"),
 ]
 th = note
 for old, new in THEORY_EDITS:
@@ -157,26 +154,9 @@ for a, b in (("(full working paper, internet appendix)", "(\\citealp{niroula2026
 for a, b in (("\\citet{niroula2026a} reports", "\\citet{niroula2026a} report"), ("\\citet{niroula2026a} proves", "\\citet{niroula2026a} prove"),
              ("\\citet{niroula2026a} matches", "\\citet{niroula2026a} match")):
     theory = theory.replace(a, b)
-# P1T readout amendment R1 (12 November 2026, authors' decision): the Taiwan test is not reported in this version.
-TAIWAN_OUT = [
-    (" A pre-registered out-of-sample test of the feedback premise on Taiwan's tagged exchange flows (spec P1T, holdout "
-     "2019--2023; \\citet{niroula2026a} report every diagnostic) gives the following. $D=0.0426$ $[0.0206, 0.0643]$, "
-     "$p=0.000$, meets the registered supportive criterion. The pre-specified reverse-causality check gives "
-     "$D=-0.0065$ $[-0.0316, 0.0165]$, which does not meet it. The registered verdict is `supportive'. Read with its "
-     "pre-specified diagnostic, the test does not provide evidence of feedback beyond prices revealing past flow. We do "
-     "not claim that tagged flow in Taiwan responds to price deviations. The registered test is supportive, but its "
-     "pre-specified diagnostic attributes the gain to reverse causality.\n\nA second test, of the two-layer prediction",
-     "\n\nA test of the two-layer prediction"),
-    ("A test of the two-layer prediction of Section~\\ref{sec:saturating}, is registered",
-     "A test of the two-layer prediction of Section~\\ref{sec:saturating} is registered"),
-    ("The Taiwan test uses the Taiwan Stock Exchange's daily reports of trading by the three major institutional "
-     "investors (T86), closing quotes (MI\\_INDEX), ex-rights and ex-dividend adjustments (TWT49U) and market totals "
-     "(FMTQIK), from \\url{https://www.twse.com.tw}. ", ""),
-]
-for a, b in TAIWAN_OUT:
-    assert theory.count(a) == 1, a[:60]
-    theory = theory.replace(a, b)
-assert "Taiwan's tagged exchange flows" not in theory and "P1T" not in theory, "Taiwan test still in the theory version"
+# P1T readout amendment R1 (12 November 2026, authors' decision): in this version the Taiwan test is reported in
+# Supplement S7 only, not in the abstract or the main text.
+assert "Taiwan" not in ABS_THEORY
 assert "full working paper" not in theory and "core version" not in theory.split("\\begin{document}")[1], "version clutter left"
 open("paper1_theory.tex", "w", encoding="utf-8").write(theory)
 print("written paper1_theory.tex; abstract words:", len(ABS_THEORY.split()))

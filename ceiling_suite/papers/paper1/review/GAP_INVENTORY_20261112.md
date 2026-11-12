@@ -121,3 +121,6 @@ By the authors' decision (`p1_empirics/P1T_readout_amendment_R1.md`), the JEDC t
 Taiwan test: not in the abstract, the main text, Supplement S7 or the data statement. The other versions keep it.
 This replaces item A1 above for this version. Abstract 142 words; supplement 80 pages. Risk recorded in the
 amendment: the test is public in the cited repository.
+
+Revised the same afternoon: the Taiwan test is back in Supplement S7 (reading-B text), not in the abstract or the
+main-text results; the main text points to S7 for both registered tests. Supplement 81 pages.
