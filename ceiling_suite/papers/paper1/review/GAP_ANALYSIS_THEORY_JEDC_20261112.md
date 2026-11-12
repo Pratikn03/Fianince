@@ -19,7 +19,7 @@ Done by an AI system reading as a JEDC referee would. Not independent review.
 
 | Gap | Before | Now |
 |---|---|---|
-| Linear feedback only | Sufficiency stated for linear and saturating flows | Sufficiency now stated for **any** population whose aggregate flow is a causal function of public signals, including strategy switching after past profits (the induction is already machine-checked in this generality, `p1_flow_market_invariance`). Identification and cost results still need linear flows and exponential memory; that remains the main scope limit. |
+| Linear feedback only | Sufficiency stated for linear and saturating flows | **New Theorem (Any population):** for any causal aggregate flow map, (i) sufficiency, (ii) prices identify exactly the flow map, and a group-level quantity is identified iff it is a function of it (machine-checked for an arbitrary map, `Paper1GeneralIdentification.lean`, standard axioms only), (iii) the cost lower bounds hold over every class containing the linear rules, including band-linear classes. Still open: upper bounds (rates) for general nonlinear classes; for some families composition is not identified at all. |
 | Near-instability bound per observation only | Disclosed | Exact finite-sample information computed (`finite_sample_check.py`): within 97.8-99.8% of n times the rate, for margins down to 1e-3 and n up to 4,000. Numerical evidence; the uniform finite-sample proof is still open. |
 | Stress identification needs exact observations | Disclosed | **New Proposition (noisy stress identification), with proof:** a minimum-distance estimator recovers the signed capacity measure consistently under Gaussian observation noise. No rate. |
 | One hiding group | Disclosed | Bound shown to hold group by group in any equilibrium among several groups; what determines each group's alpha is not modelled. |
@@ -30,5 +30,5 @@ Done by an AI system reading as a JEDC referee would. Not independent review.
 ## Net effect
 
 Gaps 1, 2 and 6 were the likeliest reasons for a JEDC rejection. With them and the second-pass gaps closed, the
-estimate is about 79-81, with a chance of eventual acceptance at JEDC of roughly 40-45%. The main remaining limit
-is that identification and cost need linear flows. These numbers are judgement, not data.
+estimate is about 80-82, with a chance of eventual acceptance at JEDC of roughly 45%. The main remaining limit
+is that attainable rates for general nonlinear rules are open. These numbers are judgement, not data.
