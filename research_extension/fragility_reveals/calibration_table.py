@@ -40,3 +40,18 @@ for K in (2, 3):
                   f"years(daily)={n / BARS_DAILY:.3e} years(5-min)={n / BARS_5MIN:.3e}")
 json.dump({"parameters": {"rc": 0.5, "W": 0.3, "kappa": 0.5}, "rule": "n >= ln(5)/KL (Bretagnolle-Huber, both errors 5%)",
            "rows": rows}, open("calibration_table_results.json", "w"), indent=1)
+
+# Robustness: slower memories. The centre rate moves from 0.5 to 0.8 and 0.9 and the total weight is scaled as
+# W = 0.6 (1 - rc), which keeps the feedback share kappa * W / (1 - rc) at 0.3, as in the main table.
+rob = []
+for rc, spacings in ((0.5, (0.1, 0.05)), (0.8, (0.1, 0.05)), (0.9, (0.05, 0.025))):
+    W = 0.6 * (1 - rc)
+    for d in spacings:
+        for margin in (0.1, 1e-6):
+            kl = kl_rate(2, d, margin, rc=rc, W=W)
+            n = np.log(5) / kl
+            rob.append({"K": 2, "rc": rc, "W": W, "spacing": d, "margin_1_minus_S": margin, "kl_per_obs": kl,
+                        "n_obs_5pct": n, "years_daily": n / BARS_DAILY})
+            print(f"robust K=2 rc={rc} W={W:.2f} spacing={d:<6} margin={margin:<6g} KL={kl:.3e} years(daily)={n / BARS_DAILY:.3e}")
+res = json.load(open("calibration_table_results.json")); res["robustness_slower_memory"] = rob
+json.dump(res, open("calibration_table_results.json", "w"), indent=1)

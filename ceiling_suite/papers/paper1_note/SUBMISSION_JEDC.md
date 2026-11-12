@@ -9,11 +9,16 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
   with their registered readouts; the main text makes no empirical claim.
 - JEDC publishes the literature the paper extends: heterogeneous feedback traders (Brock and Hommes, 1998, JEDC),
   aggregation and learning dynamics, and computational methods.
-- New in this version: a calibration table (`calibration_table.py`) that turns the cost theorem into numbers. Two
-  populations of two groups each, with memory rates within 0.1 of 0.5, need more than 20,000 years of daily prices
-  to be told apart with both error probabilities at 5%, and still 16,000 one millionth below instability.
+- New in this version: a calibration table (`calibration_table.py`) that turns the cost theorem into numbers. Two-group
+  populations whose memories all have half-lives between 5 and 9 days need more than 4,000 years of daily prices to
+  be told apart with both error probabilities at 5%, however close the market is to instability. When half-lives
+  differ by a factor of three, a century can suffice; the table shows both, so a referee sees the dependence.
+- Also new: the kernel stated as a minimal sufficient statistic; the remark that aggregate untagged flow adds nothing;
+  lower bounds stated to hold a fortiori with unknown (a, kappa); positioning against the estimation of
+  heterogeneous-agent models (Boswijk, Hommes and Manzan 2007; Franke and Westerhoff 2012; Lux and Zwinkels 2018);
+  the full working paper cited as Niroula et al. (2026a) instead of "the full working paper".
 
-Files: `Paper1_theory_main.pdf` (14 pages) and `Paper1_theory_supplement.pdf` (55 pages), built from
+Files: `Paper1_theory_main.pdf` (15 pages) and `Paper1_theory_supplement.pdf` (55 pages), built from
 `paper1_theory.tex` by `build_note.py`.
 
 ## Journal requirements
@@ -22,7 +27,7 @@ The Elsevier guide for authors could not be loaded from this session. The points
 standard requirements and a third-party summary of the JEDC template. **Check them on the JEDC guide before
 submitting.**
 - Highlights: 3 to 5 bullets of at most 85 characters each, as a separate file (below).
-- Abstract: the theory version has 131 words. If the guide sets 100, cut the sentence on position limits and the
+- Abstract: the theory version has 134 words. If the guide sets 100, cut the sentence on position limits and the
   Lean sentence.
 - Keywords and JEL codes: on the title page.
 - Declarations: competing interests, funding, data availability, CRediT contributions, and Elsevier's
@@ -32,13 +37,13 @@ submitting.**
 
 ## Highlights (separate file)
 
-- Trader populations with the same feedback kernel are observationally equivalent
+- The feedback kernel is a minimal sufficient statistic of the trader population
 - Prices identify the kernel and nothing finer, for any insider and dealer rule
 - Learning composition costs data of order (Δη)^-(4K-2), even near instability
-- Two-group populations with memories within 0.1 need 15,000+ years of daily prices
+- Memories with half-lives of 5 to 9 days need 4,000+ years of daily prices to separate
 - Market-wide supervision needs only the kernel; targeted rules need tagged flow
 
-(Character counts: 79, 77, 76, 81, 78.)
+(Character counts: 78, 77, 76, 85, 78.)
 
 ## Cover letter (draft)
 
@@ -56,8 +61,8 @@ submitting.**
 >
 > Learning anything finer is very expensive. Separating K groups whose memories lie within Δη takes data of order
 > (Δη)^-(4K-2), whether the observer probes the market or waits, and the barrier does not lift as the market
-> approaches instability. At illustrative parameters, two-group populations whose memories lie within 0.1 need more
-> than 15,000 years of daily prices to be told apart. With position limits, calm prices reveal the kernel and
+> approaches instability. At illustrative parameters, two-group populations whose memories all have half-lives
+> between 5 and 9 days need more than 4,000 years of daily prices to be told apart. With position limits, calm prices reveal the kernel and
 > nothing more; only stress reveals how close traders are to their limits.
 >
 > These results sort the current choices of regulators in China, India, Japan and the European Union, which now
