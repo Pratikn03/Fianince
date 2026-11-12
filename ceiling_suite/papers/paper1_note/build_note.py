@@ -25,7 +25,7 @@ front = ("\\begin{center}{\\Large Online Supplement}\\\\[4pt]{\\large Observatio
          "The note's results correspond to them as follows: Theorem~\\ref{n:suff} to Theorem~\\ref{thm:eqinv} and Proposition~\\ref{prop:anylinear}; "
          "Theorem~\\ref{n:ident} to Theorem~\\ref{thm:merged}(i); Theorem~\\ref{n:cost} to Theorems~\\ref{thm:kcohort}, \\ref{prop:esprit} and~\\ref{prop:passive}; "
          "Proposition~\\ref{n:target} to Propositions~\\ref{prop:target}(i) and~\\ref{prop:targetK}; Theorem~\\ref{n:disc} to Theorem~\\ref{thm:discvalue}; "
-         "Proposition~\\ref{n:nearcrit} to Proposition~\\ref{prop:nearcrit}; Proposition~\\ref{n:hiding} to Proposition~\\ref{prop:hiding}; Theorem~\\ref{n:partial} to Theorem~\\ref{thm:partial}; Theorem~\\ref{n:sat_thm} to Theorems~\\ref{thm:satsuff}, \\ref{thm:stress} and~\\ref{thm:satident}.\n\n")
+         "Proposition~\\ref{n:nearcrit} to Proposition~\\ref{prop:nearcrit}; Proposition~\\ref{n:hiding} to Proposition~\\ref{prop:hiding}; Theorem~\\ref{n:partial} to Theorem~\\ref{thm:partial}; Theorem~\\ref{n:pool} to Theorem~\\ref{thm:pool}; Theorem~\\ref{n:sat_thm} to Theorems~\\ref{thm:satsuff}, \\ref{thm:stress} and~\\ref{thm:satident}.\n\n")
 rest = supp[j:]
 
 # Leaner supplement: the note's main text gives the reading of each result, so the supplement drops the expository
@@ -61,15 +61,14 @@ print("written paper1_note_submission.tex")
 # note stays the single source. Compile paper1_theory.tex; split with
 # python3 split_note.py paper1_theory.pdf Paper1_theory_main.pdf Paper1_theory_supplement.pdf
 ABS_THEORY = ("Algorithmic traders read prices and, by trading, move them. One object, the feedback kernel, is a minimal "
-    "sufficient statistic for such a market: for any insider strategy and causal dealer rule, trader populations with "
-    "the same kernel produce the same prices, order flows, profits and equilibria, and prices identify the kernel and "
-    "nothing finer. Learning the composition of the population costs data of order $(\\Delta\\eta)^{-(4K-2)}$ for $K$ "
-    "groups whose memories lie within $\\Delta\\eta$, by probing or by waiting, and the barrier persists as the market "
-    "approaches instability. At illustrative parameters, two-group populations whose memories all have half-lives "
-    "between 5 and 9 days need more than 4{,}000 years of daily prices to be told apart. Market-wide supervision "
-    "therefore needs only the kernel; targeted supervision needs flow tagged by class, though not by every class: "
-    "tagging all but one memory class is enough. Core results are "
-    "machine-checked in Lean~4.")
+    "sufficient statistic for such a market: populations with the same kernel produce the same prices, profits and "
+    "equilibria, and prices identify nothing finer. Learning the composition of the population costs data of order "
+    "$(\\Delta\\eta)^{-(4K-2)}$ for $K$ groups whose memories lie within $\\Delta\\eta$, even near instability: "
+    "two-group populations with half-lives of 5 to 9 days need more than 4{,}000 years of daily prices to be told "
+    "apart. Two remedies follow. Tagging all but one memory class removes the barrier, and the last tag is worth "
+    "nothing. Without any tags, pooling $D$ markets in which the same algorithms trade in different proportions "
+    "lowers the exponent to $2(K-1+\\lceil K/D\\rceil)$, because an algorithm's memory is the same everywhere it "
+    "trades. Core results are machine-checked in Lean~4.")
 CAL = r"""
 \paragraph{How large is the barrier?} Table~\ref{n:tab_cal} puts numbers on part~(iii) for two groups. What matters is the spread of memories relative to their size. Populations whose memories all have half-lives between 5 and 9 days cannot be told apart with both error probabilities at $5\%$ from less than $4{,}000$ years of daily prices, however close the market is to instability. When half-lives differ by a factor of three or more, a century of daily data can suffice. With three groups the numbers grow to the order of $10^8$ years. The numbers bound every test, for the passive record; probing faces the same order (part~(i)). The exponents do not depend on Gaussian noise: with real Bitcoin price noise injected into synthetic groups, the fitted slopes are $-6.01$ and $-9.81$, against $-6$ and $-10$ (Supplement Section~\ref{sec:injection}).
 

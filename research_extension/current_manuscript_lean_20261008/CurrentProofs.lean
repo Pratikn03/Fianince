@@ -137,3 +137,4 @@ import CurrentProofs.Paper1StressIdentificationTanh
 import CurrentProofs.Paper1EveryKHalt
 import CurrentProofs.Paper1GeneralIdentification
 import CurrentProofs.Paper1PartialDisclosure
+import CurrentProofs.Paper1PoolingMarkets

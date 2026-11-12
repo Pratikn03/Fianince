@@ -72,3 +72,23 @@ worth a factor (Delta eta)^-6; the last tag is worth nothing for the weights; wh
 memory classes, not traders. Numerical check: slopes 10.05, 6.02, 5.96 against 10, 6, 6
 (`research_extension/partial_disclosure/`). Lean: algebraic steps (`Paper1PartialDisclosure.lean`, 4 theorems,
 standard axioms); probabilistic steps on paper. Added to the theory abstract.
+
+## Fifth pass (12 November 2026): the surprise result, pooling markets
+
+Search: every part of the model was reread for a place where experts' expectation and the model disagree. Rejected
+ideas, with reasons: high-frequency data (composition is a drift-like, calendar-time object; known for drifts),
+hidden gross feedback (follows from the two-layer theorem), collusion indistinguishability (Vandermonde, too
+direct), tag-by-similarity (follows from cluster super-resolution). Kept: pooling markets.
+
+Theorem `thm:pool` (core Section 5.x, note/theory Theorem "Pooling markets"): the same K algorithms (common memory)
+in D markets with participation matrix of rank D. Data needed: (Delta eta)^-2(K-1+ceil(K/D)), locally at generic
+configurations; one market 4K-2, K or more markets 2K. Lower bound near every generic configuration (counting plus
+constant rank); local upper bound under condition (R), verified by exact rational computation for K <= 5, all D.
+Numerical: 60-digit Jacobian slopes 3,2 / 5,4,3 / 7,5,5,4. Calibration (passive, half-lives 5-9 days): one market
+~7,000 years; two markets with shares differing by 50 points ~90 years (hardest pair found), 20 points ~4,000.
+Lean: counting steps (`Paper1PoolingMarkets.lean`). Closest literature: multi-snapshot super-resolution (Li, Zhu,
+Gao and Liao 2022). Economic reading: an algorithm's memory is the same everywhere it trades, which gives it away;
+cross-market surveillance substitutes for tagging; hiding requires identical proportions in every market.
+
+Open: global identification; markets with cross-impact; condition (R) for K > 5 (conjectured).
+Estimate: about 86-88. Judgement, not data.
