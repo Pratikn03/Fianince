@@ -114,3 +114,10 @@ Estimate after A, D and the C4 clarification: about 86-87, roughly 55% at JEDC. 
   The two-group section (S11) is kept: Theorem prop:passive(ii) uses it. Natural excitation is kept (one page, part
   of the economic-primitives block). Tightening S1-S7 is not done: it would need a restructuring of the build.
 - A3 and A4 remain with the authors: the proof check and the Colab Lean receipt.
+
+## Later on 12 November: the Taiwan test removed from the JEDC version
+
+By the authors' decision (`p1_empirics/P1T_readout_amendment_R1.md`), the JEDC theory version no longer mentions the
+Taiwan test: not in the abstract, the main text, Supplement S7 or the data statement. The other versions keep it.
+This replaces item A1 above for this version. Abstract 142 words; supplement 80 pages. Risk recorded in the
+amendment: the test is public in the cited repository.

@@ -68,10 +68,7 @@ ABS_THEORY = ("Algorithmic traders read prices and, by trading, move them. One o
     "apart. Two remedies follow. Tagging all but one memory class removes the barrier, and the last tag is worth "
     "nothing. Without any tags, pooling $D$ markets in which the same algorithms trade in different proportions "
     "lowers the exponent near generic configurations to $2(K-1+\\lceil K/D\\rceil)$, because an algorithm's memory is the same everywhere it "
-    "trades. In a pre-registered out-of-sample test on Taiwan's tagged exchange flows (2019--2023), prices improve "
-    "forecasts of foreign investors' flow as the registered criterion requires, but a pre-specified check attributes "
-    "the gain to prices revealing past flow rather than to feedback. A registered test of the position-limit "
-    "prediction on Binance perpetual futures is inconclusive. Core results are machine-checked in Lean~4.")
+    "trades. Core results are machine-checked in Lean~4.")
 CAL = r"""
 \paragraph{How large is the barrier?} Table~\ref{n:tab_cal} puts numbers on part~(iii) for two groups. What matters is the spread of memories relative to their size. Populations whose memories all have half-lives between 5 and 9 days cannot be told apart with both error probabilities at $5\%$ from less than $4{,}000$ years of daily prices, however close the market is to instability. When half-lives differ by a factor of three or more, a century of daily data can suffice. With three groups the numbers grow to the order of $10^8$ years. The numbers bound every test, for the passive record; probing faces the same order (part~(i)). The exponents do not depend on Gaussian noise: with real Bitcoin price noise injected into synthetic groups, the fitted slopes are $-6.01$ and $-9.81$, against $-6$ and $-10$ (Supplement Section~\ref{sec:injection}).
 
@@ -117,8 +114,13 @@ THEORY_EDITS = [
     ("\\item \\emph{Evidence} (Section~\\ref{n:concl}). We report two registered tests, each run once, with the wording fixed before the results were known.\n", ""),
     ("Figure~\\ref{n:fig_barrier} shows both statements.\n\n", "Figure~\\ref{n:fig_barrier} shows both statements.\n\n"),
     ("\\end{figure}\n\n\n\\section{Who needs composition", "\\end{figure}\n" + CAL + "\n\\section{Who needs composition"),
-    ("\\paragraph{Evidence.} The theory concerns tagged flows and position limits that are rarely observed.",
-     "\\paragraph{Evidence.} The contribution is theoretical, and the tagged flows and position limits it concerns are rarely observed."),
+    (note[note.index("\\paragraph{Evidence.}"):note.index("The sufficiency results hold whenever")],
+     "\\paragraph{Evidence.} The contribution is theoretical, and the tagged flows and position limits it concerns are "
+     "rarely observed. Supplement Section~\\ref{sec:scope} reports a registered test of the prediction of "
+     "Section~\\ref{n:sat} on Binance perpetual futures, specified after its sample period and before its data were "
+     "read. A pre-specified test on Binance perpetual futures was inconclusive (calm difference $-0.002$, 90\\% "
+     "interval $[-0.007, 0.004]$; difference-in-differences $0.041$, $p=0.553$). It neither supports nor contradicts "
+     "the prediction of Section~\\ref{n:sat}.\n\n"),
 ]
 th = note
 for old, new in THEORY_EDITS:
@@ -155,6 +157,26 @@ for a, b in (("(full working paper, internet appendix)", "(\\citealp{niroula2026
 for a, b in (("\\citet{niroula2026a} reports", "\\citet{niroula2026a} report"), ("\\citet{niroula2026a} proves", "\\citet{niroula2026a} prove"),
              ("\\citet{niroula2026a} matches", "\\citet{niroula2026a} match")):
     theory = theory.replace(a, b)
+# P1T readout amendment R1 (12 November 2026, authors' decision): the Taiwan test is not reported in this version.
+TAIWAN_OUT = [
+    (" A pre-registered out-of-sample test of the feedback premise on Taiwan's tagged exchange flows (spec P1T, holdout "
+     "2019--2023; \\citet{niroula2026a} report every diagnostic) gives the following. $D=0.0426$ $[0.0206, 0.0643]$, "
+     "$p=0.000$, meets the registered supportive criterion. The pre-specified reverse-causality check gives "
+     "$D=-0.0065$ $[-0.0316, 0.0165]$, which does not meet it. The registered verdict is `supportive'. Read with its "
+     "pre-specified diagnostic, the test does not provide evidence of feedback beyond prices revealing past flow. We do "
+     "not claim that tagged flow in Taiwan responds to price deviations. The registered test is supportive, but its "
+     "pre-specified diagnostic attributes the gain to reverse causality.\n\nA second test, of the two-layer prediction",
+     "\n\nA test of the two-layer prediction"),
+    ("A test of the two-layer prediction of Section~\\ref{sec:saturating}, is registered",
+     "A test of the two-layer prediction of Section~\\ref{sec:saturating} is registered"),
+    ("The Taiwan test uses the Taiwan Stock Exchange's daily reports of trading by the three major institutional "
+     "investors (T86), closing quotes (MI\\_INDEX), ex-rights and ex-dividend adjustments (TWT49U) and market totals "
+     "(FMTQIK), from \\url{https://www.twse.com.tw}. ", ""),
+]
+for a, b in TAIWAN_OUT:
+    assert theory.count(a) == 1, a[:60]
+    theory = theory.replace(a, b)
+assert "Taiwan's tagged exchange flows" not in theory and "P1T" not in theory, "Taiwan test still in the theory version"
 assert "full working paper" not in theory and "core version" not in theory.split("\\begin{document}")[1], "version clutter left"
 open("paper1_theory.tex", "w", encoding="utf-8").write(theory)
 print("written paper1_theory.tex; abstract words:", len(ABS_THEORY.split()))
