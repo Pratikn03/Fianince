@@ -2,6 +2,7 @@
 SHA-256 before running, and needs no access to the repository.
 
   python3 make_p7s_A1_notebooks.py                      -> P7S_A1_Development_Colab.ipynb
+  python3 make_p7s_A1_notebooks.py --replication-dev    -> P7S_A1_Replication_Development_Colab.ipynb only
   python3 make_p7s_A1_notebooks.py --dev-sha <sha256>   -> also P7S_A1_Evaluation_Colab.ipynb, which runs only on
                                                            the development outputs with that SHA-256
 """
@@ -264,5 +265,32 @@ def build(dev_sha: str | None = None) -> None:
         print("wrote P7S_A1_Evaluation_Colab.ipynb for development outputs", dev_sha[:12])
 
 
+REP_DEV_MD = """# P7S amendment A1: prospective replication, development stage (run once)
+
+This notebook reads **warm-up and development data of the replication only** (2026-07-02 to 2026-10-31). It does
+not touch the replication's evaluation window (2026-11-16 to 2027-02-14), which has not closed.
+
+The code, the universe rule and the threshold rules are those of the primary test (`P7S_amendment_A1.md`); only the
+dates differ (`CFG_REPLICATION` in `p7s_pipeline_A1.py`). The notebook:
+1. draws the replication's universe of 30 symbols by development-period quote volume;
+2. fits every threshold on the replication's development data;
+3. prints a blinded precision check: standard errors and event counts, with no estimate.
+
+Run the cell (about 20 to 30 minutes). Send back the printed output and `p7s_rep_dev_outputs.zip`. Run before
+16 November 2026 and the universe and thresholds are fixed before any replication evaluation data exist.
+The replication's evaluation stage is a separate notebook, built only after the window closes on 14 February 2027.
+"""
+
+
+def build_replication_dev() -> None:
+    code = setup_cell().replace("CFG = pl.CFG_PRIMARY", "CFG = pl.CFG_REPLICATION") + DEV_RUN.replace("p7s_dev_outputs", "p7s_rep_dev_outputs").replace(
+        "=== P7S A1 development stage ===", "=== P7S A1 replication: development stage ===")
+    assert "CFG_REPLICATION" in code and "p7s_rep_dev_outputs.zip" in code
+    (HERE / "P7S_A1_Replication_Development_Colab.ipynb").write_text(json.dumps(notebook(REP_DEV_MD, code), indent=1))
+    print("wrote P7S_A1_Replication_Development_Colab.ipynb")
+
+
 if __name__ == "__main__":
+    if "--replication-dev" in sys.argv:
+        build_replication_dev(); sys.exit()
     build(sys.argv[sys.argv.index("--dev-sha") + 1] if "--dev-sha" in sys.argv else None)

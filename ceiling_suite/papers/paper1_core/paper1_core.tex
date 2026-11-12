@@ -41,11 +41,11 @@
 \makeatletter\g@addto@macro\UrlBreaks{\do\_}\makeatother
 \begin{document}
 \maketitle
-\thispagestyle{empty}
+\thispagestyle{empty}\pagestyle{empty}
 \begingroup\onehalfspacing
 
 \begin{abstract}
-\noindent In a market with algorithmic feedback traders, the feedback kernel---the response of total feedback flow to past prices---is a sufficient statistic for aggregate dynamics. For any insider and causal dealer rule, populations with the same kernel generate identical prices, profits, and equilibria, and public prices identify nothing finer. Learning group composition costs the known $(\Delta\eta)^{-(4K-2)}$ mixture rate, which survives the closed loop and holds in an inventory equilibrium. Position limits introduce a second layer: a capacity measure over memory and leverage. Calm markets reveal only the linear kernel, carrying zero information about proximity to hard limits. Probes large enough to reach the limits identify the net capacity at each memory and leverage. In a pre-registered out-of-sample test on Taiwan's tagged exchange flows (2019--2023), prices improve forecasts of foreign investors' flow as the registered criterion requires, but a pre-specified check attributes the gain to prices revealing past flow rather than to feedback. Core statements are machine-checked in Lean~4.
+\noindent In a market with algorithmic feedback traders, the feedback kernel, the response of total feedback flow to past prices, is a sufficient statistic: for any insider and causal dealer rule, populations with the same kernel generate identical prices, profits and equilibria, and prices identify nothing finer. Learning group composition costs data of order $(\Delta\eta)^{-(4K-2)}$, in the closed loop, in equilibrium and near instability. With position limits, calm prices reveal only the kernel, and only stress reveals the rest. In a pre-registered out-of-sample test on Taiwan's tagged exchange flows (2019--2023), prices improve forecasts of foreign investors' flow as the registered criterion requires, but a pre-specified check attributes the gain to prices revealing past flow rather than to feedback. A pre-registered test of the position-limit prediction on Binance perpetual futures is inconclusive. Core statements are machine-checked in Lean~4.
 \end{abstract}
 
 \noindent\textbf{AI-use disclosure.} Claude, ChatGPT/Codex and Gemini provided material assistance with research development, code, numerical checks, manuscript drafting and internal critique, including the restructuring of this core version. Claude and ChatGPT/Codex developed and checked Lean proofs. Human authors remain responsible for verifying the content and its scholarly contribution before submission. AI checks do not constitute independent review. The authors have verified all mathematical proofs, Lean~4 formalizations and empirical calculations, and take full responsibility for the content of the manuscript.
@@ -59,6 +59,7 @@
 
 \endgroup
 \newpage
+\pagestyle{fancy}
 \setcounter{page}{1}
 
 \section{Introduction}\label{sec:intro}
@@ -127,9 +128,9 @@ The induction behind Theorem~\ref{thm:eqinv}(iii) is short. Its content is not t
 
 Time is discrete. Let $p_t$ be the price, $p^*$ the fundamental value and $x_t=p_t-p^*$ the pricing error. A reduced-form dealer sector absorbs net order flow with price impact $\kappa>0$, an imposed primitive rather than an equilibrium quote, and arbitrage pulls the error toward zero with persistence $a\in[0,1)$:
 \begin{equation}\label{eq:price}
-x_t = a x_{t-1} + \kappa \sum_{i=1}^K q_i y_{i,t-1} + \kappa v_t + w_t,
+x_t = a x_{t-1} + \kappa \sum_{i=1}^K q_i y_{i,t-1} + \kappa v_t + \varepsilon_t,
 \end{equation}
-where $v_t$ is an executed probe quantity and $w_t$ a price innovation. Group $i$ holds a state $y_{i,t}$ with exponential memory and trades $q_i y_{i,t}$:
+where $v_t$ is an executed probe quantity and $\varepsilon_t$ a price innovation (news). Group $i$ holds a state $y_{i,t}$ with exponential memory and trades $q_i y_{i,t}$:
 \begin{equation}\label{eq:cohort}
 y_{i,t} = (1-\eta_i)\,y_{i,t-1} + \eta_i x_t,\qquad \eta_i\in(0,1).
 \end{equation}
@@ -396,7 +397,15 @@ D_\epsilon(B\|A)\ \le\ C\,(\Delta\eta)^{4K-2}\qquad\text{for all }0<\epsilon\le\
 \]
 \end{proposition}
 
-\paragraph{In words.} Even as the market approaches a crash, passive prices reveal no more about who is trading than they did in calm conditions, per observation. They reveal more and more about how close the market is to instability: if the two economies share the persistence $a$ instead of the budget, their budgets differ by order $(\Delta\eta)^{2K-1}$, and numerically the divergence rate then grows like $\epsilon^{-1}$. The proof is in Supplement~\ref{app:nearcrit}. Two limits apply. The statement is about the divergence rate per observation; near instability prices are strongly dependent, and a finite-sample bound that is uniform in $\epsilon$ is not proved. And probing does gain near instability: the squared response difference grows like $\epsilon^{-1}$ (numerical, \nolinkurl{research_extension/fragility_reveals}), but probing a market at the edge of instability is not a policy.
+\paragraph{In words.} Even as the market approaches a crash, passive prices reveal no more about who is trading than they did in calm conditions, per observation. They reveal more and more about how close the market is to instability: if the two economies share the persistence $a$ instead of the budget, their budgets differ by order $(\Delta\eta)^{2K-1}$, and numerically the divergence rate then grows like $\epsilon^{-1}$. The proof is in Supplement~\ref{app:nearcrit}. Two limits apply. The statement is about the divergence rate per observation; near instability prices are strongly dependent, and a finite-sample bound that is uniform in $\epsilon$ is not proved. And probing does gain near instability: the squared response difference grows like $\epsilon^{-1}$ (numerical, \nolinkurl{research_extension/fragility_reveals}), but probing a market at the edge of instability is not a policy. Figure~\ref{fig:barrier} shows both statements.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_barrier.pdf}
+\caption{The passive barrier near instability. Both panels show the Gaussian Kullback--Leibler information per observation between the stationary price processes of two populations whose merged measures are the $K$-node Gauss and Gauss--Radau rules on memories spread over $\Delta\eta$ around $0.5$ (total weight $0.3$, impact $\kappa=0.5$). (a)~At a common feedback budget one millionth below instability, the information falls like $(\Delta\eta)^{4K-2}$ (dotted lines). (b)~Held at a common budget (solid), the information stays bounded as the margin $1-S$ shrinks; held at a common persistence (dashed), it grows without bound, because the budgets then differ. Computed from the closed-form spectra; scripts in \nolinkurl{research_extension/fragility_reveals/}.}
+\label{fig:barrier}
+\end{figure}
+
 
 \section{Who needs composition, and what disclosure buys}\label{sec:supervision}
 
@@ -512,9 +521,9 @@ Let $\psi$ and $\psi'$ be band-linear. Take two populations $P$ and $P'$ with th
  \mathrm{TV}\bigl(\mathcal L_P(O_T),\mathcal L_{P'}(O_T)\bigr)\le\Pr\nolimits_{\rm lin}(\tau<T),
 \]
 the probability that some trader of $P\cup P'$ leaves its band before $T$ in the linear market.
-\item \emph{Calm passive data.} In the market of Section~\ref{sec:model} with innovations $w_t\sim N(0,\sigma_w^2)$ i.i.d., no probe, a start from rest, and a linear market with $S_{\rm abs}=a+\kappa\sum_m|k_m|<1$, let $s_r^2=\sup_t\mathrm{Var}_{\rm lin}(m_t(r))$ and $\vartheta=\max_g|\ell_g|s_{r_g}$ over the $n+n'$ traders of $P\cup P'$. Then
+\item \emph{Calm passive data.} In the market of Section~\ref{sec:model} with innovations $\varepsilon_t\sim N(0,\sigma_\varepsilon^2)$ i.i.d., no probe, a start from rest, and a linear market with $S_{\rm abs}=a+\kappa\sum_m|k_m|<1$, let $s_r^2=\sup_t\mathrm{Var}_{\rm lin}(m_t(r))$ and $\vartheta=\max_g|\ell_g|s_{r_g}$ over the $n+n'$ traders of $P\cup P'$. Then
 \[
- \mathrm{TV}\le T\,(n+n')\,e^{-1/(2\vartheta^2)},\qquad s_r\le\frac{\sigma_w}{(1-r)(1-S_{\rm abs})},
+ \mathrm{TV}\le T\,(n+n')\,e^{-1/(2\vartheta^2)},\qquad s_r\le\frac{\sigma_\varepsilon}{(1-r)(1-S_{\rm abs})},
 \]
 and any test that tells $P$ from $P'$ with both error probabilities at most $\alpha<1/2$ needs $T\ge(1-2\alpha)\,e^{1/(2\vartheta^2)}/(n+n')$ observations.
 \item \emph{Probes.} Without process noise, if the linear market's response to a deterministic probe keeps every trader of $P\cup P'$ inside its band, the two records have the same law, for any number of repetitions and any observation noise. For a single pulse of size $A$, no information is obtained below
@@ -528,7 +537,7 @@ with $h$ the linear impulse response.
 
 \paragraph{Machine check.} The pathwise part (i), including the statement that the market follows the linear market until the first exceedance, is machine-checked for every pair of band-linear shapes and every causal insider, dealer and signal rule (\texttt{p1\_sat\_stress\_invariance}, \texttt{p1\_sat\_follows\_linear}, \texttt{p1\_satAggFlow\_linear\_of\_band}). Parts (ii)--(iv) are on paper.
 
-\paragraph{An example, and what differs at stress.} At memory $r=0.7$, take $P=\{(c,\ell)=(1,0.1)\}$ and $P'=\{(0.25,0.2),(1,0.05)\}$. Both have merged weight $0.1$, so they have the same kernel and are equivalent until stress. Under a hard limit, their total capacities, the largest aggregate flow they can deliver, are $1$ and $1.25$ (\texttt{p1\_sat\_capacity\_differs}). In the market of Section~\ref{sec:model} with $a=0.5$ and $\kappa=0.8$, single pulses up to size $4$ give exactly identical responses. Larger pulses push the most levered trader of $P'$ to its limit, and the responses separate by $0.072$ at size $6$ and $0.364$ at size $12$. Under Gaussian innovations, the simulated probability that some trader leaves its band within $1{,}000$ dates lies below the bound of part (iii) at every noise level tested. It is zero up to $\sigma_w=0.3$, and $0.0175$, $0.0875$ and $0.63$ at $\sigma_w=0.35$, $0.4$ and $0.5$. The scripts are \nolinkurl{research_extension/nonlinear_scoping/sim_wiener.py} and \nolinkurl{sim_passive_clip.py}. Figure~\ref{fig:twolayer} shows the two layers.
+\paragraph{An example, and what differs at stress.} At memory $r=0.7$, take $P=\{(c,\ell)=(1,0.1)\}$ and $P'=\{(0.25,0.2),(1,0.05)\}$. Both have merged weight $0.1$, so they have the same kernel and are equivalent until stress. Under a hard limit, their total capacities, the largest aggregate flow they can deliver, are $1$ and $1.25$ (\texttt{p1\_sat\_capacity\_differs}). In the market of Section~\ref{sec:model} with $a=0.5$ and $\kappa=0.8$, single pulses up to size $4$ give exactly identical responses. Larger pulses push the most levered trader of $P'$ to its limit, and the responses separate by $0.072$ at size $6$ and $0.364$ at size $12$. Under Gaussian innovations, the simulated probability that some trader leaves its band within $1{,}000$ dates lies below the bound of part (iii) at every noise level tested. It is zero up to $\sigma_\varepsilon=0.3$, and $0.0175$, $0.0875$ and $0.63$ at $\sigma_\varepsilon=0.35$, $0.4$ and $0.5$. The scripts are \nolinkurl{research_extension/nonlinear_scoping/sim_wiener.py} and \nolinkurl{sim_passive_clip.py}. Figure~\ref{fig:twolayer} shows the two layers.
 
 \begin{figure}[t]\centering
 \includegraphics[width=\textwidth]{figs_core/fig_twolayer.pdf}
@@ -629,19 +638,21 @@ The practical reading is a division of supervisory labour. Market-wide measures,
 
 \subsection*{Declarations}
 
+\paragraph{Author contributions.} Pratik Niroula: conceptualization, methodology, formal analysis, software, investigation, data curation, writing (original draft). Prashant Niroula: validation (verification of the proofs, the Lean~4 formalizations and the empirical calculations), writing (review and editing). Sujan Khatiwada: validation (verification of the proofs, the Lean~4 formalizations and the empirical calculations), writing (review and editing). All authors approved the final manuscript.
+
 \paragraph{Funding.} This research received no external funding.
 
 \paragraph{Competing interests.} The authors declare no competing interests.
 
-\paragraph{Author contributions.} Pratik Niroula: conceptualization, methodology, software, formal analysis, writing (original draft). Proposed review responsibilities for confirmation: Prashant Niroula and Sujan Khatiwada, proof review, validation and manuscript review. Independent human proof review and final approval by each author remain to be recorded; this draft does not attest that they have occurred.
+\paragraph{Data availability.} All data are public. The Taiwan test uses the Taiwan Stock Exchange's daily reports of trading by the three major institutional investors (T86), closing quotes (MI\_INDEX), ex-rights and ex-dividend adjustments (TWT49U) and market totals (FMTQIK), from \url{https://www.twse.com.tw}. The Binance test uses daily files of five-minute candles and trading metrics (including open interest) for USD-margined perpetual futures from the Binance public data archive (\url{https://data.binance.vision}). The registered specifications, amendments, executors, notebooks, result files and test-unlock counters are in the public repository.
 
-\paragraph{Data availability.} This version analyses no new market data. It reports results of tests documented in the full working paper. The data used there are public and are listed in its data statement.
-
-\paragraph{Code availability.} All code, pre-specified test specifications, result files and test-unlock counters are public at \url{https://github.com/Pratikn03/Fianince}. The repository's README lists the scripts in run order, and the full working paper's reproducibility appendix maps every number to the file that produces it.
+\paragraph{Code availability.} All code, Lean~4 proofs and result files are public at \url{https://github.com/Pratikn03/Fianince}.
 
 \paragraph{Ethics approval.} Not applicable. The study uses only public market data and involves no human participants or personal data.
 
-\paragraph{Use of AI tools.} Claude (Anthropic) assisted with data analysis, analysis code, derivations, Lean proofs, numerical results and text. Gemini (Google) assisted with planning and internal draft critique. ChatGPT/Codex (OpenAI) assisted with planning, literature discovery, mathematical development, code and Lean proof drafting, executable and kernel checks, result interpretation and manuscript revisions. This assistance was material. The reported kernel checks and computational runs support their explicitly stated results; they do not certify independent human review, novelty or full-manuscript correctness. AI tools are not authors. The human authors remain responsible for verifying all content, citations, analyses and conclusions and for the final scholarly contribution before submission.
+\paragraph{Use of AI tools.} See the AI-use disclosure on the title page.
+
+
 \begin{thebibliography}{99}\setlength{\itemsep}{2pt}\small
 \bibitem[Albertini and Sontag(1993)]{albertini1993} Albertini, F., and E.~D. Sontag (1993). For neural networks, function determines form. \emph{Neural Networks} 6, 975--990.
 \bibitem[Auclert et~al.(2024)]{auclert2024} Auclert, A., M. Rognlie, and L. Straub (2024). The intertemporal Keynesian cross. \emph{Journal of Political Economy} 132, 4068--4121.
@@ -652,9 +663,9 @@ The practical reading is a division of supervisory labour. Market-wide measures,
 \bibitem[Brock and Hommes(1998)]{brock1998} Brock, W.~A., and C.~H. Hommes (1998). Heterogeneous beliefs and routes to chaos in a simple asset pricing model. \emph{Journal of Economic Dynamics and Control} 22, 1235--1274.
 \bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009} Brunnermeier, M. K., and L. H. Pedersen (2009). Market liquidity and funding liquidity. \emph{Review of Financial Studies} 22, 2201--2238.
 \bibitem[Cagan(1956)]{cagan1956} Cagan, P. (1956). The monetary dynamics of hyperinflation. In M. Friedman (Ed.), \emph{Studies in the Quantity Theory of Money}, 25--117. University of Chicago Press.
-\bibitem[Celov et~al.(2008)]{celov2008} Celov, D., R. Leipus, and A. Philippe (2008). Asymptotic normality of the mixture density estimator in a disaggregation scheme. arXiv preprint arXiv:0802.0817.
+\bibitem[Celov et~al.(2010)]{celov2008} Celov, D., R. Leipus, and A. Philippe (2010). Asymptotic normality of the mixture density estimator in a disaggregation scheme. \emph{Journal of Nonparametric Statistics} 22, 425--442.
 \bibitem[De Long et~al.(1990)]{delong1990} De Long, J. B., A. Shleifer, L. H. Summers, and R. J. Waldmann (1990). Positive feedback investment strategies and destabilizing rational speculation. \emph{Journal of Finance} 45, 379--395.
-\bibitem[Dreesen et~al.(2017)]{dreesen2017} Dreesen, P., D.~T. Westwick, J. Schoukens, and M. Ishteva (2017). Modeling parallel Wiener--Hammerstein systems using tensor decomposition of Volterra kernels. arXiv preprint arXiv:1609.08063.
+\bibitem[Dreesen et~al.(2017)]{dreesen2017} Dreesen, P., D.~T. Westwick, J. Schoukens, and M. Ishteva (2017). Modeling parallel Wiener--Hammerstein systems using tensor decomposition of Volterra kernels. In \emph{Latent Variable Analysis and Signal Separation (LVA/ICA 2017)}, Lecture Notes in Computer Science 10169, 16--25. Springer.
 \bibitem[Fefferman(1994)]{fefferman1994} Fefferman, C. (1994). Reconstructing a neural net from its output. \emph{Revista Matem\'atica Iberoamericana} 10, 507--555.
 \bibitem[Forni and Lippi(1997)]{forni1997} Forni, M., and M. Lippi (1997). \emph{Aggregation and the Microfoundations of Dynamic Macroeconomics}. Oxford University Press.
 \bibitem[Granger(1980)]{granger1980} Granger, C. W. J. (1980). Long memory relationships and the aggregation of dynamic models. \emph{Journal of Econometrics} 14, 227--238.
@@ -673,7 +684,7 @@ The practical reading is a division of supervisory labour. Market-wide measures,
 \bibitem[Sargent(1976)]{sargent1976} Sargent, T.~J. (1976). The observational equivalence of natural and unnatural rate theories of macroeconomics. \emph{Journal of Political Economy} 84, 631--640.
 \bibitem[Sussmann(1992)]{sussmann1992} Sussmann, H.~J. (1992). Uniqueness of the weights for minimal feedforward nets with a given input-output map. \emph{Neural Networks} 5, 589--593.
 \bibitem[Tsybakov(2009)]{tsybakov2009} Tsybakov, A. B. (2009). \emph{Introduction to Nonparametric Estimation}. Springer.
-\bibitem[Vla\v{c}i\'c and B\"olcskei(2019)]{vlacic2019} Vla\v{c}i\'c, V., and H. B\"olcskei (2019). Neural network identifiability for a family of sigmoidal nonlinearities. arXiv preprint arXiv:1906.06994.
+\bibitem[Vla\v{c}i\'c and B\"olcskei(2022)]{vlacic2019} Vla\v{c}i\'c, V., and H. B\"olcskei (2022). Neural network identifiability for a family of sigmoidal nonlinearities. \emph{Constructive Approximation} 55, 173--224.
 \bibitem[Wu and Yang(2020)]{wu2020} Wu, Y., and P. Yang (2020). Optimal estimation of Gaussian mixtures via denoised method of moments. \emph{Annals of Statistics} 48, 1981--2007.
 \bibitem[Zaffaroni(2004)]{zaffaroni2004} Zaffaroni, P. (2004). Contemporaneous aggregation of linear dynamic models in large economies. \emph{Journal of Econometrics} 120, 75--102.
 \end{thebibliography}
@@ -1522,7 +1533,7 @@ $f_t=\sum_ic_ig_t(r_i,\ell_i)$ with $g_t(r,\ell)=\psi\bigl(\ell\sum_{j<t}r^{t-1-
 \begin{proof}
 (i) By strong induction on $t<\tau$. If the paths agree before $t$, the signals agree before $t$, so every trader of either population has the same state in both markets. All are inside their bands, so both aggregate flows equal the linear flow $\sum_{j<t}k_{t-1-j}s_j$, which is the same for $P$ and $P'$ because the kernels agree. The insider's order and the dealer's price are causal, so they agree at $t$. The same argument with $P'$ replaced by the linear market (the band-linear shape $\psi'(u)=u$) gives the second statement.
 (ii) Build both markets, and the record noise, on one probability space. By (i) the records coincide on $\{\tau\ge T\}$, so the total-variation distance is at most $\Pr(\tau<T)$, and $\tau$ is computed on the linear market.
-(iii) In the linear market from rest, $x=g*w$ with $g=h/\kappa$, and $m_t(r)=(\varphi_r*x)_t$ with $\varphi_r(j)=r^{j}$ shifted by one date. So $m_t(r)$ is centred Gaussian with variance at most $s_r^2\le\sigma_w^2\|\varphi_r\|_1^2\|g\|_1^2$. Here $\|\varphi_r\|_1=1/(1-r)$. Also $|h_t|$ is dominated by the response of the positive economy with persistence $a$ and kernel $|k_m|$, whose total mass is $\kappa/(1-S_{\rm abs})$, so $\|g\|_1\le1/(1-S_{\rm abs})$. For a standard normal $Z$ and $z\ge0$, $\Pr(|Z|>z)\le e^{-z^2/2}$. A union bound over the $T$ dates and $n+n'$ traders gives the bound. A test with both errors at most $\alpha$ needs $\mathrm{TV}\ge1-2\alpha$.
+(iii) In the linear market from rest, $x=g*\varepsilon$ with $g=h/\kappa$, and $m_t(r)=(\varphi_r*x)_t$ with $\varphi_r(j)=r^{j}$ shifted by one date. So $m_t(r)$ is centred Gaussian with variance at most $s_r^2\le\sigma_\varepsilon^2\|\varphi_r\|_1^2\|g\|_1^2$. Here $\|\varphi_r\|_1=1/(1-r)$. Also $|h_t|$ is dominated by the response of the positive economy with persistence $a$ and kernel $|k_m|$, whose total mass is $\kappa/(1-S_{\rm abs})$, so $\|g\|_1\le1/(1-S_{\rm abs})$. For a standard normal $Z$ and $z\ge0$, $\Pr(|Z|>z)\le e^{-z^2/2}$. A union bound over the $T$ dates and $n+n'$ traders gives the bound. A test with both errors at most $\alpha$ needs $\mathrm{TV}\ge1-2\alpha$.
 (iv) Without process noise, the linear path is deterministic, so $\tau\ge T$ surely and (ii) gives distance zero. For a pulse, the linear state is $m_t(r)=A\sum_{j<t}r^{t-1-j}h_j$.
 \end{proof}
 

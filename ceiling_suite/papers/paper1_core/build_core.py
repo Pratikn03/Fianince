@@ -75,7 +75,7 @@ main.append(F("sup_tail"))
 main.append(F("sat"))
 main.append(F("scope"))
 main.append(F("conclusion"))
-main.append(re.sub(r"\\paragraph\{Data availability\.\}[^\n]*", lambda m: r"\paragraph{Data availability.} This version uses no market data. The data used by the full working paper are public and are listed in its data statement.", L(763, 777, "\\subsection*{Declarations}")))
+main.append(F("declarations"))
 BIB_AT = len("".join(main))
 
 supp = []

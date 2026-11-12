@@ -42,11 +42,11 @@
 \graphicspath{{../paper1_core/}}
 \begin{document}
 \maketitle
-\thispagestyle{empty}
+\thispagestyle{empty}\pagestyle{empty}
 \begingroup\onehalfspacing
 
 \begin{abstract}
-\noindent Algorithmic traders read recent prices and, by trading, move them. We show that, in a market with linear feedback traders, one object, the feedback kernel, is a sufficient statistic: for any insider strategy and any causal dealer rule, two trader populations with the same kernel produce the same prices, profits and equilibria. The kernel is also all that prices identify. Learning more, such as which group is largest, costs data of order $(\Delta\eta)^{-(4K-2)}$ for $K$ groups whose memories lie within $\Delta\eta$, and passive observation is no cheaper. Market-wide supervisory actions need only the kernel. Targeted ones need composition, which only flow tagged by class or account supplies, as the algorithm-identification regimes now adopted in China, India, Japan and the EU collect. With position limits, calm prices reveal the kernel and nothing more, and only stress reveals the rest. In a pre-registered out-of-sample test on Taiwan's tagged exchange flows (2019--2023), prices improve forecasts of foreign investors' flow as the registered criterion requires, but a pre-specified check attributes the gain to prices revealing past flow rather than to feedback. A pre-registered test of the position-limit prediction on Binance perpetual futures is inconclusive. Core statements are machine-checked in Lean~4.
+\noindent Algorithmic traders read prices and, by trading, move them. Populations with the same feedback kernel produce identical prices, profits and equilibria; prices identify nothing finer, and learning composition costs data of order $(\Delta\eta)^{-(4K-2)}$, even near instability, so targeted supervision needs tagged flow. In a pre-registered out-of-sample test on Taiwan's tagged exchange flows (2019--2023), prices improve forecasts of foreign investors' flow as the registered criterion requires, but a pre-specified check attributes the gain to prices revealing past flow rather than to feedback. A pre-registered test of the position-limit prediction on Binance perpetual futures is inconclusive. Core results are machine-checked in Lean~4.
 \end{abstract}
 
 \noindent\textbf{AI-use disclosure.} Claude, ChatGPT/Codex and Gemini provided material assistance with research development, code, numerical checks, Lean proofs, manuscript drafting and internal critique. Human authors remain responsible for the content. AI checks do not constitute independent review. The authors have verified all mathematical proofs, Lean~4 formalizations and empirical calculations, and take full responsibility for the content of the manuscript.
@@ -59,6 +59,7 @@
 
 \endgroup
 \newpage
+\pagestyle{fancy}
 \setcounter{page}{1}
 
 \section{Introduction}\label{n:intro}
@@ -130,7 +131,15 @@ Parts (i)--(iii) are Supplement Theorems~\ref{thm:kcohort}, \ref{prop:esprit} an
 Hold the pair of Theorem~\ref{n:cost}(i) at a common feedback budget $S=1-\epsilon$. The passive information per observation between them is at most $C(\Delta\eta)^{4K-2}$, with $C$ independent of $\epsilon$, however close the market is to instability.
 \end{proposition}
 
-This is Supplement Proposition~\ref{prop:nearcrit}, new to this version. One might expect a market near instability to reveal its traders, since the loop amplifies every difference. It reveals instead how close it is to instability: with a common persistence rather than a common budget, the information grows without bound as $\epsilon\to0$, and all of the growth comes from the budget. The bound is per observation; a finite-sample version uniform in $\epsilon$ is not proved.
+This is Supplement Proposition~\ref{prop:nearcrit}, new to this version. One might expect a market near instability to reveal its traders, since the loop amplifies every difference. It reveals instead how close it is to instability: with a common persistence rather than a common budget, the information grows without bound as $\epsilon\to0$, and all of the growth comes from the budget. The bound is per observation; a finite-sample version uniform in $\epsilon$ is not proved. Figure~\ref{n:fig_barrier} shows both statements.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_barrier.pdf}
+\caption{The passive barrier near instability. Both panels show the Gaussian Kullback--Leibler information per observation between the stationary price processes of two populations whose merged measures are the $K$-node Gauss and Gauss--Radau rules on memories spread over $\Delta\eta$ around $0.5$ (total weight $0.3$, impact $\kappa=0.5$). (a)~At a common feedback budget one millionth below instability, the information falls like $(\Delta\eta)^{4K-2}$ (dotted lines). (b)~Held at a common budget (solid), the information stays bounded as the margin $1-S$ shrinks; held at a common persistence (dashed), it grows without bound, because the budgets then differ. Computed from the closed-form spectra; scripts in \nolinkurl{research_extension/fragility_reveals/}.}
+\label{n:fig_barrier}
+\end{figure}
+
 
 \section{Who needs composition, and what disclosure buys}\label{n:sup}
 
@@ -186,6 +195,23 @@ The sufficiency results need aggregate feedback flow to be linear in past public
 
 Within these limits the message is simple. Prices tell a supervisor the kernel and nothing more, and the kernel is enough for any action that treats the market as a whole. Actions aimed at one group need composition, which prices supply only at a steep and known price and which a group can hide at a bounded cost. Disclosure tagged by trader class removes that price. The same split recurs with position limits: calm markets reveal the kernel, and only stress or disclosure reveals how close traders are to their limits.
 
+\subsection*{Declarations}
+
+\paragraph{Author contributions.} Pratik Niroula: conceptualization, methodology, formal analysis, software, investigation, data curation, writing (original draft). Prashant Niroula: validation (verification of the proofs, the Lean~4 formalizations and the empirical calculations), writing (review and editing). Sujan Khatiwada: validation (verification of the proofs, the Lean~4 formalizations and the empirical calculations), writing (review and editing). All authors approved the final manuscript.
+
+\paragraph{Funding.} This research received no external funding.
+
+\paragraph{Competing interests.} The authors declare no competing interests.
+
+\paragraph{Data availability.} All data are public. The Taiwan test uses the Taiwan Stock Exchange's daily reports of trading by the three major institutional investors (T86), closing quotes (MI\_INDEX), ex-rights and ex-dividend adjustments (TWT49U) and market totals (FMTQIK), from \url{https://www.twse.com.tw}. The Binance test uses daily files of five-minute candles and trading metrics (including open interest) for USD-margined perpetual futures from the Binance public data archive (\url{https://data.binance.vision}). The registered specifications, amendments, executors, notebooks, result files and test-unlock counters are in the public repository.
+
+\paragraph{Code availability.} All code, Lean~4 proofs and result files are public at \url{https://github.com/Pratikn03/Fianince}.
+
+\paragraph{Ethics approval.} Not applicable. The study uses only public market data and involves no human participants or personal data.
+
+\paragraph{Use of AI tools.} See the AI-use disclosure on the title page.
+
+
 \begin{thebibliography}{99}\setlength{\itemsep}{2pt}\small
 \bibitem[Albertini and Sontag(1993)]{albertini1993} Albertini, F., and E.~D. Sontag (1993). For neural networks, function determines form. \emph{Neural Networks} 6, 975--990.
 \bibitem[Auclert et~al.(2024)]{auclert2024} Auclert, A., M. Rognlie, and L. Straub (2024). The intertemporal Keynesian cross. \emph{Journal of Political Economy} 132, 4068--4121.
@@ -196,9 +222,9 @@ Within these limits the message is simple. Prices tell a supervisor the kernel a
 \bibitem[Brock and Hommes(1998)]{brock1998} Brock, W.~A., and C.~H. Hommes (1998). Heterogeneous beliefs and routes to chaos in a simple asset pricing model. \emph{Journal of Economic Dynamics and Control} 22, 1235--1274.
 \bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009} Brunnermeier, M. K., and L. H. Pedersen (2009). Market liquidity and funding liquidity. \emph{Review of Financial Studies} 22, 2201--2238.
 \bibitem[Cagan(1956)]{cagan1956} Cagan, P. (1956). The monetary dynamics of hyperinflation. In M. Friedman (Ed.), \emph{Studies in the Quantity Theory of Money}, 25--117. University of Chicago Press.
-\bibitem[Celov et~al.(2008)]{celov2008} Celov, D., R. Leipus, and A. Philippe (2008). Asymptotic normality of the mixture density estimator in a disaggregation scheme. arXiv preprint arXiv:0802.0817.
+\bibitem[Celov et~al.(2010)]{celov2008} Celov, D., R. Leipus, and A. Philippe (2010). Asymptotic normality of the mixture density estimator in a disaggregation scheme. \emph{Journal of Nonparametric Statistics} 22, 425--442.
 \bibitem[De Long et~al.(1990)]{delong1990} De Long, J. B., A. Shleifer, L. H. Summers, and R. J. Waldmann (1990). Positive feedback investment strategies and destabilizing rational speculation. \emph{Journal of Finance} 45, 379--395.
-\bibitem[Dreesen et~al.(2017)]{dreesen2017} Dreesen, P., D.~T. Westwick, J. Schoukens, and M. Ishteva (2017). Modeling parallel Wiener--Hammerstein systems using tensor decomposition of Volterra kernels. arXiv preprint arXiv:1609.08063.
+\bibitem[Dreesen et~al.(2017)]{dreesen2017} Dreesen, P., D.~T. Westwick, J. Schoukens, and M. Ishteva (2017). Modeling parallel Wiener--Hammerstein systems using tensor decomposition of Volterra kernels. In \emph{Latent Variable Analysis and Signal Separation (LVA/ICA 2017)}, Lecture Notes in Computer Science 10169, 16--25. Springer.
 \bibitem[Fefferman(1994)]{fefferman1994} Fefferman, C. (1994). Reconstructing a neural net from its output. \emph{Revista Matem\'atica Iberoamericana} 10, 507--555.
 \bibitem[Forni and Lippi(1997)]{forni1997} Forni, M., and M. Lippi (1997). \emph{Aggregation and the Microfoundations of Dynamic Macroeconomics}. Oxford University Press.
 \bibitem[Granger(1980)]{granger1980} Granger, C. W. J. (1980). Long memory relationships and the aggregation of dynamic models. \emph{Journal of Econometrics} 14, 227--238.
@@ -217,7 +243,7 @@ Within these limits the message is simple. Prices tell a supervisor the kernel a
 \bibitem[Sargent(1976)]{sargent1976} Sargent, T.~J. (1976). The observational equivalence of natural and unnatural rate theories of macroeconomics. \emph{Journal of Political Economy} 84, 631--640.
 \bibitem[Sussmann(1992)]{sussmann1992} Sussmann, H.~J. (1992). Uniqueness of the weights for minimal feedforward nets with a given input-output map. \emph{Neural Networks} 5, 589--593.
 \bibitem[Tsybakov(2009)]{tsybakov2009} Tsybakov, A. B. (2009). \emph{Introduction to Nonparametric Estimation}. Springer.
-\bibitem[Vla\v{c}i\'c and B\"olcskei(2019)]{vlacic2019} Vla\v{c}i\'c, V., and H. B\"olcskei (2019). Neural network identifiability for a family of sigmoidal nonlinearities. arXiv preprint arXiv:1906.06994.
+\bibitem[Vla\v{c}i\'c and B\"olcskei(2022)]{vlacic2019} Vla\v{c}i\'c, V., and H. B\"olcskei (2022). Neural network identifiability for a family of sigmoidal nonlinearities. \emph{Constructive Approximation} 55, 173--224.
 \bibitem[Wu and Yang(2020)]{wu2020} Wu, Y., and P. Yang (2020). Optimal estimation of Gaussian mixtures via denoised method of moments. \emph{Annals of Statistics} 48, 1981--2007.
 \bibitem[Zaffaroni(2004)]{zaffaroni2004} Zaffaroni, P. (2004). Contemporaneous aggregation of linear dynamic models in large economies. \emph{Journal of Econometrics} 120, 75--102.
 \end{thebibliography}
@@ -232,13 +258,11 @@ Within these limits the message is simple. Prices tell a supervisor the kernel a
 
 \section{Model and motivating examples}\label{sec:model}
 
-\paragraph{The model in words.} The market has one price and $K$ groups of traders. Each period three things happen. First, the price moves: it drifts back toward its fundamental value, and it is pushed by the groups' trades, by any test trade and by news. Second, each group updates its view by mixing the newest price into its running average, with weight $\eta_i$ on the newest price and $1-\eta_i$ on its old view. Third, each group trades in proportion to its view, with intensity $q_i$. A group with a large $\eta_i$ has a short memory and reacts quickly, like a short-horizon trend follower; a group with a small $\eta_i$ has a long memory and reacts slowly. The equations below write this down.
-
 Time is discrete. Let $p_t$ be the price, $p^*$ the fundamental value and $x_t=p_t-p^*$ the pricing error. A reduced-form dealer sector absorbs net order flow with price impact $\kappa>0$, an imposed primitive rather than an equilibrium quote, and arbitrage pulls the error toward zero with persistence $a\in[0,1)$:
 \begin{equation}\label{eq:price}
-x_t = a x_{t-1} + \kappa \sum_{i=1}^K q_i y_{i,t-1} + \kappa v_t + w_t,
+x_t = a x_{t-1} + \kappa \sum_{i=1}^K q_i y_{i,t-1} + \kappa v_t + \varepsilon_t,
 \end{equation}
-where $v_t$ is an executed probe quantity and $w_t$ a price innovation. Group $i$ holds a state $y_{i,t}$ with exponential memory and trades $q_i y_{i,t}$:
+where $v_t$ is an executed probe quantity and $\varepsilon_t$ a price innovation (news). Group $i$ holds a state $y_{i,t}$ with exponential memory and trades $q_i y_{i,t}$:
 \begin{equation}\label{eq:cohort}
 y_{i,t} = (1-\eta_i)\,y_{i,t-1} + \eta_i x_t,\qquad \eta_i\in(0,1).
 \end{equation}
@@ -298,8 +322,6 @@ The rules $X$, $P$ and $S$ are arbitrary causal maps. This covers Kyle, inventor
 \end{enumerate}
 \end{theorem}
 
-\paragraph{In words.} Whatever the insider and the dealer do, two markets whose trader groups have the same merged response produce the same prices, the same order flow and the same insider and dealer outcomes. So the part of the population that prices cannot identify (Theorem~\ref{thm:merged}) is worth nothing to anyone who trades on public information. It matters only for actions aimed at a particular group, such as halting it (Proposition~\ref{prop:target}). Parts (i)--(iv) are machine-checked pathwise for every causal insider, dealer and signal rule (\nolinkurl{Paper1EquilibriumInvariance.lean}). Supplement~\ref{app:eqinv} gives the proof, the unbounded-horizon statement, the extension to group-specific demand shocks and a numerical illustration.
-
 \paragraph{Beyond exponential memory.} The proof of part~(iii) uses only one property of the feedback traders: their aggregate flow is a fixed linear function of past public signals. So the result does not depend on exponential memory.
 
 \begin{proposition}[Any linear population]\label{prop:anylinear}
@@ -318,10 +340,6 @@ and write $k=\sum_j\kappa^{(j)}$ for the population's kernel.
 \begin{proof}
 (i) Aggregate flow is $f_t=\sum_{m<t}k_ms_{t-1-m}$. If the kernels agree for $m<T$, the flows agree on $t\le T$ for every signal. Conversely, the impulse signal $s_j=\mathbf 1\{j=0\}$ gives $f_{m+1}=k_m$. (ii) The strong induction in the proof of Theorem~\ref{thm:eqinv}(iii) (Supplement~\ref{app:eqinv}) uses only that $f_t$ is the same function of the signals before $t$ in both markets, which is part~(i). (iii) follows from (ii), since outcomes depend on the population only through $k$.
 \end{proof}
-
-\paragraph{What the exponential case adds.} For general linear traders, nothing about composition beyond $k$ can be learned from anything that prices determine, because any split of $k$ is observationally equivalent. Exponential memory is the case in which more can be learned, and the rest of the paper prices it. Then $k_m=\int r^m\,dM(r)$ is a moment sequence, and the kernel determines the merged measure $M$ (Theorem~\ref{thm:eqinv}(ii) on an unbounded horizon). A finite record determines only finitely many moments, which is why separating close groups is costly. Proposition~\ref{prop:anylinear} is machine-checked for arbitrary kernels (\texttt{p1\_anylinear\_iff}, \texttt{p1\_anylinear\_invariance}); the passage to equilibria is on paper, as in Theorem~\ref{thm:eqinv}.
-
-\paragraph{The analogy with aggregate demand.} The kernel is the response of aggregate feedback demand to past prices. \citet{auclert2024} show that the analogous object for households, the matrix of intertemporal marginal propensities to consume, is a sufficient statistic for the transmission of fiscal policy. In the same way, $k$ summarizes every heterogeneity among feedback traders that matters for prices. The merged measure is the distribution of individual autoregressive coefficients that governs an aggregate in \citet{granger1980}. Two points distinguish the market version. Sufficiency holds inside a game with an insider and a dealer, not only for the law of an aggregate series. And as part~(iv) of Theorem~\ref{thm:eqinv} shows, it fails for group-level quantities, which matter for targeted supervision (Section~\ref{sec:supervision}).
 
 \subsection{What prices identify}
 
@@ -343,8 +361,6 @@ T\;\ge\;\frac{4\sigma_\nu^2(1-2\alpha)^2}{C_{\mathcal F}^2P\,\delta^4}=\Omega(\d
 where $C_{\mathcal F}$ depends only on the family, through $\epsilon$, the bound on $|H|$ implied by uniform stability, and the total weight $q$.
 \end{enumerate}
 \end{theorem}
-
-\paragraph{In words.} If two trading desks update on prices with the same memory, no amount of price data can tell them apart or say how much each trades: prices reveal only how much trading happens at each memory speed. Desks with different memories can be told apart in principle, and the rest of the paper prices how hard that is.
 
 
 The memory rates are poles of $G$ and \emph{zeros} of $H$, not closed-loop poles. This has a practical consequence verified in the full working paper: pole-fitting methods applied directly to the price impulse response recover closed-loop eigenvalues ($0.4256$ and $0.8224$ for $K=1$, $\eta=0.3$, $a=0.5$, $\kappa=0.8$, $q=0.2$) and miss the memory rate $0.70$.
@@ -386,8 +402,6 @@ An unexpected unit of flow moves the price by $\kappa/D$.
 Positive feedback raises the impact $\kappa$, and it raises the impact of an unexpected flow shock, $\kappa/D$, by more.
 \end{enumerate}
 \end{theorem}
-
-\paragraph{In words.} Dealers set the price impact and the persistence of mispricing. Impact is what they charge for carrying inventory risk; persistence is how slowly they lay that inventory off. Without feedback traders, this equilibrium is exactly the closed loop the paper starts from. Feedback traders enter only through their merged measure, as Theorem~\ref{thm:eqinv} requires. Positive feedback raises price impact, and dealers price their predictable future trades in advance (the terms in $u_{i,t+1}$). Feedback trading also makes liquidity fragile, not only more expensive: beyond a threshold in dealer risk aversion that falls with the feedback intensity, no equilibrium exists (Theorem~\ref{thm:fragility}).
 
 \paragraph{Machine check.} See Supplement~\ref{app:mc}.
 
@@ -464,8 +478,6 @@ with probability at least $1-\beta$. Hence $N=C'\sigma^2(\Delta\eta)^{-(4K-2)}$ 
 \end{theorem}
 
 \paragraph{Smaller classes and constants.} On smaller classes the upper bound need not be tight: if the rates are known, for example, two weights need only order $\sigma^2(\Delta\eta)^{-2}$ experiments. For $K$ known clustered rates the requirement is at least of order $\sigma^2(\Delta\eta)^{-2(K-1)}$. A weight perturbation along the $(K-1)$-th finite difference preserves the moments of order $0,\ldots,K-2$ and changes the moment of order $K-1$ by order $(\Delta\eta)^{K-1}$. For $K=3$, the direction $(1,-2,1)$ on rates $r_c-\Delta\eta,r_c,r_c+\Delta\eta$ changes the second moment by $2(\Delta\eta)^2$. This is still far below the unknown-rate order $(\Delta\eta)^{-(4K-2)}$. The constants $c_0$ and $C$ grow quickly with $K$, through the conditioning of the moment map; the theorem gives the order in $\Delta\eta$ for fixed $K$, not a usable constant for large $K$ (in the full working paper our double-precision Prony implementation already fails at $K=4$ on the disclosure grid).
-\paragraph{In words.} With $K$ unknown groups whose memories lie within $\Delta\eta$ of each other, the number of experiments needed grows like $(\Delta\eta)^{-(4K-2)}$. For two groups, halving the spread multiplies the data needed by 64; for three groups, by 1{,}024. Theorem~\ref{thm:kcohort} shows that no method does better, and this theorem shows that Prony's method achieves it.
-
 \subsection{Passive data}
 
 \begin{theorem}[Passive identification: minimum phase]\label{thm:minphase}
@@ -490,9 +502,6 @@ Hence any test based on $T$ passive observations with worst-case error at most $
 \end{theorem}
 
 
-\paragraph{In words.} Watching the market without trading does not escape the barrier. A passive observer needs at least the same polynomial order of observations as a prober needs experiments; it pays in time rather than in trading losses. Prices recorded with extra measurement noise that is independent of the price are a garbling of the noiseless record, so by the data-processing inequality they carry less information, and the lower bound holds a fortiori.
-\paragraph{Machine checks.} The machine checks of Theorems~\ref{thm:kcohort}--\ref{prop:passive} are described in Supplement~\ref{app:mc}.
-
 
 \paragraph{In executed quantity and money.} For a \emph{known} pair (one group at rate $\eta$ against two at $\eta\pm\delta$ with the same total weight), the information needed can be stated in trades. The executed quantity a prober needs is of exact order $\delta^{-2}$: the two price responses first differ at lag two, by $-\kappa^2q\delta^2$, and a single pulse of size $2\sigma\Phi^{-1}(1-\alpha)/(\kappa^2q\delta^2)$ attains error $\alpha$. The capital a counterparty must post to fill such probes is of order $\delta^{-4}$, because the adverse mark of a probe grows with the square of its size. Halving the difference between two memories therefore quadruples the trading needed and multiplies the capital by sixteen (Theorems~\ref{thm:quantity} and~\ref{thm:cap} and Lemma~\ref{thm:capital}, Supplement~\ref{app:capital}).
 
@@ -505,7 +514,15 @@ D_\epsilon(B\|A)\ \le\ C\,(\Delta\eta)^{4K-2}\qquad\text{for all }0<\epsilon\le\
 \]
 \end{proposition}
 
-\paragraph{In words.} Even as the market approaches a crash, passive prices reveal no more about who is trading than they did in calm conditions, per observation. They reveal more and more about how close the market is to instability: if the two economies share the persistence $a$ instead of the budget, their budgets differ by order $(\Delta\eta)^{2K-1}$, and numerically the divergence rate then grows like $\epsilon^{-1}$. The proof is in Supplement~\ref{app:nearcrit}. Two limits apply. The statement is about the divergence rate per observation; near instability prices are strongly dependent, and a finite-sample bound that is uniform in $\epsilon$ is not proved. And probing does gain near instability: the squared response difference grows like $\epsilon^{-1}$ (numerical, \nolinkurl{research_extension/fragility_reveals}), but probing a market at the edge of instability is not a policy.
+\paragraph{In words.} Even as the market approaches a crash, passive prices reveal no more about who is trading than they did in calm conditions, per observation. They reveal more and more about how close the market is to instability: if the two economies share the persistence $a$ instead of the budget, their budgets differ by order $(\Delta\eta)^{2K-1}$, and numerically the divergence rate then grows like $\epsilon^{-1}$. The proof is in Supplement~\ref{app:nearcrit}. Two limits apply. The statement is about the divergence rate per observation; near instability prices are strongly dependent, and a finite-sample bound that is uniform in $\epsilon$ is not proved. And probing does gain near instability: the squared response difference grows like $\epsilon^{-1}$ (numerical, \nolinkurl{research_extension/fragility_reveals}), but probing a market at the edge of instability is not a policy. Figure~\ref{fig:barrier} shows both statements.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_barrier.pdf}
+\caption{The passive barrier near instability. Both panels show the Gaussian Kullback--Leibler information per observation between the stationary price processes of two populations whose merged measures are the $K$-node Gauss and Gauss--Radau rules on memories spread over $\Delta\eta$ around $0.5$ (total weight $0.3$, impact $\kappa=0.5$). (a)~At a common feedback budget one millionth below instability, the information falls like $(\Delta\eta)^{4K-2}$ (dotted lines). (b)~Held at a common budget (solid), the information stays bounded as the margin $1-S$ shrinks; held at a common persistence (dashed), it grows without bound, because the budgets then differ. Computed from the closed-form spectra; scripts in \nolinkurl{research_extension/fragility_reveals/}.}
+\label{fig:barrier}
+\end{figure}
+
 
 \section{Who needs composition, and what disclosure buys}\label{sec:supervision}
 
@@ -529,8 +546,6 @@ The record horizon and the response norm must be the same on both sides.
 \end{proposition}
 The proof is in Supplement~\ref{app:decisionfull}. Proposition~\ref{prop:targetK} there extends part~(ii) to every $K$, with exponent $4K-2$.
 
-\paragraph{In words.} A uniform cut needs only the kernel, through $S=1-\kappa/\sum_jh_j$, so public prices suffice for it. A halt of the largest group needs that group's weight, which the kernel does not pin down. The two-group populations of Theorem~\ref{thm:kcohort} (the Gauss and Gauss--Radau pair with $K=2$) have feedback budgets within $O((\Delta\eta)^3)$ of each other, but largest groups that differ at order one. So a range of ceilings exists at which halting the largest group meets the ceiling in one population and not in the other. Prices decide between them only with order $(\Delta\eta)^{-6}$ records. The same holds for any number of groups $K$, with order $(\Delta\eta)^{-(4K-2)}$ records (Proposition~\ref{prop:targetK}).
-
 \subsection{What class-tagged disclosure buys}
 
 
@@ -548,8 +563,6 @@ $V_i$ depends only on group $i$'s own $(w_i,r_i)$, $\sigma_f^2$ and the price au
 
 \paragraph{Machine check.} Three pieces are machine-checked: the finite-sample reset-experiment version, with an error bound that does not depend on the spacing; the lower bound on the determinant of the population instrument matrix that does not depend on the spacing (\texttt{p1\_tagged\_iv\_determinant\_bound}); and the exact decomposition of the IV score into reporting-error terms with coefficients fixed by the price path plus two boundary terms (\texttt{p1\_iv\_boundary\_decomposition}). The stationary law of large numbers and the central limit theorem behind (a) are not machine-checked.
 
-\paragraph{In words.} If each group's trading is reported separately, each group becomes an ordinary regression. Its precision depends on the group's own rate and on the price dynamics, but it has no singularity as the groups' rates approach each other.
-
 
 Each tagged flow follows $u_{i,t}=r_iu_{i,t-1}+w_ix_t$, a regression whose information about $w_i$ does not involve the other groups' rates; the closed form \eqref{eq:ivdet} matches the simulated Jacobian ($0.1330$ against $0.1322$ in a two-group economy with $4\times10^5$ periods). In simulation ($T=5{,}000$, 60 replications) the root-mean-square error of the recovered weights is flat in $\Delta\eta$ (fitted slope $0.011$, error between $5.8\times10^{-4}$ and $6.6\times10^{-4}$). This is the formal content of a disclosure regime such as a consolidated audit trail: tagging flow by participant class turns a polynomial barrier into an ordinary estimation problem.
 Proposition~\ref{prop:tagged} says that tagging removes the barrier; the next result says by how much.
@@ -561,8 +574,6 @@ Take a rich class of Theorem~\ref{prop:esprit}: rates $r_c+\Delta\eta\,s$ with $
 \item to recover the rates to accuracy $c_0\Delta\eta$, for a fixed $c_0>0$ smaller than the radius of a ball contained in the class of rescaled nodes (so that no fixed guess meets the target), $c(\Delta\eta)^{-2}\le N_t\le C(\Delta\eta)^{-2}$, so $N_p/N_t\asymp(\Delta\eta)^{-(4K-4)}$.
 \end{enumerate}
 \end{theorem}
-\paragraph{In words.} This is the value of disclosure measured in data. Tagging replaces a requirement that explodes as the groups become similar with one that does not grow at all (for the weights) or grows only like $(\Delta\eta)^{-2}$ (for the rates).
-
 
 Proposition~\ref{prop:tagged} and Theorem~\ref{thm:discvalue} use different observation arrangements: the proposition concerns passive, stationary data with prices observed without noise, where the price is a valid instrument; the theorem concerns reset experiments with noisy prices. With noisy prices, regressing flow on the observed price is an errors-in-variables problem, which is why the theorem works from the known impulse instead.
 
@@ -585,8 +596,6 @@ A supervisor observes prices, under any probes and for a record of any length, a
 \begin{proof}
 (i) By Theorem~\ref{thm:eqinv}, populations with the same kernel give the same law of the price record for every probe sequence and every insider and dealer rule. The supervisor's decision is a function of that record and of its own randomization. (ii) $C(\rho^*)+P\pi(\rho^*)\le C_0+P\alpha$ by optimality, and $C(\rho^*)\ge0$. (iii) The original rule costs $P\pi_T$ and $\rho_0$ costs $C_0+P\alpha$.
 \end{proof}
-
-\paragraph{In words.} The simplest way to hide is to adopt another group's memory. By Theorem~\ref{thm:merged} the two groups then form one atom of the merged measure, and $\alpha$ is the probability with which the supervisor targets a group that does not exist separately. The bound does not involve the amount of data. The supervisor's excess targeting probability times the penalty is at most the cost of hiding. More data make the original rule easier to detect and therefore make hiding more attractive: in part~(iii) the targeting probability falls to $\alpha$ once the record is long enough. The proposition is a revealed-preference inequality. What the paper adds is that sufficiency makes the mimicry exact, for every record and every probe. Three limits apply. The cost $C_0$ is not modelled. The proposition concerns one group and not an equilibrium among several. And a group that hides changes the kernel, and so prices; we do not say whether that helps or harms the market. A class tag is different from an inferred memory: it is attached to the account, and changing the trading rule does not remove it.
 
 
 \section{Beyond the kernel: saturating traders and stress}\label{sec:saturating}
@@ -621,9 +630,9 @@ Let $\psi$ and $\psi'$ be band-linear. Take two populations $P$ and $P'$ with th
  \mathrm{TV}\bigl(\mathcal L_P(O_T),\mathcal L_{P'}(O_T)\bigr)\le\Pr\nolimits_{\rm lin}(\tau<T),
 \]
 the probability that some trader of $P\cup P'$ leaves its band before $T$ in the linear market.
-\item \emph{Calm passive data.} In the market of Section~\ref{sec:model} with innovations $w_t\sim N(0,\sigma_w^2)$ i.i.d., no probe, a start from rest, and a linear market with $S_{\rm abs}=a+\kappa\sum_m|k_m|<1$, let $s_r^2=\sup_t\mathrm{Var}_{\rm lin}(m_t(r))$ and $\vartheta=\max_g|\ell_g|s_{r_g}$ over the $n+n'$ traders of $P\cup P'$. Then
+\item \emph{Calm passive data.} In the market of Section~\ref{sec:model} with innovations $\varepsilon_t\sim N(0,\sigma_\varepsilon^2)$ i.i.d., no probe, a start from rest, and a linear market with $S_{\rm abs}=a+\kappa\sum_m|k_m|<1$, let $s_r^2=\sup_t\mathrm{Var}_{\rm lin}(m_t(r))$ and $\vartheta=\max_g|\ell_g|s_{r_g}$ over the $n+n'$ traders of $P\cup P'$. Then
 \[
- \mathrm{TV}\le T\,(n+n')\,e^{-1/(2\vartheta^2)},\qquad s_r\le\frac{\sigma_w}{(1-r)(1-S_{\rm abs})},
+ \mathrm{TV}\le T\,(n+n')\,e^{-1/(2\vartheta^2)},\qquad s_r\le\frac{\sigma_\varepsilon}{(1-r)(1-S_{\rm abs})},
 \]
 and any test that tells $P$ from $P'$ with both error probabilities at most $\alpha<1/2$ needs $T\ge(1-2\alpha)\,e^{1/(2\vartheta^2)}/(n+n')$ observations.
 \item \emph{Probes.} Without process noise, if the linear market's response to a deterministic probe keeps every trader of $P\cup P'$ inside its band, the two records have the same law, for any number of repetitions and any observation noise. For a single pulse of size $A$, no information is obtained below
@@ -637,7 +646,7 @@ with $h$ the linear impulse response.
 
 \paragraph{Machine check.} The pathwise part (i), including the statement that the market follows the linear market until the first exceedance, is machine-checked for every pair of band-linear shapes and every causal insider, dealer and signal rule (\texttt{p1\_sat\_stress\_invariance}, \texttt{p1\_sat\_follows\_linear}, \texttt{p1\_satAggFlow\_linear\_of\_band}). Parts (ii)--(iv) are on paper.
 
-\paragraph{An example, and what differs at stress.} At memory $r=0.7$, take $P=\{(c,\ell)=(1,0.1)\}$ and $P'=\{(0.25,0.2),(1,0.05)\}$. Both have merged weight $0.1$, so they have the same kernel and are equivalent until stress. Under a hard limit, their total capacities, the largest aggregate flow they can deliver, are $1$ and $1.25$ (\texttt{p1\_sat\_capacity\_differs}). In the market of Section~\ref{sec:model} with $a=0.5$ and $\kappa=0.8$, single pulses up to size $4$ give exactly identical responses. Larger pulses push the most levered trader of $P'$ to its limit, and the responses separate by $0.072$ at size $6$ and $0.364$ at size $12$. Under Gaussian innovations, the simulated probability that some trader leaves its band within $1{,}000$ dates lies below the bound of part (iii) at every noise level tested. It is zero up to $\sigma_w=0.3$, and $0.0175$, $0.0875$ and $0.63$ at $\sigma_w=0.35$, $0.4$ and $0.5$. The scripts are \nolinkurl{research_extension/nonlinear_scoping/sim_wiener.py} and \nolinkurl{sim_passive_clip.py}. Figure~\ref{fig:twolayer} shows the two layers.
+\paragraph{An example, and what differs at stress.} At memory $r=0.7$, take $P=\{(c,\ell)=(1,0.1)\}$ and $P'=\{(0.25,0.2),(1,0.05)\}$. Both have merged weight $0.1$, so they have the same kernel and are equivalent until stress. Under a hard limit, their total capacities, the largest aggregate flow they can deliver, are $1$ and $1.25$ (\texttt{p1\_sat\_capacity\_differs}). In the market of Section~\ref{sec:model} with $a=0.5$ and $\kappa=0.8$, single pulses up to size $4$ give exactly identical responses. Larger pulses push the most levered trader of $P'$ to its limit, and the responses separate by $0.072$ at size $6$ and $0.364$ at size $12$. Under Gaussian innovations, the simulated probability that some trader leaves its band within $1{,}000$ dates lies below the bound of part (iii) at every noise level tested. It is zero up to $\sigma_\varepsilon=0.3$, and $0.0175$, $0.0875$ and $0.63$ at $\sigma_\varepsilon=0.35$, $0.4$ and $0.5$. The scripts are \nolinkurl{research_extension/nonlinear_scoping/sim_wiener.py} and \nolinkurl{sim_passive_clip.py}. Figure~\ref{fig:twolayer} shows the two layers.
 
 \begin{figure}[t]\centering
 \includegraphics[width=\textwidth]{figs_core/fig_twolayer.pdf}
@@ -655,8 +664,6 @@ Let $\psi=\tanh$. In the probing experiment of Section~\ref{sec:model}, with res
 \end{enumerate}
 \end{proposition}
 
-
-\paragraph{In words.} Smooth saturation lets a prober learn about leverage, but slowly. Each doubling of the probe buys $64$ times the information, and the large probes that make learning cheap are the ones that push the market toward the limits being measured. Hard limits are starker: no information at all until some trader is pushed to its limit. In the example above, the first-tap gap divided by $A^3$ is $1.5359\times10^{-4}$ at $A=0.05$, against $-\tfrac13\kappa^4\Delta M_3=1.5360\times10^{-4}$.
 
 
 \subsection{What stress reveals}
@@ -684,8 +691,6 @@ The property holds or fails as follows.
 
 The proof (Supplement~\ref{app:saturating}) uses three facts. First, probes can steer the price along any path, so identical responses mean identical maps from past prices to flow. Second, two dates of prices turn that map into a sum of scaled copies of $\psi$, one per memory--leverage pair, with distinct scales for a suitable direction. Third, independent dilations separate the copies. For the hard limit, each copy adds a kink where its pair saturates, and the copy with the largest scale has the first kink. For $\tanh$, each copy approaches its limit at its own exponential rate, and the copy with the smallest scale has the slowest tail. The kink argument is constructive. In the example of Figure~\ref{fig:twolayer}, read along one direction, the flow map has kinks at $3.702$ and $14.813$, and their slope jumps return net capacities $0.24989$ and $0.99988$, against true values $0.25$ and $1$. Locating the second group needs a memory state of almost $15$, about four times the stress level at which the first trader saturates. Knowing the kernel and the first group fixes only the second group's total $c\ell$, not its leverage.
 
-\paragraph{Relation to network identifiability.} The third step is not new mathematics. For two fixed price dates, the flow map is a network with one hidden layer and no bias terms: the activation is $\psi$, the input weights are the scales and the output weights are the capacities. For $\tanh$, \citet{sussmann1992} proved that such a network is determined by its input--output map up to permutations and sign flips of the hidden units; see also \citet{albertini1993}, \citet{fefferman1994} and \citet{vlacic2019}. The sign flip is the reason only the signed measure $\tilde\mu$ is identified. Independent dilations is the bias-free case of the independence property used in that literature. What Theorem~\ref{thm:satident} adds is the market side. Probing recovers the flow map from prices. Two price dates give distinct memory--leverage pairs distinct scales. And the identified object, the signed capacity measure, is exactly what prices depend on (Theorem~\ref{thm:satsuff}).
-
 Theorem~\ref{thm:satident} turns Section~\ref{sec:saturating} into a two-layer theory. Prices in calm markets identify the kernel. Prices under stress identify the full signed measure $\tilde\mu$, which by Theorem~\ref{thm:satsuff} is all that any price-based outcome depends on. Under hard limits, no information beyond the kernel arrives until the first group saturates. Under smooth limits, the order-$n$ term of the response scales with the probe size to the power $2n+1$. We expect its information to scale with the power $2(2n+1)$, but only the case $n=1$ is proved (Proposition~\ref{prop:smooth}).
 
 \subsection{Deleveraging traders and dealers who anticipate}
@@ -709,8 +714,6 @@ The proof of the pathwise part is the induction of Theorem~\ref{thm:stress}(i). 
 \end{proposition}
 
 The proof is in Supplement~\ref{app:saturating}.
-
-\paragraph{In words.} An informed, forward-looking dealer leaks some leverage information into calm prices, because its quote prices the chance of a breach next period. The leak is of the order of the probability of a breach, so it is exponentially small in calm markets. In the example, with expected state $2$ and standard deviation $1$, the two expected flows differ by $1.9\times10^{-5}$, within the bound $4.4\times10^{-4}$. With standard deviation $2$ they differ by $2.9\times10^{-3}$. A full equilibrium with forward-looking dealers and saturating traders is not solved here. This proposition prices only the anticipation channel.
 
 \paragraph{What the supervisor can and cannot learn.} The two results split the population into a part prices reveal in calm markets, the kernel, and a part they reveal only under stress: the distribution of leverage within each memory, weighted by capacity. The second part decides how the market behaves when traders hit their limits, through the total capacity and through how many traders are near their limits. Calm-market price data are therefore the wrong instrument for it, however long the record and however sophisticated the estimator. The options are stress probes, whose cost and risk Proposition~\ref{prop:smooth} prices, actual stress episodes, or disclosure of capacities: position limits, margins and risk budgets. This is a different disclosure from the class-tagged flow of Section~\ref{sec:supervision}. Tagged flow reveals each group's memory and weight. Capacity disclosure reveals how far each group is from its limit.
 
@@ -812,8 +815,6 @@ In the setting of Theorem~\ref{prop:esprit}, suppose in addition that every memo
 with probability at least $1-\beta$. Hence $N=C'\sigma^2(\Delta\eta)^{-(4K-2)}$ experiments suffice, the same order as with known primitives.
 \end{enumerate}
 \end{corollary}
-
-\paragraph{In words.} Not knowing the market's own persistence or its price impact costs a constant factor, not a worse rate. Persistence enters the price exactly like one more group of traders with no memory at all, and that group sits far from the clustered groups the supervisor is trying to separate. Measured in the merged weights times the rates, the clustered groups' problem is the same Prony problem as before, with weights bounded below because rates are bounded away from zero; one more tap pins down the extra group.
 
 \begin{proof}[Proof of Corollary~\ref{cor:unknown_primitives}]
 (i) Substitute $k_0=\tilde k_0-a/\kappa$ in $h_{t+1}=ah_t+\kappa\sum_{m\le t}k_mh_{t-m}$: the term $ah_t$ cancels against $\kappa(a/\kappa)h_t$. (ii) Solving the recursion of (i) for $\tilde k_t$ gives $\tilde k_t=(h_{t+1}-\kappa\sum_{m<t}\tilde k_mh_{t-m})/\kappa^2$, a polynomial in $h_1,\ldots,h_{t+1}$ divided by a power of $h_0=\kappa$. For $m\ge1$, $\tilde k_m=\sum_iw_ir_i^m=\sum_i(w_ir_i)r_i^{m-1}$, so $\tilde k_1,\ldots,\tilde k_{2K}$ are the moments of orders $0,\ldots,2K-1$ of $\mu'$, which has $K$ distinct atoms with positive weights; these moments determine $\mu'$ (Theorem~\ref{thm:merged}). Since $r_i\ge\varepsilon>0$, $w_i=(w_ir_i)/r_i$, and then $a=\kappa(\tilde k_0-\sum_iw_i)$. (iii) On the event that every estimated tap is within $\sigma N^{-1/2}\sqrt{2\log(8K/\beta)}$ of its mean (probability at least $1-\beta/2$ by the Gaussian tail and a union bound over $2K+2$ taps, with the doubled variance absorbed into the constant), $\hat\kappa\ge\underline\kappa/2$ once $\epsilon_N\le c_0$, so the map from taps to $\hat{\tilde k}$ is Lipschitz with a constant that depends on $(K,\underline\kappa,\overline\kappa,\bar a,W)$ and not on $\Delta\eta$. The weights of $\mu'$ lie in $[\varepsilon\omega_{\min},\omega_{\max}]$ and its rates are those of the class of Theorem~\ref{prop:esprit}; the proof of that theorem uses only a $\Delta\eta$-free Lipschitz deconvolution, the rescaling by $(\Delta\eta)^{-m}$ and weights bounded below, so it applies verbatim to $\mu'$ and gives $\max_i|\widehat{w_ir_i}-w_ir_i|\le C_1\sqrt{\log(8K/\beta)}\,\epsilon_N$ and rate errors smaller by a factor $\Delta\eta$, with probability at least $1-\beta/2$. The maps $(v,r)\mapsto v/r$ on $r\ge\varepsilon/2$ and $(\kappa,\tilde k_0,w)\mapsto\kappa(\tilde k_0-\sum_iw_i)$ are Lipschitz on the bounded set reached, and $|\hat\kappa-\kappa|$ and $|\hat{\tilde k}_0-\tilde k_0|$ are of order $\sigma N^{-1/2}\le\epsilon_N$. Combining gives the bound.
@@ -927,8 +928,6 @@ Let $C$ be the lower-triangular matrix of ones and $L$ the strictly lower Toepli
 \end{enumerate}
 \end{theorem}
 
-\paragraph{In words.} A dealer that misjudges how strongly feedback traders respond hands the insider a rent, or charges it one, in proportion to the error. That error concerns only the aggregate response, which public data reveal at the ordinary rate. So the information that protects price formation is cheap to learn, while the information about who the groups are stays expensive. The dealer's coefficient $\lambda$ is held fixed: this is the insider's best response to a misspecified dealer, not a re-solved equilibrium.
-
 \begin{theorem}[Targeted intervention in equilibrium]\label{thm:eqhalt}
 Take the Gauss and Radau pairs of Theorem~\ref{thm:eqinv}(iv), with total weight $W$, on rates $c+ds$ with $\rho=|c|+|d|<1$. Place them in the market above, with the same dealer rule $(\lambda,\hat k)$, the same insider schedule and the same draws.
 \begin{enumerate}[label=(\roman*),itemsep=1pt]
@@ -937,8 +936,6 @@ Take the Gauss and Radau pairs of Theorem~\ref{thm:eqinv}(iv), with total weight
 \item Halting the largest group leaves kernels $\tfrac W2(c-d\sigma)^m$ (the Gauss weights tie; we remove the group at $c+d\sigma$) and $\tfrac W4(c-d)^m$, which differ by $\tfrac W4$ at $m=0$ for every spacing. The post-halt responses therefore differ at order one, and so do the post-halt feedback budgets $\sum_mk_m$.
 \end{enumerate}
 \end{theorem}
-
-\paragraph{In words.} Two markets can look the same in equilibrium to within the cube of the memory spacing, yet halting their largest group leaves feedback that differs at order one. Equilibrium does not remove the case for targeted information; it sharpens it. In the simulation below, the pre-halt price gap is about $3d^3$ at all three spacings tried, while the post-halt gap stays near $0.19$.
 
 
 \begin{proof}[Proof of Theorem~\ref{thm:eqinv}]
@@ -1289,8 +1286,6 @@ and the third observation achieve error exactly $\alpha$. The necessary and suff
 \end{enumerate}
 \end{theorem}
 
-\paragraph{In words.} To tell one desk from two desks whose memories differ slightly, the observer must trade against them, and the quantity it must trade grows like $1/\delta^2$: halving the difference quadruples the trading needed. Waiting longer after a fixed trade does not help, because the trade's echo in the price dies out.
-
 A probe changes inventory as well as price. We therefore specify cash and execution timing. Price has units of currency per asset, and $\kappa$ currency per squared quantity.
 
 \begin{lemma}[Fair execution]\label{lem:toeplitz}
@@ -1315,8 +1310,6 @@ V_B=\frac{2B}{\beta+\sqrt{\beta^2+4(\mu+\tfrac12)\kappa B}},\qquad\beta=c+\mu P_
 equivalently $(\mu+\tfrac12)\kappa V^2+(c+\mu P_*)V\le B$. The cap holds across all positive group representations with $S<1$, without resolving individual rates. An observer that receives only noisy prices and executed quantities has best error $\Phi[-V_B\|d_T\|_2/(2\sigma)]$ within this allowance; fixed error $\alpha<1/2$ requires capital of order at least $\delta^{-4}$, and a single positive pulse attains that order.
 \end{theorem}
 
-\paragraph{In words.} A probe moves the price against the account that makes it, so the margin it needs grows with the square of the probe. Because the probe grows like $1/\delta^2$, the capital grows like $1/\delta^4$: halving the difference multiplies the capital needed by 16.
-
 
 Even with zero initial inventory, the probe creates a quadratic adverse mark that a fixed initial price exposure would miss. Figure~\ref{fig:knownpair} illustrates the experiment.
 
@@ -1328,8 +1321,6 @@ Even with zero initial inventory, the probe creates a quadratic adverse mark tha
 \begin{proposition}[Exact financial disclosure changes the experiment]\label{prop:disclosure}
 In this noiseless-state account, exact disclosure of the third equity mark after a single positive pulse $0<A\le V_B$ distinguishes the known pair with zero error for every $\delta>0$.
 \end{proposition}
-
-\paragraph{In words.} If the observer can see an account's exact equity, a single test trade settles the question, however close the two candidate markets are. The hard part of the problem is therefore not the market itself but what the observer is allowed to see.
 
 Exact marked equity is extra information, not a free observation assumed by the price-only theorem. Real account marks have their own precision: with reports rounded to $0.01$, a guaranteed change requires a larger trade (see the disclosure contracts of the full working paper).
 
@@ -1395,8 +1386,6 @@ because then $d_\infty(\theta_0,\theta_1)=\min\{2\tau(1+\Delta\eta/q),\,(1+2\tau
 \item Conversely, the matching upper bound $N=O((\Delta\eta)^{-6})$ on rich separated two-group classes is Theorem~\ref{prop:esprit} with $K=2$. On the separated class with weights and rates bounded away from the boundary, Toeplitz deconvolution followed by a Prony--Hankel root step has Hankel determinant $g_1g_3-g_2^2=w_1w_2\eta_1\eta_2r_1r_2(\Delta\eta)^2>0$ for the deconvolved kernel $g_m=\sum_iw_i\eta_ir_i^m$, and perturbation analysis gives the same order.
 \end{enumerate}
 \end{theorem}
-
-\paragraph{In words.} For two unknown groups, no method can tell the two candidate markets apart reliably with fewer than a number of experiments of order $(\Delta\eta)^{-6}$, and a practical method (Prony's method, Theorem~\ref{prop:esprit}) achieves this order. Halving the spacing multiplies the data needed by 64.
 
 We recomputed the two-point quantities exactly (Table~\ref{tab:lecam}): the moment gap equals $4\tau p_-p_+(\Delta\eta)^3$ to machine precision, and the Le Cam requirement at $\Delta\eta=0.10$ is $5{,}927.6$ resets. The worst-case failure rates of four re-implemented estimators all lie above the lower bound (Table~\ref{tab:lecam}).
 
@@ -1568,7 +1557,7 @@ $f_t=\sum_ic_ig_t(r_i,\ell_i)$ with $g_t(r,\ell)=\psi\bigl(\ell\sum_{j<t}r^{t-1-
 \begin{proof}
 (i) By strong induction on $t<\tau$. If the paths agree before $t$, the signals agree before $t$, so every trader of either population has the same state in both markets. All are inside their bands, so both aggregate flows equal the linear flow $\sum_{j<t}k_{t-1-j}s_j$, which is the same for $P$ and $P'$ because the kernels agree. The insider's order and the dealer's price are causal, so they agree at $t$. The same argument with $P'$ replaced by the linear market (the band-linear shape $\psi'(u)=u$) gives the second statement.
 (ii) Build both markets, and the record noise, on one probability space. By (i) the records coincide on $\{\tau\ge T\}$, so the total-variation distance is at most $\Pr(\tau<T)$, and $\tau$ is computed on the linear market.
-(iii) In the linear market from rest, $x=g*w$ with $g=h/\kappa$, and $m_t(r)=(\varphi_r*x)_t$ with $\varphi_r(j)=r^{j}$ shifted by one date. So $m_t(r)$ is centred Gaussian with variance at most $s_r^2\le\sigma_w^2\|\varphi_r\|_1^2\|g\|_1^2$. Here $\|\varphi_r\|_1=1/(1-r)$. Also $|h_t|$ is dominated by the response of the positive economy with persistence $a$ and kernel $|k_m|$, whose total mass is $\kappa/(1-S_{\rm abs})$, so $\|g\|_1\le1/(1-S_{\rm abs})$. For a standard normal $Z$ and $z\ge0$, $\Pr(|Z|>z)\le e^{-z^2/2}$. A union bound over the $T$ dates and $n+n'$ traders gives the bound. A test with both errors at most $\alpha$ needs $\mathrm{TV}\ge1-2\alpha$.
+(iii) In the linear market from rest, $x=g*\varepsilon$ with $g=h/\kappa$, and $m_t(r)=(\varphi_r*x)_t$ with $\varphi_r(j)=r^{j}$ shifted by one date. So $m_t(r)$ is centred Gaussian with variance at most $s_r^2\le\sigma_\varepsilon^2\|\varphi_r\|_1^2\|g\|_1^2$. Here $\|\varphi_r\|_1=1/(1-r)$. Also $|h_t|$ is dominated by the response of the positive economy with persistence $a$ and kernel $|k_m|$, whose total mass is $\kappa/(1-S_{\rm abs})$, so $\|g\|_1\le1/(1-S_{\rm abs})$. For a standard normal $Z$ and $z\ge0$, $\Pr(|Z|>z)\le e^{-z^2/2}$. A union bound over the $T$ dates and $n+n'$ traders gives the bound. A test with both errors at most $\alpha$ needs $\mathrm{TV}\ge1-2\alpha$.
 (iv) Without process noise, the linear path is deterministic, so $\tau\ge T$ surely and (ii) gives distance zero. For a pulse, the linear state is $m_t(r)=A\sum_{j<t}r^{t-1-j}h_j$.
 \end{proof}
 
