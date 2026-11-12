@@ -18,9 +18,23 @@ This notebook reads **no market data**. It does two things.
    `verify_formalization.py`, which writes `formal_verification_receipt.json` (about 15-30 minutes). Download the
    receipt at the end and commit it.
 
-Repository: `{REPO}`, branch `{BRANCH}`. Runtime: CPU is enough."""),
- ("code", f"""!git clone --depth 1 -b {BRANCH} {REPO} repo
-%cd repo
+Repository: `{REPO}`, branch `{BRANCH}`. Runtime: CPU is enough.
+
+**The repository is private.** Before running, add a GitHub token with read access to it as a Colab Secret named
+`GITHUB_TOKEN` (key icon in the left bar; switch on notebook access). The token is read from the secret and is never
+printed. Do not paste it into a cell."""),
+ ("code", f"""import os, subprocess
+from google.colab import userdata
+os.chdir("/content")
+token = userdata.get("GITHUB_TOKEN")
+url = "{REPO}".replace("https://", "https://x-access-token:" + token + "@")
+if not os.path.isdir("repo"):
+    r = subprocess.run(["git", "clone", "--depth", "1", "-b", "{BRANCH}", url, "repo"], capture_output=True, text=True)
+    print((r.stdout + r.stderr).replace(token, "***"))
+    assert r.returncode == 0, "clone failed: check the GITHUB_TOKEN secret and its access to the repository"
+os.chdir("/content/repo")
+subprocess.run(["git", "remote", "set-url", "origin", "{REPO}"])   # do not keep the token in .git/config
+del token, url
 !pip -q install mpmath scipy numpy sympy
 !git log --oneline -1"""),
  ("code", """# 1. Numerical checks (fast part)
