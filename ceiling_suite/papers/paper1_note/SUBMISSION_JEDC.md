@@ -18,7 +18,7 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
   heterogeneous-agent models (Boswijk, Hommes and Manzan 2007; Franke and Westerhoff 2012; Lux and Zwinkels 2018);
   the full working paper cited as Niroula et al. (2026a) instead of "the full working paper".
 
-Files: `Paper1_theory_main.pdf` (16 pages) and `Paper1_theory_supplement.pdf` (86 pages), built from
+Files: `Paper1_theory_main.pdf` (17 pages) and `Paper1_theory_supplement.pdf` (87 pages), built from
 `paper1_theory.tex` by `build_note.py`.
 
 ## Journal requirements
@@ -27,7 +27,7 @@ The Elsevier guide for authors could not be loaded from this session. The points
 standard requirements and a third-party summary of the JEDC template. **Check them on the JEDC guide before
 submitting.**
 - Highlights: 3 to 5 bullets of at most 85 characters each, as a separate file (below).
-- Abstract: the theory version has 134 words. If the guide sets 100, cut the sentence on position limits and the
+- Abstract: the theory version has 147 words. If the guide sets 100, cut the sentence on position limits and the
   Lean sentence.
 - Keywords and JEL codes: on the title page.
 - Declarations: competing interests, funding, data availability, CRediT contributions, and Elsevier's
@@ -41,9 +41,9 @@ submitting.**
 - Prices identify the kernel and nothing finer, for any insider and dealer rule
 - Learning composition costs data of order (Δη)^-(4K-2), even near instability
 - Memories with half-lives of 5 to 9 days need 4,000+ years of daily prices to separate
-- Market-wide supervision needs only the kernel; targeted rules need tagged flow
+- Tagging all but one memory class gives the full composition at no extra cost
 
-(Character counts: 78, 77, 76, 85, 78.)
+(Character counts: 78, 77, 76, 85, 76.)
 
 ## Cover letter (draft)
 

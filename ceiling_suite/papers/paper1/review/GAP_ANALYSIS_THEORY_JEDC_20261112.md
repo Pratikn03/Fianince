@@ -61,3 +61,14 @@ Main text: new paragraph "Three extensions" (no separation, general memory, mone
 blindness and economic primitives, one on the audit-trail decision, one on real noise next to Table 1.
 Supplement grows from 58 to 86 pages; main text 16 pages. Estimate after this pass: about 82-84, JEDC chance
 roughly 45-50%. Judgement, not data.
+
+## Fourth pass (12 November 2026): a new result, partial disclosure
+
+Theorem `thm:partial` (core Section 5.x; note and theory Theorem "Partial disclosure"): when m of K groups are
+tagged, the cost of composition is that of the K' = K - m untagged groups alone, of order (Delta eta)^-(4K'-2) for
+K' >= 2 (lower bound with the tagged groups held fixed; upper bound by subtract-then-Prony), and independent of
+Delta eta for K' <= 1. Consequences: each tag lowers the exponent by four; the tag that leaves one class untagged is
+worth a factor (Delta eta)^-6; the last tag is worth nothing for the weights; what matters is the number of untagged
+memory classes, not traders. Numerical check: slopes 10.05, 6.02, 5.96 against 10, 6, 6
+(`research_extension/partial_disclosure/`). Lean: algebraic steps (`Paper1PartialDisclosure.lean`, 4 theorems,
+standard axioms); probabilistic steps on paper. Added to the theory abstract.

@@ -25,7 +25,7 @@ front = ("\\begin{center}{\\Large Online Supplement}\\\\[4pt]{\\large Observatio
          "The note's results correspond to them as follows: Theorem~\\ref{n:suff} to Theorem~\\ref{thm:eqinv} and Proposition~\\ref{prop:anylinear}; "
          "Theorem~\\ref{n:ident} to Theorem~\\ref{thm:merged}(i); Theorem~\\ref{n:cost} to Theorems~\\ref{thm:kcohort}, \\ref{prop:esprit} and~\\ref{prop:passive}; "
          "Proposition~\\ref{n:target} to Propositions~\\ref{prop:target}(i) and~\\ref{prop:targetK}; Theorem~\\ref{n:disc} to Theorem~\\ref{thm:discvalue}; "
-         "Proposition~\\ref{n:nearcrit} to Proposition~\\ref{prop:nearcrit}; Proposition~\\ref{n:hiding} to Proposition~\\ref{prop:hiding}; Theorem~\\ref{n:sat_thm} to Theorems~\\ref{thm:satsuff}, \\ref{thm:stress} and~\\ref{thm:satident}.\n\n")
+         "Proposition~\\ref{n:nearcrit} to Proposition~\\ref{prop:nearcrit}; Proposition~\\ref{n:hiding} to Proposition~\\ref{prop:hiding}; Theorem~\\ref{n:partial} to Theorem~\\ref{thm:partial}; Theorem~\\ref{n:sat_thm} to Theorems~\\ref{thm:satsuff}, \\ref{thm:stress} and~\\ref{thm:satident}.\n\n")
 rest = supp[j:]
 
 # Leaner supplement: the note's main text gives the reading of each result, so the supplement drops the expository
@@ -67,7 +67,8 @@ ABS_THEORY = ("Algorithmic traders read prices and, by trading, move them. One o
     "groups whose memories lie within $\\Delta\\eta$, by probing or by waiting, and the barrier persists as the market "
     "approaches instability. At illustrative parameters, two-group populations whose memories all have half-lives "
     "between 5 and 9 days need more than 4{,}000 years of daily prices to be told apart. Market-wide supervision "
-    "therefore needs only the kernel; targeted supervision needs flow tagged by class. Core results are "
+    "therefore needs only the kernel; targeted supervision needs flow tagged by class, though not by every class: "
+    "tagging all but one memory class is enough. Core results are "
     "machine-checked in Lean~4.")
 CAL = r"""
 \paragraph{How large is the barrier?} Table~\ref{n:tab_cal} puts numbers on part~(iii) for two groups. What matters is the spread of memories relative to their size. Populations whose memories all have half-lives between 5 and 9 days cannot be told apart with both error probabilities at $5\%$ from less than $4{,}000$ years of daily prices, however close the market is to instability. When half-lives differ by a factor of three or more, a century of daily data can suffice. With three groups the numbers grow to the order of $10^8$ years. The numbers bound every test, for the passive record; probing faces the same order (part~(i)). The exponents do not depend on Gaussian noise: with real Bitcoin price noise injected into synthetic groups, the fitted slopes are $-6.01$ and $-9.81$, against $-6$ and $-10$ (Supplement Section~\ref{sec:injection}).
