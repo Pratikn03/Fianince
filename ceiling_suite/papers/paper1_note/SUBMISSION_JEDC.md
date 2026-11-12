@@ -18,7 +18,7 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
   heterogeneous-agent models (Boswijk, Hommes and Manzan 2007; Franke and Westerhoff 2012; Lux and Zwinkels 2018);
   the full working paper cited as Niroula et al. (2026a) instead of "the full working paper".
 
-Files: `Paper1_theory_main.pdf` (17 pages) and `Paper1_theory_supplement.pdf` (87 pages), built from
+Files: `Paper1_theory_main.pdf` (17 pages) and `Paper1_theory_supplement.pdf` (89 pages), built from
 `paper1_theory.tex` by `build_note.py`.
 
 ## Journal requirements
@@ -84,5 +84,9 @@ submitting.**
 1. Confirm the requirements above on the JEDC guide for authors.
 2. Add the corresponding author's postal address to the title page.
 3. Confirm the declarations (competing interests; all authors approved the manuscript).
-4. Run `python3 verify_formalization.py` on a machine with the Mathlib cache and commit the receipt.
+4. Run the Colab notebook `research_extension/theorem_checks/Paper1_Theorem_Checks_Colab.ipynb` (or
+   `python3 verify_formalization.py` on a machine with the Mathlib cache) and commit the receipt.
+6. The cover letter and the AI declaration say the authors have verified all proofs. The proofs added on
+   11-12 November are listed in `ceiling_suite/papers/paper1/review/AUTHOR_PROOF_CHECKLIST_20261112.md`; the
+   sentence is true only once the authors have gone through them.
 5. Submit only one version at a time: if this goes to JEDC, the RFS version (`SUBMISSION_RFS.md`) is not sent.
