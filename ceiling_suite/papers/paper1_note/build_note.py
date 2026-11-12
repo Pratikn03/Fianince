@@ -96,8 +96,6 @@ $K=3$ & $0.5\pm0.1$ & 0.8--1.4 & $1.5\times10^{8}$ & $9.9\times10^{7}$\\
 \end{table}
 """
 THEORY_EDITS = [
-    ("The proof is an induction on dates (Supplement Theorem~\\ref{thm:eqinv} and Proposition~\\ref{prop:anylinear}). Its content is the object it isolates, not the induction.",
-     "The proof is an induction on dates (Supplement Theorem~\\ref{thm:eqinv} and Proposition~\\ref{prop:anylinear}). It is short; its content is the object it isolates, a population-level quantity that settles every equilibrium concept at once. Because total feedback flow is itself a function of the kernel, observing aggregate order flow without class tags adds nothing about composition."),
     ("with effective impact and persistence, and with the memory rates unchanged (Supplement Theorems~\\ref{thm:inventory} and~\\ref{thm:eqreduced}).",
      "with effective impact and persistence, and with the memory rates unchanged (Supplement Theorems~\\ref{thm:inventory} and~\\ref{thm:eqreduced}).\n\nTogether, Theorems~\\ref{n:suff} and~\\ref{n:ident} make the kernel a \\emph{minimal} sufficient statistic of the population for prices: it determines everything prices can show, and prices determine it. (The merged measure has finitely many atoms, so its moments, the kernel, determine it.)"),
     ("Reset probing is a benchmark for what data can reveal, not a proposed policy.",
@@ -116,7 +114,7 @@ THEORY_EDITS = [
     ("\\item \\emph{Evidence} (Section~\\ref{n:concl}). We report two pre-registered tests, each run once, with the wording fixed before the results were known.\n", ""),
     ("Figure~\\ref{n:fig_barrier} shows both statements.\n\n", "Figure~\\ref{n:fig_barrier} shows both statements.\n\n"),
     ("\\end{figure}\n\n\n\\section{Who needs composition", "\\end{figure}\n" + CAL + "\n\\section{Who needs composition"),
-    (note[note.index("\\paragraph{Evidence.}"):note.index("The sufficiency results need aggregate")],
+    (note[note.index("\\paragraph{Evidence.}"):note.index("The sufficiency results hold whenever")],
      "\\paragraph{Evidence.} The contribution is theoretical. Supplement Section~\\ref{sec:scope} reports two pre-registered tests on public data, on Taiwan's tagged exchange flows and on Binance perpetual futures, with their readouts as registered.\n\n"),
 ]
 th = note

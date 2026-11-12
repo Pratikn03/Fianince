@@ -1,0 +1,27 @@
+\subsection{Stress identification with noisy observations}\label{app:noisystress}
+
+Theorem~\ref{thm:satident} assumes exactly observed responses. The next result shows that the identification survives observation noise: a minimum-distance estimator recovers the signed capacity measure consistently. It gives no rate.
+
+\begin{proposition}[Noisy stress identification]\label{prop:noisystress}
+Let $\psi$ be continuous, odd and with independent dilations. Fix $n\ge1$, $0<\ell_{\min}\le\ell_{\max}$, $0\le\bar r<1$ and $\bar c>0$, and let $\Theta$ be the set of populations of at most $n$ traders, written $\theta=(c_i,r_i,\ell_i)_{i\le n}$ with $c_i\in[0,\bar c]$, $r_i\in[0,\bar r]$ and $\ell_{\min}\le|\ell_i|\le\ell_{\max}$ (a trader with $c_i=0$ is absent). Let $(v^{(j)})_{j\ge1}$ enumerate the probe sequences of finite length with rational entries, $v^{(j)}$ of length $T_j\le j$, and let $h_j(\theta)\in\mathbb R^{T_j}$ be the reset response of the price to $v^{(j)}$, without process noise. In round $N$, each probe $j\le N$ is run $N$ times, every price is observed with independent $N(0,\sigma^2)$ noise, and $\hat h_{j,N}$ is the average of the $N$ observed responses. Let $\hat\theta_N$ minimize
+\[
+ Q_N(\theta)=\sum_{j\le N}2^{-j}\min\bigl(1,\ \|\hat h_{j,N}-h_j(\theta)\|\bigr)
+\]
+over $\Theta$. If the true population $\theta_0\in\Theta$, then $\tilde\mu(\hat\theta_N)\to\tilde\mu(\theta_0)$ in probability, in the weak topology on signed measures on $[0,\bar r]\times[\ell_{\min},\ell_{\max}]$.
+\end{proposition}
+
+\begin{proof}
+\emph{Continuity.} For a fixed probe, the response at each date is a finite composition of the market recursion, sums, products and $\psi$, so $h_j$ is continuous on $\Theta$, which is compact. The map $\theta\mapsto\tilde\mu(\theta)=\sum_ic_i\,\mathrm{sgn}(\ell_i)\,\delta_{(r_i,|\ell_i|)}$ is continuous into the weak topology, because $\mathrm{sgn}(\ell_i)$ is constant on each of the two components $\ell_i\ge\ell_{\min}$ and $\ell_i\le-\ell_{\min}$; the weak topology on this bounded set of measures is metrized by the bounded-Lipschitz distance $\rho$.
+
+\emph{Identification.} Let $Q(\theta)=\sum_j2^{-j}\min(1,\|h_j(\theta_0)-h_j(\theta)\|)$. If $Q(\theta)=0$, the two populations give identical responses to every rational probe sequence. Responses are continuous in the probe, by the same composition argument, and rational sequences of each length are dense, so the responses agree for every probe sequence. Drop the traders with $c_i=0$ from both populations; the remaining traders satisfy the hypotheses of Theorem~\ref{thm:satident}, so $\tilde\mu(\theta)=\tilde\mu(\theta_0)$. Conversely $\tilde\mu(\theta)=\tilde\mu(\theta_0)$ gives $Q(\theta)=0$ by the same theorem.
+
+\emph{Uniform convergence.} Since $\min(1,\|\cdot\|)$ satisfies the triangle inequality,
+\[
+ \sup_\theta|Q_N(\theta)-Q(\theta)|\le\sum_{j\le N}2^{-j}\|\hat h_{j,N}-h_j(\theta_0)\|+2^{-N},
+\]
+and $\mathbb E\|\hat h_{j,N}-h_j(\theta_0)\|\le\sigma\sqrt{T_j/N}\le\sigma\sqrt{j/N}$. The expectation of the right side is at most $\sigma N^{-1/2}\sum_j2^{-j}\sqrt j+2^{-N}\to0$, so $\sup_\theta|Q_N-Q|\to0$ in probability.
+
+\emph{Consistency.} $Q_N(\hat\theta_N)\le Q_N(\theta_0)\le\sup|Q_N-Q|$, since $Q(\theta_0)=0$; hence $Q(\hat\theta_N)\le2\sup|Q_N-Q|\to0$ in probability. Fix $\delta>0$. The set $F_\delta=\{\theta\in\Theta:\rho(\tilde\mu(\theta),\tilde\mu(\theta_0))\ge\delta\}$ is closed in a compact set, hence compact, and $Q$ is continuous and, by identification, strictly positive on it, so $q_\delta=\min_{F_\delta}Q>0$ (if $F_\delta$ is empty there is nothing to prove). Then $\Pr(\rho(\tilde\mu(\hat\theta_N),\tilde\mu(\theta_0))\ge\delta)\le\Pr(Q(\hat\theta_N)\ge q_\delta)\to0$.
+\end{proof}
+
+The argument is the standard one for extremum estimators: identification, compactness, continuity and uniform convergence. It inherits the hard limit's requirement of probes of all sizes, and it is silent on rates. For $\tanh$, Proposition~\ref{prop:smooth} shows the information per probe grows like the sixth power of its size for small probes, so rates for the full measure will depend on how far the design pushes the market.

@@ -15,20 +15,20 @@ Done by an AI system reading as a JEDC referee would. Not independent review.
 | 7 | "Claims rest on an unpublished 'full working paper'." | Medium | Every such pointer is now a citation, Niroula, Niroula and Khatiwada (2026a), with the public repository. |
 | 8 | "Version clutter: core version, note, 'new to this version'." | Low | Removed from the theory build. |
 
-## Gaps that remain (disclosed in the paper, not fixable by writing)
+## Second pass (12 November 2026): the remaining gaps
 
-| Gap | Risk | Status |
+| Gap | Before | Now |
 |---|---|---|
-| Linear feedback and exponential memory | Medium | Stated in Scope; the two-layer theorem covers saturating limits. Nonlinear switching (as in Brock-Hommes) is outside the theorems. |
-| Near-instability bound is per observation, not a finite-sample bound uniform in the margin | Low | Stated next to the proposition. |
-| Stress identification assumes exactly observed responses | Medium | Stated in the theorem. A noisy version is open. |
-| One hiding group, no equilibrium among several | Low | Stated after the proposition. |
-| No empirical confirmation | Low at JEDC | Tests in the supplement with registered readouts; the Binance replication reports after February 2027. |
-| Lean receipt dated 9 November | Low | Needs `python3 verify_formalization.py` on the author's machine. |
-| Constants in the cost bounds grow fast with K | Low | Stated in the supplement. |
+| Linear feedback only | Sufficiency stated for linear and saturating flows | Sufficiency now stated for **any** population whose aggregate flow is a causal function of public signals, including strategy switching after past profits (the induction is already machine-checked in this generality, `p1_flow_market_invariance`). Identification and cost results still need linear flows and exponential memory; that remains the main scope limit. |
+| Near-instability bound per observation only | Disclosed | Exact finite-sample information computed (`finite_sample_check.py`): within 97.8-99.8% of n times the rate, for margins down to 1e-3 and n up to 4,000. Numerical evidence; the uniform finite-sample proof is still open. |
+| Stress identification needs exact observations | Disclosed | **New Proposition (noisy stress identification), with proof:** a minimum-distance estimator recovers the signed capacity measure consistently under Gaussian observation noise. No rate. |
+| One hiding group | Disclosed | Bound shown to hold group by group in any equilibrium among several groups; what determines each group's alpha is not modelled. |
+| Lean receipt dated 9 November | Needed the author's Mac | Full `lake build` running in this session (Mathlib modules compiled from source). |
+| No empirical confirmation | | Unchanged by design: tests in the supplement; Binance replication after February 2027. |
+| Constants grow fast with K | | Unchanged; stated. |
 
 ## Net effect
 
-Gaps 1, 2 and 6 were the likeliest reasons for a JEDC rejection. With them closed, the estimate moves from about
-75-78 to about 78-80, with a chance of eventual acceptance at JEDC of roughly 40%. These numbers are judgement,
-not data.
+Gaps 1, 2 and 6 were the likeliest reasons for a JEDC rejection. With them and the second-pass gaps closed, the
+estimate is about 79-81, with a chance of eventual acceptance at JEDC of roughly 40-45%. The main remaining limit
+is that identification and cost need linear flows. These numbers are judgement, not data.
