@@ -135,3 +135,4 @@ import CurrentProofs.Paper1StressIdentification
 import CurrentProofs.Paper1UnknownStart
 import CurrentProofs.Paper1SubGaussianLower
 import CurrentProofs.Paper1DisclosureValue
+import CurrentProofs.Paper1TheoryBoundariesSolved
