@@ -40,3 +40,11 @@ the next Colab run (1,199 named declarations in 137 modules).
 | `prop:nearcrit` | Steps 2 and 3 given Whittle's formula (`Paper1NearCritical.lean`); constants in the paper aligned with the Lean proof | Whittle's formula, Step 1, local properties of `D*` and their uniformity |
 | `prop:noisystress` | Extremum-estimator consistency in probability; uniform bound for truncated criteria (`Paper1NoisyStress.lean`) | Continuity of responses and of the measure map; the expectation bound |
 | `thm:stress`(ii)-(iii), `prop:smooth` | Coupling, union bound, test-cost inversions (`Paper1SaturatingBounds.lean`) | Gaussian tail of memory states; `‖e‖ ≤ C_D A³`; the first-tap expansion |
+
+## Added 13 November 2026 (evening): surveillance over time
+
+| Result | Proof | Machine-checked | Numerical check | Check by hand |
+|---|---|---|---|---|
+| Theorem `thm:track` (speed limit) | core `src/supp_dynamic.tex` | window divergence, Le Cam step, bias-noise trade-off (`Paper1TrackingGame.lean`) | slopes 0.33 / -2.01 / 0.34 vs 1/3, -2, 1/3 | (i): analyticity of the family `R_c`, a weight with nonzero derivative near `c = 0`, the Lipschitz moment bound with factor `(1+p)`; (ii): the moving-window Prony step |
+| Proposition `prop:observer` | same | the floor inequality | via the tracking check | that a learning class "of sensitivity γ" contains paths moving along the hard family |
+| Proposition `prop:hidegame` | same | (ii), (iii) | detection 0.052 ≤ 0.06; spacing ~ N^-1/4 | (i) the derivative step; the modelling claim that detection depends on `N D^6` |

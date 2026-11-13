@@ -2,7 +2,7 @@
 Usage (from the repository root): python3 research_extension/theorem_checks/run_all_checks.py [--slow]
 --slow adds the global-fibre search and the two-market worst-case table (about 30-60 minutes).
 Prints PASS or FAIL for each claim and writes research_extension/theorem_checks/run_all_checks_results.json."""
-import json
+import json, os
 import numpy as np, os, subprocess, sys, time
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -84,6 +84,17 @@ run(TC, "mc_questions.py")
 mq = load(TC, "mc_questions_results.json")
 check("discounted feedback: error flat in the memory spacing (slope within 0.1 of 0)", abs(mq["slope_discounted_feedback"]) < 0.1, f"{mq['slope_discounted_feedback']:.3f}")
 check("group weights: error grows like spacing^-3 (slope within 0.1 of -3)", abs(mq["slope_weights"] + 3) < 0.1, f"{mq['slope_weights']:.3f}")
+
+print("6c. Surveillance over time: tracking rates and the hiding game")
+TR = os.path.join(ROOT, "research_extension", "tracking")
+run(TR, "tracking_check.py")
+tr = load(TR, "tracking_check_results.json")
+check("tracking: weight error slope in speed within 0.05 of 1/3", abs(tr["slope_weights_v"] - 1 / 3) < 0.05, f"{tr['slope_weights_v']:.3f}")
+check("tracking: weight error slope in spacing within 0.1 of -2", abs(tr["slope_weights_d"] + 2) < 0.1, f"{tr['slope_weights_d']:.3f}")
+check("tracking: market-wide answer slope in speed within 0.05 of 1/3", abs(tr["slope_feedback_v"] - 1 / 3) < 0.05, f"{tr['slope_feedback_v']:.3f}")
+run(TR, "hiding_game_check.py")
+hg = load(TR, "hiding_game_check_results.json")
+check("hiding game: high-stakes detection stays below false alarm + k D0^2 / L = 0.06", hg["high_stakes_max_detection"] <= 0.06, f"{hg['high_stakes_max_detection']:.4f}")
 
 if SLOW:
     print("7. Pooling markets: global fibres and the two-market worst case (slow)")

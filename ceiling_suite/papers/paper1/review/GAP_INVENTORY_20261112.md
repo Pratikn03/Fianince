@@ -145,3 +145,13 @@ Full Lean build and strict axiom audit passed in Colab at 00:20 UTC (Lean 4.34.1
 declarations, 131 modules, axioms propext, Classical.choice and Quot.sound only. All 136 source hashes in the receipt
 match the branch. The same run passed 19 of 19 numerical checks. Remaining: A3 (the authors' proof check) and the
 repository-visibility question (the paper calls the repository public; it is private).
+
+## 13 November 2026 (evening): surveillance over time
+
+New: Theorem `thm:track` (tracking at the cube-root rate; a speed limit of order n Δη^(4K-2)/σ² above which composition
+cannot be tracked; market-wide questions tracked whatever K), Proposition `prop:observer` (traders who learn from
+prices impose a floor no probing removes, minimax over learning rules of bounded sensitivity), Proposition
+`prop:hidegame` (without tags, high-stakes groups crowd and detection stays near the false-alarm rate; tags remove
+crowding). Simulations and a Lean module (`Paper1TrackingGame.lean`, 1,206 declarations in 138 modules). Regulator-data
+tests drafted only (`p1_empirics/P1R_spec_DRAFT.md`): no data access exists. Checks: 23 of 23 pass.
+Main text 20 pages, supplement 88.

@@ -25,7 +25,7 @@ front = ("\\begin{center}{\\Large Online Supplement}\\\\[4pt]{\\large Observatio
          "The note's results correspond to them as follows: Theorem~\\ref{n:suff} to Theorem~\\ref{thm:eqinv} and Proposition~\\ref{prop:anylinear}; "
          "Theorem~\\ref{n:ident} to Theorem~\\ref{thm:merged}(i); Theorem~\\ref{n:cost} to Theorems~\\ref{thm:kcohort}, \\ref{prop:esprit} and~\\ref{prop:passive}; "
          "Proposition~\\ref{n:target} to Propositions~\\ref{prop:target}(i) and~\\ref{prop:targetK}; Theorem~\\ref{n:disc} to Theorem~\\ref{thm:discvalue}; "
-         "Proposition~\\ref{n:nearcrit} to Proposition~\\ref{prop:nearcrit}; Proposition~\\ref{n:hiding} to Proposition~\\ref{prop:hiding}; Theorem~\\ref{n:partial} to Theorem~\\ref{thm:partial}; Theorem~\\ref{n:pool} to Theorem~\\ref{thm:pool}; Theorem~\\ref{n:sat_thm} to Theorems~\\ref{thm:satsuff}, \\ref{thm:stress} and~\\ref{thm:satident}.\n\n")
+         "Proposition~\\ref{n:nearcrit} to Proposition~\\ref{prop:nearcrit}; Proposition~\\ref{n:hiding} to Proposition~\\ref{prop:hiding}; Theorem~\\ref{n:partial} to Theorem~\\ref{thm:partial}; Theorem~\\ref{n:pool} to Theorem~\\ref{thm:pool}; Theorem~\\ref{n:track} to Theorem~\\ref{thm:track}; Theorem~\\ref{n:sat_thm} to Theorems~\\ref{thm:satsuff}, \\ref{thm:stress} and~\\ref{thm:satident}.\n\n")
 rest = supp[j:]
 
 # Leaner supplement: the note's main text gives the reading of each result, so the supplement drops the expository
@@ -68,7 +68,8 @@ ABS_THEORY = ("Algorithmic traders read prices and, by trading, move them. One o
     "two-group populations with half-lives of 5 to 9 days need more than 4{,}000 years of daily prices to be told "
     "apart. More generally, a linear question about the population is answered at the usual statistical rate, "
     "whatever the number of groups, exactly when its kernel has square-summable coefficients: market-wide quantities "
-    "are cheap, composition is not. Two remedies follow. Tagging all but one memory class removes the barrier, and the last tag is worth "
+    "are cheap, composition is not. When the population drifts, composition can be tracked only below a speed "
+    "limit. Two remedies follow. Tagging all but one memory class removes the barrier, and the last tag is worth "
     "nothing. Without any tags, pooling $D$ markets in which the same algorithms trade in different proportions "
     "lowers the exponent near generic configurations to $2(K-1+\\lceil K/D\\rceil)$, because an algorithm's memory is the same everywhere it "
     "trades. Core results are machine-checked in Lean~4.")
