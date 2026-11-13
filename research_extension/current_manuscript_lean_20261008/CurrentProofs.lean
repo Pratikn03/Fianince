@@ -132,3 +132,6 @@ import CurrentProofs.Paper1KCohortEstimators
 import CurrentProofs.Paper1SaturatingSufficiency
 import CurrentProofs.Paper1CoreExtensions
 import CurrentProofs.Paper1StressIdentification
+import CurrentProofs.Paper1UnknownStart
+import CurrentProofs.Paper1SubGaussianLower
+import CurrentProofs.Paper1DisclosureValue
