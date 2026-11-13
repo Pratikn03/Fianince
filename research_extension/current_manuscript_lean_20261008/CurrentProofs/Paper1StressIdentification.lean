@@ -202,7 +202,8 @@ theorem p1_cubic_pulse_tap1_price_gap {K K' : ℕ} (γ : ℝ)
   rw [p1_cubic_pulse_tap1_kernel_cancel γ c l c' l' κ A hk]
   ring
 
-/-- **Theorem 7.4 (Step 3a, 2x2 Vandermonde regular):**
+/-- **Two-atom case only** (the general case is `p1_clip_indep_dilations` and `p1_thm_stress_identification` in
+`Paper1StressIdentificationGeneral.lean`). **Theorem 7.4 (Step 3a, 2x2 Vandermonde regular):**
 For distinct positive scales `s₁² ≠ s₂²`, a 2-term vanishing moment system
 `x + y = 0` and `x * s₁² + y * s₂² = 0` implies `x = 0` and `y = 0`. -/
 theorem p1_vandermonde_2x2_invertible (x y s1_sq s2_sq : ℝ)
@@ -316,82 +317,19 @@ theorem p1_hard_limit_kink_recovery (a0 d1 d2 u1 u2 : ℝ)
     | inr hu => linarith
   exact ⟨ha0, hd1, hd2⟩
 
-/-- **Proposition 7.5(ii): Post-breach fire-sale feedback loop gain.**
-When the aggregate liquidation feedback loop gain `G = κ * Σ λ_i |l_i| η_i / (1 - r_i)` exceeds 1,
-the secondary induced feedback liquidation flow `F_ind = G * F_0` strictly amplifies
-the initial breach liquidation shock `F_0 > 0`: `F_ind > F_0`. -/
-theorem p1_firesale_loop_gain_cascade (G F0 : ℝ) (hG : G > 1) (hF0 : F0 > 0) :
-    G * F0 > F0 := by
-  have hpos : (G - 1) * F0 > 0 := mul_pos (by linarith) hF0
-  linarith
-
-/-- **Proposition 7.5(ii), Calm Contraction:**
-When the loop gain satisfies `G ≤ 1` and `F_0 ≥ 0`, secondary liquidation flow is non-amplifying:
-`G * F_0 ≤ F_0`. -/
-theorem p1_firesale_calm_contract (G F0 : ℝ) (hG : G ≤ 1) (hF0 : F0 ≥ 0) :
-    G * F0 ≤ F0 := by
-  have h : (1 - G) * F0 ≥ 0 := mul_nonneg (by linarith) hF0
-  linarith
-
-/-- **Proposition 7.6(i): Forward-Looking Dealer Expected Linear Flow Invariance.**
-If two populations share the linear kernel weight `Σ c_i l_i = Σ c'_j l'_j`, then under any
-common expected memory state `m_bar`, their expected linear feedback flows are identical:
-`Σ c_i l_i m_bar = Σ c'_j l'_j m_bar`. -/
-theorem p1_dealer_expected_linear_invariance {K K' : ℕ}
-    (c l : Fin K → ℝ) (c' l' : Fin K' → ℝ) (m_bar : ℝ)
-    (hk : ∑ i, c i * l i = ∑ j, c' j * l' j) :
-    (∑ i, c i * l i * m_bar) = (∑ j, c' j * l' j * m_bar) := by
-  have h1 : (∑ i, c i * l i * m_bar) = (∑ i, c i * l i) * m_bar := by
-    rw [← sum_mul]
-  have h2 : (∑ j, c' j * l' j * m_bar) = (∑ j, c' j * l' j) * m_bar := by
-    rw [← sum_mul]
-  rw [h1, h2, hk]
-
-/-- **Proposition 7.6(ii): Soft-to-Hard Truncation Gap is Bounded by Tail Departure.**
-For any linear flow `y` and clipped flow `clip(y) = max(-1, min(1, y))`, when `|y| ≤ 1`,
-the linear and clipped flows coincide identically (`clip(y) = y`). -/
+/-- Inside the band `-1 ≤ y ≤ 1`, the hard limit `clip(y) = max(-1, min(1, y))` is the identity. -/
 theorem p1_clip_in_band (y : ℝ) (hlo : -1 ≤ y) (hhi : y ≤ 1) :
     max (-1) (min 1 y) = y := by
   have hmin : min 1 y = y := min_eq_right hhi
   rw [hmin]
   exact max_eq_right hlo
 
-/-- **Information Monotonicity (Oracle Lower Bound):**
-Passive Fisher information `F_pass > 0` is strictly bounded above by active probing Fisher
-information `F_act = F_pass + P / σ²` for any active probe power `P ≥ 0` and noise `σ > 0`.
-Consequently, the active inverse-Fisher variance lower bound `1 / F_act` is bounded above by
-the passive estimation variance `1 / F_pass`: `(F_pass + P / σ²)⁻¹ ≤ F_pass⁻¹`.
-Thus, any lower bound on active probing estimation error applies a fortiori to passive surveillance. -/
-theorem p1_passive_fisher_le_active (F_pass P σ : ℝ) (hF : F_pass > 0) (hP : P ≥ 0) (hσ : σ > 0) :
-    let F_act := F_pass + P / (σ ^ 2)
-    F_pass ≤ F_act ∧ (F_act)⁻¹ ≤ F_pass⁻¹ := by
-  dsimp only
-  have hσ2 : σ ^ 2 > 0 := by positivity
-  have hPdiv : 0 ≤ P / (σ ^ 2) := div_nonneg hP (le_of_lt hσ2)
-  have hle : F_pass ≤ F_pass + P / (σ ^ 2) := by linarith
-  have hFact_pos : 0 < F_pass + P / (σ ^ 2) := by linarith
-  refine ⟨hle, ?_⟩
-  exact (inv_le_inv₀ hFact_pos hF).mpr hle
-
-/-- **Higher-Order Moment Noise Explosion (Non-Gaussian Resistance):**
-To distinguish two feedback economies whose m-th order moment differs by `Δμ`
-using sample moment variance `Vm > 0` to achieve signal-to-noise ratio `ρ > 0`,
-when `ρ² * Vm ≤ T * (Δμ)²`, the required sample size `T` is bounded below by
-`(ρ² * Vm) / (Δμ)² ≤ T`. -/
-theorem p1_higher_moment_sample_size_lower (T Vm Δμ ρ : ℝ)
-    (_hT : T > 0) (hΔ2 : Δμ ^ 2 > 0)
-    (hbound : ρ ^ 2 * Vm ≤ T * Δμ ^ 2) :
-    (ρ ^ 2 * Vm) / (Δμ ^ 2) ≤ T := by
-  exact (div_le_iff₀ hΔ2).mpr hbound
-
-/-- **Strategic Microfoundation: Optimizing Feedback Trader Euler Equation.**
-A risk-averse institutional desk choosing order flow `u` to maximize
-quadratic profit `v * u - ((κ + lam) / 2) * u²` subject to price impact `κ > 0` and holding cost `lam > 0`
-uniquely chooses `u* = v / (κ + lam)`.
-When the trend forecast updates as `v_{t+1} = (1 - η) v_t + η x_t`, the optimal flow
-satisfies the exact autoregressive feedback equation:
-`u*_{t+1} = (1 - η) u*_t + w x_t` with `w = η / (κ + lam)`. -/
-theorem p1_optimizing_feedback_euler (v vt1 u_star u_star_t1 xt η κ lam : ℝ)
+/-- **A trade proportional to an exponentially updated forecast follows the same recursion.**
+If `u = v / (κ + lam)` at each date and the forecast updates as `v' = (1 - η) v + η x`, then
+`u' = (1 - η) u + (η / (κ + lam)) x`. This is algebra on the assumed equalities. It does not prove that the trade is
+optimal: the rule `u = v / (κ + lam)` is the first-order condition of the one-period objective
+`v u - ((κ + lam) / 2) u²`, which is assumed here, not derived. -/
+theorem p1_proportional_trade_recursion (v vt1 u_star u_star_t1 xt η κ lam : ℝ)
     (_hcost : κ + lam > 0)
     (hu : u_star = v / (κ + lam))
     (hvt1 : vt1 = (1 - η) * v + η * xt)
@@ -399,14 +337,5 @@ theorem p1_optimizing_feedback_euler (v vt1 u_star u_star_t1 xt η κ lam : ℝ)
     u_star_t1 = (1 - η) * u_star + (η / (κ + lam)) * xt := by
   rw [hut1, hvt1, hu]
   ring
-
-/-- **Closed-Loop Transmission Zero:**
-In a closed feedback loop where the price response numerator is `κ * D(r)`,
-if `D(r) = 0` (i.e. `r` is a feedback memory rate), then the price transmission gain
-at `r` is identically zero: `κ * D(r) = 0`.
-This confirms that closed-loop equilibration cancels memory poles into transmission zeros. -/
-theorem p1_closed_loop_transmission_zero (κ Dr : ℝ) (hD : Dr = 0) :
-    κ * Dr = 0 := by
-  rw [hD, mul_zero]
 
 end CurrentMM

@@ -70,11 +70,12 @@ main.append(F("sup_mid"))
 main.append(L(657, 672, "\\begin{proposition}[Tagged flow"))
 main.append(L(676, 684, "Proposition~\\ref{prop:tagged} says"))
 main.append(L(690, 693, "\\paragraph{In words.} This is the value"))
+main.append(F("sup_tail"))
 # Sections 7-8
 main.append(F("sat"))
 main.append(F("scope"))
 main.append(F("conclusion"))
-main.append(re.sub(r"\\paragraph\{Data availability\.\}[^\n]*", lambda m: r"\paragraph{Data availability.} This version uses no market data. The data used by the full working paper are public and are listed in its data statement.", L(763, 777, "\\subsection*{Declarations}")))
+main.append(F("declarations"))
 BIB_AT = len("".join(main))
 
 supp = []
@@ -105,11 +106,53 @@ for start, lab in [("\\paragraph{Theorem", "thm:quantity"), ("\\paragraph{Lemma"
                    ("\\paragraph{Lemma", "thm:capital")]:
     supp.append(para(start, lab) + "\n")
 # two unknown cohorts (used by Theorem prop:passive(ii))
+supp.append("\\paragraph{Account-level capital.} The full working paper refines these orders at the level of a "
+            "single trading account (a three-region partition of probe designs, adaptive probing, heteroskedastic "
+            "impact) and gives a hypothetical illustration in dollars. No result here uses them.\n\n")
 supp.append(L(2262, 2324, "\\section{Two unknown cohorts"))
 # S4: supervisory decision in detail
 supp.append(L(2709, 2772, "\\section{The supervisory decision in detail}"))
 supp.append(L(2776, 2786, "\\begin{proposition}[No-data action"))
+supp.append(F("supp_everyK"))
+supp.append(F("supp_nearcrit"))
+supp.append(F("supp_noisystress"))
 supp.append(F("supp_sat"))
+supp.append(F("supp_questions"))
+supp.append(F("supp_dynamic"))
+# Further results (restored from the full working paper, 12 November 2026), grouped by theme, verbatim by line range
+# with their proofs.
+# Part 1: identification and cost.
+_gen = L(1936, 2005, "\\section{General memory: the minimax rate is logarithmic}")
+_gen = re.sub(r"\\begin\{proof\}\[Proof sketch\].*?\\end\{proof\}\n?",
+              "The full proofs of Lemma~\\ref{lem:altpair} and Theorem~\\ref{thm:general} follow.\n\n", _gen, count=1, flags=re.S)
+supp.append(_gen)
+supp.append("\\paragraph{Full proofs.}\n\n")
+for start, lab in [("\\paragraph{Lemma", "lem:altpair"), ("\\paragraph{Theorem", "thm:general")]:
+    supp.append(para(start, lab) + "\n")
+supp.append(L(1624, 1643, "\\section{Near-colliding rates"))
+supp.append(L(1311, 1349, "\\section{Local information: the Cram"))
+supp.append("\\paragraph{Proof of Proposition~\\ref{prop:crb}.}\n" + para("\\paragraph{Proposition", "prop:crb").split("}", 2)[-1] + "\n")
+supp.append("\\section{Finite-sample surveillance bounds}\\label{app:restored_finite}\n\n")
+supp.append(L(1015, 1045, "\\subsection{A finite-window price-surveillance bound}"))
+supp.append(L(1910, 1935, "\\section{Do the rates survive real market noise?}"))
+# Part 2: what prices hide, in economic terms.
+supp.append(L(1265, 1310, "\\section{What prices hide, in economic terms}"))
+supp.append(L(1904, 1909, "\\section{A worked example: two Kalman desks}"))
+supp.append(L(1700, 1717, "\\section{A spectral blind spot}"))
+supp.append("\\paragraph{Proof of Theorem~\\ref{thm:blind}.}\n" + para("\\paragraph{Theorem", "thm:blind").split("}", 2)[-1] + "\n")
+# Part 3: supervision, money and policy.
+supp.append("\\section{Pricing, evasion and the choice of an audit trail}\\label{app:restored_policy}\n\n")
+supp.append(L(252, 264, "\\begin{proposition}[Conditional endogenous-pricing invariance]"))
+supp.append("\\paragraph{Proof of Proposition~\\ref{prop:endogenous_kappa}.}\n" + para("\\paragraph{Proposition", "prop:endogenous_kappa").split("}", 2)[-1] + "\n")
+supp.append(L(695, 705, "\\begin{proposition}[Conditional limits of three evasion arguments]"))
+supp.append("\\paragraph{Proof of Proposition~\\ref{prop:strategic}.}\n" + para("\\paragraph{Proposition", "prop:strategic").split("}", 2)[-1] + "\n")
+supp.append(L(2335, 2347))
+supp.append("\\paragraph{Proof of Proposition~\\ref{prop:choice}.}\n" + para("\\paragraph{Proposition", "prop:choice").split("}", 2)[-1] + "\n")
+# Account-level capital and the hypothetical dollar illustration (SSRN lines 1350-1623) were restored on 12 November
+# and cut again the same day: no result of the main text uses them, and Section app:capital already gives the
+# necessary and sufficient capital order. They remain in the full working paper.
+# Part 4: robustness beyond the linear model (simulations).
+supp.append(L(1644, 1699, "\\section{Robustness to nonlinear and adaptive trading rules}"))
 supp.append("\\section{Machine checks in detail}\\label{app:mc}\n\n")
 supp.append("\\paragraph{Theorem~\\ref{thm:inventory}.}\n" + L(310, 316, "\\paragraph{Machine check.}").replace("\\paragraph{Machine check.} ", "", 1))
 supp.append("\\paragraph{Theorem~\\ref{thm:kcohort}.}\n" + L(534, 534, "\\paragraph{Machine check.}").replace("\\paragraph{Machine check.} ", "", 1) + "\n")
@@ -143,6 +186,22 @@ for f in FIX:
     n = body.count(old)
     assert n >= 1, f"fix not found: {old[:80]}"
     body = body.replace(old, "" if new_ == "<DELETE>" else new_)
+
+# terminology: this version says "group" throughout; the copied text says "cohort". Labels, file names, Lean names,
+# citations and the bibliography are left alone.
+PROTECT = re.compile(r"\\(?:label|ref|eqref|texttt|nolinkurl|url|includegraphics|bibitem|cite[a-z]*\*?)(?:\[[^\]]*\])*\{[^{}]*\}")
+def _swap(seg):
+    seg = re.sub(r"\bCohort(s?)\b", r"Group\1", seg)
+    return re.sub(r"\bcohort(s?)\b", r"group\1", seg)
+_head, _bibpart, _tail = body.partition("\\begin{thebibliography}")
+_bib, _endb, _rest = _tail.partition("\\end{thebibliography}")
+def _unify(text):
+    out, pos = [], 0
+    for m in PROTECT.finditer(text):
+        out.append(_swap(text[pos:m.start()])); out.append(m.group(0)); pos = m.end()
+    out.append(_swap(text[pos:]))
+    return "".join(out)
+body = _unify(_head) + _bibpart + _bib + _endb + _unify(_rest)
 
 open("paper1_core.tex", "w", encoding="utf-8").write(body)
 print("written paper1_core.tex,", len(body.split("\n")), "lines;", len(keep), "references")
