@@ -6,7 +6,8 @@ pi(N D^6) = Phi(a sqrt(N D^6) - z_{0.95}) (the two-group exponent 4K - 2 = 6); d
 The group minimizes k (D0 - D)^2 + L pi(N D^6). With tags, detection does not depend on D, so D = D0.
 
 Predictions: (a) without tags the group always crowds (D* < D0); (b) when L(1 - pi(0)) > k D0^2 (high stakes),
-D* falls like N^(-1/6) and the detection probability stays bounded below one for every N (surveillance without
+D* falls at least as fast as N^(-1/6) (fitted: about N^(-1/4)) and the detection probability stays near the
+false-alarm level for every N (surveillance without
 tags is self-limiting); (c) when k D0^2 > L (low stakes), the group stops hiding once N is large.
 Run: python3 hiding_game_check.py -> hiding_game_check_results.json"""
 import json
