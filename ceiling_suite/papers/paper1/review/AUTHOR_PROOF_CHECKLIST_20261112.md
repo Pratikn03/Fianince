@@ -26,3 +26,17 @@ which also builds the whole Lean project with the Mathlib cache and writes the f
 
 When the authors have checked these, the disclosure sentence stands as written. Until then it should say which
 proofs the authors have verified.
+
+## Update, 13 November 2026: what the six new Lean modules now cover
+
+Compiled one by one in this session with standard axioms only and no `sorry`; the full project build is pending
+the next Colab run (1,199 named declarations in 137 modules).
+
+| Result | Newly machine-checked | Still on paper (check these by hand) |
+|---|---|---|
+| `thm:partial`(ii) | Subtract-then-Prony core: existence, uniqueness, weight bound `L 2^{2K'} η Δη^{-(2K'-1)}` (`Paper1PartialDisclosureUpper.lean`) | The `O_P(N^{-1/2})` rates of the tagged estimates |
+| `thm:pool`(ii), (iv) | Local and global minimum-distance bounds under (R); injectivity and immersion at order `2K-1` (`Paper1PoolingUpper.lean`) | Condition (R) itself (exact for K ≤ 8 by computation); injectivity below `2K-1` |
+| `thm:questions`, `prop:parametric` | Weak duality (upper half of (iv)), (i), (iii), parametric direction, for finite populations (`Paper1QuestionsCost.lean`) | Lower half of (iv) (Sion), (ii), the converse; general measures |
+| `prop:nearcrit` | Steps 2 and 3 given Whittle's formula (`Paper1NearCritical.lean`); constants in the paper aligned with the Lean proof | Whittle's formula, Step 1, local properties of `D*` and their uniformity |
+| `prop:noisystress` | Extremum-estimator consistency in probability; uniform bound for truncated criteria (`Paper1NoisyStress.lean`) | Continuity of responses and of the measure map; the expectation bound |
+| `thm:stress`(ii)-(iii), `prop:smooth` | Coupling, union bound, test-cost inversions (`Paper1SaturatingBounds.lean`) | Gaussian tail of memory states; `‖e‖ ≤ C_D A³`; the first-tap expansion |

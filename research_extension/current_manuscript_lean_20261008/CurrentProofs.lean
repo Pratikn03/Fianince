@@ -140,3 +140,9 @@ import CurrentProofs.Paper1PartialDisclosure
 import CurrentProofs.Paper1PoolingMarkets
 import CurrentProofs.Paper1PartialDisclosureLower
 import CurrentProofs.Paper1PoolingLower
+import CurrentProofs.Paper1PartialDisclosureUpper
+import CurrentProofs.Paper1PoolingUpper
+import CurrentProofs.Paper1QuestionsCost
+import CurrentProofs.Paper1NearCritical
+import CurrentProofs.Paper1NoisyStress
+import CurrentProofs.Paper1SaturatingBounds

@@ -18,7 +18,7 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
   heterogeneous-agent models (Boswijk, Hommes and Manzan 2007; Franke and Westerhoff 2012; Lux and Zwinkels 2018);
   the full working paper cited as Niroula et al. (2026a) instead of "the full working paper".
 
-Files: `Paper1_theory_main.pdf` (18 pages) and `Paper1_theory_supplement.pdf` (83 pages), built from
+Files: `Paper1_theory_main.pdf` (18 pages) and `Paper1_theory_supplement.pdf` (84 pages), built from
 `paper1_theory.tex` by `build_note.py`.
 
 ## Journal requirements
