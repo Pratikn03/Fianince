@@ -10,27 +10,18 @@ import Mathlib.Algebra.Order.Field.Basic
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-!
-# Exact Theory Boundaries and Impossibility Theorems (B1, B4, B5, B7, B8)
+# Exact Theory Boundaries and Impossibility Theorems (B1, B7, B8)
 
-This module formalizes the open theoretical boundaries identified during referee review:
-1. **B5 (Universal Vandermonde Rank Condition for all K):**
-   Proves that for any K distinct exponential memory nodes separated by Δη > 0,
-   every pairwise Vandermonde factor is strictly bounded away from zero,
-   establishing that the pooling confluence matrix has full rank K for all K ∈ ℕ
-   (eliminating the symbolic CAS K ≤ 8 limitation).
-2. **B4 (Multi-Market Global Pooling Rate):**
-   Proves Fisher information additivity across M independent market venues:
-   I_pooled = M * I_single, scaling the Cramér-Rao lower bound by exactly 1/M,
-   establishing the exact analytical pooled sample complexity reduction.
-3. **B1 (Deadband Non-Identification Theorem):**
+This module formalizes the structural impossibility theorems proved in the paper:
+1. **B1 (Deadband Non-Identification Theorem):**
    Proves that for nonlinear trading rules with execution deadband δ0 > 0,
    all probes of amplitude |u| ≤ δ0 produce identically zero excess feedback flow,
    rendering cohort composition structurally non-identifiable below threshold.
-4. **B7 (Multi-Group Strategic Hiding Invariance):**
+2. **B7 (Multi-Group Strategic Hiding Invariance):**
    Extends single-group hiding to arbitrary M-group coalitions: when collective order
    flow sums to zero (subspace neutrality), aggregate price dynamics are identically
    invariant to cohort presence and memory parameters.
-5. **B8 (Non-Stationary Learning Drift Floor / Speed Limit):**
+3. **B8 (Non-Stationary Learning Drift Floor / Speed Limit):**
    Proves the irreducible tracking error floor for online learning traders:
    for drift rate γ0 > 0 and observation variance σ0 > 0, the total estimation error
    is strictly bounded below by 2 * √(γ0 * σ0) > 0 for all window lengths W > 0.
@@ -39,70 +30,6 @@ This module formalizes the open theoretical boundaries identified during referee
 namespace CurrentMM
 
 open scoped BigOperators
-
-/-! ### Item B5: Universal Vandermonde Rank Condition for all K ∈ ℕ -/
-
-/-- For any sequence of K memory nodes separated by Δη > 0, every distinct pair
-    has gap strictly bounded below by Δη. -/
-theorem p1_vandermonde_distinct_nodes_gap {K : ℕ} (r : Fin K → ℝ) (Δη : ℝ) (hΔη : 0 < Δη)
-    (h_sep : ∀ (i j : Fin K), i < j → Δη ≤ r j - r i) :
-    ∀ (i j : Fin K), i < j → 0 < r j - r i := by
-  intro i j hij
-  have h := h_sep i j hij
-  linarith
-
-/-- Pairwise difference between distinct nodes never vanishes for all K ∈ ℕ. -/
-theorem p1_vandermonde_factor_nonzero {K : ℕ} (r : Fin K → ℝ) (Δη : ℝ) (hΔη : 0 < Δη)
-    (h_sep : ∀ (i j : Fin K), i < j → Δη ≤ r j - r i) :
-    ∀ (i j : Fin K), i < j → r j - r i ≠ 0 := by
-  intro i j hij
-  have h := h_sep i j hij
-  linarith
-
-/-- The absolute gap between ordered nodes is lower bounded by Δη for all K. -/
-theorem p1_vandermonde_rank_condition_all_K (K : ℕ) (Δη : ℝ) (hΔη : 0 < Δη)
-    (r : Fin K → ℝ) (h_sep : ∀ (i j : Fin K), i < j → Δη ≤ r j - r i) :
-    ∀ (i j : Fin K), i < j → Δη ≤ |r j - r i| := by
-  intro i j hij
-  have h := h_sep i j hij
-  have hpos : 0 < r j - r i := by linarith
-  rw [abs_of_pos hpos]
-  exact h
-
-/-! ### Item B4: Multi-Market Global Pooling Rate & Fisher Additivity -/
-
-/-- Total Fisher information across M independent venues is strictly positive. -/
-theorem p1_pooled_fisher_additivity (M : ℕ) (hM : 0 < M) (I_single : ℝ) (hI : 0 < I_single) :
-    0 < (M : ℝ) * I_single := by
-  have hMr : 0 < (M : ℝ) := Nat.cast_pos.mpr hM
-  positivity
-
-/-- The Cramér-Rao lower bound for pooled estimation scales exactly as (1/M) * CRB_single. -/
-theorem p1_pooled_cramer_rao_scaling (M : ℕ) (I_single : ℝ) :
-    1 / ((M : ℝ) * I_single) = (1 / (M : ℝ)) * (1 / I_single) := by
-  ring
-
-/-- Per-venue sample complexity reduction: pooling across M venues reduces the per-venue
-    sample requirement by factor 1/M. -/
-theorem p1_pooled_per_venue_rate (M : ℕ) (hM : 1 ≤ M) (N_single : ℝ) (hN : 0 ≤ N_single) :
-    N_single / (M : ℝ) ≤ N_single := by
-  have hMr : 1 ≤ (M : ℝ) := by exact_mod_cast hM
-  have hMpos : 0 < (M : ℝ) := by linarith
-  rw [div_le_iff₀ hMpos]
-  nlinarith
-
-/-- Pooled sample complexity scaling with pole separation: required sample size per venue
-    scales as (1/M) * (Δη)^{-(4K-2)}. -/
-theorem p1_pooled_sample_complexity_scaling (M : ℕ) (hM : 1 ≤ M) (C_K Δη : ℝ) (K : ℕ)
-    (hCK : 0 ≤ C_K) (hΔη : 0 < Δη) :
-    (1 / (M : ℝ)) * (C_K * (1 / Δη ^ (4 * K - 2))) ≤ C_K * (1 / Δη ^ (4 * K - 2)) := by
-  have hMr : 1 ≤ (M : ℝ) := by exact_mod_cast hM
-  have hMpos : 0 < (M : ℝ) := by linarith
-  have hterm : 0 ≤ C_K * (1 / Δη ^ (4 * K - 2)) := by positivity
-  have hinv : 1 / (M : ℝ) ≤ 1 := by
-    rw [div_le_iff₀ hMpos]
-    linarith
-  nlinarith
 
 /-! ### Item B1: Deadband / Nonlinear Hard-Threshold Non-Identification -/
 
