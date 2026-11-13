@@ -1086,7 +1086,13 @@ def test_tc91_09_and_10_formal_proof_and_prose_integrity():
     
     # Check current declaration count and narrower semantic coverage.
     named = json.loads(Path("research_extension/current_manuscript_lean_20261008/named_declarations.json").read_text())
-    assert f"{len(named)} named declarations" in tex_text
+    # The paper predates the thesis modules: its prose counts paper declarations,
+    # while the project audit also covers the separately registered thesis work.
+    coverage = json.loads(Path("research_extension/current_manuscript_lean_20261008/MANUSCRIPT_COVERAGE.json").read_text())
+    thesis_names = {name for result in coverage.get("thesis_results", []) for name in result["lean_declarations"]}
+    assert thesis_names <= {entry["name"] for entry in named}
+    paper_named = [entry for entry in named if entry["name"] not in thesis_names]
+    assert f"{len(paper_named)} named declarations" in tex_text
     assert "outstanding estimator-level obligation" in tex_text
     assert str(len(named)) in cov_text
     
