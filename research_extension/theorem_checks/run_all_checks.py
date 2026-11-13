@@ -96,6 +96,15 @@ run(TR, "hiding_game_check.py")
 hg = load(TR, "hiding_game_check_results.json")
 check("hiding game: high-stakes detection stays below false alarm + k D0^2 / L = 0.06", hg["high_stakes_max_detection"] <= 0.06, f"{hg['high_stakes_max_detection']:.4f}")
 
+print("6d. One running market and news of any law")
+RN = os.path.join(ROOT, "research_extension", "running")
+run(RN, "running_check.py")
+rn = load(RN, "running_check_results.json")
+for law in ("a_gauss", "a_laplace"):
+    check(f"running market ({rn[law]['law']} news): every tap MSE at most the bound of thm:running(i)", rn[law]["max_mse_over_bound"] <= 1.0, f"max MSE/bound {rn[law]['max_mse_over_bound']:.2f}")
+for law, v in rn["b"].items():
+    check(f"news law {law}: KL ratio at most sigma^2 I* and within 0.02 of sigma^2 I(f)", v["ratio"] <= v["sigma2_Istar"] + 0.01 and abs(v["ratio"] - v["sigma2_Ifisher"]) < 0.02, f"ratio {v['ratio']:.3f}, sigma^2 I = {v['sigma2_Ifisher']:.3f}")
+
 if SLOW:
     print("7. Pooling markets: global fibres and the two-market worst case (slow)")
     run(CM, "global_fibres.py"); run(CM, "pooling_table.py")
