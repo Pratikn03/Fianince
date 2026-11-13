@@ -1157,6 +1157,7 @@ run_cmd do
   `CurrentMM.thesis_hidden_record,
   `CurrentMM.thesis_hidden_unsafe_margin,
   `CurrentMM.thesis_absresp_mono,
+  `CurrentMM.thesis_general_measure_bias,
   `CurrentMM.thesis_modulus_tap_identity,
   `CurrentMM.thesis_modulus_cs,
   `CurrentMM.thesis_modulus_weak_duality,

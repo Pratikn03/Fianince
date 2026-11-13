@@ -147,3 +147,4 @@ import CurrentProofs.Paper1NearCritical
 import CurrentProofs.Paper1NoisyStress
 import CurrentProofs.Paper1SaturatingBounds
 import CurrentProofs.Paper1TrackingGame
+import CurrentProofs.ThesisMeasure
