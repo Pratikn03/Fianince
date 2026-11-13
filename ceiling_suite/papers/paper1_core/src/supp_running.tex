@@ -1,0 +1,81 @@
+\section{One running market, news of any law, and the value of tags in money}\label{app:runningnews}
+
+The upper bounds above are stated for reset experiments, and the passive bounds for Gaussian news. This section removes both restrictions for the composition cost and turns the cost into money. Probing a market that has been running from an unknown state needs the same order of data as reset experiments; Gaussian news is the least favourable news law, and any other law in a broad class changes only the constant; and the cost of learning composition from prices is a lower bound on the money value of class tags.
+
+\subsection{One running market}
+
+The market of~\eqref{eq:price} has been running since an unknown date, so its state when probing begins is unknown and arbitrary. Its news $\varepsilon_t$ may have any law with finite variance, and prices are recorded with independent observation noise $\nu_t$. Starting $\ell$ periods before the first of $T$ records, the observer trades $v_t=A\xi_t$, where the $\xi_t$ are independent fair signs, independent of the market. The market is linear, so the recorded price is
+\[
+\tilde x_t=\sum_{i\ge0}h_iv_{t-i}+n_t ,
+\]
+where $h$ is the response to a unit trade ($h_0=\kappa$), the sum runs over the probes sent so far, and $n_t$ collects the free response to the initial state, the response to news and the observation noise. The probes are independent of $n$. Write $\bar s^2=T^{-1}\sum_{t\le T}\mathbb E n_t^2$, which is bounded under Schur stability whenever the initial state and the news have finite second moments.
+
+\begin{theorem}[Probing one running market]\label{thm:running}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Taps.} For every $j\le\ell$, the estimate $\hat h_j=(AT)^{-1}\sum_{t=1}^T\tilde x_t\xi_{t-j}$ satisfies
+\[
+\mathbb E(\hat h_j-h_j)^2\le\frac{2\|h\|_2^2+\bar s^2/A^2}{T}.
+\]
+\item \emph{Upper bound.} In the setting of Theorem~\ref{prop:esprit}, with $\ell\ge2K$, there are constants $c_1,L,C$ depending only on the class such that, for $e\le1$ with $2^{2K}Ce(\Delta\eta)^{-(2K-1)}\le c_1$, Prony's method applied to $\hat h_0,\ldots,\hat h_{2K}$ has a solution and every solution recovers the weights to within $L\,2^{2K}Ce(\Delta\eta)^{-(2K-1)}$, with probability at least $1-(2K+1)(2\|h\|_2^2+\bar s^2/A^2)/(Te^2)$. So $T=O\bigl((\Delta\eta)^{-(4K-2)}\bigr)$ periods suffice for any fixed accuracy and confidence, whatever the state of the market when probing began and whatever the law of its news.
+\item \emph{Lower bound.} Suppose the news and the observation noise are Gaussian ($\sigma_\nu^2>0$), the market starts from rest any number of periods before the record, and the probes, of any law independent of the market, satisfy $\mathbb E\sum_tv_t^2\le PT$. For the Gauss and Gauss--Radau pair of Theorem~\ref{thm:kcohort}, a test with worst-case error below $1/4$ needs
+\[
+T\;\ge\;\frac{c\,(\Delta\eta)^{-(4K-2)}}{1+P/\sigma_\nu^2},
+\]
+with $c>0$ depending only on the class.
+\end{enumerate}
+Together, (ii) and (iii) say that one running market needs data of the same order as reset experiments: $(\Delta\eta)^{-(4K-2)}$ periods, no fewer and no more.
+\end{theorem}
+
+\begin{proof}
+(i) Condition on the noise path $n$; the probes are independent of it, so a bound for every path is a bound after averaging. Since $\xi^2=1$,
+\[
+\hat h_j-h_j=\frac1T\Bigl(\sum_{(t,i)}h_i\,\xi_{t-i}\xi_{t-j}+\sum_t\frac{n_t}{A}\xi_{t-j}\Bigr),
+\]
+where the first sum runs over $t\le T$ and the lags $i\ne j$ of probes already sent. Products of distinct independent fair signs are orthonormal: $\mathbb E[\chi_S\chi_R]=1$ if $S=R$ and $0$ otherwise, where $\chi_S=\prod_{a\in S}\xi_a$ (flipping one sign in $S\triangle R$ reverses the product). Each term of the first sum is the product over a two-element set $\{t-i,t-j\}$, and such a set arises from at most two pairs $(t,i)$: from $(t,i)$ itself, and from the one pair whose $j$-th probe is the probe $t-i$. Each term of the second sum is a single sign, and distinct $t$ give distinct signs. Pair products are orthogonal to single signs. Hence, using $2xy\le x^2+y^2$ within each set of at most two coinciding pairs,
+\[
+\mathbb E\Bigl(\sum h_i\xi_{t-i}\xi_{t-j}+\sum\tfrac{n_t}{A}\xi_{t-j}\Bigr)^2\le2\sum_{(t,i)}h_i^2+\sum_t\frac{n_t^2}{A^2}\le2T\|h\|_2^2+\frac{T\bar s^2}{A^2}.
+\]
+(ii) Chebyshev's inequality and a union bound over the $2K+1$ taps give the event $\max_{t\le2K}|\hat h_t-h_t|\le e$ with the stated probability. On that event the deterministic part of the proof of Theorem~\ref{prop:esprit} applies unchanged: the Lipschitz closed-loop deconvolution, the $(\Delta\eta)^{-m}$ rescaling and the uniform inverse of the moment map. The norm $\|h\|_2$ is bounded on the class by Schur stability.
+
+(iii) Condition on the probes. Given $v$, the record is Gaussian with mean $h*v$ and covariance $\Sigma$ (news through the closed loop, plus $\sigma_\nu^2I$), and
+\[
+\mathrm{KL}\bigl(N(\mu_A,\Sigma_A)\,\|\,N(\mu_B,\Sigma_B)\bigr)=\mathrm{KL}\bigl(N(0,\Sigma_A)\,\|\,N(0,\Sigma_B)\bigr)+\tfrac12(\mu_A-\mu_B)^\top\Sigma_B^{-1}(\mu_A-\mu_B).
+\]
+The first term is a passive divergence. Adding independent observation noise cannot increase it (data processing), and without that noise Theorem~\ref{prop:passive} bounds it by $C_1T(\Delta\eta)^{4K-2}$, uniformly in the warm-up. For the second, $\Sigma_B\succeq\sigma_\nu^2I$ and $\|(h^A-h^B)*v\|_2\le\sup_\omega|\Delta\hat H(e^{i\omega})|\,\|v\|_2\le C_2(\Delta\eta)^{2K-1}\|v\|_2$ (paragraph ``What counts as an experiment''). The probes have the same law under both economies, so averaging gives $\mathrm{KL}\le T(\Delta\eta)^{4K-2}(C_1+C_2^2P/(2\sigma_\nu^2))$. By Pinsker's inequality, a worst-case error below $1/4$ needs this to exceed $1/2$.
+\end{proof}
+
+\paragraph{What this means.} Reset experiments are a benchmark, not a requirement. A supervisor who trades random signs into a live market and correlates prices with its own trades learns the response as fast as one who could reset the market, and the composition barrier is the same. The proof of (i) uses nothing about the noise except its independence from the probes, so the market's history, its news law and any non-stationarity enter only through $\bar s^2$. In a simulation of a two-group market with unknown start and either Gaussian or Laplace news (400 runs, $T=4{,}000$), the mean squared error of every tap from $h_0$ to $h_4$ stays at most $0.71$ of the bound in (i) (\nolinkurl{research_extension/running/running_check.py}).
+
+\paragraph{Machine check.} Part (i) is machine-checked for every noise path, with the probes as independent fair signs on a finite probe space: orthonormality of sign products, the fibre count and the resulting bound (\texttt{p1\_walsh\_quadratic\_bound}, \texttt{p1\_running\_tap\_mse}). Part (ii) is machine-checked as stated: Chebyshev's inequality, the union bound and the deterministic Prony step of Theorem~\ref{prop:esprit} (\texttt{p1\_running\_prony\_upper}, \nolinkurl{Paper1RunningMarket.lean}). Averaging over the noise path, the bound on $\|h\|_2$ over the class, and part (iii) are on paper.
+
+\subsection{News of any law}
+
+Let the news be independent with a density $f$ of mean zero and variance $\sigma^2$, and write $D_f(\Delta)=\int f(x)\log\frac{f(x)}{f(x-\Delta)}\,dx$ for its location divergence. Say that $f$ has \emph{quadratic location divergence} with constant $I^*_f$ if $D_f(\Delta)\le\frac12I^*_f\Delta^2$ for all $\Delta$. Gaussian news has $I^*_f=1/\sigma^2$, with equality. Laplace news with scale $b$ has $D_f(\Delta)=|\Delta|/b-1+e^{-|\Delta|/b}\le\Delta^2/(2b^2)$, so $\sigma^2I^*_f=2$; Student-$t$ news with five degrees of freedom has $\sigma^2I^*_f=1.25$, computed numerically.
+
+\begin{proposition}[News of any law]\label{prop:nongauss}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item Populations with the same kernel produce the same law of prices for every news law; populations with different kernels produce different laws for every news law with finite variance.
+\item If $f$ has quadratic location divergence, then for any two economies and any record length $T$, the divergence between their price records from rest satisfies $\mathrm{KL}_f\le\sigma^2I^*_f\cdot\mathrm{KL}_{\rm Gauss}$, where $\mathrm{KL}_{\rm Gauss}$ is the divergence under Gaussian news of the same variance. The passive lower bounds of Theorem~\ref{prop:passive} therefore hold with the number of observations divided by $\sigma^2I^*_f$: the order $(\Delta\eta)^{-(4K-2)}$ is the same.
+\item $\sigma^2I^*_f\ge1$, with equality for Gaussian news. Gaussian news is the least favourable law in this class.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) Prices are the closed-loop filter of the news, and the filter is determined by the kernel (Theorem~\ref{thm:eqinv}); different kernels give different autocovariances whenever the news has finite variance.
+(ii) The filter from news to prices has leading coefficient one and a causal, stable inverse, $\varepsilon_t=x_t-ax_{t-1}-\kappa\sum_mk_mx_{t-1-m}$, so from rest the record determines the news exactly, and under economy $\theta$ the density of the record is $\prod_tf(x_t-m^\theta_t)$ with $m^\theta_t$ a linear function of past prices. The chain rule gives $\mathrm{KL}_f=\sum_t\mathbb E_A D_f(\Delta_t)$ with $\Delta_t=m^B_t-m^A_t$. Under economy $A$, $\Delta_t$ is a linear function of past news, so $\mathbb E_A\Delta_t^2$ depends on the news law only through $\sigma^2$, and the same identity under Gaussian news reads $\mathrm{KL}_{\rm Gauss}=\sum_t\mathbb E_A\Delta_t^2/(2\sigma^2)$. Hence $\mathrm{KL}_f\le\frac12I^*_f\sum_t\mathbb E_A\Delta_t^2=\sigma^2I^*_f\,\mathrm{KL}_{\rm Gauss}$.
+(iii) Near zero, $D_f(\Delta)=\frac12I(f)\Delta^2+o(\Delta^2)$, with $I(f)$ the Fisher information for location, so $I^*_f\ge I(f)\ge1/\sigma^2$ by the Cram\'er--Rao inequality for location, with equality only for the normal law.
+\end{proof}
+
+Laws outside the class, for example news with bounded support, whose shifted densities are mutually singular, can make prices far more informative; we do not analyse them. For the two-group pair of Theorem~\ref{thm:kcohort} and records of 200 periods from rest, the ratio $\mathrm{KL}_f/\mathrm{KL}_{\rm Gauss}$ is $1.999$ under Laplace news ($\sigma^2I^*_f=2$) and $1.250$ under Student-$t$ news with five degrees of freedom ($1.25$): the pair is close, so the bound is attained to three digits (\nolinkurl{research_extension/running/running_check.py}).
+
+\paragraph{Machine check.} The Laplace bound and its comparison with the Gaussian divergence (\texttt{p1\_exp\_neg\_le}, \texttt{p1\_laplace\_location\_kl}, \texttt{p1\_laplace\_vs\_gaussian}) and the comparison step of (ii), as an inequality between integrals (\texttt{p1\_newslaw\_kl\_compare}, \nolinkurl{Paper1NewsLawHiding.lean}), are machine-checked. The chain-rule identity, the Laplace divergence formula, part (i) and part (iii) are on paper.
+
+\subsection{The value of tags in money}
+
+\begin{corollary}[A lower bound on the value of tags]\label{cor:money}
+In the setting of Theorem~\ref{thm:kcohort}, let each experiment cost $c_e$. Any procedure that tells the Gauss and Gauss--Radau pair apart from prices with error probabilities $\alpha_0+\beta_0<1$ costs at least $c\,c_e\sigma^2(1-\alpha_0-\beta_0)^2(\Delta\eta)^{-(4K-2)}$. With class tags, by Theorem~\ref{thm:discvalue}(i), recovering the weights costs at most $C\,c_e$, independently of $\Delta\eta$. The money value of tags to a supervisor who needs composition, measured as the cost they save, is therefore at least $c_e\bigl(c\,\sigma^2(1-\alpha_0-\beta_0)^2(\Delta\eta)^{-(4K-2)}-C\bigr)$.
+\end{corollary}
+
+The cost of an experiment is the execution cost of its probe, priced in Section~\ref{app:capital}. The corollary gives a floor, not an estimate: the value of tags to a supervisor who never needs composition is zero, and the corollary says nothing about the supervisor's loss from acting without it.
+
+\paragraph{Machine check.} The first statement is machine-checked for the moment-matched pair that Lean uses for Theorem~\ref{thm:kcohort} (binomial weights on equally spaced nodes, the same order), by composing the cost with the uniform lower bound (\texttt{p1\_tags\_value\_money}, \nolinkurl{Paper1NewsLawHiding.lean}); the tagged upper bound is that of Theorem~\ref{thm:discvalue}.

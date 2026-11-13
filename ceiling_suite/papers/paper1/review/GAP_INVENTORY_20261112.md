@@ -164,3 +164,18 @@ Binance raw files are CC BY-NC-SA 4.0 and need an attribution and licence note; 
 raw TWSE/TPEx pages with unclear redistribution terms; internal AI review documents (this inventory, the hostile-referee
 pass) are now readable by anyone, referees included. Removing files from history would need a history rewrite, which
 needs the authors' decision.
+
+## 13 November 2026 (afternoon): B9, B10, B12 closed with real proofs; vacuous modules removed
+
+- B10 closed: Theorem `thm:running` (one running market, unknown state, random-sign probes; upper bound order
+  (Δη)^-(4K-2) for news of any law with finite variance; Gaussian lower bound of the same order).
+- B9 closed for the passive lower bounds: Proposition `prop:nongauss` (Gaussian news is least favourable among laws with
+  quadratic location divergence; order unchanged). Laws with bounded support remain outside.
+- B12 partly closed: Corollary `cor:money` gives a floor on the money value of tags; a supervisory loss is still not
+  estimated.
+- B7 partly: `prop:hidegame`(iv) bounds detection group by group in every equilibrium; existence and the long-lived
+  insider remain open.
+- 100 declarations added to `main` by another tool on 12-13 November were removed (see the author checklist), with the
+  unregistered GMM paragraph and the return of the Taiwan test to the JEDC abstract.
+- Lean: 1,216 named declarations in 141 modules (before CI receipt). Checks: 27 of 27 pass. Theory version: main text
+  20 pages, supplement 92.

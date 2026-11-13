@@ -128,10 +128,6 @@ import CurrentProofs.Paper1KCohortEstimators
 import CurrentProofs.Paper1SaturatingSufficiency
 import CurrentProofs.Paper1CoreExtensions
 import CurrentProofs.Paper1StressIdentification
-import CurrentProofs.Paper1UnknownStart
-import CurrentProofs.Paper1SubGaussianLower
-import CurrentProofs.Paper1DisclosureValue
-import CurrentProofs.Paper1TheoryBoundariesSolved
 import CurrentProofs.Paper1StressIdentificationGeneral
 import CurrentProofs.Paper1StressIdentificationTanh
 import CurrentProofs.Paper1EveryKHalt
@@ -148,7 +144,5 @@ import CurrentProofs.Paper1NoisyStress
 import CurrentProofs.Paper1SaturatingBounds
 import CurrentProofs.Paper1TrackingGame
 import CurrentProofs.ThesisMeasure
-import CurrentProofs.Paper1FrontierSolutions
-import CurrentProofs.Paper1GrandResolution
-import CurrentProofs.Paper1NewMathFrontiers
-import CurrentProofs.Paper1PaperOnlyResolved
+import CurrentProofs.Paper1RunningMarket
+import CurrentProofs.Paper1NewsLawHiding
