@@ -5,7 +5,8 @@ colab if needed and if pass lets go"). The decision rules and the simulation acc
 and committed **before the simulation check was run** and before any KRX data were read. This is not independent
 review.
 
-Status: **draft until the simulation check passes**. If it passes the criteria in section 7, the author's message
+Status: **failed its simulation check on 13 November 2026 (section 8); not registered; must not be run on KRX data.**
+Originally: draft until the simulation check passes. If it passes the criteria in section 7, the author's message
 above is the approval to register: the spec, executor and notebook are then hashed and committed, and the data run
 happens once. If it fails, nothing is registered and the failure is recorded here.
 
@@ -120,6 +121,21 @@ The design passes only if all four required rows hold. The results are recorded 
    heterogeneous case had categories whose per-stock estimates sit at one grid value, giving a spread of zero.
    Nothing else was changed; the official runs below use the rules as written.
 
-### Official runs
+### Official runs (13 November 2026; 250 stocks, 499 bootstrap draws; `validate_p1k3_results.json`)
 
-(to be filled in by the run)
+| Case | Runs | Verdicts | Categories common (of identified), per run | Required | Met? |
+|---|---|---|---|---|---|
+| common (`tau_true = 0`) | 20 | 20 inconclusive | median 3 of 11 (range 1 to 7) | supportive in >= 80% | **No (0%)** |
+| boundary (`tau_true = 0.25`) | 20 | 20 inconclusive | median 1 of 11 | supportive in <= 10% | Yes (0%) |
+| heterogeneous (`tau_true = 0.5`) | 20 | 20 inconclusive | median 1 of 11 | supportive in <= 5% | Yes (0%) |
+| null (no feedback) | 20 | 20 not testable | 0 identified | no supportive or inconsistent | Yes |
+| mixture | 10 | 10 inconclusive | median 0 of 11 | reported only | |
+| weak | 10 | 10 inconclusive | median 1 of 9 | reported only | |
+
+**Verdict: the design fails.** It never wrongly returns "supportive" and the identification step is no longer fooled
+when there is no feedback, but it has no power: with daily flows in which feedback explains 1-20% of each category's
+flow, one stock's memory is estimated too imprecisely (median upper bound 0.41 against a margin of 0.25), so it
+cannot show commonality even when memories are exactly common. The spread estimate is also biased toward zero
+(median 0.23 when the truth is 0.48), from estimates piling up at grid values. The design is not registered and must
+not be run on KRX data. The power depends on the assumed share of flow explained by feedback, which was fixed before
+the official runs and cannot be checked without reading data.
