@@ -78,7 +78,6 @@ written directly from `results/provenance/*.json` and are not repeated here.
 | F7-multi-venue-reduction | Sec. 6.6 Multi-Venue Fragmentation | Federated AMIP cross-venue contagion drawdown reduction | `80.94` | `results/provenance/multi_venue_fragmentation_results.json` | ARTIFACT |
 | F8-marl-drawdown-suppression | Sec. 6.7 Deep MARL Population | PPO Actor-Critic multi-agent drawdown suppression under AMIP | `60.3` | `results/provenance/marl_amip_results.json` | ARTIFACT |
 | F9-hft-fifo-toxic-reduction | Sec. 9.3 LOB FIFO Queue Priority | Queue-aware AMIP toxic adverse selection loss reduction | `49.37` | `results/provenance/hft_queue_priority_results.json` | ARTIFACT |
-| F10-alveo-u50-lut-utilization | Sec. 9.4 Hardware Architecture | AMD Alveo U50 post-route FPGA LUT resource utilization | `0.25` | `results/provenance/fpga_silicon_synthesis_report.json` | ARTIFACT |
 | F11-equity-flash-crash-q-crisis | Sec. 7.6 Historical Equity Flash Crash | May 6 2010 E-mini crisis regime feedback sensitivity | `0.8142` | `results/provenance/equity_flash_crash_taq_results.json` | ARTIFACT |
 | F12-treasury-flash-rally-q-crisis | Sec. 7.6 Historical Treasury Rally | Oct 15 2014 Treasury crisis regime feedback sensitivity | `0.742` | `results/provenance/equity_flash_crash_taq_results.json` | ARTIFACT |
 | F13-continuous-hawkes-gamma | Sec. 8.8 Continuous Hawkes Jump-Diffusion | Continuous marked Hawkes branching ratio Gamma | `0.875` | `results/provenance/continuous_hawkes_results.json` | ARTIFACT |
@@ -90,6 +89,7 @@ written directly from `results/provenance/*.json` and are not repeated here.
 
 ## Withdrawn
 
+- **F10 Alveo U50 post-route measurements** — fixed LUT, timing and power constants were not parsed from Vivado; physical measurements remain unverified
 - **2SLS / FI-2010 preliminary unverified claims** — superseded by Section 7 full empirical rebuild with 1-09-1-20.csv and FI-2010 pipeline
 - **Crypto panel regressions and sub-sample splits** — numbers not produced by any script
 - **Former Table 24 (dynamic Hankel empirics)** — no producing code or data

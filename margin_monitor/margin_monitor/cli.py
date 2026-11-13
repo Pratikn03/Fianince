@@ -29,14 +29,14 @@ def main(argv=None):
     cert = certify(bars, lags=a.lags, block=a.block)
     print(json.dumps(cert.to_dict(), indent=1))
     roll = warnings(rolling_margin(bars, window=a.window, step=a.step, lags=a.lags), buffer=a.buffer)
-    roll["admit"] = [throttle(v, a.m_min, a.m_max) if pd.notna(v) else float("nan") for v in roll["lo"]]
+    roll["response_alpha"] = [throttle(v, a.m_min, a.m_max) if pd.notna(v) else float("nan") for v in roll["lo"]]
     if a.out:
         roll.to_csv(a.out)
         print(f"rolling certificate written to {a.out} ({len(roll)} rows)")
     if len(roll):
         last = roll.iloc[-1]
         print(f"latest: margin {last['margin']:.4f} [{last['lo']:.4f}, {last['hi']:.4f}]  trend warning {bool(last['t2z'])}  "
-              f"admit {last['admit']:.2f}")
+              f"response signal {last['response_alpha']:.2f}")
 
 
 if __name__ == "__main__":

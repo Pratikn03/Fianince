@@ -5,14 +5,14 @@ Machine Markets — Autonomous Market Infrastructure Protocol
 
 Hardware-optimized institutional gateway implementing the 4-Barrier Zero-Trust
 pre-trade risk architecture for autonomous AI agents, algorithmic trading desks,
-and clearing member connections. Compliant with SEC Rule 15c3-5 and MiFID II RTS 6.
+and clearing member research prototypes. This code does not establish regulatory compliance.
 """
 from __future__ import annotations
 import hashlib
 import json
 import math
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field, asdict, replace
 from typing import Dict, Any, List, Optional, Tuple, Union
 
 import numpy as np
@@ -25,7 +25,7 @@ from agentic_guard.llm_tools import (
 )
 
 
-@dataclass
+@dataclass(frozen=True)
 class GatewayAuditRecord:
     timestamp_ns: int
     order_id: str
@@ -155,11 +155,6 @@ class InstitutionalAMIPGateway:
         decision: InterceptDecision,
         timestamp_ns: int
     ) -> GatewayAuditRecord:
-        # Cryptographic Hash Chaining for Auditable Immutable Memory
-        raw_token = f"{self._last_hash}:{timestamp_ns}:{order_id}:{agent_id}:{symbol}:{requested_qty}:{price}:{decision.is_allowed}:{decision.rejection_code.value}"
-        provenance_hash = hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
-        self._last_hash = provenance_hash
-
         record = GatewayAuditRecord(
             timestamp_ns=timestamp_ns,
             order_id=order_id,
@@ -178,10 +173,32 @@ class InstitutionalAMIPGateway:
             s_upper=decision.s_upper,
             kreiss_radius=decision.kreiss_safe_radius,
             latency_us=decision.execution_latency_us,
-            provenance_hash=provenance_hash
         )
+        record = replace(record, provenance_hash=self._record_hash(self._last_hash, record))
+        self._last_hash = record.provenance_hash
         self.audit_log.append(record)
         return record
+
+    @staticmethod
+    def _record_hash(previous_hash: str, record: GatewayAuditRecord) -> str:
+        payload = asdict(record)
+        payload.pop("provenance_hash")
+        # Invalid numeric inputs still need an audit entry; encode them as tagged values in strict JSON.
+        for key, value in payload.items():
+            if isinstance(value, float) and not math.isfinite(value):
+                payload[key] = {"nonfinite_float": repr(value)}
+        token = json.dumps({"schema": 2, "previous_hash": previous_hash, "record": payload},
+                           sort_keys=True, separators=(",", ":"), allow_nan=False)
+        return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+    def verify_audit_chain(self) -> bool:
+        """Verify every stored field and link in this in-memory log; not an external timestamp or signature."""
+        previous = "0" * 64
+        for record in self.audit_log:
+            if self._record_hash(previous, record) != record.provenance_hash:
+                return False
+            previous = record.provenance_hash
+        return previous == self._last_hash
 
     def get_latency_profile(self) -> Dict[str, float]:
         """Compute latency percentiles in microseconds."""

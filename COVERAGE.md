@@ -127,7 +127,7 @@ Every numbered formal environment in **Paper 2** (33 items including shared fini
 ## Reproducing the Formal Verification Audit
 
 ```bash
-# 1. Verify the Mathlib formalization (443 named theorems, 0 sorry) and generate axiom_audit.jsonl:
+# 1. Verify the Mathlib formalization (520 named theorems, 0 sorry) and generate axiom_audit.jsonl:
 python3 research_extension/current_manuscript_lean_20261008/verify_formalization.py
 
 # 2. Verify the label-to-declaration mapping across Paper 1 and Paper 2:

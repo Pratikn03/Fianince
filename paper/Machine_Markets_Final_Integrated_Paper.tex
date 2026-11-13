@@ -2395,32 +2395,20 @@ A critical requirement for institutional deployment in electronic trading is det
 
 To resolve this frontier, we specify and benchmark three complementary hardware implementations of the AMIP RFC-001 pre-trade gating protocol:
 \begin{enumerate}
-    \item \textbf{FPGA Register-Transfer-Level (RTL) Pipeline:} We implement a fully pipelined Verilog RTL architecture (\texttt{agentic\_guard/hardware/amip\_fpga\_pipeline.v}) targeting a Xilinx UltraScale+ FPGA (AMD Alveo U50) operating at $400~\text{MHz}$ ($2.5~\text{ns}$ clock period). The pipeline comprises four stages: (Stage 1) Order unpacking and account state hash lookup; (Stage 2) Fixed-point signed inventory and rate calculation; (Stage 3) Kreiss safe-radius boundary comparator ($|I_t + u_t| \le r^*$); and (Stage 4) Action emission (Direct Pass, Touch-Pegged Limit Order, or Drop). Total deterministic latency through the FPGA core is exactly \textbf{8 clock cycles ($20.0~\text{ns}$)}, enabling wire-speed pre-trade gating at $100\text{GbE}$ network line rates.
+    \item \textbf{FPGA Register-Transfer-Level (RTL) Design:} The repository contains a Verilog design and a Vivado script targeting an AMD Alveo U50 with a 400~MHz clock constraint. A clock constraint and a proposed pipeline budget are not measured implementation results. The earlier fixed slack, resource, power and wire-speed figures were not parsed from tool reports and are withdrawn as measurements. Physical timing and network performance remain unverified.
     \item \textbf{Inlined C++/Python Fast Kernel:} For software-based order management systems (OMS), we deploy a zero-allocation, branch-minimized kernel (\texttt{agentic\_guard/kernel/fast\_kernel.py}). Benchmarking across $5{,}000$ consecutive streaming order invocations (\texttt{results/provenance/hardware\_latency\_benchmark.json}) yields an empirical mean latency of \textbf{$289.0~\text{ns}$} ($0.289~\mu\text{s}$), with median $P50 = 292.0~\text{ns}$ and tail $P99 = 334.0~\text{ns}$ (minimum $208.0~\text{ns}$).
     \item \textbf{Native C++20 SIMD ARM NEON Kernel:} For bare-metal exchange co-location, we implement a header-only zero-allocation, 64-byte cacheline aligned SIMD kernel using direct 128-bit vector intrinsics (\texttt{agentic\_guard/hardware/amip\_fast\_kernel.hpp}; \texttt{agentic\_guard/hardware/benchmark\_cpp\_kernel.cpp}). Compiled natively with Apple Clang 17 (\texttt{-O3 -std=c++20}) and benchmarked across $100{,}000$ real-time orders via hardware timer \texttt{mach\_absolute\_time()}, the native SIMD kernel achieves a mean latency of \textbf{$7.6~\text{ns}$} ($0.0076~\mu\text{s}$), median $P50 = 0.0~\text{ns}$ (sub-clock resolution), tail $P99 = 41.7~\text{ns}$, and an amortized loop throughput of \textbf{$24.4~\text{ns/order}$} (\texttt{results/provenance/cpp\_kernel\_benchmark.json}).
 \end{enumerate}
-All three implementations achieve latency metrics well within institutional sub-microsecond ($< 500~\text{ns}$) and sub-100ns execution budgets in these test environments, demonstrating the computational feasibility of wire-speed pre-trade gating without introducing execution bottlenecks.
+The software figures above describe their stated benchmark environments. No physical FPGA or network latency guarantee follows from them. The hardware audit records source and tool-report provenance without assigning unmeasured performance.
 
 \begin{table*}[t]\centering\small
-\caption{Physical FPGA Silicon Synthesis Report for AMIP RFC-001 Pre-Trade Risk Gate (\texttt{agentic\_guard/hardware/amip\_fpga\_pipeline.v}). Target Silicon: AMD Alveo U50 Data Center Accelerator card (\texttt{xcu50-fsvh2104-2-e}, 16nm UltraScale+). Post-route implementation report generated at 400.0 MHz ($T_{\text{clk}} = 2.500~\text{ns}$; \texttt{results/provenance/fpga\_silicon\_synthesis\_report.json}).}
-\label{tab:fpga_synthesis_report}
-\begin{tabular}{lrrr}
-\toprule
-\textbf{Silicon Resource / Timing Metric} & \textbf{Utilization / Value} & \textbf{Available} & \textbf{Utilization \%} \\
-\midrule
-Configurable Logic Look-Up Tables (LUTs) & 2,142 & 872,000 & 0.25\% \\
-Dedicated Flip-Flops (FFs) & 3,840 & 1,744,000 & 0.22\% \\
-DSP48E2 Multiplier Slices (64-bit Fixed-Point) & 16 & 5,952 & 0.27\% \\
-Block RAM (BRAM36k) & 0 & 2,688 & 0.00\% \\
-UltraRAM (URAM288k) & 0 & 640 & 0.00\% \\
-\midrule
-Deterministic Pipeline Latency & 8 cycles (20.00 ns) & -- & -- \\
-Worst Negative Slack (WNS, Setup Timing) & +0.342 ns & -- & Met (0 violations) \\
-Worst Hold Slack (WHS, Hold Timing) & +0.045 ns & -- & Met (0 violations) \\
-Maximum Clock Frequency ($F_{\max}$) & 463.39 MHz & 400.00 MHz & +15.8\% margin \\
-Total On-Chip Power (Dynamic + Static) & 1.824 W & 75.0 W & 2.4\% thermal budget \\
-\bottomrule
-\end{tabular}
+\caption{FPGA evidence status. Earlier fixed measurement values are withdrawn; the target clock is a design constraint.}\label{tab:fpga_synthesis_report}
+\begin{tabular}{ll}\toprule
+Quantity & Status\\\midrule
+Target device & AMD Alveo U50\\
+Target clock & 400 MHz (constraint only)\\
+Achieved latency, slack, utilization and power & Not measured or independently verified\\
+\bottomrule\end{tabular}
 \end{table*}
 
 \subsection{Phantom Depth, Quote Stuffing, and Anti-Spoofing Interceptors: Theorem SP1}

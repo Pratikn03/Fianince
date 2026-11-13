@@ -18,6 +18,18 @@ The current review release adds 16 Lean theorem declarations for the exact two-g
 
 ---
 
+## Current thesis and verification
+
+The current thesis is [`thesis/thesis.pdf`](thesis/thesis.pdf), with source [`thesis/thesis.tex`](thesis/thesis.tex). See [`thesis/READINESS.md`](thesis/READINESS.md) for completed work, limitations and submission blockers. The thesis includes the completed B2 language-model experiment (three primaries passed, the warning-lead primary failed); its exact model revision was not archived. Pending studies are not counted as results. The standalone [`margin_monitor`](margin_monitor/README.md) package reports a conditional margin sign, not an unrestricted stability or solvency verdict.
+
+```bash
+python thesis/verify_thesis_numbers.py
+python thesis/checks/check_b2_supplement.py --check
+python scripts/verify_thesis_release.py --pdf
+PYTHONPATH=margin_monitor pytest margin_monitor/tests -q
+sh thesis/build_thesis.sh
+```
+
 ## October 2026 Manuscripts (`ceiling_suite/`)
 
 This repository contains the LaTeX sources, replication code, pre-registered notebooks, and Lean 4 formalizations for two companion working papers:
