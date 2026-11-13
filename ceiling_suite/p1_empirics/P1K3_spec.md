@@ -44,7 +44,8 @@ memories are recovered well (error at most 0.024), which is what this design bui
 ## 4. Estimation
 
 For a memory `r` on the grid `0.00, 0.01, ..., 0.99`, let `m_{t-1}(r) = sum_{j>=1} r^(j-1) x_{t-j}` (started at zero,
-first 20 days of each stock-year dropped). In each stock-year, regress `u_t` on `(1, x_t, m_{t-1}(r))` by OLS (Paper 1's
+first 20 usable days of each stock-year dropped; a day is usable if `x` and all eleven flows are finite; a stock-year
+enters if at least 150 usable days remain). In each stock-year, regress `u_t` on `(1, x_t, m_{t-1}(r))` by OLS (Paper 1's
 tagged-flow model `u_t = r u_{t-1} + w x_t`; same-day reverse causality biases only the `x_t` coefficient). Let
 `SSE_{s,y}(r)` be the residual sum of squares divided by the stock-year's total sum of squares of `u`.
 
@@ -106,5 +107,19 @@ prices, flow noise that also moves the same day's price, and stock entry and exi
 The design passes only if all four required rows hold. The results are recorded in section 8 whatever they are.
 
 ## 8. Simulation check results
+
+### Design iterations before the official runs (smoke tests on seeds outside the official set)
+
+1. First simulator: the feedback component explained about 99% of each category's flow, far more than real daily
+   flows. Changed: other trading is added so that feedback explains a share `R2_c` of each category's flow,
+   log-uniform on [1%, 20%] across categories, and other trading also moves prices.
+2. With that noise and the regressor `x_t`, the no-feedback case identified 4 of 11 categories: flows that move the
+   same day's price make the coefficient on `m_{t-1}(r)` take the same sign in every stock. Changed: the regressor is
+   `k_t` (past prices only), as in section 4. The no-feedback case then identified none.
+3. With both changes, one smoke run of the common case found 3 of 11 categories common (7 needed), and the
+   heterogeneous case had categories whose per-stock estimates sit at one grid value, giving a spread of zero.
+   Nothing else was changed; the official runs below use the rules as written.
+
+### Official runs
 
 (to be filled in by the run)
