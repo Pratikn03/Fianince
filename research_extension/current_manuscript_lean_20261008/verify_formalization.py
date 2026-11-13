@@ -39,7 +39,7 @@ def main():
     env = dict(os.environ, COPYFILE_DISABLE="1", PATH=elan_bin + os.pathsep + os.environ.get("PATH", ""))
     for args, stem in [(["lake", "build"], "build"),
                        (["lake", "env", "lean", "AxiomAudit.lean"], "axiom_audit")]:
-        run = subprocess.run(args, cwd=HERE, env=env, text=True, capture_output=True, timeout=240)
+        run = subprocess.run(args, cwd=HERE, env=env, text=True, capture_output=True, timeout=int(os.environ.get("VERIFY_TIMEOUT", "240")))
         (HERE / (stem + ".log")).write_text(run.stdout + run.stderr)
         if run.returncode:
             receipt.update(status="FAILED", command=args, returncode=run.returncode)
