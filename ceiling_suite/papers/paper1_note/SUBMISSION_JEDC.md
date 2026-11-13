@@ -87,8 +87,8 @@ submitting.**
 1. Confirm the requirements above on the JEDC guide for authors.
 2. Add the corresponding author's postal address to the title page.
 3. Confirm the declarations (competing interests; all authors approved the manuscript).
-4. Run the Colab notebook `research_extension/theorem_checks/Paper1_Theorem_Checks_Colab.ipynb` (or
-   `python3 verify_formalization.py` on a machine with the Mathlib cache) and commit the receipt.
+4. Done 13 November 2026: full Lean build and axiom audit passed in Colab (1,156 declarations, 131 modules,
+   standard axioms only); receipt committed; 19 of 19 numerical checks passed in the same run.
 6. The cover letter and the AI declaration say the authors have verified all proofs. The proofs added on
    11-12 November are listed in `ceiling_suite/papers/paper1/review/AUTHOR_PROOF_CHECKLIST_20261112.md`; the
    sentence is true only once the authors have gone through them.

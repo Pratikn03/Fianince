@@ -138,3 +138,10 @@ main-text results; the main text points to S7 for both registered tests. Supplem
   counterpart in the cited literatures; robustness sentence in the opening.
 - Supplement: four duplicated expository paragraphs dropped. Net 83 pages (the new section adds three).
 - run_all_checks.py: 19 of 19 checks pass (two new dichotomy checks).
+
+## 13 November 2026: A4 closed
+
+Full Lean build and strict axiom audit passed in Colab at 00:20 UTC (Lean 4.34.1, Mathlib d13f23b): 1,156 named
+declarations, 131 modules, axioms propext, Classical.choice and Quot.sound only. All 136 source hashes in the receipt
+match the branch. The same run passed 19 of 19 numerical checks. Remaining: A3 (the authors' proof check) and the
+repository-visibility question (the paper calls the repository public; it is private).
