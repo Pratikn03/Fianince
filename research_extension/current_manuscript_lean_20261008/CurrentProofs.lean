@@ -150,3 +150,5 @@ import CurrentProofs.Paper1TrackingGame
 import CurrentProofs.ThesisMeasure
 import CurrentProofs.Paper1FrontierSolutions
 import CurrentProofs.Paper1GrandResolution
+import CurrentProofs.Paper1NewMathFrontiers
+import CurrentProofs.Paper1PaperOnlyResolved
