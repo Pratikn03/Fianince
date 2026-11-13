@@ -199,3 +199,15 @@ and the largest-weight comparison for all sufficiently large K (difference π/(4
 optimizing against an insider under mechanical impact; cascade dynamics with forward-looking dealers; a rate under
 hard limits; costs for nonlinear learners; an explicit threshold for the largest-weight comparison. Lean: 1,231
 declarations in 143 modules. Checks: 37 of 37. Theory supplement 101 pages.
+
+## 13 November 2026 (late): the last five items
+
+Proved: a strategic group against an insider under mechanical impact (existence, pure insider strategy, kernel
+sufficiency, entry condition, pure equilibrium under quasi-concavity); how a cascade unfolds (geometric rate
+κℓ(δ*), critical slowing down to 1/n, immediate fall and overshoot with slow-moving capital, threshold lowered to
+(κ+γT)ℓ > 1); a parametric rate under hard limits for generic configurations with a design that brackets the kinks;
+the cost of composition for nonlinear traders (the linear cost with a shared leverage, a cost independent of Δη with
+distinct leverages, tracking by the window argument); the largest-weight comparison for every K ≥ 2 (Sonin-function
+bounds for K ≥ 62, computation for K ≤ 61). Still open: uniqueness in the insider game and pure equilibria without
+quasi-concavity; dealers with richer constraints; coinciding kinks under hard limits; upper bounds for nonlinear
+traders who share a leverage. Lean: 1,235 declarations in 144 modules. Theory supplement 107 pages.

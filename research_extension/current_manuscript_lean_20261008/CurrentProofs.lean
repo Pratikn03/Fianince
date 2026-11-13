@@ -148,3 +148,4 @@ import CurrentProofs.Paper1RunningMarket
 import CurrentProofs.Paper1NewsLawHiding
 import CurrentProofs.Paper1RankCondition
 import CurrentProofs.Paper1OpenResolved
+import CurrentProofs.Paper1OpenResolved2

@@ -55,3 +55,9 @@ Nothing is called machine-checked unless the Lean statement is the claim.
 A1–A6 are done: paper text in core `sup_tail.tex`, `supp_nearcrit.tex`, `supp_openres.tex` and `sat.tex`; Lean in
 `Paper1RankCondition.lean` and `Paper1OpenResolved.lean` (standard axioms only); checks in
 `research_extension/open_problems/open_checks.py` (all pass). B-1 to B-3 and C-1 to C-3 remain open.
+
+## Status, 13 November 2026 (late)
+
+B-1 (largest weights, now every K), B-2 (`prop:smoothn`), B-3 (`prop:stressrate`, plus `prop:hardrate` for hard
+limits), C-1 (forward-looking dealers: `prop:reecascade`, `prop:cascadedyn`) and C-2 (`prop:learners`,
+`prop:nlcost`) are settled as stated in the supplement; A5's open part is `prop:insidergame`. C-3 remains as stated.

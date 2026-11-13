@@ -90,3 +90,16 @@ for every K), B7 (long-lived insider), B8 (general learning rules) and the post-
 | `prop:stressrate` | same | — | full-rank differential at 50 random populations | the degree-by-degree independence argument; finite design; M-estimation step |
 | `prop:learners` | same | deterministic pathwise step | — | the randomized induction |
 | `prop:maxweight` | same | — | K²·gap → π/4 (K ≤ 60), positive for K ≤ 200 | the Gauss–Jacobi weight asymptotics cited from Hale and Townsend (2013) |
+
+## Added 13 November 2026 (late): the last five items
+
+| Result | Proof | Machine-checked | Numerical check | Check by hand |
+|---|---|---|---|---|
+| `prop:insidergame` | core `src/supp_openres.tex` | symbol bound behind (i), via `p1_no_manipulation_symbol` | entry (4.49 vs 3.49); pure equilibrium w = 0.032; insider profit 3.673 → 3.531 | Glicksberg on the compactified game; strict concavity; the entry derivative; Kakutani under quasi-concavity |
+| `prop:cascadedyn` | same | geometric bound (`p1_cascade_rounds_geometric`); slow-capital price path (`p1_slow_capital_fall`) | round rate 0.606 vs κℓ(δ*) = 0.603; fall 0.575 → 0.780 with γT = 0.4 | the exact-rate limit; the 1/n limit at the critical shock; the dealers' no-arbitrage condition |
+| `prop:hardrate` | same | — | LS error slope −0.49 in N | piecewise structure; the injectivity argument from slope and intercept jumps |
+| `prop:nlcost` | same | closed-loop bias via `p1_deadband_bias` | equal leverage: ×76, ×67, ×65 per halving, singular at Δη = 0; distinct: ×16.5, ×6.2, ×3.1, finite at 0 | Taylor bound against the hard pair; Faà di Bruno bound; the (p+qj)λ^j independence; the window argument |
+| `prop:maxweight` (now every K) | same | the two central-binomial polynomial inequalities (`p1_centralbinom_q_step`, `p1_centralbinom_r_step`) | K ≤ 61 at 30 digits (min gap 4.2e-4); exact rational check K ≥ 62 (largest real root 61.1); explicit bounds hold against exact weights K = 8..60 | the two Sonin functions; Bruns' bounds (Szegő 6.21.2) and interlacing for the node location; the bracket bound T_K |
+
+Note: the first version of the Radau lower bound in `open_checks3.py` used Q ≤ Φ where Q ≥ Q₀ was needed for the
+`Kx/Q` term. It was corrected before any text was written; the threshold (K ≥ 62) is unchanged.

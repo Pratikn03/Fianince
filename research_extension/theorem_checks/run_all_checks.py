@@ -123,6 +123,15 @@ check("noisy stress rate: two-date flow map differential has full rank at 50 ran
 check("largest weights: K^2 x gap positive and approaching pi/4", o2["B3_ok"], f"K=60: {o2['B3_rows'][-1]['gap_times_K2']:.3f}")
 check("forward-looking dealers: three equilibria above the threshold", o2["B4_ok"], str([round(x, 3) for x in o2['B4_equilibria']]))
 
+print("6f. Insider game, cascade path, hard limits, nonlinear traders, largest weights for every K")
+run(OP, "open_checks3.py")
+o3 = load(OP, "open_checks3_results.json")
+check("largest weights for every K: K <= 61 computed, explicit bounds positive for K >= 62", o3["C1_ok"], f"min gap K<=61 {o3['C1_min_gap_K2_61']:.1e}; largest root {o3['C1_largest_real_root']:.2f}")
+check("insider vs strategic group: entry, pure equilibrium, insider profit falls", o3["C2_ok"] and o3["C2_insider_payoff"] < o3["C2_insider_payoff_no_group"], f"w = {o3['C2_weight']:.4f}; profit {o3['C2_insider_payoff']:.3f} vs {o3['C2_insider_payoff_no_group']:.3f}")
+check("hard limits: least-squares error slope -1/2 in N", o3["C3_ok"], f"slope {o3['C3_slope']:.2f}")
+check("nonlinear traders: equal leverage ~ (d eta)^-6, distinct leverage bounded at d eta = 0", o3["C4_ok"], f"ratios {[round(x, 1) for x in o3['C4_ratio_per_halving_equal']]} vs {[round(x, 1) for x in o3['C4_ratio_per_halving_distinct']]}")
+check("cascade path: round rate = kappa*l(delta*), slow capital deepens the fall", o3["C5_ok"], f"rate {o3['C5_round_rate']:.3f} vs {o3['C5_kappa_Lprime']:.3f}; fall {o3['C5_fall_mechanical']:.3f} -> {o3['C5_fall_slow_capital']:.3f}")
+
 if SLOW:
     print("7. Pooling markets: global fibres and the two-market worst case (slow)")
     run(CM, "global_fibres.py"); run(CM, "pooling_table.py")
