@@ -77,3 +77,96 @@ In the setting of Theorem~\ref{prop:esprit}, with $W_1=\sum_i|w_i|$ and $|a|+\ka
 Large probes identify dead-band traders because the band is a bounded distortion, which a probe of size $A$ dilutes by $1/A$. In a simulation of two dead-band groups, the largest tap bias stays below the bound of (i) for probe sizes from 1 to 32 and falls with fitted slope $-0.99$ in $A$ (\nolinkurl{open_checks.py}).
 
 \paragraph{Machine check.} The bias bound of (i), for any bounded deviation fed through a stable closed loop, is machine-checked (\texttt{p1\_deadband\_bias}, \nolinkurl{Paper1OpenResolved.lean}). The reduction of the group flows to that recursion and part (ii) are on paper; part (ii) is the deterministic Prony step of Theorem~\ref{prop:esprit}, which is machine-checked, with the bias added to the radius.
+
+\subsection{Forward-looking dealers after a breach}
+
+Theorem~\ref{thm:cascade} lets liquidation move the price round by round. Suppose instead that the price is set by competitive dealers who see the whole sequence coming. As in \citet{grossman1988}, dealers absorb supply at a discount proportional to the inventory they must carry, $\kappa$ per unit, and they know the liquidation rule $L$. A rational-expectations outcome is a total fall $\delta$ at which the liquidation the fall triggers, $L(\delta)$, is exactly what justifies the fall.
+
+\begin{proposition}[Cascades with forward-looking dealers]\label{prop:reecascade}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The rational-expectations falls are the fixed points of $\delta=s+\kappa L(\delta)$. The price moves to one of them at once, without rounds.
+\item Below the threshold of Theorem~\ref{thm:cascade}(ii) there is exactly one, and it is the outcome of the rounds.
+\item Above the threshold, with $\delta_1<\delta_0$ as in Theorem~\ref{thm:cascade}(iii), every shock $s$ with $\psi(\delta_0)<s<\psi(\delta_1)$ and $\psi(0)\le s$ has at least three equilibria: a mild fall below $\delta_1$, an intermediate one, and a crash beyond $\delta_0$. Which occurs depends on what dealers expect, so a crash can be self-fulfilling.
+\item If dealers are risk-neutral toward liquidation flow that is predictable from public information, so that predictable flow carries no inventory discount, the fall is $\delta=s$: no cascade at all.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) Dealers clear the market at a fall that prices the inventory they end up holding, $\kappa L(\delta)$ beyond the shock, and with rational expectations that inventory is the liquidation the fall itself triggers. (ii) Theorem~\ref{thm:cascade}(ii). (iii) $\psi$ is continuous, $\psi(0)\le s<\psi(\delta_1)$, $\psi(\delta_0)<s$, and $\psi(\delta)\ge\delta-\kappa Q\to\infty$, so the intermediate value theorem gives solutions of $\psi(\delta)=s$ in $[0,\delta_1)$, $(\delta_1,\delta_0)$ and $(\delta_0,\infty)$. (iv) As in Proposition~\ref{prop:insider}(iv), flow that is a function of public information is netted out at no discount.
+\end{proof}
+
+\paragraph{What this means.} Anticipation does not remove the threshold; it changes what happens above it. Below the threshold, forward-looking dealers reproduce the round-by-round outcome at once. Above it, the market has several self-consistent prices, and a crash is one of them. Cascades in this model therefore need two things: positions dense enough near their limits, $\kappa\ell>1$, and dealers who charge for absorbing even predictable liquidation. In the example of Theorem~\ref{thm:cascade} with $\kappa\max\ell=2$, the shock $0.249$ has equilibria at falls of $0.253$, $0.500$ and $0.747$ (\nolinkurl{research_extension/open_problems/open_checks2.py}). The existence of three equilibria is machine-checked from the intermediate value theorem (\texttt{p1\_cascade\_three\_equilibria}, \nolinkurl{Paper1OpenResolved.lean}). Combined with Proposition~\ref{prop:insider}(iv), a rational market maker also settles the insider's equilibrium with reacting groups. Whatever rules the groups follow, including rules that react to the insider through prices, their flow is a function of public information and is netted out, so the equilibrium is Kyle's \citep{kyle1985}.
+
+\subsection{Saturation of every order}
+
+Proposition~\ref{prop:smooth} gives the first nonlinear order. Let $\psi$ be odd and analytic near zero, $\psi(u)=\sum_{j\ge0}a_ju^{2j+1}$ for $|u|<\varrho_\psi$, with $a_0=1$; for $\tanh$, $a_1=-\frac13$, $a_2=\frac2{15}$, $\varrho_\psi=\pi/2$, and no $a_j$ vanishes. For a population, let $\mu_j=\sum_ic_i\ell_i^{2j+1}\delta_{r_i}$ be its odd leverage moment of order $2j+1$ at each memory, and $M_{2j+1}=\sum_ic_i\ell_i^{2j+1}$ its total. Since memories lie in $[0,1)$, $\mu_0$ is determined by the kernel.
+
+\begin{proposition}[Saturation of every order]\label{prop:smoothn}
+In the setting of Proposition~\ref{prop:smooth}, let $P$ and $P'$ be stable and have $\mu_j(P)=\mu_j(P')$ for every $j<n$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item There are $A_0,C_n>0$ with $\|x^P-x^{P'}\|_2\le C_n|A|^{2n+1}$ for $|A|\le A_0$, so telling $P$ from $P'$ with both errors at most $\alpha<1/2$ needs $N\ge4\sigma^2(1-2\alpha)^2/(C_n^2A^{2(2n+1)})$.
+\item The first tap differs by $x^P_1-x^{P'}_1=\kappa^{2n+2}a_n\Delta M_{2n+1}A^{2n+1}+O(A^{2n+3})$. If $a_n\Delta M_{2n+1}\ne0$, the averaged first tap tells them apart once $N\ge C\sigma^2/(a_n^2\Delta M_{2n+1}^2A^{2(2n+1)})$, so the order $A^{-2(2n+1)}$ is attained.
+\item The coefficient of $A^{2n+1}$ in the first tap is $\kappa^{2n+2}a_nM_{2n+1}$. Small probes therefore identify every odd leverage moment, the one of order $2n+1$ at information rate $A^{2(2n+1)}$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(ii) and (iii): after the pulse every memory state is $\kappa A$, so the first tap is $a\kappa A+\kappa\sum_ic_i\psi(\ell_i\kappa A)=a\kappa A+\kappa\sum_ja_j(\kappa A)^{2j+1}M_{2j+1}$; the totals of order below $2n+1$ agree. (i) Stability and $|\psi(u)|\le C|u|$ near zero give $|\ell_im_{i,t}|\le C|A|\bar r^{\,t}$-type geometric bounds, so for $|A|\le A_0$ every state lies where the series converges. Write $\psi=\sum_{j<n}a_ju^{2j+1}+R_n$ with $|R_n(u)|\le K_n|u|^{2n+1}$ there. Since $m_{i,t}$ depends on trader $i$ only through $r_i$, the order-$(2j+1)$ part of the aggregate flow is $a_j\int m_t(r)^{2j+1}\mu_j(dr)$, the same functional of the price path for $P$ and $P'$ when $j<n$. So the difference $d=x^P-x^{P'}$ solves the stable linear recursion of the kernel driven by two terms. The first is the order $j\ge1$ terms evaluated on the two paths, bounded by $C'A^2$ times a geometric average of $|d|$. The second is the remainders, of $\ell^2$ norm at most $C''|A|^{2n+1}$. For $A$ small the first term does not break the contraction, and $\|d\|_2\le C_n|A|^{2n+1}$ follows as in Proposition~\ref{prop:smooth}. The test bound is Le Cam's, as there.
+\end{proof}
+
+This proves the expectation stated after Theorem~\ref{thm:satident}: information about the order-$n$ term scales with the probe size to the power $2(2n+1)$. Learning the leverage distribution moment by moment gets steeply harder; probes large enough to reveal high moments are the ones that push traders to their limits. For two populations with one memory, equal kernels and equal cubic measures but fifth moments $1$ and $1.94$, the response difference grows with fitted slope $5.00$ in $A$, and the first tap's coefficient matches $\kappa^6a_2\Delta M_5$ to five digits (\nolinkurl{open_checks2.py}). The sup-norm version of the contraction step is the bias bound \texttt{p1\_deadband\_bias} applied with the contraction factor $s+cA^2$ and $E=CA^{2n+1}$; the rest is on paper.
+
+\subsection{A rate for noisy stress identification}
+
+Proposition~\ref{prop:noisystress} gives consistency without a rate. For smooth shapes, the rate is parametric. Call a population \emph{irreducible} if every $c_i\ne0$, every $\ell_i\ne0$, and the pairs $(r_i,|\ell_i|)$ are distinct; Theorem~\ref{thm:satident} identifies populations only up to merging traders that violate this.
+
+\begin{proposition}[Parametric rate for smooth shapes]\label{prop:stressrate}
+Let $\psi$ be odd and analytic near zero with $a_j\ne0$ for infinitely many $j$ (as for $\tanh$), and let $\theta_0$ be irreducible.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The two-date flow map $F_\theta(u_1,u_2)=\sum_ic_i\psi(\ell_i(r_iu_1+u_2))$ has an injective differential in $\theta$ at $\theta_0$, as a map into functions on any neighbourhood of zero.
+\item Hence there is a finite design of at most $3n$ probe pairs, as small as desired, at which the reset responses have an injective Jacobian at $\theta_0$.
+\item Least squares on that design, started from the consistent estimator of Proposition~\ref{prop:noisystress}, satisfies $\|\hat\theta_N-\theta_0\|=O_P(N^{-1/2})$ up to relabelling and the sign flips $(c_i,\ell_i)\mapsto(-c_i,-\ell_i)$, which leave the flow unchanged, and so recovers $\tilde\mu$ at the parametric rate.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) A perturbation $(\delta c_i,\delta\ell_i,\delta r_i)$ changes $F$ by $\sum_i[\alpha_i\psi(\ell_iz_i)+\beta_iz_i\psi'(\ell_iz_i)+\gamma_iu_1\psi'(\ell_iz_i)]$, with $z_i=r_iu_1+u_2$, $\alpha_i=\delta c_i$, $\beta_i=c_i\delta\ell_i$ and $\gamma_i=c_i\ell_i\delta r_i$. Suppose this vanishes near zero. Its homogeneous part of degree $2k+1$ is
+\[
+a_k\sum_i\bigl[(\alpha_i\ell_i+(2k+1)\beta_i)\ell_i^{2k}z_i^{2k+1}+(2k+1)\gamma_i\ell_i^{2k}u_1z_i^{2k}\bigr]=0 .
+\]
+Take $k$ with $a_k\ne0$, set $u_1=1$ and $u_2=y$, and group traders by memory. For distinct memories, the polynomials $(y+r)^{2k+1}$ and $(y+r)^{2k}$ are linearly independent once $2k+2$ exceeds twice the number of memories, by Hermite interpolation as in Theorem~\ref{thm:pool}(iii). So for every memory class and every such $k$, $\sum_{i\in\text{class}}(\alpha_i\ell_i+(2k+1)\beta_i)\ell_i^{2k}=0$ and $\sum_{i\in\text{class}}\gamma_i\ell_i^{2k}=0$. Within a class the $\ell_i^2$ are distinct. Sequences $k\mapsto(p+qk)\lambda^k$ with distinct $\lambda$ are linearly independent on any infinite set of $k$, since the largest $\lambda$ dominates. So $\alpha_i\ell_i=\beta_i=\gamma_i=0$, and irreducibility gives $\delta\theta=0$.
+(ii) Probes steer the first price to any $u_1$ and, with the second probe, the second price over an interval around any value. If a perturbation leaves all small two-date responses unchanged, the one-date response gives a vanishing perturbation of $u\mapsto\sum c_i\psi(\ell_iu)$, and the two-date response then gives a vanishing perturbation of $F$ on a neighbourhood of zero. So the Jacobian over all small probe pairs is injective, and finitely many pairs, at most the dimension $3n$, already give full rank.
+(iii) With a nonsingular Jacobian on a finite design and Gaussian averaged observations, least squares in a neighbourhood of $\theta_0$ is asymptotically linear with error $O_P(N^{-1/2})$ \citep{vandervaart1998}. The consistent estimator puts $\hat\theta$ in that neighbourhood with probability tending to one.
+\end{proof}
+
+For 50 random irreducible $\tanh$ populations of up to three traders, the differential of the two-date map has full rank (\nolinkurl{open_checks2.py}). The earlier Monte Carlo run, with errors falling close to $N^{-1/2}$, is consistent with (iii). The constant depends on the design: small probes give rates of order $(NA^{2(2n+1)})^{-1/2}$ for the order-$n$ moments, by Proposition~\ref{prop:smoothn}. The hard limit is not covered: its response is piecewise linear in the parameters, and a rate needs a design that avoids its kinks.
+
+\subsection{Traders who learn}
+
+Proposition~\ref{prop:observer} covers learning rules with bounded sensitivity to probing. The general statement is about information, not dynamics. Let each trader's flow at $t$ be any measurable function of the public price history, its own past trades (hence its own profit and loss) and a private randomization independent of news and of other traders. This covers gradient learning, reinforcement learning and Bayesian updating on public data. Call the law of aggregate flow at $t$ given the price history and past aggregate flows the population's \emph{aggregate flow kernel}.
+
+\begin{proposition}[Learning traders]\label{prop:learners}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item Two populations of learning traders with the same aggregate flow kernel produce the same joint law of prices and aggregate flows for every probe strategy, and the same equilibria under any concept defined from payoffs and the public history. Prices identify the aggregate flow kernel and nothing finer.
+\item Without private randomization the kernel is a deterministic map, and (i) is Theorem~\ref{thm:anypop}.
+\item If the traders are linear with exponential memory and learning moves their memories and weights by at most $v$ per period, Theorem~\ref{thm:track} applies: composition is tracked with error of order $\Gamma^{1/3}$ below the speed limit $v^*$ and not at all above it, and market-wide questions are tracked at the cube-root rate whatever $K$. If learning also responds to probing, Proposition~\ref{prop:observer} adds its floor.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) Induction on $t$. Given the same law of the history up to $t-1$, the price at $t$ is the same function of that history, the probe, the news and aggregate flow, and the conditional law of aggregate flow is the same by assumption. So the law of the history up to $t$ is the same. Payoffs that depend on public history and aggregate flow have the same law. (ii) is the deterministic case. (iii) restates Theorem~\ref{thm:track} and Proposition~\ref{prop:observer} for this class.
+\end{proof}
+
+The deterministic pathwise step is the machine-checked invariance of any causal flow market (\texttt{p1\_flow\_market\_invariance}); the randomized induction is on paper. What is not covered is the cost of learning composition for nonlinear learners, beyond the lower bounds of Theorem~\ref{thm:anypop}.
+
+\subsection{The largest weights of the hard pair}
+
+\begin{proposition}[Largest weights]\label{prop:maxweight}
+For the normalized $K$-point rules, the largest Gauss--Radau weight exceeds the largest Gauss weight by $\pi/(4K^2)+O(K^{-3})$. Hence it exceeds it for all sufficiently large $K$, and it does so in 60-digit arithmetic for every $K\le200$.
+\end{proposition}
+
+\begin{proof}
+The interior Gauss--Radau nodes and weights are those of the $(K-1)$-point Gauss--Jacobi rule for the weight $1+x$, divided by $1+x$. Uniformly over nodes in any compact subinterval of $(-1,1)$, Gauss--Jacobi weights for the weight $(1-x)^\alpha(1+x)^\beta$ satisfy $w=\frac{\pi}{n+(\alpha+\beta+1)/2}(1-x)^{\alpha+1/2}(1+x)^{\beta+1/2}(1+O(n^{-2}))$ \citep{hale2013}. So the interior Radau weights are $\frac\pi K\sqrt{1-x^2}(1+O(K^{-2}))$, and the Gauss weights are $\frac\pi{K+1/2}\sqrt{1-x^2}(1+O(K^{-2}))$. The largest weights sit at the nodes nearest zero, where $\sqrt{1-x^2}=1-O(K^{-2})$, and the endpoint weight $2/K^2$ is smaller. Halving for the uniform probability, the difference is $\frac\pi2(\frac1K-\frac1{K+1/2})+O(K^{-3})=\frac\pi{4K^2}+O(K^{-3})$.
+\end{proof}
+
+This explains the constant $0.79\approx\pi/4$ reported with Theorem~\ref{thm:kcohort}. The scaled gap $K^2\times$(difference) is $0.903$, $0.851$, $0.831$, $0.820$, $0.813$ and $0.809$ at $K=10,20,\ldots,60$, approaching $\pi/4=0.785$ with a correction near $1.4/K$ (\nolinkurl{open_checks2.py}). The threshold beyond which the asymptotic argument applies is not explicit, so a range of $K$ above 200 is covered by neither the computation nor an explicit bound. Proposition~\ref{prop:targetK} does not need the comparison: it covers every $K$ through the family $R_c$.

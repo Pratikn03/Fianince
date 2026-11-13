@@ -116,6 +116,13 @@ check("cascade: continuous below kappa*l = 1, jump above", op["A4_ok"], f"larges
 check("insider: Re H/kappa >= 1/(1+s) and the theta = 1/2 cost form is positive definite", op["A5_ok"], f"min eigenvalue {op['A5_min_eig_theta_half']:.4f}")
 check("dead band: tap bias below the bound and falling like 1/A", op["A6_ok"] and abs(op["A6_bias_slope_in_A"] + 1) < 0.05, f"slope {op['A6_bias_slope_in_A']:.2f}")
 
+run(OP, "open_checks2.py")
+o2 = load(OP, "open_checks2_results.json")
+check("saturation of order 5: response gap slope 5 in A and first-tap coefficient", o2["B1_ok"], f"slope {o2['B1_slope_in_A']:.2f}")
+check("noisy stress rate: two-date flow map differential has full rank at 50 random populations", o2["B2_jacobian_full_rank_50_random"], "")
+check("largest weights: K^2 x gap positive and approaching pi/4", o2["B3_ok"], f"K=60: {o2['B3_rows'][-1]['gap_times_K2']:.3f}")
+check("forward-looking dealers: three equilibria above the threshold", o2["B4_ok"], str([round(x, 3) for x in o2['B4_equilibria']]))
+
 if SLOW:
     print("7. Pooling markets: global fibres and the two-market worst case (slow)")
     run(CM, "global_fibres.py"); run(CM, "pooling_table.py")

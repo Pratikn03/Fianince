@@ -80,3 +80,13 @@ for every K), B7 (long-lived insider), B8 (general learning rules) and the post-
 | `thm:cascade` | same | (i) rounds and least fixed point, (ii) contraction, (iii) jump given an earlier higher value of ψ | continuity below, jump 0.45 above | the derivative step of (iii) |
 | `prop:insider` | same | Re(1-w)^-1 ≥ 1/(1+s), symbol bound, netting step | 200 random stable kernels; M_{1/2} positive definite | Toeplitz representation of the cost; (i) via `thm:eqinv`; (iii); from information equivalence to conditional expectations in (iv) |
 | `prop:deadband` | same | the bias bound through a stable loop (`p1_deadband_bias`) | bias below bound, slope -0.99 in A | reduction of the group flows to the recursion; (ii) via the Prony step with the bias added |
+
+## Added 13 November 2026 (night): the remaining open items
+
+| Result | Proof | Machine-checked | Numerical check | Check by hand |
+|---|---|---|---|---|
+| `prop:reecascade` | core `src/supp_openres.tex` | three equilibria (IVT) | three equilibria at falls 0.253, 0.500, 0.747 | the equilibrium condition; (iv) via netting |
+| `prop:smoothn` | same | sup-norm contraction via `p1_deadband_bias` | slope 5.00; first-tap coefficient to five digits | the expansion, the ℓ² bound |
+| `prop:stressrate` | same | — | full-rank differential at 50 random populations | the degree-by-degree independence argument; finite design; M-estimation step |
+| `prop:learners` | same | deterministic pathwise step | — | the randomized induction |
+| `prop:maxweight` | same | — | K²·gap → π/4 (K ≤ 60), positive for K ≤ 200 | the Gauss–Jacobi weight asymptotics cited from Hale and Townsend (2013) |

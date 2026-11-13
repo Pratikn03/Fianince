@@ -225,4 +225,24 @@ theorem p1_deadband_bias (a κ s E : ℝ) (hs : s < 1) (hE : 0 ≤ E) (k d e : �
           _ ≤ s * M + E := by gcongr
           _ = M := hsM
 
+/-- **Forward-looking dealers: several equilibria above the threshold (`prop:reecascade`).** Let
+`ψ(δ) = δ - κ L(δ)` be continuous with `ψ(0) ≤ s`, `ψ(δ₁) > s` and `ψ(δ₀) < s` for `0 ≤ δ₁ < δ₀`, and
+`ψ(δ₂) ≥ s` for some `δ₂ ≥ δ₀`. Then the equilibrium condition `ψ(δ) = s` has solutions in `[0, δ₁]`, in
+`[δ₁, δ₀]` and in `[δ₀, δ₂]`: three equilibria, of which the first two differ and the last two differ. -/
+theorem p1_cascade_three_equilibria (ψ : ℝ → ℝ) (hψ : Continuous ψ) (s δ₀ δ₁ δ₂ : ℝ)
+    (h01 : 0 ≤ δ₁) (h10 : δ₁ < δ₀) (h02 : δ₀ ≤ δ₂)
+    (hz : ψ 0 ≤ s) (h1 : s < ψ δ₁) (h0 : ψ δ₀ < s) (h2 : s ≤ ψ δ₂) :
+    ∃ a b c, a ∈ Set.Icc 0 δ₁ ∧ b ∈ Set.Icc δ₁ δ₀ ∧ c ∈ Set.Icc δ₀ δ₂ ∧ ψ a = s ∧ ψ b = s ∧ ψ c = s ∧
+      a < b ∧ b < c := by
+  obtain ⟨a, ha, hav⟩ := intermediate_value_Icc h01 hψ.continuousOn ⟨hz, h1.le⟩
+  obtain ⟨b, hb, hbv⟩ := intermediate_value_Icc' h10.le hψ.continuousOn ⟨h0.le, h1.le⟩
+  obtain ⟨c, hc, hcv⟩ := intermediate_value_Icc h02 hψ.continuousOn ⟨h0.le, h2⟩
+  refine ⟨a, b, c, ha, hb, hc, hav, hbv, hcv, ?_, ?_⟩
+  · rcases lt_or_eq_of_le ha.2 with h | h
+    · exact lt_of_lt_of_le h hb.1
+    · exfalso; rw [h] at hav; linarith
+  · rcases lt_or_eq_of_le hb.2 with h | h
+    · exact lt_of_lt_of_le h hc.1
+    · exfalso; rw [h] at hbv; linarith
+
 end CurrentMM

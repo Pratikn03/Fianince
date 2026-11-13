@@ -189,3 +189,13 @@ manipulation in a stable market, netting by a rational market maker), and part o
 large probes). Still open: equilibrium with responsive groups or forward-looking dealers, higher-order saturating
 rates, general learning rules, the largest-weight comparison for every K, the B3 rate. Lean: 1,230 declarations in
 143 modules (CI build pending). Checks: 33 of 33. Theory version: main text 20 pages, supplement 97.
+
+## 13 November 2026 (night): the remaining items
+
+Proved: forward-looking dealers after a breach (equilibria = fixed points; several equilibria above the threshold;
+no cascade if predictable flow is absorbed at fair value), saturation of every order (information A^(2(2n+1))), a
+parametric rate for noisy stress identification with smooth shapes, the information content of learning traders,
+and the largest-weight comparison for all sufficiently large K (difference π/(4K²)). Still open: strategic groups
+optimizing against an insider under mechanical impact; cascade dynamics with forward-looking dealers; a rate under
+hard limits; costs for nonlinear learners; an explicit threshold for the largest-weight comparison. Lean: 1,231
+declarations in 143 modules. Checks: 37 of 37. Theory supplement 101 pages.

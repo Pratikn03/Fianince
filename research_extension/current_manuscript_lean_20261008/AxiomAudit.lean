@@ -736,6 +736,7 @@ run_cmd do
   `CurrentMM.p1_no_manipulation_symbol,
   `CurrentMM.p1_netting_prefix,
   `CurrentMM.p1_deadband_bias,
+  `CurrentMM.p1_cascade_three_equilibria,
   `CurrentMM.p1_partial_kernel_gap,
   `CurrentMM.p1_partial_residual_kernel,
   `CurrentMM.p1_partial_single_untagged,
