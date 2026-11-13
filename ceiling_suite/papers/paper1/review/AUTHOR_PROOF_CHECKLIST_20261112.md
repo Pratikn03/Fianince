@@ -69,3 +69,14 @@ of the claims are false or contradict the paper (volatility does not break obser
 of `thm:general` is a lower bound; Gauss–Radau rules are exact to degree 2K-2, not 2K-1). They are removed, with their
 rows in this checklist and in the supplement. B9, B10 and B12 now have real proofs (table above); B5 (rank condition
 for every K), B7 (long-lived insider), B8 (general learning rules) and the post-breach equilibrium remain open.
+
+## Added 13 November 2026 (evening): questions left open, settled
+
+| Result | Proof | Machine-checked | Numerical check | Check by hand |
+|---|---|---|---|---|
+| `thm:pool`(iii), condition (R) for every K, D | core `src/sup_tail.tex` | witness injectivity for every K, D; Hermite with mixed multiplicities; groups `i mod D` (`Paper1RankCondition.lean`) | full rank mod p, K ≤ 12 | genericity: one witness makes the failure set a proper algebraic set |
+| `prop:nearcritn` | core `src/supp_nearcrit.tex` | eigenvalue step (`p1_nearcrit_finite_sample`) | eigenvalues in band; KL below bound, 9 cases | the Toeplitz sandwich from the pointwise ratio bound |
+| `prop:gap` | core `src/supp_openres.tex` | — | formula vs 60-digit Radau rules, K ≤ 30; bounds K ≤ 2,000 | the classical Radau error formula (A&S 25.4.31); the central-binomial bounds; the leading-order claim about the response difference |
+| `thm:cascade` | same | (i) rounds and least fixed point, (ii) contraction, (iii) jump given an earlier higher value of ψ | continuity below, jump 0.45 above | the derivative step of (iii) |
+| `prop:insider` | same | Re(1-w)^-1 ≥ 1/(1+s), symbol bound, netting step | 200 random stable kernels; M_{1/2} positive definite | Toeplitz representation of the cost; (i) via `thm:eqinv`; (iii); from information equivalence to conditional expectations in (iv) |
+| `prop:deadband` | same | the bias bound through a stable loop (`p1_deadband_bias`) | bias below bound, slope -0.99 in A | reduction of the group flows to the recursion; (ii) via the Prony step with the bias added |

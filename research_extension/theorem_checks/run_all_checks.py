@@ -105,6 +105,17 @@ for law in ("a_gauss", "a_laplace"):
 for law, v in rn["b"].items():
     check(f"news law {law}: KL ratio at most sigma^2 I* and within 0.02 of sigma^2 I(f)", v["ratio"] <= v["sigma2_Istar"] + 0.01 and abs(v["ratio"] - v["sigma2_Ifisher"]) < 0.02, f"ratio {v['ratio']:.3f}, sigma^2 I = {v['sigma2_Ifisher']:.3f}")
 
+print("6e. Questions left open in earlier versions")
+OP = os.path.join(ROOT, "research_extension", "open_problems")
+run(OP, "open_checks.py")
+op = load(OP, "open_checks_results.json")
+check("rank condition (R): block witness has full rank (mod p) for every K <= 12, D <= K", op["A1_witness_full_rank_mod_p_K_le_12"], "")
+check("moment gap: 4^K/(K C(2K,K)^2) equals the Gauss-Radau gap (K <= 30) and obeys the pi/4^K bounds (K <= 2000)", op["A3_formula_vs_radau_max_rel_error_K_le_30"] < 1e-30 and op["A3_bounds_hold_K_le_2000"], f"max rel. error {op['A3_formula_vs_radau_max_rel_error_K_le_30']:.1e}")
+check("near instability: n-observation divergence within the eigenvalue bound for every budget and n", op["A2_all_within_bound"], "")
+check("cascade: continuous below kappa*l = 1, jump above", op["A4_ok"], f"largest jumps {op['A4']['below']['max_jump']:.4f} vs {op['A4']['above']['max_jump']:.2f}")
+check("insider: Re H/kappa >= 1/(1+s) and the theta = 1/2 cost form is positive definite", op["A5_ok"], f"min eigenvalue {op['A5_min_eig_theta_half']:.4f}")
+check("dead band: tap bias below the bound and falling like 1/A", op["A6_ok"] and abs(op["A6_bias_slope_in_A"] + 1) < 0.05, f"slope {op['A6_bias_slope_in_A']:.2f}")
+
 if SLOW:
     print("7. Pooling markets: global fibres and the two-market worst case (slow)")
     run(CM, "global_fibres.py"); run(CM, "pooling_table.py")

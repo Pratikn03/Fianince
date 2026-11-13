@@ -179,3 +179,13 @@ needs the authors' decision.
   unregistered GMM paragraph and the return of the Taiwan test to the JEDC abstract.
 - Lean: 1,216 named declarations in 141 modules (before CI receipt). Checks: 27 of 27 pass. Theory version: main text
   20 pages, supplement 92.
+
+## 13 November 2026 (evening): six open items settled
+
+B5 (rank condition for every K: now generic for every K and D), B2 (finite-sample near-instability bound uniform in
+the margin), B11 (exact moment gap g_K = 4^K/(K C(2K,K)^2) ~ pi 4^-K, so a factor 16^K/pi^2 in the constants), the
+post-breach cascade threshold (theorem under mechanical impact), the long-lived insider (kernel sufficiency, no
+manipulation in a stable market, netting by a rational market maker), and part of B1 (dead-band rules identifiable by
+large probes). Still open: equilibrium with responsive groups or forward-looking dealers, higher-order saturating
+rates, general learning rules, the largest-weight comparison for every K, the B3 rate. Lean: 1,230 declarations in
+143 modules (CI build pending). Checks: 33 of 33. Theory version: main text 20 pages, supplement 97.

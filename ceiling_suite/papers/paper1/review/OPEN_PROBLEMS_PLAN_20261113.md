@@ -49,3 +49,9 @@ Two quick checks were run before writing the plan:
 Each item ends with the paper text, a Lean module where feasible (no placeholder statements, axioms audited, and the
 statement compared against the prose), a numerical check in `run_all_checks.py`, and a row in the author checklist.
 Nothing is called machine-checked unless the Lean statement is the claim.
+
+## Status, 13 November 2026 (evening)
+
+A1–A6 are done: paper text in core `sup_tail.tex`, `supp_nearcrit.tex`, `supp_openres.tex` and `sat.tex`; Lean in
+`Paper1RankCondition.lean` and `Paper1OpenResolved.lean` (standard axioms only); checks in
+`research_extension/open_problems/open_checks.py` (all pass). B-1 to B-3 and C-1 to C-3 remain open.

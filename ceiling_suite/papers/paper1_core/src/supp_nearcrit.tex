@@ -11,4 +11,14 @@ Write $D_X(z)=z-a_X-\kappa G_X(z)$ for economy $X$, so that $H_X=\kappa z/D_X$ a
 \paragraph{Numerical check.} For $K=2,3$, $\Delta\eta\in\{0.1,0.05,0.025\}$ and margins from $10^{-1}$ to $10^{-6}$, the ratio $D_\epsilon(B\|A)/(\Delta\eta)^{4K-2}$ increases to a finite limit as $\epsilon\to0$ (0.41 to 0.48 for $K=2$, 0.65 to 0.71 for $K=3$; \nolinkurl{fragility_uniform_check.py}). With a common persistence instead of a common budget, the divergence rate grows like $\epsilon^{-1}$, which is the budget difference becoming visible. This proposition is not machine-checked.
 
 
-\paragraph{Finite samples (numerical).} The proposition bounds the information per observation. A finite-sample bound uniform in $\epsilon$ is not proved. Numerically, the exact Kullback--Leibler divergence between the laws of $n$ consecutive stationary observations, computed from the state-space autocovariances, lies between $97.8\%$ and $99.8\%$ of $n$ times the per-observation rate in every case computed: $K=2$, $\Delta\eta\in\{0.1,0.2\}$, $\epsilon\in\{10^{-1},10^{-2},10^{-3}\}$ and $n\in\{250,1000,4000\}$, at the parameters of Figure~\ref{fig:barrier} (\nolinkurl{research_extension/fragility_reveals/finite_sample_check.py}). So, in these cases, data requirements computed from the per-observation rate are not loosened by finite samples.
+\paragraph{Finite samples.} The proposition bounds the information per observation; the same bound holds for every record length.
+
+\begin{proposition}[Near instability, finite samples]\label{prop:nearcritn}
+Under the conditions of Proposition~\ref{prop:nearcrit}, with $C_3(\Delta\eta)^{2K-1}\le1/8$, the divergence between the laws of $n$ consecutive stationary observations of the two economies is at most $16nC_3^2(\Delta\eta)^{4K-2}$, for every $n$ and uniformly in the margin $\epsilon$.
+\end{proposition}
+
+\begin{proof}
+The covariance of $n$ consecutive observations is the Toeplitz matrix $T_n(f)$ of the spectral density, and $x^\top T_n(f)x=\frac1{2\pi}\int|\hat x(\omega)|^2f(\omega)\,d\omega$. Step~3 gives $|u-1|\le4\rho$ for $u=f_B/f_A$ at every frequency, so $(1-4\rho)T_n(f_A)\preceq T_n(f_B)\preceq(1+4\rho)T_n(f_A)$, and every eigenvalue $\lambda_k$ of $T_n(f_A)^{-1}T_n(f_B)$ lies within $4\rho$ of one. The divergence is $\frac12\sum_k(\lambda_k-1-\log\lambda_k)\le\frac12n\cdot2(4\rho)^2=16n\rho^2$, using $u-1-\log u\le2(u-1)^2$ for $|u-1|\le1/2$.
+\end{proof}
+
+The eigenvalue step is machine-checked (\texttt{p1\_nearcrit\_finite\_sample}, \nolinkurl{Paper1OpenResolved.lean}); the Toeplitz sandwich is on paper. Numerically, the exact divergence of $n$ consecutive stationary observations lies between $97.8\%$ and $99.8\%$ of $n$ times the per-observation rate for $K=2$, $\Delta\eta\in\{0.1,0.2\}$, $\epsilon\in\{10^{-1},10^{-2},10^{-3}\}$ and $n\in\{250,1000,4000\}$ (\nolinkurl{research_extension/fragility_reveals/finite_sample_check.py}). In every such case at budgets $1-10^{-1}$, $1-10^{-2}$ and $1-10^{-3}$, all eigenvalues lie in the band of the proof, and the divergence is below the bound (\nolinkurl{research_extension/open_problems/open_checks.py}).

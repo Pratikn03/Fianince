@@ -146,3 +146,5 @@ import CurrentProofs.Paper1TrackingGame
 import CurrentProofs.ThesisMeasure
 import CurrentProofs.Paper1RunningMarket
 import CurrentProofs.Paper1NewsLawHiding
+import CurrentProofs.Paper1RankCondition
+import CurrentProofs.Paper1OpenResolved

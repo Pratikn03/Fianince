@@ -1,0 +1,79 @@
+\section{Questions left open in earlier versions}\label{app:openres}
+
+This section settles four questions that earlier versions left open or answered only numerically. It gives the exact size of the moment gap behind the constants of Theorem~\ref{thm:kcohort}, the threshold for a cascade after a breach, the long-lived insider, and an upper bound for a family of nonlinear rules. The rank condition of Theorem~\ref{thm:pool} and the finite-sample version of Proposition~\ref{prop:nearcrit} are proved where those results are stated.
+
+\subsection{The moment gap of the hard pair}
+
+\begin{proposition}[The moment gap]\label{prop:gap}
+Normalize the $K$-point Gauss and Gauss--Radau rules for the uniform probability on $[-1,1]$. Their moments agree up to order $2K-2$, and their moments of order $2K-1$ differ by exactly
+\[
+g_K=\frac{4^K}{K\binom{2K}{K}^2},\qquad \frac{\pi}{4^K}\Bigl(1+\frac1{4K}\Bigr)<g_K<\frac{\pi}{4^K}\Bigl(1+\frac1{2K}\Bigr).
+\]
+\end{proposition}
+
+\begin{proof}
+The Gauss rule integrates polynomials of degree $2K-1$ exactly, so its moment of order $2K-1$ is the true one. For the Gauss--Radau rule with a fixed endpoint and weight one on $[-1,1]$, the error for a function with continuous derivative of order $2K-1$ is $2^{2K-1}K[(K-1)!]^4f^{(2K-1)}(\xi)/[(2K-1)!]^3$ for some $\xi$ \citep[25.4.31]{abramowitz1964}. For $f(x)=x^{2K-1}$ the derivative is the constant $(2K-1)!$, so the error is exact, and halving it for the uniform probability gives $2^{2K-2}K[(K-1)!]^4/[(2K-1)!]^2=4^K/(K\binom{2K}{K}^2)$. The bounds follow from $4^K/\sqrt{\pi(K+1/2)}<\binom{2K}{K}<4^K/\sqrt{\pi(K+1/4)}$.
+\end{proof}
+
+The gaps $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$ reported with Theorem~\ref{thm:kcohort} are $g_2$, $g_3$ and $g_4$. The first tap at which the two price responses differ is $h_{2K}$, with $h^A_{2K}-h^B_{2K}=\pm\kappa^2Wg_K(\Delta\eta)^{2K-1}$. At leading order in $\Delta\eta$ the whole response difference is $g_K(\Delta\eta)^{2K-1}$ times a closed-loop response that depends on $K$ but not on $\Delta\eta$. So the divergence in the proof of Theorem~\ref{thm:kcohort} carries the factor $g_K^2$, and the data requirement the factor $g_K^{-2}\approx16^K/\pi^2$. This is one reason the constants grow so fast with $K$; the closed-loop factor adds more. The formula agrees with Gauss--Radau rules computed in 60-digit arithmetic to $3\times10^{-46}$ for $K\le30$, and the bounds hold for every $K\le2{,}000$ (\nolinkurl{research_extension/open_problems/open_checks.py}).
+
+\subsection{The cascade after a breach}
+
+After a breach, traders whose positions hit their limits liquidate, and their sales move the price. Let the price fall by a shock $s\ge0$ beyond what the linear market produces, and let $L(\delta)\ge0$ be the quantity liquidated by traders whose limits lie within $\delta$ of the pre-shock price: nondecreasing, bounded by the total position $Q$, and, when positions are spread with density $\ell$ over distances to limits, $L(\delta)=\int_0^\delta\ell$. With price impact $\kappa$, liquidation rounds run $\delta_0=s$, $\delta_{n+1}=s+\kappa L(\delta_n)$: each round's sales push further traders over their limits.
+
+\begin{theorem}[A threshold for cascades]\label{thm:cascade}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The rounds increase and, for continuous $L$, converge to the least fixed point $\delta^*(s)$ of $\delta=s+\kappa L(\delta)$; every fixed point at or above $s$ lies above every round.
+\item \emph{Below the threshold.} If $L$ is Lipschitz with constant $\bar\ell$ and $\kappa\bar\ell<1$, the fixed point is unique and $|\delta^*(s)-\delta^*(s')|\le|s-s'|/(1-\kappa\bar\ell)$: the fall is continuous in the shock, amplified by at most $1/(1-\kappa\bar\ell)$.
+\item \emph{Above the threshold.} If $\kappa\ell(\delta_0)>1$ at some $\delta_0$ at which $\ell$ is continuous, the map $\psi(\delta)=\delta-\kappa L(\delta)$ decreases near $\delta_0$, so its maximum on $[0,\delta_0]$ is attained at some $\delta_1<\delta_0$ with $\bar s=\psi(\delta_1)>\psi(\delta_0)$. Then $\delta^*(\bar s)\le\delta_1$, while every fixed point for a shock $s>\bar s$ exceeds $\delta_0$: an arbitrarily small additional shock produces a further fall of at least $\delta_0-\delta_1$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(i) By induction the rounds increase, because $L$ is nondecreasing, and stay below any fixed point $\delta'\ge s$, because $\delta_{n+1}=s+\kappa L(\delta_n)\le s+\kappa L(\delta')=\delta'$. They are bounded by $s+\kappa Q$, so they converge, and continuity of $L$ makes the limit a fixed point. (ii) Subtracting the fixed-point equations for $s$ and $s'$ gives $|\delta-\delta'|\le|s-s'|+\kappa\bar\ell|\delta-\delta'|$. (iii) $\psi'(\delta_0)=1-\kappa\ell(\delta_0)<0$, so $\psi(\delta)>\psi(\delta_0)$ for some $\delta<\delta_0$, and the maximum of $\psi$ on the compact interval $[0,\delta_0]$ is attained before $\delta_0$. A fixed point for $s$ is a solution of $\psi(\delta)=s$; for $s>\bar s\ge\psi$ on $[0,\delta_0]$ there is none in that interval. For $\bar s$, $\delta_1$ is a fixed point, so $\delta^*(\bar s)\le\delta_1$ by (i).
+\end{proof}
+
+\paragraph{What this means.} The conjectured threshold holds. Cascades occur exactly where the liquidation triggered per unit of price move, $\kappa\ell$, exceeds one. Below that the market absorbs liquidation with bounded amplification. The density $\ell$ of positions near their limits is exactly what Theorem~\ref{thm:satsuff} says calm prices do not reveal. A supervisor can therefore learn from calm prices neither whether the market is above the threshold nor where it is. In a numerical example with a bump of positions half a unit from their limits, the largest jump in the fall is $0.002$ on a grid of step $0.0005$ when $\kappa\max\ell=0.75$, and $0.45$ when $\kappa\max\ell=2$ (\nolinkurl{research_extension/open_problems/open_checks.py}). The theorem uses mechanical impact. With forward-looking dealers who anticipate the rounds, the terminal price should solve the same fixed-point equation, but the dynamics need an equilibrium model that we do not provide.
+
+\paragraph{Machine check.} All three parts are machine-checked: the rounds stay below every fixed point and converge to the least one, the contraction bound, and the jump given a value of $\psi$ above $\psi(\delta_0)$ before $\delta_0$ (\texttt{p1\_cascade\_iterate\_le\_fixed}, \texttt{p1\_cascade\_rounds\_converge}, \texttt{p1\_cascade\_contraction}, \texttt{p1\_cascade\_jump}, \nolinkurl{Paper1OpenResolved.lean}). The derivative step of (iii) is on paper.
+
+\subsection{A long-lived insider}
+
+An insider knows the value $V$ and trades $z_t$ over $T$ periods; her trades enter~\eqref{eq:price} as $\kappa z_t$, like a probe. She pays the pre-trade price plus $\theta\kappa z_t$, so $\theta=1$ is the post-trade price and $\theta=1/2$ the average price on a linear book. Write $\hat H(\omega)=\kappa/(1-e^{-i\omega}(a+\kappa\hat k(\omega)))$ for the frequency response of the price to a trade, with $\hat k$ the transform of the kernel, and suppose the market is stable in the sense used throughout: $|a|+\kappa\sum_m|k_m|\le s<1$.
+
+\begin{proposition}[A long-lived insider]\label{prop:insider}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Only the kernel matters.} For any causal strategy, the joint law of $V$, her trades and prices, and hence her profit, is the same for two populations with the same kernel. Her optimal strategies and value coincide, and no observer of prices and her trades learns more about composition than the kernel.
+\item \emph{No manipulation.} The expected execution cost of a deterministic schedule $z$ beyond the value is $z^\top M_\theta z$, where $M_\theta$ is the symmetric Toeplitz matrix with diagonal $\theta\kappa$ and off-diagonal entries $h_{|t-u|}/2$, and $z^\top M_\theta z\ge\kappa\bigl(\frac1{1+s}-(1-\theta)\bigr)\|z\|^2>0$ for every $\theta\ge1/2$. No schedule, round trips included, has negative expected cost, however strong the feedback, as long as the market is stable.
+\item \emph{The informed schedule.} With $\Delta=V-p^*$, the deterministic schedule that maximizes expected profit $\Delta\mathbf 1^\top z-z^\top M_\theta z$ is $z^*=\frac\Delta2M_\theta^{-1}\mathbf 1$, with value $\frac{\Delta^2}4\mathbf 1^\top M_\theta^{-1}\mathbf 1\le\Delta^2T/[4\kappa(\frac1{1+s}-(1-\theta))]$. Both depend on the population only through the kernel.
+\item \emph{A rational market maker nets out feedback.} If instead prices are set by a market maker as $\mathbb E[V\mid\text{order flow so far}]$, and the feedback flow at each date is a function of earlier prices, then total and net order flow (total minus feedback) determine each other date by date. Prices, the insider's optimal strategy and her profit are those of the market without feedback traders, and the feedback flow has no price impact. The market maker needs to know only the aggregate flow rule, that is the kernel.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) Aggregate feedback flow is the kernel applied to past prices on every path (Theorem~\ref{thm:eqinv}), so prices are the same function of news and trades in both markets, and her strategy is a function of what she observes. (ii) Expected prices are $h$ convolved with her trades, so the expected cost is $\sum_tz_t\sum_{u\le t}h_{t-u}z_u-(1-\theta)\kappa\|z\|^2=z^\top M_\theta z$. A symmetric Toeplitz form is $\frac1{2\pi}\int|\hat z(\omega)|^2S(\omega)\,d\omega$ with symbol $S_\theta(\omega)=\theta\kappa+\sum_{d\ge1}h_d\cos(d\omega)=\mathrm{Re}\,\hat H(\omega)-(1-\theta)\kappa$. With $w=e^{-i\omega}(a+\kappa\hat k(\omega))$, $|w|\le s$, and $\mathrm{Re}\,(1-w)^{-1}\ge(1+s)^{-1}$ for $|w|\le s<1$, because $(1-\mathrm{Re}\,w)(1+s)-|1-w|^2\ge(1-s)(s+\mathrm{Re}\,w)\ge0$. Hence $S_\theta\ge\kappa(\frac1{1+s}-(1-\theta))$, which is positive for $\theta\ge\frac12$. (iii) The objective is strictly concave by (ii), and the bound uses the smallest eigenvalue. (iv) Prices are functions of earlier order flow, so the feedback flow at $t$ is a function of order flow before $t$. Then the order flow up to $t$ and the net flow up to $t$ are functions of each other, by induction on $t$, so the market maker's information, and the price, are the same.
+\end{proof}
+
+\paragraph{What this means.} The open question was whether a long-lived insider could exploit or reveal the groups' memory. She cannot reveal it: everything she does depends on the kernel alone. And in a stable market she cannot manipulate it either, since the feedback never makes a round trip profitable. With a rational market maker, feedback flow is priced out entirely, so the paper's results on feedback concern markets where impact is mechanical, as in a limit order book, not markets where a dealer prices flow by its information. For 200 random stable kernels the smallest value of $\mathrm{Re}\,\hat H/\kappa$ is never below $1/(1+s)$, and $M_{1/2}$ is positive definite (\nolinkurl{open_checks.py}). An equilibrium in which the groups or a forward-looking dealer respond to the insider remains open.
+
+\paragraph{Machine check.} The inequality $\mathrm{Re}\,(1-w)^{-1}\ge(1+s)^{-1}$, the resulting bound on the symbol and the netting step of (iv) are machine-checked (\texttt{p1\_re\_inv\_one\_sub\_ge}, \texttt{p1\_no\_manipulation\_symbol}, \texttt{p1\_netting\_prefix}, \nolinkurl{Paper1OpenResolved.lean}). The Toeplitz representation, part (iii), the step from information to conditional expectations in (iv), and part (i) (an instance of Theorem~\ref{thm:eqinv}) are on paper.
+
+\subsection{Traders with a dead band}
+
+Theorem~\ref{thm:anypop} gives lower bounds for any rules but no upper bound, and for some families composition is not identified at all. Here is a family for which it is. Let group $i$ trade $w_i\psi_i(y_{i,t})$, where $y_i$ is its memory state and $|\psi_i(u)-u|\le\delta_0$ for all $u$. This covers a dead band, $\psi(u)=\mathrm{sign}(u)(|u|-\delta_0)_+$, where the trader does nothing until its signal leaves the band and then trades linearly beyond it, and rounding to lots of size $2\delta_0$. It does not cover saturation, whose deviation from linearity is unbounded.
+
+\begin{proposition}[Dead bands are identifiable]\label{prop:deadband}
+In the setting of Theorem~\ref{prop:esprit}, with $W_1=\sum_i|w_i|$ and $|a|+\kappa\sum_m|k_m|\le s<1$, run reset experiments with a unit impulse scaled to size $A$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item The scaled price response differs from the linear response by at most $\kappa\delta_0W_1/((1-s)A)$ at every tap.
+\item Prony's method applied to the scaled, averaged taps recovers the weights to within $C\bigl(\kappa\delta_0W_1/((1-s)A)+\sigma A^{-1}N^{-1/2}\sqrt{\log(4K/\beta)}\bigr)(\Delta\eta)^{-(2K-1)}$ with probability at least $1-\beta$, whenever this is below the radius of Theorem~\ref{prop:esprit}. Accuracy $\varepsilon$ needs probes of size $A\gtrsim\delta_0(\Delta\eta)^{-(2K-1)}/\varepsilon$ and $N\gtrsim\sigma^2/(A^2\varepsilon^2(\Delta\eta)^{4K-2})$ experiments.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) Let $d_t$ be the difference between the price paths with and without the band. The linear part of every group's flow is the kernel applied to past prices, so $d_t=ad_{t-1}+\kappa\sum_mk_md_{t-1-m}+e_t$, with $e_t=\kappa\sum_iw_i(\psi_i(y_{i,t-1})-y_{i,t-1})$ and $|e_t|\le\kappa\delta_0W_1$. By induction $|d_t|\le s\sup_{u<t}|d_u|+\kappa\delta_0W_1$, so $|d_t|\le\kappa\delta_0W_1/(1-s)$; divide by $A$. (ii) The scaled taps are the linear taps plus a bias bounded by (i) plus noise of standard deviation $\sigma/A$ per experiment. The proof of Theorem~\ref{prop:esprit} applies with the bias added to the radius of the event.
+\end{proof}
+
+Large probes identify dead-band traders because the band is a bounded distortion, which a probe of size $A$ dilutes by $1/A$. In a simulation of two dead-band groups, the largest tap bias stays below the bound of (i) for probe sizes from 1 to 32 and falls with fitted slope $-0.99$ in $A$ (\nolinkurl{open_checks.py}).
+
+\paragraph{Machine check.} The bias bound of (i), for any bounded deviation fed through a stable closed loop, is machine-checked (\texttt{p1\_deadband\_bias}, \nolinkurl{Paper1OpenResolved.lean}). The reduction of the group flows to that recursion and part (ii) are on paper; part (ii) is the deterministic Prony step of Theorem~\ref{prop:esprit}, which is machine-checked, with the bias added to the radius.
