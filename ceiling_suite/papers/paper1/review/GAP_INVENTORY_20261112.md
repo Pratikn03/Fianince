@@ -155,3 +155,12 @@ prices impose a floor no probing removes, minimax over learning rules of bounded
 crowding). Simulations and a Lean module (`Paper1TrackingGame.lean`, 1,206 declarations in 138 modules). Regulator-data
 tests drafted only (`p1_empirics/P1R_spec_DRAFT.md`): no data access exists. Checks: 23 of 23 pass.
 Main text 20 pages, supplement 88.
+
+## 13 November 2026: repository made public by the authors
+
+Confirmed public (anonymous API returns 200). The paper's "public repository" sentence is now true. History scan
+(660 commits) found no tokens, keys or passwords; the author email appears only in 4 commit author lines. Open:
+Binance raw files are CC BY-NC-SA 4.0 and need an attribution and licence note; the schema-probe zips contain two days of
+raw TWSE/TPEx pages with unclear redistribution terms; internal AI review documents (this inventory, the hostile-referee
+pass) are now readable by anyone, referees included. Removing files from history would need a history rewrite, which
+needs the authors' decision.
