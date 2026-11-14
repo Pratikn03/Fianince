@@ -1,0 +1,96 @@
+\documentclass[11pt]{article}
+\usepackage[paperwidth=6.5in,paperheight=10in,margin=0.55in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,enumitem,booktabs,microtype}
+\usepackage[round]{natbib}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue]{hyperref}
+\newtheorem{theorem}{Theorem}\newtheorem{proposition}[theorem]{Proposition}\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}\newtheorem{remark}[theorem]{Remark}
+\title{Composition Is Invisible and Irrelevant:\\ Forecast Irrelevance in Feedback Markets\\[4pt]\large Draft for the authors' proof check, 14 November 2026}
+\author{Written by an AI system for Pratik Niroula, Prashant Niroula and Sujan Khatiwada}
+\date{}
+\begin{document}\maketitle
+\noindent\textbf{Status.} Not yet in the paper. Part (i) is proved in full below. Part (ii) rests on a cited theorem on autoregressive prediction. Part (iii) has a proof sketch that needs to be written out. The numerical checks are in \texttt{research\_extension/\allowbreak irrelevance/}. Nothing here has been reviewed by anyone but the system that wrote it.
+
+\section{Setting}
+Use the paper's model with time-varying weights. Group $i=1,\dots,K$ has memory rate $r_i=1-\eta_i\in[0,\bar r]$, $\bar r<1$, and weight $q_{i,t}\ge 0$:
+\[
+x_t=a\,x_{t-1}+\kappa\sum_i q_{i,t}\,y_{i,t-1}+\varepsilon_t,\qquad y_{i,t}=r_i\,y_{i,t-1}+\eta_i x_t,\qquad y_{i,-1}=0,
+\]
+with $\varepsilon_t$ i.i.d., mean zero, variance $\sigma^2$, finite fourth moment, and uniform stability $a+\kappa\sum_i q_{i,t}\le s<1$ for all $t$. Two observers forecast $x_{t+1}$:
+\begin{itemize}[itemsep=1pt]
+\item the \emph{price observer} $\mathcal P_t=\sigma(x_0,\dots,x_t)$;
+\item the \emph{composition observer} $\mathcal C_t=\sigma(x_s,\,q_{i,s},\,q_{i,s}y_{i,s}:\ s\le t,\ i\le K)$, who sees every group's weight and position. Any class-level data (sums of positions over groups) give less than $\mathcal C_t$.
+\end{itemize}
+The \emph{forecast value of composition} is the reduction in mean squared forecast error from $\mathcal P$ to $\mathcal C$. Write $w_{i,t}=q_{i,t}\eta_i$ and $k_{m,t}=\sum_i w_{i,t}r_i^m$ (the kernel).
+
+\section{The theorem}
+\begin{theorem}[Composition is forecast-irrelevant]\label{thm:irr}
+\begin{enumerate}[label=(\roman*),itemsep=2pt]
+\item \emph{Known, constant population.} If the weights are constant and known, then
+\[ \mathbb E[x_{t+1}\mid\mathcal C_t]=\mathbb E[x_{t+1}\mid\mathcal P_t]=a\,x_t+\kappa\sum_{m=0}^{t}k_m\,x_{t-m}. \]
+The forecast value of composition is exactly zero.
+\item \emph{Unknown, constant population.} If the weights are constant but unknown, the least-squares autoregression of order $L_T\asymp\log T$ fitted to $x_0,\dots,x_T$ forecasts $x_{T+1}$ with mean squared error $\sigma^2+O(\sigma^2\log T/T)$. The forecast value of any composition data is therefore $O(\sigma^2\log T/T)$. The constant depends on the population only through $\bar r$ and $s$, not on how close the memories are.
+\item \emph{Drifting population.} If $|q_{i,t+1}-q_{i,t}|\le v$ for all $i,t$, a least-squares autoregression of order $L\asymp\log(1/v)$ refitted on a trailing window of $m\asymp v^{-2/3}$ periods has excess mean squared error at most $C\sigma^2 v^{2/3}\log(1/v)$ over $\mathcal C$, with $C$ depending only on $(a,\kappa,\bar r,s,K)$. So composition is worth at most that much for forecasting, again whatever the spacing of the memories.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Proof of (i)]
+From $y_{i,-1}=0$, $y_{i,t}=\eta_i\sum_{j=0}^{t}r_i^jx_{t-j}$, which is $\mathcal P_t$-measurable. With known constant weights, every generator of $\mathcal C_t$ is a function of $(x_0,\dots,x_t)$, so $\mathcal C_t=\mathcal P_t$. Then $\mathbb E[x_{t+1}\mid\mathcal P_t]=a x_t+\kappa\sum_iq_iy_{i,t}=a x_t+\kappa\sum_m\big(\sum_i q_i\eta_ir_i^m\big)x_{t-m}$, because $\varepsilon_{t+1}$ is independent of $\mathcal P_t$.
+\end{proof}
+
+\begin{proof}[Proof of (ii)]
+With constant weights, $x$ is an autoregression of infinite order, $x_t=\sum_{j\ge1}\phi_jx_{t-j}+\varepsilon_t$, with $\phi_1=a+\kappa k_0$, $\phi_{j}=\kappa k_{j-1}$ for $j\ge2$, so $|\phi_j|\le \kappa W\bar r^{\,j-1}$ with $W=\sum_iw_i$. Since $\phi_j\ge0$ and $\sum_j\phi_j=a+\kappa\sum_iq_i\le s<1$, the polynomial $1-\sum_j\phi_jz^j$ has no zero in $|z|\le1$. For such processes, the same-realization mean squared prediction error of the least-squares autoregression of order $L$ is $\sigma^2(1+L/T)+\sigma^2\sum_{j>L}O(\phi_j^2)+o(L/T)$ \citep{ingwei2003}. The tail is $O(\bar r^{\,2L})$, so $L\asymp\log T$ gives $\sigma^2+O(\sigma^2\log T/T)$. The composition observer's error is at least $\sigma^2$, because $\varepsilon_{t+1}$ is independent of $\mathcal C_t$. The constants depend on the process through $\bar r$, $s$ and $\kappa W$, which are bounded on the class.
+\end{proof}
+\noindent\emph{To check:} \citet{ingwei2003} is stated for a fixed process. Uniformity over a compact stable class needs their constants to be bounded in terms of the spectral bounds, which holds here because the spectral density lies between $\sigma^2/(1+s)^2$ and $\sigma^2/(1-s)^2$.
+
+\begin{proof}[Proof sketch of (iii)]
+Within a window of $m$ periods the kernel taps move by at most $|\Delta k_{j}|\le\eta_{\max}\bar r^{\,j}Kvm$, so the autoregressive coefficients on the window lie within $O(vm)$ of their window average. Least squares on the window estimates that average with variance $O(L/m)$ in the forecast, and the drift adds a bias of order $vm$ in coefficients, hence $O(v^2m^2)$ in squared forecast error. Truncation adds $O(\bar r^{2L})$. The total $C\sigma^2(L/m+v^2m^2+\bar r^{2L})$ is minimized at $m\asymp v^{-2/3}$, $L\asymp\log(1/v)$. A complete proof follows the tracking analysis of \citet{guoljung1995}, which needs a persistence-of-excitation condition. Here that condition holds because the spectral density is bounded below.
+\end{proof}
+
+\section{What breaks it}
+The theorem says composition is worthless for forecasting prices whenever the traders' flows are functions of public prices. Each way of breaking that assumption is a section of the paper or a prediction that can be tested.
+
+\begin{proposition}[The four exceptions]\label{prop:exc}
+\begin{enumerate}[label=(\alph*),itemsep=2pt]
+\item \emph{Informed classes.} If some group's flow depends on information not in $\mathcal P_t$, such as the next change in value, composition can have forecast value of order one.
+\item \emph{Exogenous flows with different persistence.} If group $i$ also trades an exogenous flow $u_{i,t}$, independent of prices, then in the linear-Gaussian case the forecast value of composition, beyond prices and the aggregate flow $A_t=\sum_iq_{i,t}y_{i,t-1}+\sum_iu_{i,t}$, equals $\kappa^2$ times the reduction in the error of forecasting $\sum_iu_{i,t+1}$ from the components $(u_{i,s})_{s\le t}$ instead of their sum. It is zero when all the $u_i$ share one autoregressive law.
+\item \emph{Position limits under stress.} With saturating rules, the next price depends on the population through a measure over memory and leverage that calm prices do not reveal (the paper's Theorem on saturation). Composition can then forecast prices once limits bind.
+\item \emph{Targeted actions.} Composition is needed for actions aimed at one group, by the observation--intervention law. That concerns decisions, not forecasts.
+\end{enumerate}
+\end{proposition}
+\begin{proof}
+(a) is an example: let one group buy $\beta(\Delta f_{t+1})$, where $f$ is the value. (b) Prices and aggregate flow determine the feedback parts, by (i). The remaining forecast error is $\kappa$ times the error in forecasting $\sum_iu_{i,t+1}$, and Gaussian conditioning gives the stated equality. When all $u_i$ follow one autoregression, so does their sum, and its own past is sufficient. (c) and (d) are results of the paper.
+\end{proof}
+
+\begin{remark}[Why this matters]
+The result has the structure of an irrelevance theorem: a benchmark under which something is irrelevant, and a list of exactly what makes it relevant, as in \citet{mm1958}. The aggregation step is close in spirit to \citet{gorman1953}. The prediction it makes is testable: class data should not improve price forecasts beyond prices and anonymous flow, except through (a)--(c). This may explain why trader-position reports have little forecasting power for futures returns \citep{sandersetal2009}, which is to be checked against that literature before it is claimed.
+\end{remark}
+
+\section{Numerical checks}
+\begin{center}\small
+\begin{tabular}{p{1.2in}p{2.5in}p{1.2in}}\toprule
+Check & Result & Script \\\midrule
+(ii) spacing independence & excess MSE $1.56\times10^{-4}$ for memories $(0.30,0.60)$ and for $(0.44,0.46)$ & \texttt{irrelevance\_\allowbreak theorem\_check.py}\\
+(iii) drift & excess$/v^{2/3}$ between 0.18 and 0.41 for $v$ from $3\cdot10^{-5}$ to $10^{-3}$ & same\\
+(b) aggregation channel & $\Delta R^2\approx+0.1\%$ with persistences $0.3,0.7,0.95$; $-0.03\%$ with one persistence & \texttt{p1f\_design\_\allowbreak sim.py}\\
+(a) informed class & $\Delta R^2\approx+1.5\%$ & same\\\bottomrule
+\end{tabular}\end{center}
+The drift exponent fitted in simulation is 0.55, below $2/3$ at small $v$ because the window grid is capped. The bound in (iii) is an upper bound and is not shown to be tight.
+
+\section{For the proof check}
+\begin{enumerate}[itemsep=1pt]
+\item Part (i): check that $\mathcal C_t=\mathcal P_t$ under known constant weights, including the initial condition.
+\item Part (ii): read \citet{ingwei2003} and confirm that their conditions hold here (exponentially decaying coefficients; moment conditions on $\varepsilon$), and that their result is about same-realization prediction, as used.
+\item Part (iii): write the full tracking proof, or state (iii) as a proposition with an explicit persistence-of-excitation assumption.
+\item Proposition~\ref{prop:exc}(b): verify the Gaussian conditioning step.
+\item Novelty: search for prior forecast-irrelevance results for trader composition, and read \citet{gorman1953}, \citet{sandersetal2009}.
+\end{enumerate}
+
+\begin{thebibliography}{9}
+\bibitem[Gorman(1953)]{gorman1953} Gorman, W.~M. (1953). Community preference fields. \emph{Econometrica} 21(1), 63--80.
+\bibitem[Guo and Ljung(1995)]{guoljung1995} Guo, L. and L. Ljung (1995). Performance analysis of general tracking algorithms. \emph{IEEE Transactions on Automatic Control} 40(8), 1388--1402.
+\bibitem[Ing and Wei(2003)]{ingwei2003} Ing, C.-K. and C.-Z. Wei (2003). On same-realization prediction in an infinite-order autoregressive process. \emph{Journal of Multivariate Analysis} 85(1), 130--155.
+\bibitem[Modigliani and Miller(1958)]{mm1958} Modigliani, F. and M.~H. Miller (1958). The cost of capital, corporation finance and the theory of investment. \emph{American Economic Review} 48(3), 261--297.
+\bibitem[Sanders et~al.(2009)]{sandersetal2009} Sanders, D.~R., S.~H. Irwin and R.~P. Merrin (2009). Smart money: The forecasting ability of CFTC large traders in agricultural futures markets. \emph{Journal of Agricultural and Resource Economics} 34(2), 276--296.
+\end{thebibliography}
+\end{document}
