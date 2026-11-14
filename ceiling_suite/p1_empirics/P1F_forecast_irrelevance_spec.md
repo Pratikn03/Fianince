@@ -1,8 +1,25 @@
-# P1F: Is trader composition irrelevant for forecasting prices? (DRAFT specification, 14 November 2026)
+# P1F: Is trader composition irrelevant for forecasting prices? (registered 14 November 2026)
 
-**Status: DRAFT. Not registered.** Written by an AI system for the authors. It becomes a registration only when the
-authors approve it, the executor is written and hashed, and the specification is pushed in a commit of its own
-before any data in its window exist or are read. Nothing in this file has touched market data.
+**Status: REGISTERED.** Approved by the author on 14 November 2026 ("lets test and find if it workw e will add in
+the paper"; "give me colab run to test on real data"). The author's request to run on real data now is read as
+approving the draft's recommended choices: margin δ = 0.005 primary and 0.002 secondary, and a retrospective
+window (option R), because the prospective option cannot give a result now. This specification, the executor
+`p1f_executor.py`, the notebook `P1F_Forecast_Irrelevance_Colab.ipynb` and `P1F_unlocks.json` (opens = 0) are
+pushed in a commit of their own before any data in the window are downloaded. Their SHA-256 hashes are in
+`P1F_spec.json`. The test runs once. Written by an AI system for the authors.
+
+**Window and data reuse, disclosed.**
+- **Window.** The window is retrospective: 1 March 2022 to 29 April 2022, 60 UTC days. Training is 1–30 March;
+  test is 31 March–29 April.
+- **Binance futures metrics files for 2022 have not been read by any earlier test in this project.** P7S read
+  July 2024 to October 2026. E8–E16 used 2023–2026. C2, C3, F1, E1 and D1 used 2025–2026.
+- **Two earlier tests touched 2022 data:**
+  - O1 read futures prices around scheduled macro releases in 2022–2024, a few minutes on each release date.
+  - The spot feedback panel read Binance spot klines on the 10th and 24th of each month in 2021–2024.
+
+  Both asked different questions about different files or seconds. They are disclosed here, and the window is not
+  changed.
+- **Readers will know 2022.** The period is public history, including the market events of that spring.
 
 ## 1. Question and theory
 
@@ -33,18 +50,17 @@ P1F asks a different question, with different features, a different sample and a
     `sum_open_interest`.
 - **Bars.** 30 minutes, built from the 5-minute files: last close; summed signed taker flow, buy minus sell;
   last metrics row.
-- **Universe (fixed at registration from volume only).** The 30 USDT-margined perpetuals with the largest 24-hour
-  quote volume on the registration date, excluding those listed less than 90 days before it, read from the public
-  ticker. No return, flow or metrics data enter this choice.
-- **Window. The authors choose one before registration:**
-  - **Option P (recommended):** the 60 UTC days starting the day after the specification is pushed. Training is
-    the first 30 days, test the last 30. These data do not exist at registration.
-  - **Option R:** a retrospective window of 60 days that no earlier test has read. Binance metrics from July 2024
-    to October 2026 are spent (P7S), as are 2023–2024 training days and the 2nd, 9th, 10th, 22nd and 24th of months
-    in several tests. Option R needs an audit of the ledger by the authors first, and the paper must say it is
-    retrospective.
-- **Independence.** Under option P the window overlaps the P7S replication window (16 November 2026 to
-  14 February 2027) on related symbols. The two tests ask different questions but are not independent.
+- **Universe.** The 30 USDT-margined perpetuals with the largest February 2022 quote volume (monthly 1-day klines)
+  among symbols that have a metrics file and a 5-minute kline file on both 1 March and 29 April 2022. The choice
+  uses volume and file listings only.
+- **Window.** 1 March to 29 April 2022, as above.
+- **Files.** Every zip is checked against its published `.CHECKSUM`.
+- **Bars.** 30-minute bars on a complete UTC grid:
+  - close: the last 5-minute close;
+  - flow: the sum of signed taker quote volume, 2 × taker-buy quote − quote volume;
+  - metrics: the last snapshot strictly before the bar's end and inside the bar.
+
+  A bar with fewer than six 5-minute klines has no price or flow.
 
 ## 3. Variables
 
@@ -142,10 +158,19 @@ A1 passed in every simulated data set. The A3 gate detected the injected gain in
 - The weak-informed case shows that $\delta=0.005$ calls an effect of 0.24% "irrelevant". That follows from the
   margin's definition, and the paper must state the margin plainly.
 
-## 8. Decisions needed from the authors
+## 8. Executor and checks
 
-1. Approve or change the margin: 0.005 primary, with 0.002 as a secondary result.
-2. Choose option P or option R for the window.
-3. Approve the universe rule.
-4. Then the executor is written, tested on synthetic files in the archive's format, and hashed. After that, this
-   file is renamed without "DRAFT", the hashes are added, and it is pushed in a commit of its own.
+- **`p1f_executor.py`** implements sections 2–6. It was tested offline on synthetic files in the archive's format
+  (`research_extension/irrelevance/executor_test/`), with:
+  - checksum files;
+  - kline files with and without headers;
+  - a missing metrics file;
+  - a two-page archive listing.
+- **On those files it returned:**
+  - in the null world: "irrelevant", ΔR² = −0.013%;
+  - in the informed world: "relevant", ΔR² = +0.75%;
+  - in both worlds: A1 passed and the power gate was 1.00.
+- **The universe rule picked the 30 largest eligible symbols** and excluded those missing a file.
+- **Results.** The notebook writes `p1f_results.json`, `p1f_universe.json`, `p1f_coverage.json` and
+  `p1f_log.txt`, and zips them for download. After the run, the result is reported here as it came out, and
+  `P1F_unlocks.json` is set to opens = 1.
