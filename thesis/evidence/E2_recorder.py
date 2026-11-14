@@ -23,6 +23,7 @@ import json
 import logging
 import os
 from pathlib import Path
+import secrets
 import sys
 import time
 import urllib.error
@@ -155,3 +156,48 @@ if __name__ == '__main__':
         run_archive_intake()
     else:
         parser.print_help()
+
+
+def _utc_now():
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _sha256_of(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+class DailyWriter:
+    """Day-rotating, checksummed gzip chunk writer for the E2 recorder.
+
+    Restored from the registered recorder revision: each record is written
+    under a per-day directory; on rotation or close the finished chunk is
+    entered into chunks_manifest.jsonl with its SHA-256 and row count.
+    Payloads are stored verbatim; no zero imputation is performed.
+    """
+
+    def __init__(self, output):
+        self.output = Path(output); self.output.mkdir(parents=True, exist_ok=True)
+        self.day = None; self.file = None; self.path = None; self.rows = 0
+
+    def log(self, event):
+        with (self.output / 'connections_and_gaps.jsonl').open('a') as f:
+            f.write(json.dumps({'utc': _utc_now(), **event}) + '\n')
+
+    def close(self):
+        if self.file is not None:
+            self.file.close()
+            with (self.output / 'chunks_manifest.jsonl').open('a') as f:
+                f.write(json.dumps({'path': str(self.path.relative_to(self.output)),
+                                    'sha256': _sha256_of(self.path), 'rows': self.rows}) + '\n')
+            self.file = None
+
+    def write(self, raw, received):
+        day = received[:10]
+        if day != self.day or self.file is None:
+            self.close(); self.day = day
+            directory = self.output / day; directory.mkdir(exist_ok=True)
+            self.path = directory / ('forceOrder-' + secrets.token_hex(8) + '.jsonl.gz')
+            self.file = gzip.open(self.path, 'xt', encoding='utf-8'); self.rows = 0
+        payload = json.loads(raw)  # retain the exchange payload; no zero imputation
+        self.file.write(json.dumps({'received_utc': received, 'payload': payload}) + '\n')
+        self.file.flush(); self.rows += 1

@@ -8,7 +8,7 @@ This document provides an explicit, item-by-item audit of what is formalized in 
 
 | Project | Toolchain & Setup | Declarations | Axioms | Scope |
 |---|---|---|---|---|
-| [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) | Lean 4.34.1 + Mathlib (`d13f23b7`) | **787** named theorems across 81 modules in `CurrentProofs/` | `propext`, `Classical.choice`, `Quot.sound` (`0 sorry`) | Primary formalization over `ℝ` (`MeasureTheory`, `Matrix`, `EuclideanSpace`, `InformationTheory.klDiv`, `IsGreatest`, `sSup`). |
+| [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) | Lean 4.34.1 + Mathlib (`d13f23b7`) | **1235** named theorems across 144 modules in `CurrentProofs/` | `propext`, `Classical.choice`, `Quot.sound` (`0 sorry`) | Primary formalization over `ℝ` (`MeasureTheory`, `Matrix`, `EuclideanSpace`, `InformationTheory.klDiv`, `IsGreatest`, `sSup`). |
 | [`lean_proofs/`](lean_proofs/) | Plain Lean 4.34.1 (no Mathlib, over `Rat`) | **183** named theorems across 14 modules in `Proofs/` (437 audited declarations in `MachineMarkets`) | Standard axioms (`0 sorry`) | Exact rational arithmetic, polynomial identities, and numerical witness checks (`decide +kernel`, `grind`). |
 | [`research_extension/mechanism_formal_v1/`](research_extension/mechanism_formal_v1/) | Plain Lean 4.29.1 | **26** named theorems | Standard axioms (`0 sorry`) | Finite-game exact arithmetic checks (`decide +kernel`) for a worked disclosure example. |
 
