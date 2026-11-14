@@ -174,3 +174,17 @@ A1 passed in every simulated data set. The A3 gate detected the injected gain in
 - **Results.** The notebook writes `p1f_results.json`, `p1f_universe.json`, `p1f_coverage.json` and
   `p1f_log.txt`, and zips them for download. After the run, the result is reported here as it came out, and
   `P1F_unlocks.json` is set to opens = 1.
+
+## Result (run once by the author on 14 November 2026)
+
+**VOID.** None of the 30 symbols met the coverage rule: coverage was 0.000 in both halves for every symbol.
+
+- **Data were present.** All 3,600 files were present and checksum-verified, with none missing.
+- **No outcome was computed.** The executor stops at the coverage rule, before any return, forecast or test
+  statistic is calculated. So no outcome of P1F has been seen.
+- **Cause.** Coverage of exactly zero with every file present points to a mismatch between the 2022 files and the
+  executor's bar construction, not to missing data. Possible reasons are a field that is empty in 2022 metrics files
+  or a parsing difference. The offline test used files in the 2024 format, so it could not catch this.
+- **Diagnosis.** It must use days outside the window and look at file structure only.
+- **Next step.** Any change of code or window is an amendment that needs the author's approval and is disclosed.
+  Outputs: `results/p1f_results.zip`.
