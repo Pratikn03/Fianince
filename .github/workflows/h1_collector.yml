@@ -1,0 +1,39 @@
+# H1 collector on GitHub Actions. Kept in docs/ (inactive) until the repository owner approves; enabling means copying
+# it to .github/workflows/h1_collector.yml. Every 3 hours a job runs the registered collector for 5 h 50 min, so two
+# jobs always overlap and a delayed start leaves no gap; each job publishes its output as an asset of the release
+# `h1-data`, and thesis/evidence/h1_merge.py merges the assets into the Drive folder (trades deduplicated by trade id,
+# coverage by the maximum per minute). It uses the universe committed in thesis/evidence/H1_universe.json, the one the
+# first Colab session drew, and refuses to run without it.
+name: H1 collector
+on:
+  schedule:
+    - cron: "7 */3 * * *"
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: h1-collector-${{ github.run_id }}
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install websockets numpy pandas scipy
+      - name: Collect
+        run: |
+          test -f thesis/evidence/H1_universe.json || { echo "H1 universe not committed"; exit 1; }
+          mkdir -p h1_out && cp thesis/evidence/H1_universe.json h1_out/
+          cd thesis/evidence
+          python -c "import asyncio, h1_hyperliquid as C; asyncio.run(C.collect('../../h1_out', hours=5.83))"
+      - name: Publish to the h1-data release
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tar -czf "h1-${GITHUB_RUN_ID}.tar.gz" -C . h1_out
+          gh release view h1-data >/dev/null 2>&1 || gh release create h1-data --prerelease --title "H1 collector output" \
+            --notes "Raw Hyperliquid trades for Test H1, one asset per collector run. Merge with thesis/evidence/h1_merge.py."
+          gh release upload h1-data "h1-${GITHUB_RUN_ID}.tar.gz" --clobber
