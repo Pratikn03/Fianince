@@ -39,3 +39,27 @@ Written by an AI system for the authors. This is one reader's judgement, not ind
 - Read Ing and Wei (2003). Confirm their conditions on the news and on the growth of L, and confirm that their result is for same-realization prediction.
 - Confirm the Gauss–Radau facts: positive weights, exact to degree 2K-2. These are standard.
 - Then edit the disclosure sentence and post.
+
+## Update, later on 15 November: three gaps closed, and the other tool's branch
+
+**The branch `paper1-focused-validation-2026-11-14`.** It holds no work. Its tip is commit `1f7180f`, an older commit
+of `main`; it is 0 commits ahead of `main` and 10 behind. Whatever the other tool wrote was never pushed. The same is
+true of the two older `claude/` branches (0 ahead). Nothing could be merged.
+
+**Gaps closed in the SSRN version (all in `ssrn_parts.tex`, proofs in Supplement S28).**
+
+| Gap before | What was done | Status |
+|---|---|---|
+| "Invisible" and "irrelevant" were two separate results | **Theorem 5.1 (detection equals forecast loss).** For any two populations, the information a price record carries about which one is trading equals the cumulative forecast loss from confusing them, divided by twice the news variance. No test separates them until that loss exceeds one period's news variance | Proved (a few lines; the mathematics is the standard chain rule, and the paper says so). Checked by simulation on 64 cases; Figure 2 |
+| The upper bound for general rules was conditional on an inverse bound we did not prove | **Theorem 4.6.** For linear rules of any memory shape, the cost is of order spread^-(4K-2) above and below, in the paper's own experiment model, under a rank condition on the derivatives of the memory shape. The condition is proved for exponential and power-law memory and checked numerically for two more shapes | Proved in full. Estimator simulated: slopes -3.05 and -3.08 against -3 |
+| Forecast irrelevance relied on a cited expansion for one fixed population | **Theorem 5.2(iii).** A bound on the value of composition to a forecaster that holds at every horizon and uniformly over the number of groups and the spacing of memories (Bayesian autoregression, log-likelihood units) | Proved in full. Simulated: 44.4 and 44.1 against a bound of 66.5 |
+
+**Still open, and not closable by writing.**
+- No direct evidence on real accounts until H1 opens (mid-December at the earliest) and P1F-A1 runs (16 January 2027).
+- No upper bound for nonlinear rules.
+- The drift rate in Remark 5.3 is not proved.
+- The proofs of S28 have not been checked by the authors.
+
+**Effect on the level.** Theory only: about 76 to 78. The paper now has one idea that a reader can repeat (a market
+hides exactly those features of its traders that do not matter for its prices), with matched bounds that no longer
+depend on exponential memory. The ceiling table above is unchanged: evidence, not theory, is what moves it past 80.

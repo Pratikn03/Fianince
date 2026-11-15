@@ -1,6 +1,6 @@
 """Builds paper1_ssrn.tex, the SSRN version (15 November 2026), from paper1_focus.tex (run build_note.py first) and the
-blocks in ssrn_parts.tex. Adds Theorem n:univ and Proposition n:univup (the cost of composition for any smooth family),
-Section n:irr_sec (forecast irrelevance), a rewritten abstract and introduction, and the supplement section with proofs.
+blocks in ssrn_parts.tex. Adds Theorems n:univ and n:shape (the cost of composition for any smooth family and any memory shape),
+Section n:irr_sec (detection equals forecast loss; forecast irrelevance), a rewritten abstract and introduction, and the supplement section with proofs.
 Compile paper1_ssrn.tex three times (after paper1b_companion.aux exists); split with
 python3 split_note.py paper1_ssrn.pdf Paper1_ssrn_main.pdf Paper1_ssrn_supplement.pdf"""
 import re
@@ -27,7 +27,7 @@ ev_old = t[t.index("\\paragraph{Evidence.} The contribution is theoretical"):t.i
 t = rep(t, ev_old, parts["evidence"] + "\n\n")
 t = rep(t, "The authors have verified all mathematical proofs, Lean~4 formalizations and empirical calculations, and take full responsibility for the content of the manuscript.",
         "The authors have verified the mathematical proofs, Lean~4 formalizations and empirical calculations of the results carried over from the version of 13 November 2026, and take full responsibility for the content of the manuscript. "
-        "The proofs of Theorems~\\ref{n:univ} and~\\ref{n:irr} and Propositions~\\ref{n:univup} and~\\ref{n:exc}, new in this version, are being checked by the authors.")
+        "The proofs of Theorems~\\ref{n:univ}, \\ref{n:shape}, \\ref{n:dual} and~\\ref{n:irr} and Proposition~\\ref{n:exc}, new in this version, are being checked by the authors.")
 t = rep(t, "\\date{13 November 2026}", "\\date{15 November 2026}")
 t = rep(t, "\\section{Machine checks in detail}\\label{app:mc}", parts["supp"] + "\n\n\\section{Machine checks in detail}\\label{app:mc}")
 i = t.index("\\end{thebibliography}")

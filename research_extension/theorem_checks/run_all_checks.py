@@ -132,6 +132,21 @@ check("hard limits: least-squares error slope -1/2 in N", o3["C3_ok"], f"slope {
 check("nonlinear traders: equal leverage ~ (d eta)^-6, distinct leverage bounded at d eta = 0", o3["C4_ok"], f"ratios {[round(x, 1) for x in o3['C4_ratio_per_halving_equal']]} vs {[round(x, 1) for x in o3['C4_ratio_per_halving_distinct']]}")
 check("cascade path: round rate = kappa*l(delta*), slow capital deepens the fall", o3["C5_ok"], f"rate {o3['C5_round_rate']:.3f} vs {o3['C5_kappa_Lprime']:.3f}; fall {o3['C5_fall_mechanical']:.3f} -> {o3['C5_fall_slow_capital']:.3f}")
 
+print("6g. Any family of rules: detection equals forecast loss, matched bounds, forecast irrelevance")
+UL = os.path.join(ROOT, "research_extension", "universal_law"); DU = os.path.join(ROOT, "research_extension", "duality")
+IR = os.path.join(ROOT, "research_extension", "irrelevance")
+run(UL, "universal_law_check.py"); ul = load(UL, "universal_law_results.json")
+sl = [v["slope_response_gap"] - v["predicted"] for k, v in ul.items() if k != "ok"]
+check("hard pair in three non-exponential families: response gap ~ spread^(2K-1), jets independent", ul["ok"], f"slope errors {min(sl):+.2f} to {max(sl):+.2f}")
+run(DU, "duality_check.py"); du = load(DU, "duality_results.json")
+check("detection equals forecast loss: KL = Lambda/2 within 4 standard errors, 64 combinations", du["identity_max_z"] < 4, f"largest z {du['identity_max_z']:.1f}")
+check("no test with both errors below 1/4 when Lambda <= 1", du["min_error_with_Lambda_at_most_1"] >= 0.25, f"smallest error {du['min_error_with_Lambda_at_most_1']:.3f}")
+check("minimum-distance estimator, non-exponential memory: weight error ~ spread^-(2K-1)", all(abs(v["slope"] - v["predicted"]) < 0.3 for v in du["upper"].values()), str({k: round(v["slope"], 2) for k, v in du["upper"].items()}))
+check("Bayesian autoregression: excess log-loss below the uniform bound, same for wide and close memories", all(v["cumulative_excess_logloss"] <= v["bound"] for v in du["irrelevance"].values()), str({k: round(v["cumulative_excess_logloss"], 1) for k, v in du["irrelevance"].items()}))
+run(IR, "irrelevance_theorem_check.py"); ir = load(IR, "irrelevance_theorem_results.json")
+ex = [v["excess_mse"] for v in ir["spacing"].values()]
+check("least-squares autoregression: excess forecast error does not depend on the spacing", ir["ok"] and abs(ex[0] - ex[1]) < 0.05 * ex[0], f"{ex[0]:.3e} vs {ex[1]:.3e}")
+
 if SLOW:
     print("7. Pooling markets: global fibres and the two-market worst case (slow)")
     run(CM, "global_fibres.py"); run(CM, "pooling_table.py")
