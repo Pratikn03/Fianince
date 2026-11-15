@@ -1,0 +1,169 @@
+%%BEGIN abstract
+\noindent An exchange can reduce feedback trading across a market or restrict a particular class of traders. We study what the public record reveals about the effects of these actions. For traders who follow a common public signal, the aggregate feedback response determines public outcomes under fixed causal strategies. A uniform reduction depends on this response; a class-specific restriction can meet a prudential ceiling in one population and fail in another with nearly indistinguishable public records. For a smooth one-parameter family, common initialization and Gaussian innovations, we construct $K$-type populations within radius $\Delta$ whose distinction requires at least order $\Delta^{-(4K-2)}$ observations under a uniform derivative-moment bound. Matching recovery requires additional identifiability and observation assumptions. Class-tagged flows remove the spacing penalty for recovering weights once at most one memory class remains untagged. In a stationary exponential-memory benchmark, a price-signal predictor approaches the composition oracle's forecast risk pointwise. We distinguish these theoretical results from the pending empirical tests and from the portions checked in Lean~4.
+%%END abstract
+
+%%BEGIN intro
+\paragraph{The economic question.} A supervisor may know how strongly a market reacts to past prices while knowing little about which traders generate that response. These are different objects of inference. If every group's feedback is scaled by the same factor, the aggregate response is sufficient to evaluate the intervention in our model. If a particular group is halted, its contribution matters. This paper quantifies that distinction and the information supplied by class-tagged reports.
+
+\paragraph{The answer.} Under a common public signal and fixed causal rules, the population enters public market outcomes through its aggregate flow map. For linear rules this map is the feedback kernel. Equal kernels give equal public paths, insider profits and dealer inventories under the same shocks and strategies; the resulting equilibrium correspondence uses the same strategy spaces and public payoff maps. Individual feedback traders' payoffs need not agree. A counterfactual that changes their strategies requires a separate invariance or equilibrium argument.
+
+Three results organize the analysis. First, closely spaced types are weakly identified. A moment-matched pair of $K$-type populations has aggregate-flow differences of order $\Delta^{2K-1}$, leading to a Gaussian information lower bound of order $\Delta^{-(4K-2)}$. The smooth-family result requires common initial information, predictable probes and a derivative-moment bound uniform over the experiments being compared. It is a worst-case lower bound; some smooth families are never identified. Second, aggregate feedback can suffice for a decision even when the underlying population is hard to estimate. Proposition~\ref{n:target} gives the intervention comparison, and Corollary~\ref{n:decisionloss} expresses its consequence as expected decision loss. Third, reports that separately measure class flows change the observation experiment. In the exponential-memory model, tagging all but one memory class removes the spacing penalty for recovering class weights. An additional tag can still improve precision.
+
+\paragraph{A forecasting benchmark.} If the common pricing-error signal is observed, known parameters and zero initial group states make current positions reconstructible from its history. For an unknown fixed population in a stationary Gaussian market, a specified autoregressive predictor has excess forecast risk of order $\log T/T$ pointwise. This separates estimating an aggregate response from estimating its components. It does not establish a uniform bound as types collide, a monotone decline in the value of positions, or irrelevance for traded returns when fundamentals are hidden.
+
+\paragraph{Results and interpretation.} Theorems~\ref{n:suff}--\ref{n:ident} identify the sufficient public object; Theorems~\ref{n:cost}--\ref{n:univ} quantify identification costs in their specified experiments. Theorem~\ref{n:questions} classifies linear population functionals by their estimation cost. Section~\ref{n:sup} studies common interventions, targeting, partial disclosure and pooling across markets with shared memory rates. Section~\ref{n:dyn} considers bounded drift, and Section~\ref{n:sat} separates calm observations from observations that reach hard position limits. Illustrative calendar-year conversions depend on assumed noise, weight and spacing parameters; they are not estimates of a particular venue's identification horizon.
+
+The motivation is consistent with evidence of difficult parameter estimation in heterogeneous-agent models \citep{lux2018} and weak predictive content of large-trader positions in ten agricultural futures markets \citep{sanders2009}. Those findings neither identify the mechanism here nor test its intervention counterfactuals. The empirical exercises are reported with their registered outcomes and limitations.
+%%END intro
+
+%%BEGIN forecast
+\section{Forecasting the public signal without recovering composition}\label{n:irr_sec}
+
+The forecasting target is the pricing error $x_t$ in \eqref{n:eq:model}. We assume it is observed by the forecaster. Observing a traded price $p_t=x_t+f_t$ alone does not generally reveal $x_t$. Take $q_i\ge0$, $0<r_i<1$, $\kappa>0$, $S<1$ and no probes. The following parts use different initialization and decision regimes.
+
+\begin{theorem}[A forecast benchmark]\label{n:irr}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Known parameters and zero group states.} Let $(a,\kappa,q_i,r_i)$ be known, $y_{i,-1}=0$, and next-period news have conditional mean zero and variance $\sigma^2$, independent of the record. With $\mathcal P_t=\sigma(x_0,\ldots,x_t)$ and $\mathcal C_t=\sigma(x_s,q_i y_{i,s}:0\le s\le t, i\le K)$, one has $\mathcal C_t=\mathcal P_t$ and
+\[
+\mathbb E[x_{t+1}\mid\mathcal C_t]=\mathbb E[x_{t+1}\mid\mathcal P_t]
+=a x_t+\kappa\sum_{m=0}^t k_m x_{t-m}.
+\]
+Both optimal forecasts have mean squared error $\sigma^2$.
+\item \emph{A fixed unknown population in stationarity.} Assume a stationary solution with iid $N(0,\sigma^2)$ innovations, $\sigma>0$, and $W=\sum_iw_i>0$. Set $\bar r=\max_i r_i<1$, $L_T=\lceil c\log T\rceil$, with $c\log(1/\bar r)>1/2$. Fit the same-realization least-squares predictor using the common-row convention of \citet[Proposition~2]{ingwei2005}: choose $K_T=\lfloor T^{1/(2+\epsilon)}\rfloor$ for a fixed $\epsilon>0$, use origins $K_T,\ldots,T-1$, and $L_T$ observed lags. Then, for this fixed process,
+\[
+\mathbb E(x_{T+1}-\hat x_{T+1})^2-\sigma^2
+=\frac{\sigma^2 L_T}{T}\{1+o(1)\}.
+\]
+An oracle supplied with $(a,\kappa)$ and the actual current weighted group states has risk $\sigma^2$. Before estimation, the best order-$L$ linear projection has excess risk $A_L$ satisfying
+\[
+0\le A_L\le
+\frac{\sigma^2(\kappa W)^2}{(1-S)^2(1-\bar r^2)}\,\bar r^{2L},\qquad L\ge1.
+\]
+\end{enumerate}
+\end{theorem}
+
+Part (i) compares information sets under known parameters. Part (ii) compares an implementable predictor with an oracle, at each fixed parameter. Fixed unknown constants do not themselves enlarge a sigma field; a Bayesian or minimax value of learning those constants would require a prior or a common parameter-class risk. The result supplies neither a finite-sample bound of $\sigma^2L_T/T$ nor a remainder uniform as $\Delta\to0$ or $S\to1$. Its leading pointwise term contains no memory-spacing parameter. No monotonicity of forecast value in that spacing follows.
+
+\begin{remark}[Drift remains a separate problem]
+For weights changing over time, the preceding stationary expansion does not apply. A window-length trade-off suggests rates involving the drift speed, but requires mixing, stability, excitation and estimation bounds uniform over the drifting class. The earlier simulation selected a window by its realized evaluation error and used random-walk increments, rather than a deterministic bound on each increment. It is exploratory and supplies no proof of a bounded-drift rate. A valid test fixes the window using training data and evaluates independent seeds without selecting on their outcomes.
+\end{remark}
+
+\begin{proposition}[Channels through which class records can matter]\label{n:exc}
+\begin{enumerate}[label=(\alph*),itemsep=1pt]
+\item \emph{Private signals.} There are specified-flow economies in which a tagged record reveals future news absent from the public history and reduces forecast risk by a positive amount. This is an existence statement, without an optimal-trading or equilibrium claim.
+\item \emph{Exogenous component flows.} Suppose both observers know the feedback parameters and recoverable states and observe the exact aggregate exogenous flow $U_s=\sum_i u_{i,s}$ for every $s\le t$. The augmented observer also sees every $u_{i,s}$. Let these flows be jointly stationary Gaussian and independent of price news, and assume price initialization adds no information about future flows conditional on their histories. For
+$x_{t+1}=a x_t+\kappa\sum_iq_i y_{i,t}+\kappa U_{t+1}+\varepsilon_{t+1}$,
+the reduction in forecast risk is exactly $\kappa^2$ times the reduction in projection-error variance for $U_{t+1}$. It is zero if all components have common autoregressive coefficients and innovations unpredictable from the joint past.
+\item \emph{Unobserved components of the price.} If only $p_t=x_t+f_t$ is observed, a class record can help infer $x_t$ and improve forecasts of $p_{t+1}$ without advance information about future news.
+\item \emph{Stress and interventions.} The hard-limit experiment of Theorem~\ref{n:sat_thm} and the targeted decision of Proposition~\ref{n:target} concern further sources of value. The exact calm-market result is for band-linear hard limits. Smooth saturation need not be exactly invisible in noiseless small-probe observations. These channels are not exhaustive.
+\end{enumerate}
+\end{proposition}
+
+The aggregate-versus-component forecasting comparison is established in the disaggregation literature \citep{lutkepohl1987,hendry2011}; the benchmark here specifies when feedback components add no information. Supplement Section~\ref{app:univirr} proves the claims and gives explicit counterexamples to broader interpretations.
+
+\begin{proposition}[Fitted-forecast gains and the value of information]\label{n:learnergap}
+Let $D$ be the training sigma field. Let $\mathcal F_B\subseteq\mathcal F_A$ be the baseline and augmented forecast information sets, both containing $D$, and let $m_j=\mathbb E[Y\mid\mathcal F_j]$ for a square-integrable target $Y$. For square-integrable fitted predictors $f_j$ measurable with respect to $\mathcal F_j$, define $e_j=\mathbb E[(f_j-m_j)^2\mid D]$ and conditional squared-error risks $R_j=\mathbb E[(Y-f_j)^2\mid D]$. Then
+\[
+R_B-R_A=\underbrace{\mathbb E[(Y-m_B)^2-(Y-m_A)^2\mid D]}_{\Delta_*\,\ge0}
++e_B-e_A,
+\qquad \Delta_*\le R_B-R_A+e_A.
+\]
+Thus an upper bound on the gain of fitted forecasts bounds the oracle value of additional information only with a separate bound on the augmented predictor's excess risk. Dividing by a common positive variance normalization gives the corresponding identity for normalized gains.
+\end{proposition}
+
+This projection identity is standard; its role here is to delimit what the proposed forecast exercise can establish. In an offline diagnostic with a known population-oracle gain of $0.005$, the candidate classified 55 of 200 iid worlds as irrelevant, with 133 inconclusive and 12 relevant. Its average estimated gain was $0.004688$. The diagnostic failed its stated boundary criterion. It evaluates the population-oracle boundary, which differs from the conditional fitted-predictor estimand; the discrepancy therefore does not by itself isolate a bootstrap failure. We report it as a reason to require an estimand-specific calibration before live inference, rather than as a market result or a test of Theorem~\ref{n:irr}.
+
+\paragraph{Empirical scope.} P1F compares specified forecasts of traded returns with and without Binance position-ratio features. The ratios are neither class-tagged executed flows nor the model's observed pricing error. A favorable result would support that forecast comparison within its power and equivalence margins; it would not establish structural invisibility or identify the mechanism. The first window was void: zero of 30 symbols met the registered coverage rule and no forecast outcome was computed. The replacement window is 16 November 2026--14 January 2027, with earliest execution on 16 January 2027 UTC. It has not begun on this revision's date. An offline audit identified boundary-label leakage, omitted final-day observations and incomplete secondary outputs in the executor. Candidate repairs and tests accompany this revision; the registered files and unlock counters are preserved. A documented amendment is required before a corrected empirical run can be described as the registered test.
+%%END forecast
+
+%%BEGIN decision
+\begin{corollary}[Expected loss from a weakly identified intervention]\label{n:decisionloss}
+Consider the pair in Proposition~\ref{n:target}. In economy 0 a halt of the largest verified class misses the prudential ceiling, while a common reduction meets it; in economy 1 both meet it. Let the loss of the unsuccessful halt in economy 0 be $b>0$, and the loss of an unnecessarily common restriction in economy 1 be $c>0$, with the other two losses zero. For equally likely economies and public-record laws $P_0,P_1$, every choice rule has average loss
+\[
+R\ \ge\ \frac{\min(b,c)}{2}\{1-\operatorname{TV}(P_0,P_1)\}
+\ \ge\ \frac{\min(b,c)}{2}\big[1-\sqrt{\mathrm{KL}(P_0\Vert P_1)/2}\big]_+.
+\]
+If the specified price experiment has $\mathrm{KL}(P_0\Vert P_1)\le C T\Delta^{4K-2}$, achieving $R\le\epsilon\min(b,c)$, $0<\epsilon<1/2$, requires
+$T\ge 2(1-2\epsilon)^2/(C\Delta^{4K-2})$.
+For independent Gaussian tagged measurements with common covariance $\tau^2I$, mean difference $d\ne0$ and $N$ repetitions, the likelihood-ratio rule instead has
+\[
+R_{\rm tag}\le \tfrac12\max(b,c)\exp\{-N\|d\|^2/(8\tau^2)\}.
+\]
+\end{corollary}
+
+This is a decision-theoretic consequence of the hard pair, not a new statistical lower-bound method. The losses are specified primitives, not estimated welfare effects. The tagged statement assumes a verified executable class identity and means known under the two hypotheses. It does not establish optimal disclosure in an unrestricted market. The proof and a stable two-class example are in Supplement Section~\ref{app:revisiondecision}.
+
+\begin{figure}[tb]
+\centering\includegraphics[width=\textwidth]{fig_intervention_revision.pdf}
+\caption{\textbf{Intervention choice and an illustrative information comparison.} Panel A uses the two-class construction in Supplement Section~\ref{app:revisiondecision}, with $a=0.3$, $\kappa=0.5$, $W=0.2$ and $r_c=0.5$. A ceiling of $0.375$ separates the post-halt budgets while common scaling meets it in both economies. Panel B fixes $\Delta=0.05$ and compares exact likelihood-ratio errors for two known hypotheses. Each repetition measures 30 deterministic impulse-response coordinates with independent Gaussian measurement standard deviation $0.01$; the class report measures $\kappa w_1$ with the same standard deviation. The calculated requirements for 5\% error are about $2.03\times10^6$ public-response repetitions and two class reports. These are assumptions of an illustrative measurement experiment, not a passive-innovation model, feasible live reset policy or market calibration.}
+\label{fig:revisiondecision}
+\end{figure}
+%%END decision
+
+%%BEGIN forecastproof
+\begin{proof}[Proof of Theorem~\ref{n:irr}]
+(i) Induction gives $y_{i,t}=(1-r_i)\sum_{j=0}^t r_i^j x_{t-j}$ under zero initialization. Every tagged state is therefore measurable with respect to the observed signal history. The innovation is independent of that history, so substitution into the transition equation gives the conditional expectation and variance stated.
+
+(ii) This part uses the stationary infinite prehistory, not the initialization of part (i). Substitution yields
+$x_t=\sum_{j\ge1}\phi_jx_{t-j}+\varepsilon_t$,
+where $\phi_1=a+\kappa k_0$ and $\phi_j=\kappa k_{j-1}$ for $j\ge2$. The coefficients are nonnegative and sum to $S<1$. Consequently the autoregressive polynomial has no zero in the closed unit disk, and
+\[
+\frac{\sigma^2}{2\pi(1+S)^2}\le f_x(\omega)
+\le\frac{\sigma^2}{2\pi(1-S)^2}.
+\]
+The coefficient tail obeys $\phi_j\le\kappa W\bar r^{j-1}$ for $j\ge2$. The best order-$L$ linear predictor has no larger error than the predictor formed with the true first $L$ coefficients. Its excess risk is therefore bounded by
+\[
+\operatorname{Var}\Big(\sum_{j>L}\phi_jx_{t+1-j}\Big)
+\le 2\pi\sup_\omega f_x(\omega)\sum_{j>L}\phi_j^2
+\le\frac{\sigma^2(\kappa W)^2\bar r^{2L}}{(1-S)^2(1-\bar r^2)}.
+\]
+The first inequality follows from the spectral representation and Parseval's identity. It is uniform on classes with specified common bounds on $S,\bar r,W,\sigma$; this does not make the estimated-predictor expansion uniform.
+
+For the statistical expansion we use the sufficient conditions in \citet[Section~2, Proposition~2]{ingwei2005}, which restates the relevant result of \citet{ingwei2003}. Geometric coefficients satisfy the required weighted summability, the preceding polynomial bound gives stability, Gaussian innovations have a Lipschitz distribution function and moments of every order, and the chosen $K_T$ obeys its polynomial-growth condition. The common-row least-squares predictor thus has excess mean squared error
+$\{\sigma^2 L_T/(T-K_T)+A_{L_T}\}\{1+o(1)\}$
+for the fixed process. Since $K_T/T\to0$ and $\bar r^{2L_T}=o(T^{-1})$, the stated expansion follows. The oracle directly observes the current weighted states and uses the transition equation, giving innovation risk $\sigma^2$. Under stationarity, a finite observed history alone need not reconstruct the initial states; no such reconstruction is used here.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{n:exc}]
+(a) Let $Z_t$ be iid centered Gaussian with variance $v>0$ and let the public signal be $x_t=Z_t$. At date $t$, two groups with offsetting exposures submit $+\beta Z_{t+1}$ and $-\beta Z_{t+1}$, for $\beta\ne0$. Their orders cancel in the public aggregate, which supplies no information about $Z_{t+1}$. A noiseless group report supplies it exactly. Public forecast risk is $v$ and tagged forecast risk is zero. The example specifies information and flows; it does not solve a strategic trading game.
+
+(b) Subtract the known feedback contribution. Under the observation and initialization hypotheses, conditioning additionally on price news adds no information about future $U$. The two conditional errors are the independent innovation plus $\kappa$ times the corresponding error predicting $U_{t+1}$. Their variances differ by the stated amount. Joint Gaussianity identifies conditional means with linear projections. If $u_{i,t+1}=\sum_{j\ge0}\alpha_j u_{i,t-j}+e_{i,t+1}$, with joint-past martingale-difference innovations and a convergent representation, the conditional expectation of the sum is $\sum_j\alpha_j U_{t-j}$ under either information set. No gain then remains. Noisy aggregate reports or unknown feedback states fall outside this statement.
+
+(c) Take $x_{t+1}=\rho x_t+\epsilon_{t+1}$, $0<\rho<1$, with iid Gaussian $\epsilon$ of variance $v_\epsilon>0$, and observe only $p_t=x_t+f_t$ with independent iid Gaussian $f_t$ of variance $v_f>0$. An explicit instantaneous-feedback boundary case has $r=0$, $q>0$, $0<\kappa q<\rho$ and $a=\rho-\kappa q$: its current class flow $qx_t$ reveals $x_t$. The price-only observer in this example does not see the signal component observed by that group. Given the full price history, the steady-state filtering variance $P>0$ solves
+\[
+P=\frac{v_f(\rho^2P+v_\epsilon)}{\rho^2P+v_\epsilon+v_f}.
+\]
+Without the report, the risk for $p_{t+1}$ is $\rho^2P+v_\epsilon+v_f$; with the report it is $v_\epsilon+v_f$. The gain $\rho^2P>0$ comes from separating the current state from observation noise, even though neither group knows future innovations. This is a counterexample to extending the observed-signal benchmark to every traded-price observation system.
+
+(d) The hard-limit and intervention claims follow from the cited results with their respective observation contracts. For smooth saturation, exact identification from noiseless small probes and finite-sample information under noisy probes are different assertions.
+\end{proof}
+
+\paragraph{Why the final tag can matter.} Once one untagged class remains, its weight can be inferred from the estimated total and the other estimated weights at a rate independent of the memory spacing. This does not make an additional independent report valueless. In the Gaussian experiment $Y=w+e_1$ and $Z=w+e_2$, with independent errors of variance $\tau^2$, the unbiased estimator $Y$ has variance $\tau^2$, while $(Y+Z)/2$ has variance $\tau^2/2$. Both have the same spacing exponent, zero. The example refutes a universal zero-value claim; correlated or costly reports require their own comparison.
+
+\begin{proof}[Proof of Proposition~\ref{n:learnergap}]
+For either information set, expand $Y-f_j=(Y-m_j)+(m_j-f_j)$. The cross term has conditional expectation zero given $D$: first condition on $\mathcal F_j$, use $\mathbb E[Y-m_j\mid\mathcal F_j]=0$, and apply the tower property since $D\subseteq\mathcal F_j$. Hence $R_j=\mathbb E[(Y-m_j)^2\mid D]+e_j$. Subtracting gives the identity, and $e_B\ge0$ gives the upper bound on $\Delta_*$. Nested information also implies $\Delta_*=\mathbb E[(m_A-m_B)^2\mid D]\ge0$ by the same orthogonality argument. For a concrete limit, let $Y=C$ with unit variance, let the baseline observe no signal, and let the augmented observer see $C$. If both fitted predictors equal zero, their gain is zero while the oracle gain is one. No uniformly valid inference of oracle irrelevance can follow from that fitted comparison alone.
+\end{proof}
+
+\paragraph{Numerical evidence and formal scope.} The original response-gap simulation and the revised high-precision information calculation are finite-design checks. Neither establishes a uniform inverse inequality. The earlier forecast simulation chose its window on evaluation loss; it is retained in the source archive as exploratory output and is not used to establish the theorem. The additional Lean file checks the deterministic polynomial-cancellation, estimation and decision-loss steps listed in the validation report. The sequential Gaussian likelihood, Pinsker inequality, Gaussian concentration, conditional-projection argument and same-realization autoregression theorem remain paper-level or cited ingredients. Full mechanization of these results is not asserted.
+%%END forecastproof
+
+%%BEGIN decisionproof
+\section{Intervention loss: proof and a two-class construction}\label{app:revisiondecision}
+
+\begin{proof}[Proof of Corollary~\ref{n:decisionloss}]
+Let $A$ be the event that the supervisor authorizes the class-specific halt. Its equally weighted expected loss is $\{bP_0(A)+cP_1(A^c)\}/2$. It is at least
+$\min(b,c)\{1-[P_1(A)-P_0(A)]\}/2$, hence at least $\min(b,c)(1-\operatorname{TV})/2$. Randomized rules follow by adjoining the same independent randomization to both experiments. Pinsker's inequality and nonnegativity give the second bound. Rearranging it under the KL upper bound proves the sample requirement. This argument also applies to unequal policy costs; the minimum is a conservative bound, while the exact Bayes risk is one half the integral of $\min(bp_0,cp_1)$ under a common dominating measure.
+
+For the tagged Gaussian experiment, projection of the sample mean on the difference of means gives a test with both errors $\Phi(-\sqrt N\|d\|/(2\tau))$. The Gaussian tail bound $\Phi(-z)\le\tfrac12 e^{-z^2/2}$, $z\ge0$, gives the result. Equal-prior likelihood ratio testing need not minimize cost-weighted loss when $b\ne c$, but it supplies the stated upper bound.
+\end{proof}
+
+Set $a=0.3$, $\kappa=0.5$, $W=0.2$, $r_c=0.5$ and $\Delta=0.05$. Define the merged measures by nodes and weights
+\[
+M_0:\quad r_c\pm\Delta/\sqrt3,\quad (W/2,W/2),
+\qquad
+M_1:\quad (r_c-\Delta,r_c+\Delta/3),\quad(W/4,3W/4).
+\]
+Their moments agree through order two. Convert trading weights to activity by $q_i=w_i/(1-r_i)$. Both economies have $S\simeq0.5006<1$. After halting the largest class their budgets are approximately $0.3945$ and $0.3455$. A ceiling of $0.375$ is therefore missed in economy 0 and met in economy 1. Scaling all activity by $1/3$ meets the ceiling in both, with budgets approximately $0.3669$. The ceiling is prudential: both original economies are already stable.
+
+As $\Delta\downarrow0$, the post-halt budgets converge to $a+\kappa W/[2(1-r_c)]$ and $a+\kappa W/[4(1-r_c)]$, respectively. The fixed ceiling $a+3\kappa W/[8(1-r_c)]$ lies strictly between them. The decision margin therefore stays positive for all sufficiently small positive $\Delta$, while the public response difference starts at order $\Delta^3$. This explicit example displays the $K=2$ mechanism; the all-$K$ existence result is Proposition~\ref{prop:targetK}. The action presumes a reliable mapping from a class to executable accounts. Anonymous latent-atom estimation alone does not supply that mapping.
+%%END decisionproof

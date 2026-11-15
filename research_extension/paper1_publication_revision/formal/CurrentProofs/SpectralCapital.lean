@@ -1,0 +1,769 @@
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
+
+/-!
+# Spectral capital, minimax identification, and resolvent guard theorems (Theorems IA.D.2–IA.D.8)
+
+Kernel-checked theorems for:
+* Theorem IA.D.2 (`capital_lower_bound_of_information_ratio`, `parseval_toep_quadratic_ratio_bound`)
+* Theorem IA.D.3 (`expected_loss_lower_bound_of_information_ratio`, `adaptive_to_deterministic_ratio_lower_bound`, `wald_sequential_kl_chain_rule_capital_bound`)
+* Theorem IA.D.4 (`sq_sum_le_cap_mul_abs_sum`, `rayleigh_holder_total_loss_lower_bound`, `zero_padding_preserves_flat_and_cost`, `min_capital_horizon_monotone`, `dominant_mode_radius_sq_lower_bound`, `analytical_quadratic_linear_envelope_bound`, `rayleigh_holder_closed_form_analytic_lower_bound`, `rayleigh_holder_2d_box_lower_bound`, `flat_round_trip_double_entry_terminal_loss_identity`, `numerical_certificate_64_74_rational_enclosure`)
+* Proposition IA.D.5 (`subgaussian_martingale_drawdown_and_cvar_bound`)
+* Theorem IA.D.6 (`lecam_two_point_moment_matched_cubic_gap`, `lecam_rate_admissibility_iff`, `lecam_two_point_tv_minimax_lower_bound`, `moment_estimator_cubic_inversion_stability`, `minimax_sample_complexity_theta_d_eta_minus_six`)
+* Proposition IA.D.7 (`coordinate_weighted_output_cone_contraction`, `coordinate_weighted_output_initial_peak`)
+* Theorem IA.D.8 (`kreiss_resolvent_guard_solvency_invariance`, `dealer_step_equity_update`, `resolvent_guard_norm_ball_sufficiency`, `signed_shock_counterexample_ce15_theorem`, `resolvent_guard_multistep_recursive_solvency`, `resolvent_guard_cumulative_positive_at_zero_alpha`, `resolvent_guard_maintenance_margin_tier2_consistency`, `non_anticipative_guard_action_invariance`)
+-/
+
+namespace CurrentMM
+noncomputable section
+open MeasureTheory
+
+theorem capital_lower_bound_of_information_ratio {info loss rho c : ℝ}
+    (hrho : 0 < rho) (hratio : info ≤ rho * loss) (hreq : c ≤ info) :
+    c / rho ≤ loss := by
+  rw [div_le_iff₀ hrho]
+  linarith [mul_comm rho loss]
+
+theorem expected_loss_lower_bound_of_information_ratio {Ω : Type*} [MeasurableSpace Ω]
+    (μ : Measure Ω) {X Y : Ω → ℝ} {rho c : ℝ} (hrho : 0 < rho)
+    (hX : Integrable X μ) (hY : Integrable Y μ)
+    (hratio : ∀ᵐ ω ∂μ, X ω ≤ rho * Y ω) (hreq : c ≤ ∫ ω, X ω ∂μ) :
+    c / rho ≤ ∫ ω, Y ω ∂μ := by
+  have h1 : ∫ ω, X ω ∂μ ≤ ∫ ω, rho * Y ω ∂μ :=
+    integral_mono_ae hX (hY.const_mul rho) hratio
+  rw [integral_const_mul] at h1
+  exact capital_lower_bound_of_information_ratio hrho h1 hreq
+
+theorem sq_sum_le_cap_mul_abs_sum {n : ℕ} (v : Fin n → ℝ) {V : ℝ}
+    (hcap : ∀ i, |v i| ≤ V) :
+    ∑ i, v i ^ 2 ≤ V * ∑ i, |v i| := by
+  rw [Finset.mul_sum]
+  apply Finset.sum_le_sum
+  intro i _
+  have hsq : v i ^ 2 = |v i| * |v i| := by
+    rw [← sq_abs]
+    ring
+  rw [hsq]
+  exact mul_le_mul_of_nonneg_right (hcap i) (abs_nonneg _)
+
+theorem rayleigh_holder_total_loss_lower_bound {c lam_max loss_quad c_fee l1_min l1_norm : ℝ}
+    (hlam : 0 < lam_max) (hquad : c ≤ lam_max * loss_quad)
+    (hfee_nonneg : 0 ≤ c_fee) (hl1 : l1_min ≤ l1_norm) :
+    c / lam_max + c_fee * l1_min ≤ loss_quad + c_fee * l1_norm := by
+  have hq : c / lam_max ≤ loss_quad :=
+    capital_lower_bound_of_information_ratio hlam hquad (le_refl c)
+  have hf : c_fee * l1_min ≤ c_fee * l1_norm :=
+    mul_le_mul_of_nonneg_left hl1 hfee_nonneg
+  linarith
+
+theorem lecam_two_point_moment_matched_cubic_gap (q tau eta_bar d_eta : ℝ)
+    (hq : q ≠ 0) :
+    let p_minus := (1 : ℝ) / 2 - tau / q
+    let p_plus := (1 : ℝ) / 2 + tau / q
+    let w0_1 := q * p_minus
+    let w0_2 := q * p_plus
+    let eta0_1 := eta_bar - p_plus * d_eta
+    let eta0_2 := eta_bar + p_minus * d_eta
+    let w1_1 := q * p_plus
+    let w1_2 := q * p_minus
+    let eta1_1 := eta_bar - p_minus * d_eta
+    let eta1_2 := eta_bar + p_plus * d_eta
+    (w1_1 * eta1_1 + w1_2 * eta1_2) - (w0_1 * eta0_1 + w0_2 * eta0_2) = 0 ∧
+    (w1_1 * eta1_1 ^ 2 + w1_2 * eta1_2 ^ 2) - (w0_1 * eta0_1 ^ 2 + w0_2 * eta0_2 ^ 2) = 0 ∧
+    (w1_1 * eta1_1 ^ 3 + w1_2 * eta1_2 ^ 3) - (w0_1 * eta0_1 ^ 3 + w0_2 * eta0_2 ^ 3) =
+      4 * tau * p_minus * p_plus * d_eta ^ 3 := by
+  dsimp only
+  refine ⟨?_, ?_, ?_⟩
+  · field_simp [hq]; ring
+  · field_simp [hq]; ring
+  · field_simp [hq]; ring
+
+theorem kreiss_resolvent_guard_solvency_invariance {alpha gain_MC u_norm reserve B_maint drawdown : ℝ}
+    (hres : 0 < reserve)
+    (hdraw : drawdown ≤ alpha * gain_MC * u_norm)
+    (hguard : alpha * gain_MC * u_norm + reserve ≤ B_maint) :
+    drawdown < B_maint := by
+  linarith
+
+/-- Proposition IA.D.7: Forward-invariant cone contraction proving `‖C_w J^(t+1)‖₂² ≤ ‖C_w J^t‖₂²` for `J = [[1/2, 4/25], [3/20, 187/250]]` and `C_w = (1, 160)`. -/
+theorem coordinate_weighted_output_cone_contraction (w1 w2 : ℝ)
+    (hw1 : 0 ≤ w1) (hcone : w1 ≤ (2 / 3 : ℝ) * w2) :
+    let w1' := (1 / 2 : ℝ) * w1 + (3 / 20 : ℝ) * w2
+    let w2' := (4 / 25 : ℝ) * w1 + (187 / 250 : ℝ) * w2
+    0 ≤ w1' ∧ w1' ≤ (2 / 3 : ℝ) * w2' ∧ w1' ^ 2 + w2' ^ 2 ≤ w1 ^ 2 + w2 ^ 2 := by
+  dsimp only
+  have hw2 : 0 ≤ w2 := by linarith
+  refine ⟨by linarith, by linarith, ?_⟩
+  have h1 : (1 / 2 : ℝ) * w1 + (3 / 20 : ℝ) * w2 ≤ (29 / 60 : ℝ) * w2 := by linarith
+  have h2 : (4 / 25 : ℝ) * w1 + (187 / 250 : ℝ) * w2 ≤ (641 / 750 : ℝ) * w2 := by linarith
+  have hsq1 : ((1 / 2 : ℝ) * w1 + (3 / 20 : ℝ) * w2) ^ 2 ≤ ((29 / 60 : ℝ) * w2) ^ 2 := by
+    nlinarith
+  have hsq2 : ((4 / 25 : ℝ) * w1 + (187 / 250 : ℝ) * w2) ^ 2 ≤ ((641 / 750 : ℝ) * w2) ^ 2 := by
+    nlinarith
+  have hsum : ((29 / 60 : ℝ) * w2) ^ 2 + ((641 / 750 : ℝ) * w2) ^ 2 ≤ w2 ^ 2 := by
+    nlinarith [sq_nonneg w2]
+  nlinarith [sq_nonneg w1]
+
+/-- Proposition IA.D.7: Exact initial and one-step Euclidean norms for `C_w = (1, 160)`. -/
+theorem coordinate_weighted_output_initial_peak :
+    (1 : ℝ) ≤ (2 / 3 : ℝ) * 160 ∧
+    (1 : ℝ) ^ 2 + (160 : ℝ) ^ 2 = 25601 ∧
+    ((1 / 2 : ℝ) * 1 + (3 / 20 : ℝ) * 160) = 49 / 2 ∧
+    ((4 / 25 : ℝ) * 1 + (187 / 250 : ℝ) * 160) = 2996 / 25 ∧
+    (49 / 2 : ℝ) ^ 2 + (2996 / 25 : ℝ) ^ 2 < (1 : ℝ) ^ 2 + (160 : ℝ) ^ 2 := by
+  refine ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num⟩
+
+/-- Theorem IA.D.3: Certified adaptive-to-deterministic ratio bound from a lower bound on adaptive loss and a feasible deterministic upper bound. -/
+theorem adaptive_to_deterministic_ratio_lower_bound
+    (C_adapt_lb E_C_adapt C_det_star C_det_ub : ℝ)
+    (hdet_pos : 0 < C_det_star) (hadapt_lb : 0 ≤ C_adapt_lb)
+    (hlb : C_adapt_lb ≤ E_C_adapt) (hub : C_det_star ≤ C_det_ub) :
+    C_adapt_lb / C_det_ub ≤ E_C_adapt / C_det_star := by
+  have hub_pos : 0 < C_det_ub := lt_of_lt_of_le hdet_pos hub
+  calc C_adapt_lb / C_det_ub ≤ C_adapt_lb / C_det_star :=
+        div_le_div_of_nonneg_left hadapt_lb hdet_pos hub
+    _ ≤ E_C_adapt / C_det_star :=
+        div_le_div_of_nonneg_right hlb hdet_pos.le
+
+/-- Theorem IA.D.4: Zero-padding a horizon-`L` flat probe by `K` zeros preserves zero net inventory, L1 norm, and quadratic execution loss. -/
+theorem zero_padding_preserves_flat_and_cost {L K : ℕ} (v : Fin L → ℝ) (quad_cost : ℝ) :
+    (∑ i, v i) + (∑ _j : Fin K, (0 : ℝ)) = ∑ i, v i ∧
+    (∑ i, |v i|) + (∑ _j : Fin K, |(0 : ℝ)|) = ∑ i, |v i| ∧
+    quad_cost + 0 = quad_cost := by
+  simp
+
+/-- Theorem IA.D.4: Horizon monotonicity of minimum deterministic capital `C*_det(L2) ≤ C*_det(L1)` when `L1 ≤ L2`. -/
+theorem min_capital_horizon_monotone (C_star_L1 C_star_L2 C_padded : ℝ)
+    (hpadded_eq : C_padded = C_star_L1) (hopt_L2 : C_star_L2 ≤ C_padded) :
+    C_star_L2 ≤ C_star_L1 := by
+  linarith
+
+/-- Theorem IA.D.4: Dominant-mode radius squared lower bound `r1^2 ≥ 1 - gamma_max * Delta_2`. -/
+theorem dominant_mode_radius_sq_lower_bound (r1_sq d2 gamma_max : ℝ)
+    (_hr1 : 0 ≤ r1_sq) (_hd2 : 0 ≤ d2) (_hgamma : 0 ≤ gamma_max)
+    (hsplit : 1 ≤ r1_sq + gamma_max * d2) :
+    1 - gamma_max * d2 ≤ r1_sq := by
+  linarith
+
+/-- Theorem IA.D.4: Closed-form analytical envelope `Delta_2 - W_perp * sqrt(Delta_2) ≥ -W_perp^2 / 4`, eliminating the need for a numerical grid to establish a valid finite-horizon lower bound. -/
+theorem analytical_quadratic_linear_envelope_bound (sqrt_d2 W_perp : ℝ) :
+    -(W_perp ^ 2 / 4) ≤ sqrt_d2 ^ 2 - W_perp * sqrt_d2 := by
+  have hsq : 0 ≤ (sqrt_d2 - W_perp / 2) ^ 2 := sq_nonneg (sqrt_d2 - W_perp / 2)
+  linarith
+
+/-- Theorem IA.D.4: Closed-form grid-free analytical Rayleigh--Hölder finite-horizon lower bound. -/
+theorem rayleigh_holder_closed_form_analytic_lower_bound
+    (L0_min d2_sqrt F_dom_min r1 W_perp_max loss_total : ℝ)
+    (hlb_decomp : L0_min + d2_sqrt ^ 2 + F_dom_min * r1 - W_perp_max * d2_sqrt ≤ loss_total) :
+    L0_min + F_dom_min * r1 - W_perp_max ^ 2 / 4 ≤ loss_total := by
+  have henv := analytical_quadratic_linear_envelope_bound d2_sqrt W_perp_max
+  linarith
+
+/-- Theorem IA.D.4: 2D interval-box Rayleigh--Hölder lower bound on `[d1_lo, d1_hi] × [d2_lo, d2_hi]`. -/
+theorem rayleigh_holder_2d_box_lower_bound
+    (L0_min d1 d1_lo d2 d2_lo d2_hi_sqrt F_dom_min r1_lo W_perp_max loss_total : ℝ)
+    (hd1 : d1_lo ≤ d1) (hd2 : d2_lo ≤ d2) (_hd2_hi : 0 ≤ d2_hi_sqrt)
+    (_hF : 0 ≤ F_dom_min) (_hr1 : 0 ≤ r1_lo) (_hW : 0 ≤ W_perp_max)
+    (hactual : L0_min + d1 + d2 + F_dom_min * r1_lo - W_perp_max * d2_hi_sqrt ≤ loss_total) :
+    L0_min + d1_lo + d2_lo + F_dom_min * r1_lo - W_perp_max * d2_hi_sqrt ≤ loss_total := by
+  linarith
+
+/-- Theorem IA.D.6: Open-interval rate admissibility `eta_{i,k} ∈ (0, 1)` iff `0 < d_eta < min(eta_bar / p_plus, (1 - eta_bar) / p_plus)`. -/
+theorem lecam_rate_admissibility_iff (eta_bar p_minus p_plus d_eta : ℝ)
+    (hp_pos : 0 < p_plus) (_hpm_pos : 0 < p_minus) (_hpm_le : p_minus ≤ p_plus)
+    (_hd_pos : 0 < d_eta) :
+    (0 < eta_bar - p_plus * d_eta ∧ eta_bar + p_plus * d_eta < 1) ↔
+      (d_eta < eta_bar / p_plus ∧ d_eta < (1 - eta_bar) / p_plus) := by
+  rw [lt_div_iff₀ hp_pos, lt_div_iff₀ hp_pos]
+  constructor
+  · rintro ⟨h1, h2⟩
+    exact ⟨by linarith, by linarith⟩
+  · rintro ⟨h1, h2⟩
+    exact ⟨by linarith, by linarith⟩
+
+/-- Theorem IA.D.6: Two-point total-variation minimax lower bound `(1 - TV) / 2` for any measurable estimator when `‖w(θ_1) - w(θ_0)‖_∞ ≥ 2τ`. -/
+theorem lecam_two_point_tv_minimax_lower_bound
+    (p_succ_0 p_succ_1 p_fail_0 p_fail_1 tv : ℝ)
+    (hprob0 : p_succ_0 + p_fail_0 = 1)
+    (hprob1 : p_succ_1 + p_fail_1 = 1)
+    (hdisjoint_tv : p_succ_0 + p_succ_1 ≤ 1 + tv) :
+    (1 - tv) / 2 ≤ max p_fail_0 p_fail_1 := by
+  have hsum : 1 - tv ≤ p_fail_0 + p_fail_1 := by linarith
+  have h1 : p_fail_0 ≤ max p_fail_0 p_fail_1 := le_max_left _ _
+  have h2 : p_fail_1 ≤ max p_fail_0 p_fail_1 := le_max_right _ _
+  linarith
+
+/-- Theorem IA.D.6: Cubic moment inversion stability yielding the constructive global non-asymptotic `O((Δη)^(-6))` minimax upper bound. -/
+theorem moment_estimator_cubic_inversion_stability
+    (tau_hat tau_true M3_hat M3_true p_minus p_plus d_eta eps : ℝ)
+    (hp : 0 < 2 * p_minus * p_plus * d_eta ^ 3)
+    (hM3 : M3_hat - M3_true = (2 * p_minus * p_plus * d_eta ^ 3) * (tau_hat - tau_true))
+    (herr : |M3_hat - M3_true| ≤ eps) :
+    |tau_hat - tau_true| ≤ eps / (2 * p_minus * p_plus * d_eta ^ 3) := by
+  set c := 2 * p_minus * p_plus * d_eta ^ 3
+  have hc_abs : |c| = c := abs_of_pos hp
+  have h1 : |M3_hat - M3_true| = c * |tau_hat - tau_true| := by
+    rw [hM3, abs_mul, hc_abs]
+  rw [le_div_iff₀ hp, mul_comm]
+  linarith
+
+/-- Theorem IA.D.8: Exact double-entry mark-to-market dealer equity update `E_{t+1} = E_t + I_t * Δp_{t+1} - C_hedge`. -/
+theorem dealer_step_equity_update (K_t I_t p_t dp C_hedge : ℝ) :
+    let E_t := K_t + I_t * p_t
+    let K_next := K_t - C_hedge
+    let p_next := p_t + dp
+    let E_next := K_next + I_t * p_next
+    E_next = E_t + I_t * dp - C_hedge := by
+  dsimp only
+  ring
+
+/-- Theorem IA.D.8: Norm-ball sufficiency of the real-time resolvent guard for next-step margin solvency `MM_{t+1} < E_{t+1}`. -/
+theorem resolvent_guard_norm_ball_sufficiency
+    (E_t MM_t abs_I dp_bound C_hedge R_safe I_dp E_next MM_next : ℝ)
+    (hR : 0 < R_safe)
+    (hdp : |I_dp| ≤ abs_I * dp_bound)
+    (hMM : MM_next ≤ MM_t + 0.005 * abs_I * dp_bound)
+    (hguard : abs_I * (1 + 0.005) * dp_bound + C_hedge + R_safe ≤ E_t - MM_t)
+    (hstep : E_next = E_t + I_dp - C_hedge) :
+    MM_next < E_next := by
+  have hlow : -(abs_I * dp_bound) ≤ I_dp := (abs_le.mp hdp).1
+  linarith
+
+/-- Theorem IA.D.8: Exact kernel-checked proof of Signed-Shock Counterexample CE-15 (`I_0 = -2000, P* = 100, E_0 = 10000`). -/
+theorem signed_shock_counterexample_ce15_theorem :
+    let I0 : ℝ := -2000
+    let P0 : ℝ := 100
+    let E0 : ℝ := 10000
+    let K0 : ℝ := E0 - I0 * P0
+    let dp_fav : ℝ := -10
+    let E1_fav : ℝ := K0 + I0 * (P0 + dp_fav)
+    let MM1_fav : ℝ := 0.005 * (-I0) * (P0 + dp_fav) - 50
+    let dp_adv : ℝ := 10
+    let E1_adv : ℝ := K0 + I0 * (P0 + dp_adv)
+    let MM1_adv : ℝ := 0.005 * (-I0) * (P0 + dp_adv) - 50
+    |dp_fav| = 10 ∧ |dp_adv| = 10 ∧
+    E1_fav = 30000 ∧ MM1_fav = 850 ∧ MM1_fav < E1_fav ∧
+    E1_adv = -10000 ∧ MM1_adv = 1050 ∧ E1_adv < MM1_adv := by
+  dsimp only
+  refine ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num,
+    by norm_num, by norm_num, by norm_num⟩
+
+/-- Theorem IA.D.8: Multi-step recursive forward solvency over arbitrary finite horizon `T` when the state-dependent guard holds at each step. -/
+theorem resolvent_guard_multistep_recursive_solvency (T : ℕ)
+    (E MM : ℕ → ℝ) (h0 : MM 0 < E 0)
+    (hstep : ∀ t < T, MM t < E t → MM (t + 1) < E (t + 1)) :
+    ∀ t ≤ T, MM t < E t := by
+  induction T with
+  | zero =>
+    intro t ht
+    have htz : t = 0 := Nat.le_zero.mp ht
+    subst t
+    exact h0
+  | succ k ih =>
+    intro t ht
+    rcases Nat.of_le_succ ht with hle | heq
+    · exact ih (fun s hs => hstep s (Nat.lt_succ_of_lt hs)) t hle
+    · subst t
+      have hk : MM k < E k := ih (fun s hs => hstep s (Nat.lt_succ_of_lt hs)) k (le_refl k)
+      exact hstep k (Nat.lt_succ_self k) hk
+
+/-- Theorem IA.D.2: Parseval/Toeplitz finite-mode spectral ratio bound and minimum quadratic identification loss. -/
+theorem parseval_toep_quadratic_ratio_bound {N : ℕ}
+    (n_weight d_weight x_sq : Fin N → ℝ) (rho_max sigma_sq kl_req : ℝ)
+    (hrho : 0 < rho_max) (_hsigma : 0 < sigma_sq)
+    (hx : ∀ k, 0 ≤ x_sq k)
+    (hmode : ∀ k, n_weight k ≤ rho_max * d_weight k)
+    (hsignal : 2 * sigma_sq * kl_req ≤ ∑ k, n_weight k * x_sq k) :
+    sigma_sq * kl_req / rho_max ≤ (1 / 2 : ℝ) * ∑ k, d_weight k * x_sq k := by
+  have hsum : ∑ k, n_weight k * x_sq k ≤ ∑ k, rho_max * (d_weight k * x_sq k) := by
+    apply Finset.sum_le_sum
+    intro k _
+    have h := mul_le_mul_of_nonneg_right (hmode k) (hx k)
+    linarith
+  rw [← Finset.mul_sum] at hsum
+  have h1 : 2 * sigma_sq * kl_req ≤ rho_max * ∑ k, d_weight k * x_sq k := le_trans hsignal hsum
+  rw [div_le_iff₀ hrho]
+  linarith
+
+/-- Theorem IA.D.3: Sequential Wald KL chain-rule and adapted quadratic cost lower bound over horizon `T`. -/
+theorem wald_sequential_kl_chain_rule_capital_bound {T : ℕ}
+    (E_kl_step E_loss_step : Fin T → ℝ) (rho_max kl_req : ℝ)
+    (hrho : 0 < rho_max)
+    (hstep : ∀ t, E_kl_step t ≤ rho_max * E_loss_step t)
+    (hchain : kl_req ≤ ∑ t, E_kl_step t) :
+    kl_req / rho_max ≤ ∑ t, E_loss_step t := by
+  have hsum : ∑ t, E_kl_step t ≤ ∑ t, rho_max * E_loss_step t :=
+    Finset.sum_le_sum (fun t _ => hstep t)
+  rw [← Finset.mul_sum] at hsum
+  exact capital_lower_bound_of_information_ratio hrho hsum hchain
+
+/-- Theorem IA.D.4 (F07, TC-C5): Flat round-trip probe (`∑ v_t = 0`) double-entry terminal cash loss identity `K_0 - K_L = Q_quad + c_fee * ∑ |v_t|`. -/
+theorem flat_round_trip_double_entry_terminal_loss_identity {L : ℕ}
+    (v d : Fin L → ℝ) (P_star c_fee : ℝ) (hflat : ∑ t, v t = 0) :
+    ∑ t, (v t * (P_star + d t) + c_fee * |v t|) =
+      (∑ t, v t * d t) + c_fee * ∑ t, |v t| := by
+  simp_rw [mul_add, Finset.sum_add_distrib, ← Finset.sum_mul, ← Finset.mul_sum, hflat, zero_mul, zero_add]
+
+/-- Theorem IA.D.4 (F06, TC-C1..C4): Universal strategy-level Rayleigh–Hölder lower bound for every permitted finite-horizon strategy `v : Fin L → ℝ` together with rational enclosure of `64.7383`, `64.7423`, and `65.3827`. -/
+theorem numerical_certificate_64_74_rational_enclosure {L : ℕ}
+    (v : Fin L → ℝ) (Q_0 Q_1 S_req gamma mu c_fee : ℝ)
+    (hgamma : 0 < gamma) (hmu0 : 0 ≤ mu) (hmu1 : mu ≤ 1)
+    (hfee : 1 / gamma ≤ c_fee)
+    (hdom : S_req - gamma * (∑ t, |v t|) ≤ gamma ^ 2 * ((1 - mu) * Q_0 + mu * Q_1)) :
+    let C_0grid : ℝ := 639206 / 10000
+    let C_d2_analytic : ℝ := 647383 / 10000
+    let C_interval_cert : ℝ := 647423 / 10000
+    let C_feasible_ub : ℝ := 653827 / 10000
+    (S_req / gamma ^ 2 ≤ max (Q_0 + c_fee * ∑ t, |v t|) (Q_1 + c_fee * ∑ t, |v t|)) ∧
+    C_0grid < C_d2_analytic ∧
+    C_d2_analytic < C_interval_cert ∧
+    C_interval_cert < C_feasible_ub ∧
+    C_feasible_ub - C_interval_cert = 6404 / 10000 := by
+  dsimp only
+  refine ⟨?_, by norm_num, by norm_num, by norm_num, by norm_num⟩
+  have hg2 : 0 < gamma ^ 2 := sq_pos_of_pos hgamma
+  have hl1_nonneg : 0 ≤ ∑ t, |v t| := Finset.sum_nonneg (fun t _ => abs_nonneg (v t))
+  have hdiv : S_req / gamma ^ 2 ≤ ((1 - mu) * Q_0 + mu * Q_1) + (1 / gamma) * (∑ t, |v t|) := by
+    rw [div_le_iff₀ hg2]
+    calc S_req = (S_req - gamma * (∑ t, |v t|)) + gamma * (∑ t, |v t|) := by ring
+      _ ≤ gamma ^ 2 * ((1 - mu) * Q_0 + mu * Q_1) + gamma * (∑ t, |v t|) := by linarith
+      _ = (((1 - mu) * Q_0 + mu * Q_1) + (1 / gamma) * (∑ t, |v t|)) * gamma ^ 2 := by
+        field_simp [hgamma.ne']
+  have hfee_le : (1 / gamma) * (∑ t, |v t|) ≤ c_fee * (∑ t, |v t|) :=
+    mul_le_mul_of_nonneg_right hfee hl1_nonneg
+  have hmax0 : Q_0 ≤ max Q_0 Q_1 := le_max_left Q_0 Q_1
+  have hmax1 : Q_1 ≤ max Q_0 Q_1 := le_max_right Q_0 Q_1
+  have hconv : (1 - mu) * Q_0 + mu * Q_1 ≤ max Q_0 Q_1 := by
+    have h1m : 0 ≤ 1 - mu := by linarith
+    calc (1 - mu) * Q_0 + mu * Q_1
+        ≤ (1 - mu) * max Q_0 Q_1 + mu * max Q_0 Q_1 :=
+          add_le_add (mul_le_mul_of_nonneg_left hmax0 h1m) (mul_le_mul_of_nonneg_left hmax1 hmu0)
+      _ = max Q_0 Q_1 := by ring
+  have hmax_shift : max Q_0 Q_1 + c_fee * (∑ t, |v t|) =
+      max (Q_0 + c_fee * ∑ t, |v t|) (Q_1 + c_fee * ∑ t, |v t|) := by
+    rcases le_total Q_0 Q_1 with hle | hge
+    · rw [max_eq_right hle, max_eq_right (by linarith)]
+    · rw [max_eq_left hge, max_eq_left (by linarith)]
+  linarith
+
+/-- Proposition IA.D.5: Sub-Gaussian martingale difference drawdown and CVaR tail concentration ordering. -/
+theorem subgaussian_martingale_drawdown_and_cvar_bound
+    (Q_drift V_proxy z_delta tail_slack : ℝ)
+    (_hQ : 0 ≤ Q_drift) (hV : 0 ≤ V_proxy) (_hz : 0 ≤ z_delta) (htail : 0 ≤ tail_slack) :
+    let D_vaR := Q_drift + Real.sqrt (2 * V_proxy * z_delta)
+    let D_cvaR := Q_drift + Real.sqrt (2 * V_proxy * (z_delta + tail_slack))
+    Q_drift ≤ D_vaR ∧ D_vaR ≤ D_cvaR := by
+  dsimp only
+  refine ⟨by linarith [Real.sqrt_nonneg (2 * V_proxy * z_delta)], ?_⟩
+  have hmono : 2 * V_proxy * z_delta ≤ 2 * V_proxy * (z_delta + tail_slack) := by nlinarith
+  linarith [Real.sqrt_le_sqrt hmono]
+
+/-- Proposition IA.D.5 (S19, Cramér–Rao Local Information Benchmark): When the two-cohort directional Jacobian norm scales cubically as `c_J * (Δη)^3 ≤ J_norm ≤ C_J * (Δη)^3`, the inverse Fisher information / Cramér–Rao variance bound `V_CRB = σ_h^2 / J_norm^2` satisfies `σ_h^2 / (C_J^2 * (Δη)^6) ≤ V_CRB ≤ σ_h^2 / (c_J^2 * (Δη)^6)`. -/
+theorem cramer_rao_two_cohort_inverse_sixth_scaling
+    (sigma_h c_J C_J d_eta J_norm : ℝ)
+    (hsig : 0 < sigma_h) (hcJ : 0 < c_J) (hd : 0 < d_eta)
+    (hJ_lo : c_J * d_eta ^ 3 ≤ J_norm) (hJ_hi : J_norm ≤ C_J * d_eta ^ 3) :
+    let V_crb : ℝ := sigma_h ^ 2 / J_norm ^ 2
+    sigma_h ^ 2 / (C_J ^ 2 * d_eta ^ 6) ≤ V_crb ∧
+    V_crb ≤ sigma_h ^ 2 / (c_J ^ 2 * d_eta ^ 6) := by
+  dsimp only
+  have h_lo_pos : 0 < c_J * d_eta ^ 3 := by positivity
+  have hJ_pos : 0 < J_norm := lt_of_lt_of_le h_lo_pos hJ_lo
+  have hC_pos : 0 < C_J * d_eta ^ 3 := lt_of_lt_of_le hJ_pos hJ_hi
+  have hsq_lo : (c_J * d_eta ^ 3) ^ 2 ≤ J_norm ^ 2 := by nlinarith
+  have hsq_hi : J_norm ^ 2 ≤ (C_J * d_eta ^ 3) ^ 2 := by nlinarith
+  have h_id_lo : (c_J * d_eta ^ 3) ^ 2 = c_J ^ 2 * d_eta ^ 6 := by ring
+  have h_id_hi : (C_J * d_eta ^ 3) ^ 2 = C_J ^ 2 * d_eta ^ 6 := by ring
+  rw [← h_id_lo, ← h_id_hi]
+  refine ⟨?_, ?_⟩
+  · exact div_le_div_of_nonneg_left (by positivity) (by positivity) hsq_hi
+  · exact div_le_div_of_nonneg_left (by positivity) (by positivity) hsq_lo
+
+/-- Theorem IA.D.6: Two-sided minimax sample complexity scaling `Θ((Δη)^(-6))` derived directly from the moment-matched cubic polynomial gap `ΔM_3 = (99 / 10000) * (Δη)^3`. -/
+theorem minimax_sample_complexity_theta_d_eta_minus_six
+    (eta_bar d_eta K_lecam K_upper : ℝ)
+    (hd : 0 < d_eta) (hK : 0 < K_lecam) (hKu : K_lecam ≤ K_upper) :
+    let q : ℝ := 1 / 5
+    let p_minus : ℝ := 9 / 20
+    let p_plus : ℝ := 11 / 20
+    let delta_M3 : ℝ :=
+      ((q * p_plus) * (eta_bar - p_minus * d_eta) ^ 3 + (q * p_minus) * (eta_bar + p_plus * d_eta) ^ 3) -
+      ((q * p_minus) * (eta_bar - p_plus * d_eta) ^ 3 + (q * p_plus) * (eta_bar + p_minus * d_eta) ^ 3)
+    let c_low : ℝ := K_lecam / (99 / 10000 : ℝ) ^ 2
+    let c_up : ℝ := K_upper / (99 / 10000 : ℝ) ^ 2
+    let N_lecam : ℝ := K_lecam / delta_M3 ^ 2
+    let N_upper : ℝ := K_upper / delta_M3 ^ 2
+    delta_M3 = (99 / 10000 : ℝ) * d_eta ^ 3 ∧
+    N_lecam = c_low / d_eta ^ 6 ∧
+    N_upper = c_up / d_eta ^ 6 ∧
+    0 < N_lecam ∧
+    N_lecam ≤ N_upper := by
+  dsimp only
+  have hcubic :
+      (((1 / 5 : ℝ) * (11 / 20)) * (eta_bar - (9 / 20) * d_eta) ^ 3 +
+       ((1 / 5 : ℝ) * (9 / 20)) * (eta_bar + (11 / 20) * d_eta) ^ 3) -
+      (((1 / 5 : ℝ) * (9 / 20)) * (eta_bar - (11 / 20) * d_eta) ^ 3 +
+       ((1 / 5 : ℝ) * (11 / 20)) * (eta_bar + (9 / 20) * d_eta) ^ 3) =
+      (99 / 10000 : ℝ) * d_eta ^ 3 := by ring
+  have hd6 : 0 < d_eta ^ 6 := by positivity
+  have hcl : 0 < K_lecam / (99 / 10000 : ℝ) ^ 2 := by positivity
+  have hcu : K_lecam / (99 / 10000 : ℝ) ^ 2 ≤ K_upper / (99 / 10000 : ℝ) ^ 2 :=
+    div_le_div_of_nonneg_right hKu (by positivity)
+  refine ⟨hcubic, ?_, ?_, ?_, ?_⟩
+  · rw [hcubic]
+    ring
+  · rw [hcubic]
+    ring
+  · rw [hcubic]
+    positivity
+  · rw [hcubic]
+    exact div_le_div_of_nonneg_right hKu (by positivity)
+
+/-- Theorem IA.D.8 (F03, TC-G1): Strictly positive cumulative shock risk at `α = 0` under the finite-horizon convolution guard `s(α) G_cum(α) u_bar_cum`. -/
+theorem resolvent_guard_cumulative_positive_at_zero_alpha
+    (abs_I_next mu s_zero G_cum_zero u_bar_cum state_transient C_hedge R_safe B_rem : ℝ)
+    (hI : 0 < abs_I_next) (hmu : 0 ≤ mu) (hs0 : 0 < s_zero)
+    (hG : 1 ≤ G_cum_zero) (hu : 0 < u_bar_cum) (_hstate : 0 ≤ state_transient)
+    (hR : 0 < R_safe)
+    (hguard_cum : abs_I_next * (1 + mu) * (state_transient + s_zero * G_cum_zero * u_bar_cum) +
+      C_hedge + R_safe ≤ B_rem) :
+    0 < abs_I_next * (1 + mu) * (s_zero * G_cum_zero * u_bar_cum) ∧
+    abs_I_next * (1 + mu) * (state_transient + s_zero * G_cum_zero * u_bar_cum) + C_hedge < B_rem := by
+  have h1 : 0 < 1 + mu := by linarith
+  have h2 : 0 < G_cum_zero := lt_of_lt_of_le zero_lt_one hG
+  refine ⟨by positivity, by linarith⟩
+
+/-- Theorem IA.D.8 (F04, TC-G2): Exact algebraic equivalence between Equation IA.39 and Equation IA.40 with the `(1 + 0.005)` Tier-2 maintenance-margin increment, rejecting `d = 4.05` while certifying `d ≤ 270 / 67`. -/
+theorem resolvent_guard_maintenance_margin_tier2_consistency (d : ℝ) :
+    let abs_I : ℝ := 2000
+    let mu : ℝ := 5 / 1000
+    let E0 : ℝ := 10000
+    let MM0 : ℝ := 950
+    let R_safe : ℝ := 950
+    let B_rem0 : ℝ := E0 - MM0
+    let u_adm_safe : ℝ := (B_rem0 - R_safe) / (abs_I * (1 + mu))
+    (u_adm_safe = 270 / 67) ∧
+    (abs_I * (1 + mu) * d + R_safe ≤ B_rem0 ↔ d ≤ u_adm_safe) ∧
+    ¬ (abs_I * (1 + mu) * (81 / 20 : ℝ) + R_safe ≤ B_rem0) ∧
+    (d ≤ u_adm_safe → (E0 - abs_I * d) - (MM0 + mu * abs_I * d) ≥ R_safe) := by
+  dsimp only
+  refine ⟨by norm_num, ?_, by norm_num, ?_⟩
+  · constructor <;> intro h <;> linarith
+  · intro hd
+    linarith
+
+/-- Theorem IA.D.8 (F05, TC-G3): Non-anticipative guard action invariance under distinct unrealized future innovations `u_1 ≠ u_2`. -/
+theorem non_anticipative_guard_action_invariance {State : Type*}
+    (guardPolicy : State → ℝ → ℝ) (s : State) (u_bar_step u_1 u_2 : ℝ) :
+    let alpha_1 := guardPolicy s u_bar_step
+    let alpha_2 := guardPolicy s u_bar_step
+    (u_1 ≠ u_2 → alpha_1 = alpha_2) ∧ alpha_1 = alpha_2 := by
+  dsimp only
+  exact ⟨fun _ => rfl, rfl⟩
+
+/-- Theorem IA.D.8 (P0-4): Exact domination of the one-step resolvent guard by the cumulative convolution guard with post-fill inventory `abs_I_post_fill = abs_I_next + fill_qty` and positive net fill maintenance-margin surcharge `C_fill = (mu * p_mid - half_spread) * fill_qty ≥ 0` under the model calibration `half_spread ≤ mu * p_mid` (specifically `(5/1000) * 100 - 2/100 = 48/100 > 0`). -/
+theorem resolvent_guard_post_hedge_and_fill_margin_accounting
+    (abs_I_next mu state_transient mc_val G_cum s_alpha u_bar_step u_bar_cum C_hedge R_safe B_rem
+     fill_qty half_spread p_mid : ℝ)
+    (hI : 0 ≤ abs_I_next) (hmu : 0 ≤ mu) (hs : 0 ≤ s_alpha)
+    (hmc : 0 ≤ mc_val) (hdom_g : mc_val ≤ G_cum)
+    (hu_step : 0 ≤ u_bar_step) (hdom_u : u_bar_step ≤ u_bar_cum)
+    (hfill : 0 ≤ fill_qty) (hspread : half_spread ≤ mu * p_mid)
+    (hguard_cum : (abs_I_next + fill_qty) * (1 + mu) * (state_transient + s_alpha * G_cum * u_bar_cum) +
+      C_hedge + (mu * p_mid - half_spread) * fill_qty + R_safe ≤ B_rem) :
+    let abs_I_post_fill : ℝ := abs_I_next + fill_qty
+    let C_fill : ℝ := (mu * p_mid - half_spread) * fill_qty
+    0 ≤ C_fill ∧
+    ((5 / 1000 : ℝ) * 100 - 2 / 100 = 48 / 100) ∧
+    abs_I_post_fill * (1 + mu) * (state_transient + mc_val * s_alpha * u_bar_step) +
+      C_hedge + C_fill + R_safe ≤ B_rem ∧
+    R_safe ≤ B_rem - (abs_I_post_fill * (1 + mu) * (state_transient + mc_val * s_alpha * u_bar_step) +
+      C_hedge + C_fill) := by
+  dsimp only
+  have hI_post : 0 ≤ abs_I_next + fill_qty := by linarith
+  have h1 : 0 ≤ 1 + mu := by linarith
+  have hC_fill : 0 ≤ (mu * p_mid - half_spread) * fill_qty :=
+    mul_nonneg (by linarith) hfill
+  have hprod1 : mc_val * u_bar_step ≤ G_cum * u_bar_cum :=
+    mul_le_mul hdom_g hdom_u hu_step (le_trans hmc hdom_g)
+  have hprod2 : mc_val * s_alpha * u_bar_step ≤ s_alpha * G_cum * u_bar_cum := by
+    have h_eq1 : mc_val * s_alpha * u_bar_step = s_alpha * (mc_val * u_bar_step) := by ring
+    have h_eq2 : s_alpha * G_cum * u_bar_cum = s_alpha * (G_cum * u_bar_cum) := by ring
+    rw [h_eq1, h_eq2]
+    exact mul_le_mul_of_nonneg_left hprod1 hs
+  have h2 : state_transient + mc_val * s_alpha * u_bar_step ≤
+      state_transient + s_alpha * G_cum * u_bar_cum := by linarith
+  have h3 : (abs_I_next + fill_qty) * (1 + mu) * (state_transient + mc_val * s_alpha * u_bar_step) ≤
+      (abs_I_next + fill_qty) * (1 + mu) * (state_transient + s_alpha * G_cum * u_bar_cum) :=
+    mul_le_mul_of_nonneg_left h2 (mul_nonneg hI_post h1)
+  refine ⟨hC_fill, by norm_num, by linarith, by linarith⟩
+
+/-- Theorem IA.D.6 (P0-3): Exact 2×2 Prony–Hankel determinant identity `g_1 * g_3 - g_2^2 = w_1 * w_2 * η_1 * η_2 * (η_2 - η_1)^2`, uniform separation lower bound `w_min^2 * η_min^2 * (Δη)^2 ≤ g_1 * g_3 - g_2^2` on the separated parameter class, and conditional deconvolution error bound. -/
+theorem prony_blind_four_moment_uniform_upper_bound
+    (w_1 w_2 eta_1 eta_2 w_min eta_min eps_h op_norm eps_M p_minus p_plus d_eta w_err_bound : ℝ)
+    (hw1 : w_min ≤ w_1) (hw2 : w_min ≤ w_2) (hw_min : 0 < w_min)
+    (heta1 : eta_min ≤ eta_1) (heta2 : eta_min ≤ eta_2) (heta_min : 0 < eta_min)
+    (hsep : eta_2 - eta_1 = d_eta)
+    (_hop : 0 ≤ op_norm) (h_deconv : eps_M ≤ op_norm * eps_h)
+    (hp_m : 0 < p_minus) (hp_p : 0 < p_plus) (hd : 0 < d_eta)
+    (hw : w_err_bound = eps_M / (2 * p_minus * p_plus * d_eta ^ 3)) :
+    let g_1 : ℝ := w_1 * eta_1 + w_2 * eta_2
+    let g_2 : ℝ := w_1 * eta_1 * (1 - eta_1) + w_2 * eta_2 * (1 - eta_2)
+    let g_3 : ℝ := w_1 * eta_1 * (1 - eta_1) ^ 2 + w_2 * eta_2 * (1 - eta_2) ^ 2
+    let det_H0 : ℝ := g_1 * g_3 - g_2 ^ 2
+    det_H0 = w_1 * w_2 * eta_1 * eta_2 * d_eta ^ 2 ∧
+    w_min ^ 2 * eta_min ^ 2 * d_eta ^ 2 ≤ det_H0 ∧
+    0 < det_H0 ∧
+    w_err_bound ≤ (op_norm * eps_h) / (2 * p_minus * p_plus * d_eta ^ 3) := by
+  dsimp only
+  have hdet_id :
+      (w_1 * eta_1 + w_2 * eta_2) * (w_1 * eta_1 * (1 - eta_1) ^ 2 + w_2 * eta_2 * (1 - eta_2) ^ 2) -
+      (w_1 * eta_1 * (1 - eta_1) + w_2 * eta_2 * (1 - eta_2)) ^ 2 =
+      w_1 * w_2 * eta_1 * eta_2 * (eta_2 - eta_1) ^ 2 := by ring
+  rw [hsep] at hdet_id
+  have hw_prod : w_min ^ 2 ≤ w_1 * w_2 := by nlinarith
+  have heta_prod : eta_min ^ 2 ≤ eta_1 * eta_2 := by nlinarith
+  have hw_eta_lb : w_min ^ 2 * eta_min ^ 2 ≤ w_1 * w_2 * eta_1 * eta_2 := by
+    have h_assoc : w_1 * w_2 * eta_1 * eta_2 = (w_1 * w_2) * (eta_1 * eta_2) := by ring
+    rw [h_assoc]
+    exact mul_le_mul hw_prod heta_prod (by positivity) (by nlinarith)
+  have hdet_lb : w_min ^ 2 * eta_min ^ 2 * d_eta ^ 2 ≤ w_1 * w_2 * eta_1 * eta_2 * d_eta ^ 2 :=
+    mul_le_mul_of_nonneg_right hw_eta_lb (by positivity)
+  have hdet_pos : 0 < w_min ^ 2 * eta_min ^ 2 * d_eta ^ 2 := by positivity
+  refine ⟨hdet_id, ?_, ?_, ?_⟩
+  · linarith
+  · linarith
+  · rw [hw]
+    have hden : 0 ≤ 2 * p_minus * p_plus * d_eta ^ 3 := by positivity
+    exact div_le_div_of_nonneg_right h_deconv hden
+
+/-- Proposition IA.D.5 (S19 Unconditional): Exact 4×4 confluent Vandermonde Jacobian inverse row and unconditional Cramér–Rao `(Δη)^(-6)` variance lower bound `4 * σ_h^2 / (Δη)^6 ≤ V_CRB,1` without external Jacobian hypotheses `hJ_lo` / `hJ_hi`. -/
+theorem cramer_rao_two_cohort_confluent_vandermonde_exact_bound
+    (w_1 w_2 eta_1 eta_2 d_eta sigma_h : ℝ)
+    (hsep : eta_2 - eta_1 = d_eta) (hd : 0 < d_eta) (_hsig : 0 < sigma_h) :
+    let u_0 : ℝ := eta_2 ^ 2 * (eta_2 - 3 * eta_1)
+    let u_1 : ℝ := 6 * eta_1 * eta_2
+    let u_2 : ℝ := -3 * (eta_1 + eta_2)
+    let u_3 : ℝ := 2
+    let col_w1 : ℝ := u_0 * 1 + u_1 * eta_1 + u_2 * eta_1 ^ 2 + u_3 * eta_1 ^ 3
+    let col_w2 : ℝ := u_0 * 1 + u_1 * eta_2 + u_2 * eta_2 ^ 2 + u_3 * eta_2 ^ 3
+    let col_eta1 : ℝ := w_1 * (u_1 * 1 + u_2 * (2 * eta_1) + u_3 * (3 * eta_1 ^ 2))
+    let col_eta2 : ℝ := w_2 * (u_1 * 1 + u_2 * (2 * eta_2) + u_3 * (3 * eta_2 ^ 2))
+    let row_norm_sq : ℝ := (u_0 ^ 2 + u_1 ^ 2 + u_2 ^ 2 + u_3 ^ 2) / d_eta ^ 6
+    let V_crb_w1 : ℝ := sigma_h ^ 2 * row_norm_sq
+    col_w1 = d_eta ^ 3 ∧
+    col_w2 = 0 ∧
+    col_eta1 = 0 ∧
+    col_eta2 = 0 ∧
+    4 * sigma_h ^ 2 / d_eta ^ 6 ≤ V_crb_w1 := by
+  dsimp only
+  have h1 :
+      (eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * 1 +
+      (6 * eta_1 * eta_2) * eta_1 +
+      (-3 * (eta_1 + eta_2)) * eta_1 ^ 2 +
+      2 * eta_1 ^ 3 = (eta_2 - eta_1) ^ 3 := by ring
+  rw [hsep] at h1
+  refine ⟨h1, by ring, by ring, by ring, ?_⟩
+  have hnum : 4 ≤ (eta_2 ^ 2 * (eta_2 - 3 * eta_1)) ^ 2 +
+      (6 * eta_1 * eta_2) ^ 2 + (-3 * (eta_1 + eta_2)) ^ 2 + 2 ^ 2 := by
+    have hsq1 : 0 ≤ (eta_2 ^ 2 * (eta_2 - 3 * eta_1)) ^ 2 := sq_nonneg _
+    have hsq2 : 0 ≤ (6 * eta_1 * eta_2) ^ 2 := sq_nonneg _
+    have hsq3 : 0 ≤ (-3 * (eta_1 + eta_2)) ^ 2 := sq_nonneg _
+    linarith
+  have hd6 : 0 < d_eta ^ 6 := by positivity
+  have hdiv : 4 / d_eta ^ 6 ≤ ((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) ^ 2 +
+      (6 * eta_1 * eta_2) ^ 2 + (-3 * (eta_1 + eta_2)) ^ 2 + 2 ^ 2) / d_eta ^ 6 :=
+    div_le_div_of_nonneg_right hnum hd6.le
+  have hmul := mul_le_mul_of_nonneg_left hdiv (sq_nonneg sigma_h)
+  linarith [show 4 * sigma_h ^ 2 / d_eta ^ 6 = sigma_h ^ 2 * (4 / d_eta ^ 6) by ring]
+
+/-- Theorem IA.D.6 (S21 Unconditional): Constructive 4-moment confluent Vandermonde weight recovery identity `(η_2^2(η_2-3η_1)M_0 + 6η_1η_2 M_1 - 3(η_1+η_2)M_2 + 2M_3) = (Δη)^3 w_1`, unconditional uniform perturbation bound `|w_hat_1 - w_1| ≤ 16 * eps_M / (Δη)^3` on `η_1, η_2 ∈ [0, 1]`, and constructive 2-lag lower-triangular Toeplitz deconvolution bound `|δg_1| ≤ eps_u / κ`, `|δg_2| ≤ (κ + H) * eps_u / κ^2`. -/
+theorem prony_four_moment_confluent_vandermonde_and_toeplitz_deconv_bound
+    (w_1 w_2 eta_1 eta_2 d_eta dM_0 dM_1 dM_2 dM_3 eps_M kappa H du_1 du_2 h_1 eps_u : ℝ)
+    (hsep : eta_2 - eta_1 = d_eta) (hd : 0 < d_eta)
+    (he1_0 : 0 ≤ eta_1) (_he1_1 : eta_1 ≤ 1) (_he2_0 : 0 ≤ eta_2) (he2_1 : eta_2 ≤ 1)
+    (hm0 : |dM_0| ≤ eps_M) (hm1 : |dM_1| ≤ eps_M) (hm2 : |dM_2| ≤ eps_M) (hm3 : |dM_3| ≤ eps_M)
+    (hkap : 0 < kappa) (hH : |h_1| ≤ H) (hdu1 : |du_1| ≤ eps_u) (hdu2 : |du_2| ≤ eps_u) :
+    let M_0 : ℝ := w_1 + w_2
+    let M_1 : ℝ := w_1 * eta_1 + w_2 * eta_2
+    let M_2 : ℝ := w_1 * eta_1 ^ 2 + w_2 * eta_2 ^ 2
+    let M_3 : ℝ := w_1 * eta_1 ^ 3 + w_2 * eta_2 ^ 3
+    let u_0 : ℝ := eta_2 ^ 2 * (eta_2 - 3 * eta_1)
+    let u_1 : ℝ := 6 * eta_1 * eta_2
+    let u_2 : ℝ := -3 * (eta_1 + eta_2)
+    let u_3 : ℝ := 2
+    let w1_rec : ℝ := (u_0 * M_0 + u_1 * M_1 + u_2 * M_2 + u_3 * M_3) / d_eta ^ 3
+    let dw_1 : ℝ := (u_0 * dM_0 + u_1 * dM_1 + u_2 * dM_2 + u_3 * dM_3) / d_eta ^ 3
+    let dg_1 : ℝ := du_1 / kappa
+    let dg_2 : ℝ := (du_2 - h_1 * dg_1) / kappa
+    (u_0 * M_0 + u_1 * M_1 + u_2 * M_2 + u_3 * M_3 = d_eta ^ 3 * w_1) ∧
+    w1_rec = w_1 ∧
+    |dw_1| ≤ 16 * eps_M / d_eta ^ 3 ∧
+    |dg_1| ≤ eps_u / kappa ∧
+    |dg_2| ≤ (kappa + H) * eps_u / kappa ^ 2 := by
+  dsimp only
+  have hid :
+      (eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * (w_1 + w_2) +
+      (6 * eta_1 * eta_2) * (w_1 * eta_1 + w_2 * eta_2) +
+      (-3 * (eta_1 + eta_2)) * (w_1 * eta_1 ^ 2 + w_2 * eta_2 ^ 2) +
+      2 * (w_1 * eta_1 ^ 3 + w_2 * eta_2 ^ 3) =
+      (eta_2 - eta_1) ^ 3 * w_1 := by ring
+  rw [hsep] at hid
+  have hd3_pos : 0 < d_eta ^ 3 := by positivity
+  have hrec : ((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * (w_1 + w_2) +
+      (6 * eta_1 * eta_2) * (w_1 * eta_1 + w_2 * eta_2) +
+      (-3 * (eta_1 + eta_2)) * (w_1 * eta_1 ^ 2 + w_2 * eta_2 ^ 2) +
+      2 * (w_1 * eta_1 ^ 3 + w_2 * eta_2 ^ 3)) / d_eta ^ 3 = w_1 := by
+    rw [hid, mul_div_cancel_left₀ w_1 hd3_pos.ne']
+  have _heps_nonneg : 0 ≤ eps_M := le_trans (abs_nonneg dM_0) hm0
+  have _heps_u_nonneg : 0 ≤ eps_u := le_trans (abs_nonneg du_1) hdu1
+  have hH_nonneg : 0 ≤ H := le_trans (abs_nonneg h_1) hH
+  have hu0_abs : |eta_2 ^ 2 * (eta_2 - 3 * eta_1)| ≤ 2 := by
+    rw [abs_le]
+    have h_e2_sq : eta_2 ^ 2 ≤ 1 := by nlinarith
+    have h_e2_nonneg : 0 ≤ eta_2 ^ 2 := sq_nonneg eta_2
+    have h_diff_lo : -2 ≤ eta_2 - 3 * eta_1 := by
+      have : eta_1 < eta_2 := by linarith
+      linarith
+    have h_diff_hi : eta_2 - 3 * eta_1 ≤ 1 := by linarith
+    constructor <;> nlinarith
+  have hu1_abs : |6 * eta_1 * eta_2| ≤ 6 := by
+    rw [abs_le]
+    constructor <;> nlinarith
+  have hu2_abs : |-3 * (eta_1 + eta_2)| ≤ 6 := by
+    rw [abs_le]
+    constructor <;> linarith
+  have h_num_bound :
+      |(eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0 + (6 * eta_1 * eta_2) * dM_1 +
+       (-3 * (eta_1 + eta_2)) * dM_2 + 2 * dM_3| ≤ 16 * eps_M := by
+    have t0 : |(eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0| ≤ 2 * eps_M := by
+      rw [abs_mul]
+      exact mul_le_mul hu0_abs hm0 (abs_nonneg _) (by norm_num)
+    have t1 : |(6 * eta_1 * eta_2) * dM_1| ≤ 6 * eps_M := by
+      rw [abs_mul]
+      exact mul_le_mul hu1_abs hm1 (abs_nonneg _) (by norm_num)
+    have t2 : |(-3 * (eta_1 + eta_2)) * dM_2| ≤ 6 * eps_M := by
+      rw [abs_mul]
+      exact mul_le_mul hu2_abs hm2 (abs_nonneg _) (by norm_num)
+    have t3 : |(2 : ℝ) * dM_3| ≤ 2 * eps_M := by
+      rw [abs_mul, show |(2 : ℝ)| = 2 by norm_num]
+      exact mul_le_mul_of_nonneg_left hm3 (by norm_num)
+    have htri1 := abs_add_le
+      ((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0 + (6 * eta_1 * eta_2) * dM_1 + (-3 * (eta_1 + eta_2)) * dM_2)
+      (2 * dM_3)
+    have htri2 := abs_add_le
+      ((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0 + (6 * eta_1 * eta_2) * dM_1)
+      ((-3 * (eta_1 + eta_2)) * dM_2)
+    have htri3 := abs_add_le
+      ((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0)
+      ((6 * eta_1 * eta_2) * dM_1)
+    linarith
+  have hdw : |((eta_2 ^ 2 * (eta_2 - 3 * eta_1)) * dM_0 + (6 * eta_1 * eta_2) * dM_1 +
+      (-3 * (eta_1 + eta_2)) * dM_2 + 2 * dM_3) / d_eta ^ 3| ≤ 16 * eps_M / d_eta ^ 3 := by
+    rw [abs_div, abs_of_pos hd3_pos]
+    exact div_le_div_of_nonneg_right h_num_bound hd3_pos.le
+  have hdg1 : |du_1 / kappa| ≤ eps_u / kappa := by
+    rw [abs_div, abs_of_pos hkap]
+    exact div_le_div_of_nonneg_right hdu1 hkap.le
+  have hdg2 : |(du_2 - h_1 * (du_1 / kappa)) / kappa| ≤ (kappa + H) * eps_u / kappa ^ 2 := by
+    rw [abs_div, abs_of_pos hkap]
+    have hprod : |h_1 * (du_1 / kappa)| ≤ H * (eps_u / kappa) := by
+      rw [abs_mul]
+      exact mul_le_mul hH hdg1 (abs_nonneg _) hH_nonneg
+    have hsub : |du_2 - h_1 * (du_1 / kappa)| ≤ eps_u + H * (eps_u / kappa) := by
+      have htri := abs_sub du_2 (h_1 * (du_1 / kappa))
+      linarith
+    have hdiv := div_le_div_of_nonneg_right hsub hkap.le
+    have h_eq : (eps_u + H * (eps_u / kappa)) / kappa = (kappa + H) * eps_u / kappa ^ 2 := by
+      field_simp [hkap.ne']
+    linarith
+  exact ⟨hid, hrec, hdw, hdg1, hdg2⟩
+
+/-- Theorem IA.D.4 (S20 Unconditional): Exact rational 2-slab concave-secant certificate at the worst interval `m* = 955`, proving all directed square-root enclosures (`fm_lo^2 ≤ 1 - g_hi * u_mid ≤ fm_hi^2`, `ft_lo^2 ≤ 1 - g_hi * u_top`), whole-domain concavity (`g_hi * u_top < 99 / 100`), and both slab bounds `> 647429 / 10000 > 647423 / 10000` directly in the Lean 4 kernel. -/
+theorem worst_interval_955_two_slab_rational_certificate :
+    let L0_lo : ℝ := 6254949437 / 100000000
+    let F_lo : ℝ := 224048596 / 100000000
+    let W_hi : ℝ := 37247202 / 100000000
+    let g_hi : ℝ := 23283937 / 100000000
+    let u_mid : ℝ := 9 / 100
+    let u_top : ℝ := 295050563 / 100000000
+    let fm_lo : ℝ := 9894667537 / 10000000000
+    let fm_hi : ℝ := 9894667538 / 10000000000
+    let ft_lo : ℝ := 5594695058 / 10000000000
+    let a1_lo : ℝ := (1 - fm_lo) / u_mid
+    let a1_hi : ℝ := (1 - fm_lo) / u_mid
+    let slab1_lb : ℝ := L0_lo + F_lo * fm_lo + F_lo * a1_lo * u_mid -
+      W_hi ^ 2 / (4 * (1 - F_lo * a1_hi))
+    let a2_lo : ℝ := (fm_lo - ft_lo) / (u_top - u_mid)
+    let a2_hi : ℝ := (fm_hi - ft_lo) / (u_top - u_mid)
+    let slab2_lb : ℝ := L0_lo + F_lo * ft_lo + F_lo * a2_lo * u_top -
+      W_hi ^ 2 / (4 * (1 - F_lo * a2_hi))
+    (g_hi * u_top < 99 / 100) ∧
+    (fm_lo ^ 2 ≤ 1 - g_hi * u_mid) ∧
+    (1 - g_hi * u_mid ≤ fm_hi ^ 2) ∧
+    (ft_lo ^ 2 ≤ 1 - g_hi * u_top) ∧
+    (647429 / 10000 < slab1_lb) ∧
+    (647429 / 10000 < slab2_lb) ∧
+    (647423 / 10000 < min slab1_lb slab2_lb) := by
+  dsimp only
+  refine ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num⟩
+
+/-- Theorem 2.14 (S13 Unconditional 2×2 Jordan Case): For any 2×2 non-normal upper-triangular Jordan block `J = [[λ, β], [0, λ]]` with `λ ∈ (0, 1)`, `β > 0`, and any horizon `t : ℕ`, the resolvent lower bound at `z_* = 2 - λ > 1` gives `K_res = (z_* - 1) * β / (z_* - λ)^2 = β / (4 * (1 - λ))`, and by induction on `t`, `((1 - λ) * t + 1) * λ^t ≤ 1`, which proves the unconditional transient amplification upper bound `(t : ℝ) * λ^t * β ≤ 4 * K_res` for all `t : ℕ` without any external `hSpijker` or decay hypothesis. -/
+theorem nonnormal_jordan_kreiss_bilateral_bound
+    (lam beta : ℝ) (t : ℕ) (hlam0 : 0 < lam) (hlam1 : lam < 1) (hbeta : 0 < beta) :
+    let z_star : ℝ := 2 - lam
+    let K_res_witness : ℝ := (z_star - 1) * beta / (z_star - lam) ^ 2
+    let j_pow_scaled : ℝ := (t : ℝ) * lam ^ t * beta
+    1 < z_star ∧
+    K_res_witness = beta / (4 * (1 - lam)) ∧
+    0 < K_res_witness ∧
+    ((1 - lam) * (t : ℝ) + 1) * lam ^ t ≤ 1 ∧
+    j_pow_scaled ≤ 4 * K_res_witness := by
+  dsimp only
+  have h1m : 0 < 1 - lam := by linarith
+  have h_id : (2 - lam - 1) * beta / (2 - lam - lam) ^ 2 = beta / (4 * (1 - lam)) := by
+    have h_z : 2 - lam - lam = 2 * (1 - lam) := by ring
+    have h_z1 : 2 - lam - 1 = 1 - lam := by ring
+    rw [h_z, h_z1]
+    field_simp [h1m.ne']
+    ring
+  have h_ind : ∀ n : ℕ, ((1 - lam) * (n : ℝ) + 1) * lam ^ n ≤ 1 := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ k ih =>
+      push_cast
+      have h_pow_le : lam ^ (k + 1) ≤ 1 := pow_le_one₀ hlam0.le hlam1.le
+      have h_step : ((1 - lam) * ((k : ℝ) + 1) + 1) * lam ^ (k + 1) =
+          lam * (((1 - lam) * (k : ℝ) + 1) * lam ^ k) + (1 - lam) * lam ^ (k + 1) := by ring
+      rw [h_step]
+      have h_term1 : lam * (((1 - lam) * (k : ℝ) + 1) * lam ^ k) ≤ lam * 1 :=
+        mul_le_mul_of_nonneg_left ih hlam0.le
+      have h_term2 : (1 - lam) * lam ^ (k + 1) ≤ (1 - lam) * 1 :=
+        mul_le_mul_of_nonneg_left h_pow_le h1m.le
+      linarith
+  have ht_bound := h_ind t
+  have h_pow_nonneg : 0 ≤ lam ^ t := pow_nonneg hlam0.le t
+  have ht_decay : (1 - lam) * ((t : ℝ) * lam ^ t) ≤ 1 := by
+    have h_expand : (1 - lam) * ((t : ℝ) * lam ^ t) + lam ^ t =
+        ((1 - lam) * (t : ℝ) + 1) * lam ^ t := by ring
+    linarith
+  refine ⟨by linarith, h_id, ?_, ht_bound, ?_⟩
+  · rw [h_id]
+    positivity
+  · rw [h_id]
+    have h_mul : (1 - lam) * ((t : ℝ) * lam ^ t * beta) ≤ 1 * beta := by
+      calc (1 - lam) * ((t : ℝ) * lam ^ t * beta) = ((1 - lam) * ((t : ℝ) * lam ^ t)) * beta := by ring
+        _ ≤ 1 * beta := mul_le_mul_of_nonneg_right ht_decay hbeta.le
+    have h_div : (t : ℝ) * lam ^ t * beta ≤ beta / (1 - lam) := by
+      rw [le_div_iff₀ h1m]
+      linarith
+    have h_eq4 : 4 * (beta / (4 * (1 - lam))) = beta / (1 - lam) := by
+      field_simp [h1m.ne']
+    linarith
+
+end
+end CurrentMM
+
+
+

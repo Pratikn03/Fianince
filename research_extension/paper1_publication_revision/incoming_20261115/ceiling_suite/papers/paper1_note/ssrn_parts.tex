@@ -1,0 +1,295 @@
+%% Blocks used by build_ssrn.py to make the SSRN version (15 November 2026) from paper1_focus.tex.
+%% Each block runs from a line "%%BEGIN name" to a line "%%END name".
+
+%%BEGIN abstract
+\noindent Algorithmic traders read prices and, by trading, move them. We ask what a price record reveals about the population of such traders, and for which decisions that is enough. Prices see the population only through its aggregate response to past prices, the feedback kernel: populations with the same kernel produce the same prices, profits and equilibria. Beyond the kernel, composition is \emph{invisible}: telling apart $K$ trader types whose rules lie within $\Delta$ of one another takes data of order $\Delta^{-(4K-2)}$ for any smooth family of rules, and for linear rules of any memory shape this order is attained under a rank condition. It is invisible because it is \emph{irrelevant} to prices: two populations can be told apart only once confusing them has cost a forecaster more than one period's news variance in total, so what is expensive to learn is worth little for forecasting. Composition is \emph{needed} only for actions aimed at particular traders and once position limits bind; tagging all but one class of traders supplies it, and the last tag is worth nothing. Core results are machine-checked in Lean~4.
+%%END abstract
+
+%%BEGIN intro
+\paragraph{Three findings and one question.} Three findings from different literatures point to the same question. First, models of markets with fundamentalist and chartist traders \citep{brock1998,hommes2006} are fitted to prices to estimate the traders' shares, and the estimates are fragile: a recent survey reports nearly collinear parameters, switching parameters that are not significant, and estimates that depend on where the optimizer starts \citep{lux2018}. Second, large traders' positions in U.S. futures markets respond to past price changes, non-commercial traders following trends, yet give very little evidence of leading returns \citep{sanders2009}. Third, regulators who want to act on particular algorithms do not try to infer them from prices; they require identifiers. Each finding asks what the price record reveals about who trades, and what knowing who trades is good for.
+
+\paragraph{The answer.} Prices see a population of feedback traders only through one object, the market's \emph{feedback kernel}: the response, $m$ periods later, of total feedback flow to a unit move in the price signal. Populations with the same kernel produce the same prices, order flows, profits and equilibria (Theorem~\ref{n:suff}). This single fact has three consequences, and together they say where knowledge of the population is worth having.
+\begin{enumerate}[label=(\alph*),leftmargin=*,itemsep=2pt]
+\item \emph{Composition is invisible.} Telling apart $K$ types of trader whose rules lie within $\Delta$ of one another takes data of order $\Delta^{-(4K-2)}$. This holds for any smooth family of trading rules, not only exponential memory, and for an observer who waits as well as one who trades (Theorem~\ref{n:univ}). For linear rules of any memory shape that satisfies a rank condition the order is attained (Theorem~\ref{n:shape}), and for exponential memory it does not improve as the market approaches instability (Proposition~\ref{n:nearcrit}). Two groups with half-lives between 5 and 9 days need more than 4{,}000 years of daily prices to be told apart (Table~\ref{n:tab_cal}).
+\item \emph{It is invisible because it is irrelevant to prices.} For any two populations, the information that a price record carries about which of them is trading equals the cumulative loss, in mean squared error, of a forecaster who has the wrong one, divided by twice the news variance (Theorem~\ref{n:dual}). No test tells the two apart until that loss exceeds the news variance of a single period. Over the 4{,}000 years above, a forecaster with the wrong population loses, in total, less than $3.3$ times the news variance of one day. An observer who sees every group's weight and position gains no more over a price-only forecaster than the error of estimating the kernel, whatever the spacing of the groups (Theorem~\ref{n:irr}).
+\item \emph{Composition is needed for targeted action and under stress.} A market-wide limit needs only the kernel; halting one group needs composition (Proposition~\ref{n:target}). With position limits, calm prices carry no information about how close traders are to their limits, and stress reveals it (Theorem~\ref{n:sat_thm}). The exceptions to irrelevance that we identify are these channels, plus informed traders and exogenous flows of different persistence (Proposition~\ref{n:exc}).
+\end{enumerate}
+The three findings fit this account. Share estimates from prices are fragile because the data they need explode as the types' rules approach one another; that the market-impact coefficient cannot be separated from the traders' reaction coefficients \citep{lux2018} is the sufficiency of the kernel, in which only their product enters. Positions that respond to prices but do not lead them are what feedback trading predicts when positions are functions of past prices. And identifiers are the only route to targeted action at a cost that does not explode, with a precise value: tagging all but one memory class is enough, and the last tag is worth nothing (Theorem~\ref{n:partial}).
+
+\paragraph{Results.}
+\begin{enumerate}[label=(\arabic*),leftmargin=*,itemsep=2pt]
+\item \emph{Sufficiency and identification} (Theorems~\ref{n:suff} and~\ref{n:ident}). With a value, noise traders, an insider and a dealer, each following an arbitrary causal rule, two populations with the same kernel give the same prices, order flows, insider profits and dealer inventories, realization by realization, and so the same equilibria. Prices identify the trading weight at each memory rate and nothing finer; for any population, linear or not, they identify exactly its aggregate flow map.
+\item \emph{The cost of composition} (Theorems~\ref{n:cost}, \ref{n:univ} and~\ref{n:shape}, Proposition~\ref{n:nearcrit}). For any smooth family of rules, separating $K$ types within $\Delta$ needs data of order $\Delta^{-(4K-2)}$, passively or by probing. For linear rules of any memory shape satisfying a rank condition, a minimum-distance estimator attains this order. For exponential memory the barrier does not lift near instability: prices then reveal how close the market is to breaking, not who is trading.
+\item \emph{Which questions are cheap} (Theorem~\ref{n:questions}). A linear question about the population is answered at the usual statistical rate, whatever the number of groups and the spacing of their memories, exactly when its kernel has square-summable power-series coefficients; its exact cost is a problem of polynomial approximation.
+\item \emph{Detection and forecasting} (Theorems~\ref{n:dual} and~\ref{n:irr}, Proposition~\ref{n:exc}). What a price record reveals about which of two populations is trading equals the forecast loss from confusing them. Composition improves price forecasts by at most the cost of estimating the kernel, uniformly in the number of groups and the spacing of their memories; we list the channels through which it can matter.
+\item \emph{Supervision} (Section~\ref{n:sup}). Halting the largest group needs composition, at the cost above. Class-tagged flow removes the cost, and tagging all but one memory class is enough. Pooling markets in which the same algorithms trade in different proportions lowers the exponent without any tags. A group that can mimic another's memory caps what any price-based targeting can achieve.
+\item \emph{Surveillance over time} (Theorem~\ref{n:track}). When the population drifts, composition can be tracked only at the cube-root rate and not at all above a speed limit.
+\item \emph{Limits} (Section~\ref{n:sat}). With position limits the sufficient object becomes a measure over memory and leverage. Calm prices reveal only its linear part, the kernel; probes large enough to reach the limits identify the rest.
+\end{enumerate}
+%%END intro
+
+%%BEGIN known_add
+ The exponent $2K-1$ in the gap between near-colliding populations is also the error amplification for super-resolution of $K$ near-colliding point sources \citep{batenkov2021}, of which Prony's method is the classical instance. That disaggregate information helps forecast an aggregate when the components have different dynamics is known from the literature on forecasting aggregates \citep{lutkepohl1987,hendry2011}; Proposition~\ref{n:exc}(b) is that result in this market. The identity between Kullback--Leibler information and cumulative prediction loss under Gaussian noise is the chain rule, familiar from prequential statistics \citep{dawid1984}, and the bounds for Bayesian forecasters are those of sequential prediction \citep{vovk2001,cesabianchi2006}.
+%%END known_add
+
+%%BEGIN new_add
+ Three results are new in this version. First, the cost of composition is not a feature of exponential memory: its lower bound holds for every smooth family of trading rules inside the feedback loop, with one proof for passive and probing observers (Theorem~\ref{n:univ}), and for linear rules of any memory shape satisfying a rank condition the bound is attained (Theorem~\ref{n:shape}). Second, composition is invisible because it is irrelevant to prices: what a record reveals about which of two populations is trading is exactly the forecast loss from confusing them (Theorem~\ref{n:dual}). The mathematics of that identity is standard; its reading, that a market hides exactly those features of its traders that do not matter for its prices, is the organizing idea of the paper. Third, the value of composition to a forecaster is bounded uniformly over the number of groups and the spacing of their memories (Theorem~\ref{n:irr}).
+%%END new_add
+
+%%BEGIN univ
+\paragraph{The barrier does not depend on exponential memory.} Exponential memory makes the problem explicit, but the exponent has a more general source. Let each type of trader be indexed by a number $\theta$ in an interval $\Theta$ and trade $f_\theta(h)$ after the public history $h=(x_t,x_{t-1},\ldots)$, where $f_\theta$ is any causal rule: a power-law or hump-shaped memory, a fixed lookback window, a saturating rule, or a learning rule with a fixed tuning parameter. A population is a finite measure $\nu$ on $\Theta$, the weight on each type, and its aggregate flow
+\[
+F_\nu(h)=\int f_\theta(h)\,\nu(d\theta)
+\]
+is linear in $\nu$ whatever the rules. Prices follow \eqref{n:eq:model} with $\kappa F_\nu(h_{t-1})$ in place of the feedback term. Theorem~\ref{n:suff} says that $F_\nu$ is all that prices can reveal; the next result says what it costs to read $\nu$ from it.
+
+\begin{theorem}[The cost of composition for any smooth family]\label{n:univ}
+Fix $K\ge2$, a centre type $\theta_c$, a total weight $W$ and a spread $\Delta$ with $[\theta_c-\Delta,\theta_c+\Delta]\subset\Theta$. Suppose that $\theta\mapsto f_\theta(h)$ has $2K-1$ continuous derivatives at every history, with $|\partial_\theta^{2K-1}f_\theta(h)|\le B(h)$, and that news is Gaussian with variance $\sigma^2$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Flow gap.} There are two populations $\nu$ and $\nu'$, each with $K$ types in $[\theta_c-\Delta,\theta_c+\Delta]$, positive weights and total weight $W$, at Wasserstein distance $W_1(\nu,\nu')=d_KW\Delta$ for a constant $d_K>0$, whose aggregate flows satisfy, at every history,
+\[
+|F_\nu(h)-F_{\nu'}(h)|\le\frac{2W}{(2K-1)!}\,B(h)\,\Delta^{2K-1}.
+\]
+\item \emph{Lower bound.} Suppose $\mathbb E[B(h_t)^2]\le\bar B^2$ at every date under $\nu$ and the observer's policy. For any probes, none or chosen from the observer's own past and randomization, a record of $T$ periods (for example $N$ reset experiments of length $T/N$) tells $\nu$ from $\nu'$ with both error probabilities below $1/4$ only if
+\[
+T\ \ge\ \frac{\big((2K-1)!\big)^2}{4\kappa^2W^2\bar B^2}\;\sigma^2\,\Delta^{-(4K-2)}.
+\]
+\end{enumerate}
+\end{theorem}
+
+The proof has two steps (Supplement Section~\ref{app:univirr}). The two populations are the $K$-node Gauss and Gauss--Radau quadrature rules on the interval, which integrate every polynomial of degree $2K-2$ alike, so a Taylor expansion of $f_\theta$ in $\theta$ leaves only the remainder of order $2K-1$. With Gaussian news, the chain rule for Kullback--Leibler information then charges each period the squared gap between the two populations' predicted flows (Theorem~\ref{n:dual} below). Nothing uses exponential memory, linearity in the history, or the structure of the loop, and the same argument covers the observer who only waits. Theorem~\ref{n:cost}(i) is the case $f_r(h)=(1-r)\sum_jr^jx_{t-j}$ with $\theta=r$, where the constants can be made explicit. With position limits, groups that share a leverage are a one-parameter family in memory and are covered; groups with different leverages are not, and for them composition is cheaper (Companion Proposition~\ref{prop:nlcost}).
+
+For linear rules the bound is attained, under a rank condition on the shape of memory.
+
+\begin{theorem}[The cost of composition for any memory shape]\label{n:shape}
+Let traders follow linear rules $f_\theta(h)=\sum_{m\ge0}g_m(\theta)x_{t-m}$, so that a population $\nu=\sum_iw_i\delta_{\theta_i}$ has kernel $k_m=\sum_iw_ig_m(\theta_i)$. Let each of $N$ reset experiments record the impulse response $h_0,\ldots,h_L$, $L\ge2K$, with independent Gaussian noise of variance $\sigma^2$, as in Theorem~\ref{n:cost}, and let $g=(g_0,\ldots,g_{L-1})$ have $2K$ continuous derivatives near $\theta_c$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Lower bound.} Telling apart the two populations of Theorem~\ref{n:univ}(i) with both error probabilities below $1/4$ needs $N\ge c\,\sigma^2\Delta^{-(4K-2)}$ experiments.
+\item \emph{Upper bound.} Suppose the $2K$ vectors $g(\theta_c),g'(\theta_c),\ldots,g^{(2K-1)}(\theta_c)$ are linearly independent. Consider the populations with types $\theta_c+\Delta s_i$, where $s_1<\cdots<s_K$ lie in $[-1,1]$ at least $\gamma>0$ apart, and weights in $[\omega_{\min},\omega_{\max}]$ with $\omega_{\min}>0$. There are $\Delta_0>0$ and $C$, not depending on $\Delta$, such that for $\Delta\le\Delta_0$ the minimum-distance estimator over this class recovers every weight and every rescaled type $s_i$, with probability at least $1-\delta$, to within
+\[
+C\,\sigma\,\big(\sqrt{L+1}+\sqrt{2\log(1/\delta)}\big)\,N^{-1/2}\,\Delta^{-(2K-1)}.
+\]
+\item \emph{The rank condition} of part (ii) holds for exponential memory, $g_m(\theta)=(1-\theta)\theta^m$ with $\theta_c\in(0,1)$, and for power-law memory, $g_m(\theta)=(m+1)^{-\theta}$.
+\end{enumerate}
+The pair of part (i) belongs to the class of part (ii) when $\gamma$ and $\omega_{\min}$ are small enough, so of order $\sigma^2\Delta^{-(4K-2)}$ experiments are necessary and sufficient.
+\end{theorem}
+
+Part~(ii) extends the Prony bound of Theorem~\ref{n:cost}(ii) from exponential memory to any memory shape. The proof (Supplement Section~\ref{app:univirr}) is a Taylor expansion. To order $2K-1$ in $\Delta$, the kernel depends on the population only through its first $2K$ rescaled moments $\sum_iw_is_i^{\,p}$, the $p$-th entering with weight $\Delta^p$. The rank condition lets the kernel determine those moments, and $2K$ moments determine $K$ types and their weights. The weakest link is the moment of order $2K-1$, which enters with weight $\Delta^{2K-1}$; that is the exponent. For nonlinear rules the lower bound is Theorem~\ref{n:univ}; we have no matching upper bound for them.
+
+For hump-shaped and smoothed-window memories we checked the rank condition numerically (the smallest normalized singular value of the derivative vectors lies between $0.28$ and $0.49$). In simulations with power-law and hump-shaped memory and two groups, the weight error of the minimum-distance estimator grows with fitted slopes $-3.05$ and $-3.08$ in $\Delta$, against $-3$. For power-law, hump-shaped and smoothed-window memories, the gap between the closed-loop responses of the two populations of Theorem~\ref{n:univ}(i) shrinks with slopes between $2.98$ and $3.07$ for $K=2$ and between $4.97$ and $5.07$ for $K=3$, against $3$ and $5$ (scripts in \nolinkurl{research_extension/universal_law/} and \nolinkurl{research_extension/duality/}).
+%%END univ
+
+%%BEGIN irr
+\section{Invisible because irrelevant}\label{n:irr_sec}
+
+Why is composition so hard to read from prices? Because prices are indifferent to it. This section makes that statement exact, and then asks what composition is worth to a forecaster.
+
+Take any two populations $\nu$ and $\nu'$, with any causal rules and aggregate flow maps $F$ and $F'$, in the market of \eqref{n:eq:model} with Gaussian news of variance $\sigma^2$ and any probe policy. A forecaster who believes the population is $\nu'$ forecasts $x_{t+1}$ by $ax_t+\kappa F'(h_t)+\kappa v_{t+1}$. When the population is in fact $\nu$, its mean squared error exceeds that of a forecaster who knows $\nu$ by
+\[
+V_t=\kappa^2\,\mathbb E_\nu\big[\big(F(h_t)-F'(h_t)\big)^2\big].
+\]
+Write $\Lambda_T=\sigma^{-2}\sum_{t<T}V_t$ for the cumulative forecast loss from confusing the two populations over $T$ periods, in units of the news variance.
+
+\begin{theorem}[Detection equals forecast loss]\label{n:dual}
+Let $P_T$ and $P'_T$ be the laws of the record of $T$ periods under $\nu$ and $\nu'$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item $\mathrm{KL}(P_T\,\|\,P'_T)=\Lambda_T/2$.
+\item Any test that tells $\nu$ from $\nu'$ with both error probabilities below $1/4$ has $\Lambda_T>1$.
+\item Let a Bayesian forecaster hold a prior over any countable set of candidate populations that gives probability $\pi>0$ to the true one. On every path and at every horizon, its cumulative log predictive likelihood is within $\log(1/\pi)$ of that of the forecaster who knows the population.
+\end{enumerate}
+\end{theorem}
+
+Part~(i) is the chain rule for Kullback--Leibler information with Gaussian news, and part~(iii) is the standard bound for Bayesian mixtures \citep{dawid1984,cesabianchi2006}; the proofs are a few lines (Supplement Section~\ref{app:univirr}). Their content here is economic. The left side of (i) is everything that a price record can reveal about which of the two populations is trading. The right side is what a forecaster loses by having the wrong one. They are the same number. A feature of the population is therefore hard to learn from prices exactly to the extent that being wrong about it does not hurt a price forecast. The kernel is cheap to learn because an error in the kernel is a forecast error. Composition, given the kernel, is expensive because an error in it is not.
+
+Three consequences put numbers on this. Theorem~\ref{n:univ}(ii) is the case in which the flow gap bounds $V_t$ by a multiple of $\Delta^{4K-2}$: the cost of composition explodes at exactly the rate at which its value to a forecaster vanishes. For the two-group populations of Table~\ref{n:tab_cal} with half-lives between 5 and 9 days, which no test separates at the $5\%$ level in $4{,}000$ years of daily prices, a forecaster with the wrong population loses over those years less than $2\ln5\approx3.2$ times the news variance of a single day. And by part~(iii), a forecaster who gives equal prior weight to two candidate populations loses at most $\log2$, one bit of predictive likelihood, in total, however long it forecasts. Figure~\ref{n:fig_dual} shows part~(i) at work: population pairs from four families of memory, with two and three groups, with matched moments and without, fall on one curve once the horizontal axis is $\Lambda_T$. For passive records and news that is not Gaussian but has a quadratically bounded location divergence, (i) holds as an inequality, $\mathrm{KL}\le\sigma^2I^*_f\Lambda_T/2$ (Supplement Proposition~\ref{prop:nongauss}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\textwidth]{fig_duality.pdf}
+\caption{Detection equals forecast loss. Each point is one pair of populations and one probe size: the error of the likelihood-ratio test between the two populations (average of the two error probabilities, $4{,}000$ simulated records of $160$ periods under each) against $\Lambda$, the cumulative forecast loss from confusing them in units of the news variance. Matched pairs are the populations of Theorem~\ref{n:univ}(i) with exponential, power-law, hump-shaped and smoothed-window memory; unmatched pairs are one exponential group against two, and a power-law population against a hump-shaped one. The line is the error when the flow gap does not depend on the path. By Theorem~\ref{n:dual}(ii), no test has both errors below $1/4$ when $\Lambda\le1$. Script: \nolinkurl{research_extension/duality/duality_check.py}.}
+\label{n:fig_dual}
+\end{figure}
+
+The identity does not make composition unimportant. The two populations of Theorem~\ref{n:univ}(i) differ by a fixed fraction in the weight of their largest group, while $\Lambda_T$ grows only like $T\Delta^{4K-2}$. The loss from aiming an action at the wrong group is not a forecast loss, and prices carry no more information than forecast losses pay for. That is the precise sense in which targeted supervision asks prices for something they do not hold (Section~\ref{n:sup}).
+
+\paragraph{What composition is worth to a forecaster.} Theorem~\ref{n:dual} compares two candidate populations. The next result compares a forecaster who sees only prices with one who sees everything. Take model \eqref{n:eq:model} without probes, with constant weights $q_i\ge0$, a stable market ($S<1$), news that is independent over time with mean zero, variance $\sigma^2$ and a finite fourth moment, and positions that start at zero, $y_{i,-1}=0$. The \emph{price observer} sees $\mathcal P_t=\sigma(x_0,\ldots,x_t)$. The \emph{composition observer} also sees every group's weight and position, $\mathcal C_t=\sigma(x_s,\,q_i,\,q_iy_{i,s}:s\le t,\,i\le K)$. Class reports, which sum positions over groups, tell less than $\mathcal C_t$.
+
+\begin{theorem}[Composition is irrelevant for forecasting]\label{n:irr}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Known population.} If the weights are known, $\mathcal C_t=\mathcal P_t$ and
+\[
+\mathbb E[x_{t+1}\mid\mathcal C_t]=\mathbb E[x_{t+1}\mid\mathcal P_t]=a\,x_t+\kappa\sum_{m=0}^{t}k_m\,x_{t-m}.
+\]
+The forecast depends on the population only through the kernel.
+\item \emph{Unknown population, mean squared error.} Let the weights be unknown and the market stationary, and let $\hat x_{T+1}$ be the forecast of a least-squares autoregression of order $L$ fitted to $x_0,\ldots,x_T$. Under the conditions of \citet{ingwei2003} on the news and on the growth of $L$ with $T$,
+\[
+\mathbb E\big(x_{T+1}-\hat x_{T+1}\big)^2=\sigma^2+\sigma^2\frac{L}{T}\big(1+o(1)\big)+O\big(\bar r^{\,2L}\big),
+\]
+where $\bar r$ is the largest memory rate and the constant in the last term depends on the population only through $\bar r$ and $S$. The composition observer's error is $\sigma^2$. The leading term does not depend on the population at all, and in particular not on how close the memories are.
+\item \emph{Unknown population, uniformly.} Let the news be Gaussian with known variance. Consider all populations with any number of groups, memory rates at most $\bar r<1$ and feedback budget at most $\bar s<1$. For every such population and every horizon $T$, the Bayesian autoregression of order $L$ with a standard normal prior on its coefficients has expected cumulative log predictive likelihood within
+\[
+\frac{\bar s^2}{2}+\frac L2\log\Big(1+\frac{T}{(1-\bar s)^2}\Big)+\frac{T\,\bar s^2\,\bar r^{\,2L}}{2(1-\bar s)^2}
+\]
+of the composition observer's. With $L=\lceil\log T/(2\log(1/\bar r))\rceil$ this is of order $\log^2T$, so the value of composition to the forecaster is at most of order $\log^2T/T$ per period, uniformly in the number of groups and the spacing of their memories.
+\end{enumerate}
+\end{theorem}
+
+Part~(i) is elementary: positions are functions of past prices. Parts (ii) and (iii) say what it costs the price observer not to know the kernel. Part~(ii) rests on the expansion of \citet{ingwei2003} for autoregressions fitted to a process of infinite order, applied to the representation $x_t=\sum_{j\ge1}\phi_jx_{t-j}+\varepsilon_t$ with $\phi_1=a+\kappa k_0$ and $\phi_j=\kappa k_{j-1}$; the expansion is for a fixed population. Part~(iii) is uniform and holds at every horizon; it follows from the pathwise bound for Bayesian linear regression \citep{vovk2001} and from $\sum_{j>L}\phi_j\le S\bar r^{\,L}$. Set against Theorem~\ref{n:cost}, the two statements move in opposite directions. As the groups' memories approach one another, the data needed to learn composition grow like $\Delta^{-(4K-2)}$, while the bound on its value to a forecaster does not move. In simulations with two groups the cumulative excess log-loss of the Bayesian autoregression over $4{,}000$ periods is $44.4$ when the memories are $(0.30,0.60)$ and $44.1$ when they are $(0.44,0.46)$, against a bound of $66.5$; with least squares the excess mean squared error is $1.56\times10^{-4}$ in both cases.
+
+\begin{remark}[A drifting population]
+If the weights drift by at most $v$ per period, an autoregression of order of $\log(1/v)$ refitted on a trailing window of order $v^{-2/3}$ periods should have excess error of order $\sigma^2v^{2/3}\log(1/v)$, again independent of the spacing, by the bias--variance trade-off of tracking estimators \citep{guoljung1995}. We have not proved this. In simulations with $v$ from $3\times10^{-5}$ to $10^{-3}$ the excess error divided by $v^{2/3}$ lies between $0.18$ and $0.41$, with a fitted exponent of $0.55$, below $2/3$ because the grid of windows is capped (\nolinkurl{research_extension/irrelevance/irrelevance_theorem_check.py}).
+\end{remark}
+
+Theorem~\ref{n:irr} has the structure of an irrelevance result in the sense of \citet{mm1958}: a benchmark in which something does not matter, and a list of what makes it matter.
+
+\begin{proposition}[What makes composition relevant]\label{n:exc}
+\begin{enumerate}[label=(\alph*),itemsep=1pt]
+\item \emph{Informed groups.} If a group's flow depends on information not in $\mathcal P_t$, such as the next change in value, composition can improve the forecast by an amount that does not vanish with $T$.
+\item \emph{Exogenous flows of different persistence.} Let group $i$ also trade an exogenous flow $u_{i,t}$, the $u_i$ jointly Gaussian, stationary and independent of the news. Beyond prices and the aggregate flow, the value of composition for forecasting $x_{t+1}$ is exactly $\kappa^2$ times the reduction in the error of forecasting $\sum_iu_{i,t+1}$ from the components $(u_{i,s})_{s\le t}$ rather than from their sum. It is zero when the $u_i$ follow one autoregressive law whose innovations are unpredictable from the past of every component.
+\item \emph{Position limits.} With saturating rules, the forecast depends on the population through the measure $\nu$ of Section~\ref{n:sat} rather than the kernel, and calm prices reveal only the kernel (Theorem~\ref{n:sat_thm}). Composition can then improve forecasts once limits bind.
+\item \emph{Targeted actions.} Composition is needed for actions aimed at one group (Proposition~\ref{n:target}). That concerns decisions, not forecasts.
+\end{enumerate}
+\end{proposition}
+
+Part~(b) is the known result that components with different dynamics help forecast an aggregate \citep{lutkepohl1987,hendry2011}; what the market adds is that the feedback part of every group's flow drops out, so only the exogenous part can carry information. The proof is in Supplement Section~\ref{app:univirr}.
+
+\paragraph{What the theory predicts.} Data on the composition of feedback traders should not improve price forecasts beyond prices and anonymous flow in calm markets, except through informed or exogenous flows of different persistence. This is what the reports of large traders in U.S. futures markets show: positions respond to past prices, but give very little evidence of leading returns \citep{sanders2009}. The theorem does not explain those data, which are weekly positions rather than flows; it says that the finding is what feedback trading implies. We registered a direct test of the prediction on Binance perpetual futures (P1F), using the venue's ratios of long to short positions among its largest traders. Its first window was void: the archive files for that window lacked the trader-class fields that the registered universe rule requires, so no symbol qualified and no outcome was computed. A replacement window from 16 November 2026 to 14 January 2027 was registered before any of its data existed, and will be reported as it comes out.
+%%END irr
+
+%%BEGIN scope_old
+The explicit identification and cost results need linear rules with exponential memory.
+%%END scope_old
+
+%%BEGIN scope_new
+The explicit identification results and the near-instability results need linear rules with exponential memory. The lower bound on the cost of composition holds for any smooth family of rules (Theorem~\ref{n:univ}), and it is attained for linear rules of any memory shape that satisfies a rank condition (Theorem~\ref{n:shape}).
+%%END scope_new
+
+%%BEGIN evidence
+\paragraph{Evidence.} The contribution is theoretical, and the tagged flows and position limits it concerns are rarely observed. Supplement Section~\ref{sec:scope} reports two registered tests on public data, on Taiwan's tagged exchange flows and on Binance perpetual futures, with their readouts as registered. The registered test of forecast irrelevance (Section~\ref{n:irr_sec}) was void in its first window, and its replacement window is under way. A registered test on a venue where every trade carries account addresses will ask whether accounts' own records separate trading memories that prices do not; its data are being collected, and its specification was fixed before any were read.
+%%END evidence
+
+%%BEGIN bib
+\bibitem[Batenkov et~al.(2021)]{batenkov2021} Batenkov, D., G. Goldman, and Y. Yomdin (2021). Super-resolution of near-colliding point sources. \emph{Information and Inference: A Journal of the IMA} 10(2), 515--572.
+
+\bibitem[Guo and Ljung(1995)]{guoljung1995} Guo, L., and L. Ljung (1995). Performance analysis of general tracking algorithms. \emph{IEEE Transactions on Automatic Control} 40(8), 1388--1402.
+
+\bibitem[Hendry and Hubrich(2011)]{hendry2011} Hendry, D.~F., and K. Hubrich (2011). Combining disaggregate forecasts or combining disaggregate information to forecast an aggregate. \emph{Journal of Business \& Economic Statistics} 29(2), 216--227.
+
+\bibitem[Ing and Wei(2003)]{ingwei2003} Ing, C.-K., and C.-Z. Wei (2003). On same-realization prediction in an infinite-order autoregressive process. \emph{Journal of Multivariate Analysis} 85(1), 130--155.
+
+\bibitem[L\"utkepohl(1987)]{lutkepohl1987} L\"utkepohl, H. (1987). \emph{Forecasting Aggregated Vector ARMA Processes}. Lecture Notes in Economics and Mathematical Systems 284. Springer, Berlin.
+
+\bibitem[Modigliani and Miller(1958)]{mm1958} Modigliani, F., and M.~H. Miller (1958). The cost of capital, corporation finance and the theory of investment. \emph{American Economic Review} 48(3), 261--297.
+
+\bibitem[Sanders et~al.(2009)]{sanders2009} Sanders, D.~R., S.~H. Irwin, and R.~P. Merrin (2009). Smart money: The forecasting ability of CFTC large traders in agricultural futures markets. \emph{Journal of Agricultural and Resource Economics} 34(2), 276--296.
+
+\bibitem[Cesa-Bianchi and Lugosi(2006)]{cesabianchi2006} Cesa-Bianchi, N., and G. Lugosi (2006). \emph{Prediction, Learning, and Games}. Cambridge University Press.
+
+\bibitem[Dawid(1984)]{dawid1984} Dawid, A.~P. (1984). Statistical theory: The prequential approach. \emph{Journal of the Royal Statistical Society, Series A} 147(2), 278--292.
+
+\bibitem[Vovk(2001)]{vovk2001} Vovk, V. (2001). Competitive on-line statistics. \emph{International Statistical Review} 69(2), 213--248.
+%%END bib
+
+%%BEGIN supp
+\section{Composition for any family of rules, and its value to a forecaster}\label{app:univirr}
+
+This section proves Theorems~\ref{n:univ}, \ref{n:shape}, \ref{n:dual} and~\ref{n:irr} and Proposition~\ref{n:exc} of the main text. These results are new in this version; nothing in this section is machine-checked.
+
+\begin{proof}[Proof of Theorem~\ref{n:dual}]
+(i) Let $P$ and $P'$ be the laws of the record, prices and probes, under $\nu$ and $\nu'$, with the same initial law and the same probe policy. Given the record up to date $t$ and the probe $v_{t+1}$, the price $x_{t+1}$ is Gaussian with variance $\sigma^2$ and mean $ax_t+\kappa F(h_t)+\kappa v_{t+1}$ under $\nu$, and the same with $F'$ under $\nu'$. The probe's conditional law given the past is the same under both. The Kullback--Leibler divergence between two Gaussian laws with common variance $\sigma^2$ and means $m,m'$ is $(m-m')^2/(2\sigma^2)$, so by the chain rule
+\[
+\mathrm{KL}(P_T\|P'_T)=\sum_{t<T}\mathbb E_\nu\Big[\frac{\kappa^2\big(F(h_t)-F'(h_t)\big)^2}{2\sigma^2}\Big]=\frac{1}{2\sigma^2}\sum_{t<T}V_t=\frac{\Lambda_T}{2}.
+\]
+That $V_t$ is the excess mean squared error: the forecaster who believes $\nu'$ errs by $x_{t+1}-ax_t-\kappa F'(h_t)-\kappa v_{t+1}=\varepsilon_{t+1}+\kappa(F-F')(h_t)$, and $\varepsilon_{t+1}$ has mean zero and is independent of $h_t$, so its mean squared error is $\sigma^2+V_t$, against $\sigma^2$ for the forecaster who knows $\nu$.
+
+(ii) If both error probabilities are below $1/4$ their sum is below $1/2$. The sum is at least $1-\mathrm{TV}(P_T,P'_T)$, so the total variation exceeds $1/2$, and by Pinsker's inequality $\mathrm{KL}(P_T\|P'_T)\ge2\,\mathrm{TV}^2>1/2$. By (i), $\Lambda_T>1$.
+
+(iii) Let $p_j$ be the density of the record under candidate $j$ and $q=\sum_j\pi_jp_j$ the Bayesian forecaster's. The product of its one-step predictive densities along a path is $q$ evaluated at that path, and likewise for the forecaster who knows the true candidate $j^*$. Since $q\ge\pi_{j^*}p_{j^*}$ at every path, $\log p_{j^*}-\log q\le\log(1/\pi_{j^*})$.
+\end{proof}
+
+\paragraph{The hard pair.} Let $G_K$ be the $K$-node Gauss--Legendre rule on $[-1,1]$, normalized to unit mass, and $R_K$ the $K$-node Gauss--Radau rule with fixed node $-1$, normalized the same way. Both have positive weights; $G_K$ integrates polynomials of degree at most $2K-1$ exactly and $R_K$ those of degree at most $2K-2$ \citep[Section~3.4]{szego1975}. Hence $\int p\,dG_K=\int p\,dR_K$ for every polynomial $p$ of degree at most $2K-2$. The two rules are different measures ($R_K$ has an atom at $-1$ and $G_K$ does not), so $d_K=W_1(G_K,R_K)>0$. For centre $\theta_c$, spread $\Delta$ and total weight $W$, let $\nu$ and $\nu'$ be the images of $WG_K$ and $WR_K$ under $s\mapsto\theta_c+\Delta s$. They have $K$ atoms each in $[\theta_c-\Delta,\theta_c+\Delta]$, positive weights summing to $W$, equal moments of order $0,\ldots,2K-2$ about $\theta_c$, and $W_1(\nu,\nu')=d_KW\Delta$, since $W_1$ scales linearly under dilation and mass.
+
+\begin{proof}[Proof of Theorem~\ref{n:univ}]
+(i) Fix a history $h$. By Taylor's theorem with the Lagrange remainder, $f_\theta(h)=P_h(\theta)+\rho_h(\theta)$ with $P_h$ a polynomial of degree $2K-2$ in $\theta-\theta_c$ and $|\rho_h(\theta)|\le B(h)|\theta-\theta_c|^{2K-1}/(2K-1)!$. The polynomial part integrates alike under $\nu$ and $\nu'$. So
+\[
+|F_\nu(h)-F_{\nu'}(h)|=\Big|\int\rho_h\,d\nu-\int\rho_h\,d\nu'\Big|\le\int|\rho_h|\,d\nu+\int|\rho_h|\,d\nu'\le\frac{2W}{(2K-1)!}B(h)\Delta^{2K-1},
+\]
+because both measures have mass $W$ and live where $|\theta-\theta_c|\le\Delta$.
+
+(ii) By part (i) and the moment bound, $V_t\le4\kappa^2W^2\bar B^2\Delta^{4K-2}/((2K-1)!)^2$ at every date, so $\Lambda_T\le4T\kappa^2W^2\bar B^2\Delta^{4K-2}/(\sigma^2((2K-1)!)^2)$. By Theorem~\ref{n:dual}(ii) a test with both errors below $1/4$ needs $\Lambda_T>1$, which is the bound. With no probe the argument is the same with $v_t=0$; with reset experiments the record is the concatenation of independent runs and the chain rule applies run by run.
+\end{proof}
+
+\noindent\emph{The moment condition.} For a linear rule $f_\theta(h)=\sum_{j\ge0}g_j(\theta)x_{t-j}$ with $\sup_\theta\sum_j|\partial_\theta^{2K-1}g_j(\theta)|\lambda^{-j}<\infty$ for some $\lambda<1$, one can take $B(h)=C\sup_j\lambda^j|x_{t-j}|$, which has bounded second moments in a stable market with Gaussian news and bounded probes. For bounded rules with bounded derivatives, such as saturating rules with a common leverage, $B$ is a constant.
+
+\begin{proof}[Proof of Theorem~\ref{n:shape}]
+\emph{The response map.} With $h_0=\kappa$, the impulse response satisfies $h_{t+1}=ah_t+\kappa\sum_{m=0}^tk_mh_{t-m}$, so $(h_1,\ldots,h_L)$ is a polynomial function of $(k_0,\ldots,k_{L-1})$, and conversely $k_t=(h_{t+1}-ah_t-\kappa\sum_{m<t}k_mh_{t-m})/\kappa^2$ gives $(k_0,\ldots,k_{L-1})$ as a polynomial function of $(h_1,\ldots,h_L)$. Polynomial maps are Lipschitz on bounded sets. So on any bounded set of kernels there are constants $C_f$ and $C_b$, depending on $(a,\kappa,L)$ and the bound, with $\|h-h'\|\le C_f\|k-k'\|$ and $\|k-k'\|\le C_b\|h-h'\|$.
+
+(i) As in the proof of Theorem~\ref{n:univ}(i), applied to each tap, $|k_m(\nu)-k_m(\nu')|\le2W\sup|g_m^{(2K-1)}|\Delta^{2K-1}/(2K-1)!$, so $\|h(\nu)-h(\nu')\|\le C_1\Delta^{2K-1}$. The $N$ experiments are Gaussian with common covariance, so their divergence is $N\|h(\nu)-h(\nu')\|^2/(2\sigma^2)\le NC_1^2\Delta^{4K-2}/(2\sigma^2)$, and as in Theorem~\ref{n:dual}(ii) both errors below $1/4$ need this to exceed $1/2$.
+
+(ii) \emph{Moments.} Let $\mathcal Z$ be the compact set of parameters $z=(s,w)$ with $-1\le s_1<\cdots<s_K\le1$, $s_{i+1}-s_i\ge\gamma$ and $w_i\in[\omega_{\min},\omega_{\max}]$, and let $\mu(z)=(\sum_iw_is_i^{\,p})_{p=0}^{2K-1}$. The map $\mu$ is injective on $\mathcal Z$: if $\mu(z)=\mu(z')$, the signed measure $\sum_iw_i\delta_{s_i}-\sum_iw'_i\delta_{s'_i}$ has at most $2K$ atoms and integrates every polynomial of degree below $2K$ to zero; choosing the polynomial that vanishes at all its atoms but one shows that every atom has zero net weight, and since the weights are positive and the nodes ordered, $z=z'$. The Jacobian of $\mu$ has columns $(s_i^{\,p})_p$ and $(w_ips_i^{\,p-1})_p$, a confluent Vandermonde matrix with determinant $\pm\prod_iw_i\prod_{i<j}(s_i-s_j)^4\ne0$. An injective continuously differentiable map on a compact set with nonsingular Jacobian has a Lipschitz inverse: if not, there would be $z_n\ne z'_n$ with $\|\mu(z_n)-\mu(z'_n)\|/\|z_n-z'_n\|\to0$; along a subsequence $z_n\to z$ and $z'_n\to z'$, and either $z\ne z'$, contradicting injectivity, or $z=z'$, contradicting the nonsingular Jacobian at $z$. So there is $c_\mu>0$ with $\|\mu(z)-\mu(z')\|\ge c_\mu\|z-z'\|$ on $\mathcal Z$.
+
+\emph{Expansion.} Write $g(\theta_c+u)=\sum_{p=0}^{2K-1}a_pu^p+\rho(u)$ with $a_p=g^{(p)}(\theta_c)/p!$. Since $g$ has $2K$ continuous derivatives, $\|\rho(u)\|\le M|u|^{2K}/(2K)!$ and $\|\rho'(u)\|\le M|u|^{2K-1}/(2K-1)!$ for $|u|\le\Delta_1$, with $M$ a bound on $\|g^{(2K)}\|$ there. The kernel of the population with parameter $z$ is
+\[
+k(z)=\sum_iw_ig(\theta_c+\Delta s_i)=A\,D_\Delta\,\mu(z)+R_\Delta(z),
+\]
+where $A=[a_0,\ldots,a_{2K-1}]$ is $L\times2K$, $D_\Delta=\mathrm{diag}(1,\Delta,\ldots,\Delta^{2K-1})$ and $R_\Delta(z)=\sum_iw_i\rho(\Delta s_i)$. By the rank condition $A$ has full column rank; let $\sigma_A>0$ be its smallest singular value. For $\Delta\le1$, $\|AD_\Delta(\mu(z)-\mu(z'))\|\ge\sigma_A\Delta^{2K-1}\|\mu(z)-\mu(z')\|\ge\sigma_Ac_\mu\Delta^{2K-1}\|z-z'\|$. The partial derivatives of $R_\Delta$ are $\rho(\Delta s_i)$ in $w_i$ and $w_i\Delta\rho'(\Delta s_i)$ in $s_i$, both of norm at most a constant times $\Delta^{2K}$ on the box $[-1,1]^K\times[0,\omega_{\max}]^K$, so $\|R_\Delta(z)-R_\Delta(z')\|\le C_R\Delta^{2K}\|z-z'\|$. Hence, for $\Delta\le\Delta_0=\min\{1,\Delta_1,\sigma_Ac_\mu/(2C_R)\}$,
+\[
+\|k(z)-k(z')\|\ge\big(\sigma_Ac_\mu\Delta^{2K-1}-C_R\Delta^{2K}\big)\|z-z'\|\ge\tfrac12\sigma_Ac_\mu\Delta^{2K-1}\|z-z'\|.
+\]
+
+\emph{The estimator.} Let $\bar y=h(z)+\bar\xi$ be the average of the $N$ recorded responses, with $\bar\xi\sim\mathcal N(0,\sigma^2I_{L+1}/N)$, and $\hat z\in\arg\min_{\zeta\in\mathcal Z}\|h(\zeta)-\bar y\|$. Then $\|h(\hat z)-h(z)\|\le\|h(\hat z)-\bar y\|+\|\bar y-h(z)\|\le2\|\bar\xi\|$. The kernels of the class are bounded, so $\|k(\hat z)-k(z)\|\le2C_b\|\bar\xi\|$ and
+\[
+\|\hat z-z\|\le\frac{4C_b}{\sigma_Ac_\mu}\,\frac{\|\bar\xi\|}{\Delta^{2K-1}}.
+\]
+The norm is $1$-Lipschitz, so by Gaussian concentration $\|\bar\xi\|\le\sigma\big(\sqrt{L+1}+\sqrt{2\log(1/\delta)}\big)/\sqrt N$ with probability at least $1-\delta$. This is the claim with $C=4C_b/(\sigma_Ac_\mu)$.
+
+(iii) A linear relation $\sum_{p<2K}c_pg^{(p)}(\theta_c)=0$ says that the functional $\ell(\varphi)=\sum_pc_p\varphi^{(p)}(\theta_c)$ vanishes on $g_0,\ldots,g_{L-1}$. For exponential memory these span the functions $(1-\theta)q(\theta)$ with $q$ a polynomial of degree below $L$, which includes degree below $2K$. Since $1-\theta_c\ne0$, the derivatives of $(1-\theta)q$ at $\theta_c$ up to order $2K-1$ range over all of $\mathbb R^{2K}$ as $q$ ranges over polynomials of degree below $2K$, so $\ell=0$ forces every $c_p=0$. For power-law memory $g_m^{(p)}(\theta_c)=(-\log(m+1))^p(m+1)^{-\theta_c}$, and the relation says that a polynomial of degree below $2K$ in $\log(m+1)$ vanishes at the $L\ge2K$ distinct values $\log1,\ldots,\log L$; it is zero.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{n:irr}]
+(i) From $y_{i,-1}=0$ and $y_{i,t}=r_iy_{i,t-1}+\eta_ix_t$, $y_{i,t}=\eta_i\sum_{j=0}^tr_i^jx_{t-j}$, a function of $(x_0,\ldots,x_t)$. With known weights every generator of $\mathcal C_t$ is $\mathcal P_t$-measurable, so $\mathcal C_t=\mathcal P_t$. Since $\varepsilon_{t+1}$ is independent of $\mathcal P_t$ with mean zero,
+$\mathbb E[x_{t+1}\mid\mathcal P_t]=ax_t+\kappa\sum_iq_iy_{i,t}=ax_t+\kappa\sum_{m=0}^t\big(\sum_iq_i\eta_ir_i^m\big)x_{t-m}$, and $\sum_iq_i\eta_ir_i^m=k_m$.
+
+\emph{Coefficients.} The same substitution gives $x_t=\sum_{j\ge1}\phi_jx_{t-j}+\varepsilon_t$ with $\phi_1=a+\kappa k_0$ and $\phi_j=\kappa k_{j-1}$ for $j\ge2$ (the sum runs over the available past when the market starts at date $0$). All $\phi_j$ are nonnegative and $\sum_j\phi_j=a+\kappa\sum_mk_m=S<1$. For $L\ge1$, $\sum_{j>L}\phi_j=\kappa\sum_{m\ge L}k_m=\kappa\sum_iw_ir_i^{\,L}/(1-r_i)=\kappa\sum_iq_ir_i^{\,L}\le S\bar r^{\,L}$, because $w_i=q_i\eta_i$ and $1-r_i=\eta_i$. Writing $x_t=\sum_j\psi_j\varepsilon_{t-j}$, $\sum_j|\psi_j|\le1/(1-S)$, so $\mathbb Ex_t^2\le\sigma^2/(1-S)^2$ at every date.
+
+(ii) In the stationary market $1-\sum_j\phi_jz^j$ has no zero in $|z|\le1$, and the process is a causal, invertible autoregression of infinite order with spectral density between $\sigma^2/(2\pi(1+S)^2)$ and $\sigma^2/(2\pi(1-S)^2)$. \citet{ingwei2003} show that, for such processes and under their conditions on the news and on $L$, the mean squared error of the same-realization least-squares forecast of order $L$ is $\sigma^2$ plus a model-complexity term $\sigma^2L/T\,(1+o(1))$ plus an approximation term equal to the prediction error contributed by the omitted coefficients $(\phi_j)_{j>L}$. That term is at most $(\sum_{j>L}\phi_j)^2\,\mathbb Ex_t^2\le S^2\bar r^{\,2L}\sigma^2/(1-S)^2$. The composition observer knows the weights, so by part (i) its forecast error is $\mathbb E\varepsilon_{T+1}^2=\sigma^2$, and no observer does better because $\varepsilon_{T+1}$ is independent of everything observed by date $T$.
+
+(iii) Let $p$ be the density of the record $X=(x_1,\ldots,x_T)$ under the true population, which is also the product of the composition observer's predictive densities, and let $p_L$ be the density of the autoregression of order $L$ with coefficients $\phi_{1:L}=(\phi_1,\ldots,\phi_L)$ and Gaussian news of variance $\sigma^2$. Let $Z$ be the $T\times L$ matrix with rows $z_t=(x_{t-1},\ldots,x_{t-L})$, zeros before the start. The Bayesian autoregression has density $q(X)=\int p_\varphi(X)\,\mathcal N(d\varphi;0,I_L)$, the product of its predictive densities. Then
+\[
+\mathbb E\log\frac pq=\mathbb E\log\frac p{p_L}+\mathbb E\log\frac{p_L}q,
+\]
+with expectations under $p$. \emph{First term.} The two conditional means differ by $\tau_t=\sum_{j>L}\phi_jx_{t-j}$, so $\mathbb E\log(p/p_L)=\sum_t\mathbb E\tau_t^2/(2\sigma^2)$, and by Minkowski's inequality $\mathbb E\tau_t^2\le(\sum_{j>L}\phi_j)^2\max_s\mathbb Ex_s^2\le S^2\bar r^{\,2L}\sigma^2/(1-S)^2$. \emph{Second term.} Completing the square in the Gaussian integral,
+\[
+\log q(X)=-\tfrac T2\log(2\pi\sigma^2)-\tfrac12\log\det\big(I_L+Z^\top Z/\sigma^2\big)-\frac1{2\sigma^2}\min_\varphi\big\{\|X-Z\varphi\|^2+\sigma^2\|\varphi\|^2\big\}.
+\]
+Taking $\varphi=\phi_{1:L}$ in the minimum gives, on every path,
+\[
+\log\frac{p_L(X)}{q(X)}\le\tfrac12\|\phi_{1:L}\|^2+\tfrac12\log\det\big(I_L+Z^\top Z/\sigma^2\big).
+\]
+Here $\|\phi_{1:L}\|^2\le(\sum_j\phi_j)^2=S^2$. The function $\log\det$ is concave and $\log\det(I_L+M)\le L\log(1+\operatorname{tr}M/L)$ for positive semidefinite $M$, so by Jensen's inequality $\mathbb E\log\det(I_L+Z^\top Z/\sigma^2)\le L\log(1+\mathbb E\operatorname{tr}(Z^\top Z)/(L\sigma^2))\le L\log(1+T/(1-S)^2)$, using $\mathbb E\|z_t\|^2\le L\sigma^2/(1-S)^2$. Adding the two terms,
+\[
+\mathbb E\log\frac pq\le\frac{S^2}2+\frac L2\log\Big(1+\frac T{(1-S)^2}\Big)+\frac{TS^2\bar r^{\,2L}}{2(1-S)^2},
+\]
+which is increasing in $S$, so $S$ may be replaced by $\bar s$. With $L\ge\log T/(2\log(1/\bar r))$, $T\bar r^{\,2L}\le1$. Neither the number of groups nor the spacing of their memories enters.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{n:exc}]
+(a) Let one group trade $\beta\,\Delta f_{t+1}$, with $f$ the fundamental value and $\Delta f_{t+1}$ independent of the price history; its flow forecasts $x_{t+1}$ with a gain of order $\kappa^2\beta^2\operatorname{Var}(\Delta f_{t+1})$ that does not depend on $T$. (b) With exogenous flows, $x_{t+1}=ax_t+\kappa\sum_iq_iy_{i,t}+\kappa U_{t+1}+\varepsilon_{t+1}$ with $U=\sum_iu_i$. The positions are still functions of past prices, so as in Theorem~\ref{n:irr}(i) the feedback part is known to both observers given the weights, and the aggregate flow then reveals $U_s$ for $s\le t$. The price-and-flow observer therefore knows $\sigma(x_s,U_s:s\le t)$ and the composition observer $\sigma(x_s,u_{i,s}:s\le t,\,i\le K)$. Prices add nothing about the future of $U$ beyond its own past, because $x_s$ is a function of $U_s$, $\varepsilon_s$ and earlier prices, and the news is independent of $u$. The two forecast errors are $\sigma^2+\kappa^2\operatorname{Var}(U_{t+1}\mid U_s,s\le t)$ and $\sigma^2+\kappa^2\operatorname{Var}(U_{t+1}\mid u_{i,s},s\le t,i\le K)$; in the Gaussian case these are the variances of linear projection errors, and their difference is the claim. If every $u_i$ follows $u_{i,t+1}=\sum_{j\ge0}\alpha_ju_{i,t-j}+e_{i,t+1}$ with common coefficients and innovations unpredictable from the past of all components, then $\mathbb E[U_{t+1}\mid u^t]=\sum_j\alpha_jU_{t-j}$, a function of the past of $U$, so the difference is zero. (c) and (d) restate Theorem~\ref{n:sat_thm} and Proposition~\ref{n:target}.
+\end{proof}
+
+\paragraph{Numerical checks.} The table lists the checks behind the numbers in the main text. Scripts are under \nolinkurl{research_extension/} in the repository.
+
+\begin{center}\small
+\begin{tabular}{p{1.6in}p{2.9in}p{1.4in}}\toprule
+Check & Result & Script \\\midrule
+Theorem~\ref{n:dual}(i) & Monte Carlo mean of the log likelihood ratio against $\Lambda/2$ for 64 pair-and-probe combinations: largest deviation $2.8$ standard errors & \nolinkurl{duality/duality_check.py}\\
+Theorem~\ref{n:dual}(ii) & smallest test error among the 21 combinations with $\Lambda\le1$: $0.31$; largest distance of the 64 errors from $\Phi(-\sqrt\Lambda/2)$: $0.033$ & same\\
+Theorem~\ref{n:univ}, three non-exponential families & response-gap slopes $2.98$--$3.07$ ($K=2$) and $4.97$--$5.07$ ($K=3$), against $3$ and $5$ & \nolinkurl{universal_law/universal_law_check.py}\\
+Theorem~\ref{n:shape}(ii), rank condition & smallest normalized singular value of the derivative vectors: power-law $0.067$ ($K=2$) and $0.0036$ ($K=3$); hump and window $0.28$ to $0.49$ & same\\
+Theorem~\ref{n:shape}(ii), estimator & weight error of the minimum-distance fit against $\Delta$ (five spreads, 200 runs each, fits started at the truth): slopes $-3.05$ (power-law) and $-3.08$ (hump), against $-3$ & \nolinkurl{duality/duality_check.py}\\
+Theorem~\ref{n:irr}(ii), spacing & excess error $1.56\times10^{-4}$ with memories $(0.30,0.60)$ and with $(0.44,0.46)$, against $L/T=1.6\times10^{-4}$ & \nolinkurl{irrelevance/irrelevance_theorem_check.py}\\
+Theorem~\ref{n:irr}(iii) & cumulative excess log-loss over $4{,}000$ periods, $L=12$, 60 paths: $44.4$ and $44.1$ for the same two populations, against the bound $66.5$ & \nolinkurl{duality/duality_check.py}\\
+Remark on drift & excess$/v^{2/3}$ between $0.18$ and $0.41$ for $v$ from $3\times10^{-5}$ to $10^{-3}$ & \nolinkurl{irrelevance/irrelevance_theorem_check.py}\\\bottomrule
+\end{tabular}
+\end{center}
+%%END supp

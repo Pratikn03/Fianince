@@ -49,6 +49,10 @@ jobs:
         working-directory: research_extension/current_manuscript_lean_20261008
         run: lake env lean AxiomAudit.lean
 
+      - name: Check the consolidated Paper 1 revision lemmas
+        working-directory: research_extension/current_manuscript_lean_20261008
+        run: lake env lean ../paper1_publication_revision/PublicationRevision.lean
+
       - name: Run Formal Verification Script
         working-directory: research_extension/current_manuscript_lean_20261008
         run: python verify_formalization.py
@@ -72,6 +76,50 @@ jobs:
             research_extension/current_manuscript_lean_20261008/AxiomAudit.lean
             ceiling_suite/CEILING_SUITE_LEAN_PROOF_MANIFEST.json
             ceiling_suite/CEILING_SUITE_LEAN_PROOF_REPORT.md
+
+  paper1-revision:
+    name: Paper 1 Revision Offline Proof and Regression Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install the recorded revision dependencies
+        run: python -m pip install -r research_extension/paper1_publication_revision/requirements-validation.txt
+      - name: Check counterexamples, registered hashes, and inference boundaries
+        run: >-
+          python -m pytest
+          research_extension/paper1_publication_revision/validation/test_revision.py
+          research_extension/paper1_publication_revision/validation/test_incoming.py
+          research_extension/paper1_publication_revision/validation/test_notebook_candidate.py
+          --junitxml=paper1_revision_tests.xml
+      - name: Check exact pooled reconstruction and high-precision information
+        run: |
+          python research_extension/paper1_publication_revision/validation/pooling_certificate_check.py
+          python research_extension/paper1_publication_revision/validation/high_precision_information.py
+      - name: Install the manuscript build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended \
+            texlive-latex-extra texlive-fonts-recommended lmodern poppler-utils
+      - name: Rebuild and compare the delivered revision
+        run: |
+          cp pdf_delivered/Paper1_ssrn_complete.pdf /tmp/paper1_committed.pdf
+          python ceiling_suite/papers/paper1_note/build_ssrn.py --pdf
+          pdftotext -layout /tmp/paper1_committed.pdf /tmp/paper1_committed.txt
+          pdftotext -layout pdf_delivered/Paper1_ssrn_complete.pdf /tmp/paper1_rebuilt.txt
+          python ceiling_suite/papers/pdf_text_tokens.py /tmp/paper1_committed.txt /tmp/paper1_rebuilt.txt
+      - name: Upload offline revision checks
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper1-revision-checks
+          path: |
+            paper1_revision_tests.xml
+            research_extension/paper1_publication_revision/validation/pooling_certificate_results.json
+            research_extension/paper1_publication_revision/validation/high_precision_information_results.json
+            pdf_delivered/Paper1_ssrn_complete.pdf
 
   paper-suite:
     name: Paper Suite Clean Reproduction (tests, results, LaTeX, ledger)

@@ -1,0 +1,275 @@
+--- registered/p1f_executor_A1.py
++++ UNREGISTERED/candidate_p1f_executor.py
+@@ -1,10 +1,13 @@
++"""UNREGISTERED OFFLINE CANDIDATE. Requires a new documented amendment and simulation gate.
++Live archive downloads are disabled in run_all.
++"""
+ """P1F executor, amendment A1 (prospective window): is trader composition irrelevant for forecasting prices?
+ 
+ Amendment A1, approved by the author on 14 November 2026 (US Central), changes only the window, the universe rule and
+ adds a structure check and a date guard. Estimation, verdicts and the power gate are unchanged from p1f_executor.py.
+ 
+ 
+-Implements ceiling_suite/p1_empirics/P1F_forecast_irrelevance_spec.md exactly. The pipeline (features, pooled
++This candidate changes the registered implementation and is not the registered test. The pipeline (features, pooled
+ regression, bootstrap, verdicts, power gate) is the one checked by simulation in
+ research_extension/irrelevance/p1f_design_sim.py, applied to Binance archive files.
+ 
+@@ -199,39 +202,39 @@
+     return k, m, status
+ 
+ 
+-def to_bars(k, m):
++def to_bars(k, m, bar="30min"):
+     """30-minute bars on a complete UTC grid. Close = last 5-minute close; flow = signed taker quote volume;
+     metrics = last snapshot strictly before the bar's end (conservative against look-ahead)."""
+-    grid = pd.date_range(pd.Timestamp(WINDOW_START, tz="UTC"), periods=NDAYS * 48, freq=BAR)
++    grid = pd.date_range(pd.Timestamp(WINDOW_START, tz="UTC"), periods=NDAYS * int(pd.Timedelta("1D") / pd.Timedelta(bar)), freq=bar)
+     out = pd.DataFrame(index=grid)
+     if len(k):
+         k = k.copy()
+         k["t"] = pd.to_datetime(k["open_time"].astype("int64"), unit="ms", utc=True)
+         k = k.drop_duplicates("t").set_index("t").sort_index()
+         k["flow"] = 2 * k["taker_buy_quote_volume"].astype(float) - k["quote_volume"].astype(float)
+-        g = k.resample(BAR, label="left", closed="left")
++        g = k.resample(bar, label="left", closed="left")
+         cnt = g["close"].count()
+         out["close"] = g["close"].last().reindex(grid)
+         out["flow"] = g["flow"].sum().reindex(grid)
+-        out.loc[cnt.reindex(grid).fillna(0) < 6, ["close", "flow"]] = np.nan
++        out.loc[cnt.reindex(grid).fillna(0) < int(pd.Timedelta(bar) / pd.Timedelta("5min")), ["close", "flow"]] = np.nan
+     else:
+         out["close"] = np.nan
+         out["flow"] = np.nan
+     if len(m):
+         m = m.drop_duplicates("create_time").set_index("create_time").sort_index()
+-        ends = grid + pd.Timedelta(BAR)
+-        snap = m[["sum_open_interest_value"] + list(CLASSES)].astype(float)
+-        idx = snap.index.searchsorted(ends - pd.Timedelta("1ns"), side="right") - 1
++        ends = grid + pd.Timedelta(bar)
++        snap = m[["sum_open_interest"] + list(CLASSES)].astype(float)
++        idx = snap.index.searchsorted(ends, side="left") - 1
+         vals = np.full((len(grid), snap.shape[1]), np.nan)
+         okk = idx >= 0
+         vals[okk] = snap.values[idx[okk]]
+         age = np.full(len(grid), np.inf)
+         age[okk] = (ends[okk] - snap.index[idx[okk]]).total_seconds()
+-        vals[age > 1800] = np.nan  # the snapshot must fall inside the bar
++        vals[age > pd.Timedelta(bar).total_seconds()] = np.nan  # the snapshot must fall inside the bar
+         for j, c in enumerate(snap.columns):
+             out[c] = vals[:, j]
+     else:
+-        for c in ["sum_open_interest_value"] + list(CLASSES):
++        for c in ["sum_open_interest"] + list(CLASSES):
+             out[c] = np.nan
+     return out
+ 
+@@ -253,7 +256,7 @@
+     syms = list(bars)
+     close = np.stack([bars[s]["close"].values for s in syms], 1)
+     flow = np.stack([bars[s]["flow"].values for s in syms], 1)
+-    oi = np.stack([bars[s]["sum_open_interest_value"].values for s in syms], 1)
++    oi = np.stack([bars[s]["sum_open_interest"].values for s in syms], 1)
+     R = np.diff(np.log(close), axis=0, prepend=np.nan)
+     A = flow
+     dOI = np.diff(np.log(oi), axis=0, prepend=np.nan)
+@@ -277,7 +280,7 @@
+ def class_features(N):
+     d1 = N - lag(N, 1)
+     d8 = N - lag(N, 8)
+-    lev = N - ema(N, 48)
++    lev = N - np.stack([pd.DataFrame(N[..., j]).rolling(48, min_periods=48).mean().values for j in range(N.shape[-1])], -1)
+     lev[np.isnan(N)] = np.nan
+     return np.concatenate([d1, d8, lev], -1)
+ 
+@@ -290,7 +293,7 @@
+ 
+ 
+ # ---------------------------------------------------------------- the test
+-def evaluate(R, A, dOI, N, delta, train_end, test_end, inject=None, class_idx=None, rng=None, boot=BOOT, bpd=48):
++def evaluate(R, A, dOI, N, delta, train_end, test_end, inject=None, class_idx=None, rng=None, boot=BOOT, bpd=48, block_days=3):
+     X = features(R, A, dOI)
+     C = class_features(N)
+     if class_idx is not None:
+@@ -302,7 +305,7 @@
+     T, S = R.shape
+     start = 2 * bpd  # warm-up for lags and moving averages
+     tmask = np.zeros(T, bool)
+-    tmask[start:train_end] = True
++    tmask[start:train_end - 1] = True  # one-step target must remain inside training
+     emask = np.zeros(T, bool)
+     emask[train_end:test_end] = True
+     Xs = np.stack([_std(X[:, s], tmask) for s in range(S)], 1)
+@@ -326,42 +329,70 @@
+     yy = np.where(rows_te, ys, np.nan)
+     mu_te = np.nanmean(yy, 0)
+     v = np.where(rows_te, (ys - mu_te) ** 2, 0.0)
+-    nday = (test_end - train_end) // bpd
+-    sl = slice(train_end, train_end + nday * bpd)
+-    dd = d[sl].reshape(nday, bpd, S).sum((1, 2))
+-    vv = v[sl].reshape(nday, bpd, S).sum((1, 2))
++    sl = slice(train_end, test_end)
++    starts = np.arange(0, test_end - train_end, bpd)
++    nday = len(starts)
++    dd = np.add.reduceat(d[sl].sum(1), starts)
++    vv = np.add.reduceat(v[sl].sum(1), starts)
++    if nday < 2 or vv.sum() <= 0:
++        raise ValueError("Insufficient evaluation days or target variation")
+     est = dd.sum() / vv.sum()
+     rng = rng or np.random.default_rng(SEED)
+-    idx = rng.integers(0, nday, (boot, nday))
++    if not 1 <= block_days <= nday:
++        raise ValueError("Invalid bootstrap block length")
++    nb = (nday + block_days - 1) // block_days
++    starts_boot = rng.integers(0, nday, (boot, nb))
++    idx = ((starts_boot[..., None] + np.arange(block_days)) % nday).reshape(boot, -1)[:, :nday]
+     boots = dd[idx].sum(1) / vv[idx].sum(1)
+     lo, hi = np.quantile(boots, [0.10, 0.90])
+     if hi < delta:
+         verdict = "irrelevant"
+-    elif lo > 0 and est >= delta:
++    elif lo > delta:
+         verdict = "relevant"
+     else:
+         verdict = "inconclusive"
+     per_sym = (d[sl].sum(0) / np.maximum(v[sl].sum(0), 1e-12))
+     return {"verdict": verdict, "dR2": float(est), "lower90": float(lo), "upper90": float(hi),
+-            "n_test_rows": int(rows_te.sum()), "n_train_rows": int(rows_tr.sum()), "per_symbol_dR2": per_sym.tolist()}
++            "n_test_rows": int(rows_te.sum()), "n_scored_days": nday, "block_days": block_days, "one_sided_confidence": 0.9, "n_train_rows": int(rows_tr.sum()), "per_symbol_dR2": per_sym.tolist()}
++
++
++def injection_coefficient(residual_variance, target_variance, gain):
++    """Population algebra when residuals are orthogonal to the baseline.
++    Sample estimates of these variances supply only a calibration diagnostic.
++    """
++    target = gain * target_variance
++    if not 0 < target < residual_variance:
++        raise ValueError("Requested incremental signal is infeasible")
++    return np.sqrt(target / (residual_variance - target))
+ 
+ 
+ def power_gate(R, A, dOI, N, train_end, rng, draws=GATE_DRAWS, bpd=48):
+-    """Training half only: split it in two, inject a synthetic class feature with true dR2 about 2*DELTA."""
+-    y = np.roll(R, -1, 0)
++    """Training-only candidate; injection calibrated from inner-training residuals.
++    Its achieved out-of-sample power must be established in an amended simulation gate.
++    """
++    R, A, dOI, N = [z[:train_end].copy() for z in (R, A, dOI, N)]
++    y = np.roll(R, -1, 0); y[-1] = np.nan
+     T, S = R.shape
+-    tmask = np.zeros(T, bool)
+-    tmask[2 * bpd:train_end] = True
+-    ys = np.stack([_std(y[:, s][:, None], tmask)[:, 0] for s in range(S)], 1)
+-    c = np.sqrt(2 * DELTA / (1 - 2 * DELTA))
+-    mid = 2 * bpd + ((train_end - 2 * bpd) // bpd // 2) * bpd
++    mid = 2*bpd + ((train_end-2*bpd)//bpd//2)*bpd
++    X = features(R, A, dOI)
++    signal = np.full_like(R, np.nan)
++    for s in range(S):
++        fitmask = np.arange(T) >= 2*bpd
++        fitmask[mid-1:] = False
++        fitmask &= np.isfinite(X[:, s]).all(1) & np.isfinite(y[:, s])
++        Z = np.column_stack([np.ones(T), X[:, s]])
++        beta = np.linalg.lstsq(Z[fitmask], y[fitmask, s], rcond=None)[0]
++        residual = y[:, s] - Z @ beta
++        vr = np.var(residual[fitmask]); vy = np.var(y[fitmask, s])
++        c = injection_coefficient(vr, vy, 2*DELTA)
++        signal[:, s] = c * residual / np.sqrt(vr)
+     hits = 0
+     for _ in range(draws):
+-        z = c * np.nan_to_num(ys) + rng.standard_normal(ys.shape)
+-        z[train_end:] = 0.0
+-        r = evaluate(R, A, dOI, N, DELTA, mid, train_end, inject=z, rng=rng, boot=400, bpd=bpd)
+-        hits += r["verdict"] == "relevant"
+-    return hits / draws
++        z = signal + rng.standard_normal(signal.shape)
++        result = evaluate(R, A, dOI, N, DELTA, mid, train_end-1,
++                          inject=z, rng=rng, boot=400, bpd=bpd)
++        hits += result["verdict"] == "relevant"
++    return hits/draws
+ 
+ 
+ def a1(R, A, dOI, N, train_end, test_end, bpd=48):
+@@ -373,7 +404,7 @@
+     for s in range(S):
+         Z = X[:, s]
+         ok = ~np.isnan(Z).any(-1) & ~np.isnan(tgt[:, s])
+-        tr = ok.copy(); tr[:2 * bpd] = False; tr[train_end:] = False
++        tr = ok.copy(); tr[:2 * bpd] = False; tr[train_end - 8:] = False  # purge every eight-step boundary label
+         te = ok.copy(); te[:train_end] = False; te[test_end:] = False
+         if tr.sum() < 100 or te.sum() < 100:
+             r2s.append(float("nan")); continue
+@@ -395,6 +426,8 @@
+ # ---------------------------------------------------------------- driver
+ def run_all(workdir=".", syms=None, max_symbols=None):
+     import os
++    if FETCH is http_fetch:
++        raise SystemExit("UNREGISTERED OFFLINE CANDIDATE: live execution disabled; amend and validate first")
+     os.makedirs(workdir, exist_ok=True)
+     t0 = time.time()
+     if FETCH is http_fetch and dt.datetime.utcnow().date() < EARLIEST_RUN:
+@@ -405,16 +438,17 @@
+         syms, vols = universe()
+     if max_symbols:
+         syms = syms[:max_symbols]
+-    json.dump({"symbols": syms, "feb2022_quote_volume": vols}, open(f"{workdir}/p1f_universe.json", "w"), indent=1)
+-
+-    bars, coverage, files = {}, {}, {"verified": 0, "unverified": 0, "missing": 0}
++    json.dump({"symbols": syms, "ranking_month_quote_volume": vols}, open(f"{workdir}/p1f_universe.json", "w"), indent=1)
++
++    bars, bars5, coverage, files = {}, {}, {}, {"verified": 0, "unverified": 0, "missing": 0}
+     for s in syms:
+         k, m, st = symbol_frames(s)
+         for kk in files:
+             files[kk] += st[kk]
+         b = to_bars(k, m)
+         bars[s] = b
+-        complete = b[["close", "flow", "sum_open_interest_value"] + list(CLASSES)].notna().all(1).values
++        bars5[s] = to_bars(k, m, bar="5min")
++        complete = b[["close", "flow", "sum_open_interest"] + list(CLASSES)].notna().all(1).values
+         half = TRAIN_DAYS * 48
+         coverage[s] = {"train": float(complete[:half].mean()), "test": float(complete[half:].mean())}
+         log(f"{s}: coverage train {coverage[s]['train']:.3f} test {coverage[s]['test']:.3f}; files {st}")
+@@ -424,7 +458,7 @@
+     json.dump({"per_symbol": coverage, "kept": kept, "excluded": excluded, "files": files},
+               open(f"{workdir}/p1f_coverage.json", "w"), indent=1)
+ 
+-    res = {"spec": "P1F_forecast_irrelevance_spec.md + P1F_amendment_A1.md", "window_start": WINDOW_START.isoformat(), "days": NDAYS,
++    res = {"spec": "UNREGISTERED OFFLINE CANDIDATE: P1F_candidate_amendment.md", "window_start": WINDOW_START.isoformat(), "days": NDAYS,
+            "symbols_kept": kept, "symbols_excluded": excluded, "files": files}
+     if len(kept) < 20:
+         res["status"] = "VOID: fewer than 20 symbols meet the coverage rule"
+@@ -447,6 +481,11 @@
+ 
+     res["A1"] = a1(R, A, dOI, N, train_end, test_end)
+     res["A2_primary"] = evaluate(R, A, dOI, N, DELTA, train_end, test_end, rng=np.random.default_rng(SEED))
++    R5, A5, O5, N5 = panel_arrays({s: bars5[s] for s in kept})
++    res["A2_5minute"] = evaluate(R5, A5, O5, N5, DELTA, TRAIN_DAYS*288, NDAYS*288-1,
++                                 rng=np.random.default_rng(SEED), bpd=288)
++    res["A2_block_sensitivity"] = {str(k): evaluate(R, A, dOI, N, DELTA, train_end, test_end,
++        rng=np.random.default_rng(SEED), block_days=k) for k in (1, 5)}
+     res["A2_delta_0.002"] = evaluate(R, A, dOI, N, DELTA_SECONDARY, train_end, test_end,
+                                      rng=np.random.default_rng(SEED))
+     res["A2_by_class"] = {c: evaluate(R, A, dOI, N, DELTA, train_end, test_end, class_idx=j,
+@@ -461,15 +500,15 @@
+ 
+     a2 = res["A2_primary"]["verdict"]
+     if res["A1"]["pass"] and a2 == "irrelevant":
+-        res["joint_reading"] = "SUPPORTIVE: composition was invisible to prices and irrelevant for price forecasts"
++        res["joint_reading"] = "SUPPORTIVE FOR SPECIFIED LEARNERS AND MARGIN; no structural invisibility inference"
+     else:
+         res["joint_reading"] = f"NOT SUPPORTIVE: A1 {'pass' if res['A1']['pass'] else 'fail'}, A2 {a2}"
+-    words = {"irrelevant": "Class positions did not improve price forecasts by delta or more beyond public prices and anonymous flow.",
+-             "relevant": "Class positions improved price forecasts beyond public prices and anonymous flow; the irrelevance prediction is rejected.",
++    words = {"irrelevant": "For the specified model, features, horizon and bootstrap, the upper one-sided 90% limit is below delta.",
++             "relevant": "For the specified model, features, horizon and bootstrap, the lower one-sided 90% limit exceeds delta.",
+              "inconclusive": "The test could not tell whether class positions improve price forecasts by delta."}
+-    res["A2_registered_wording"] = words[a2]
+-    res["A1_registered_wording"] = ("Prices and anonymous flow did not reveal how top-trader positions moved."
+-                                    if res["A1"]["pass"] else "Prices and anonymous flow revealed how top-trader positions moved.")
++    res["A2_candidate_wording"] = words[a2]
++    res["A1_candidate_wording"] = ("The specified baseline met the registered position-change prediction threshold; no structural non-identification follows."
++                                    if res["A1"]["pass"] else "The specified baseline did not meet the registered position-change prediction threshold.")
+     res["status"] = "COMPLETE"
+     res["seconds"] = round(time.time() - t0)
+     log(f"A1 {res['A1']['pass']} ({res['A1']['share_below']:.2f}); A2 {a2} dR2 {res['A2_primary']['dR2']:.5f} "
