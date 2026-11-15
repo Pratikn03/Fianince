@@ -1,5 +1,7 @@
 # Paper 1: the ceiling, and what the SSRN version adds (15 November 2026)
 
+> **Consolidation note:** This incoming review is retained as historical context. Its branch inventory and unqualified “gaps closed” labels are superseded by the [integrated 59-gap audit](../../../../research_extension/paper1_publication_revision/Research_Audit.md). The canonical current PDFs and build are linked from the repository README. The integrated version keeps the three new results with explicit assumptions, adds a block-Hankel global pooling certificate, and reports the failed offline forecast diagnostics.
+
 Written by an AI system for the authors. This is one reader's judgement, not independent review.
 
 ## What the literature check found
