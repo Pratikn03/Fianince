@@ -188,3 +188,19 @@ A1 passed in every simulated data set. The A3 gate detected the injected gain in
 - **Diagnosis.** It must use days outside the window and look at file structure only.
 - **Next step.** Any change of code or window is an amendment that needs the author's approval and is disclosed.
   Outputs: `results/p1f_results.zip`.
+
+## Diagnosis of the void (14 November 2026, out-of-window days only)
+
+The author ran `P1F_diagnostic_cell.py` on 27 and 28 February 2022 for BTCUSDT and ETHUSDT. These days are outside
+the window and unused by any test. Output: `results/p1f_diagnostic_output.txt`.
+
+- **Klines and open interest are complete in 2022.** Every kline row and every open-interest field is present.
+- **The all-accounts ratio is complete.** `count_long_short_ratio` is present in every row.
+- **The top-trader fields are empty.** `sum_toptrader_long_short_ratio`, `count_toptrader_long_short_ratio` and
+  `sum_taker_long_short_vol_ratio` are blank in every row. The archive did not carry top-trader ratios for these
+  dates.
+
+**Conclusion.** The void is a data limitation, not a code error. The coverage rule worked as written. The
+specification's universe rule checked that files existed, not that the fields were filled, so it could not catch
+this before the run. A 2022 window cannot test P1F, because the test needs the top-trader classes. Any new window is
+an amendment that needs the author's approval.
