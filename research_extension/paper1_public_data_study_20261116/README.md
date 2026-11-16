@@ -64,6 +64,31 @@ This directory archives the evidence package delivered with the 141-page revisio
   nor the existing Binance prospective replication. Outcomes were not available
   at delivery time.
 
+## Lock timeline clarification (author review, 15 November 2026)
+
+The manuscript (S31.1) dates the protocol lock "16 November 2026", which is the
+manuscript revision date. The extraction run recorded in `run_manifest.json`
+started 2026-11-15T22:33:53Z and finished 2026-11-15T22:36:30Z (UTC), and the
+manifest asserts the final-validation outcome was not available before the lock
+(`outcome_available_on_2026_11_16: false`). The protocol hash above is the lock's
+content identifier; the manuscript should state the lock relative to this UTC run
+timeline rather than the revision date.
+
+## Frozen candidate list integrity
+
+`run_manifest.json` pins the sampling frame and selection:
+
+- `frame_rows` / `unique_valid_addresses`: 47,705
+- ordering: ascending `SHA256(Paper1-public-account-v1||lowercase_address)`
+- `candidate_count`: 192, with `candidate_sha256`
+  `6d4fd1fbbac918f1bd97f5d3cb6ac79bc206a8cf9421147e70c05f37ab55ce58`
+- `outcome_based_selection: false`
+
+The 192-row `account_sampling_ledger.csv` here is consistent with those pins. The
+full 47,705-row leaderboard snapshot itself is retained by the originating
+session and is not part of this archive; its SHA-256 should be deposited with the
+replication archive so the frozen frame is third-party reproducible.
+
 ## Evidence status (verbatim from the manifest)
 
 `real_public_market_data: true`, `real_public_address_data: true`;
