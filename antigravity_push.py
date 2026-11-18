@@ -76,6 +76,27 @@ def main():
         if (core_dir / "paper1_core.tex").exists():
             print(f"📄 Compiling paper1_core.tex...")
             subprocess.run("pdflatex -interaction=nonstopmode paper1_core.tex", shell=True, cwd=str(core_dir))
+
+        # Split and sync PDFs
+        print("📄 Splitting and syncing delivery PDFs...")
+        subprocess.run("python3 split_note.py paper1_theory.pdf Paper1_theory_main.pdf Paper1_theory_supplement.pdf", shell=True, cwd=str(note_dir))
+        subprocess.run("python3 split_note.py paper1_note_submission.pdf Paper1_note_submission_main.pdf Paper1_note_submission_supplement.pdf", shell=True, cwd=str(note_dir))
+        
+        pdf_del = root / "pdf_delivered"
+        if pdf_del.exists():
+            subprocess.run(f"cp {note_dir}/paper1_theory.pdf {pdf_del}/paper1_theory.pdf", shell=True)
+            subprocess.run(f"cp {note_dir}/Paper1_theory_main.pdf {pdf_del}/Paper1_theory_main.pdf", shell=True)
+            subprocess.run(f"cp {note_dir}/Paper1_theory_supplement.pdf {pdf_del}/Paper1_theory_supplement.pdf", shell=True)
+            subprocess.run(f"cp {note_dir}/Paper1_note_submission_main.pdf {pdf_del}/Paper1_note_submission_main.pdf", shell=True)
+            subprocess.run(f"cp {note_dir}/Paper1_note_submission_supplement.pdf {pdf_del}/Paper1_note_submission_supplement.pdf", shell=True)
+            subprocess.run(f"cp {core_dir}/paper1_core.pdf {pdf_del}/Paper1_core_compiled_latest.pdf", shell=True)
+            subprocess.run(f"cp {core_dir}/paper1_core.pdf {pdf_del}/Paper1_core_combined.pdf", shell=True)
+        
+        # Mirror PDFs
+        if pub_note_dir.exists():
+            subprocess.run(f"cp {note_dir}/paper1_theory.pdf {note_dir}/Paper1_theory_main.pdf {note_dir}/Paper1_theory_supplement.pdf {note_dir}/paper1_note_submission.pdf {note_dir}/Paper1_note_submission_main.pdf {note_dir}/Paper1_note_submission_supplement.pdf {pub_note_dir}/", shell=True)
+        if pub_core_dir.exists():
+            subprocess.run(f"cp {core_dir}/paper1_core.pdf {pub_core_dir}/", shell=True)
     else:
         print("ℹ️ pdflatex not found in PATH; skipping PDF rendering.")
 
@@ -87,7 +108,7 @@ def main():
 
     # Step 5: Commit & Push to Remote
     print("\n--- [5/5] Committing & Pushing to Remote Origin ---")
-    commit_msg = "Antigravity sync: math open problems resolved (det J pooling, nonlinear Prony, Nash contraction, convex holding), Lean formalizations, repo-wide path cleanup"
+    commit_msg = "Publication upgrade: S17 math rigor (pooling Jacobian det, total curvature Nash, data processing KL), title page AI disclosure removed to Declarations, all PDFs recompiled and synced"
     
     diff_check = subprocess.run("git diff --cached --quiet", shell=True, cwd=str(root))
     if diff_check.returncode != 0:

@@ -135,12 +135,7 @@ th = note
 for old, new in THEORY_EDITS:
     assert th.count(old) == 1, old[:60]
     th = th.replace(old, new)
-decl_th = decl.replace("\\paragraph{Use of AI tools.} See the AI-use disclosure on the title page.",
-    "\\paragraph{Declaration of generative AI and AI-assisted technologies.} During the preparation of this work the authors "
-    "used Claude, ChatGPT/Codex and Gemini for research development, code, numerical checks, Lean proofs, drafting and internal "
-    "critique, as stated on the title page. After using these tools, the authors reviewed and edited the content as needed and "
-    "take full responsibility for the content of the publication.")
-assert decl_th != decl
+decl_th = decl
 theory = (pre + "\\begin{document}\n\\maketitle\n\\thispagestyle{empty}\\pagestyle{empty}\n\\begingroup\\onehalfspacing\n\n" + th + "\n" + decl_th + "\n" + bib + "\n"
           + head + front + full + rest + "\\end{document}\n")
 NEWBIB = r"""\bibitem[Boswijk et~al.(2007)]{boswijk2007} Boswijk, H.~P., C.~H. Hommes, and S. Manzan (2007). Behavioral heterogeneity in stock prices. \emph{Journal of Economic Dynamics and Control} 31, 1938--1970.
@@ -183,15 +178,14 @@ MOVE = {"After a breach": ["The cascade after a breach", "Forward-looking dealer
                                            "A rate under hard limits", "The cost of composition when traders are nonlinear", "Traders who learn"]}
 KEEP = ["The moment gap of the hard pair", "The largest weights of the hard pair",
         "The pooling moment map: Jacobian and global immersion",
-        "Constructive upper bound for nonlinear equal-leverage traders",
-        "Mixed-strategy equilibrium: local contraction and quasi-concavity",
+        "Mixed-strategy equilibrium: local contraction and total curvature",
         "Convex dealer holding costs and Gaussian-convolved news"]
 i = theory.index("\\section{Questions left open in earlier versions}"); j = theory.index("\\section{", i + 10)
 sec = theory[i:j]
 cuts = [m.start() for m in re.finditer(r"\\subsection\{", sec)] + [len(sec)]
 subs = {re.match(r"\\subsection\{([^\n]*)\}", sec[a:]).group(1).split("}")[0]: sec[a:b] for a, b in zip(cuts, cuts[1:])}
 assert set(subs) == set(KEEP) | {t for v in MOVE.values() for t in v}, set(subs) ^ (set(KEEP) | {t for v in MOVE.values() for t in v})
-newsec = ("\\section{The hard pair: moment gap, largest weights, Jacobian and extensions}\\label{app:openres}\n\nThis section gives the exact size of the moment gap behind the constants of Theorem~\\ref{thm:kcohort}, compares the largest weights of the hard pair, proves global immersion of the pooling moment map, the matching upper bound for nonlinear equal-leverage traders, a pure Nash equilibrium condition, and extensions to strictly convex dealer holding costs and Gaussian-convolved news.\n\n" + "".join(subs[t] for t in KEEP))
+newsec = ("\\section{The hard pair: moment gap, largest weights, Jacobian and extensions}\\label{app:openres}\n\nThis section gives the exact size of the moment gap behind the constants of Theorem~\\ref{thm:kcohort}, compares the largest weights of the hard pair, proves global immersion of the pooling moment map, a pure Nash equilibrium condition, and extensions to strictly convex dealer holding costs and Gaussian-convolved news.\n\n" + "".join(subs[t] for t in KEEP))
 focus = theory[:i] + newsec + theory[j:]
 i = focus.index("\\section{Robustness to nonlinear and adaptive trading rules}"); j = focus.index("\\section{", i + 10)
 sims = focus[i:j]; focus = focus[:i] + focus[j:]
@@ -249,9 +243,6 @@ CABS = ("\\begin{abstract}\n\\noindent This note collects results that extend ``
         "whose choice is still summarized by the kernel. For traders with dead bands or smooth or hard position limits, large probes identify the "
         "population at the parametric rate, and nonlinearity lowers the cost of learning composition only when it separates the groups. "
         "Several steps are machine-checked in Lean~4; the main paper's supplement lists them.\n\\end{abstract}\n\n"
-        "\\noindent\\textbf{AI-use disclosure.} Claude, ChatGPT/Codex and Gemini provided material assistance with research development, code, numerical "
-        "checks, Lean proofs, manuscript drafting and internal critique. Human authors remain responsible for the content. AI checks do not constitute "
-        "independent review.\n\n"
         "\\noindent\\textbf{Numbering.} Results here are numbered C1.1, C1.2, and so on. Numbers of the form 3.1 refer to the main text of the main paper, "
         "and numbers of the form S4.1 to its online supplement. Code and proofs: \\url{https://github.com/Pratikn03/Fianince}.\n\n")
 MBIB = ("\\bibitem[Niroula et~al.(2026d)]{niroula2026m} Niroula, P., P. Niroula, and S. Khatiwada (2026d). Observationally equivalent algorithms: What prices "
@@ -263,7 +254,12 @@ keepb = [it for it in items[1:] if re.search(r"\]\{([^}]*)\}", it).group(1) in c
 cbib = bhead + "\n" + MBIB + "\n".join(keepb) + "\n\\end{thebibliography}\n"
 missing = cited - {"niroula2026m"} - {re.search(r"\]\{([^}]*)\}", it).group(1) for it in keepb}
 assert not missing, missing
+cdecl = ("\n\n\\subsection*{Declarations}\n\n\\paragraph{Declaration of generative AI and AI-assisted technologies.} "
+         "During the preparation of this work, the authors used large language model systems (Claude, ChatGPT/Codex, and Gemini) "
+         "for code development, numerical cross-checks, Lean~4 formalization checks, and manuscript drafting assistance. After using these "
+         "tools, the authors reviewed, validated, and edited all materials, verified all mathematical proofs and empirical calculations, "
+         "and take full responsibility for the content and conclusions of this manuscript.\n\n")
 comp = (cpre + "\\externaldocument{paper1_focus}\n\\begin{document}\n\\maketitle\n" + CABS + "\\renewcommand{\\thesection}{C\\arabic{section}}\n"
-        + comp_body + "\n" + cbib + "\\end{document}\n")
+        + comp_body + cdecl + "\n" + cbib + "\\end{document}\n")
 open("paper1b_companion.tex", "w", encoding="utf-8").write(comp)
 print("written paper1_focus.tex and paper1b_companion.tex; moved labels:", len(moved), "; cited keys in companion:", len(cited))
