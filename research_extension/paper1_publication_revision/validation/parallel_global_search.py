@@ -49,7 +49,7 @@ def main():
                         found.append(x)
             return found
         gf.other_solutions = parallel_solutions
-        runpy.run_path(str(SOURCE / 'global_fibres_extended.py'), run_name='__main__')
+        runpy.run_path(str(SOURCE / 'global_fibres_extended.py'), run_name='p1f_parallel_design')
 
 
 if __name__ == '__main__':

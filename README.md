@@ -1,5 +1,11 @@
 # Machine Markets: Auditable Memory, Financial Identification Limits, and Pre-Trade Safety Under Feedback
 
+## Current Paper 1 revision — 14 November 2026
+
+The consolidated author-review revision incorporates the incoming SSRN additions, corrected proof assumptions, a global pooling certificate, an intervention-loss example, and the complete offline diagnostic failures. Start with the [combined paper](pdf_delivered/Paper1_ssrn_complete.pdf), [main paper](pdf_delivered/Paper1_ssrn_main.pdf), [supplement](pdf_delivered/Paper1_ssrn_supplement.pdf), and [59-gap research audit](pdf_delivered/Paper1_Research_Audit.pdf). The [revision source and reproduction guide](research_extension/paper1_publication_revision/README.md) distinguish formal checks, synthetic experiments, inherited evidence and pending real-data studies.
+
+Rebuild with `.venv/bin/python ceiling_suite/papers/paper1_note/build_ssrn.py --pdf`. This is the canonical Paper 1 SSRN build; the dated versions below are historical or separate manuscripts. The registered empirical files and counters are unchanged. The unregistered offline candidate failed several calibration diagnostics and is not cleared for confirmatory use. Human author review and independent proof review remain pending.
+
 ## Paper 1 working-paper release — 5 November 2026
 
 The current review release adds 16 Lean theorem declarations for the exact two-group supervisory witness, a Gaussian unsafe-halt event bound, robustness and after-cost information acquisition. The full proof project builds and its strict axiom audit covers 803 named declarations across the programme. These counts do not establish complete manuscript equivalence.
