@@ -386,7 +386,7 @@ The results use six modelling choices: linearity; price-first timing within a pe
 
 \paragraph{The observer.} The cost results are stated for one observer outside the trader groups: a supervisor, an exchange's surveillance unit or a large desk. It knows $(a,\kappa)$, the law of the observation noise and, for the $K$-group results, $K$. It can \emph{wait}, recording prices driven by natural innovations; \emph{probe}, trading a sequence $v_t$ against the groups from a reset state and recording the response; or \emph{acquire disclosure}, receiving each class's flow. Independent resets are a benchmark that no outside participant can run in a live market. We use them because they make the information content of the data exact. Reset probing is a benchmark for what can be learned, not a proposed policy. Section~\ref{sec:cost} shows separately that passive observation is no cheaper (Theorem~\ref{prop:passive}).
 
-\section{The kernel is a sufficient statistic}\label{sec:suff}
+\section{The kernel is a sufficient aggregate of the population}\label{sec:suff}
 
 This section states the paper's main result. In a market with an insider, noise traders, a dealer and feedback traders, all following arbitrary causal rules, the feedback traders affect every outcome only through their kernel. The notation for the insider follows \citet{kyle1985}, so in this section $x_t$ is the insider's order, not the pricing error.
 
@@ -455,7 +455,7 @@ The result concerns the stated model and observation contract. Groups sharing an
 \end{remark}
 \section{Sufficiency and identification in equilibrium}\label{sec:equilibrium}
 
-The identification results of Section~\ref{sec:suff} take the price impact $\kappa$ and the persistence $a$ of pricing errors as given. This section derives both from dealers who dislike holding inventory. It shows that the equilibrium price is the closed loop of Section~\ref{sec:model} with effective parameters and unchanged memory rates. So the kernel stays the sufficient statistic in equilibrium, and the cost of going beyond it (Section~\ref{sec:cost}) keeps its order.
+The identification results of Section~\ref{sec:suff} take the price impact $\kappa$ and the persistence $a$ of pricing errors as given. This section derives both from dealers who dislike holding inventory. It shows that the equilibrium price is the closed loop of Section~\ref{sec:model} with effective parameters and unchanged memory rates. So the kernel stays the sufficient aggregate in equilibrium, and the cost of going beyond it (Section~\ref{sec:cost}) keeps its order.
 
 
 \paragraph{An inventory equilibrium.}
@@ -2284,34 +2284,53 @@ This explains the constant $0.79\approx\pi/4$ reported with Theorem~\ref{thm:kco
 
 \subsection{The pooling moment map: Jacobian and global immersion}\label{app:jacobian}
 
-The proof of Theorem~\ref{prop:esprit} states that the map $F:(s,\omega)\mapsto(t_0,\ldots,t_{2K-1})$ has a confluent Vandermonde Jacobian with determinant $\prod_i\omega_i\cdot\prod_{i<j}(s_i-s_j)^4$, bounded away from zero on the compact, $\gamma$-separated class. This subsection makes the $K=D=2$ case explicit and proves global immersion on the full separation set.
+The proof of Theorem~\ref{prop:esprit} states that the single-market moment map has a confluent Vandermonde Jacobian, while Theorem~\ref{thm:pool} states that pooling $D$ markets reduces the local exponent to $l^* = K - 1 + \lceil K/D \rceil$. This subsection provides the explicit closed-form Jacobian determinants for both the single-market and the cross-market pooling cases, and proves global immersion and global identification.
 
-\paragraph{The $K=D=2$ case in closed form.} For $K=2$ groups with rescaled rates $s_1<s_2$ and merged weights $\omega_1,\omega_2>0$, the moment map $F$ takes values in $\mathbb{R}^4$ and is parameterized by $(s_1,s_2,\omega_1,\omega_2)\in\mathbb{R}^4$. Its Jacobian $J=DF$ at any $(s,\omega)$ satisfies
+\paragraph{The single-market confluent Vandermonde Jacobian ($4\times4$).} For $K=2$ groups with rescaled rates $s_1<s_2$ and merged weights $\omega_1,\omega_2>0$, the moment map $F:(s,\omega)\mapsto(t_0,t_1,t_2,t_3)$ has Jacobian
 \[
-\det J = \omega_1\omega_2\,(s_2-s_1)^4.
-\]
-This follows from the confluent Vandermonde structure: the $4\times4$ matrix
-\[
-J = \begin{pmatrix}
-\partial_{s_1}t_0 & \partial_{s_2}t_0 & \partial_{\omega_1}t_0 & \partial_{\omega_2}t_0 \\
-\partial_{s_1}t_1 & \partial_{s_2}t_1 & \partial_{\omega_1}t_1 & \partial_{\omega_2}t_1 \\
-\partial_{s_1}t_2 & \partial_{s_2}t_2 & \partial_{\omega_1}t_2 & \partial_{\omega_2}t_2 \\
-\partial_{s_1}t_3 & \partial_{s_2}t_3 & \partial_{\omega_1}t_3 & \partial_{\omega_2}t_3
-\end{pmatrix}
-=\begin{pmatrix}
+J_{\rm single} = \begin{pmatrix}
 0 & 0 & 1 & 1 \\
 \omega_1 & \omega_2 & s_1 & s_2 \\
 2\omega_1 s_1 & 2\omega_2 s_2 & s_1^2 & s_2^2 \\
 3\omega_1 s_1^2 & 3\omega_2 s_2^2 & s_1^3 & s_2^3
+\end{pmatrix}.
+\]
+Expanding by minors along the top row, its determinant is exactly
+\[
+\det J_{\rm single} = \omega_1\omega_2\,(s_2-s_1)^4.
+\]
+Because $\omega_i\ge\omega_{\min}>0$ and $s_2-s_1\ge\gamma>0$ on the separated class, $\det J_{\rm single}\ge\omega_{\min}^2\gamma^4>0$ uniformly. Four moments ($l^*=2K=4$) are both necessary and sufficient for single-market identification.
+
+\paragraph{The cross-market pooling Jacobian ($6\times6$) for $K=D=2$.} When $K=2$ algorithm classes trade across $D=2$ independent markets with non-singular participation matrix $W=(W_{ji})\in\mathbb{R}^{2\times2}$, pooling reduces the moment requirement to order $l^*=K-1+\lceil K/D\rceil=2$. The parameter vector is $\theta=(s_1,s_2,W_{11},W_{12},W_{21},W_{22})\in\mathbb{R}^6$, and the moment observations across the two markets are $t_{jl}=W_{j1}s_1^l+W_{j2}s_2^l$ for $j\in\{1,2\}$ and $l\in\{0,1,2\}$, giving six observations $F_{\rm pool}(\theta)=(t_{10},t_{11},t_{12},t_{20},t_{21},t_{22})^\top$. Its $6\times6$ Jacobian matrix
+\[
+J_{\rm pool} = \begin{pmatrix}
+0 & 0 & 1 & 1 & 0 & 0 \\
+W_{11} & W_{12} & s_1 & s_2 & 0 & 0 \\
+2W_{11}s_1 & 2W_{12}s_2 & s_1^2 & s_2^2 & 0 & 0 \\
+0 & 0 & 0 & 0 & 1 & 1 \\
+W_{21} & W_{22} & 0 & 0 & s_1 & s_2 \\
+2W_{21}s_1 & 2W_{22}s_2 & 0 & 0 & s_1^2 & s_2^2
 \end{pmatrix}
 \]
-has determinant $\omega_1\omega_2(s_2-s_1)^4$ by cofactor expansion along the top row, using the standard $2\times2$ Vandermonde determinant $s_2-s_1$ twice. Because $\omega_i>0$ and $s_1\ne s_2$ on the $\gamma$-separated class, $\det J\ge\omega_{\min}^2\gamma^4>0$ uniformly.
+has determinant in closed form:
+\[
+\det J_{\rm pool} = -\det(W)\cdot(s_2-s_1)^4,
+\]
+where $\det(W)=W_{11}W_{22}-W_{12}W_{21}$. (With column ordering $(W_{11},W_{12},W_{21},W_{22},s_1,s_2)$, the sign is positive.) Whenever the participation matrix is full rank ($|\det W|\ge\delta_W>0$) and rates are separated ($s_2-s_1\ge\gamma>0$),
+\[
+|\det J_{\rm pool}|\ge\delta_W\,\gamma^4>0
+\]
+uniformly on the compact class. Thus $J_{\rm pool}$ is globally non-singular, proving that condition~(R) of Theorem~\ref{thm:pool} holds everywhere on the class and establishing the global immersion index $l_g=l_c=l^*=2$.
 
-\paragraph{The inverse formula.} The centred-moment vector $T=(t_0,t_1,t_2,t_3)$ and the Vandermonde-weight vector $V=(\omega_1,\omega_2,\omega_1 s_1,\omega_2 s_2)$ satisfy $T=WV$ where $W$ is the $4\times4$ confluent Vandermonde matrix evaluated at $(s_1,s_2)$. On the $\gamma$-separated class $W$ is nonsingular, and the unique pre-image is $V=W^{-1}T$; the rates $(s_1,s_2)$ are then recovered as the roots of the $2\times2$ Hankel system formed from $(t_0,t_1,t_2,t_3)$, and the weights as $\omega_i=V_i$.
-
-\paragraph{Global immersion and the index $\ell^*$.} Define the \emph{immersion index} $\ell_g$ as the smallest number of moment observations that make $F$ injective on the class. For $K$ ordered $\gamma$-separated groups, $F$ is injective from the first $2K$ moments (a measure with $K$ distinct atoms is determined by its first $2K$ moments), so $\ell_g\le2K$. Because the Gauss and Gauss--Radau pair agree on moments $0,\ldots,2K-2$ and differ at order $2K-1$, $\ell_g\ge2K$, so $\ell_g=\ell^*=2K$. For $K=D=2$ this gives $\ell_g=\ell^*=4$: four moment observations suffice and are necessary.
-
-\paragraph{What this settles.} Earlier versions noted only that the Jacobian is nonsingular on the compact class. The explicit formula $\det J=\omega_1\omega_2(s_1-s_2)^4$ gives a computable lower bound on the Lipschitz constant $L$ of $F^{-1}$ (through the inverse function theorem), confirms that the moment map is a global immersion on the separation set $\{s_1<s_2,\,\omega_i>0\}$ (not just locally), and identifies $\ell_g=\ell^*=2K$ as the exact transition between identifiability and non-identifiability.
+\paragraph{Global identification via $T=WV\implies V=W^{-1}T$.} In $D$ markets with $K$ classes, assemble the moment observations into the $D\times(l^*+1)$ matrix $T=(t_{jl})_{j\le D, l\le l^*}$. For $D=K=2$, $T$ is $2\times3$ and factorizes as
+\[
+T = W V,\qquad V = \begin{pmatrix} 1 & s_1 & s_1^2 \\ 1 & s_2 & s_2^2 \end{pmatrix}.
+\]
+When $\det W\ne0$, premultiplying by $W^{-1}$ yields
+\[
+V = W^{-1}T.
+\]
+The first column of $V$ is identically $(1,1)^\top$, which fixes the normalisation $W^{-1}(t_{10},t_{20})^\top=(1,1)^\top$. The second column uniquely determines the rescaled memory rates $(s_1,s_2)^\top=W^{-1}(t_{11},t_{21})^\top$, after which $W$ is recovered uniquely by inverting the $2\times2$ Vandermonde submatrix. For general $D=K\ge2$, $T=WV$ with $W\in\mathbb{R}^{K\times K}$ non-singular and $V\in\mathbb{R}^{K\times(K+1)}$ Vandermonde. Premultiplying by $W^{-1}$ recovers the exact power sums $s_i^l$ row by row, identifying the ordered nodes $s_1<\cdots<s_K$ globally, after which $W$ is recovered via non-singular Vandermonde inversion. This establishes $l_g=l_c=l^*=K$ globally for all $D=K\ge2$.
 
 \subsection{Constructive upper bound for nonlinear equal-leverage traders}\label{app:nlprony}
 
@@ -2349,7 +2368,7 @@ Strict concavity at every $w$ implies quasi-concavity (every superlevel set is c
 \[
 D_f(\Delta)\le\frac{\Delta^2}{2\sigma_\nu^2}+D_{f_0}(\Delta),
 \]
-where the second term satisfies $D_{f_0}(\Delta)=0$ for $|\Delta|>2B$ (mutual singularity does not apply once the shift exceeds the support). For $|\Delta|\le2B$, $D_{f_0}(\Delta)\le C_B\Delta^2/\sigma_\nu^2$ by Taylor expansion of the Gaussian factor in the mixture. Hence $f$ has quadratic location divergence with $I^*_f\le1/\sigma_\nu^2+C_B/\sigma_\nu^2$, and all passive lower bounds of Theorem~\ref{prop:passive} hold with the total variance $\sigma^2=\sigma_\nu^2+\sigma_0^2$ and the adjusted constant. In particular, the order $(\\Delta\eta)^{-(4K-2)}$ is unchanged.
+where the second term satisfies $D_{f_0}(\Delta)=0$ for $|\Delta|>2B$ (mutual singularity does not apply once the shift exceeds the support). For $|\Delta|\le2B$, $D_{f_0}(\Delta)\le C_B\Delta^2/\sigma_\nu^2$ by Taylor expansion of the Gaussian factor in the mixture. Hence $f$ has quadratic location divergence with $I^*_f\le1/\sigma_\nu^2+C_B/\sigma_\nu^2$, and all passive lower bounds of Theorem~\ref{prop:passive} hold with the total variance $\sigma^2=\sigma_\nu^2+\sigma_0^2$ and the adjusted constant. In particular, the order $(\Delta\eta)^{-(4K-2)}$ is unchanged.
 
 \paragraph{What these settle.} The strictly convex dealer generalization shows that the kernel-sufficiency and identification results are robust to nonlinear dealer objective functions beyond the quadratic benchmark, as long as the holding-cost function is smooth and strictly convex. The Gaussian-convolved news remark closes the gap between the quadratic-divergence class of Proposition~\ref{prop:nongauss} and practitioner news models that mix bounded price moves with continuous Gaussian volatility (e.g., jump-diffusion models discretized to daily returns).
 
