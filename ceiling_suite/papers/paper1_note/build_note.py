@@ -181,14 +181,17 @@ MOVE = {"After a breach": ["The cascade after a breach", "Forward-looking dealer
         "Insiders": ["A long-lived insider", "An insider against a strategic group"],
         "Nonlinear and learning traders": ["Traders with a dead band", "Saturation of every order", "A rate for noisy stress identification",
                                            "A rate under hard limits", "The cost of composition when traders are nonlinear", "Traders who learn"]}
-KEEP = ["The moment gap of the hard pair", "The largest weights of the hard pair"]
+KEEP = ["The moment gap of the hard pair", "The largest weights of the hard pair",
+        "The pooling moment map: Jacobian and global immersion",
+        "Constructive upper bound for nonlinear equal-leverage traders",
+        "Mixed-strategy equilibrium: local contraction and quasi-concavity",
+        "Convex dealer holding costs and Gaussian-convolved news"]
 i = theory.index("\\section{Questions left open in earlier versions}"); j = theory.index("\\section{", i + 10)
 sec = theory[i:j]
 cuts = [m.start() for m in re.finditer(r"\\subsection\{", sec)] + [len(sec)]
 subs = {re.match(r"\\subsection\{([^\n]*)\}", sec[a:]).group(1).split("}")[0]: sec[a:b] for a, b in zip(cuts, cuts[1:])}
 assert set(subs) == set(KEEP) | {t for v in MOVE.values() for t in v}, set(subs) ^ (set(KEEP) | {t for v in MOVE.values() for t in v})
-newsec = ("\\section{The hard pair: moment gap and largest weights}\\label{app:openres}\n\nThis section gives the exact size of the moment gap "
-          "behind the constants of Theorem~\\ref{thm:kcohort} and compares the largest weights of the hard pair for every $K$.\n\n" + "".join(subs[t] for t in KEEP))
+newsec = ("\\section{The hard pair: moment gap, largest weights, Jacobian and extensions}\\label{app:openres}\n\nThis section gives the exact size of the moment gap behind the constants of Theorem~\\ref{thm:kcohort}, compares the largest weights of the hard pair, proves global immersion of the pooling moment map, the matching upper bound for nonlinear equal-leverage traders, a pure Nash equilibrium condition, and extensions to strictly convex dealer holding costs and Gaussian-convolved news.\n\n" + "".join(subs[t] for t in KEEP))
 focus = theory[:i] + newsec + theory[j:]
 i = focus.index("\\section{Robustness to nonlinear and adaptive trading rules}"); j = focus.index("\\section{", i + 10)
 sims = focus[i:j]; focus = focus[:i] + focus[j:]

@@ -106,4 +106,38 @@ theorem p1_flow_gaussian_decision_bound {J : ℕ} (N : ℕ) (hN : 0 < N)
       exact hSound x hGood hx.1 hx.2
     _ ≤ _ := p1_flow_joint_mean_bound N hN mean v e he
 
+/-! ### Computable flow decision rule and its soundness -/
+
+/-- A computable flow-decision rule: given `K` class upper bounds and a drift allowance,
+decide to halt class `i` if halting it keeps the total feedback budget under `cap`. -/
+def flowDecisionRule {K : ℕ} (upper : Fin K → ℝ) (a κ drift cap : ℝ) (i : Fin K) : Prop :=
+  a + κ * (∑ j ∈ Finset.univ.erase i, upper j) + drift ≤ cap
+
+/-- **Soundness of the flow decision rule.** If the rule selects class `i` for halting, and
+the actual class flows are bounded by their upper bounds with actual drift at most allowance,
+then the actual residual feedback budget is under `cap`. This is the verifiable guarantee:
+a supervisor who monitors (q_j, upper_j, drift, allowance, cap) and applies `flowDecisionRule`
+never exceeds the cap in the actual market. -/
+theorem p1_flow_decision_executable_sound {K : ℕ}
+    (q upper : Fin K → ℝ) (i : Fin K) (a κ drift allowance cap : ℝ)
+    (hk : 0 ≤ κ)
+    (hq : ∀ j, q j ≤ upper j)
+    (hd : drift ≤ allowance)
+    (hRule : flowDecisionRule upper a κ drift cap i) :
+    a + κ * (∑ j ∈ Finset.univ.erase i, q j) + drift ≤ cap := by
+  exact p1_flow_selected_halt_sound q upper i a κ drift allowance cap hk hq hd hRule
+
+/-- **Monotonicity of the decision rule.** If halting class `i` is safe under upper bounds `upper`,
+it remains safe under any tighter bounds `upper' ≤ upper`. -/
+theorem p1_flow_decision_monotone {K : ℕ}
+    (upper upper' : Fin K → ℝ) (i : Fin K) (a κ drift cap : ℝ)
+    (hk : 0 ≤ κ)
+    (htighter : ∀ j, upper' j ≤ upper j)
+    (hRule : flowDecisionRule upper a κ drift cap i) :
+    flowDecisionRule upper' a κ drift cap i := by
+  unfold flowDecisionRule at *
+  have hs : (∑ j ∈ Finset.univ.erase i, upper' j) ≤ ∑ j ∈ Finset.univ.erase i, upper j :=
+    Finset.sum_le_sum (fun j _ => htighter j)
+  linarith [mul_le_mul_of_nonneg_left hs hk]
+
 end CurrentMM

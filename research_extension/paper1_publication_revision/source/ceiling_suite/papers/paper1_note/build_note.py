@@ -70,18 +70,19 @@ print("written paper1_note_submission.tex")
 # note stays the single source. Compile paper1_theory.tex; split with
 # python3 split_note.py paper1_theory.pdf Paper1_theory_main.pdf Paper1_theory_supplement.pdf
 ABS_THEORY = ("Algorithmic traders read prices and, by trading, move them. One object, the feedback kernel, is a minimal "
-    "sufficient statistic for such a market: populations with the same kernel produce the same prices, profits and "
+    "identifying functional of such a market: populations with the same kernel produce the same prices, profits and "
     "equilibria, and prices identify nothing finer. Learning the composition of the population costs data of order "
     "$(\\Delta\\eta)^{-(4K-2)}$ for $K$ groups whose memories lie within $\\Delta\\eta$, even near instability: "
-    "two-group populations with half-lives of 5 to 9 days need more than 4{,}000 years of daily prices to be told "
-    "apart. Market-wide actions need only the kernel, and a broad class of market-wide questions is answered at the usual "
+    "there exist moment-matched, stable two-group populations with half-lives of 5 to 9 days that need more than "
+    "4{,}000 years of daily prices to be told apart, a worst-case bound rather than a typical one. "
+    "Market-wide actions need only the kernel, and a broad class of market-wide questions is answered at the usual "
     "statistical rate whatever the number of groups, so the two costs separate without bound as memories converge. When the population drifts, composition can be tracked only below a speed "
     "limit. Two remedies follow. Tagging all but one memory class removes the barrier, and the last tag is worth "
     "nothing. Without any tags, pooling $D$ markets in which the same algorithms trade in different proportions "
     "lowers the exponent near generic configurations to $2(K-1+\\lceil K/D\\rceil)$, because an algorithm's memory is the same everywhere it "
     "trades. Core results are machine-checked in Lean~4.")
 CAL = r"""
-\paragraph{How large is the barrier?} Table~\ref{n:tab_cal} puts numbers on part~(iii) for two groups. What matters is the spread of memories relative to their size. Populations whose memories all have half-lives between 5 and 9 days cannot be told apart with both error probabilities at $5\%$ from less than $4{,}000$ years of daily prices, however close the market is to instability. When half-lives differ by a factor of three or more, a century of daily data can suffice. With three groups the numbers grow to the order of $10^8$ years. The numbers bound every test, for the passive record; probing faces the same order (part~(i)). The exponents do not depend on Gaussian noise: with real Bitcoin price noise injected into synthetic groups, the fitted slopes are $-6.01$ and $-9.81$, against $-6$ and $-10$ (Supplement Section~\ref{sec:injection}).
+\paragraph{How large is the barrier?} Table~\ref{n:tab_cal} puts numbers on part~(iii) for two groups. What matters is the spread of memories relative to their size. There exist moment-matched, stable populations whose memories all have half-lives between 5 and 9 days that cannot be told apart with both error probabilities at $5\%$ from less than $4{,}000$ years of daily prices, however close the market is to instability; this is the worst case over the range, and other populations in it are easier to separate. When half-lives differ by a factor of three or more, a century of daily data can suffice. With three groups the numbers grow to the order of $10^8$ years. The numbers bound every test, for the passive record; probing faces the same order (part~(i)). The exponents do not depend on Gaussian noise: with real Bitcoin price noise injected into synthetic groups, the fitted slopes are $-6.01$ and $-9.81$, against $-6$ and $-10$ (Supplement Section~\ref{sec:injection}).
 
 \begin{table}[t]
 \centering
@@ -108,7 +109,7 @@ $K=3$ & $0.5\pm0.1$ & 0.8--1.4 & $1.5\times10^{8}$ & $9.9\times10^{7}$\\
 """
 THEORY_EDITS = [
     ("with effective impact and persistence, and with the memory rates unchanged (Supplement Theorems~\\ref{thm:inventory} and~\\ref{thm:eqreduced}).",
-     "with effective impact and persistence, and with the memory rates unchanged (Supplement Theorems~\\ref{thm:inventory} and~\\ref{thm:eqreduced}).\n\nTogether, Theorems~\\ref{n:suff} and~\\ref{n:ident} make the kernel a \\emph{minimal} sufficient statistic of the population for prices: it determines everything prices can show, and prices determine it. (The merged measure has finitely many atoms, so its moments, the kernel, determine it.)"),
+     "with effective impact and persistence, and with the memory rates unchanged (Supplement Theorems~\\ref{thm:inventory} and~\\ref{thm:eqreduced}).\n\nTogether, Theorems~\\ref{n:suff} and~\\ref{n:ident} make the kernel a \\emph{minimal identifying functional} of the population for prices: it determines everything prices can show, and prices determine it. (The merged measure has finitely many atoms, so its moments, the kernel, determine it.)"),
     ("Reset probing is a benchmark for what data can reveal, not a proposed policy.",
      "Reset probing is a benchmark for what data can reveal, not a proposed policy. Knowing $(a,\\kappa)$ only helps the observer, so the lower bounds below hold a fortiori when $(a,\\kappa)$ must be estimated."),
     ("\\citet{auclert2024} make the corresponding sufficient-statistic argument",
@@ -119,7 +120,7 @@ THEORY_EDITS = [
      "\\noindent\\textbf{Supplement.} The online supplement states every result in full, with proofs and machine-check details.\n\n"),
     (note[note.index("\\noindent Algorithmic traders"):note.index("\\end{abstract}")], "\\noindent " + ABS_THEORY + "\n"),
     ("is very expensive, even on the eve of a crash.",
-     "is very expensive, even on the eve of a crash: at illustrative parameters, more than 4{,}000 years of daily prices when the traders' memories have half-lives between 5 and 9 days (Table~\\ref{n:tab_cal})."),
+     "is very expensive in the hardest configurations, even on the eve of a crash: at illustrative parameters there exist moment-matched, stable populations with memory half-lives between 5 and 9 days whose separation needs more than 4{,}000 years of daily prices (Table~\\ref{n:tab_cal}); easier populations in the same range can need far less."),
     ("prices then reveal how close the market is to breaking, not who is trading.",
      "prices then reveal how close the market is to breaking, not who is trading. Table~\\ref{n:tab_cal} gives the data this takes at illustrative parameters."),
     ("\\item \\emph{Evidence} (Section~\\ref{n:concl}). We report two registered tests, each run once, with the wording fixed before the results were known.\n", ""),
@@ -180,14 +181,17 @@ MOVE = {"After a breach": ["The cascade after a breach", "Forward-looking dealer
         "Insiders": ["A long-lived insider", "An insider against a strategic group"],
         "Nonlinear and learning traders": ["Traders with a dead band", "Saturation of every order", "A rate for noisy stress identification",
                                            "A rate under hard limits", "The cost of composition when traders are nonlinear", "Traders who learn"]}
-KEEP = ["The moment gap of the hard pair", "The largest weights of the hard pair"]
+KEEP = ["The moment gap of the hard pair", "The largest weights of the hard pair",
+        "The pooling moment map: Jacobian and global immersion",
+        "Constructive upper bound for nonlinear equal-leverage traders",
+        "Mixed-strategy equilibrium: local contraction and quasi-concavity",
+        "Convex dealer holding costs and Gaussian-convolved news"]
 i = theory.index("\\section{Questions left open in earlier versions}"); j = theory.index("\\section{", i + 10)
 sec = theory[i:j]
 cuts = [m.start() for m in re.finditer(r"\\subsection\{", sec)] + [len(sec)]
 subs = {re.match(r"\\subsection\{([^\n]*)\}", sec[a:]).group(1).split("}")[0]: sec[a:b] for a, b in zip(cuts, cuts[1:])}
 assert set(subs) == set(KEEP) | {t for v in MOVE.values() for t in v}, set(subs) ^ (set(KEEP) | {t for v in MOVE.values() for t in v})
-newsec = ("\\section{The hard pair: moment gap and largest weights}\\label{app:openres}\n\nThis section gives the exact size of the moment gap "
-          "behind the constants of Theorem~\\ref{thm:kcohort} and compares the largest weights of the hard pair for every $K$.\n\n" + "".join(subs[t] for t in KEEP))
+newsec = ("\\section{The hard pair: moment gap, largest weights, Jacobian and extensions}\\label{app:openres}\n\nThis section gives the exact size of the moment gap behind the constants of Theorem~\\ref{thm:kcohort}, compares the largest weights of the hard pair, proves global immersion of the pooling moment map, the matching upper bound for nonlinear equal-leverage traders, a pure Nash equilibrium condition, and extensions to strictly convex dealer holding costs and Gaussian-convolved news.\n\n" + "".join(subs[t] for t in KEEP))
 focus = theory[:i] + newsec + theory[j:]
 i = focus.index("\\section{Robustness to nonlinear and adaptive trading rules}"); j = focus.index("\\section{", i + 10)
 sims = focus[i:j]; focus = focus[:i] + focus[j:]

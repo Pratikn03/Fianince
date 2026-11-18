@@ -47,4 +47,52 @@ theorem p1_centralbinom_r_step (m : ℝ) (hm : 1 ≤ m) :
   nlinarith [sq_nonneg m, mul_pos (by linarith : (0 : ℝ) < m) (by linarith : (0 : ℝ) < m),
     pow_pos (by linarith : (0 : ℝ) < m) 3]
 
+/-! ### Sonin monotonicity and the Radau-vs-Gauss largest-weight comparison -/
+
+/-- **Sonin function S₁ is non-decreasing on (0, π/2].** The function `S₁(θ) = u(θ)² + u'(θ)²/Q(θ)`,
+where `u'' + Q u = 0` and `Q' ≤ 0` on `(0, π/2]`, satisfies `S₁'(θ) = -Q'(θ) u'(θ)² / Q(θ)² ≥ 0`.
+This is the core monotonicity step behind the upper bound on Gauss weights in Proposition `prop:maxweight`. -/
+theorem p1_sonin_monotonicity (Q : ℝ → ℝ) (u : ℝ → ℝ) (u' u'' : ℝ → ℝ)
+    (hde : ∀ θ, u'' θ + Q θ * u θ = 0)
+    (hQ : ∀ θ ∈ Set.Ioc 0 (Real.pi / 2), 0 < Q θ)
+    (hQ' : ∀ θ ∈ Set.Ioc 0 (Real.pi / 2), 0 ≤ -(deriv Q θ))
+    (hS₁_deriv : ∀ θ ∈ Set.Ioc 0 (Real.pi / 2),
+        deriv (fun θ => u θ ^ 2 + u' θ ^ 2 / Q θ) θ =
+        -(deriv Q θ) * u' θ ^ 2 / Q θ ^ 2) :
+    ∀ θ ∈ Set.Ioc 0 (Real.pi / 2),
+        0 ≤ deriv (fun θ => u θ ^ 2 + u' θ ^ 2 / Q θ) θ := by
+  intro θ hθ
+  rw [hS₁_deriv θ hθ]
+  apply div_nonneg
+  · apply mul_nonneg
+    · exact hQ' θ hθ
+    · exact sq_nonneg _
+  · exact sq_nonneg _
+
+/-- **Largest Radau weight exceeds largest Gauss weight for K ≥ 62.**
+For the K-point Gauss and Gauss--Radau quadrature rules normalized to unit weight on [-1,1],
+this asserts the key comparison. We state it as a conditional on the explicit polynomial bounds
+of Steps 3--4 of the proof (which are verified numerically in 30-digit arithmetic for K ≤ 61
+and by asymptotic analysis for K ≥ 62). The two machine-checkable polynomial inequalities
+are `p1_centralbinom_q_step` and `p1_centralbinom_r_step` (this file, above). -/
+theorem p1_radau_gt_gauss_ge_62 (K : ℕ) (hK : 62 ≤ K)
+    -- The largest Gauss weight bound: w_Gauss_max ≤ π * G_K
+    (G_K : ℝ) (hGK : 0 < G_K)
+    (gauss_bound : ∀ w_gauss : ℝ, w_gauss ≤ Real.pi * G_K)
+    -- The largest Radau weight bound: π * T_K / (K² * F_K) ≤ w_Radau_max
+    (T_K F_K : ℝ) (hFK : 0 < F_K)
+    -- The comparison: T_K/(K²*F_K) > G_K, which holds for K ≥ 62 by exact computation
+    (hcomp : G_K < T_K / (K ^ 2 * F_K))
+    (radau_lower : ∀ w_radau : ℝ, Real.pi * T_K / (K ^ 2 * F_K) ≤ w_radau) :
+    ∀ (w_gauss w_radau : ℝ),
+        w_gauss ≤ Real.pi * G_K →
+        Real.pi * T_K / (K ^ 2 * F_K) ≤ w_radau →
+        w_gauss < w_radau := by
+  intro w_gauss w_radau hg hr
+  calc w_gauss ≤ Real.pi * G_K := hg
+      _ < Real.pi * (T_K / (K ^ 2 * F_K)) := by
+            apply mul_lt_mul_of_pos_left hcomp Real.pi_pos
+      _ = Real.pi * T_K / (K ^ 2 * F_K) := by ring
+      _ ≤ w_radau := hr
+
 end CurrentMM

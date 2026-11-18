@@ -809,7 +809,7 @@ The reference directory contains 21 unit tests. Looped numerical fixtures also c
 
 A Gaussian calibration illustration used $R=32$, $p=4$, $10{,}000$ independently generated panels, and seed $240926$. The exact response-ellipsoid radius squared was $12.12340136$. The true response was included in $9{,}476$ panels ($94.76\%$), with nominal Monte Carlo standard error about $0.218$ percentage points at $95\%$. Replacing its $F$ radius by an unjustified $\chi^2_4$ radius gave $89.46\%$ inclusion in this particular illustration. This is a diagnostic example, not evidence about the market-data study.
 
-The polyhedral outer relaxation of the Second-Order Cone Program (Theorem~S7.2) is implemented via HiGHS cutting planes with numerical dual residual repair (\nolinkurl{research_extension.mm_revision.inference.conic_certificate.fit_conic_certificate}). The numerical comparisons presented represent the validated configurations. The corrected 600-panel grid starts at the post-probe response. Two separate 300-panel budget sweeps distinguish known covariance with chi-square calibration from independent Wishart-estimated covariance with $F$ calibration. The main manuscript reports their candidate endpoints and failures from \nolinkurl{research_extension/outputs/statistical_repair_20260926/}. Full outward construction of the numerical constraints remains unverified, so all conic certified labels are withheld. The interval-containment theorem and the solver's numerical evidence are distinct claims.
+The polyhedral outer relaxation of the Second-Order Cone Program (Theorem~S7.2) is implemented via HiGHS cutting planes with numerical dual residual repair (\nolinkurl{research_extension.mm_revision.inference.conic_certificate.fit_conic_certificate}). The numerical comparisons presented represent the validated configurations. The corrected 600-panel grid starts at the post-probe response. Two separate 300-panel budget sweeps distinguish known covariance with chi-square calibration from independent Wishart-estimated covariance with $F$ calibration. The main manuscript reports their candidate endpoints and failures from \nolinkurl{outputs/statistical_repair_20260926/}. Full outward construction of the numerical constraints remains unverified, so all conic certified labels are withheld. The interval-containment theorem and the solver's numerical evidence are distinct claims.
 
 The calculation log also records the manuscript's $S=0.82$, spectral radius $0.9900902493$, and the conventional two-sided value $\Prob(|T_8|\ge2.47)\approx0.03871045$. Actual regression tables should still be regenerated from their saved model objects rather than edited using this isolated calculation.
 
@@ -824,7 +824,7 @@ python run_checks.py
 \textbf{Status: fully executed across 10 random seeds in PyTorch 2.5.1 on continuous state space.} This section details the complete mathematical formulation, network architectures, and empirical findings for evaluating feedback stability in multi-agent reinforcement learning (MARL) populations and continuous trading environments.
 
 \subsection{Continuous State Space and Balance-Sheet Conservation}
-The continuous trading environment (\nolinkurl{continuous_trading_env.py} in \path{research_extension/learned_agents/}) formalizes the interaction of learning agents with a double-auction price-formation mechanism under strict balance-sheet constraints. At discrete decision step $t$, the state of the market and the agent is represented by the continuous vector $\mathbf{s}_t \in \mathbb{R}^5$:
+The continuous trading environment (\nolinkurl{continuous_trading_env.py} in \path{learned_agents/}) formalizes the interaction of learning agents with a double-auction price-formation mechanism under strict balance-sheet constraints. At discrete decision step $t$, the state of the market and the agent is represented by the continuous vector $\mathbf{s}_t \in \mathbb{R}^5$:
 \begin{equation}
 \mathbf{s}_t = \big(x_t,\, r_t,\, I_t,\, \text{util}_t,\, \text{imb}_t\big)^\top \in \mathbb{R}^5,
 \end{equation}
@@ -847,7 +847,7 @@ where $a_t \in [-a_{\max}, a_{\max}]$ is the executed trade action, $C_t$ is the
 \end{equation}
 
 \subsection{Neural Deep RL Architectures: Discrete DQN and Continuous Actor-Critic}
-We evaluate two distinct neural deep reinforcement learning architectures trained across 10 independent random seeds (926101--926110) for 50,000 transitions each (\nolinkurl{research_extension/learned_agents/train_deep_rl.py}):
+We evaluate two distinct neural deep reinforcement learning architectures trained across 10 independent random seeds (926101--926110) for 50,000 transitions each (\nolinkurl{learned_agents/train_deep_rl.py}):
 \begin{enumerate}
     \item \textbf{Deep Q-Network (DQN):} Fully connected multilayer perceptron $f_\theta: \mathbb{R}^5 \to \mathbb{R}^5$ with two hidden layers of 64 units each and ReLU activations:
     \begin{equation}
@@ -901,7 +901,7 @@ Std    & 0.0000 & 0.0000 & 0.0000 & 0.2355 & 0.2744 & 0.1164 & 0.0982 & 0.0345 &
 
 \subsection{Multiscale Perturbation Radius Audit in Tabular Q-Learning}
 \label{sec:supp_multiscale_audit}
-To determine whether tabular Q-learning policies exhibit approximately linear, positive-feedback behavior locally near equilibrium ($\delta x \approx 0$) even if globally nonlinear, we evaluate the response function $u(\delta x)$ across five nested perturbation radii $r \in \{0.05, 0.10, 0.25, 0.50, 1.00\}$ with 21 evenly-spaced query points per radius (\nolinkurl{research_extension/learned_agents/multiscale_audit.py}). Table~\ref{tab:supp_multiscale_audit} reports $R^2(r)$ for all ten independently trained policies.
+To determine whether tabular Q-learning policies exhibit approximately linear, positive-feedback behavior locally near equilibrium ($\delta x \approx 0$) even if globally nonlinear, we evaluate the response function $u(\delta x)$ across five nested perturbation radii $r \in \{0.05, 0.10, 0.25, 0.50, 1.00\}$ with 21 evenly-spaced query points per radius (\nolinkurl{learned_agents/multiscale_audit.py}). Table~\ref{tab:supp_multiscale_audit} reports $R^2(r)$ for all ten independently trained policies.
 
 At the tightest radius ($r = 0.05$), all ten policies yield $R^2 = 0.0000$ due to complete action inertia: the inventory and turnover penalties induce an inactive dead-band around zero price deviation. At $r = 0.10$, local action variation appears in seven policies, yielding a mean $R^2$ of $0.0955$ and a positive local slope $\partial u/\partial x = 1.30$, but the response remains a discrete step function. Across wider radii ($r \in [0.25, 1.00]$), the mean $R^2$ monotonically decays toward $0.0530$, and individual slopes turn negative (contrarian). Across all radii and all policies, $R^2(r) \le 0.2449 \ll 0.70$. This confirms that the out-of-class classification is not an artifact of wide-radius extrapolation into unvisited state bins, but reflects genuine structural incompatibility between discrete tabular policies and the linear positive-memory model class.
 
@@ -931,7 +931,7 @@ Mean & 0.0000 & 0.0955 & 0.0812 & 0.0755 & 0.0530 \\
 
 \subsection{Reward-Penalty Sensitivity Sweep}
 \label{sec:supp_reward_sensitivity}
-To test whether the low price dislocation and out-of-class response of Q-learning agents are contingent on the specific inventory penalty parameters ($\lambda_I = 0.01, \lambda_T = 0.005$), we execute a pre-registered sensitivity sweep across four distinct reward specifications (\nolinkurl{research_extension/learned_agents/reward_sensitivity_sweep.py}). Table~\ref{tab:supp_reward_sensitivity} summarizes the results.
+To test whether the low price dislocation and out-of-class response of Q-learning agents are contingent on the specific inventory penalty parameters ($\lambda_I = 0.01, \lambda_T = 0.005$), we execute a pre-registered sensitivity sweep across four distinct reward specifications (\nolinkurl{learned_agents/reward_sensitivity_sweep.py}). Table~\ref{tab:supp_reward_sensitivity} summarizes the results.
 
 Eliminating the inventory penalty (Specification B: $\lambda_I = 0, \lambda_T = 0.005$) substantially increases trading activity: mean turnover rises from $9.9$ to $27.8$, mean dislocation triples from $0.0279$ to $0.0807$, and dealer capacity limits are breached in $65.0\%$ of evaluation episodes. However, the policy remains strongly non-linear ($R^2 = 0.0804 \ll 0.70$) with negative average slope ($\partial u/\partial x = -0.3312$). Eliminating the turnover penalty (Specification C) or scaling both penalties down (Specification D) preserves low turnover ($7.2$--$8.2$) and low dislocation ($0.0275$--$0.0278$) with zero halts, but all policies remain outside the linear model class ($R^2 \le 0.1016$). In total, zero policies across all four specifications satisfy the structural model-class requirements.
 
@@ -953,7 +953,7 @@ D (Low Penalty) & 0.0025 & 0.001 & 2 & 0.0692 & $-0.5260$ & 8.2 & 0.0278 & 0.0\%
 
 \subsection{Per-Policy Individual Turnover-Matched Baselines}
 \label{sec:supp_individual_matched}
-In the main text, the Turnover-Matched static baseline uses a single trade probability ($p = 0.0484$) calibrated to median Q-policy turnover. Because individual policy turnover varies between $5.6$ and $29.1$, we calibrate a separate static random trading agent to each policy's individual turnover (\nolinkurl{research_extension/learned_agents/evaluate_q_learning.py}). Table~\ref{tab:supp_individual_matched} reports the resulting paired comparison.
+In the main text, the Turnover-Matched static baseline uses a single trade probability ($p = 0.0484$) calibrated to median Q-policy turnover. Because individual policy turnover varies between $5.6$ and $29.1$, we calibrate a separate static random trading agent to each policy's individual turnover (\nolinkurl{learned_agents/evaluate_q_learning.py}). Table~\ref{tab:supp_individual_matched} reports the resulting paired comparison.
 
 \begin{table}[htbp]
 \centering\small
@@ -1000,7 +1000,7 @@ Let $S = a + Q$ be the aggregate feedback persistence. For any matching engine s
 \textbf{Empirical Tri-Simulator Results:} Across 100 independent market trajectories executed on each engine, the Recurrence LP certificate achieves:
 \begin{itemize}
     \item \textbf{Subcritical Regime ($S = 0.82 < 1.0$):} 100.0\% certificate coverage and 100.0\% decisiveness across FIFO, Pro-Rata, and CDA engines, with zero trajectory unboundedness.
-    \item \textbf{Supercritical Regime ($S = 1.18 > 1.0$):} 0.0\% certificate coverage (100.0\% correct rejection of stability) across all three engines, confirming that matching engine mechanics neither mask supercritical instability nor destabilize subcritical equilibria (\nolinkurl{research_extension/outputs/tri_simulator_validation_results.json}).
+    \item \textbf{Supercritical Regime ($S = 1.18 > 1.0$):} 0.0\% certificate coverage (100.0\% correct rejection of stability) across all three engines, confirming that matching engine mechanics neither mask supercritical instability nor destabilize subcritical equilibria (\nolinkurl{outputs/tri_simulator_validation_results.json}).
 \end{itemize}
 
 \subsection{High-Power Solvency Monte Carlo Verification ($N=1{,}000$ per cell)}

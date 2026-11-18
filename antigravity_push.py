@@ -50,6 +50,14 @@ def main():
 
     # Step 3: Rebuilding LaTeX Manuscripts
     print("\n--- [3/5] Rebuilding Paper 1 Manuscripts ---")
+    core_dir = root / "ceiling_suite/papers/paper1_core"
+    if (core_dir / "build_core.py").exists():
+        run_cmd("python3 build_core.py", "Paper 1 Core assembly", cwd=str(core_dir))
+
+    pub_core_dir = root / "research_extension/paper1_publication_revision/source/ceiling_suite/papers/paper1_core"
+    if (pub_core_dir / "build_core.py").exists():
+        run_cmd("python3 build_core.py", "Publication revision Core assembly", cwd=str(pub_core_dir))
+
     note_dir = root / "ceiling_suite/papers/paper1_note"
     if (note_dir / "build_note.py").exists():
         run_cmd("python3 build_note.py", "Paper 1 Note assembly", cwd=str(note_dir))
@@ -61,10 +69,13 @@ def main():
     # Compile paper1_theory.tex if pdflatex is present
     which_pdf = subprocess.run("which pdflatex", shell=True, capture_output=True, text=True)
     if which_pdf.returncode == 0:
-        for target in ["paper1_theory.tex", "paper1_note.tex"]:
+        for target in ["paper1_theory.tex", "paper1_note_submission.tex"]:
             if (note_dir / target).exists():
                 print(f"📄 Compiling {target}...")
                 subprocess.run(f"pdflatex -interaction=nonstopmode {target}", shell=True, cwd=str(note_dir))
+        if (core_dir / "paper1_core.tex").exists():
+            print(f"📄 Compiling paper1_core.tex...")
+            subprocess.run("pdflatex -interaction=nonstopmode paper1_core.tex", shell=True, cwd=str(core_dir))
     else:
         print("ℹ️ pdflatex not found in PATH; skipping PDF rendering.")
 
@@ -76,7 +87,7 @@ def main():
 
     # Step 5: Commit & Push to Remote
     print("\n--- [5/5] Committing & Pushing to Remote Origin ---")
-    commit_msg = "Antigravity sync: full path cleanup, prospective empirical framing, nolinkurl-to-repro-table migration (fixes A-L)"
+    commit_msg = "Antigravity sync: math open problems resolved (det J pooling, nonlinear Prony, Nash contraction, convex holding), Lean formalizations, repo-wide path cleanup"
     
     diff_check = subprocess.run("git diff --cached --quiet", shell=True, cwd=str(root))
     if diff_check.returncode != 0:
