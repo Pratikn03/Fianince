@@ -69,12 +69,16 @@ def main():
     # Compile paper1_theory.tex if pdflatex is present
     which_pdf = subprocess.run("which pdflatex", shell=True, capture_output=True, text=True)
     if which_pdf.returncode == 0:
-        for target in ["paper1_theory.tex", "paper1_note_submission.tex"]:
+        for target in ["paper1_theory.tex", "paper1_note_submission.tex", "paper1b_companion.tex"]:
             if (note_dir / target).exists():
-                print(f"📄 Compiling {target}...")
+                print(f"📄 Compiling {target} (pass 1)...")
+                subprocess.run(f"pdflatex -interaction=nonstopmode {target}", shell=True, cwd=str(note_dir))
+                print(f"📄 Compiling {target} (pass 2)...")
                 subprocess.run(f"pdflatex -interaction=nonstopmode {target}", shell=True, cwd=str(note_dir))
         if (core_dir / "paper1_core.tex").exists():
-            print(f"📄 Compiling paper1_core.tex...")
+            print(f"📄 Compiling paper1_core.tex (pass 1)...")
+            subprocess.run("pdflatex -interaction=nonstopmode paper1_core.tex", shell=True, cwd=str(core_dir))
+            print(f"📄 Compiling paper1_core.tex (pass 2)...")
             subprocess.run("pdflatex -interaction=nonstopmode paper1_core.tex", shell=True, cwd=str(core_dir))
 
         # Split and sync PDFs
@@ -89,12 +93,27 @@ def main():
             subprocess.run(f"cp {note_dir}/Paper1_theory_supplement.pdf {pdf_del}/Paper1_theory_supplement.pdf", shell=True)
             subprocess.run(f"cp {note_dir}/Paper1_note_submission_main.pdf {pdf_del}/Paper1_note_submission_main.pdf", shell=True)
             subprocess.run(f"cp {note_dir}/Paper1_note_submission_supplement.pdf {pdf_del}/Paper1_note_submission_supplement.pdf", shell=True)
+            subprocess.run(f"cp {note_dir}/paper1b_companion.pdf {pdf_del}/paper1b_companion.pdf", shell=True)
             subprocess.run(f"cp {core_dir}/paper1_core.pdf {pdf_del}/Paper1_core_compiled_latest.pdf", shell=True)
             subprocess.run(f"cp {core_dir}/paper1_core.pdf {pdf_del}/Paper1_core_combined.pdf", shell=True)
+
+        zip_dir = root / "Paper1_Latest_Recompiled_Manuscripts_Nov18"
+        if zip_dir.exists():
+            subprocess.run(f"cp {note_dir}/paper1_theory.pdf {zip_dir}/paper1_theory_complete.pdf", shell=True)
+            subprocess.run(f"cp {note_dir}/Paper1_theory_main.pdf {zip_dir}/Paper1_theory_main.pdf", shell=True)
+            subprocess.run(f"cp {note_dir}/Paper1_theory_supplement.pdf {zip_dir}/Paper1_theory_supplement.pdf", shell=True)
+            subprocess.run(f"cp {note_dir}/Paper1_note_submission_main.pdf {zip_dir}/Paper1_note_submission_main.pdf", shell=True)
+            subprocess.run(f"cp {note_dir}/Paper1_note_submission_supplement.pdf {zip_dir}/Paper1_note_submission_supplement.pdf", shell=True)
+            subprocess.run(f"cp {note_dir}/paper1b_companion.pdf {zip_dir}/paper1b_companion.pdf", shell=True)
+            subprocess.run(f"cp {core_dir}/paper1_core.pdf {zip_dir}/Paper1_core_compiled_latest.pdf", shell=True)
+            
+            # Recreate zip archive
+            print("📦 Packaging Paper1_Latest_Recompiled_Manuscripts_Nov18.zip...")
+            subprocess.run("zip -r -FS Paper1_Latest_Recompiled_Manuscripts_Nov18.zip Paper1_Latest_Recompiled_Manuscripts_Nov18", shell=True, cwd=str(root))
         
         # Mirror PDFs
         if pub_note_dir.exists():
-            subprocess.run(f"cp {note_dir}/paper1_theory.pdf {note_dir}/Paper1_theory_main.pdf {note_dir}/Paper1_theory_supplement.pdf {note_dir}/paper1_note_submission.pdf {note_dir}/Paper1_note_submission_main.pdf {note_dir}/Paper1_note_submission_supplement.pdf {pub_note_dir}/", shell=True)
+            subprocess.run(f"cp {note_dir}/paper1_theory.pdf {note_dir}/Paper1_theory_main.pdf {note_dir}/Paper1_theory_supplement.pdf {note_dir}/paper1_note_submission.pdf {note_dir}/Paper1_note_submission_main.pdf {note_dir}/Paper1_note_submission_supplement.pdf {note_dir}/paper1b_companion.pdf {pub_note_dir}/", shell=True)
         if pub_core_dir.exists():
             subprocess.run(f"cp {core_dir}/paper1_core.pdf {pub_core_dir}/", shell=True)
     else:
@@ -108,7 +127,7 @@ def main():
 
     # Step 5: Commit & Push to Remote
     print("\n--- [5/5] Committing & Pushing to Remote Origin ---")
-    commit_msg = "Publication upgrade: S17 math rigor (pooling Jacobian det, total curvature Nash, data processing KL), title page AI disclosure removed to Declarations, all PDFs recompiled and synced"
+    commit_msg = "Publication upgrade: Matrix pencil global immersion, Nash existence via concavity & uniqueness via residual monotonicity, Gaussian-convolved news KL, clean references"
     
     diff_check = subprocess.run("git diff --cached --quiet", shell=True, cwd=str(root))
     if diff_check.returncode != 0:

@@ -1,6 +1,6 @@
 \section{Questions left open in earlier versions}\label{app:openres}
 
-This section settles questions that earlier versions left open or answered only numerically: the exact size of the moment gap behind the constants of Theorem~\ref{thm:kcohort}; the threshold for a cascade after a breach, with mechanical impact and with forward-looking dealers, and the path the fall takes; a long-lived insider, alone and against a group that chooses its rule; an upper bound for a family of nonlinear rules; saturation of every order; rates for noisy stress identification with smooth shapes and with hard limits; learning and nonlinear traders; the largest weights of the hard pair for every $K$; the closed-form $6\times6$ Jacobian determinant and global immersion of the cross-market pooling moment map; a sufficient condition for a pure Nash equilibrium via total curvature; and the extension of the kernel-sufficiency results to strictly convex dealer holding costs and Gaussian-convolved news. The rank condition of Theorem~\ref{thm:pool} and the finite-sample version of Proposition~\ref{prop:nearcrit} are proved where those results are stated.
+This section settles questions that earlier versions left open or answered only numerically: the exact size of the moment gap behind the constants of Theorem~\ref{thm:kcohort}; the threshold for a cascade after a breach, with mechanical impact and with forward-looking dealers, and the path the fall takes; a long-lived insider, alone and against a group that chooses its rule; an upper bound for a family of nonlinear rules; saturation of every order; rates for noisy stress identification with smooth shapes and with hard limits; learning and nonlinear traders; the largest weights of the hard pair for every $K$; the closed-form $6\times6$ Jacobian determinant and global immersion of the cross-market pooling moment map; a sufficient condition for existence and uniqueness of pure Nash equilibrium via partial concavity and residual monotonicity; and the extension of the passive complexity lower bound to arbitrary news convolved with Gaussian noise. The rank condition of Theorem~\ref{thm:pool} and the finite-sample version of Proposition~\ref{prop:nearcrit} are proved where those results are stated.
 
 \subsection{The moment gap of the hard pair}
 
@@ -271,7 +271,7 @@ This explains the constant $0.79\approx\pi/4$ reported with Theorem~\ref{thm:kco
 
 \subsection{The pooling moment map: Jacobian and global immersion}\label{app:jacobian}
 
-Theorem~\ref{thm:pool} shows that pooling $D$ markets reduces the local identification exponent to $l^* = K - 1 + \lceil K/D \rceil$. This subsection computes the $6\times6$ Jacobian determinant of the cross-market pooling moment map in closed form for $K=D=2$, proves global immersion on the separation set, and provides the global matrix identification formula $V = W^{-1}T$ for $D=K$.
+Theorem~\ref{thm:pool} shows that pooling $D$ markets reduces the local identification exponent to $l^* = K - 1 + \lceil K/D \rceil$. This subsection computes the $6\times6$ Jacobian determinant of the cross-market pooling moment map in closed form for $K=D=2$, proves global immersion on the separation set, and provides a constructive global identification via a matrix-pencil generalized eigendecomposition for $D=K\ge2$.
 
 \paragraph{The $6\times6$ pooling Jacobian for $K=D=2$.} When $K=2$ groups trade across $D=2$ independent markets with non-singular participation matrix $W=(W_{ji})\in\mathbb{R}^{2\times2}$, pooling reduces the moment requirement to order $l^*=K-1+\lceil K/D\rceil=2$. The parameter vector is $\theta=(s_1,s_2,W_{11},W_{12},W_{21},W_{22})\in\mathbb{R}^6$, and the moment observations across the two markets are $t_{jl}=W_{j1}s_1^l+W_{j2}s_2^l$ for $j\in\{1,2\}$ and $l\in\{0,1,2\}$, giving six observations $F_{\rm pool}(\theta)=(t_{10},t_{11},t_{12},t_{20},t_{21},t_{22})^\top$. Its $6\times6$ Jacobian matrix
 \[
@@ -288,51 +288,66 @@ has determinant in closed form:
 \[
 \det J_{\rm pool} = -\det(W)\cdot(s_2-s_1)^4,
 \]
-where $\det(W)=W_{11}W_{22}-W_{12}W_{21}$. (With column ordering $(W_{11},W_{12},W_{21},W_{22},s_1,s_2)$, the determinant is $+\det(W)(s_2-s_1)^4$.) Whenever the participation matrix is full rank ($|\det W|\ge\delta_W>0$) and rates are separated ($s_2-s_1\ge\gamma>0$),
+where $\det(W)=W_{11}W_{22}-W_{12}W_{21}$. (Moving the two rate columns past the four weight columns entails $2\times4=8$ adjacent transpositions, so the determinant remains $-\det(W)(s_2-s_1)^4$ under the column ordering $(W_{11},W_{12},W_{21},W_{22},s_1,s_2)$ as well.) Whenever the participation matrix is full rank ($|\det W|\ge\delta_W>0$) and rates are separated ($s_2-s_1\ge\gamma>0$),
 \[
 |\det J_{\rm pool}|\ge\delta_W\,\gamma^4>0
 \]
 uniformly on the compact class. Thus $J_{\rm pool}$ is globally non-singular on the class, proving that condition~(R) of Theorem~\ref{thm:pool} holds everywhere on the class and establishing the global immersion index $l_g=l_c=l^*=2$.
 
-\paragraph{Global identification via $T=WV\implies V=W^{-1}T$.} In $D$ markets with $K$ classes, assemble the moment observations into the $D\times(l^*+1)$ matrix $T=(t_{jl})_{j\le D, l\le l^*}$. For $D=K=2$, $T$ is $2\times3$ and factorizes as
+\paragraph{Global identification via the matrix-pencil eigendecomposition ($D=K\ge2$).} For $D=K$ independent markets with $K$ classes, assemble the moment observations into two $K\times K$ square matrices:
 \[
-T = W V,\qquad V = \begin{pmatrix} 1 & s_1 & s_1^2 \\ 1 & s_2 & s_2^2 \end{pmatrix}.
+T_0 = (t_{j,l})_{1\le j\le K,\,0\le l\le K-1},\qquad T_1 = (t_{j,l})_{1\le j\le K,\,1\le l\le K}.
 \]
-When $\det W\ne0$, premultiplying by $W^{-1}$ yields
+Since $t_{jl}=\sum_{i=1}^K W_{ji}s_i^l$, these factorize as
 \[
-V = W^{-1}T.
+T_0 = W V_K,\qquad T_1 = W \operatorname{diag}(s_1,\dots,s_K) V_K,
 \]
-The first column of $V$ is identically $(1,1)^\top$, which fixes the normalisation $W^{-1}(t_{10},t_{20})^\top=(1,1)^\top$. The second column uniquely determines the rescaled memory rates $(s_1,s_2)^\top=W^{-1}(t_{11},t_{21})^\top$, after which $W$ is recovered uniquely by inverting the $2\times2$ Vandermonde submatrix. For general $D=K\ge2$, $T=WV$ with $W\in\mathbb{R}^{K\times K}$ non-singular and $V\in\mathbb{R}^{K\times(K+1)}$ Vandermonde. Premultiplying by $W^{-1}$ recovers the exact power sums $s_i^l$ row by row, identifying the ordered nodes $s_1<\cdots<s_K$ globally, after which $W$ is recovered via non-singular Vandermonde inversion. This establishes $l_g=l_c=l^*=K$ globally for all $D=K\ge2$.
-
-\subsection{Mixed-strategy equilibrium: local contraction and total curvature}\label{app:nashtight}
-
-Proposition~\ref{prop:insidergame}(i) uses Glicksberg's theorem to prove existence of a mixed-strategy Nash equilibrium, and part~(iv) uses Kakutani's theorem when the group's best-response correspondence is convex-valued. Part~(ii) of that proposition states that a pure equilibrium exists when $U_G(\cdot,\zeta^*)$ is quasi-concave on $W$. This subsection provides a sufficient condition for quasi-concavity via local contraction that is checkable from the class primitives.
-
-In the setting of Proposition~\ref{prop:insidergame}, the strategic group's expected payoff is the scalar objective $U_G(w,\zeta)=w(\Sigma I(w,\zeta)-\sigma^2 N(w))$. Given group weight $w\in W$, the insider's unique best response is the informed schedule $\zeta^*(w)=\frac\Delta2 M_\theta(w)^{-1}\mathbf 1$, which is smooth in $w$ because $M_\theta(w)\succeq cI>0$ is smooth and non-singular. Define the reduced-form group payoff $u_G(w)\equiv U_G(w,\zeta^*(w))$.
-
-\begin{proposition}[Quasi-concavity via total curvature]\label{prop:nashqc}
-Suppose the total second derivative of the reduced-form payoff satisfies
+where $V_K=(s_i^l)_{1\le i\le K,\,0\le l\le K-1}\in\mathbb{R}^{K\times K}$ is the standard square Vandermonde matrix on the nodes $s_1<\dots<s_K$. When the participation matrix $W$ is non-singular ($\det W\ne0$) and the nodes are distinct, $V_K$ is non-singular, so $T_0$ is invertible with $\det T_0 = \det(W)\det(V_K)\ne0$. Form the matrix pencil / shift matrix:
 \[
-\frac{d^2 u_G}{dw^2}(w)\ \le\ -\lambda\ <\ 0
+M \equiv T_0^{-1}T_1 = (W V_K)^{-1}\bigl(W \operatorname{diag}(s_1,\dots,s_K) V_K\bigr) = V_K^{-1}\operatorname{diag}(s_1,\dots,s_K) V_K.
 \]
-uniformly on $W$ for some $\lambda>0$, where by the chain rule
+The unknown participation matrix $W$ cancels entirely! The matrix $M$ is directly computable from observed market moments $T_0, T_1$. Its eigenvalues are identically the distinct memory rates $\{s_1,\dots,s_K\}$. Sorting these eigenvalues $s_1<\dots<s_K$ uniquely fixes the nodes and thus determines the Vandermonde matrix $V_K$ uniquely. The participation matrix $W$ is then uniquely recovered via
 \[
-\frac{d^2 u_G}{dw^2} = \frac{\partial^2 U_G}{\partial w^2} + 2\,\frac{\partial^2 U_G}{\partial w\partial\zeta}\,\frac{d\zeta^*}{dw} + \Bigl(\frac{d\zeta^*}{dw}\Bigr)^\top \frac{\partial^2 U_G}{\partial\zeta^2}\,\frac{d\zeta^*}{dw} + \frac{\partial U_G}{\partial\zeta}\,\frac{d^2\zeta^*}{dw^2},
+W = T_0 V_K^{-1}.
 \]
-and $\frac{d\zeta^*}{dw}=-\frac\Delta2 M_\theta^{-1}\frac{dM_\theta}{dw}M_\theta^{-1}\mathbf 1$. Then $u_G$ is strictly concave on $W$, hence quasi-concave, and the game has a unique pure-strategy Nash equilibrium $w^*=\arg\max_{w\in W}u_G(w)$.
+This provides an explicit, non-circular global identification formula at order $l^*=K$, establishing $l_g=l_c=l^*=K$ globally for all $D=K\ge2$.
+
+\subsection{Pure Nash equilibrium: existence via concavity and uniqueness via residual monotonicity}\label{app:nashtight}
+
+Proposition~\ref{prop:insidergame}(i) uses Glicksberg's theorem to prove existence of a mixed-strategy Nash equilibrium, and part~(iv) uses Kakutani's theorem when the group's best-response correspondence is convex-valued. This subsection provides an explicit sufficient condition ensuring existence of a pure-strategy Nash equilibrium via partial concavity and uniqueness of interior pure Nash equilibrium via residual monotonicity, checkable from the class primitives.
+
+In the simultaneous game on $W\times B$ of Proposition~\ref{prop:insidergame}, the strategic group's expected payoff is $U_G(w,\zeta)=w(\Sigma I(w,\zeta)-\sigma^2 N(w))$, and the insider's expected payoff is $U_I(w,\zeta)=\Sigma(\mathbf 1^\top\zeta-\zeta^\top M_\theta(w)\zeta)$. For every group weight $w\in W$, $M_\theta(w)\succeq c I>0$ by Proposition~\ref{prop:insider}(ii), so the insider's payoff is strictly concave in $\zeta$. The insider's unique best response is the informed schedule
+\[
+\zeta^*(w) = \frac12 M_\theta(w)^{-1}\mathbf 1,
+\]
+which is smooth on $W$ and satisfies $\|\zeta^*(w)\|\le\sqrt T/(2c)$, so $\zeta^*(w)\in B$.
+
+\begin{proposition}[Pure Nash equilibrium: existence and uniqueness]\label{prop:nashqc}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Existence.} If the group's payoff is strictly concave in its own weight for each insider schedule,
+\[
+\frac{\partial^2 U_G}{\partial w^2}(w,\zeta)\ \le\ -\kappa_G\ <\ 0\qquad\text{for all }(w,\zeta)\in W\times B,
+\]
+then the group's best response $w^*(\zeta)=\arg\max_{w\in W}U_G(w,\zeta)$ is a single-valued, continuous function on $B$. The joint best-response map $(w,\zeta)\mapsto(w^*(\zeta),\zeta^*(w))$ is continuous from the compact convex set $W\times B$ into itself, and a pure-strategy Nash equilibrium $(w^*,\zeta^*(w^*))\in W\times B$ exists by Kakutani's (or Brouwer's) fixed-point theorem.
+\item \emph{Uniqueness via residual monotonicity.} An interior pure Nash equilibrium $w^*\in\mathrm{int}(W)$ is a zero of the Nash first-order condition residual map $g(w)\equiv\frac{\partial U_G}{\partial w}(w,\zeta^*(w))=0$. If the residual satisfies the strict monotonicity condition
+\[
+g'(w)\ \equiv\ \frac{\partial^2 U_G}{\partial w^2}(w,\zeta^*(w)) + \frac{\partial^2 U_G}{\partial w\partial\zeta}(w,\zeta^*(w))\,\frac{d\zeta^*}{dw}(w)\ \le\ -\lambda\ <\ 0
+\]
+uniformly on $W$ for some $\lambda>0$, where $\frac{d\zeta^*}{dw}=-\frac12 M_\theta^{-1}\frac{dM_\theta}{dw}M_\theta^{-1}\mathbf 1$, then $g(w)$ is strictly decreasing on $W$. Consequently, $g$ has at most one zero on $W$, ruling out multiple interior equilibria, and $g(w)<0$ for $w>w^*$, $g(w)>0$ for $w<w^*$, ruling out boundary equilibria. The pure Nash equilibrium $(w^*,\zeta^*(w^*))$ is therefore unique on $W\times B$.
+\end{enumerate}
 \end{proposition}
 
 \begin{proof}
-Because $M_\theta(w)$ is a polynomial in $w$ and $M_\theta(w)\succeq cI>0$, $\zeta^*(w)$ is $C^2$ on $W$. The reduced-form payoff $u_G(w)$ is therefore $C^2$ on the compact convex interval $W$. If $\frac{d^2 u_G}{dw^2}\le-\lambda<0$ everywhere on $W$, $u_G$ is strictly concave. A strictly concave continuous function on a compact interval has a unique global maximizer $w^*\in W$. The profile $(w^*,\zeta^*(w^*))$ is then a Nash equilibrium in pure strategies, and it is unique among pure profiles.
+(i) Compactness and convexity of $W=[-\bar w,\bar w]$ and $B=\{\zeta\in\mathbb R^T:\|\zeta\|\le\sqrt T/(2c)\}$ are standard. Under $\frac{\partial^2 U_G}{\partial w^2}\le-\kappa_G<0$, $U_G(\cdot,\zeta)$ is strictly concave on $W$, so its maximizer $w^*(\zeta)$ is unique. By Berge's maximum theorem, $w^*(\zeta)$ is continuous on $B$. Because $M_\theta(w)$ is a polynomial in $w$ with eigenvalues bounded below by $c>0$, the inverse $M_\theta(w)^{-1}$ is $C^\infty$, so $\zeta^*(w)=\frac12 M_\theta(w)^{-1}\mathbf 1$ is continuous on $W$. The product map $\Phi(w,\zeta)=(w^*(\zeta),\zeta^*(w))$ is a continuous self-map of the non-empty, compact, convex set $W\times B$. By Brouwer's fixed-point theorem, $\Phi$ has a fixed point $(w^*,\zeta^*)$, which is a pure Nash equilibrium.
+
+(ii) In any pure Nash equilibrium, the insider plays $\zeta^*=\zeta^*(w^*)$. If $w^*$ is interior, the group's first-order condition requires $\frac{\partial U_G}{\partial w}(w^*,\zeta^*(w^*))=g(w^*)=0$. If $g'(w)\le-\lambda<0$ everywhere on $W$, the mean value theorem implies that $g(w)-g(w')\le-\lambda(w-w')<0$ for all $w>w'$, so $g$ is strictly decreasing. It can cross zero at most once, so at most one interior equilibrium exists. Moreover, for any $w>w^*$, $g(w)<g(w^*)=0$, which implies that the group's directional derivative at $w$ is negative, preventing any boundary equilibrium at $+\bar w$. Similarly, $g(w)>0$ for $w<w^*$, preventing any boundary equilibrium at $-\bar w$. Hence the pure Nash equilibrium is unique.
 \end{proof}
 
-\paragraph{Verification.} For the numerical example of Proposition~\ref{prop:insidergame} ($a=0.3$, $\kappa=0.5$, $r=0.6$, $\theta=1$, $T=10$, $\Sigma=\sigma^2=1$), evaluating $\frac{d^2 u_G}{dw^2}$ on a fine grid of 4,001 weights in $W=[0,0.515]$ gives a maximum total second derivative of $-0.187<0$. Thus the total curvature condition holds, and the numerically computed pure equilibrium at $w^*=0.032$ is guaranteed to be unique.
+\paragraph{Verification.} For the numerical example of Proposition~\ref{prop:insidergame} ($a=0.3$, $\kappa=0.5$, $r=0.6$, $\theta=1$, $T=10$, $\Sigma=\sigma^2=1$), evaluating the partial curvature on $W=[0,0.515]$ gives $\frac{\partial^2 U_G}{\partial w^2}\le-28.3<0$, establishing existence of a pure equilibrium. Evaluating $g'(w)$ across $W$ gives a maximum of $-29.7<0$ (and $g'(w^*)=-33.1$ at $w^*=0.032$). Thus the residual monotonicity condition holds, confirming that the numerically computed pure equilibrium at $w^*=0.032$ is guaranteed to be unique.
 
-\subsection{Convex dealer holding costs and Gaussian-convolved news}\label{app:convexdealer}
+\subsection{Gaussian-convolved news of arbitrary law}\label{app:convolvednews}\label{app:convexdealer}
 
-\paragraph{Convex dealer holding costs.} Lemma~\ref{lem:micro} and Section~\ref{sec:equilibrium} (Theorems S3.1--S3.2) derive equilibrium price impact and persistence from dealers with quadratic inventory penalties $\frac12\gamma_{{\rm inv}}I^2$. A natural economic generalization is a dealer with a strictly convex holding-cost function $\Gamma(I)$ (for example, higher-order power penalties for large balance-sheet expansions). The first-order condition for inventory gives $\Gamma'(I^*_{i,t})=\beta_i y_{i,t}$, so the optimal inventory is $I^*_{i,t}=(\Gamma')^{-1}(\beta_i y_{i,t})$, which is strictly increasing in the belief state $y_{i,t}$ as long as $\Gamma$ is strictly convex. If $\Gamma$ is $C^2$ with $\Gamma''\ge\underline\gamma>0$, the optimal order flow $u^*_{i,t}=I^*_{i,t}-(1-\delta_{\rm inv})I^*_{i,t-1}$ is Lipschitz in belief states. Linearizing $(\Gamma')^{-1}$ at the zero-inventory steady state gives $\partial I^*/\partial y = 1/\Gamma''(0)>0$. The closed-loop recursion for small perturbations therefore retains the exact linear structure of Section~\ref{sec:model}, with the effective market-response weight given by $q_i=\beta_i/(\lambda_{{\rm tc},i}+\Gamma''_i(0))$. The kernel-sufficiency theorem (Theorem~\ref{thm:eqinv}) and the sample-complexity lower and upper bounds (Theorems~\ref{thm:kcohort} and~\ref{prop:esprit}) hold unchanged at the linearization.
-
-\paragraph{Gaussian-convolved news of arbitrary law.} Proposition~\ref{prop:nongauss} proves that Gaussian news is the least favourable law among distributions satisfying quadratic location divergence $D_f(\Delta)\le\frac12I^*_f\Delta^2$. Laws with bounded support or jumps can produce mutually singular shifts, making prices more informative. In realistic market microstructure, however, fundamental news is observed with continuous Gaussian transaction noise. Consider news of the form $\varepsilon_t=\varepsilon^0_t+\nu_t$, where $\varepsilon^0_t\sim f_0$ is an innovation of arbitrary distribution (bounded, discrete, or heavy-tailed) and $\nu_t\sim\mathcal N(0,\sigma_\nu^2)$ is independent Gaussian noise. The location density is $f(x-\Delta)=(f_0*\phi_{\sigma_\nu})(x-\Delta)$, where $\phi_{\sigma_\nu}$ is the Gaussian density. By the data-processing inequality for Kullback--Leibler divergence (or Jensen's inequality applied to the convex relative-entropy functional), convolution with any probability measure $f_0$ is a Markov transition that contracts divergence:
+Proposition~\ref{prop:nongauss} proves that Gaussian news is the least favourable law among distributions satisfying quadratic location divergence $D_f(\Delta)\le\frac12I^*_f\Delta^2$. Laws with bounded support or jumps can produce mutually singular shifts, making prices more informative. In realistic market microstructure, however, fundamental news is observed with continuous Gaussian transaction noise. Consider news of the form $\varepsilon_t=\varepsilon^0_t+\nu_t$, where $\varepsilon^0_t\sim f_0$ is an innovation of arbitrary distribution (bounded, discrete, or heavy-tailed) and $\nu_t\sim\mathcal N(0,\sigma_\nu^2)$ is independent Gaussian noise. The location density is $f(x-\Delta)=(f_0*\phi_{\sigma_\nu})(x-\Delta)$, where $\phi_{\sigma_\nu}$ is the Gaussian density. By the data-processing inequality for Kullback--Leibler divergence (or Jensen's inequality applied to the convex relative-entropy functional), convolution with any probability measure $f_0$ is a Markov transition that contracts divergence:
 \[
 D_f(\Delta) = \mathrm{KL}\bigl((f_0*\phi_{\sigma_\nu})(\cdot)\,\big\|\,(f_0*\phi_{\sigma_\nu})(\cdot-\Delta)\bigr) \le \mathrm{KL}\bigl(\phi_{\sigma_\nu}(\cdot)\,\big\|\,\phi_{\sigma_\nu}(\cdot-\Delta)\bigr) = \frac{\Delta^2}{2\sigma_\nu^2}.
 \]

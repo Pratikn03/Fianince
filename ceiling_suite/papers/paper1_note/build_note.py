@@ -178,14 +178,14 @@ MOVE = {"After a breach": ["The cascade after a breach", "Forward-looking dealer
                                            "A rate under hard limits", "The cost of composition when traders are nonlinear", "Traders who learn"]}
 KEEP = ["The moment gap of the hard pair", "The largest weights of the hard pair",
         "The pooling moment map: Jacobian and global immersion",
-        "Mixed-strategy equilibrium: local contraction and total curvature",
-        "Convex dealer holding costs and Gaussian-convolved news"]
+        "Pure Nash equilibrium: existence via concavity and uniqueness via residual monotonicity",
+        "Gaussian-convolved news of arbitrary law"]
 i = theory.index("\\section{Questions left open in earlier versions}"); j = theory.index("\\section{", i + 10)
 sec = theory[i:j]
 cuts = [m.start() for m in re.finditer(r"\\subsection\{", sec)] + [len(sec)]
 subs = {re.match(r"\\subsection\{([^\n]*)\}", sec[a:]).group(1).split("}")[0]: sec[a:b] for a, b in zip(cuts, cuts[1:])}
 assert set(subs) == set(KEEP) | {t for v in MOVE.values() for t in v}, set(subs) ^ (set(KEEP) | {t for v in MOVE.values() for t in v})
-newsec = ("\\section{The hard pair: moment gap, largest weights, Jacobian and extensions}\\label{app:openres}\n\nThis section gives the exact size of the moment gap behind the constants of Theorem~\\ref{thm:kcohort}, compares the largest weights of the hard pair, proves global immersion of the pooling moment map, a pure Nash equilibrium condition, and extensions to strictly convex dealer holding costs and Gaussian-convolved news.\n\n" + "".join(subs[t] for t in KEEP))
+newsec = ("\\section{The hard pair: moment gap, largest weights, Jacobian and extensions}\\label{app:openres}\n\nThis section gives the exact size of the moment gap behind the constants of Theorem~\\ref{thm:kcohort}, compares the largest weights of the hard pair, proves global immersion of the pooling moment map, existence and uniqueness of pure Nash equilibrium, and the extension of passive lower bounds to Gaussian-convolved news.\n\n" + "".join(subs[t] for t in KEEP))
 focus = theory[:i] + newsec + theory[j:]
 i = focus.index("\\section{Robustness to nonlinear and adaptive trading rules}"); j = focus.index("\\section{", i + 10)
 sims = focus[i:j]; focus = focus[:i] + focus[j:]
@@ -208,7 +208,7 @@ for a, b in (("Supplement Theorem~\\ref{thm:cascade} and Propositions~\\ref{prop
     if a in focus: focus = focus.replace(a, b); mixed = [x for x in mixed if x not in a]
 print("focus: mixed reference groups left for manual wording:", mixed)
 focus = focus.replace("\\usepackage[colorlinks=true", "\\usepackage{xr-hyper}\n\\usepackage[colorlinks=true", 1)
-focus = focus.replace("\\begin{document}", "\\externaldocument{paper1b_companion}\n\\begin{document}", 1)
+focus = focus.replace("\\begin{document}", "\\externaldocument[][nocite]{paper1b_companion}\n\\begin{document}", 1)
 focus = focus.replace("\\noindent\\textbf{Supplement.} The online supplement states every result in full, with proofs and machine-check details.",
     "\\noindent\\textbf{Supplement and companion.} The online supplement states every result in full, with proofs and machine-check details. "
     "Results on cascades after a breach, insiders, and nonlinear or learning traders are in a companion note \\citep{niroula2026c}; "
@@ -259,7 +259,7 @@ cdecl = ("\n\n\\subsection*{Declarations}\n\n\\paragraph{Declaration of generati
          "for code development, numerical cross-checks, Lean~4 formalization checks, and manuscript drafting assistance. After using these "
          "tools, the authors reviewed, validated, and edited all materials, verified all mathematical proofs and empirical calculations, "
          "and take full responsibility for the content and conclusions of this manuscript.\n\n")
-comp = (cpre + "\\externaldocument{paper1_focus}\n\\begin{document}\n\\maketitle\n" + CABS + "\\renewcommand{\\thesection}{C\\arabic{section}}\n"
+comp = (cpre + "\\externaldocument[][nocite]{paper1_focus}\n\\begin{document}\n\\maketitle\n" + CABS + "\\renewcommand{\\thesection}{C\\arabic{section}}\n"
         + comp_body + cdecl + "\n" + cbib + "\\end{document}\n")
 open("paper1b_companion.tex", "w", encoding="utf-8").write(comp)
 print("written paper1_focus.tex and paper1b_companion.tex; moved labels:", len(moved), "; cited keys in companion:", len(cited))

@@ -126,7 +126,7 @@ supp.append(F("supp_openres"))
 # Part 1: identification and cost.
 _gen = L(1936, 2005, "\\section{General memory: the minimax rate is logarithmic}")
 _gen = re.sub(r"\\begin\{proof\}\[Proof sketch\].*?\\end\{proof\}\n?",
-              "The full proofs of Lemma~\\ref{lem:altpair} and Theorem~\\ref{thm:general} follow.\n\n", _gen, count=1, flags=re.S)
+              lambda m: "The full proofs of Lemma~\\ref{lem:altpair} and Theorem~\\ref{thm:general} follow.\n\n", _gen, count=1, flags=re.S)
 supp.append(_gen)
 supp.append("\\paragraph{Full proofs.}\n\n")
 for start, lab in [("\\paragraph{Lemma", "lem:altpair"), ("\\paragraph{Theorem", "thm:general")]:
@@ -170,7 +170,11 @@ body = "".join(main) + "%%BIB%%\n" + "".join(supp) + "\\end{document}\n"
 bib_old = L(779, 877, "\\begin{thebibliography}")
 items = re.findall(r"(\\bibitem\[.*?\]\{(.*?)\}.*?)(?=\n\\bibitem|\n\\end\{thebibliography\})", bib_old, re.S)
 new = open("src/bib_new.tex", encoding="utf-8").read()
-items += re.findall(r"(\\bibitem\[.*?\]\{(.*?)\}.*?)(?=\n\\bibitem|\Z)", new.strip(), re.S)
+new_items = re.findall(r"(\\bibitem\[.*?\]\{(.*?)\}.*?)(?=\n\\bibitem|\Z)", new.strip(), re.S)
+item_map = {k: t for t, k in items}
+for t, k in new_items:
+    item_map[k] = t
+items = [(t, k) for k, t in item_map.items()]
 cited = set()
 for m in re.finditer(r"\\cite(?:t|p|alp|alt|author|year)?\*?(?:\[[^\]]*\])*\{([^}]*)\}", body):
     cited |= {k.strip() for k in m.group(1).split(",")}
