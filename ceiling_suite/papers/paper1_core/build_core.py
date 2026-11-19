@@ -208,6 +208,8 @@ def _unify(text):
     out.append(_swap(text[pos:]))
     return "".join(out)
 body = _unify(_head) + _bibpart + _bib + _endb + _unify(_rest)
+body = body.replace("is (see Reproducibility Table).", "is recorded in Supplement Section~\\ref{app:verification} (and \\nolinkurl{formal_verification_receipt.json}).")
+body = body.replace("(see Reproducibility Table)", "(Supplement Section~\\ref{app:verification}, \\nolinkurl{reproduce.py})")
 
 open("paper1_core.tex", "w", encoding="utf-8").write(body)
 print("written paper1_core.tex,", len(body.split("\n")), "lines;", len(keep), "references")

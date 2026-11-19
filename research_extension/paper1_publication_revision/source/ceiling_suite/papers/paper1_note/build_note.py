@@ -19,6 +19,26 @@ EXTRABIB = r"""\bibitem[Blackwell(1953)]{blackwell1953} Blackwell, D. (1953). Eq
 
 """
 bib = bib.replace("\\end{thebibliography}", EXTRABIB + "\\end{thebibliography}")
+
+def sort_bib_entries(bib_str):
+    import re
+    p = bib_str.split(r"\bibitem")
+    hdr = p[0]
+    ftr = r"\end{thebibliography}"
+    ents = [r"\bibitem" + x.replace(ftr, "").strip() for x in p[1:] if x.strip()]
+    def _k(entry):
+        m = re.match(r"\\bibitem\[([^\]]+)\]", entry)
+        if not m: return (entry.lower(), "")
+        lbl = m.group(1)
+        auth = lbl.split("(")[0].replace("~", " ").strip()
+        yr = re.search(r"\((\d{4}[a-z]?)\)", lbl)
+        y_str = yr.group(1) if yr else ""
+        clean = "".join(c for c in auth if c.isalpha() or c == " ")
+        return (clean.lower(), y_str)
+    ents.sort(key=_k)
+    return hdr + "\n\n".join(ents) + "\n\n" + ftr
+
+bib = sort_bib_entries(bib)
 full = main_core[main_core.index("\\section{Model and motivating examples}"):main_core.index("\\section{Conclusion}")]
 supp = core[core.index("\\appendix"):core.index("\\end{document}")]
 # core supplement front matter -> note supplement front matter
@@ -107,9 +127,63 @@ $K=3$ & $0.5\pm0.1$ & 0.8--1.4 & $1.5\times10^{8}$ & $9.9\times10^{7}$\\
 \parbox{\textwidth}{\footnotesize Bound: $n\ge\ln 5/\mathrm{KL}$ observations (Bretagnolle--Huber), with KL the Gaussian information per observation, computed as in Figure~\ref{n:fig_barrier}, at a common feedback budget $S$, impact $\kappa=0.5$ and feedback share $\kappa\sum_iq_i=0.3$ (total weight $0.6(1-r_c)$ at centre rate $r_c$). Memory rates are per day, 252 days a year; for traders whose memories are counted in five-minute periods, with prices recorded every five minutes around the clock, divide by $417$. Two significant digits.}
 \end{table}
 """
+EQ_SEC = r"""
+\section{Sufficiency and identification in equilibrium}\label{n:sec_equilibrium}
+
+The identification results of Section~\ref{n:suff_sec} take the price impact $\kappa$ and the persistence $a$ of pricing errors as given. This section derives both endogenously from competitive dealers who carry inventory risk. It shows that the equilibrium price follows the closed loop of Section~\ref{n:model} with effective parameters and unchanged memory rates. Consequently, the kernel remains the minimal sufficient statistic in equilibrium, and the sample complexity of learning composition retains its $(\Delta\eta)^{-(4K-2)}$ barrier.
+
+\paragraph{An inventory equilibrium.}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{Fundamental and price.} The fundamental $F_t$ is a public random walk with innovation variance $\sigma_F^2$, and the transaction price is $p_t=F_t+x_t$, where $x_t$ is the pricing error.
+\item \emph{Groups.} Feedback groups trade $u_{i,t+1}=r_i u_{i,t}+w_i x_t$, with exponential memory rates $r_i=1-\eta_i\in(0,1)$ and weights $w_i=q_i\eta_i$.
+\item \emph{Exogenous flow.} An exogenous shock $\xi_t\sim N(0,\sigma_\xi^2)$, i.i.d., represents noise trading or supervisory probing. Total customer order flow is $y_t=\sum_i u_{i,t}+\xi_t$.
+\item \emph{Dealers.} Competitive risk-averse dealers absorb customer order flow and lay off a fraction $1-\bar a$ of their inventory each period, yielding the inventory evolution $H_t=\bar a H_{t-1}-y_t$. An overlapping generation of dealers with CARA risk aversion $A$ prices the asset so that $H_t=(E_t p_{t+1}-p_t)/(A V)$, with conditional price variance $V=\mathrm{Var}_t(p_{t+1})$.
+\end{itemize}
+We consider stationary linear equilibria where $x_t$ is linear in dealer inventory and future feedback trades. Let $G(D)=\sum_i w_i/(D-r_i)$ denote the Stieltjes transform of the merged measure.
+
+\begin{theorem}[Price impact and persistence in an inventory equilibrium]\label{n:thm_inventory}
+Consider stationary linear equilibria of the inventory model above.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Characterization.} The pricing error satisfies
+\[
+ x_t=-\kappa H_t+\kappa\sum_i\frac{u_{i,t+1}}{D-r_i}
+\]
+with $D\ne0$ and $D\ne r_i$, if and only if the induced dynamics are stable and
+\begin{equation}\label{n:eq:inventory_eq}
+ D=1-\kappa\,G(D),\qquad \kappa(D-\bar a)=A\,V\,D,\qquad V=\sigma_F^2+\frac{\kappa^2\sigma_\xi^2}{D^2}.
+\end{equation}
+An unexpected unit of order flow moves the price by $\kappa/D$.
+\item \emph{No feedback.} When $w_i=0$, $D=1$ and the pricing error satisfies $x_t=\bar a\,x_{t-1}+\kappa\,y_t$. Persistence is the dealer carry share $a=\bar a$, and impact $\kappa$ solves $\kappa(1-\bar a)=A(\sigma_F^2+\kappa^2\sigma_\xi^2)$. An equilibrium exists if and only if $\Delta=(1-\bar a)^2-4A^2\sigma_F^2\sigma_\xi^2\ge0$. When $\Delta>0$, the low-impact root $\kappa_-\approx A\sigma_F^2/(1-\bar a)$ is the equilibrium price of inventory risk.
+\item \emph{Invariance.} The equilibrium coefficients $(\kappa,D,V)$ depend on the groups only through the Stieltjes transform $G$, and therefore only through the merged measure $M$.
+\item \emph{Small feedback.} For small feedback intensity $G(1)=\sum_i q_i$, there exists a unique equilibrium near $(\kappa_-,1)$ with
+\[
+ D=1-\kappa_-G(1)+o(G(1)),\qquad \kappa=\kappa_-+\frac{\kappa_-^2(\bar a+2A\kappa_-\sigma_\xi^2)}{\sqrt\Delta}\,G(1)+o(G(1)).
+\]
+Positive feedback increases both price impact $\kappa$ and unexpected shock impact $\kappa/D$.
+\end{enumerate}
+\end{theorem}
+
+\begin{remark}[Observability of pricing errors]\label{n:rem_observability}
+While feedback traders and dealers in Theorem~\ref{n:thm_inventory} condition on the pricing error $x_t = p_t - F_t$, an outside market supervisor observing only raw transaction prices $p_t = F_t + x_t$ with an unobserved random-walk fundamental $F_t$ receives strictly less information. Every sample-complexity lower bound established below therefore holds a fortiori under unobserved fundamentals (while Corollary~\ref{cor:unknown_primitives} handles unknown primitives under active reset probes).
+\end{remark}
+
+\begin{theorem}[The identification results hold in equilibrium]\label{n:thm_eqreduced}
+In the inventory equilibrium of Theorem~\ref{n:thm_inventory}:
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Reduced form.} The pricing error follows the closed loop of Section~\ref{n:model} with effective persistence $a^*=\bar a/D$, effective impact $\kappa^*=\kappa/D$, unchanged memory rates $r_i$, and rescaled weights $\tilde w_i=w_i(D-\bar a)/(D-r_i)$.
+\item \emph{Zeros.} The memory rates $r_i$ remain the transmission zeros of the equilibrium price response.
+\item \emph{Identification boundary.} The effective merged measure $\tilde M=h\,M$ with $h(r)=(D-\bar a)/(D-r)>0$ is in one-to-one correspondence with the primitive merged measure $M$. Hence the merged measure remains the exact identifying functional of equilibrium prices.
+\item \emph{Minimax rate preservation.} Two economies with identical primitives $(A,\sigma_F^2,\sigma_\xi^2,\bar a)$ that differ only in their feedback groups require $N\ge c\,\sigma^2(\Delta\eta)^{-(4K-2)}$ observations to be distinguished.
+\end{enumerate}
+\end{theorem}
+"""
+
 THEORY_EDITS = [
     ("with effective impact and persistence, and with the memory rates unchanged (Supplement Theorems~\\ref{thm:inventory} and~\\ref{thm:eqreduced}).",
-     "with effective impact and persistence, and with the memory rates unchanged (Supplement Theorems~\\ref{thm:inventory} and~\\ref{thm:eqreduced}).\n\nTogether, Theorems~\\ref{n:suff} and~\\ref{n:ident} make the kernel a \\emph{minimal identifying functional} of the population for prices: it determines everything prices can show, and prices determine it. (The merged measure has finitely many atoms, so its moments, the kernel, determine it.)"),
+     "with effective impact and persistence, and with the memory rates unchanged (Theorems~\\ref{n:thm_inventory} and~\\ref{n:thm_eqreduced}).\n\nTogether, Theorems~\\ref{n:suff} and~\\ref{n:ident} make the kernel a \\emph{minimal identifying functional} of the population for prices: it determines everything prices can show, and prices determine it. (The merged measure has finitely many atoms, so its moments, the kernel, determine it.)\n\n" + EQ_SEC),
+    (r"\item \emph{Identification} (Theorem~\ref{n:ident}). Two populations give identical price responses to every trade sequence exactly when their \emph{merged measures}, the trading weight at each memory rate, coincide. Groups with the same memory cannot be separated however long the record. For any population, linear or not, prices identify exactly its aggregate flow map, and the cost bounds below hold over any class that contains the linear rules.",
+     r"""\item \emph{Identification} (Theorem~\ref{n:ident}). Two populations give identical price responses to every trade sequence exactly when their \emph{merged measures}, the trading weight at each memory rate, coincide. Groups with the same memory cannot be separated however long the record. For any population, linear or not, prices identify exactly its aggregate flow map, and the cost bounds below hold over any class that contains the linear rules.
+\item \emph{Equilibrium microfoundations} (Theorems~\ref{n:thm_inventory} and~\ref{n:thm_eqreduced}). In an inventory equilibrium with competitive risk-averse dealers, price impact and persistence arise endogenously. The equilibrium price is the closed loop with effective parameters, the memory rates are preserved, and the identification boundary and minimax sample-complexity bounds hold unchanged."""),
     ("Reset probing is a benchmark for what data can reveal, not a proposed policy.",
      "Reset probing is a benchmark for what data can reveal, not a proposed policy. Knowing $(a,\\kappa)$ only helps the observer, so the lower bounds below hold a fortiori when $(a,\\kappa)$ must be estimated."),
     ("\\citet{auclert2024} make the corresponding sufficient-statistic argument",
@@ -152,15 +226,30 @@ NEWBIB = r"""\bibitem[Boswijk et~al.(2007)]{boswijk2007} Boswijk, H.~P., C.~H. H
 theory = theory.replace("\\end{thebibliography}", NEWBIB + "\\end{thebibliography}", 1)
 theory = theory.replace("\\bibitem[Niroula et~al.(2026)]{niroula2026b}", "\\bibitem[Niroula et~al.(2026b)]{niroula2026b}", 1)
 theory = theory.replace("Niroula, S. Alkhushayni, Y. Chen, M. Bhavsar, and P. Niroula (2026).", "Niroula, S. Alkhushayni, Y. Chen, M. Bhavsar, and P. Niroula (2026b).", 1)
+
+# Sort bibliography in theory version alphabetically
+i_th = theory.index(r"\begin{thebibliography}")
+j_th = theory.index(r"\end{thebibliography}") + len(r"\end{thebibliography}")
+bib_th = theory[i_th:j_th]
+theory = theory[:i_th] + sort_bib_entries(bib_th) + theory[j_th:]
+
 for a, b in (("(full working paper, internet appendix)", "(\\citealp{niroula2026a}, internet appendix)"), ("(full working paper)", "\\citep{niroula2026a}"), ("The full working paper", "\\citet{niroula2026a}"),
              ("the full working paper", "\\citet{niroula2026a}"),
              ("reproduce Sections~2--8 of the longer core version of this paper (12 November 2026): every result in full, with the remarks, machine-check notes and the results that the note omits.",
               "state every result in full, with the remarks, machine-check notes and the results that the main text omits."),
-             ("Theorem numbers in the supplement are those of these sections, not of the note. The note's results correspond", "Theorem numbers in the supplement are those of these sections, not of the main text. The main text's results correspond")):
+             ("Theorem numbers in the supplement are those of these sections, not of the note. The note's results correspond", "Theorem numbers in the supplement are those of these sections, not of the main text. The main text's results correspond"),
+             ("The main text's results correspond to them as follows: Theorem~\\ref{n:suff}", "The main text's results correspond to them as follows: Theorems~\\ref{n:thm_inventory} and~\\ref{n:thm_eqreduced} to Theorems~\\ref{thm:inventory} and~\\ref{thm:eqreduced}; Theorem~\\ref{n:suff}")):
     theory = theory.replace(a, b)
 for a, b in (("\\citet{niroula2026a} reports", "\\citet{niroula2026a} report"), ("\\citet{niroula2026a} proves", "\\citet{niroula2026a} prove"),
              ("\\citet{niroula2026a} matches", "\\citet{niroula2026a} match")):
     theory = theory.replace(a, b)
+
+body = body.replace("is (see Reproducibility Table).", "is recorded in Supplement Section~\\ref{app:verification} (and \\nolinkurl{formal_verification_receipt.json}).")
+body = body.replace("(see Reproducibility Table)", "(Supplement Section~\\ref{app:verification}, \\nolinkurl{reproduce.py})")
+sub = sub.replace("is (see Reproducibility Table).", "is recorded in Supplement Section~\\ref{app:verification} (and \\nolinkurl{formal_verification_receipt.json}).")
+sub = sub.replace("(see Reproducibility Table)", "(Supplement Section~\\ref{app:verification}, \\nolinkurl{reproduce.py})")
+theory = theory.replace("is (see Reproducibility Table).", "is recorded in Supplement Section~\\ref{app:verification} (and \\nolinkurl{formal_verification_receipt.json}).")
+theory = theory.replace("(see Reproducibility Table)", "(Supplement Section~\\ref{app:verification}, \\nolinkurl{reproduce.py})")
 # P1T readout amendment R1 (12 November 2026, authors' decision): in this version the Taiwan test is reported in
 # Supplement S7 only, not in the abstract or the main text.
 assert "Taiwan" not in ABS_THEORY
