@@ -165,6 +165,30 @@ estimates (329 and 373 trading days), not read from data.
 
 Recorded in section 8a below after the run, whatever it shows.
 
+### 8a. Preliminary result (20 November 2026; `P1B_simulation_preliminary.json`; 25% of the runs, smoke seeds)
+
+Prior: 300 treated and 300 control stocks, mean short share 5%, `gamma` mean 0.002 and s.d. 0.002 per unit of `R`,
+GARCH(0.08, 0.90) with t(5) innovations, sector share 0.15.
+
+| Case | Runs | Supportive | Contradicted | Mean t |
+|---|---|---|---|---|
+| null | 100 | 10% | 4% | 0.05 |
+| null, size confound | 100 | 5% | 4% | 0.04 |
+| SESOI (`theta = 0.03`) | 100 | **55%** | 0% | 1.70 |
+| SESOI, lag-1 kernel | 25 | 56% | 0% | 1.92 |
+| half SESOI | 25 | 24% | 0% | 1.11 |
+| double SESOI | 25 | 92% | 0% | 3.24 |
+| kernel on lags 6-10 | 25 | 4% | 4% | 0.01 |
+
+Under the prior the design **would fail**: power at the SESOI is about 55% (80% required), and the null's 10% in 100
+runs is above the 7% bound, although within Monte Carlo error of 5%. The binding constraint is the length of the ban
+(about 330 trading days), which fixes the noise in each stock's autocorrelations; the design detects
+`theta = 0.06` reliably. The official check uses the calibrated parameters and may differ; the SESOI is not changed.
+Design choices made during smoke tests, before this run: the same-day return was dropped from the `gamma` regression
+(it biased `gamma` through the class's own price impact); the baseline `A` was dropped as a control (it contains the
+class's effect); the two events were stacked into one primary statistic; sector demeaning and EWMA volatility scaling
+were added to the outcome.
+
 ## 9. Registration and data run (only if the check passes)
 
 With the author's explicit approval: hash this spec, `p1b_core.py`, the executor and its notebook, and the treated and
