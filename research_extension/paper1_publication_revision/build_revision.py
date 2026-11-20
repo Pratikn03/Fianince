@@ -129,6 +129,20 @@ replace(r'The original P1F forecast window was void; the replacement window begi
         r'The registered forecast test on Binance perpetual futures (P1F) was void in its first window, because the archive lacked the trader-class fields its universe rule requires; its replacement window runs from 16 November 2026 to 14 January 2027 and cannot be analysed before 16 January 2027. A registered account-level test on Hyperliquid, where every trade carries account addresses (H1), is collecting data; it opens no earlier than 10 December 2026, and only if at least 20 coins reach 30 valid days by 31 January 2027. Neither supplies a result here.')
 replace(r'with $h(r)=(D-\bar a)/(D-r)>0$ is in one-to-one correspondence with the primitive merged measure $M$.', r'with $h(r)=(D-\bar a)/(D-r)$, positive when $D$ exceeds every memory rate (as in part (iv)), is in one-to-one correspondence with the primitive merged measure $M$.')
 replace(r'where $h(r)=(D-\bar a)/(D-r)$ is positive', r'where $h(r)=(D-\bar a)/(D-r)$ is positive when $D$ exceeds every memory rate')
+replace('The accompanying revision Lean file verifies selected deterministic steps. The statistical theorems are not fully mechanized; the exact division is stated below and in the validation report.',
+        r'''The deterministic steps of these results are machine-checked in two Lean~4 files, \nolinkurl{PublicationRevision.lean} and \nolinkurl{PublicationRevision2.lean} (in \nolinkurl{research_extension/paper1_publication_revision/}), which build against the same pinned Mathlib with only Lean's three standard axioms. The probabilistic steps are on paper. Table~\ref{tab:newlean} gives the division.
+\begin{table}[ht]\centering\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}}\toprule
+Result & Machine-checked (Lean declaration) & On paper only\\\midrule
+Theorem~\ref{n:univ} & moment cancellation and flow gap (\texttt{matched\_polynomial}, \texttt{flow\_gap}); errors below $1/4$ need $\Lambda>1$ (\texttt{errors\_need\_unit\_loss}); sample-size inversion (\texttt{sample\_size\_lower\_bound}) & Gaussian KL chain rule; Pinsker's inequality; existence of the Gauss and Gauss--Radau rules\\
+Proposition~\ref{n:univup} & approximate minimum-distance fitting (\texttt{minimum\_distance\_error}) & Gaussian concentration\\
+Theorem~\ref{n:shape} & signed atomic measures with vanishing moments are zero (\texttt{vandermonde\_signed\_zero}); remainder absorption (\texttt{inverse\_remainder\_absorption}) & Lipschitz inverse on the compact class; Lipschitz bounds of the response map\\
+Theorem~\ref{n:dual} & squared-error mismatch (\texttt{forecast\_mismatch\_identity}); $\Lambda>1$ (\texttt{errors\_need\_unit\_loss}); Bayesian-mixture regret (\texttt{bayes\_mixture\_regret}) & Gaussian KL formula and chain rule; Pinsker's inequality\\
+Theorem~\ref{n:irr} & positions are kernel convolutions of past prices (\texttt{pos\_closed}, \texttt{positions\_kernel}); initial-state residual (\texttt{initial\_state\_residual}) & the Ing--Wei expansion\\
+Theorem~\ref{n:uniformlog} & omitted coefficients at most $S\bar r^{L}$ (\texttt{geometric\_tail}, \texttt{tail\_budget}); $T\bar r^{2L}\le1$ (\texttt{order\_choice}); log-determinant Jensen step (\texttt{sum\_log\_le}) & Gaussian integral; trace bound; diagonalization\\\bottomrule
+\end{tabular}
+\caption{What is machine-checked in the results new in this revision.}\label{tab:newlean}
+\end{table}''')
 (NOTE / 'paper1_revised.tex').write_text(t)
 shutil.copy2(HERE/'validation/intervention_example.pdf', NOTE/'fig_intervention_revision.pdf')
 print('Wrote', NOTE / 'paper1_revised.tex', len(t.splitlines()), 'lines')

@@ -2794,7 +2794,19 @@ Part (i) restates the comparison of losses. Part (ii) says that disclosure is va
 
 \section{Smooth-family lower bounds and forecast comparisons}\label{app:univirr}
 
-This section supplies the corrected proofs of Theorem~\ref{n:univ}, Proposition~\ref{n:univup}, Theorem~\ref{n:irr} and Proposition~\ref{n:exc}. The accompanying revision Lean file verifies selected deterministic steps. The statistical theorems are not fully mechanized; the exact division is stated below and in the validation report.
+This section supplies the corrected proofs of Theorem~\ref{n:univ}, Proposition~\ref{n:univup}, Theorem~\ref{n:irr} and Proposition~\ref{n:exc}. The deterministic steps of these results are machine-checked in two Lean~4 files, \nolinkurl{PublicationRevision.lean} and \nolinkurl{PublicationRevision2.lean} (in \nolinkurl{research_extension/paper1_publication_revision/}), which build against the same pinned Mathlib with only Lean's three standard axioms. The probabilistic steps are on paper. Table~\ref{tab:newlean} gives the division.
+\begin{table}[ht]\centering\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}}\toprule
+Result & Machine-checked (Lean declaration) & On paper only\\\midrule
+Theorem~\ref{n:univ} & moment cancellation and flow gap (\texttt{matched\_polynomial}, \texttt{flow\_gap}); errors below $1/4$ need $\Lambda>1$ (\texttt{errors\_need\_unit\_loss}); sample-size inversion (\texttt{sample\_size\_lower\_bound}) & Gaussian KL chain rule; Pinsker's inequality; existence of the Gauss and Gauss--Radau rules\\
+Proposition~\ref{n:univup} & approximate minimum-distance fitting (\texttt{minimum\_distance\_error}) & Gaussian concentration\\
+Theorem~\ref{n:shape} & signed atomic measures with vanishing moments are zero (\texttt{vandermonde\_signed\_zero}); remainder absorption (\texttt{inverse\_remainder\_absorption}) & Lipschitz inverse on the compact class; Lipschitz bounds of the response map\\
+Theorem~\ref{n:dual} & squared-error mismatch (\texttt{forecast\_mismatch\_identity}); $\Lambda>1$ (\texttt{errors\_need\_unit\_loss}); Bayesian-mixture regret (\texttt{bayes\_mixture\_regret}) & Gaussian KL formula and chain rule; Pinsker's inequality\\
+Theorem~\ref{n:irr} & positions are kernel convolutions of past prices (\texttt{pos\_closed}, \texttt{positions\_kernel}); initial-state residual (\texttt{initial\_state\_residual}) & the Ing--Wei expansion\\
+Theorem~\ref{n:uniformlog} & omitted coefficients at most $S\bar r^{L}$ (\texttt{geometric\_tail}, \texttt{tail\_budget}); $T\bar r^{2L}\le1$ (\texttt{order\_choice}); log-determinant Jensen step (\texttt{sum\_log\_le}) & Gaussian integral; trace bound; diagonalization\\\bottomrule
+\end{tabular}
+\caption{What is machine-checked in the results new in this revision.}\label{tab:newlean}
+\end{table}
 
 \paragraph{The hard pair.} Let $G_K$ be the $K$-node Gauss--Legendre rule on $[-1,1]$, normalized to unit mass, and $R_K$ the $K$-node Gauss--Radau rule with fixed node $-1$, normalized the same way. Both have positive weights; $G_K$ integrates polynomials of degree at most $2K-1$ exactly and $R_K$ those of degree at most $2K-2$ \citep[Section~3.4]{szego1975}. Hence $\int p\,dG_K=\int p\,dR_K$ for every polynomial $p$ of degree at most $2K-2$. The two rules are different measures ($R_K$ has an atom at $-1$ and $G_K$ does not), so $d_K=W_1(G_K,R_K)>0$. For centre $\theta_c$, spread $\Delta$ and total weight $W$, let $\nu$ and $\nu'$ be the images of $WG_K$ and $WR_K$ under $s\mapsto\theta_c+\Delta s$. They have $K$ atoms each in $[\theta_c-\Delta,\theta_c+\Delta]$, positive weights summing to $W$, equal moments of order $0,\ldots,2K-2$ about $\theta_c$, and $W_1(\nu,\nu')=d_KW\Delta$, since $W_1$ scales linearly under dilation and mass.
 
