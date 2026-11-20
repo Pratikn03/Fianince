@@ -10,6 +10,9 @@ on:
   schedule:
     - cron: "7 */3 * * *"
   workflow_dispatch: {}
+  push:                                   # a change to this file starts the chain without a manual click
+    branches: [main]
+    paths: [".github/workflows/h1_collector.yml"]
 permissions:
   contents: write
   actions: write
@@ -24,8 +27,8 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
       - run: pip install websockets numpy pandas scipy
-      - name: Watchdog (a scheduled run exits if a collector is already running)
-        if: github.event_name == 'schedule'
+      - name: Watchdog (a scheduled or push run exits if a collector is already running)
+        if: github.event_name != 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -51,3 +54,11 @@ jobs:
           gh release view h1-data >/dev/null 2>&1 || gh release create h1-data --prerelease --title "H1 collector output" \
             --notes "Raw Hyperliquid trades for Test H1, one asset per collector run. Merge with thesis/evidence/h1_merge.py."
           gh release upload h1-data "h1-${GITHUB_RUN_ID}.tar.gz" --clobber
+          # coverage only (seconds of live connection per minute), so progress can be checked without the trade files
+          python -c "import json,glob,os; d={os.path.basename(f)[:-5]: json.load(open(f)) for f in glob.glob('h1_out/coverage/*.json')}; json.dump(d, open('cov-${GITHUB_RUN_ID}.json','w'))"
+          gh release upload h1-data "cov-${GITHUB_RUN_ID}.json" --clobber
+      - name: Coverage so far (all collectors; coverage files only)
+        if: always() && env.SKIP != '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python thesis/evidence/h1_coverage_status.py --from-release || true
