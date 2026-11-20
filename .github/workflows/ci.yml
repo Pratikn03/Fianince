@@ -107,9 +107,17 @@ jobs:
         run: |
           cp pdf_delivered/Paper1_ssrn_complete.pdf /tmp/paper1_committed.pdf
           python ceiling_suite/papers/paper1_note/build_ssrn.py --pdf
-          pdftotext -layout /tmp/paper1_committed.pdf /tmp/paper1_committed.txt
-          pdftotext -layout pdf_delivered/Paper1_ssrn_complete.pdf /tmp/paper1_rebuilt.txt
-          python ceiling_suite/papers/pdf_text_tokens.py /tmp/paper1_committed.txt /tmp/paper1_rebuilt.txt
+          # Compare the word/number streams in either extraction mode, as reproduce_clean.sh does:
+          # pdftotext joins tokens around tall formulas differently across platforms.
+          matched=0
+          for mode in "" "-layout"; do
+            pdftotext $mode /tmp/paper1_committed.pdf /tmp/paper1_committed.txt
+            pdftotext $mode pdf_delivered/Paper1_ssrn_complete.pdf /tmp/paper1_rebuilt.txt
+            # a math capital can be glued to the preceding word in one build only; split lower-upper pairs in both
+            sed -i -E 's/([a-z])([A-Z])/\1 \2/g' /tmp/paper1_committed.txt /tmp/paper1_rebuilt.txt
+            if python ceiling_suite/papers/pdf_text_tokens.py /tmp/paper1_committed.txt /tmp/paper1_rebuilt.txt; then matched=1; break; fi
+          done
+          test "$matched" = 1
       - name: Upload offline revision checks
         if: always()
         uses: actions/upload-artifact@v4
