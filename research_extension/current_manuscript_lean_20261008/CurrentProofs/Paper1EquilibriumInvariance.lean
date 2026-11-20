@@ -186,43 +186,7 @@ theorem p1_eq_group_level_differs (c d σ : ℝ) (hσ : σ ^ 2 = 1 / 3) :
     (max (1 / 2 : ℝ) (1 / 2) = 1 / 2 ∧ max (1 / 4 : ℝ) (3 / 4) = 3 / 4) := by
   refine ⟨p1_eq_gauss_radau_kernels c d σ hσ, max_self _, max_eq_right (by norm_num)⟩
 
-/-! ### Atomic moment uniqueness and Nash equilibrium invariance -/
-
-/-- **Atomic moment uniqueness (K = 2).** Two two-atom discrete measures on `ℝ` whose first four
-power moments agree must be equal (as ordered pairs of atoms and weights, once sorted). This is the
-algebraic core of global injectivity of the pooling moment map for `K = D = 2`. -/
-theorem p1_atomic_moment_uniqueness (s1 s2 s1' s2' w1 w2 w1' w2' : ℝ)
-    (hs : s1 < s2) (hs' : s1' < s2')
-    (hw : 0 < w1) (hw2 : 0 < w2) (hw' : 0 < w1') (hw2' : 0 < w2')
-    (h0 : w1 + w2 = w1' + w2')
-    (h1 : w1 * s1 + w2 * s2 = w1' * s1' + w2' * s2')
-    (h2 : w1 * s1 ^ 2 + w2 * s2 ^ 2 = w1' * s1' ^ 2 + w2' * s2' ^ 2)
-    (h3 : w1 * s1 ^ 3 + w2 * s2 ^ 3 = w1' * s1' ^ 3 + w2' * s2' ^ 3) :
-    s1 = s1' ∧ s2 = s2' ∧ w1 = w1' ∧ w2 = w2' := by
-  -- The first two moments determine the barycenter and total weight.
-  -- The Hankel matrix det = (s2 - s1)^2 * w1 * w2 ≠ 0 forces the atoms to agree.
-  -- We derive s1 + s2 and s1 * s2 from the moment system, then identify both.
-  have hd : s2 - s1 ≠ 0 := sub_ne_zero.mpr (ne_of_gt (by linarith))
-  have hd' : s2' - s1' ≠ 0 := sub_ne_zero.mpr (ne_of_gt (by linarith))
-  -- From h0 and h1: total weight and barycenter agree.
-  have hbar : w1 * s1 + w2 * s2 = w1' * s1' + w2' * s2' := h1
-  -- From h2 - (h1)^2 / h0: second central moment difference = 0.
-  -- w1*w2*(s2-s1)^2/(w1+w2) = w1'*w2'*(s2'-s1')^2/(w1'+w2')
-  -- We use the identity: w1*s1^2 + w2*s2^2 = (w1+w2)*bary^2 + w1*w2*(s2-s1)^2/(w1+w2)
-  -- to show (s2-s1)^2 * w1 * w2 = (s2'-s1')^2 * w1' * w2' (using h0).
-  -- The third moment then gives (s1+s2) = (s1'+s2'), combined with the product via h2 this
-  -- forces s1=s1' and s2=s2', and then h0, h1 force w1=w1', w2=w2'.
-  -- Full algebraic proof: express as polynomial system and use nlinarith/ring.
-  constructor
-  · nlinarith [sq_nonneg (s1 - s1'), sq_nonneg (s2 - s2'), sq_nonneg (s1 - s2'),
-               sq_nonneg (s2 - s1'), mul_pos hw hw2, mul_pos hw' hw2',
-               sq_nonneg (w1 * (s1 - s1')), sq_nonneg (w2 * (s2 - s2'))]
-  constructor
-  · nlinarith [sq_nonneg (s1 - s1'), sq_nonneg (s2 - s2'), sq_nonneg (s1 - s2'),
-               sq_nonneg (s2 - s1'), mul_pos hw hw2, mul_pos hw' hw2']
-  constructor
-  · linarith [mul_comm w2 s2, mul_comm w2' s2']
-  · linarith
+/-! ### Nash equilibrium invariance -/
 
 /-- **Nash equilibrium invariance.** In any game where each player's payoff depends on the
 feedback-cohort configuration only through the kernel (Theorem E1), two configurations with equal

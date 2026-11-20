@@ -16,6 +16,8 @@ REV=ROOT/'research_extension/paper1_publication_revision'
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--pdf',action='store_true',help='Compile, check references, split, and copy the PDFs.')
 args=parser.parse_args()
+subprocess.run([sys.executable,str(HERE/'build_note.py')],cwd=HERE,check=True,stdout=subprocess.DEVNULL)
+subprocess.run([sys.executable,str(REV/'make_base.py')],check=True)
 subprocess.run([sys.executable,str(REV/'build_revision.py')],check=True)
 SOURCE=REV/'source/ceiling_suite/papers/paper1_note'
 shutil.copy2(SOURCE/'paper1_revised.tex',HERE/'paper1_ssrn.tex')

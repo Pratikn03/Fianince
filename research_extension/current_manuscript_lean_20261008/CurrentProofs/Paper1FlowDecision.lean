@@ -109,7 +109,8 @@ theorem p1_flow_gaussian_decision_bound {J : ℕ} (N : ℕ) (hN : 0 < N)
 /-! ### Computable flow decision rule and its soundness -/
 
 /-- A computable flow-decision rule: given `K` class upper bounds and a drift allowance,
-decide to halt class `i` if halting it keeps the total feedback budget under `cap`. -/
+decide to halt class `i` if halting it keeps the total feedback budget under `cap`; the drift argument is the
+allowance the supervisor budgets for drift. -/
 def flowDecisionRule {K : ℕ} (upper : Fin K → ℝ) (a κ drift cap : ℝ) (i : Fin K) : Prop :=
   a + κ * (∑ j ∈ Finset.univ.erase i, upper j) + drift ≤ cap
 
@@ -123,7 +124,7 @@ theorem p1_flow_decision_executable_sound {K : ℕ}
     (hk : 0 ≤ κ)
     (hq : ∀ j, q j ≤ upper j)
     (hd : drift ≤ allowance)
-    (hRule : flowDecisionRule upper a κ drift cap i) :
+    (hRule : flowDecisionRule upper a κ allowance cap i) :
     a + κ * (∑ j ∈ Finset.univ.erase i, q j) + drift ≤ cap := by
   exact p1_flow_selected_halt_sound q upper i a κ drift allowance cap hk hq hd hRule
 

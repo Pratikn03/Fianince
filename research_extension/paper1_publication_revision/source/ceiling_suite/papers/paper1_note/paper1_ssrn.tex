@@ -41,7 +41,7 @@
 \usepackage{array}
 \makeatletter\g@addto@macro\UrlBreaks{\do\_}\makeatother
 \graphicspath{{../paper1_core/}}
-\externaldocument{paper1b_companion}
+\externaldocument[][nocite]{paper1b_companion}
 \begin{document}
 \maketitle
 \thispagestyle{empty}\pagestyle{empty}
@@ -121,9 +121,60 @@ The proof is an induction on dates (Supplement Theorem~\ref{thm:eqinv} and Propo
 In model \eqref{n:eq:model}, two economies produce identical price responses to every probe sequence if and only if their merged measures coincide.
 \end{theorem}
 
-This is Supplement Theorem~\ref{thm:merged}(i). The same holds when $\kappa$ and $a$ are derived from competitive dealers who dislike inventory: the equilibrium price follows \eqref{n:eq:model} path by path with effective impact and persistence, and with the memory rates unchanged (Supplement Theorems~\ref{thm:inventory} and~\ref{thm:eqreduced}).
+This is Supplement Theorem~\ref{thm:merged}(i). The same holds when $\kappa$ and $a$ are derived from competitive dealers who dislike inventory: the equilibrium price follows \eqref{n:eq:model} path by path with effective impact and persistence, and with the memory rates unchanged (Theorems~\ref{n:thm_inventory} and~\ref{n:thm_eqreduced}).
 
-Together, Theorems~\ref{n:suff} and~\ref{n:ident} make the kernel a \emph{minimal} sufficient statistic of the population for prices: it determines everything prices can show, and prices determine it. (The merged measure has finitely many atoms, so its moments, the kernel, determine it.)
+Together, Theorems~\ref{n:suff} and~\ref{n:ident} make the kernel a \emph{minimal identifying functional} of the population for prices: it determines everything prices can show, and prices determine it. (The merged measure has finitely many atoms, so its moments, the kernel, determine it.)
+
+
+\section{Sufficiency and identification in equilibrium}\label{n:sec_equilibrium}
+
+The identification results of Section~\ref{n:suff_sec} take the price impact $\kappa$ and the persistence $a$ of pricing errors as given. This section derives both endogenously from competitive dealers who carry inventory risk. It shows that the equilibrium price follows the closed loop of Section~\ref{n:model} with effective parameters and unchanged memory rates. Consequently, the kernel remains the minimal sufficient statistic in equilibrium, and the sample complexity of learning composition retains its $(\Delta\eta)^{-(4K-2)}$ barrier.
+
+\paragraph{An inventory equilibrium.}
+\begin{itemize}[itemsep=1pt,topsep=2pt]
+\item \emph{Fundamental and price.} The fundamental $F_t$ is a public random walk with innovation variance $\sigma_F^2$, and the transaction price is $p_t=F_t+x_t$, where $x_t$ is the pricing error.
+\item \emph{Groups.} Feedback groups trade $u_{i,t+1}=r_i u_{i,t}+w_i x_t$, with exponential memory rates $r_i=1-\eta_i\in(0,1)$ and weights $w_i=q_i\eta_i$.
+\item \emph{Exogenous flow.} An exogenous shock $\xi_t\sim N(0,\sigma_\xi^2)$, i.i.d., represents noise trading or supervisory probing. Total customer order flow is $y_t=\sum_i u_{i,t}+\xi_t$.
+\item \emph{Dealers.} Competitive risk-averse dealers absorb customer order flow and lay off a fraction $1-\bar a$ of their inventory each period, yielding the inventory evolution $H_t=\bar a H_{t-1}-y_t$. An overlapping generation of dealers with CARA risk aversion $A$ prices the asset so that $H_t=(E_t p_{t+1}-p_t)/(A V)$, with conditional price variance $V=\mathrm{Var}_t(p_{t+1})$.
+\end{itemize}
+We consider stationary linear equilibria where $x_t$ is linear in dealer inventory and future feedback trades. Let $G(D)=\sum_i w_i/(D-r_i)$ denote the Stieltjes transform of the merged measure.
+
+\begin{theorem}[Price impact and persistence in an inventory equilibrium]\label{n:thm_inventory}
+Consider stationary linear equilibria of the inventory model above.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Characterization.} The pricing error satisfies
+\[
+ x_t=-\kappa H_t+\kappa\sum_i\frac{u_{i,t+1}}{D-r_i}
+\]
+with $D\ne0$ and $D\ne r_i$, if and only if the induced dynamics are stable and
+\begin{equation}\label{n:eq:inventory_eq}
+ D=1-\kappa\,G(D),\qquad \kappa(D-\bar a)=A\,V\,D,\qquad V=\sigma_F^2+\frac{\kappa^2\sigma_\xi^2}{D^2}.
+\end{equation}
+An unexpected unit of order flow moves the price by $\kappa/D$.
+\item \emph{No feedback.} When $w_i=0$, $D=1$ and the pricing error satisfies $x_t=\bar a\,x_{t-1}+\kappa\,y_t$. Persistence is the dealer carry share $a=\bar a$, and impact $\kappa$ solves $\kappa(1-\bar a)=A(\sigma_F^2+\kappa^2\sigma_\xi^2)$. An equilibrium exists if and only if $\Delta=(1-\bar a)^2-4A^2\sigma_F^2\sigma_\xi^2\ge0$. When $\Delta>0$, the low-impact root $\kappa_-\approx A\sigma_F^2/(1-\bar a)$ is the equilibrium price of inventory risk.
+\item \emph{Invariance.} The equilibrium coefficients $(\kappa,D,V)$ depend on the groups only through the Stieltjes transform $G$, and therefore only through the merged measure $M$.
+\item \emph{Small feedback.} For small feedback intensity $G(1)=\sum_i q_i$, there exists a unique equilibrium near $(\kappa_-,1)$ with
+\[
+ D=1-\kappa_-G(1)+o(G(1)),\qquad \kappa=\kappa_-+\frac{\kappa_-^2(\bar a+2A\kappa_-\sigma_\xi^2)}{\sqrt\Delta}\,G(1)+o(G(1)).
+\]
+Positive feedback increases both price impact $\kappa$ and unexpected shock impact $\kappa/D$.
+\end{enumerate}
+\end{theorem}
+
+\begin{remark}[Observability of pricing errors]\label{n:rem_observability}
+While feedback traders and dealers in Theorem~\ref{n:thm_inventory} condition on the pricing error $x_t = p_t - F_t$, an outside market supervisor observing only raw transaction prices $p_t = F_t + x_t$ with an unobserved random-walk fundamental $F_t$ receives strictly less information. Every sample-complexity lower bound established below therefore holds a fortiori under unobserved fundamentals (while Corollary~\ref{cor:unknown_primitives} handles unknown primitives under active reset probes).
+\end{remark}
+
+\begin{theorem}[The identification results hold in equilibrium]\label{n:thm_eqreduced}
+In the inventory equilibrium of Theorem~\ref{n:thm_inventory}:
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Reduced form.} The pricing error follows the closed loop of Section~\ref{n:model} with effective persistence $a^*=\bar a/D$, effective impact $\kappa^*=\kappa/D$, unchanged memory rates $r_i$, and rescaled weights $\tilde w_i=w_i(D-\bar a)/(D-r_i)$.
+\item \emph{Zeros.} The memory rates $r_i$ remain the transmission zeros of the equilibrium price response.
+\item \emph{Identification boundary.} The effective merged measure $\tilde M=h\,M$ with $h(r)=(D-\bar a)/(D-r)>0$ is in one-to-one correspondence with the primitive merged measure $M$. Hence the merged measure remains the exact identifying functional of equilibrium prices.
+\item \emph{Minimax rate preservation.} Two economies with identical primitives $(A,\sigma_F^2,\sigma_\xi^2,\bar a)$ that differ only in their feedback groups require $N\ge c\,\sigma^2(\Delta\eta)^{-(4K-2)}$ observations to be distinguished.
+\end{enumerate}
+\end{theorem}
+
 
 \paragraph{Any population.} For any population, linear or not, probe responses identify exactly the aggregate flow map, and a group-level quantity is identified if and only if it is a function of that map (Supplement Theorem~\ref{thm:anypop}, machine-checked for an arbitrary flow map). Theorem~\ref{n:ident} is the linear case. The lower bounds of the next section hold over any class of rules that contains the linear ones, so richer rules cannot make composition cheaper to learn.
 
@@ -186,7 +237,7 @@ This is Supplement Proposition~\ref{prop:nearcrit}. One might expect a market ne
 \label{n:fig_barrier}
 \end{figure}
 
-\paragraph{How large is the barrier?} Table~\ref{n:tab_cal} puts numbers on part~(iii) for two groups. What matters is the spread of memories relative to their size. Populations whose memories all have half-lives between 5 and 9 days cannot be told apart with both error probabilities at $5\%$ from less than $4{,}000$ years of daily prices, however close the market is to instability. When half-lives differ by a factor of three or more, a century of daily data can suffice. With three groups the numbers grow to the order of $10^8$ years. The numbers bound every test, for the passive record; probing faces the same order (part~(i)). The exponents do not depend on Gaussian noise: with real Bitcoin price noise injected into synthetic groups, the fitted slopes are $-6.01$ and $-9.81$, against $-6$ and $-10$ (Supplement Section~\ref{sec:injection}).
+\paragraph{How large is the barrier?} Table~\ref{n:tab_cal} puts numbers on part~(iii) for two groups. What matters is the spread of memories relative to their size. There exist moment-matched, stable populations whose memories all have half-lives between 5 and 9 days that cannot be told apart with both error probabilities at $5\%$ from less than $4{,}000$ years of daily prices, however close the market is to instability; this is the worst case over the range, and other populations in it are easier to separate. When half-lives differ by a factor of three or more, a century of daily data can suffice. With three groups the numbers grow to the order of $10^8$ years. The numbers bound every test, for the passive record; probing faces the same order (part~(i)). The exponents do not depend on Gaussian noise: with real Bitcoin price noise injected into synthetic groups, the fitted slopes are $-6.01$ and $-9.81$, against $-6$ and $-10$ (Supplement Section~\ref{sec:injection}).
 
 \begin{table}[t]
 \centering
@@ -208,7 +259,7 @@ $K=3$ & $0.5\pm0.1$ & 0.8--1.4 & $1.5\times10^{8}$ & $9.9\times10^{7}$\\
 \bottomrule
 \end{tabular}
 \par\smallskip
-\parbox{\textwidth}{\footnotesize Bound: $n\ge\ln 5/\mathrm{KL}$ observations (Bretagnolle--Huber), with KL the Gaussian information per observation, computed as in Figure~\ref{n:fig_barrier}, at a common feedback budget $S$, impact $\kappa=0.5$ and feedback share $\kappa\sum_iq_i=0.3$ (total weight $0.6(1-r_c)$ at centre rate $r_c$). Memory rates are per day, 252 days a year; for traders whose memories are counted in five-minute periods, with prices recorded every five minutes around the clock, divide by $417$. Two significant digits. (See Reproducibility Table in the supplement.)}
+\parbox{\textwidth}{\footnotesize Bound: $n\ge\ln 5/\mathrm{KL}$ observations (Bretagnolle--Huber), with KL the Gaussian information per observation, computed as in Figure~\ref{n:fig_barrier}, at a common feedback budget $S$, impact $\kappa=0.5$ and feedback share $\kappa\sum_iq_i=0.3$ (total weight $0.6(1-r_c)$ at centre rate $r_c$). Memory rates are per day, 252 days a year; for traders whose memories are counted in five-minute periods, with prices recorded every five minutes around the clock, divide by $417$. Two significant digits.}
 \end{table}
 
 \paragraph{The barrier does not depend on exponential memory.} Exponential memory makes the problem explicit, but the exponent has a more general source. Let each type of trader be indexed by a number $\theta$ in an interval $\Theta$ and trade $f_\theta(h)$ after the public history $h=(x_t,x_{t-1},\ldots)$, where $f_\theta$ is any causal rule: a power-law or hump-shaped memory, a fixed lookback window, a saturating rule, or a learning rule with a fixed tuning parameter. A population is a finite measure $\nu$ on $\Theta$, the weight on each type, and its aggregate flow
@@ -243,7 +294,7 @@ W_1(\hat\nu,\nu)\le\Big(\frac{2\sigma\big(\sqrt L+\sqrt{2\log(1/\delta)}\big)}{c
 so $N$ of order $\sigma^2\Delta^{-(4K-2)}$ experiments recover composition to any fixed fraction of the spread $\Delta$.
 \end{proposition}
 
-The inverse bound is a strong-identifiability condition. For exponential memory $G$ is a vector of moments and the bound underlies Prony's method (Theorem~\ref{n:cost}(ii)). For mixtures of distributions, \citet{heinrich2018} prove the corresponding bound whenever the derivatives of the family in its parameter, up to order $2K$, are linearly independent; their argument uses only Taylor expansion and that independence, but we have not written out its transfer to $G$ and do not claim it here. In three families that are not exponential memory (a power-law memory indexed by its exponent, a hump-shaped memory indexed by its peak, and a smoothed window indexed by its length), the derivatives at the centre type up to order $2K-1$ are linearly independent, the gap between the Gauss and Gauss--Radau populations' closed-loop responses shrinks with fitted slopes between $2.98$ and $3.07$ for $K=2$ and between $4.97$ and $5.07$ for $K=3$, against $3$ and $5$, and the information about a group's weight falls with slopes $5.98$ to $6.03$ for $K=2$ and $9.29$ to $9.34$ for $K=3$, against $6$ and $10$ (script (see Reproducibility Table); one of the six information slopes could not be computed because the information matrix was numerically singular).
+The inverse bound is a strong-identifiability condition. For exponential memory $G$ is a vector of moments and the bound underlies Prony's method (Theorem~\ref{n:cost}(ii)). For mixtures of distributions, \citet{heinrich2018} prove the corresponding bound whenever the derivatives of the family in its parameter, up to order $2K$, are linearly independent; their argument uses only Taylor expansion and that independence, but we have not written out its transfer to $G$ and do not claim it here. In three families that are not exponential memory (a power-law memory indexed by its exponent, a hump-shaped memory indexed by its peak, and a smoothed window indexed by its length), the derivatives at the centre type up to order $2K-1$ are linearly independent, the gap between the Gauss and Gauss--Radau populations' closed-loop responses shrinks with fitted slopes between $2.98$ and $3.07$ for $K=2$ and between $4.97$ and $5.07$ for $K=3$, against $3$ and $5$, and the information about a group's weight falls with slopes $5.98$ to $6.03$ for $K=2$ and $9.29$ to $9.34$ for $K=3$, against $6$ and $10$ (script \nolinkurl{research_extension/universal_law/universal_law_check.py}; one of the six information slopes could not be computed because the information matrix was numerically singular).
 
 \section{Composition does not help forecast prices}\label{n:irr_sec}
 
@@ -267,7 +318,7 @@ where $\bar r$ is the largest memory rate and the constant in the last term depe
 Part~(i) is elementary: positions are functions of past prices. Its content is the comparison with Theorem~\ref{n:cost}. The data needed to learn composition grow like $\Delta^{-(4K-2)}$ as the groups' memories approach one another, while the value of composition for forecasting stays below $\sigma^2L/T$, whatever the spacing. The two are not just different; they move in opposite directions, since the closer the groups are, the harder composition is to learn and the less any forecaster could gain from it. Part~(ii) rests on the expansion of \citet{ingwei2003} for autoregressions fitted to a process of infinite order, applied to the representation $x_t=\sum_{j\ge1}\phi_jx_{t-j}+\varepsilon_t$ with $\phi_1=a+\kappa k_0$ and $\phi_j=\kappa k_{j-1}$ (Supplement Section~\ref{app:univirr}). The expansion is for a fixed population; we do not claim that its remainder is uniform over populations.
 
 \begin{remark}[A drifting population]
-If the weights drift by at most $v$ per period, an autoregression of order of $\log(1/v)$ refitted on a trailing window of order $v^{-2/3}$ periods should have excess error of order $\sigma^2v^{2/3}\log(1/v)$, again independent of the spacing, by the bias--variance trade-off of tracking estimators \citep{guoljung1995}. We have not proved this. In simulations with $v$ from $3\times10^{-5}$ to $10^{-3}$ the excess error divided by $v^{2/3}$ lies between $0.18$ and $0.41$, with a fitted exponent of $0.55$, below $2/3$ because the grid of windows is capped (see Reproducibility Table).
+If the weights drift by at most $v$ per period, an autoregression of order of $\log(1/v)$ refitted on a trailing window of order $v^{-2/3}$ periods should have excess error of order $\sigma^2v^{2/3}\log(1/v)$, again independent of the spacing, by the bias--variance trade-off of tracking estimators \citep{guoljung1995}. We have not proved this. In simulations with $v$ from $3\times10^{-5}$ to $10^{-3}$ the excess error divided by $v^{2/3}$ lies between $0.18$ and $0.41$, with a fitted exponent of $0.55$, below $2/3$ because the grid of windows is capped (\nolinkurl{research_extension/irrelevance/irrelevance_theorem_check.py}).
 \end{remark}
 
 The theorem has the structure of an irrelevance result in the sense of \citet{mm1958}: a benchmark in which something does not matter, and a list of what makes it matter.
@@ -314,7 +365,7 @@ This is Supplement Theorem~\ref{thm:partial}; the lower bound uses the $K'$-node
 A supervisor who sees several markets has a second route that needs no tags at all. An algorithm's memory, its lookback, is the same in every market it trades, while its participation varies from market to market.
 
 \begin{theorem}[Pooling markets]\label{n:pool}
-Let the same $K$ algorithms trade in $D$ markets, with common memory rates and market-specific weights whose matrix has rank $D\le K$. Pooling the price records of the $D$ markets, the data needed to learn composition are of order $(\Delta\eta)^{-2(K-1+\lceil K/D\rceil)}$ near generic configurations: $(\Delta\eta)^{-(4K-2)}$ with one market and $(\Delta\eta)^{-2K}$ with $K$ or more. Over a compact class the exponent lies between $2(K-1+\lceil K/D\rceil)$ and $4K-2$, so pooling never needs more data than one market; whether it equals the local exponent is a global question that is open in general.
+Let the same $K$ algorithms trade in $D$ markets, with common memory rates and market-specific weights whose matrix has rank $D\le K$. Pooling the price records of the $D$ markets, the data needed to learn composition are of order $(\Delta\eta)^{-2(K-1+\lceil K/D\rceil)}$ near generic configurations: $(\Delta\eta)^{-(4K-2)}$ with one market and $(\Delta\eta)^{-2K}$ with $K$ or more. Over a compact class the exponent lies between $2(K-1+\lceil K/D\rceil)$ and $4K-2$, so pooling never needs more data than one market; whether it equals the local exponent is open in general for $D < K$, and holds globally when $D = K \ge 2$ (Supplement Section~\ref{app:jacobian}).
 \end{theorem}
 
 This is Supplement Theorem~\ref{thm:pool}. The lower bound on the joint records of all markets is machine-checked for any matched pair, and so is the upper bound given the rank condition, which holds at almost every configuration for any number of algorithms and markets (machine-checked at an explicit configuration); Monte Carlo runs of the estimator reproduce the predicted rates. Cross-market surveillance is a partial substitute for tagging, and the converse constrains hiding: to stay as hidden as in a single market, the algorithms must trade in the same proportions everywhere. For two algorithms with half-lives between 5 and 9 days, about $7{,}000$ years of daily prices in one market become at least about $90$ in two markets in which their shares differ by $50$ percentage points (hardest pair found numerically; Supplement Section~\ref{sec:pool}).
@@ -388,54 +439,88 @@ Within these limits the message is simple. Prices tell a supervisor the kernel a
 
 \begin{thebibliography}{99}\setlength{\itemsep}{2pt}\small
 \bibitem[Abramowitz and Stegun(1964)]{abramowitz1964} Abramowitz, M., and I. A. Stegun (1964). \emph{Handbook of Mathematical Functions}. National Bureau of Standards, Washington, DC.
+
 \bibitem[Auclert et~al.(2024)]{auclert2024} Auclert, A., M. Rognlie, and L. Straub (2024). The intertemporal Keynesian cross. \emph{Journal of Political Economy} 132, 4068--4121.
+
 \bibitem[Barberis et~al.(2015)]{barberis2015} Barberis, N., R. Greenwood, L. Jin, and A. Shleifer (2015). X-CAPM: An extrapolative capital asset pricing model. \emph{Journal of Financial Economics} 115, 1--24.
+
 \bibitem[Barberis et~al.(2018)]{barberis2018} Barberis, N., R. Greenwood, L. Jin, and A. Shleifer (2018). Extrapolation and bubbles. \emph{Journal of Financial Economics} 129, 203--227.
+
 \bibitem[Barroso et~al.(2022)]{barroso2022} Barroso, P., R.~M. Edelen, and P. Karehnke (2022). Crowding and tail risk in momentum returns. \emph{Journal of Financial and Quantitative Analysis} 57, 1313--1342.
+
 \bibitem[Bernstein(1914)]{bernstein1914} Bernstein, S. (1914). Sur la meilleure approximation de $|x|$ par des polyn\^omes de degr\'es donn\'es. \emph{Acta Mathematica} 37, 1--57.
-\bibitem[Brock and Hommes(1998)]{brock1998} Brock, W.~A., and C.~H. Hommes (1998). Heterogeneous beliefs and routes to chaos in a simple asset pricing model. \emph{Journal of Economic Dynamics and Control} 22, 1235--1274.
-\bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009} Brunnermeier, M. K., and L. H. Pedersen (2009). Market liquidity and funding liquidity. \emph{Review of Financial Studies} 22, 2201--2238.
-\bibitem[Cagan(1956)]{cagan1956} Cagan, P. (1956). The monetary dynamics of hyperinflation. In M. Friedman (Ed.), \emph{Studies in the Quantity Theory of Money}, 25--117. University of Chicago Press.
-\bibitem[Celov et~al.(2010)]{celov2008} Celov, D., R. Leipus, and A. Philippe (2010). Asymptotic normality of the mixture density estimator in a disaggregation scheme. \emph{Journal of Nonparametric Statistics} 22, 425--442.
-\bibitem[Donoho(1994)]{donoho1994} Donoho, D.~L. (1994). Statistical estimation and optimal recovery. \emph{Annals of Statistics} 22, 238--270.
-\bibitem[Dreesen et~al.(2017)]{dreesen2017} Dreesen, P., D.~T. Westwick, J. Schoukens, and M. Ishteva (2017). Modeling parallel Wiener--Hammerstein systems using tensor decomposition of Volterra kernels. In \emph{Latent Variable Analysis and Signal Separation (LVA/ICA 2017)}, Lecture Notes in Computer Science 10169, 16--25. Springer.
-\bibitem[Fan(1991)]{fan1991} Fan, J. (1991). On the optimal rates of convergence for nonparametric deconvolution problems. \emph{Annals of Statistics} 19, 1257--1272.
-\bibitem[Forni and Lippi(1997)]{forni1997} Forni, M., and M. Lippi (1997). \emph{Aggregation and the Microfoundations of Dynamic Macroeconomics}. Oxford University Press.
-\bibitem[Granger(1980)]{granger1980} Granger, C. W. J. (1980). Long memory relationships and the aggregation of dynamic models. \emph{Journal of Econometrics} 14, 227--238.
-\bibitem[Hale and Townsend(2013)]{hale2013} Hale, N., and A. Townsend (2013). Fast and accurate computation of Gauss--Legendre and Gauss--Jacobi quadrature nodes and weights. \emph{SIAM Journal on Scientific Computing} 35, A652--A674.
-\bibitem[Heinrich and Kahn(2018)]{heinrich2018} Heinrich, P., and J. Kahn (2018). Strong identifiability and optimal minimax rates for finite mixture estimation. \emph{Annals of Statistics} 46, 2844--2870.
-\bibitem[Katz et~al.(2023)]{katz2023} Katz, R., N. Diab, and D. Batenkov (2023). On the accuracy of Prony's method for recovery of exponential sums with closely spaced exponents. arXiv preprint arXiv:2302.05883.
-\bibitem[Kong and Valiant(2017)]{kong2017} Kong, W., and G. Valiant (2017). Spectrum estimation from samples. \emph{Annals of Statistics} 45, 2218--2247.
-\bibitem[Koyck(1954)]{koyck1954} Koyck, L.~M. (1954). \emph{Distributed Lags and Investment Analysis}. North-Holland.
-\bibitem[Kyle(1985)]{kyle1985} Kyle, A. S. (1985). Continuous auctions and insider trading. \emph{Econometrica} 53, 1315--1335.
-\bibitem[Li et~al.(2022)]{li2022} Li, W., Z. Zhu, W. Gao, and W. Liao (2022). Stability and super-resolution of MUSIC and ESPRIT for multi-snapshot spectral estimation. \emph{IEEE Transactions on Signal Processing} 70, doi:10.1109/TSP.2022.3204454.
-\bibitem[Muth(1960)]{muth1960} Muth, J.~F. (1960). Optimal properties of exponentially weighted forecasts. \emph{Journal of the American Statistical Association} 55, 299--306.
-\bibitem[Nerlove(1958)]{nerlove1958} Nerlove, M. (1958). Adaptive expectations and cobweb phenomena. \emph{Quarterly Journal of Economics} 72, 227--240.
-\bibitem[Niroula et~al.(2026b)]{niroula2026b} Niroula, P., S. Alkhushayni, Y. Chen, M. Bhavsar, and P. Niroula (2026). From human markets to machine markets: Transient amplification, an exact depth condition, and a maximal pre-trade guard. Working paper, Minnesota State University, Mankato.
-\bibitem[Pesaran and Chudik(2014)]{pesaran2014} Pesaran, M.~H., and A. Chudik (2014). Aggregation in large dynamic panels. \emph{Journal of Econometrics} 178, 273--285.
-\bibitem[Rivlin(1981)]{rivlin1981} Rivlin, T. J. (1981). \emph{An Introduction to the Approximation of Functions}. Dover.
-\bibitem[Sargent(1976)]{sargent1976} Sargent, T.~J. (1976). The observational equivalence of natural and unnatural rate theories of macroeconomics. \emph{Journal of Political Economy} 84, 631--640.
-\bibitem[Sussmann(1992)]{sussmann1992} Sussmann, H.~J. (1992). Uniqueness of the weights for minimal feedforward nets with a given input-output map. \emph{Neural Networks} 5, 589--593.
-\bibitem[Szeg\H{o}(1975)]{szego1975} Szeg\H{o}, G. (1975). \emph{Orthogonal Polynomials}, 4th ed. American Mathematical Society Colloquium Publications 23, Providence, RI.
-\bibitem[Tsybakov(2009)]{tsybakov2009} Tsybakov, A. B. (2009). \emph{Introduction to Nonparametric Estimation}. Springer.
-\bibitem[Varga and Carpenter(1985)]{varga1985} Varga, R. S., and A. J. Carpenter (1985). On the Bernstein conjecture in approximation theory. \emph{Constructive Approximation} 1, 333--348.
-\bibitem[Wu and Yang(2020)]{wu2020} Wu, Y., and P. Yang (2020). Optimal estimation of Gaussian mixtures via denoised method of moments. \emph{Annals of Statistics} 48, 1981--2007.
-\bibitem[Zaffaroni(2004)]{zaffaroni2004} Zaffaroni, P. (2004). Contemporaneous aggregation of linear dynamic models in large economies. \emph{Journal of Econometrics} 120, 75--102.
+
 \bibitem[Blackwell(1953)]{blackwell1953} Blackwell, D. (1953). Equivalent comparisons of experiments. \emph{Annals of Mathematical Statistics} 24(2), 265--272.
-
-\bibitem[Le~Cam(1964)]{lecam1964} Le~Cam, L. (1964). Sufficiency and approximate sufficiency. \emph{Annals of Mathematical Statistics} 35(4), 1419--1455.
-
-\bibitem[van Waarde et~al.(2020)]{vanwaarde2020} van Waarde, H.~J., J. Eising, H.~L. Trentelman, and M.~K. Camlibel (2020). Data informativity: A new perspective on data-driven analysis and control. \emph{IEEE Transactions on Automatic Control} 65(11), 4753--4768.
 
 \bibitem[Boswijk et~al.(2007)]{boswijk2007} Boswijk, H.~P., C.~H. Hommes, and S. Manzan (2007). Behavioral heterogeneity in stock prices. \emph{Journal of Economic Dynamics and Control} 31, 1938--1970.
 
+\bibitem[Brock and Hommes(1998)]{brock1998} Brock, W.~A., and C.~H. Hommes (1998). Heterogeneous beliefs and routes to chaos in a simple asset pricing model. \emph{Journal of Economic Dynamics and Control} 22, 1235--1274.
+
+\bibitem[Brunnermeier and Pedersen(2009)]{brunnermeier2009} Brunnermeier, M. K., and L. H. Pedersen (2009). Market liquidity and funding liquidity. \emph{Review of Financial Studies} 22, 2201--2238.
+
+\bibitem[Cagan(1956)]{cagan1956} Cagan, P. (1956). The monetary dynamics of hyperinflation. In M. Friedman (Ed.), \emph{Studies in the Quantity Theory of Money}, 25--117. University of Chicago Press.
+
+\bibitem[Celov et~al.(2010)]{celov2008} Celov, D., R. Leipus, and A. Philippe (2010). Asymptotic normality of the mixture density estimator in a disaggregation scheme. \emph{Journal of Nonparametric Statistics} 22, 425--442.
+
+\bibitem[Donoho(1994)]{donoho1994} Donoho, D.~L. (1994). Statistical estimation and optimal recovery. \emph{Annals of Statistics} 22, 238--270.
+
+\bibitem[Dreesen et~al.(2017)]{dreesen2017} Dreesen, P., D.~T. Westwick, J. Schoukens, and M. Ishteva (2017). Modeling parallel Wiener--Hammerstein systems using tensor decomposition of Volterra kernels. In \emph{Latent Variable Analysis and Signal Separation (LVA/ICA 2017)}, Lecture Notes in Computer Science 10169, 16--25. Springer.
+
+\bibitem[Fan(1991)]{fan1991} Fan, J. (1991). On the optimal rates of convergence for nonparametric deconvolution problems. \emph{Annals of Statistics} 19, 1257--1272.
+
+\bibitem[Forni and Lippi(1997)]{forni1997} Forni, M., and M. Lippi (1997). \emph{Aggregation and the Microfoundations of Dynamic Macroeconomics}. Oxford University Press.
+
 \bibitem[Franke and Westerhoff(2012)]{franke2012} Franke, R., and F. Westerhoff (2012). Structural stochastic volatility in asset pricing dynamics: Estimation and model contest. \emph{Journal of Economic Dynamics and Control} 36, 1193--1211.
+
+\bibitem[Granger(1980)]{granger1980} Granger, C. W. J. (1980). Long memory relationships and the aggregation of dynamic models. \emph{Journal of Econometrics} 14, 227--238.
+
+\bibitem[Hale and Townsend(2013)]{hale2013} Hale, N., and A. Townsend (2013). Fast and accurate computation of Gauss--Legendre and Gauss--Jacobi quadrature nodes and weights. \emph{SIAM Journal on Scientific Computing} 35, A652--A674.
+
+\bibitem[Heinrich and Kahn(2018)]{heinrich2018} Heinrich, P., and J. Kahn (2018). Strong identifiability and optimal minimax rates for finite mixture estimation. \emph{Annals of Statistics} 46, 2844--2870.
 
 \bibitem[Hommes(2006)]{hommes2006} Hommes, C.~H. (2006). Heterogeneous agent models in economics and finance. In L. Tesfatsion and K.~L. Judd (eds.), \emph{Handbook of Computational Economics}, Vol.~2, 1109--1186. Elsevier.
 
+\bibitem[Katz et~al.(2023)]{katz2023} Katz, R., N. Diab, and D. Batenkov (2023). On the accuracy of Prony's method for recovery of exponential sums with closely spaced exponents. arXiv preprint arXiv:2302.05883.
+
+\bibitem[Kong and Valiant(2017)]{kong2017} Kong, W., and G. Valiant (2017). Spectrum estimation from samples. \emph{Annals of Statistics} 45, 2218--2247.
+
+\bibitem[Koyck(1954)]{koyck1954} Koyck, L.~M. (1954). \emph{Distributed Lags and Investment Analysis}. North-Holland.
+
+\bibitem[Kyle(1985)]{kyle1985} Kyle, A. S. (1985). Continuous auctions and insider trading. \emph{Econometrica} 53, 1315--1335.
+
+\bibitem[Le~Cam(1964)]{lecam1964} Le~Cam, L. (1964). Sufficiency and approximate sufficiency. \emph{Annals of Mathematical Statistics} 35(4), 1419--1455.
+
+\bibitem[Li et~al.(2022)]{li2022} Li, W., Z. Zhu, W. Gao, and W. Liao (2022). Stability and super-resolution of MUSIC and ESPRIT for multi-snapshot spectral estimation. \emph{IEEE Transactions on Signal Processing} 70, doi:10.1109/TSP.2022.3204454.
+
 \bibitem[Lux and Zwinkels(2018)]{lux2018} Lux, T., and R.~C.~J. Zwinkels (2018). Empirical validation of agent-based models. In C. Hommes and B. LeBaron (eds.), \emph{Handbook of Computational Economics}, Vol.~4, 437--488. Elsevier.
 
+\bibitem[Muth(1960)]{muth1960} Muth, J.~F. (1960). Optimal properties of exponentially weighted forecasts. \emph{Journal of the American Statistical Association} 55, 299--306.
+
+\bibitem[Nerlove(1958)]{nerlove1958} Nerlove, M. (1958). Adaptive expectations and cobweb phenomena. \emph{Quarterly Journal of Economics} 72, 227--240.
+
 \bibitem[Niroula et~al.(2026a)]{niroula2026a} Niroula, P., P. Niroula, and S. Khatiwada (2026a). What prices cannot tell a market supervisor: The cost of identifying trader groups and the value of class disclosure. Working paper, 5 November 2026, \url{https://github.com/Pratikn03/Fianince}.
+
+\bibitem[Niroula et~al.(2026b)]{niroula2026b} Niroula, P., S. Alkhushayni, Y. Chen, M. Bhavsar, and P. Niroula (2026b). From human markets to machine markets: Transient amplification, an exact depth condition, and a maximal pre-trade guard. Working paper, Minnesota State University, Mankato.
+
+\bibitem[Pesaran and Chudik(2014)]{pesaran2014} Pesaran, M.~H., and A. Chudik (2014). Aggregation in large dynamic panels. \emph{Journal of Econometrics} 178, 273--285.
+
+\bibitem[Rivlin(1981)]{rivlin1981} Rivlin, T. J. (1981). \emph{An Introduction to the Approximation of Functions}. Dover.
+
+\bibitem[Sargent(1976)]{sargent1976} Sargent, T.~J. (1976). The observational equivalence of natural and unnatural rate theories of macroeconomics. \emph{Journal of Political Economy} 84, 631--640.
+
+\bibitem[Sussmann(1992)]{sussmann1992} Sussmann, H.~J. (1992). Uniqueness of the weights for minimal feedforward nets with a given input-output map. \emph{Neural Networks} 5, 589--593.
+
+\bibitem[Szeg\H{o}(1975)]{szego1975} Szeg\H{o}, G. (1975). \emph{Orthogonal Polynomials}, 4th ed. American Mathematical Society Colloquium Publications 23, Providence, RI.
+
+\bibitem[Tsybakov(2009)]{tsybakov2009} Tsybakov, A. B. (2009). \emph{Introduction to Nonparametric Estimation}. Springer.
+
+\bibitem[van Waarde et~al.(2020)]{vanwaarde2020} van Waarde, H.~J., J. Eising, H.~L. Trentelman, and M.~K. Camlibel (2020). Data informativity: A new perspective on data-driven analysis and control. \emph{IEEE Transactions on Automatic Control} 65(11), 4753--4768.
+
+\bibitem[Varga and Carpenter(1985)]{varga1985} Varga, R. S., and A. J. Carpenter (1985). On the Bernstein conjecture in approximation theory. \emph{Constructive Approximation} 1, 333--348.
+
+\bibitem[Wu and Yang(2020)]{wu2020} Wu, Y., and P. Yang (2020). Optimal estimation of Gaussian mixtures via denoised method of moments. \emph{Annals of Statistics} 48, 1981--2007.
+
+\bibitem[Zaffaroni(2004)]{zaffaroni2004} Zaffaroni, P. (2004). Contemporaneous aggregation of linear dynamic models in large economies. \emph{Journal of Econometrics} 120, 75--102.
 
 \bibitem[Niroula et~al.(2026c)]{niroula2026c} Niroula, P., P. Niroula, and S. Khatiwada (2026c). After a breach, and beyond linear rules: Companion results to ``Observationally equivalent algorithms''. Working paper, 13 November 2026, \url{https://github.com/Pratikn03/Fianince}.
 
@@ -462,7 +547,7 @@ Within these limits the message is simple. Prices tell a supervisor the kernel a
 \setcounter{page}{1}\renewcommand{\thepage}{S-\arabic{page}}\renewcommand{\thesection}{S\arabic{section}}\setcounter{table}{0}\renewcommand{\thetable}{S\arabic{table}}\setcounter{figure}{0}\renewcommand{\thefigure}{S\arabic{figure}}
 \begin{center}{\Large Online Supplement}\\[4pt]{\large Observationally Equivalent Algorithms}\\[2pt]{\normalsize Niroula, Niroula and Khatiwada, 12 November 2026}\end{center}
 
-\noindent Sections~S1--S7 state every result in full, with the remarks, machine-check notes and the results that the main text omits. The remaining sections give the proofs, further results, machine checks and notation. Theorem numbers in the supplement are those of these sections, not of the main text. The main text's results correspond to them as follows: Theorem~\ref{n:suff} to Theorem~\ref{thm:eqinv} and Proposition~\ref{prop:anylinear}; Theorem~\ref{n:ident} to Theorem~\ref{thm:merged}(i); Theorem~\ref{n:cost} to Theorems~\ref{thm:kcohort}, \ref{prop:esprit} and~\ref{prop:passive}; Proposition~\ref{n:target} to Propositions~\ref{prop:target}(i) and~\ref{prop:targetK}; Theorem~\ref{n:disc} to Theorem~\ref{thm:discvalue}; Proposition~\ref{n:nearcrit} to Proposition~\ref{prop:nearcrit}; Proposition~\ref{n:hiding} to Proposition~\ref{prop:hiding}; Theorem~\ref{n:partial} to Theorem~\ref{thm:partial}; Theorem~\ref{n:pool} to Theorem~\ref{thm:pool}; Theorem~\ref{n:track} to Theorem~\ref{thm:track}; Theorem~\ref{n:sat_thm} to Theorems~\ref{thm:satsuff}, \ref{thm:stress} and~\ref{thm:satident}.
+\noindent Sections~S1--S7 state every result in full, with the remarks, machine-check notes and the results that the main text omits. The remaining sections give the proofs, further results, machine checks and notation. Theorem numbers in the supplement are those of these sections, not of the main text. The main text's results correspond to them as follows: Theorems~\ref{n:thm_inventory} and~\ref{n:thm_eqreduced} to Theorems~\ref{thm:inventory} and~\ref{thm:eqreduced}; Theorem~\ref{n:suff} to Theorem~\ref{thm:eqinv} and Proposition~\ref{prop:anylinear}; Theorem~\ref{n:ident} to Theorem~\ref{thm:merged}(i); Theorem~\ref{n:cost} to Theorems~\ref{thm:kcohort}, \ref{prop:esprit} and~\ref{prop:passive}; Proposition~\ref{n:target} to Propositions~\ref{prop:target}(i) and~\ref{prop:targetK}; Theorem~\ref{n:disc} to Theorem~\ref{thm:discvalue}; Proposition~\ref{n:nearcrit} to Proposition~\ref{prop:nearcrit}; Proposition~\ref{n:hiding} to Proposition~\ref{prop:hiding}; Theorem~\ref{n:partial} to Theorem~\ref{thm:partial}; Theorem~\ref{n:pool} to Theorem~\ref{thm:pool}; Theorem~\ref{n:track} to Theorem~\ref{thm:track}; Theorem~\ref{n:sat_thm} to Theorems~\ref{thm:satsuff}, \ref{thm:stress} and~\ref{thm:satident}.
 
 \section{Model and motivating examples}\label{sec:model}
 
@@ -577,7 +662,7 @@ The result concerns the stated model and observation contract. Groups sharing an
 \end{remark}
 \section{Sufficiency and identification in equilibrium}\label{sec:equilibrium}
 
-The identification results of Section~\ref{sec:suff} take the price impact $\kappa$ and the persistence $a$ of pricing errors as given. This section derives both from dealers who dislike holding inventory. It shows that the equilibrium price is the closed loop of Section~\ref{sec:model} with effective parameters and unchanged memory rates. So the kernel stays the sufficient statistic in equilibrium, and the cost of going beyond it (Section~\ref{sec:cost}) keeps its order.
+The identification results of Section~\ref{sec:suff} take the price impact $\kappa$ and the persistence $a$ of pricing errors as given. This section derives both from dealers who dislike holding inventory. It shows that the equilibrium price is the closed loop of Section~\ref{sec:model} with effective parameters and unchanged memory rates. So the kernel stays the sufficient aggregate in equilibrium, and the cost of going beyond it (Section~\ref{sec:cost}) keeps its order.
 
 
 \paragraph{An inventory equilibrium.}
@@ -720,7 +805,7 @@ D_\epsilon(B\|A)\ \le\ C\,(\Delta\eta)^{4K-2}\qquad\text{for all }0<\epsilon\le\
 \]
 \end{proposition}
 
-\paragraph{In words.} Even as the market approaches a crash, passive prices reveal no more about who is trading than they did in calm conditions, per observation. They reveal more and more about how close the market is to instability: if the two economies share the persistence $a$ instead of the budget, their budgets differ by order $(\Delta\eta)^{2K-1}$, and numerically the divergence rate then grows like $\epsilon^{-1}$. The proof is in Supplement~\ref{app:nearcrit}. Two limits apply. The statement is about the divergence rate per observation; near instability prices are strongly dependent, and a finite-sample bound that is uniform in $\epsilon$ is not proved, although numerically the exact information in $n$ observations stays within $3\%$ below $n$ times the rate down to $\epsilon=10^{-3}$ (Supplement~\ref{app:nearcrit}). And probing does gain near instability: the squared response difference grows like $\epsilon^{-1}$ (numerical), but probing a market at the edge of instability is not a policy. Figure~\ref{fig:barrier} shows both statements.
+\paragraph{In words.} Even as the market approaches a crash, passive prices reveal no more about who is trading than they did in calm conditions, per observation. They reveal more and more about how close the market is to instability: if the two economies share the persistence $a$ instead of the budget, their budgets differ by order $(\Delta\eta)^{2K-1}$, and numerically the divergence rate then grows like $\epsilon^{-1}$. The proof is in Supplement~\ref{app:nearcrit}. Two limits apply. The statement is about the divergence rate per observation; near instability prices are strongly dependent, and extends to finite samples uniformly in $\epsilon$ (Supplement Proposition~\ref{prop:nearcritn}), where numerically the exact information in $n$ observations stays within $3\%$ below $n$ times the rate down to $\epsilon=10^{-3}$ (Supplement Section~\ref{app:nearcrit}). And probing does gain near instability: the squared response difference grows like $\epsilon^{-1}$ (numerical), but probing a market at the edge of instability is not a policy. Figure~\ref{fig:barrier} shows both statements.
 
 \begin{figure}[t]
 \centering
@@ -802,7 +887,7 @@ The constants depend on $(\sigma,\sigma_f)$, the class and the tagged groups, no
 (iii) With one untagged group of weight $v$ and rate $s$, $k_0=\sum_{\rm tagged}w_i+v$ and $k_1=\sum_{\rm tagged}w_ir_i+vs$, so $v$ and $s$ are smooth functions of $k_0$, $k_1$ and the tagged estimates, all estimated with error $O_P(N^{-1/2})$ independent of $\Delta\eta$. With none, this is Theorem~\ref{thm:discvalue}(i).
 \end{proof}
 
-\paragraph{Numerical check and machine check.} For $K=3$ with no tag and one tag, and $K=4$ with two tags, the exact divergence per experiment of the hard pair falls with $\Delta\eta$ at fitted slopes $10.05$, $6.02$ and $5.96$, against $10$, $6$ and $6$ (see Reproducibility Table). Part~(i) is machine-checked on the joint records of prices and tagged flows, for records of any fixed length $T$ and a common noise variance $\sigma^2$ on prices and flows (with $\sigma_f\ne\sigma$, replace $\sigma$ by $\min(\sigma,\sigma_f)$): for any two economies that share their tagged groups and whose untagged node moments agree below order $n$, any test satisfies $4\sigma^2(1-\alpha_0-\beta_0)^2\le N(T+MT)\bigl(2W2^T(\Delta\eta)^nC_T(1+W_tT)\bigr)^2$ (\texttt{p1\_partial\_lower\_bound\_matched}, \nolinkurl{Paper1PartialDisclosureLower.lean}); with the matched $K'$-node pair of Theorem~\ref{thm:kcohort}, $n=2K'-1$. The algebraic steps of (ii) and (iii) are machine-checked too (\nolinkurl{Paper1PartialDisclosure.lean}), and so is the deterministic core of (ii): if the kernel taps are estimated within $e_k$ and the tagged weights and rates within $e_w$ and $e_r$, an ordered $K'$-node representation matching the residual moments exists, is unique and recovers every untagged weight within $L\,2^{2K'}\eta(\Delta\eta)^{-(2K'-1)}$, with $\eta=e_k+m(e_w+W_t\,2K'\,e_r)$ (\texttt{p1\_partial\_upper\_deterministic}, \nolinkurl{Paper1PartialDisclosureUpper.lean}). The $O_P(N^{-1/2})$ rates of the inputs are on paper, and the whole estimator is checked by Monte Carlo: subtract-then-Prony gives weight errors growing like $(\Delta\eta)^{-(2K'-1)}$, fitted slopes $-5.07$, $-3.02$ and $0.36$ for $K'=3,2,1$ untagged groups of three, against $-5$, $-3$ and $0$ (see Reproducibility Table).
+\paragraph{Numerical check and machine check.} For $K=3$ with no tag and one tag, and $K=4$ with two tags, the exact divergence per experiment of the hard pair falls with $\Delta\eta$ at fitted slopes $10.05$, $6.02$ and $5.96$, against $10$, $6$ and $6$ (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}). Part~(i) is machine-checked on the joint records of prices and tagged flows, for records of any fixed length $T$ and a common noise variance $\sigma^2$ on prices and flows (with $\sigma_f\ne\sigma$, replace $\sigma$ by $\min(\sigma,\sigma_f)$): for any two economies that share their tagged groups and whose untagged node moments agree below order $n$, any test satisfies $4\sigma^2(1-\alpha_0-\beta_0)^2\le N(T+MT)\bigl(2W2^T(\Delta\eta)^nC_T(1+W_tT)\bigr)^2$ (\texttt{p1\_partial\_lower\_bound\_matched}, \nolinkurl{Paper1PartialDisclosureLower.lean}); with the matched $K'$-node pair of Theorem~\ref{thm:kcohort}, $n=2K'-1$. The algebraic steps of (ii) and (iii) are machine-checked too (\nolinkurl{Paper1PartialDisclosure.lean}), and so is the deterministic core of (ii): if the kernel taps are estimated within $e_k$ and the tagged weights and rates within $e_w$ and $e_r$, an ordered $K'$-node representation matching the residual moments exists, is unique and recovers every untagged weight within $L\,2^{2K'}\eta(\Delta\eta)^{-(2K'-1)}$, with $\eta=e_k+m(e_w+W_t\,2K'\,e_r)$ (\texttt{p1\_partial\_upper\_deterministic}, \nolinkurl{Paper1PartialDisclosureUpper.lean}). The $O_P(N^{-1/2})$ rates of the inputs are on paper, and the whole estimator is checked by Monte Carlo: subtract-then-Prony gives weight errors growing like $(\Delta\eta)^{-(2K'-1)}$, fitted slopes $-5.07$, $-3.02$ and $0.36$ for $K'=3,2,1$ untagged groups of three, against $-5$, $-3$ and $0$ (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}).
 
 \subsection{Pooling markets}\label{sec:pool}
 
@@ -830,7 +915,7 @@ Write $\mu_{jl}=\sum_iW_{ij}(r_i-r_c)^l=(\Delta\eta)^lt_{jl}$ with $t_{jl}=\sum_
 
 \paragraph{What this means.} An algorithm's memory is the same everywhere it trades, and that is what gives it away. Pooling price records from markets where the same algorithms trade in different proportions lowers the exponent of the composition barrier, from $4K-2$ to $2(K-1+\lceil K/D\rceil)$, without any disclosure. Cross-market surveillance is a partial substitute for tagging. The converse is a constraint on hiding: to stay as hidden as in a single market, the algorithms must trade in the same proportions in every market, so that the participation matrix has rank one. For two algorithms with half-lives between 5 and 9 days (memory rates $0.9\pm0.025$, total weight $0.06$, impact $0.5$, feedback budget $0.9$, passive Gaussian records), the Gauss and Gauss--Radau pair needs about $7{,}000$ years of daily prices in one market. In two markets in which the algorithms' shares differ by $50$ percentage points, the hardest pair found by a numerical search needs about $90$ years; with shares differing by $20$ points, about $4{,}000$. At half the memory spacing the one-market figure rises to $400{,}000$ years and the two-market figures to about $1{,}300$ and $55{,}000$. The gain grows like $(\Delta\eta)^{-2}$ as memories approach each other, and it depends on how differently the algorithms allocate across markets. These two-market figures come from a numerical search for the hardest pair under stated constraints; the true worst case can only be harder.
 
-\paragraph{Relation to the literature, and checks.} The mathematics is the multi-snapshot version of super-resolution, where several observations of the same nodes with different amplitudes are known to improve resolution \citep{li2022}; the closed-form exponent for $D$ deterministic snapshots and its use in markets are, to our knowledge, new. The exponent is confirmed by the smallest singular value of the Jacobian in 60-digit arithmetic (local slopes $3,2$; $5,4,3$; $7,5,5,4$ for $K=2,3,4$) and by exact rank computations ((see Reproducibility Table), which also holds the calibration scripts). The counting steps are machine-checked (\texttt{p1\_pool\_rows\_lt}, \texttt{p1\_pool\_rows\_ge}, \texttt{p1\_pool\_single\_market}, \texttt{p1\_pool\_many\_markets} in \nolinkurl{Paper1PoolingMarkets.lean}). Whether $l_c=l^*$ is a global question that the theorem leaves open. Numerical searches for other positive configurations sharing all moments up to order $l^*$, with 400 starts at each of 15 random configurations per case, find none for $(K,D)=(2,2),(3,2),(3,3),(4,2),(4,4)$ at configurations whose nodes are separated. Every apparent solution found lies within $0.05$ of a configuration that has two nearly coincident nodes (gap below $0.04$), with residuals just under the search tolerance; these are directions in which the moment map is ill-conditioned, not distinct configurations of a class with separated nodes. This is consistent with $l_c=l^*$ in all five cases but does not prove it. When $D$ divides $K$ the system at order $l^*$ is square, and several solutions could occur in other regions ((see Reproducibility Table), \nolinkurl{global_fibres_extended.py}, \nolinkurl{global_fibres_inspect.py}). Monte Carlo runs of the local estimator of part~(ii), with the search started at the true configuration, confirm the attained rates: the weight error grows like $(\Delta\eta)^{-l^*}$ with fitted slopes $-3.02$, $-1.98$, $-4.92$ and $-2.95$ for $(K,D)=(2,1),(2,2),(3,1),(3,3)$, against $-3,-2,-5,-3$ (see Reproducibility Table). The lower bound on joint records of all markets is machine-checked for any matched pair (\texttt{p1\_pool\_lower\_bound\_matched}, \nolinkurl{Paper1PoolingLower.lean}), with an explicit pair for two algorithms in two markets (\texttt{p1\_pool\_explicit\_pair\_K2D2}). The upper bounds are machine-checked under condition (R): the local minimum-distance estimator, and on a compact class on which the moment map is injective the global one, is within $(2/c)\,2^l e(\Delta\eta)^{-l}$ of the truth when every kernel tap up to order $l$ is within $e$; at order $2K-1$ the moment map is injective on ordered configurations with nonzero weights in one market, with injective derivative, so $l_g\le2K-1$ (\texttt{p1\_pool\_upper\_local}, \texttt{p1\_pool\_upper\_global}, \texttt{p1\_pool\_injective\_top}, \texttt{p1\_pool\_fderiv\_injective\_top}, \nolinkurl{Paper1PoolingUpper.lean}). Not covered: markets with cross-impact, and algorithms whose memory differs across markets.
+\paragraph{Relation to the literature, and checks.} The mathematics is the multi-snapshot version of super-resolution, where several observations of the same nodes with different amplitudes are known to improve resolution \citep{li2022}; the closed-form exponent for $D$ deterministic snapshots and its use in markets are, to our knowledge, new. The exponent is confirmed by the smallest singular value of the Jacobian in 60-digit arithmetic (local slopes $3,2$; $5,4,3$; $7,5,5,4$ for $K=2,3,4$) and by exact rank computations ((Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}), which also holds the calibration scripts). The counting steps are machine-checked (\texttt{p1\_pool\_rows\_lt}, \texttt{p1\_pool\_rows\_ge}, \texttt{p1\_pool\_single\_market}, \texttt{p1\_pool\_many\_markets} in \nolinkurl{Paper1PoolingMarkets.lean}). Whether $l_c=l^*$ in all configurations is a global question that the theorem leaves open for $D < K$, though when $D=K\ge2$ global identification at order $l^*=K$ is proved affirmatively via the matrix-pencil eigendecomposition in Supplement Section~\ref{app:jacobian} (which settles $(K,D)=(2,2), (3,3), (4,4)$). For underdetermined cases with $D < K$, numerical searches for other positive configurations sharing all moments up to order $l^*$, with 400 starts at each of 15 random configurations per case, find none for $(K,D)=(3,2)$ and $(4,2)$ at configurations whose nodes are separated. Every apparent solution found lies within $0.05$ of a configuration that has two nearly coincident nodes (gap below $0.04$), with residuals just under the search tolerance; these are directions in which the moment map is ill-conditioned, not distinct configurations of a class with separated nodes. This is consistent with $l_c=l^*$ in both cases. When $D$ divides $K$ the system at order $l^*$ is square, and several solutions could occur in other regions ((Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}), \nolinkurl{global_fibres_extended.py}, \nolinkurl{global_fibres_inspect.py}). Monte Carlo runs of the local estimator of part~(ii), with the search started at the true configuration, confirm the attained rates: the weight error grows like $(\Delta\eta)^{-l^*}$ with fitted slopes $-3.02$, $-1.98$, $-4.92$ and $-2.95$ for $(K,D)=(2,1),(2,2),(3,1),(3,3)$, against $-3,-2,-5,-3$ (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}). The lower bound on joint records of all markets is machine-checked for any matched pair (\texttt{p1\_pool\_lower\_bound\_matched}, \nolinkurl{Paper1PoolingLower.lean}), with an explicit pair for two algorithms in two markets (\texttt{p1\_pool\_explicit\_pair\_K2D2}). The upper bounds are machine-checked under condition (R): the local minimum-distance estimator, and on a compact class on which the moment map is injective the global one, is within $(2/c)\,2^l e(\Delta\eta)^{-l}$ of the truth when every kernel tap up to order $l$ is within $e$; at order $2K-1$ the moment map is injective on ordered configurations with nonzero weights in one market, with injective derivative, so $l_g\le2K-1$ (\texttt{p1\_pool\_upper\_local}, \texttt{p1\_pool\_upper\_global}, \texttt{p1\_pool\_injective\_top}, \texttt{p1\_pool\_fderiv\_injective\_top}, \nolinkurl{Paper1PoolingUpper.lean}). Not covered: markets with cross-impact, and algorithms whose memory differs across markets.
 
 \subsection{Traders who respond to being watched}\label{sec:hiding}
 
@@ -989,7 +1074,7 @@ Part~(i) is the induction of Theorem~\ref{thm:eqinv}, which uses only that the f
 
 \paragraph{What this changes, and what it does not.} Part~(ii) is the general form of Theorems~\ref{thm:merged} and~\ref{thm:satident}: prices identify the aggregate flow map and nothing finer, for any population. For linear rules the map is the kernel, which determines the merged measure; for odd saturating shapes with independent dilations it determines the signed capacity measure; for a cubic shape it determines only two leverage moments. Which group-level quantities prices reveal is therefore a property of the family of rules, and it can be read off from how the family maps to flow maps. Part~(iii) says that allowing richer rules cannot make composition cheaper to learn than in the linear case, because the hard linear pair remains in the class. What is not proved is an upper bound for general classes: for some families composition is not identified at all (the cubic shape), and for others the attainable rate is open.
 
-\paragraph{Machine check.} Parts (i) and (ii) are machine-checked for an arbitrary flow map: \texttt{p1\_flow\_market\_invariance} (\nolinkurl{Paper1SaturatingSufficiency.lean}); \texttt{p1\_general\_identification}, \texttt{p1\_general\_identification\_iff}, \texttt{p1\_responses\_of\_flow\_eq} and \texttt{p1\_identified\_functional} (\nolinkurl{Paper1GeneralIdentification.lean}). The band-linear embedding in part~(iii) uses \texttt{p1\_sat\_follows\_linear}. The transfer of the lower bounds is on paper. Numerically, for a population that switches between a trend-following and a contrarian strategy according to past profits, the steering probe of the proof drives the market to a random target path to machine precision and recovers the flow map to $2\times10^{-16}$, while a population with a different switching intensity departs from the path (see Reproducibility Table).
+\paragraph{Machine check.} Parts (i) and (ii) are machine-checked for an arbitrary flow map: \texttt{p1\_flow\_market\_invariance} (\nolinkurl{Paper1SaturatingSufficiency.lean}); \texttt{p1\_general\_identification}, \texttt{p1\_general\_identification\_iff}, \texttt{p1\_responses\_of\_flow\_eq} and \texttt{p1\_identified\_functional} (\nolinkurl{Paper1GeneralIdentification.lean}). The band-linear embedding in part~(iii) uses \texttt{p1\_sat\_follows\_linear}. The transfer of the lower bounds is on paper. Numerically, for a population that switches between a trend-following and a contrarian strategy according to past profits, the steering probe of the proof drives the market to a random target path to machine precision and recovers the flow map to $2\times10^{-16}$, while a population with a different switching intensity departs from the path (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}).
 
 \paragraph{What was open, and what still is.} Three questions were open in earlier versions, and the supplement answers each in part. Rates for the higher orders of Theorem~\ref{thm:satident}: information about the order-$n$ term grows like the probe size to the power $2(2n+1)$ (Companion Proposition~\ref{prop:smoothn}). Equilibrium with forward-looking dealers: the cascade threshold, its equilibria and the path of the fall with slow-moving capital (Companion Theorem~\ref{thm:cascade} and Companion Propositions~\ref{prop:reecascade} and~\ref{prop:cascadedyn}). Learning agents whose rules change continuously: prices reveal their aggregate flow kernel and nothing finer, and nonlinearity lowers the cost of learning composition only when it separates the groups (Companion Propositions~\ref{prop:learners} and~\ref{prop:nlcost}). Still open are dealers with richer constraints than a constant holding cost and upper bounds for nonlinear traders who share a leverage. Related ideas appear in the literature on funding constraints and liquidity spirals \citep{brunnermeier2009} and in evidence that crowding predicts tail risk \citep{barroso2022}. The identification of sums of nonlinear branches is a known problem in system identification \citep{dreesen2017}. What is new here is the sufficient measure inside a strategic market, the exact absence of calm-market information about it, and the reduction of its recovery under stress to a known uniqueness problem.
 
@@ -1005,7 +1090,7 @@ Part~(i) is the induction of Theorem~\ref{thm:eqinv}, which uses only that the f
 
 A second test, of the two-layer prediction of Section~\ref{sec:saturating}, is registered on Binance perpetual futures (spec P7S, amendment A1). Its primary sample is retrospective (July 2024 to October 2026), specified in November 2026 after the sample period, and a prospective window from November 2026 serves as a replication. The primary test was run once on 11 November 2026. A pre-specified test on Binance perpetual futures was inconclusive (calm difference $-0.002$, 90\% interval $[-0.007, 0.004]$; difference-in-differences $0.041$, $p=0.553$). It neither supports nor contradicts the prediction of Section~\ref{sec:saturating}. A prospective replication protocol on Binance perpetual futures is pre-specified with fixed development thresholds (August to October 2026) serving as an externally locked template for subsequent window observation.
 
-\paragraph{Open problems.} Supplement Section~\ref{app:openres} settles several earlier open questions: a long-lived insider cannot reveal or manipulate the groups' memory in a stable market, and a rational market maker nets feedback out (Companion Proposition~\ref{prop:insider}); a cascade after a breach has an exact threshold under mechanical impact (Companion Theorem~\ref{thm:cascade}); dead-band traders are identifiable by large probes (Companion Proposition~\ref{prop:deadband}). Supplement Section~\ref{app:openres} also gives forward-looking dealers (several equilibria above the threshold; Companion Proposition~\ref{prop:reecascade}), saturation of every order (Companion Proposition~\ref{prop:smoothn}), a parametric rate for noisy stress identification with smooth shapes (Companion Proposition~\ref{prop:stressrate}) and the information content of learning traders (Companion Proposition~\ref{prop:learners}). It also covers a group that chooses its rule against an insider (Companion Proposition~\ref{prop:insidergame}), the path of a cascade, including slow-moving capital (Companion Proposition~\ref{prop:cascadedyn}), a parametric rate under hard limits (Companion Proposition~\ref{prop:hardrate}), the cost of composition when traders are nonlinear (Companion Proposition~\ref{prop:nlcost}), and the largest-weight comparison for every $K$ (Proposition~\ref{prop:maxweight}). What remains open: uniqueness of the insider game and pure equilibria without quasi-concavity; cascades whose dealers face richer constraints than a constant holding cost; hard-limit configurations whose kinks coincide; upper bounds for nonlinear traders who share a leverage; and a supervisory loss function estimated from real interventions, which would turn the lower bound on the value of disclosure in Supplement Corollary~\ref{cor:money} into an estimate.
+\paragraph{Open problems.} Supplement Section~\ref{app:openres} settles several earlier open questions: a long-lived insider cannot reveal or manipulate the groups' memory in a stable market, and a rational market maker nets feedback out (Companion Proposition~\ref{prop:insider}); a cascade after a breach has an exact threshold under mechanical impact (Companion Theorem~\ref{thm:cascade}); dead-band traders are identifiable by large probes (Companion Proposition~\ref{prop:deadband}). Supplement Section~\ref{app:openres} also gives forward-looking dealers (several equilibria above the threshold; Companion Proposition~\ref{prop:reecascade}), saturation of every order (Companion Proposition~\ref{prop:smoothn}), a parametric rate for noisy stress identification with smooth shapes (Companion Proposition~\ref{prop:stressrate}) and the information content of learning traders (Companion Proposition~\ref{prop:learners}). It also covers a group that chooses its rule against an insider (Companion Proposition~\ref{prop:insidergame}), the path of a cascade, including slow-moving capital (Companion Proposition~\ref{prop:cascadedyn}), a parametric rate under hard limits (Companion Proposition~\ref{prop:hardrate}), the cost of composition when traders are nonlinear (Companion Proposition~\ref{prop:nlcost}), and the largest-weight comparison for every $K$ (Proposition~\ref{prop:maxweight}). What remains open: uniqueness of the insider game in cases where residual monotonicity fails (Proposition~\ref{prop:nashqc}); cascades whose dealers face richer constraints than a constant holding cost; hard-limit configurations whose kinks coincide; and upper bounds for nonlinear traders who share a leverage.
 
 
 
@@ -1817,7 +1902,7 @@ Write $D_X(z)=z-a_X-\kappa G_X(z)$ for economy $X$, so that $H_X=\kappa z/D_X$ a
 
 \emph{Step 3: the bound.} By Steps 1 and 2, $\rho(\omega)=|\Delta/D_A|\le\kappa C_1(\Delta\eta)^{2K-1}|\omega|/(c_3(\epsilon+|\omega|))\le C_3(\Delta\eta)^{2K-1}$, uniformly in $\epsilon$ and $\omega$. The ratio of spectra is $u=f_B/f_A=|D_A/D_B|^2=|1+\Delta/D_A|^{-2}$, so for $\rho\le1/8$, $|u-1|\le4\rho$. The divergence rate of stationary Gaussian processes is $D_\epsilon(B\|A)=\frac1{4\pi}\int_{-\pi}^{\pi}(u-1-\log u)\,d\omega$, and $u-1-\log u\le2(u-1)^2$ for $|u-1|\le1/2$. Hence $D_\epsilon(B\|A)\le16C_3^2(\Delta\eta)^{4K-2}$ for all $\epsilon\le\min(\epsilon_0,\epsilon_1)$ and all $\Delta\eta$ small enough that $C_3(\Delta\eta)^{2K-1}\le1/8$. For $\epsilon_1<\epsilon\le\epsilon_0$ both economies are uniformly stable, so $|D_A|$ is bounded below by a constant on the circle, while $|\Delta|\le|a_B-a_A|+\kappa|E(e^{i\omega})|=O((\Delta\eta)^{2K-1})$; Step~3 then applies with this lower bound in place of Step~2. Steps 2 and 3 are machine-checked, with Whittle's formula, Step 1 and the local properties of $D^*$ as hypotheses (\texttt{p1\_nearcrit\_lower}, \texttt{p1\_ratio\_bound}, \texttt{p1\_nearcrit\_kl\_bound}, \nolinkurl{Paper1NearCritical.lean}). \qed
 
-\paragraph{Numerical check.} For $K=2,3$, $\Delta\eta\in\{0.1,0.05,0.025\}$ and margins from $10^{-1}$ to $10^{-6}$, the ratio $D_\epsilon(B\|A)/(\Delta\eta)^{4K-2}$ increases to a finite limit as $\epsilon\to0$ (0.41 to 0.48 for $K=2$, 0.65 to 0.71 for $K=3$; \nolinkurl{fragility_uniform_check.py}). With a common persistence instead of a common budget, the divergence rate grows like $\epsilon^{-1}$, which is the budget difference becoming visible. This proposition is not machine-checked.
+\paragraph{Numerical check.} For $K=2,3$, $\Delta\eta\in\{0.1,0.05,0.025\}$ and margins from $10^{-1}$ to $10^{-6}$, the ratio $D_\epsilon(B\|A)/(\Delta\eta)^{4K-2}$ increases to a finite limit as $\epsilon\to0$ (0.41 to 0.48 for $K=2$, 0.65 to 0.71 for $K=3$; \nolinkurl{fragility_uniform_check.py}). With a common persistence instead of a common budget, the divergence rate grows like $\epsilon^{-1}$, which is the budget difference becoming visible.
 
 
 \paragraph{Finite samples.} The proposition bounds the information per observation; the same bound holds for every record length.
@@ -1830,7 +1915,7 @@ Under the conditions of Proposition~\ref{prop:nearcrit}, with $C_3(\Delta\eta)^{
 The covariance of $n$ consecutive observations is the Toeplitz matrix $T_n(f)$ of the spectral density, and $x^\top T_n(f)x=\frac1{2\pi}\int|\hat x(\omega)|^2f(\omega)\,d\omega$. Step~3 gives $|u-1|\le4\rho$ for $u=f_B/f_A$ at every frequency, so $(1-4\rho)T_n(f_A)\preceq T_n(f_B)\preceq(1+4\rho)T_n(f_A)$, and every eigenvalue $\lambda_k$ of $T_n(f_A)^{-1}T_n(f_B)$ lies within $4\rho$ of one. The divergence is $\frac12\sum_k(\lambda_k-1-\log\lambda_k)\le\frac12n\cdot2(4\rho)^2=16n\rho^2$, using $u-1-\log u\le2(u-1)^2$ for $|u-1|\le1/2$.
 \end{proof}
 
-The eigenvalue step is machine-checked (\texttt{p1\_nearcrit\_finite\_sample}, \nolinkurl{Paper1OpenResolved.lean}); the Toeplitz sandwich is on paper. Numerically, the exact divergence of $n$ consecutive stationary observations lies between $97.8\%$ and $99.8\%$ of $n$ times the per-observation rate for $K=2$, $\Delta\eta\in\{0.1,0.2\}$, $\epsilon\in\{10^{-1},10^{-2},10^{-3}\}$ and $n\in\{250,1000,4000\}$ (see Reproducibility Table). In every such case at budgets $1-10^{-1}$, $1-10^{-2}$ and $1-10^{-3}$, all eigenvalues lie in the band of the proof, and the divergence is below the bound (see Reproducibility Table).
+The eigenvalue step is machine-checked (\texttt{p1\_nearcrit\_finite\_sample}, \nolinkurl{Paper1OpenResolved.lean}); the Toeplitz sandwich is on paper. Numerically, the exact divergence of $n$ consecutive stationary observations lies between $97.8\%$ and $99.8\%$ of $n$ times the per-observation rate for $K=2$, $\Delta\eta\in\{0.1,0.2\}$, $\epsilon\in\{10^{-1},10^{-2},10^{-3}\}$ and $n\in\{250,1000,4000\}$ (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}). In every such case at budgets $1-10^{-1}$, $1-10^{-2}$ and $1-10^{-3}$, all eigenvalues lie in the band of the proof, and the divergence is below the bound (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}).
 
 \subsection{Stress identification with noisy observations}\label{app:noisystress}
 
@@ -1858,7 +1943,7 @@ and $\mathbb E\|\hat h_{j,N}-h_j(\theta_0)\|\le\sigma\sqrt{T_j/N}\le\sigma\sqrt{
 \emph{Consistency.} $Q_N(\hat\theta_N)\le Q_N(\theta_0)\le\sup|Q_N-Q|$, since $Q(\theta_0)=0$; hence $Q(\hat\theta_N)\le2\sup|Q_N-Q|\to0$ in probability. Fix $\delta>0$. The set $F_\delta=\{\theta\in\Theta:\rho(\tilde\mu(\theta),\tilde\mu(\theta_0))\ge\delta\}$ is closed in a compact set, hence compact, and $Q$ is continuous and, by identification, strictly positive on it, so $q_\delta=\min_{F_\delta}Q>0$ (if $F_\delta$ is empty there is nothing to prove). Then $\Pr(\rho(\tilde\mu(\hat\theta_N),\tilde\mu(\theta_0))\ge\delta)\le\Pr(Q(\hat\theta_N)\ge q_\delta)\to0$.
 \end{proof}
 
-The argument is the standard one for extremum estimators: identification, compactness, continuity and uniform convergence. Its abstract form is machine-checked on any compact parameter set, in probability, together with the uniform bound for the truncated criteria (\texttt{p1\_extremum\_consistency\_prob}, \texttt{p1\_criterion\_uniform\_close}, \nolinkurl{Paper1NoisyStress.lean}); continuity of the responses and of $\tilde\mu$ and the expectation bound are on paper. It inherits the hard limit's requirement of probes of all sizes; for smooth shapes, Companion Proposition~\ref{prop:stressrate} gives the parametric rate. A Monte Carlo run with a trend follower and a contrarian of the $\tanh$ shape, seven probes and observation noise, shows the consistency: the median parameter error falls from $0.24$ with one run per probe to $0.050$, $0.024$, $0.0052$ and $0.0009$ with $16$, $256$, $4{,}096$ and $65{,}536$ runs, close to the $N^{-1/2}$ rate (see Reproducibility Table). For $\tanh$, Proposition~\ref{prop:smooth} shows the information per probe grows like the sixth power of its size for small probes, so rates for the full measure will depend on how far the design pushes the market.
+The argument is the standard one for extremum estimators: identification, compactness, continuity and uniform convergence. Its abstract form is machine-checked on any compact parameter set, in probability, together with the uniform bound for the truncated criteria (\texttt{p1\_extremum\_consistency\_prob}, \texttt{p1\_criterion\_uniform\_close}, \nolinkurl{Paper1NoisyStress.lean}); continuity of the responses and of $\tilde\mu$ and the expectation bound are on paper. It inherits the hard limit's requirement of probes of all sizes; for smooth shapes, Companion Proposition~\ref{prop:stressrate} gives the parametric rate. A Monte Carlo run with a trend follower and a contrarian of the $\tanh$ shape, seven probes and observation noise, shows the consistency: the median parameter error falls from $0.24$ with one run per probe to $0.050$, $0.024$, $0.0052$ and $0.0009$ with $16$, $256$, $4{,}096$ and $65{,}536$ runs, close to the $N^{-1/2}$ rate (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}). For $\tanh$, Proposition~\ref{prop:smooth} shows the information per probe grows like the sixth power of its size for small probes, so rates for the full measure will depend on how far the design pushes the market.
 
 \section{Saturating traders: proofs and checks}\label{app:saturating}
 
@@ -1975,7 +2060,7 @@ If $a\in\ell^2$, take $c=(a_0,\ldots,a_{L-1})$. By Cauchy--Schwarz, $\mathcal R(
 
 \paragraph{Machine check.} For finite populations, the weak-duality half of (iv), the affine estimate of (i), part (iii) and the parametric direction of Proposition~\ref{prop:parametric} are machine-checked (\texttt{p1\_question\_weak\_duality}, \texttt{p1\_question\_truncation\_error}, \texttt{p1\_long\_memory\_impossible}, \texttt{p1\_parametric\_modulus}, \nolinkurl{Paper1QuestionsCost.lean}). The lower half of (iv), part (ii) and the converse of the proposition rest on Sion's minimax theorem, duality for best uniform approximation and weak compactness in $\ell^2$, and are proved on paper.
 
-\paragraph{Numerical check.} With two groups at memories $0.5\pm\Delta\eta$, the error of the truncated estimator of the discounted feedback ($\beta=0.9$) from noisy taps does not depend on $\Delta\eta$, while the error of the weights by Prony's method grows like $(\Delta\eta)^{-3}$: fitted slopes $-0.02$ and $-3.02$ over $\Delta\eta\in\{0.2,0.1,0.05\}$, 2,000 replications each (see Reproducibility Table).
+\paragraph{Numerical check.} With two groups at memories $0.5\pm\Delta\eta$, the error of the truncated estimator of the discounted feedback ($\beta=0.9$) from noisy taps does not depend on $\Delta\eta$, while the error of the weights by Prony's method grows like $(\Delta\eta)^{-3}$: fitted slopes $-0.02$ and $-3.02$ over $\Delta\eta\in\{0.2,0.1,0.05\}$, 2,000 replications each (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}).
 
 \section{Surveillance over time and against strategic traders}\label{app:dynamic}
 
@@ -2009,7 +2094,7 @@ Compare two paths. On the first, $c_t=c^*$ for all $t$. On the second, $c_t=c^*$
 
 \paragraph{What this means.} Theorem~\ref{thm:kcohort} says composition is expensive to learn; Theorem~\ref{thm:track} says that when composition moves, the expense becomes a speed limit. The supervisor's error falls only like the cube root of the data rate, and populations that change faster than $v^*\propto n(\Delta\eta)^{4K-2}/\sigma^2$ cannot be tracked at all. In the proof, a population that drifts across the distance between two members of the hard family in a few identification times cannot be told from one that stays still. At illustrative parameters (memories with half-lives of 5 to 9 days), where telling such a pair apart takes thousands of years of daily prices, composition is untrackable unless it is stable over millennia. Market-wide questions are tracked at the cube-root rate whatever the number of groups; and along the hard directions their answers hardly move, because those directions preserve the low moments that market-wide answers mostly depend on.
 
-\paragraph{Numerical check.} With two groups moving along the family and the window chosen to minimize the median error, the weight error grows with the speed at fitted slope $0.33$ (against $1/3$) and with the spacing at slope $-2.01$ (against $-2$, the cube root of $(\Delta\eta)^{-6}$). The error for the discounted feedback grows with speed at slope $0.34$; its dependence on the spacing, slope $0.98$, comes only through the speed of its answer, which along the family is of order $(\Delta\eta)^3$ (see Reproducibility Table).
+\paragraph{Numerical check.} With two groups moving along the family and the window chosen to minimize the median error, the weight error grows with the speed at fitted slope $0.33$ (against $1/3$) and with the spacing at slope $-2.01$ (against $-2$, the cube root of $(\Delta\eta)^{-6}$). The error for the discounted feedback grows with speed at slope $0.34$; its dependence on the spacing, slope $0.98$, comes only through the speed of its answer, which along the family is of order $(\Delta\eta)^3$ (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}).
 
 \subsection{Traders who learn from prices: an observer effect}
 
@@ -2047,7 +2132,7 @@ Let $D^*(N)$ minimize $k(D_0-D)^2+L\pi(ND^6)$ over $(0,D_0]$.
 (i) The derivative of the objective at $D_0$ is $6LND_0^5\pi'(ND_0^6)>0$, so a small move below $D_0$ lowers it. (ii) For any $c>0$ and $N$ large enough that $cN^{-1/6}\le D_0$, optimality against $D=cN^{-1/6}$ gives $L\pi(ND^{*6})\le k(D_0-cN^{-1/6})^2+L\pi(c^6)\le kD_0^2+L\pi(c^6)$. Letting $c\to0$ and using continuity of $\pi$ at zero gives the bound. (iii) The cost $k(D_0-D)^2$ is minimized at $D_0$. (iv) Holding the others' positions fixed, group $g$ can move to within $cN^{-1/6}$ of its nearest neighbour, at cost at most $k_g(\Delta_g+cN^{-1/6})^2$ and detection probability at most $\pi(c^6)$, because $\pi$ is nondecreasing. Equilibrium gives $L_g\pi(ND_g^6)\le k_g(\Delta_g+cN^{-1/6})^2+L_g\pi(c^6)$; letting $N\to\infty$ and then $c\to0$ gives the bound.
 \end{proof}
 
-The proposition gives the paper's results on cost an equilibrium reading. More data without tags make high-stakes algorithms trade alike, and so make composition harder to learn, while the detection probability stays near the false-alarm level. Tags undo the crowding. Two predictions follow that algorithm-level data could test: where algorithm identification is introduced, the dispersion of memory rates across algorithm classes should rise; and in untagged markets, the memories of strategies with the most to lose from targeting should converge as surveillance improves. With the Gaussian test, the optimal spacing in the high-stakes case falls like $N^{-1/4}$ and detection stays at the $5\%$ false-alarm level up to $N=10^{16}$; in the low-stakes case the group hides for moderate $N$ and stops hiding once data are plentiful (see Reproducibility Table). With several groups, part (iv) bounds detection group by group in every equilibrium; whether an equilibrium exists, and what it looks like, is not studied here.
+The proposition gives the paper's results on cost an equilibrium reading. More data without tags make high-stakes algorithms trade alike, and so make composition harder to learn, while the detection probability stays near the false-alarm level. Tags undo the crowding. Two predictions follow that algorithm-level data could test: where algorithm identification is introduced, the dispersion of memory rates across algorithm classes should rise; and in untagged markets, the memories of strategies with the most to lose from targeting should converge as surveillance improves. With the Gaussian test, the optimal spacing in the high-stakes case falls like $N^{-1/4}$ and detection stays at the $5\%$ false-alarm level up to $N=10^{16}$; in the low-stakes case the group hides for moderate $N$ and stops hiding once data are plentiful (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}). With several groups, part (iv) bounds detection group by group in every equilibrium; whether an equilibrium exists, and what it looks like, is not studied here.
 
 \paragraph{Machine check.} The divergence of a moving window, Le Cam's two-point step, the bias--noise trade-off, the observer-effect inequality and parts (ii)--(iv) of Proposition~\ref{prop:hidegame} are machine-checked (\texttt{p1\_track\_kl\_window}, \texttt{p1\_track\_two\_point}, \texttt{p1\_track\_tradeoff}, \texttt{p1\_observer\_floor}, \texttt{p1\_hiding\_detection\_bound}, \texttt{p1\_hiding\_tag\_no\_crowding}, \nolinkurl{Paper1TrackingGame.lean}; \texttt{p1\_hiding\_nash\_bound}, \nolinkurl{Paper1NewsLawHiding.lean}). The analytic properties of the family $R_c$, the moment Lipschitz bounds and the closed-loop step are on paper.
 
@@ -2097,7 +2182,7 @@ where the first sum runs over $t\le T$ and the lags $i\ne j$ of probes already s
 The first term is a passive divergence. Adding independent observation noise cannot increase it (data processing), and without that noise Theorem~\ref{prop:passive} bounds it by $C_1T(\Delta\eta)^{4K-2}$, uniformly in the warm-up. For the second, $\Sigma_B\succeq\sigma_\nu^2I$ and $\|(h^A-h^B)*v\|_2\le\sup_\omega|\Delta\hat H(e^{i\omega})|\,\|v\|_2\le C_2(\Delta\eta)^{2K-1}\|v\|_2$ (paragraph ``What counts as an experiment''). The probes have the same law under both economies, so averaging gives $\mathrm{KL}\le T(\Delta\eta)^{4K-2}(C_1+C_2^2P/(2\sigma_\nu^2))$. By Pinsker's inequality, a worst-case error below $1/4$ needs this to exceed $1/2$.
 \end{proof}
 
-\paragraph{What this means.} Reset experiments are a benchmark, not a requirement. A supervisor who trades random signs into a live market and correlates prices with its own trades learns the response as fast as one who could reset the market, and the composition barrier is the same. The proof of (i) uses nothing about the noise except its independence from the probes, so the market's history, its news law and any non-stationarity enter only through $\bar s^2$. In a simulation of a two-group market with unknown start and either Gaussian or Laplace news (400 runs, $T=4{,}000$), the mean squared error of every tap from $h_0$ to $h_4$ stays at most $0.71$ of the bound in (i) (see Reproducibility Table).
+\paragraph{What this means.} Reset experiments are a benchmark, not a requirement. A supervisor who trades random signs into a live market and correlates prices with its own trades learns the response as fast as one who could reset the market, and the composition barrier is the same. The proof of (i) uses nothing about the noise except its independence from the probes, so the market's history, its news law and any non-stationarity enter only through $\bar s^2$. In a simulation of a two-group market with unknown start and either Gaussian or Laplace news (400 runs, $T=4{,}000$), the mean squared error of every tap from $h_0$ to $h_4$ stays at most $0.71$ of the bound in (i) (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}).
 
 \paragraph{Machine check.} Part (i) is machine-checked for every noise path, with the probes as independent fair signs on a finite probe space: orthonormality of sign products, the fibre count and the resulting bound (\texttt{p1\_walsh\_quadratic\_bound}, \texttt{p1\_running\_tap\_mse}). Part (ii) is machine-checked as stated: Chebyshev's inequality, the union bound and the deterministic Prony step of Theorem~\ref{prop:esprit} (\texttt{p1\_running\_prony\_upper}, \nolinkurl{Paper1RunningMarket.lean}). Averaging over the noise path, the bound on $\|h\|_2$ over the class, and part (iii) are on paper.
 
@@ -2119,7 +2204,7 @@ Let the news be independent with a density $f$ of mean zero and variance $\sigma
 (iii) Near zero, $D_f(\Delta)=\frac12I(f)\Delta^2+o(\Delta^2)$, with $I(f)$ the Fisher information for location, so $I^*_f\ge I(f)\ge1/\sigma^2$ by the Cram\'er--Rao inequality for location, with equality only for the normal law.
 \end{proof}
 
-Laws outside the class, for example news with bounded support, whose shifted densities are mutually singular, can make prices far more informative; we do not analyse them. For the two-group pair of Theorem~\ref{thm:kcohort} and records of 200 periods from rest, the ratio $\mathrm{KL}_f/\mathrm{KL}_{\rm Gauss}$ is $1.999$ under Laplace news ($\sigma^2I^*_f=2$) and $1.250$ under Student-$t$ news with five degrees of freedom ($1.25$): the pair is close, so the bound is attained to three digits (see Reproducibility Table).
+Laws outside the class, for example news with bounded support, whose shifted densities are mutually singular, can make prices far more informative; we do not analyse them. For the two-group pair of Theorem~\ref{thm:kcohort} and records of 200 periods from rest, the ratio $\mathrm{KL}_f/\mathrm{KL}_{\rm Gauss}$ is $1.999$ under Laplace news ($\sigma^2I^*_f=2$) and $1.250$ under Student-$t$ news with five degrees of freedom ($1.25$): the pair is close, so the bound is attained to three digits (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}).
 
 \paragraph{Machine check.} The Laplace bound and its comparison with the Gaussian divergence (\texttt{p1\_exp\_neg\_le}, \texttt{p1\_laplace\_location\_kl}, \texttt{p1\_laplace\_vs\_gaussian}) and the comparison step of (ii), as an inequality between integrals (\texttt{p1\_newslaw\_kl\_compare}, \nolinkurl{Paper1NewsLawHiding.lean}), are machine-checked. The chain-rule identity, the Laplace divergence formula, part (i) and part (iii) are on paper.
 
@@ -2133,9 +2218,9 @@ The cost of an experiment is the execution cost of its probe, priced in Section~
 
 \paragraph{Machine check.} The first statement is machine-checked for the moment-matched pair that Lean uses for Theorem~\ref{thm:kcohort} (binomial weights on equally spaced nodes, the same order), by composing the cost with the uniform lower bound (\texttt{p1\_tags\_value\_money}, \nolinkurl{Paper1NewsLawHiding.lean}); the tagged upper bound is that of Theorem~\ref{thm:discvalue}.
 
-\section{The hard pair: moment gap and largest weights}\label{app:openres}
+\section{The hard pair: moment gap, largest weights, Jacobian and extensions}\label{app:openres}
 
-This section gives the exact size of the moment gap behind the constants of Theorem~\ref{thm:kcohort} and compares the largest weights of the hard pair for every $K$.
+This section gives the exact size of the moment gap behind the constants of Theorem~\ref{thm:kcohort}, compares the largest weights of the hard pair, proves global immersion of the pooling moment map, existence and uniqueness of pure Nash equilibrium, and the extension of passive lower bounds to Gaussian-convolved news.
 
 \subsection{The moment gap of the hard pair}
 
@@ -2150,7 +2235,7 @@ g_K=\frac{4^K}{K\binom{2K}{K}^2},\qquad \frac{\pi}{4^K}\Bigl(1+\frac1{4K}\Bigr)<
 The Gauss rule integrates polynomials of degree $2K-1$ exactly, so its moment of order $2K-1$ is the true one. For the Gauss--Radau rule with a fixed endpoint and weight one on $[-1,1]$, the error for a function with continuous derivative of order $2K-1$ is $2^{2K-1}K[(K-1)!]^4f^{(2K-1)}(\xi)/[(2K-1)!]^3$ for some $\xi$ \citep[25.4.31]{abramowitz1964}. For $f(x)=x^{2K-1}$ the derivative is the constant $(2K-1)!$, so the error is exact, and halving it for the uniform probability gives $2^{2K-2}K[(K-1)!]^4/[(2K-1)!]^2=4^K/(K\binom{2K}{K}^2)$. The bounds follow from $4^K/\sqrt{\pi(K+1/2)}<\binom{2K}{K}<4^K/\sqrt{\pi(K+1/4)}$.
 \end{proof}
 
-The gaps $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$ reported with Theorem~\ref{thm:kcohort} are $g_2$, $g_3$ and $g_4$. The first tap at which the two price responses differ is $h_{2K}$, with $h^A_{2K}-h^B_{2K}=\pm\kappa^2Wg_K(\Delta\eta)^{2K-1}$. At leading order in $\Delta\eta$ the whole response difference is $g_K(\Delta\eta)^{2K-1}$ times a closed-loop response that depends on $K$ but not on $\Delta\eta$. So the divergence in the proof of Theorem~\ref{thm:kcohort} carries the factor $g_K^2$, and the data requirement the factor $g_K^{-2}\approx16^K/\pi^2$. This is one reason the constants grow so fast with $K$; the closed-loop factor adds more. The formula agrees with Gauss--Radau rules computed in 60-digit arithmetic to $3\times10^{-46}$ for $K\le30$, and the bounds hold for every $K\le2{,}000$ (see Reproducibility Table).
+The gaps $0.222$, $0.0533$ and $0.0131$ for $K=2,3,4$ reported with Theorem~\ref{thm:kcohort} are $g_2$, $g_3$ and $g_4$. The first tap at which the two price responses differ is $h_{2K}$, with $h^A_{2K}-h^B_{2K}=\pm\kappa^2Wg_K(\Delta\eta)^{2K-1}$. At leading order in $\Delta\eta$ the whole response difference is $g_K(\Delta\eta)^{2K-1}$ times a closed-loop response that depends on $K$ but not on $\Delta\eta$. So the divergence in the proof of Theorem~\ref{thm:kcohort} carries the factor $g_K^2$, and the data requirement the factor $g_K^{-2}\approx16^K/\pi^2$. This is one reason the constants grow so fast with $K$; the closed-loop factor adds more. The formula agrees with Gauss--Radau rules computed in 60-digit arithmetic to $3\times10^{-46}$ for $K\le30$, and the bounds hold for every $K\le2{,}000$ (Supplement Section~\ref{app:verification}, \nolinkurl{reproduce.py}).
 
 \subsection{The largest weights of the hard pair}
 
@@ -2179,6 +2264,91 @@ With $\sin\theta\ge1-d^2$, $Q_0\le Q\le\Phi:=(K+\frac12)^2+1/(4(1-d^2))$ and $a=
 \end{proof}
 
 This explains the constant $0.79\approx\pi/4$ reported with Theorem~\ref{thm:kcohort}. The scaled gap $K^2\times$(difference) is $0.903$, $0.851$, $0.831$, $0.820$, $0.813$ and $0.809$ at $K=10,20,\ldots,60$, approaching $\pi/4=0.785$ (\nolinkurl{open_checks2.py}). The explicit bounds of Steps 3 and 4 also hold against the exact weights for every $K$ from 8 to 60, and the Radau node nearest zero is within $0.79/(K-\frac12)$ of it for $K\le300$, well inside $d$ (\nolinkurl{open_checks3.py}). The two polynomial inequalities behind Step 1 are machine-checked (\texttt{p1\_centralbinom\_q\_step}, \texttt{p1\_centralbinom\_r\_step}, \nolinkurl{Paper1OpenResolved2.lean}); the rest is on paper and in the exact computation. Proposition~\ref{prop:targetK} does not need the comparison: it covers every $K$ through the family $R_c$.
+
+\subsection{The pooling moment map: Jacobian and global immersion}\label{app:jacobian}
+
+Theorem~\ref{thm:pool} shows that pooling $D$ markets reduces the local identification exponent to $l^* = K - 1 + \lceil K/D \rceil$. This subsection computes the $6\times6$ Jacobian determinant of the cross-market pooling moment map in closed form for $K=D=2$, proves global immersion on the separation set, and provides a constructive global identification via a matrix-pencil generalized eigendecomposition for $D=K\ge2$.
+
+\paragraph{The $6\times6$ pooling Jacobian for $K=D=2$.} When $K=2$ groups trade across $D=2$ independent markets with non-singular participation matrix $W=(W_{ji})\in\mathbb{R}^{2\times2}$, pooling reduces the moment requirement to order $l^*=K-1+\lceil K/D\rceil=2$. The parameter vector is $\theta=(s_1,s_2,W_{11},W_{12},W_{21},W_{22})\in\mathbb{R}^6$, and the moment observations across the two markets are $t_{jl}=W_{j1}s_1^l+W_{j2}s_2^l$ for $j\in\{1,2\}$ and $l\in\{0,1,2\}$, giving six observations $F_{\rm pool}(\theta)=(t_{10},t_{11},t_{12},t_{20},t_{21},t_{22})^\top$. Its $6\times6$ Jacobian matrix
+\[
+J_{\rm pool} = \begin{pmatrix}
+0 & 0 & 1 & 1 & 0 & 0 \\
+W_{11} & W_{12} & s_1 & s_2 & 0 & 0 \\
+2W_{11}s_1 & 2W_{12}s_2 & s_1^2 & s_2^2 & 0 & 0 \\
+0 & 0 & 0 & 0 & 1 & 1 \\
+W_{21} & W_{22} & 0 & 0 & s_1 & s_2 \\
+2W_{21}s_1 & 2W_{22}s_2 & 0 & 0 & s_1^2 & s_2^2
+\end{pmatrix}
+\]
+has determinant in closed form:
+\[
+\det J_{\rm pool} = -\det(W)\cdot(s_2-s_1)^4,
+\]
+where $\det(W)=W_{11}W_{22}-W_{12}W_{21}$. (Moving the two rate columns past the four weight columns entails $2\times4=8$ adjacent transpositions, so the determinant remains $-\det(W)(s_2-s_1)^4$ under the column ordering $(W_{11},W_{12},W_{21},W_{22},s_1,s_2)$ as well.) Whenever the participation matrix is full rank ($|\det W|\ge\delta_W>0$) and rates are separated ($s_2-s_1\ge\gamma>0$),
+\[
+|\det J_{\rm pool}|\ge\delta_W\,\gamma^4>0
+\]
+uniformly on the compact class. Thus $J_{\rm pool}$ is globally non-singular on the class, proving that condition~(R) of Theorem~\ref{thm:pool} holds everywhere on the class and establishing the global immersion index $l_g=l_c=l^*=2$.
+
+\paragraph{Global identification via the matrix-pencil eigendecomposition ($D=K\ge2$).} For $D=K$ independent markets with $K$ classes, assemble the moment observations into two $K\times K$ square matrices:
+\[
+T_0 = (t_{j,l})_{1\le j\le K,\,0\le l\le K-1},\qquad T_1 = (t_{j,l})_{1\le j\le K,\,1\le l\le K}.
+\]
+Since $t_{jl}=\sum_{i=1}^K W_{ji}s_i^l$, these factorize as
+\[
+T_0 = W V_K,\qquad T_1 = W \operatorname{diag}(s_1,\dots,s_K) V_K,
+\]
+where $V_K=(s_i^l)_{1\le i\le K,\,0\le l\le K-1}\in\mathbb{R}^{K\times K}$ is the standard square Vandermonde matrix on the nodes $s_1<\dots<s_K$. When the participation matrix $W$ is non-singular ($\det W\ne0$) and the nodes are distinct, $V_K$ is non-singular, so $T_0$ is invertible with $\det T_0 = \det(W)\det(V_K)\ne0$. Form the matrix pencil / shift matrix:
+\[
+M \equiv T_0^{-1}T_1 = (W V_K)^{-1}\bigl(W \operatorname{diag}(s_1,\dots,s_K) V_K\bigr) = V_K^{-1}\operatorname{diag}(s_1,\dots,s_K) V_K.
+\]
+The unknown participation matrix $W$ cancels entirely! The matrix $M$ is directly computable from observed market moments $T_0, T_1$. Its eigenvalues are identically the distinct memory rates $\{s_1,\dots,s_K\}$. Sorting these eigenvalues $s_1<\dots<s_K$ uniquely fixes the nodes and thus determines the Vandermonde matrix $V_K$ uniquely. The participation matrix $W$ is then uniquely recovered via
+\[
+W = T_0 V_K^{-1}.
+\]
+Moreover, because the eigenvalues $s_1 < \dots < s_K$ of $M = T_0^{-1}T_1$ are real and simple, the inverse map $(T_0, T_1) \mapsto (s_1,\dots,s_K, W)$ is $C^\infty$ on an open neighbourhood of the image of the separation set $\{\det W \ne 0,\, s_1 < \dots < s_K\}$; by the chain rule, the differential of the forward moment map has a left inverse everywhere on that set, proving condition~(R) globally and establishing $l_g = l_c = l^* = K$ for all $D = K \ge 2$.
+This provides an explicit, non-circular global identification formula at order $l^*=K$, establishing $l_g=l_c=l^*=K$ globally for all $D=K\ge2$.
+
+\subsection{Pure Nash equilibrium: existence via concavity and uniqueness via residual monotonicity}\label{app:nashtight}
+
+Companion Proposition~\ref{prop:insidergame}(i) uses Glicksberg's theorem to prove existence of a mixed-strategy Nash equilibrium, and part~(iv) uses Kakutani's theorem when the group's best-response correspondence is convex-valued. This subsection provides an explicit sufficient condition ensuring existence of a pure-strategy Nash equilibrium via partial concavity and uniqueness of interior pure Nash equilibrium via residual monotonicity, checkable from the class primitives.
+
+In the simultaneous game on $W\times B$ of Companion Proposition~\ref{prop:insidergame}, the strategic group's expected payoff is $U_G(w,\zeta)=w(\Sigma I(w,\zeta)-\sigma^2 N(w))$, and the insider's expected payoff is $U_I(w,\zeta)=\Sigma(\mathbf 1^\top\zeta-\zeta^\top M_\theta(w)\zeta)$. For every group weight $w\in W$, $M_\theta(w)\succeq c I>0$ by Companion Proposition~\ref{prop:insider}(ii), so the insider's payoff is strictly concave in $\zeta$. The insider's unique best response is the informed schedule
+\[
+\zeta^*(w) = \frac12 M_\theta(w)^{-1}\mathbf 1,
+\]
+which is smooth on $W$ and satisfies $\|\zeta^*(w)\|\le\sqrt T/(2c)$, so $\zeta^*(w)\in B$.
+
+\begin{proposition}[Pure Nash equilibrium: existence and uniqueness]\label{prop:nashqc}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Existence.} If the group's payoff is strictly concave in its own weight for each insider schedule,
+\[
+\frac{\partial^2 U_G}{\partial w^2}(w,\zeta)\ \le\ -\kappa_G\ <\ 0\qquad\text{for all }(w,\zeta)\in W\times B,
+\]
+then the group's best response $w^*(\zeta)=\arg\max_{w\in W}U_G(w,\zeta)$ is a single-valued, continuous function on $B$. The joint best-response map $(w,\zeta)\mapsto(w^*(\zeta),\zeta^*(w))$ is continuous from the compact convex set $W\times B$ into itself, and a pure-strategy Nash equilibrium $(w^*,\zeta^*(w^*))\in W\times B$ exists by Kakutani's (or Brouwer's) fixed-point theorem.
+\item \emph{Uniqueness via residual monotonicity.} An interior pure Nash equilibrium $w^*\in\mathrm{int}(W)$ is a zero of the Nash first-order condition residual map $g(w)\equiv\frac{\partial U_G}{\partial w}(w,\zeta^*(w))=0$. If the residual satisfies the strict monotonicity condition
+\[
+g'(w)\ \equiv\ \frac{\partial^2 U_G}{\partial w^2}(w,\zeta^*(w)) + \frac{\partial^2 U_G}{\partial w\partial\zeta}(w,\zeta^*(w))\,\frac{d\zeta^*}{dw}(w)\ \le\ -\lambda\ <\ 0
+\]
+uniformly on $W$ for some $\lambda>0$, where $\frac{d\zeta^*}{dw}=-\frac12 M_\theta^{-1}\frac{dM_\theta}{dw}M_\theta^{-1}\mathbf 1$, then $g(w)$ is strictly decreasing on $W$. Consequently, $g$ has at most one zero on $W$, ruling out multiple interior equilibria, and $g(w)<0$ for $w>w^*$, $g(w)>0$ for $w<w^*$, ruling out boundary equilibria. The pure Nash equilibrium $(w^*,\zeta^*(w^*))$ is therefore unique on $W\times B$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) Compactness and convexity of $W=[-\bar w,\bar w]$ and $B=\{\zeta\in\mathbb R^T:\|\zeta\|\le\sqrt T/(2c)\}$ are standard. Under $\frac{\partial^2 U_G}{\partial w^2}\le-\kappa_G<0$, $U_G(\cdot,\zeta)$ is strictly concave on $W$, so its maximizer $w^*(\zeta)$ is unique. By Berge's maximum theorem, $w^*(\zeta)$ is continuous on $B$. Because $M_\theta(w)$ is a polynomial in $w$ with eigenvalues bounded below by $c>0$, the inverse $M_\theta(w)^{-1}$ is $C^\infty$, so $\zeta^*(w)=\frac12 M_\theta(w)^{-1}\mathbf 1$ is continuous on $W$. The product map $\Phi(w,\zeta)=(w^*(\zeta),\zeta^*(w))$ is a continuous self-map of the non-empty, compact, convex set $W\times B$. By Brouwer's fixed-point theorem, $\Phi$ has a fixed point $(w^*,\zeta^*)$, which is a pure Nash equilibrium.
+
+(ii) In any pure Nash equilibrium, the insider plays $\zeta^*=\zeta^*(w^*)$. If $w^*$ is interior, the group's first-order condition requires $\frac{\partial U_G}{\partial w}(w^*,\zeta^*(w^*))=g(w^*)=0$. If $g'(w)\le-\lambda<0$ everywhere on $W$, the mean value theorem implies that $g(w)-g(w')\le-\lambda(w-w')<0$ for all $w>w'$, so $g$ is strictly decreasing. It can cross zero at most once, so at most one interior equilibrium exists. Moreover, for any $w>w^*$, $g(w)<g(w^*)=0$, which implies that the group's directional derivative at $w$ is negative, preventing any boundary equilibrium at $+\bar w$. Similarly, $g(w)>0$ for $w<w^*$, preventing any boundary equilibrium at $-\bar w$. Hence the pure Nash equilibrium is unique.
+\end{proof}
+
+\paragraph{Verification.} For the numerical example of Companion Proposition~\ref{prop:insidergame} ($a=0.3$, $\kappa=0.5$, $r=0.6$, $\theta=1$, $T=10$, $\Sigma=\sigma^2=1$), evaluating the partial curvature on the symmetric stability interval $W=[-0.515,0.515]$ gives $\frac{\partial^2 U_G}{\partial w^2}\le-4.0<0$ (and $\le-28.3<0$ on $[0,0.515]$), establishing existence of a pure equilibrium. Evaluating $g'(w)$ across $W=[-0.515,0.515]$ gives a maximum of $-8.0<0$ (and $g'(w^*)=-33.1$ at $w^*=0.032$). Thus the residual monotonicity condition holds globally on the entire symmetric stability interval $[-0.515,0.515]$, confirming that the numerically computed pure equilibrium at $w^*=0.032$ is guaranteed to be globally unique.
+
+\subsection{Gaussian-convolved news of arbitrary law}\label{app:convolvednews}\label{app:convexdealer}
+
+Proposition~\ref{prop:nongauss} proves that Gaussian news is the least favourable law among distributions satisfying quadratic location divergence $D_f(\Delta)\le\frac12I^*_f\Delta^2$. Laws with bounded support or jumps can produce mutually singular shifts, making prices more informative. In realistic market microstructure, however, fundamental news is observed with continuous Gaussian transaction noise. Consider news of the form $\varepsilon_t=\varepsilon^0_t+\nu_t$, where $\varepsilon^0_t\sim f_0$ is an innovation of arbitrary distribution (bounded, discrete, or heavy-tailed) and $\nu_t\sim\mathcal N(0,\sigma_\nu^2)$ is independent Gaussian noise. The location density is $f(x-\Delta)=(f_0*\phi_{\sigma_\nu})(x-\Delta)$, where $\phi_{\sigma_\nu}$ is the Gaussian density. By the data-processing inequality for Kullback--Leibler divergence (or Jensen's inequality applied to the convex relative-entropy functional), convolution with any probability measure $f_0$ is a Markov transition that contracts divergence:
+\[
+D_f(\Delta) = \mathrm{KL}\bigl((f_0*\phi_{\sigma_\nu})(\cdot)\,\big\|\,(f_0*\phi_{\sigma_\nu})(\cdot-\Delta)\bigr) \le \mathrm{KL}\bigl(\phi_{\sigma_\nu}(\cdot)\,\big\|\,\phi_{\sigma_\nu}(\cdot-\Delta)\bigr) = \frac{\Delta^2}{2\sigma_\nu^2}.
+\]
+Hence $f$ satisfies quadratic location divergence unconditionally, with $I^*_f\le1/\sigma_\nu^2$. The passive lower bounds of Theorem~\ref{prop:passive} therefore hold for all news laws with an independent Gaussian component of variance $\sigma_\nu^2$, with the sample complexity scaling as $(\Delta\eta)^{-(4K-2)}$ and the constant adjusted by at most $\sigma^2/\sigma_\nu^2$.
 
 \section{General memory: the minimax rate is logarithmic}\label{sec:general}
 
@@ -2552,7 +2722,7 @@ Theorem~\ref{n:irr}(ii), spacing & excess error $1.56\times10^{-4}$ with memorie
 Remark on drift & excess$/v^{2/3}$ between $0.18$ and $0.41$ for $v$ from $3\times10^{-5}$ to $10^{-3}$ & same\\\bottomrule
 \end{tabular}
 \end{center}
-\noindent Scripts are available in the public repository at \url{https://github.com/Pratikn03/Fianince}.
+\noindent Scripts are under \nolinkurl{research_extension/} in the repository.
 
 \section{Machine checks in detail}\label{app:mc}
 
@@ -2578,7 +2748,7 @@ Lean checks the finite-sample consequence of parts (i) and (iii), not the diverg
 
 \section{Machine-checked declarations}\label{app:verification}
 
-The table lists, for each main result, the Lean~4 declarations that check it and what is proved only on paper. The project builds against a pinned Mathlib and has 1,235 named declarations in 144 modules, with no \texttt{sorry}. A full build on 13 November 2026 (Lean 4.34.1, Mathlib commit \texttt{d13f23b}) passed, together with the axiom audit below; the receipt, which records the SHA-256 hash of every source file, is \nolinkurl{formal_verification_receipt.json}. An axiom audit of every named declaration finds only Lean's three standard axioms (\texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}). A machine check confirms the formal statement, not that it matches the prose. The prose statements above say where the two differ.
+The table lists, for each main result, the Lean~4 declarations that check it and what is proved only on paper. The project builds against a pinned Mathlib and has 1,238 named declarations in 144 modules, with no \texttt{sorry}. A full build on 13 November 2026 (Lean 4.34.1, Mathlib commit \texttt{d13f23b}) passed, together with the axiom audit below; the receipt, which records the SHA-256 hash of every source file, is recorded in Supplement Section~\ref{app:verification} (and \nolinkurl{formal_verification_receipt.json}). An axiom audit of every named declaration finds only Lean's three standard axioms (\texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}). A machine check confirms the formal statement, not that it matches the prose. The prose statements above say where the two differ.
 
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.2\textwidth}>{\raggedright\arraybackslash}p{0.42\textwidth}>{\raggedright\arraybackslash}p{0.3\textwidth}}
 \toprule

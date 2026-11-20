@@ -108,3 +108,21 @@ Keep `paper1b_companion.pdf` beside the combined PDF for external companion link
 ## Remaining research obligations
 
 See the audit's acceptance tests, not a calendar schedule. They include a uniform feasible-forecast result, attainability in the same observation experiment, pooling results beyond the proved rank certificate, an intervention design with a defensible counterfactual, report-cost and decision-loss calibration, an estimand-specific empirical validation, measurement assumptions, and independent proof review. No favorable empirical outcome is promised or required; negative results must be retained.
+
+## Canonical build, 20 November 2026
+
+`python ceiling_suite/papers/paper1_note/build_ssrn.py --pdf` now runs, in order:
+1. `build_note.py`, which regenerates `paper1_focus.tex` from `paper1_core` (this carries the 18 November inventory-equilibrium section, Section 4);
+2. `make_base.py`, which applies the 15 November SSRN blocks (`base_ssrn_parts_20261115.tex`) to that focus text;
+3. `build_revision.py` and `integrate_incoming.py`, which apply the scoped revision and the later 15 November results (Theorems 5.5, 5.7, 6.1–6.3).
+
+Changes on 20 November:
+- a new abstract and an equilibrium paragraph in the introduction;
+- the 18 November main-text equilibrium section is kept;
+- two citations that could not be verified were removed or replaced (a 2026 arXiv preprint on ESPRIT stability, and a 2026 IRFA article, replaced by Frino, Johnstone and Zheng 2010); Roy and Kailath (1989) and Hua and Sarkar (1990) are cited for the matrix-pencil identity;
+- the Nash "guaranteed unique" overclaim now reads as a grid evaluation;
+- positivity of h(r) in the equilibrium boundary now states its condition;
+- the evidence paragraph gives the dated status of P1F and H1;
+- the AI-use declaration names the results whose proofs are still under the authors' check.
+
+The 142-page public-data revision of 16 November (Supplement S31) is archived in `research_extension/paper1_public_data_study_20261116/` and is not part of the canonical Paper 1. Its gate study belongs with Paper 2, and its address study does not test a Paper 1 result.

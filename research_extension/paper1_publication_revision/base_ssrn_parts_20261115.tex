@@ -1,0 +1,196 @@
+%% Blocks used by build_ssrn.py to make the SSRN version (15 November 2026) from paper1_focus.tex.
+%% Each block runs from a line "%%BEGIN name" to a line "%%END name".
+
+%%BEGIN abstract
+\noindent Algorithmic traders read prices and, by trading, move them. We ask what a price record reveals about the population of such traders, and for which decisions that is enough. Prices see the population only through its aggregate response to past prices, the feedback kernel: populations with the same kernel produce the same prices, profits and equilibria. Three consequences follow. Composition is \emph{invisible}: telling apart $K$ trader types whose rules lie within $\Delta$ of one another takes data of order $\Delta^{-(4K-2)}$, for any smooth family of rules, whether the observer waits or trades. Composition is \emph{irrelevant} for forecasting: knowing every group's position improves price forecasts by no more than the error of estimating the kernel, however close the groups are. Composition is \emph{needed} only for actions aimed at particular traders and once position limits bind; tagging all but one class of traders supplies it, and the last tag is worth nothing. Core results are machine-checked in Lean~4.
+%%END abstract
+
+%%BEGIN intro
+\paragraph{Three findings and one question.} Three findings from different literatures point to the same question. First, models of markets with fundamentalist and chartist traders \citep{brock1998,hommes2006} are fitted to prices to estimate the traders' shares, and the estimates are fragile: a recent survey reports nearly collinear parameters, switching parameters that are not significant, and estimates that depend on where the optimizer starts \citep{lux2018}. Second, large traders' positions in U.S. futures markets respond to past price changes, non-commercial traders following trends, yet give very little evidence of leading returns \citep{sanders2009}. Third, regulators who want to act on particular algorithms do not try to infer them from prices; they require identifiers. Each finding asks what the price record reveals about who trades, and what knowing who trades is good for.
+
+\paragraph{The answer.} Prices see a population of feedback traders only through one object, the market's \emph{feedback kernel}: the response, $m$ periods later, of total feedback flow to a unit move in the price signal. Populations with the same kernel produce the same prices, order flows, profits and equilibria (Theorem~\ref{n:suff}). This single fact has three sharp consequences, and together they say where knowledge of the population is worth having.
+\begin{enumerate}[label=(\alph*),leftmargin=*,itemsep=2pt]
+\item \emph{Composition is invisible.} Telling apart $K$ types of trader whose rules lie within $\Delta$ of one another takes data of order $\Delta^{-(4K-2)}$. This holds for any smooth family of trading rules, not only exponential memory, and for an observer who waits as well as one who trades (Theorem~\ref{n:univ}). For exponential memory the order is attained and does not improve as the market approaches instability (Theorem~\ref{n:cost}, Proposition~\ref{n:nearcrit}). Two groups with half-lives between 5 and 9 days need more than 4{,}000 years of daily prices to be told apart (Table~\ref{n:tab_cal}).
+\item \emph{Composition is irrelevant for forecasting.} An observer who sees every group's weight and position forecasts the next price no better than one who sees prices alone and fits an autoregression, up to the error of estimating the kernel. That error does not depend on how close the groups are (Theorem~\ref{n:irr}). What is most expensive to learn from prices is therefore worth least for predicting them.
+\item \emph{Composition is needed for targeted action and under stress.} A market-wide limit needs only the kernel; halting one group needs composition (Proposition~\ref{n:target}). With position limits, calm prices carry no information about how close traders are to their limits, and stress reveals it (Theorem~\ref{n:sat_thm}). The exceptions to irrelevance that we identify are these channels, plus informed traders and exogenous flows of different persistence (Proposition~\ref{n:exc}).
+\end{enumerate}
+The three findings fit this account. Share estimates from prices are fragile because the data they need explode as the types' rules approach one another; that the market-impact coefficient cannot be separated from the traders' reaction coefficients \citep{lux2018} is the sufficiency of the kernel, in which only their product enters. Positions that respond to prices but do not lead them are what feedback trading predicts when positions are functions of past prices. And identifiers are the only route to targeted action at a cost that does not explode, with a precise value: tagging all but one memory class is enough, and the last tag is worth nothing (Theorem~\ref{n:partial}).
+
+\paragraph{Results.}
+\begin{enumerate}[label=(\arabic*),leftmargin=*,itemsep=2pt]
+\item \emph{Sufficiency and identification} (Theorems~\ref{n:suff} and~\ref{n:ident}). With a value, noise traders, an insider and a dealer, each following an arbitrary causal rule, two populations with the same kernel give the same prices, order flows, insider profits and dealer inventories, realization by realization, and so the same equilibria. Prices identify the trading weight at each memory rate and nothing finer; for any population, linear or not, they identify exactly its aggregate flow map.
+\item \emph{The cost of composition} (Theorems~\ref{n:cost} and~\ref{n:univ}, Proposition~\ref{n:nearcrit}). For any smooth family of rules, separating $K$ types within $\Delta$ needs data of order $\Delta^{-(4K-2)}$, passively or by probing. For exponential memory Prony's method attains this order and the barrier does not lift near instability: prices then reveal how close the market is to breaking, not who is trading.
+\item \emph{Which questions are cheap} (Theorem~\ref{n:questions}). A linear question about the population is answered at the usual statistical rate, whatever the number of groups and the spacing of their memories, exactly when its kernel has square-summable power-series coefficients; its exact cost is a problem of polynomial approximation.
+\item \emph{Forecast irrelevance} (Theorem~\ref{n:irr}, Proposition~\ref{n:exc}). Composition improves price forecasts by at most the cost of estimating the kernel, independently of the spacing; we list the channels through which it can matter.
+\item \emph{Supervision} (Section~\ref{n:sup}). Halting the largest group needs composition, at the cost above. Class-tagged flow removes the cost, and tagging all but one memory class is enough. Pooling markets in which the same algorithms trade in different proportions lowers the exponent without any tags. A group that can mimic another's memory caps what any price-based targeting can achieve.
+\item \emph{Surveillance over time} (Theorem~\ref{n:track}). When the population drifts, composition can be tracked only at the cube-root rate and not at all above a speed limit.
+\item \emph{Limits} (Section~\ref{n:sat}). With position limits the sufficient object becomes a measure over memory and leverage. Calm prices reveal only its linear part, the kernel; probes large enough to reach the limits identify the rest.
+\end{enumerate}
+%%END intro
+
+%%BEGIN known_add
+ The exponent $2K-1$ in the gap between near-colliding populations is also the error amplification for super-resolution of $K$ near-colliding point sources \citep{batenkov2021}, of which Prony's method is the classical instance. That disaggregate information helps forecast an aggregate when the components have different dynamics is known from the literature on forecasting aggregates \citep{lutkepohl1987,hendry2011}; Proposition~\ref{n:exc}(b) is that result in this market.
+%%END known_add
+
+%%BEGIN new_add
+ Two results are new in this version. The cost of composition is not a feature of exponential memory: its lower bound holds for every smooth family of trading rules inside the feedback loop, with one proof for passive and probing observers (Theorem~\ref{n:univ}). And composition, which is so expensive to learn, is worth almost nothing for forecasting prices, by an amount that does not depend on how close the groups are (Theorem~\ref{n:irr}): the barrier and the irrelevance are two faces of the same sufficiency.
+%%END new_add
+
+%%BEGIN univ
+\paragraph{The barrier does not depend on exponential memory.} Exponential memory makes the problem explicit, but the exponent has a more general source. Let each type of trader be indexed by a number $\theta$ in an interval $\Theta$ and trade $f_\theta(h)$ after the public history $h=(x_t,x_{t-1},\ldots)$, where $f_\theta$ is any causal rule: a power-law or hump-shaped memory, a fixed lookback window, a saturating rule, or a learning rule with a fixed tuning parameter. A population is a finite measure $\nu$ on $\Theta$, the weight on each type, and its aggregate flow
+\[
+F_\nu(h)=\int f_\theta(h)\,\nu(d\theta)
+\]
+is linear in $\nu$ whatever the rules. Prices follow \eqref{n:eq:model} with $\kappa F_\nu(h_{t-1})$ in place of the feedback term. Theorem~\ref{n:suff} says that $F_\nu$ is all that prices can reveal; the next result says what it costs to read $\nu$ from it.
+
+\begin{theorem}[The cost of composition for any smooth family]\label{n:univ}
+Fix $K\ge2$, a centre type $\theta_c$, a total weight $W$ and a spread $\Delta$ with $[\theta_c-\Delta,\theta_c+\Delta]\subset\Theta$. Suppose that $\theta\mapsto f_\theta(h)$ has $2K-1$ continuous derivatives at every history, with $|\partial_\theta^{2K-1}f_\theta(h)|\le B(h)$, and that news is Gaussian with variance $\sigma^2$.
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Flow gap.} There are two populations $\nu$ and $\nu'$, each with $K$ types in $[\theta_c-\Delta,\theta_c+\Delta]$, positive weights and total weight $W$, at Wasserstein distance $W_1(\nu,\nu')=d_KW\Delta$ for a constant $d_K>0$, whose aggregate flows satisfy, at every history,
+\[
+|F_\nu(h)-F_{\nu'}(h)|\le\frac{2W}{(2K-1)!}\,B(h)\,\Delta^{2K-1}.
+\]
+\item \emph{Lower bound.} Suppose $\mathbb E[B(h_t)^2]\le\bar B^2$ at every date under $\nu$ and the observer's policy. For any probes, none or chosen from the observer's own past and randomization, a record of $T$ periods (for example $N$ reset experiments of length $T/N$) tells $\nu$ from $\nu'$ with both error probabilities below $1/4$ only if
+\[
+T\ \ge\ \frac{\big((2K-1)!\big)^2}{4\kappa^2W^2\bar B^2}\;\sigma^2\,\Delta^{-(4K-2)}.
+\]
+\end{enumerate}
+\end{theorem}
+
+The proof has two lines (Supplement Section~\ref{app:univirr}). The two populations are the $K$-node Gauss and Gauss--Radau quadrature rules on the interval, which integrate every polynomial of degree $2K-2$ alike, so a Taylor expansion of $f_\theta$ in $\theta$ leaves only the remainder of order $2K-1$. With Gaussian news, the chain rule for Kullback--Leibler information then charges each period the squared gap between the two populations' predicted flows. Nothing uses exponential memory, linearity in the history, or the structure of the loop, and the same argument covers the observer who only waits. Theorem~\ref{n:cost}(i) is the case $f_r(h)=(1-r)\sum_jr^jx_{t-j}$ with $\theta=r$, where the constants can be made explicit. With position limits, groups that share a leverage are a one-parameter family in memory and are covered; groups with different leverages are not, and for them composition is cheaper (Companion Proposition~\ref{prop:nlcost}).
+
+The lower bound is attained wherever the flow map separates near-colliding types as fast as the Taylor expansion allows.
+
+\begin{proposition}[When the bound is attained]\label{n:univup}
+Let the observer record aggregate flow at $L$ fixed histories $h^{(1)},\ldots,h^{(L)}$ with independent Gaussian noise of variance $\sigma^2$ in each of $N$ experiments, and write $G(\nu)=(F_\nu(h^{(l)}))_{l\le L}$. Suppose that on a class $\mathcal K$ of populations with at most $K$ types the inverse bound $\|G(\nu)-G(\nu')\|\ge c_0\,W_1(\nu,\nu')^{2K-1}$ holds. Then the minimum-distance estimator $\hat\nu\in\arg\min_{\mu\in\mathcal K}\|G(\mu)-\bar y\|$ satisfies, with probability at least $1-\delta$,
+\[
+W_1(\hat\nu,\nu)\le\Big(\frac{2\sigma\big(\sqrt L+\sqrt{2\log(1/\delta)}\big)}{c_0\sqrt N}\Big)^{1/(2K-1)},
+\]
+so $N$ of order $\sigma^2\Delta^{-(4K-2)}$ experiments recover composition to any fixed fraction of the spread $\Delta$.
+\end{proposition}
+
+The inverse bound is a strong-identifiability condition. For exponential memory $G$ is a vector of moments and the bound underlies Prony's method (Theorem~\ref{n:cost}(ii)). For mixtures of distributions, \citet{heinrich2018} prove the corresponding bound whenever the derivatives of the family in its parameter, up to order $2K$, are linearly independent; their argument uses only Taylor expansion and that independence, but we have not written out its transfer to $G$ and do not claim it here. In three families that are not exponential memory (a power-law memory indexed by its exponent, a hump-shaped memory indexed by its peak, and a smoothed window indexed by its length), the derivatives at the centre type up to order $2K-1$ are linearly independent, the gap between the Gauss and Gauss--Radau populations' closed-loop responses shrinks with fitted slopes between $2.98$ and $3.07$ for $K=2$ and between $4.97$ and $5.07$ for $K=3$, against $3$ and $5$, and the information about a group's weight falls with slopes $5.98$ to $6.03$ for $K=2$ and $9.29$ to $9.34$ for $K=3$, against $6$ and $10$ (script \nolinkurl{research_extension/universal_law/universal_law_check.py}; one of the six information slopes could not be computed because the information matrix was numerically singular).
+%%END univ
+
+%%BEGIN irr
+\section{Composition does not help forecast prices}\label{n:irr_sec}
+
+The cost of composition raises a question: who needs it? For forecasting prices, nobody does. Take model \eqref{n:eq:model} without probes, with constant weights $q_i\ge0$, a stable market ($S<1$), news that is independent over time with mean zero, variance $\sigma^2$ and a finite fourth moment, and positions that start at zero, $y_{i,-1}=0$. Compare two forecasters of $x_{t+1}$: the \emph{price observer}, who sees $\mathcal P_t=\sigma(x_0,\ldots,x_t)$, and the \emph{composition observer}, who also sees every group's weight and position, $\mathcal C_t=\sigma(x_s,\,q_i,\,q_iy_{i,s}:s\le t,\,i\le K)$. Class reports, which sum positions over groups, tell less than $\mathcal C_t$.
+
+\begin{theorem}[Composition is irrelevant for forecasting]\label{n:irr}
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item \emph{Known population.} If the weights are known, $\mathcal C_t=\mathcal P_t$ and
+\[
+\mathbb E[x_{t+1}\mid\mathcal C_t]=\mathbb E[x_{t+1}\mid\mathcal P_t]=a\,x_t+\kappa\sum_{m=0}^{t}k_m\,x_{t-m}.
+\]
+The forecast depends on the population only through the kernel.
+\item \emph{Unknown population.} Let the weights be unknown and the market stationary, and let $\hat x_{T+1}$ be the forecast of a least-squares autoregression of order $L$ fitted to $x_0,\ldots,x_T$. Under the conditions of \citet{ingwei2003} on the news and on the growth of $L$ with $T$,
+\[
+\mathbb E\big(x_{T+1}-\hat x_{T+1}\big)^2=\sigma^2+\sigma^2\frac{L}{T}\big(1+o(1)\big)+O\big(\bar r^{\,2L}\big),
+\]
+where $\bar r$ is the largest memory rate and the constant in the last term depends on the population only through $\bar r$ and $\kappa\sum_iw_i$. The composition observer's error is $\sigma^2$. With $L=\lceil c\log T\rceil$ and $c\log(1/\bar r)>1/2$, the forecast value of composition is at most $\sigma^2c\log T/T\,(1+o(1))$. The leading term does not depend on the population at all, and in particular not on how close the memories are.
+\end{enumerate}
+\end{theorem}
+
+Part~(i) is elementary: positions are functions of past prices. Its content is the comparison with Theorem~\ref{n:cost}. The data needed to learn composition grow like $\Delta^{-(4K-2)}$ as the groups' memories approach one another, while the value of composition for forecasting stays below $\sigma^2L/T$, whatever the spacing. The two are not just different; they move in opposite directions, since the closer the groups are, the harder composition is to learn and the less any forecaster could gain from it. Part~(ii) rests on the expansion of \citet{ingwei2003} for autoregressions fitted to a process of infinite order, applied to the representation $x_t=\sum_{j\ge1}\phi_jx_{t-j}+\varepsilon_t$ with $\phi_1=a+\kappa k_0$ and $\phi_j=\kappa k_{j-1}$ (Supplement Section~\ref{app:univirr}). The expansion is for a fixed population; we do not claim that its remainder is uniform over populations.
+
+\begin{remark}[A drifting population]
+If the weights drift by at most $v$ per period, an autoregression of order of $\log(1/v)$ refitted on a trailing window of order $v^{-2/3}$ periods should have excess error of order $\sigma^2v^{2/3}\log(1/v)$, again independent of the spacing, by the bias--variance trade-off of tracking estimators \citep{guoljung1995}. We have not proved this. In simulations with $v$ from $3\times10^{-5}$ to $10^{-3}$ the excess error divided by $v^{2/3}$ lies between $0.18$ and $0.41$, with a fitted exponent of $0.55$, below $2/3$ because the grid of windows is capped (\nolinkurl{research_extension/irrelevance/irrelevance_theorem_check.py}).
+\end{remark}
+
+The theorem has the structure of an irrelevance result in the sense of \citet{mm1958}: a benchmark in which something does not matter, and a list of what makes it matter.
+
+\begin{proposition}[What makes composition relevant]\label{n:exc}
+\begin{enumerate}[label=(\alph*),itemsep=1pt]
+\item \emph{Informed groups.} If a group's flow depends on information not in $\mathcal P_t$, such as the next change in value, composition can improve the forecast by an amount that does not vanish with $T$.
+\item \emph{Exogenous flows of different persistence.} Let group $i$ also trade an exogenous flow $u_{i,t}$, the $u_i$ jointly Gaussian, stationary and independent of the news. Beyond prices and the aggregate flow, the value of composition for forecasting $x_{t+1}$ is exactly $\kappa^2$ times the reduction in the error of forecasting $\sum_iu_{i,t+1}$ from the components $(u_{i,s})_{s\le t}$ rather than from their sum. It is zero when the $u_i$ follow one autoregressive law whose innovations are unpredictable from the past of every component.
+\item \emph{Position limits.} With saturating rules, the forecast depends on the population through the measure $\nu$ of Section~\ref{n:sat} rather than the kernel, and calm prices reveal only the kernel (Theorem~\ref{n:sat_thm}). Composition can then improve forecasts once limits bind.
+\item \emph{Targeted actions.} Composition is needed for actions aimed at one group (Proposition~\ref{n:target}). That concerns decisions, not forecasts.
+\end{enumerate}
+\end{proposition}
+
+Part~(b) is the known result that components with different dynamics help forecast an aggregate \citep{lutkepohl1987,hendry2011}; what the market adds is that the feedback part of every group's flow drops out, so only the exogenous part can carry information. The proof is in Supplement Section~\ref{app:univirr}.
+
+\paragraph{What the theorem predicts.} Data on the composition of feedback traders should not improve price forecasts beyond prices and anonymous flow in calm markets, except through informed or exogenous flows of different persistence. This is what the reports of large traders in U.S. futures markets show: positions respond to past prices, but give very little evidence of leading returns \citep{sanders2009}. The theorem does not explain those data, which are weekly positions rather than flows; it says that the finding is what feedback trading implies. We registered a direct test of the prediction on Binance perpetual futures (P1F), using the venue's ratios of long to short positions among its largest traders. Its first window was void: the archive files for that window lacked the trader-class fields that the registered universe rule requires, so no symbol qualified and no outcome was computed. A replacement window from 16 November 2026 to 14 January 2027 was registered before any of its data existed, and will be reported as it comes out.
+%%END irr
+
+%%BEGIN scope_old
+The explicit identification and cost results need linear rules with exponential memory.
+%%END scope_old
+
+%%BEGIN scope_new
+The explicit identification results and the matching upper bounds need linear rules with exponential memory; the lower bound on the cost of composition holds for any smooth family of rules (Theorem~\ref{n:univ}), and its attainment needs a strong-identifiability condition (Proposition~\ref{n:univup}).
+%%END scope_new
+
+%%BEGIN evidence
+\paragraph{Evidence.} The contribution is theoretical, and the tagged flows and position limits it concerns are rarely observed. Supplement Section~\ref{sec:scope} reports two registered tests on public data, on Taiwan's tagged exchange flows and on Binance perpetual futures, with their readouts as registered. The registered test of forecast irrelevance (Section~\ref{n:irr_sec}) was void in its first window, and its replacement window is under way. A registered test on a venue where every trade carries account addresses will ask whether accounts' own records separate trading memories that prices do not; its data are being collected, and its specification was fixed before any were read.
+%%END evidence
+
+%%BEGIN bib
+\bibitem[Batenkov et~al.(2021)]{batenkov2021} Batenkov, D., G. Goldman, and Y. Yomdin (2021). Super-resolution of near-colliding point sources. \emph{Information and Inference: A Journal of the IMA} 10(2), 515--572.
+
+\bibitem[Guo and Ljung(1995)]{guoljung1995} Guo, L., and L. Ljung (1995). Performance analysis of general tracking algorithms. \emph{IEEE Transactions on Automatic Control} 40(8), 1388--1402.
+
+\bibitem[Hendry and Hubrich(2011)]{hendry2011} Hendry, D.~F., and K. Hubrich (2011). Combining disaggregate forecasts or combining disaggregate information to forecast an aggregate. \emph{Journal of Business \& Economic Statistics} 29(2), 216--227.
+
+\bibitem[Ing and Wei(2003)]{ingwei2003} Ing, C.-K., and C.-Z. Wei (2003). On same-realization prediction in an infinite-order autoregressive process. \emph{Journal of Multivariate Analysis} 85(1), 130--155.
+
+\bibitem[L\"utkepohl(1987)]{lutkepohl1987} L\"utkepohl, H. (1987). \emph{Forecasting Aggregated Vector ARMA Processes}. Lecture Notes in Economics and Mathematical Systems 284. Springer, Berlin.
+
+\bibitem[Modigliani and Miller(1958)]{mm1958} Modigliani, F., and M.~H. Miller (1958). The cost of capital, corporation finance and the theory of investment. \emph{American Economic Review} 48(3), 261--297.
+
+\bibitem[Sanders et~al.(2009)]{sanders2009} Sanders, D.~R., S.~H. Irwin, and R.~P. Merrin (2009). Smart money: The forecasting ability of CFTC large traders in agricultural futures markets. \emph{Journal of Agricultural and Resource Economics} 34(2), 276--296.
+
+%%END bib
+
+%%BEGIN supp
+\section{The cost of composition for any smooth family, and forecast irrelevance}\label{app:univirr}
+
+This section proves Theorem~\ref{n:univ}, Proposition~\ref{n:univup}, Theorem~\ref{n:irr} and Proposition~\ref{n:exc} of the main text. These results are new in this version; nothing in this section is machine-checked.
+
+\paragraph{The hard pair.} Let $G_K$ be the $K$-node Gauss--Legendre rule on $[-1,1]$, normalized to unit mass, and $R_K$ the $K$-node Gauss--Radau rule with fixed node $-1$, normalized the same way. Both have positive weights; $G_K$ integrates polynomials of degree at most $2K-1$ exactly and $R_K$ those of degree at most $2K-2$ \citep[Section~3.4]{szego1975}. Hence $\int p\,dG_K=\int p\,dR_K$ for every polynomial $p$ of degree at most $2K-2$. The two rules are different measures ($R_K$ has an atom at $-1$ and $G_K$ does not), so $d_K=W_1(G_K,R_K)>0$. For centre $\theta_c$, spread $\Delta$ and total weight $W$, let $\nu$ and $\nu'$ be the images of $WG_K$ and $WR_K$ under $s\mapsto\theta_c+\Delta s$. They have $K$ atoms each in $[\theta_c-\Delta,\theta_c+\Delta]$, positive weights summing to $W$, equal moments of order $0,\ldots,2K-2$ about $\theta_c$, and $W_1(\nu,\nu')=d_KW\Delta$, since $W_1$ scales linearly under dilation and mass.
+
+\begin{proof}[Proof of Theorem~\ref{n:univ}]
+(i) Fix a history $h$. By Taylor's theorem with the Lagrange remainder, $f_\theta(h)=P_h(\theta)+\rho_h(\theta)$ with $P_h$ a polynomial of degree $2K-2$ in $\theta-\theta_c$ and $|\rho_h(\theta)|\le B(h)|\theta-\theta_c|^{2K-1}/(2K-1)!$. The polynomial part integrates alike under $\nu$ and $\nu'$. So
+\[
+|F_\nu(h)-F_{\nu'}(h)|=\Big|\int\rho_h\,d\nu-\int\rho_h\,d\nu'\Big|\le\int|\rho_h|\,d\nu+\int|\rho_h|\,d\nu'\le\frac{2W}{(2K-1)!}B(h)\Delta^{2K-1},
+\]
+because both measures have mass $W$ and live where $|\theta-\theta_c|\le\Delta$.
+
+(ii) Let $P$ and $P'$ be the laws of the record, prices and probes, under $\nu$ and $\nu'$, with the same initial law and the same probe policy. Given the record up to $t-1$ and the probe $v_t$, the price $x_t$ is Gaussian with variance $\sigma^2$ and mean $ax_{t-1}+\kappa F(h_{t-1})+\kappa v_t$, with $F=F_\nu$ or $F_{\nu'}$. The probe's conditional law given the past is the same under both. By the chain rule for Kullback--Leibler divergence,
+\[
+\mathrm{KL}(P\|P')=\sum_{t=1}^{T}\mathbb E_P\Big[\frac{\kappa^2\big(F_\nu(h_{t-1})-F_{\nu'}(h_{t-1})\big)^2}{2\sigma^2}\Big]\le T\,\frac{2\kappa^2W^2\bar B^2}{\sigma^2((2K-1)!)^2}\,\Delta^{2(2K-1)},
+\]
+by part (i) and the moment bound. If a test has both error probabilities below $1/4$, their sum is below $1/2$; since the sum is at least $1-\mathrm{TV}(P,P')$, the total variation exceeds $1/2$, and by Pinsker's inequality $\mathrm{KL}(P\|P')>1/2$. Combining the two displays gives the bound. With no probe the argument is the same with $v_t=0$; with reset experiments the record is the concatenation of independent runs and the chain rule applies run by run.
+\end{proof}
+
+\noindent\emph{The moment condition.} For a linear rule $f_\theta(h)=\sum_{j\ge0}g_j(\theta)x_{t-j}$ with $\sup_\theta\sum_j|\partial_\theta^{2K-1}g_j(\theta)|\lambda^{-j}<\infty$ for some $\lambda<1$, one can take $B(h)=C\sup_j\lambda^j|x_{t-j}|$, which has bounded second moments in a stable market with Gaussian news and bounded probes. For bounded rules with bounded derivatives, such as saturating rules with a common leverage, $B$ is a constant.
+
+\begin{proof}[Proof of Proposition~\ref{n:univup}]
+Write $\bar y=G(\nu)+\bar\xi$, where $\bar\xi$ is the average of the $N$ noise vectors, so $\bar\xi\sim\mathcal N(0,\sigma^2I_L/N)$. The norm is $1$-Lipschitz, so by Gaussian concentration $\|\bar\xi\|\le\sigma(\mathbb E\|Z\|+\sqrt{2\log(1/\delta)})/\sqrt N$ with probability at least $1-\delta$, where $Z$ is standard normal in $\mathbb R^L$ and $\mathbb E\|Z\|\le\sqrt L$. Since $\hat\nu$ minimizes $\|G(\mu)-\bar y\|$ and $\nu\in\mathcal K$, $\|G(\hat\nu)-G(\nu)\|\le\|G(\hat\nu)-\bar y\|+\|\bar y-G(\nu)\|\le2\|\bar\xi\|$. The inverse bound then gives $c_0W_1(\hat\nu,\nu)^{2K-1}\le2\|\bar\xi\|$, which is the claim. For $W_1(\hat\nu,\nu)\le\epsilon\Delta$ it suffices that $N\ge\big(2\sigma(\sqrt L+\sqrt{2\log(1/\delta)})/c_0\big)^2(\epsilon\Delta)^{-(4K-2)}$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{n:irr}]
+(i) From $y_{i,-1}=0$ and $y_{i,t}=r_iy_{i,t-1}+\eta_ix_t$, $y_{i,t}=\eta_i\sum_{j=0}^tr_i^jx_{t-j}$, a function of $(x_0,\ldots,x_t)$. With known weights every generator of $\mathcal C_t$ is $\mathcal P_t$-measurable, so $\mathcal C_t=\mathcal P_t$. Since $\varepsilon_{t+1}$ is independent of $\mathcal P_t$ with mean zero,
+$\mathbb E[x_{t+1}\mid\mathcal P_t]=ax_t+\kappa\sum_iq_iy_{i,t}=ax_t+\kappa\sum_{m=0}^t\big(\sum_iq_i\eta_ir_i^m\big)x_{t-m}$, and $\sum_iq_i\eta_ir_i^m=k_m$.
+
+(ii) In the stationary market the same substitution over the infinite past gives $x_t=\sum_{j\ge1}\phi_jx_{t-j}+\varepsilon_t$ with $\phi_1=a+\kappa k_0$ and $\phi_j=\kappa k_{j-1}$ for $j\ge2$. All $\phi_j$ are nonnegative and $\sum_j\phi_j=a+\kappa\sum_mk_m=S<1$, so $1-\sum_j\phi_jz^j$ has no zero in $|z|\le1$ and the process is a causal, invertible autoregression of infinite order, with spectral density between $\sigma^2/(2\pi(1+S)^2)$ and $\sigma^2/(2\pi(1-S)^2)$. Its coefficients satisfy $\phi_j\le\kappa\big(\sum_iw_i\big)\bar r^{\,j-1}$ for $j\ge2$. \citet{ingwei2003} show that, for such processes and under their conditions on the news and on $L$, the mean squared error of the same-realization least-squares forecast of order $L$ is $\sigma^2$ plus a model-complexity term $\sigma^2L/T\,(1+o(1))$ plus an approximation term equal to the prediction error contributed by the omitted coefficients $(\phi_j)_{j>L}$. With the spectral density bounded above, the approximation term is at most a constant times $\sum_{j>L}\phi_j^2$, and the coefficient bound makes this $O(\bar r^{\,2L})$ with a constant depending only on $\kappa\sum_iw_i$, $\bar r$ and $S$. The composition observer knows the weights, so by part (i) its forecast error is $\mathbb E\varepsilon_{T+1}^2=\sigma^2$, and no observer does better because $\varepsilon_{T+1}$ is independent of everything observed by date $T$. With $L=\lceil c\log T\rceil$, $\bar r^{\,2L}\le T^{-2c\log(1/\bar r)}=o(1/T)$ when $c\log(1/\bar r)>1/2$.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{n:exc}]
+(a) Let one group trade $\beta\,\Delta f_{t+1}$, with $f$ the fundamental value and $\Delta f_{t+1}$ independent of the price history; its flow forecasts $x_{t+1}$ with a gain of order $\kappa^2\beta^2\operatorname{Var}(\Delta f_{t+1})$ that does not depend on $T$. (b) With exogenous flows, $x_{t+1}=ax_t+\kappa\sum_iq_iy_{i,t}+\kappa U_{t+1}+\varepsilon_{t+1}$ with $U=\sum_iu_i$. The positions are still functions of past prices, so as in Theorem~\ref{n:irr}(i) the feedback part is known to both observers given the weights, and the aggregate flow then reveals $U_s$ for $s\le t$. The price-and-flow observer therefore knows $\sigma(x_s,U_s:s\le t)$ and the composition observer $\sigma(x_s,u_{i,s}:s\le t,\,i\le K)$. Prices add nothing about the future of $U$ beyond its own past, because $x_s$ is a function of $U_s$, $\varepsilon_s$ and earlier prices, and the news is independent of $u$. The two forecast errors are $\sigma^2+\kappa^2\operatorname{Var}(U_{t+1}\mid U_s,s\le t)$ and $\sigma^2+\kappa^2\operatorname{Var}(U_{t+1}\mid u_{i,s},s\le t,i\le K)$; in the Gaussian case these are the variances of linear projection errors, and their difference is the claim. If every $u_i$ follows $u_{i,t+1}=\sum_{j\ge0}\alpha_ju_{i,t-j}+e_{i,t+1}$ with common coefficients and innovations unpredictable from the past of all components, then $\mathbb E[U_{t+1}\mid u^t]=\sum_j\alpha_jU_{t-j}$, a function of the past of $U$, so the difference is zero. (c) and (d) restate Theorem~\ref{n:sat_thm} and Proposition~\ref{n:target}.
+\end{proof}
+
+\paragraph{Numerical checks.} The table lists the checks behind the numbers in the main text.
+
+\begin{center}\small
+\begin{tabular}{p{1.7in}p{2.6in}p{1.6in}}\toprule
+Check & Result & Script \\\midrule
+Theorem~\ref{n:univ}, three non-exponential families & response-gap slopes $2.98$--$3.07$ ($K=2$) and $4.97$--$5.07$ ($K=3$), against $3$ and $5$ & \nolinkurl{universal_law/universal_law_check.py}\\
+Proposition~\ref{n:univup}, same families & derivative vectors of order $0,\ldots,2K-1$ at the centre independent (smallest normalized singular value $0.0036$ to $0.49$); information slopes $5.98$--$6.03$ and $9.29$--$9.34$, against $6$ and $10$ & same\\
+Theorem~\ref{n:irr}(ii), spacing & excess error $1.56\times10^{-4}$ with memories $(0.30,0.60)$ and with $(0.44,0.46)$, against $L/T=1.6\times10^{-4}$ & \nolinkurl{irrelevance/irrelevance_theorem_check.py}\\
+Remark on drift & excess$/v^{2/3}$ between $0.18$ and $0.41$ for $v$ from $3\times10^{-5}$ to $10^{-3}$ & same\\\bottomrule
+\end{tabular}
+\end{center}
+\noindent Scripts are under \nolinkurl{research_extension/} in the repository.
+%%END supp
