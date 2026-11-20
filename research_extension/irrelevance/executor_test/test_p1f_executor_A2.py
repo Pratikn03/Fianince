@@ -1,4 +1,4 @@
-"""Offline test of p1f_executor_A2 (draft) on synthetic files in the Binance archive format (no market data).
+"""Offline test of p1f_executor_A2 on synthetic files in the Binance archive format (no market data).
 
 Builds 5-minute klines and metrics for 30 symbols x 60 days from the design simulation's worlds, serves them through
 a fake fetch (with CHECKSUM files, header and headerless klines, one missing day, a fake S3 listing), and checks
@@ -8,7 +8,7 @@ import datetime as dt, hashlib, importlib.util, io, json, sys, zipfile
 import numpy as np, pandas as pd
 
 ROOT = "/home/claude/fianince/"
-spec = importlib.util.spec_from_file_location("ex", ROOT + "ceiling_suite/p1_empirics/drafts_A2/p1f_executor_A2.py")
+spec = importlib.util.spec_from_file_location("ex", ROOT + "ceiling_suite/p1_empirics/p1f_executor_A2.py")
 ex = importlib.util.module_from_spec(spec); spec.loader.exec_module(ex)
 
 def make_world(world, seed, S=30):

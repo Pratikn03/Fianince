@@ -1,8 +1,9 @@
-# P1F amendment A2 (DRAFT, not registered): purge labels at the training/evaluation boundary
+# P1F amendment A2: purge labels at the training/evaluation boundary (registered 20 November 2026 UTC)
 
-Status: **draft for author approval.** This draft is not part of the registration until the author approves it and it
-is pushed with its hash record. Until then, amendment A1 and `p1f_executor_A1.py` remain the registered test, with
-unlock counter `P1F_A1_unlocks.json` at 0.
+**Approved by the author on 20 November 2026, US Central** (chat: "lets do leakage free"). Pushed in a commit of its
+own on 20 November 2026 (UTC). From this commit, the registered P1F test is the specification as amended by A1 and A2,
+run once with `P1F_A2_Colab.ipynb` and `p1f_executor_A2.py`; its counter is `P1F_A2_unlocks.json`. The A1 executor and
+notebook are superseded before any run: `P1F_A1_unlocks.json` stays at 0, and the A2 notebook stops if it is not.
 
 ## Why
 
@@ -34,15 +35,23 @@ sentences are unchanged.
 
 ## Timing and data access
 
-- The A1 executor refuses to download anything before 16 January 2027, so no one has read any window data.
-- This draft was written on 20 November 2026. Window data have been published daily since 16 November, but none have been fetched or read.
-- If approved, A2 must be pushed in a commit of its own, with SHA-256 hashes of this file, the A2 executor and its notebook, and a new counter `P1F_A2_unlocks.json` at 0.
-- The A1 counter is then closed as "superseded by A2 before any run".
+- The window opened on 16 November 2026. Binance has published window files daily since then, but none has been
+  fetched or read: the A1 executor refuses to download before 16 January 2027, and no other code in the repository
+  reads these files.
+- The changes were decided from code review and synthetic data only. They do not depend on any window outcome.
+- Hashes of the specification, both amendments, the A2 executor and the A2 notebook are in `P1F_A2_spec.json`.
 
 ## Simulation check (offline, synthetic data only)
 
 `research_extension/irrelevance/executor_test/test_p1f_executor_A2.py` runs the A2 executor on the synthetic 30-symbol,
-60-day worlds used to check A1. The registered rule requires the same verdicts as A1: NULL gives irrelevant, INFORMED gives relevant, and the power gate passes. The results are recorded in `A2_offline_test.txt` next to this file.
+60-day worlds used to check A1 (`P1F_A2_offline_test.txt`):
+
+| Executor | pandas | NULL world | INFORMED world | Power gate |
+|---|---|---|---|---|
+| A1 (registered before A2) | 2.2.3 | irrelevant, ΔR² −0.00013 | relevant, ΔR² 0.00745 | 1.00 |
+| A2 | 2.2.3 | irrelevant, ΔR² −0.00012 | relevant, ΔR² 0.00746 | 1.00 |
+| A2 | 3.1.1 | irrelevant, ΔR² −0.00012 | relevant, ΔR² 0.00746 | 1.00 |
+| A1 | 3.1.1 | stops with a unit-cast error | — | — |
 
 ## What A2 does not change
 

@@ -1,9 +1,9 @@
-"""P1F executor, amendment A2 (DRAFT, not registered): purges labels at the training/evaluation boundary.
+"""P1F executor, amendment A2 (registered 20 November 2026): purges labels at the training/evaluation boundary.
 
-Amendment A2 changes p1f_executor_A1.py in four lines and nothing else (see P1F_amendment_A2_DRAFT.md):
+Amendment A2 changes p1f_executor_A1.py in seven lines and nothing else (see P1F_amendment_A2.md):
 the last training origin of A2 (one-step label) and the last eight of A1 (eight-step target) are dropped, and the
-power gate uses only labels inside the training half. Window, universe, estimators, margins, bootstrap and verdict
-rules are those of amendment A1.
+power gate uses only labels inside the training half; time indexes are cast to nanoseconds so the code runs under
+pandas 2 and 3 alike. Window, universe, estimators, margins, bootstrap and verdict rules are those of amendment A1.
 
 Amendment A1, approved by the author on 14 November 2026 (US Central), changes only the window, the universe rule and
 adds a structure check and a date guard. Estimation, verdicts and the power gate are unchanged from p1f_executor.py.
