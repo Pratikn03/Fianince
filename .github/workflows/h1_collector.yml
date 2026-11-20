@@ -1,6 +1,7 @@
-# H1 collector on GitHub Actions. Kept in docs/ (inactive) until the repository owner approves; enabling means copying
-# it to .github/workflows/h1_collector.yml. Every 3 hours a job runs the registered collector for 5 h 50 min, so two
-# jobs always overlap and a delayed start leaves no gap; each job publishes its output as an asset of the release
+# H1 collector on GitHub Actions (active copy: .github/workflows/h1_collector.yml). Each job runs the registered collector
+# for 5 h 51 min and, 5 h 40 min in, dispatches its successor, so consecutive jobs overlap by about ten minutes. GitHub
+# fired the 3-hourly schedule only every 6-9 hours (15-20 Nov 2026: 46-73% of each day covered), so the schedule is now
+# a watchdog: a scheduled run exits at once if a collector is already running, and otherwise restarts the chain; each job publishes its output as an asset of the release
 # `h1-data`, and thesis/evidence/h1_merge.py merges the assets into the Drive folder (trades deduplicated by trade id,
 # coverage by the maximum per minute). It uses the universe committed in thesis/evidence/H1_universe.json, the one the
 # first Colab session drew, and refuses to run without it.
@@ -11,6 +12,7 @@ on:
   workflow_dispatch: {}
 permissions:
   contents: write
+  actions: write
 concurrency:
   group: h1-collector-${{ github.run_id }}
 jobs:
@@ -22,14 +24,26 @@ jobs:
       - uses: actions/setup-python@v5
         with: {python-version: "3.11"}
       - run: pip install websockets numpy pandas scipy
-      - name: Collect
+      - name: Watchdog (a scheduled run exits if a collector is already running)
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          n=$(gh run list --workflow h1_collector.yml --status in_progress --json databaseId --jq "[.[] | select(.databaseId != ${GITHUB_RUN_ID})] | length")
+          if [ "$n" -gt 0 ]; then echo "collector chain alive ($n running); nothing to do"; echo "SKIP=1" >> "$GITHUB_ENV"; fi
+      - name: Collect
+        if: env.SKIP != '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Start the successor 5 h 40 min in, so consecutive jobs overlap by about ten minutes.
+          ( sleep 20400; gh workflow run h1_collector.yml --ref main ) &
           test -f thesis/evidence/H1_universe.json || { echo "H1 universe not committed"; exit 1; }
           mkdir -p h1_out && cp thesis/evidence/H1_universe.json h1_out/
           cd thesis/evidence
-          python -c "import asyncio, h1_hyperliquid as C; asyncio.run(C.collect('../../h1_out', hours=5.83))"
+          python -c "import asyncio, h1_hyperliquid as C; asyncio.run(C.collect('../../h1_out', hours=5.85))"
       - name: Publish to the h1-data release
-        if: always()
+        if: always() && env.SKIP != '1'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
