@@ -64,6 +64,9 @@ if args.pdf:
     pdflatex('paper1_full',3)
     journal_cut()
     pdflatex('paper1_ssrn',3)
+    import jedc_front
+    (HERE/'paper1_jedc.tex').write_text(jedc_front.apply((HERE/'paper1_ssrn.tex').read_text()))
+    pdflatex('paper1_jedc',3)
     from pypdf import PdfReader,PdfWriter
     pages={}
     for stem in ['paper1_full','paper1_ssrn']:
@@ -81,6 +84,7 @@ if args.pdf:
             shutil.copy2(HERE/name,out/name)
         shutil.copy2(HERE/'paper1_ssrn.pdf',out/'Paper1_ssrn_complete.pdf')
         shutil.copy2(HERE/'paper1_full.pdf',out/'Paper1_full_working_paper.pdf')
+        shutil.copy2(HERE/'paper1_jedc.pdf',out/'Paper1_JEDC_submission.pdf')
     ftexts=pages['paper1_full'][1]
     print(f'Delivered journal version {len(texts)} pages: {split} main and {len(texts)-split} supplement; '
           f'full working paper {len(ftexts)} pages.')
