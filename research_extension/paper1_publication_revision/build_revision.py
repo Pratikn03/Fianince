@@ -38,7 +38,7 @@ replace(r'\begingroup\onehalfspacing', r'\begingroup\singlespacing\small')
 # Set to True only after every row of AUTHOR_PROOF_CHECK_NEW_RESULTS_20261120.md has an author checker and an outcome.
 AUTHOR_CHECK_DONE = True  # Pratik Niroula, 21 Nov 2026: "its trye so make it make verified by author"
 # Until the authors' check is recorded, the declaration says what has been checked and by what, without claiming it.
-CHECK_SENTENCE = (r" The proofs of Theorems~\ref{n:univ}, \ref{n:shape}, \ref{n:dual}, \ref{n:irr} and~\ref{n:uniformlog} are new in this revision: their deterministic steps are checked in Lean~4 (Table~\ref{tab:newlean}), the remaining steps were re-derived and checked numerically with AI assistance (repository script \texttt{verify\_new\_results\_20261121.py}), and the proofs were verified by the authors.") if AUTHOR_CHECK_DONE else (r" The proofs of Theorems~\ref{n:univ}, \ref{n:shape}, \ref{n:dual}, \ref{n:irr} and~\ref{n:uniformlog} are new in this revision: their deterministic steps are checked in Lean~4 (Table~\ref{tab:newlean}), and the remaining steps were re-derived and checked numerically with AI assistance (repository script \texttt{verify\_new\_results\_20261121.py}).")
+CHECK_SENTENCE = (r" The proofs of Theorems~\ref{n:univ}, \ref{n:shape}, \ref{n:dual}, \ref{n:irr} and~\ref{n:uniformlog} are new in this revision: their deterministic steps are checked in Lean~4 (Table~\ref{tab:newlean}), the remaining steps were re-derived and checked numerically with AI assistance (repository script \texttt{verify\_new\_results\_20261121.py}), and the proofs were verified by the authors. Proposition~\ref{n:relabel} was added on 21 November 2026 with AI assistance; its algebra is checked in Lean~4 and its closed forms by brute-force computation (\texttt{t6\_check.py}).") if AUTHOR_CHECK_DONE else (r" The proofs of Theorems~\ref{n:univ}, \ref{n:shape}, \ref{n:dual}, \ref{n:irr} and~\ref{n:uniformlog} are new in this revision: their deterministic steps are checked in Lean~4 (Table~\ref{tab:newlean}), and the remaining steps were re-derived and checked numerically with AI assistance (repository script \texttt{verify\_new\_results\_20261121.py}).")
 span(r'\paragraph{Declaration of generative AI and AI-assisted technologies.}', r'\begin{thebibliography}', r"""\paragraph{Declaration of generative AI and AI-assisted technologies.} During the preparation of this work the authors used large language model systems (Claude, ChatGPT/Codex and Gemini) for literature search, code development, numerical checks, Lean~4 formalization and drafting. The authors reviewed and edited all material and take full responsibility for the content.""" + CHECK_SENTENCE + r""" Lean~4 certifies the stated formal declarations only; it does not certify empirical validity, novelty or full manuscript coverage.""")
 # Set to True only when Pratik, Prashant and Sujan have each approved this version for posting.
 ALL_AUTHORS_APPROVED = True  # Pratik Niroula, 21 Nov 2026: "i told then do it" (co-authors informed and agree)
@@ -150,6 +150,20 @@ Theorem~\ref{n:uniformlog} & omitted coefficients at most $S\bar r^{L}$ (\texttt
 \end{tabular}
 \caption{What is machine-checked in the results new in this revision.}\label{tab:newlean}
 \end{table}''')
+# ---- 21 November 2026: Proposition n:relabel (disclosure game with relabeling)
+import sys as _sys
+_sys.path.insert(0, str(HERE / 't6'))
+import t6_blocks as T6
+replace('A class tag is attached to the account, so changing the trading rule does not remove it.',
+        'A class tag is attached to the account, so changing the trading rule does not remove it. Activity can, however, be routed through accounts that carry another label. The next result solves the disclosure game when it can.\n\n' + T6.MAIN)
+replace('can keep $q_i=w_i$ constant. $\\square$', 'can keep $q_i=w_i$ constant. $\\square$\n\n' + T6.SUPP)
+replace('They do not solve an equilibrium game of evasion.', 'They do not solve a general equilibrium game of evasion; Proposition~\\ref{n:relabel} solves a stylised one.')
+replace("holds the algorithms' behaviour fixed across regimes; neither is modelled here.", "holds the algorithms' behaviour fixed across regimes. Proposition~\\ref{n:relabel} lets behaviour respond to the regime; the harm remains a primitive.")
+replace(T6.ABSTRACT_OLD, T6.ABSTRACT_NEW)
+replace(r'two Lean~4 files, \nolinkurl{PublicationRevision.lean} and \nolinkurl{PublicationRevision2.lean}', r'three Lean~4 files, \nolinkurl{PublicationRevision.lean}, \nolinkurl{PublicationRevision2.lean} and \nolinkurl{PublicationRevision3.lean}')
+replace(r'Theorem~\ref{n:uniformlog} & omitted coefficients', T6.LEAN_ROW + '\n' + r'Theorem~\ref{n:uniformlog} & omitted coefficients')
+replace(r'\bibitem[Dawid(1984)]', T6.BIB_CROCKER + '\n\n' + r'\bibitem[Dawid(1984)]')
+replace(r'\bibitem[Le~Cam(1964)]', T6.BIB_LACKER + '\n\n' + r'\bibitem[Le~Cam(1964)]')
 (NOTE / 'paper1_revised.tex').write_text(t)
 shutil.copy2(HERE/'validation/intervention_example.pdf', NOTE/'fig_intervention_revision.pdf')
 print('Wrote', NOTE / 'paper1_revised.tex', len(t.splitlines()), 'lines')
