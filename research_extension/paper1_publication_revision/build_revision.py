@@ -172,6 +172,11 @@ import round4 as _R4
 t = _R4.apply(t)
 import round5 as _R5
 t = _R5.apply(t)
+import round6 as _R6
+if _R6.RESULTS.exists():  # P1M results: the paragraph is added only once they exist
+    t = _R6.apply(t)
+import round7 as _R7
+t = _R7.apply(t)
 (NOTE / 'paper1_revised.tex').write_text(t)
 shutil.copy2(HERE/'validation/intervention_example.pdf', NOTE/'fig_intervention_revision.pdf')
 print('Wrote', NOTE / 'paper1_revised.tex', len(t.splitlines()), 'lines')

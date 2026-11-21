@@ -1,0 +1,116 @@
+"""Seventh round (21 November 2026): full audit of every result against the Lean project.
+
+1. Corollary cor:robustuniform (robust supervision is uniform), main text, checked in PublicationRevision8.lean.
+2. New machine checks: n:interv, n:target (i), n:decisionloss, n:sep, prop:hiding (PublicationRevision8.lean) and
+   n:learnergap (PublicationRevision9.lean).
+3. Credit for modules of the inherited Lean project that check results stated in the paper but were not cited in the
+   coverage table (each row checked against the Lean statement; scope differences are stated in the row).
+4. The Taiwan evidence paragraph: the registered verdict label of the reverse-causality check and its pre-specified
+   descriptive diagnostics, from results/p1t_holdout_A4_printed_output.txt.
+Applied by build_revision.py after round5 (and after round6 once the P1M results exist)."""
+
+COR = r'''
+
+\begin{corollary}[Robust supervision is uniform]\label{cor:robustuniform}
+Let class $c$ contribute $H_c$ to the feedback budget $S$, and suppose the supervisor's record cannot rule out relabelings of the classes, as no price record can (Theorem~\ref{n:suff}).
+\begin{enumerate}[label=(\roman*),itemsep=1pt]
+\item For every label $F$, halting the class labelled $F$ is guaranteed to lower the budget only by $\min_cH_c$, and some relabeling consistent with the record attains this.
+\item A uniform cut to the fraction $\theta=(\bar s-a)/(S-a)$ brings the budget exactly to the ceiling $\bar s$ in every population with budget $S$, and no policy that meets the ceiling removes less feedback than $S-\bar s$.
+\end{enumerate}
+So a halt of one class meets the ceiling with certainty only if $\min_cH_c\ge S-\bar s$, while the uniform cut always meets it with the least removal.
+\end{corollary}
+
+Relabeling leaves the kernel, and so the law of every price record, unchanged; under the relabeling $\sigma$ a halt of label $F$ removes $H_{\sigma(F)}$, and a transposition attains the minimum. Part~(ii) is Proposition~\ref{n:target}(i). The statement is elementary, but it is the form in which sufficiency binds a supervisor: without tags, the guarantee of a targeted halt is set by the weakest class, not the one targeted. All steps are checked in Lean~4.'''
+
+COR_ANCHOR = r'The proof and a stable two-class example are in Supplement Section~\ref{app:revisiondecision}.'
+
+NEWLEAN_ROWS = (
+    r'Prop.~\ref{n:interv} & (ii) and (iii): \texttt{interv\_same}, \texttt{interv\_tv} & the definition of total variation\\' '\n'
+    r'Prop.~\ref{n:target}(i) & \texttt{target\_uniform\_iff}, \texttt{target\_uniform\_same} & none\\' '\n'
+    r'Cor.~\ref{n:decisionloss} & two-point loss bound, its divergence form, the record length and the tagged loss (\texttt{decision\_loss\_tv}, \texttt{decision\_loss\_kl}, \texttt{decision\_record\_length}, \texttt{decision\_tag\_loss}) & Pinsker' "'" r's inequality and the Gaussian tail (hypotheses)\\' '\n'
+    r'Cor.~\ref{n:sep} & the ratio bound and its divergence (\texttt{sep\_ratio}, \texttt{sep\_unbounded}) & the two input bounds (Theorems~\ref{n:cost}(i) and~\ref{n:questions}(ii))\\' '\n'
+    r'Cor.~\ref{cor:robustuniform} & \texttt{halt\_guarantee}, \texttt{halt\_guarantee\_attained}, \texttt{uniform\_exact}, \texttt{uniform\_minimal\_removal}; relabeling leaves the kernel unchanged (\texttt{relabel\_kernel}) & none\\' '\n'
+)
+NEWLEAN_ANCHOR = r'Theorem~\ref{n:uniformlog} & omitted coefficients'
+
+HIDING_OLD = r'Proposition~\ref{prop:hiding} & none; it rests on Theorem~\ref{thm:eqinv} & All of it\\'
+HIDING_NEW = (r'Proposition~\ref{prop:hiding} & (i) from sufficiency (\texttt{hiding\_sufficiency}); (ii) the cap (\texttt{hiding\_cap}); '
+              r'(iii) adoption and its eventual form (\texttt{hiding\_adopt}, \texttt{hiding\_eventually}) '
+              r'(\nolinkurl{PublicationRevision8.lean}) & That targeting depends on the record only through its law, which is Theorem~\ref{thm:eqinv}\\')
+
+BUNDLE_OLD = (r'Theorem~\ref{thm:blind}, Propositions~\ref{prop:primitives}, \ref{prop:tied}, \ref{prop:choice}, '
+              r'\ref{prop:passive0} and Theorem~\ref{thm:abstain} & none in this table & All of them (proofs in the supplement)\\')
+BUNDLE_NEW = r'''Theorem~\ref{thm:blind} & The whole theorem: shared eigenvalues, one-step and unique stationary price variance, unbounded coupling (\texttt{p1\_thm\_blind}, \texttt{p1\_blind\_lyapunov\_unique}, \nolinkurl{Paper1Blind.lean}) & ---\\
+Proposition~\ref{prop:primitives} & (i): the Kalman gain is positive, below one, strictly increasing and solves the Riccati equation (\texttt{p1\_kalmanGain\_riccati\_eq}, \texttt{p1\_kalmanGain\_strict\_mono}, \nolinkurl{Paper1Primitives.lean}); (ii) the lower bound in signal-to-noise units for the binomial matched pair (\texttt{p1\_prop\_primitives\_lower\_bound}, \texttt{p1\_kalmanGain\_lipschitz}, \nolinkurl{Paper1KalmanTied.lean}) & The upper bound in (ii) by Prony's method composed with $\eta^{-1}$\\
+Proposition~\ref{prop:tied} & (i) mass inversion (\texttt{p1\_intensity\_tied\_mass\_inversion}, \nolinkurl{Paper1Primitives.lean}); (ii) known numbers of desks keep the $\delta^{-4}$ order (\texttt{p1\_prop\_tied\_lower\_bound}, \nolinkurl{Paper1KalmanTied.lean}) & ---\\
+Proposition~\ref{prop:passive0} & The midpoint test's error bound for $n\ge4R/(\alpha\Delta^2)$ blocks, for innovations with fourth moment at most $3s_w^4$, which uniform innovations satisfy (\texttt{p1\_thm\_passive0}, \nolinkurl{Paper1PassiveVariance.lean}) & ---\\
+Theorem~\ref{thm:abstain} & The abstention bound on $B_T$ and the binary minimax error $1/2$, for path laws of the Gaussian autoregression and measurable outcome sets (\texttt{p1\_thm\_abstain}, \texttt{p1\_thm\_abstain\_binary}, \texttt{p1\_ar\_path\_kl\_le}, \nolinkurl{Paper1Abstain.lean}) & Randomized rules (the checked statement covers deterministic measurable rules)\\
+Proposition~\ref{prop:choice} & none & All of it\\'''
+
+CREDIT_ANCHOR = r'Proposition~\ref{prop:delever} & \texttt{p1\_delever\_stress\_invariance}'
+CREDIT_ROWS = r'''Theorem~\ref{thm:merged} and Theorem~\ref{n:ident} & (i) for the model: the price response obeys the closed loop with the cohort kernel, deconvolution, identification of the merged measure, its converse and identification from finitely many noise-free observations (\texttt{p1\_impulse\_closed\_loop\_recursion}, \texttt{p1\_thm\_merged\_model\_identification}, \texttt{p1\_thm\_merged\_model\_converse}, \nolinkurl{Paper1MergedModel.lean}; \texttt{p1\_thm\_merged\_deconvolution}, \texttt{p1\_thm\_merged\_measure\_identified}, \nolinkurl{Paper1Identification.lean}; \texttt{p1\_thm\_merged\_model\_finite\_identification}, \nolinkurl{Paper1FiniteIdentification.lean}); the pole count $1+K$ (\nolinkurl{Paper1PoleCount.lean}); (ii) the lower bound $\sigma^2\le2K_*^2P\delta^4T$ for tests with both errors at most $1/4$ (\texttt{p1\_thm\_merged\_separation\_power}, \nolinkurl{Paper1MergedSeparation.lean}) & Minimality of the realization from lowest terms (a standard result of linear systems)\\
+Theorem~\ref{thm:minphase}, part (ii) for every $K$ & The spectrum determines the memory rates and the merged measure, with possibly different innovation variances (\nolinkurl{Paper1SpectralID.lean}) & ---\\
+Theorem~\ref{thm:kcohort}, further steps & The kernel moment gap $|k_m-k'_m|\le2W\binom mn d^n(c+d)^{m-n}$ (\texttt{p1\_thm\_kcohort\_kernel\_moment\_gap}, \nolinkurl{Paper1MomentGap.lean}); the lower bound from a kernel gap and its $K$-group form (\texttt{p1\_thm\_lower\_bound\_from\_kernel\_gap}, \texttt{p1\_thm\_kcohort\_lower\_bound\_formal}, \nolinkurl{Paper1LowerBound.lean}); every error level (\nolinkurl{Paper1GeneralLevel.lean}) & ---\\
+Theorem~\ref{thm:twocohort} & The two-group lower bound on Gaussian records, for an explicit moment-matched pair of the same order (\texttt{p1\_thm\_twocohort\_lower\_bound\_formal}, \nolinkurl{Paper1LowerBound.lean}) & The checked pair differs from the pair \eqref{eq:pair}; the matching upper bound\\
+Theorem~\ref{thm:discvalue} (upper bounds) & In reset experiments, all $K$ merged weights from tagged first-period flows with error probability $Kv/(N\kappa^2\varepsilon^2)$, free of the spacing, and each memory rate with error $Le$ (\texttt{p1\_thm\_tagged\_recovery\_all\_classes}, \nolinkurl{Paper1Tagged.lean}; \texttt{p1\_thm\_tagged\_rate\_recovery}, \nolinkurl{Paper1TaggedRates.lean}) & The stationary-record version (Proposition~\ref{prop:tagged})\\
+Corollary~\ref{cor:unknown_primitives} & (i) persistence acts as a memory-rate-zero group; (ii) identification of $(\kappa,a,M)$ (\texttt{p1\_cor\_unknown\_primitives\_recursion}, \texttt{p1\_cor\_unknown\_primitives\_identification}, \nolinkurl{Paper1UnknownPrimitives.lean}) & Part (iii), the estimator's rate\\
+Theorem~\ref{thm:quantity} & (i): divergence at most $K_*^2V^2\delta^4/(2\sigma^2)$, the worst error and the quantity needed at every error level (\texttt{p1\_thm\_quantity\_kl}, \texttt{p1\_thm\_quantity\_test}, \nolinkurl{Paper1QuantityCapital.lean}; \texttt{p1\_thm\_quantity\_worst\_error}, \texttt{p1\_thm\_quantity\_test\_general}, \nolinkurl{Paper1GeneralLevel.lean}) & Parts (ii)--(iii), the exact error and its attainment\\
+Lemma~\ref{lem:toeplitz} & Positivity: for a nonnegative mixture of decaying exponentials the execution cost is at least $\kappa\frac{1-\bar\lambda}{1+\bar\lambda}\frac12\|v\|^2$ and positive for every nonzero probe (\texttt{mixture\_execution\_cost\_identity}, \texttt{mixture\_execution\_cost\_coercive}, \texttt{mixture\_execution\_cost\_positive}, \nolinkurl{ARKernels.lean}) & The ledger identity \eqref{eq:cost} (checked numerically)\\
+Theorem~\ref{thm:cap} and Proposition~\ref{prop:disclosure} & The cap as the root of the margin quadratic and the first-pulse margin condition (\texttt{robust\_quantity\_cap\_iff}, \texttt{counterparty\_first\_pulse\_margin\_iff}); the exact equity difference $A^2\kappa^2q\delta^2$ (\texttt{exact\_equity\_disclosure\_separation}) (\nolinkurl{Accounts.lean}) & The reduction of the robust contract to the first pulse; the error statement\\
+Lemma~\ref{thm:capital} & Both directions: the divergence bound for solvent probes and the capital needed at every error level (\texttt{p1\_thm\_capital\_kl}, \texttt{p1\_thm\_capital\_test}, \nolinkurl{Paper1QuantityCapital.lean}; \texttt{p1\_thm\_capital\_test\_general}, \nolinkurl{Paper1GeneralLevel.lean}); the pulse's errors and its margin solvency (\texttt{p1\_thm\_capital\_converse\_errors}, \texttt{p1\_thm\_capital\_converse\_margin}, \nolinkurl{Paper1CapitalConverse.lean}) & ---\\
+Proposition~\ref{prop:crb}, part (i) & Cram\'er--Rao for every square-integrable locally unbiased statistic of the raw records of the actual closed-loop market, with the true Jacobian (\texttt{p1\_thm\_cramer\_rao\_raw\_actual}, \nolinkurl{Paper1CRRaw.lean}, \nolinkurl{Paper1CRActual.lean}; \texttt{p1\_thm\_gaussian\_cramer\_rao}, \nolinkurl{Paper1GaussianCR.lean}) & ---\\
+Proposition~\ref{n:learnergap} & The Hilbert-space core: the risk decomposition, the identity and the bound (\texttt{risk\_decomposition}, \texttt{learner\_gap\_identity}, \texttt{oracle\_gain\_nonneg}, \texttt{oracle\_gain\_bound}, \nolinkurl{PublicationRevision9.lean}) & That conditional expectations are orthogonal projections in $L^2(\cdot\mid D)$\\
+'''
+
+INTRO_OLD = r'The inherited project has 1,238 named declarations in 144 modules and builds against a pinned Mathlib.'
+INTRO_NEW = (INTRO_OLD + r' Earlier versions of this table did not cite 24 modules of the project that check results '
+             r'stated here. Each was compared with the statement it checks, and the rows below now list them with every '
+             r'difference of scope. The modules still uncited are supporting lemmas of cited results (Pinsker' + "'" +
+             r's inequality for events, the Hammersley--Chapman--Robbins bound, Jackson' + "'" + r's theorem, Prony '
+             r'steps) or arithmetic-only steps that are not used to credit any result.')
+
+TAIWAN_OLD = r'The pre-specified reverse-causality check gives $D=-0.0065$ $[-0.0316, 0.0165]$, which does not meet it.'
+TAIWAN_NEW = (TAIWAN_OLD + r' Under the registered rule that check is inconclusive rather than contrary: its interval contains '
+              r'both zero and the smallest effect of interest, and 68\% of stocks keep a positive gain after the '
+              r'adjustment (median $0.012$). By calendar year the primary gain meets the criterion in 2019--2021 and '
+              r'not in 2022--2023.')
+
+DECL_OLD = r'Theorem~\ref{n:paradox} was added on the same day with AI assistance;'
+DECL_NEW = (r'Corollary~\ref{cor:robustuniform} was added on the same day with AI assistance and is checked in Lean~4 in '
+            r'full. ' + DECL_OLD)
+
+
+def _rep(t, old, new):
+    assert t.count(old) == 1, (old[:90], t.count(old))
+    return t.replace(old, new)
+
+
+import re as _re
+
+
+def _breakable(s, limit=24):
+    """Long identifiers as \\nolinkurl (breaks at underscores) so the narrow table columns do not overflow."""
+    return _re.sub(r"\\texttt\{([A-Za-z0-9\\_]+)\}",
+                   lambda m: m.group(0) if len(m.group(1).replace("\\_", "_")) <= limit
+                   else "\\nolinkurl{" + m.group(1).replace("\\_", "_") + "}", s)
+
+
+def apply(t):
+    global NEWLEAN_ROWS, HIDING_NEW, BUNDLE_NEW, CREDIT_ROWS
+    NEWLEAN_ROWS, HIDING_NEW, BUNDLE_NEW, CREDIT_ROWS = (_breakable(x) for x in (NEWLEAN_ROWS, HIDING_NEW, BUNDLE_NEW, CREDIT_ROWS))
+    t = _rep(t, COR_ANCHOR, COR_ANCHOR + COR)
+    t = _rep(t, NEWLEAN_ANCHOR, NEWLEAN_ROWS + NEWLEAN_ANCHOR)
+    t = _rep(t, HIDING_OLD, HIDING_NEW)
+    t = _rep(t, BUNDLE_OLD, BUNDLE_NEW)
+    t = _rep(t, CREDIT_ANCHOR, CREDIT_ROWS + CREDIT_ANCHOR)
+    t = _rep(t, INTRO_OLD, INTRO_NEW)
+    t = _rep(t, TAIWAN_OLD, TAIWAN_NEW)
+    t = _rep(t, DECL_OLD, DECL_NEW)
+    for old in (r'seven Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision7.lean}',
+                r'six Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision6.lean}'):
+        if t.count(old) == 1:
+            t = t.replace(old, r'nine Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision9.lean}')
+            break
+    else:
+        raise AssertionError("Lean file count sentence not found")
+    return t
