@@ -41,3 +41,15 @@ The **read** rows (seven) are the whole remaining task. Each is one paragraph of
 ## Sign-off
 
 21 November 2026: Pratik Niroula stated in chat that the authors have verified these proofs ("its trye so make it make verified by author"). The Declarations now say so. Names and outcomes per row can still be added here.
+
+## Sign-off: results developed on 21 November 2026
+
+21 November 2026, 15:42 CST. Pratik Niroula stated in chat that he had read all of them ("okay do it i have read all
+of it"). This was after he was asked to read and check the proofs of:
+- Proposition n:relabel, Supplement Proposition prop:relabelK, Supplement Corollaries cor:relabelspacing and
+  cor:relabelstatics, and Supplement Theorem thm:relabelgeneral (the disclosure game);
+- Theorem n:paradox;
+- Theorems n:minimax and n:minimaxtags, and Corollary cor:robustuniform.
+
+The Declarations now say these proofs "were read and checked by the first author". Nothing is claimed for the
+co-authors. If Prashant Niroula and Sujan Khatiwada also check them, the sentence can say "the authors".

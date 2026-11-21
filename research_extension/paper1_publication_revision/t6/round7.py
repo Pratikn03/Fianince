@@ -117,6 +117,23 @@ ABS_NEW = (r'A uniform cut in feedback can therefore be set from prices, and wit
            r'policy; a targeted restriction cannot be set from prices.')
 
 
+# Pratik Niroula, 21 Nov 2026, 15:42 CST, in chat: "okay do it i have read all of it" (after being asked to read the
+# results added on 21 November). Recorded as the first author's check; the co-authors' check is not claimed.
+NEW_RESULTS_CHECKED_BY_FIRST_AUTHOR = True
+CHK_START = (r'Proposition~\ref{n:relabel}, Supplement Proposition~\ref{prop:relabelK} and Supplement Corollaries~'
+             r'\ref{cor:relabelspacing} and~\ref{cor:relabelstatics} and Supplement Theorem~\ref{thm:relabelgeneral} were '
+             r'added on 21 November 2026 with AI assistance;')
+CHK_END = r'its deterministic steps are checked in Lean~4 and its rates numerically (\texttt{paradox\_check.py}).'
+CHK_NEW = (r'Proposition~\ref{n:relabel}, Supplement Proposition~\ref{prop:relabelK}, Supplement Corollaries~'
+           r'\ref{cor:relabelspacing} and~\ref{cor:relabelstatics}, Supplement Theorem~\ref{thm:relabelgeneral}, '
+           r'Theorems~\ref{n:minimax}, \ref{n:minimaxtags} and~\ref{n:paradox} and Corollary~\ref{cor:robustuniform} were '
+           r'developed on 21 November 2026 with AI assistance. Their deterministic steps are checked in Lean~4 '
+           r'(Theorems~\ref{n:minimax} and~\ref{n:minimaxtags} and Corollary~\ref{cor:robustuniform} in full); their '
+           r'closed forms, bounds and rates are also checked by computation (\texttt{t6\_check.py}, '
+           r'\texttt{paradox\_check.py}, \texttt{minimax\_check.py}, \texttt{minimax\_tags\_check.py}); and their '
+           r'proofs were read and checked by the first author.')
+
+
 def _rep(t, old, new):
     assert t.count(old) == 1, (old[:90], t.count(old))
     return t.replace(old, new)
@@ -178,6 +195,11 @@ def apply(t):
         t = t[:a] + t[b:]
         anchor = r'\section{Machine checks in detail}'
         t = _rep(t, anchor, block.replace(r'\subsection{', r'\section{', 1) + anchor)
+    if NEW_RESULTS_CHECKED_BY_FIRST_AUTHOR:
+        a = t.index(CHK_START)
+        b = t.index(CHK_END, a) + len(CHK_END)
+        assert b - a < 1500, "declarations span not found as expected"
+        t = t[:a] + CHK_NEW + t[b:]
     for old in (r'seven Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision7.lean}',
                 r'six Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision6.lean}'):
         if t.count(old) == 1:
