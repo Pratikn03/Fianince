@@ -3,7 +3,13 @@
 Written 20 November 2026 by an AI system for the authors, at the author's request in chat ("lets do ... a real
 regulation aimed at one class of traders that the theory predicts correctly"). This is not independent review.
 
-**Status: draft, not registered.** The theory's prediction, the statistics, the decision rules and the simulation
+**Status (21 November 2026): not runnable; closed without registration.** KRX's short-selling data now need a
+logged-in KRX account, and KRX sign-up requires Korean identity verification (an i-PIN or a Korean mobile number),
+which the authors do not have. A test in Colab on 21 November 2026 without an account returned no short-selling data
+(pykrx 1.2.9: empty response, `KeyError: '거래량'`), for pre-ban dates only. No calibration was run and no Korean
+data of any date were read. The rules below are kept as written.
+
+**Original status: draft, not registered.** The theory's prediction, the statistics, the decision rules and the simulation
 acceptance criteria below are fixed in this commit, before any Korean market data are read for this test. The
 simulation check is then calibrated to pre-ban data only (section 8). If the check passes, the spec, estimator,
 executor and notebook are hashed and registered with the author's explicit approval, and the data run happens once.
