@@ -9,6 +9,10 @@ which the authors do not have. A test in Colab on 21 November 2026 without an ac
 (pykrx 1.2.9: empty response, `KeyError: '거래량'`), for pre-ban dates only. No calibration was run and no Korean
 data of any date were read. The rules below are kept as written.
 
+Author approval: on 21 November 2026 (09:42 US Central) Pratik Niroula wrote in chat "p1b is approved". The approval
+is recorded; registration still requires (a) access to KRX short-selling data and (b) a passed simulation check
+calibrated on pre-ban data, and neither exists.
+
 **Original status: draft, not registered.** The theory's prediction, the statistics, the decision rules and the simulation
 acceptance criteria below are fixed in this commit, before any Korean market data are read for this test. The
 simulation check is then calibrated to pre-ban data only (section 8). If the check passes, the spec, estimator,
