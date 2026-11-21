@@ -144,3 +144,19 @@ targeted range lies inside the tagged interval), the paragraph says so in place 
 heading and position do not change. The template is implemented, word for word, in
 `research_extension/paper1_publication_revision/t6/round6.py`, which fills it from `p1m_results.json` and adds Table
 `tab:barrier` and the supplement subsection `app:barrier` (all four runs, and the one-stock ranges).
+
+## 8. Post-result notes (21 November 2026, after the run; nothing above this section was changed)
+
+- **Run:** computed 2026-11-21T20:44:23Z in the authors' Colab, once.
+  - `results/p1m_results.json` has SHA-256 `b7ad67bb…`. Its copy inside `results/p1m_results.zip` is identical.
+  - Hashes recorded in the file: core `50df914b…`, which matches the committed `p1m_core.py`; executor `8d8a70a3…`.
+- **Section 7 direction checks: all three predicted directions hold, so the template's default sentences apply.**
+  1. A stock-day of tagged flows carries 4.7×10^5 times the information of a stock-day of prices.
+  2. The targeted range is the whole box in both boxes: ±0.028, and ±0.0027 in the tight box. The tagged 95% interval is [0.0012, 0.0016].
+  3. The uniform range over the whole panel is [0.00145, 0.00189]. That is 127 times narrower than the targeted range, and close to the tagged interval for U, [0.00138, 0.00199].
+- **Added after the run, with no template sentence and no number changed:**
+  1. **Clarification after the paragraph:** both record lengths compare feedback rules with each class's non-feedback flow held at its estimated law; with tags, each class's contribution is estimated directly.
+  2. **On size:** κ = 0.0038, so the three classes together contribute 0.0017 to a feedback budget of 0.97.
+  3. **One abstract sentence:** prices pin down the uniform cut but cannot attribute feedback to classes.
+  4. **Layout:** the estimates table is set at `\footnotesize`, and the supplement subsection is moved to its own section before the machine-check sections.
+- **Reading note:** "at least 5,738 years of one stock" for the tagged record is a statement about separating feedback rules with non-feedback flow held fixed. For the 300-stock panel it is about 19 years. The bootstrap intervals for r_c come from the regression in which flow and rule share one decay, and there Foreign and Trust separate (0.31–0.38 against 0.39–0.43). These are different questions, and the paper reports both.

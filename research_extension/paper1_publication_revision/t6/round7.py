@@ -147,6 +147,27 @@ def apply(t):
     if t.count(NEW_OLD) == 1:
         t = t.replace(NEW_OLD, NEW_NEW)
     t = _rep(t, ABS_OLD, ABS_NEW)
+    # once the P1M results exist: one clarifying sentence after the fixed template paragraph (no template sentence
+    # or number is changed; recorded in P1M_measurement_protocol.md, post-result notes) and one abstract sentence
+    tail = (r'the pre-specified sensitivity runs are in Supplement Section~\ref{app:barrier}.')
+    if tail in t:
+        import json as _json
+        import round6 as _r6
+        _R = _json.load(open(_r6.RESULTS))['runs']['primary']
+        _k, _U, _S = _R['theta']['kappa'], _R['effects']['U'], _R['effects']['S']
+        t = _rep(t, tail, tail + (r' Both record lengths compare feedback rules with each class' + "'" + r's non-feedback flow held '
+                 r'at its estimated law; with tags, each class' + "'" + r's contribution is estimated directly, with the '
+                 r'intervals of Table~\ref{tab:barrier}. The barrier is this large partly because lagged institutional flow '
+                 r'moves prices little ($\kappa=' + _r6.sig(_k).strip('$') + r'$): the three classes together contribute '
+                 + _r6.sig(_U) + r' to a feedback budget of ' + _r6.sig(_S) + r'.'))
+        t = _rep(t, r'Class tags restore targeting only if relabeling is costly;',
+                 r'Calibrated to Taiwan' + "'" + r's tagged exchange flows, prices alone pin down the effect of a uniform '
+                 r'cut but cannot attribute feedback to the trading classes. Class tags restore targeting only if '
+                 r'relabeling is costly;')
+    # the estimates table of round6 is a few points too wide at \small (layout only)
+    _tb = '\\begin{table}[t]\\centering\\small\n\\caption{Tagged rules in Taiwan'
+    if _tb in t:
+        t = _rep(t, _tb, '\\begin{table}[t]\\centering\\footnotesize\\setlength{\\tabcolsep}{4pt}\n\\caption{Tagged rules in Taiwan')
     # once the P1M results exist, round6 inserts its supplement subsection inside the surveillance section; it is a
     # section of its own, placed before the machine-check sections (placement only; the text is round6's)
     bar = r'\subsection{The barrier in a real market: protocol and sensitivity}'
