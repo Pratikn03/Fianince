@@ -95,6 +95,14 @@ INTRO_ADD = (r' Without tags, a uniform policy is also minimax: for any convex l
              r'with the record (Theorem~\ref{n:minimax}).')
 
 
+NEW_OLD = r'and only audit trails that link accounts to owners escape the problem. Finally, without tags'
+NEW_NEW = (r'and only audit trails that link accounts to owners escape the problem. Without tags, a uniform policy is '
+           r'minimax for every convex loss (Theorem~\ref{n:minimax}). Finally, without tags')
+ABS_OLD = r'A uniform cut in feedback can therefore be set from prices; a targeted restriction cannot.'
+ABS_NEW = (r'A uniform cut in feedback can therefore be set from prices, and without class tags it is the minimax '
+           r'policy; a targeted restriction cannot be set from prices.')
+
+
 def _rep(t, old, new):
     assert t.count(old) == 1, (old[:90], t.count(old))
     return t.replace(old, new)
@@ -122,6 +130,19 @@ def apply(t):
     t = _rep(t, TAIWAN_OLD, TAIWAN_NEW)
     t = _rep(t, DECL_OLD, DECL_NEW)
     t = _rep(t, INTRO_ANCHOR, INTRO_ANCHOR + INTRO_ADD)
+    if t.count(NEW_OLD) == 1:
+        t = t.replace(NEW_OLD, NEW_NEW)
+    t = _rep(t, ABS_OLD, ABS_NEW)
+    # once the P1M results exist, round6 inserts its supplement subsection inside the surveillance section; it is a
+    # section of its own, placed before the machine-check sections (placement only; the text is round6's)
+    bar = r'\subsection{The barrier in a real market: protocol and sensitivity}'
+    if bar in t:
+        a = t.index(bar)
+        b = t.index(r'\paragraph{Machine check.} The divergence of a moving window', a)
+        block = t[a:b]
+        t = t[:a] + t[b:]
+        anchor = r'\section{Machine checks in detail}'
+        t = _rep(t, anchor, block.replace(r'\subsection{', r'\section{', 1) + anchor)
     for old in (r'seven Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision7.lean}',
                 r'six Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision6.lean}'):
         if t.count(old) == 1:
