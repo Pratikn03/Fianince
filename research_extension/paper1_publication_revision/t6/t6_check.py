@@ -65,3 +65,38 @@ for th, nH, nS, bH in [(0.3, -1.0, 0.8, 0.5), (0.7, -1.0, 0.8, 0.5), (0.5, -0.2,
     assert np.all(np.diff(VC) > 0) and VC[0] < 1e-3 * VA and VA - VC[-1] < 1e-3 * VA and np.all(VC < VA)
     print(f"theta={th}: m={m:+.3f}; V_C rises from {VC[0]:.2e} to {VC[-1]:.4f} < V_A={VA:.4f}")
 print("all checks pass")
+
+
+# ---- many classes (Proposition prop:relabelK): three classes, nearest-neighbour channels both ways
+def welfare_K(x, th, n, b, cbar, eps):
+    K = len(x)
+    W = 0.0
+    for j in range(K):
+        best = (0.0, 0.0, 0.0)  # payoff, gain z*d, cost
+        for k in (j - 1, j + 1):
+            if 0 <= k < K:
+                d = max(x[k] - x[j], 0.0); c = eps * cbar[j][k]
+                z = min(1.0, b[j] * d / c) if d > 0 else 0.0
+                pay = b[j] * d * z - c * z * z / 2
+                if pay > best[0]:
+                    best = (pay, z * d, c * z * z / 2)
+        W += th[j] * (n[j] * (x[j] + best[1]) - best[2])
+    return W
+
+
+grid = np.linspace(0, 1, 21)
+pols = np.array(list(itertools.product(grid, grid, grid)))
+for trial in range(30):
+    th = rng.dirichlet(np.ones(3)); n = rng.uniform(-1.5, 1.5, 3); b = rng.uniform(0.1, 2, 3)
+    cbar = rng.uniform(0.5, 2, (3, 3))
+    coarse = max(sum(th[j] * n[j] * max(x[max(j - 1, 0):j + 2]) for j in range(3)) for x in pols)
+    WA = sum(th * np.maximum(n, 0))
+    for eps in (1e-3, 1e-2, 1e-1):
+        WC = max(welfare_K(x, th, n, b, cbar, eps) for x in pols)
+        bound = eps * sum(th[j] * (abs(n[j]) / (2 * b[j]) + 0.5) * cbar[j].max() for j in range(3))
+        assert abs(WC - coarse) <= bound + 1e-12, ("cheap", trial, eps, WC, coarse, bound)
+    for eps in (1e2, 1e3):
+        WC = max(welfare_K(x, th, n, b, cbar, eps) for x in pols)
+        bound = sum(th[j] * (abs(n[j]) * b[j] + b[j] ** 2) / (eps * cbar[j].min()) for j in range(3))
+        assert abs(WC - WA) <= bound + 1e-12, ("expensive", trial, eps, WC, WA, bound)
+print("many classes: cheap- and expensive-channel bounds hold on 30 random three-class economies")

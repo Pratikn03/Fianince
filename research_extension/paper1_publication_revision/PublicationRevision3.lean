@@ -89,4 +89,39 @@ theorem hiding_share_lt_one (a b γ : ℝ) (ha : 0 < a) (hb : 0 < b) (hγ : 0 < 
   · rw [div_lt_one h2]
     linarith
 
+/-! ## Many classes (Proposition `prop:relabelK`) -/
+
+/-- Cheap channels: if the chosen channel (gap `d ≤ D`, share `z`, cost `c`) pays at least what routing
+everything through the best label would (`b D - cs/2`), the effective gain `z d` is within `cs/(2b)` of `D`
+and the resource cost is at most `cs/2`. -/
+theorem routing_near_best (b c cs z d D : ℝ) (hb : 0 < b) (hc : 0 ≤ c) (hz0 : 0 ≤ z) (hz1 : z ≤ 1)
+    (hd0 : 0 ≤ d) (hdD : d ≤ D) (hopt : b * D - cs / 2 ≤ b * d * z - c * z ^ 2 / 2) :
+    D - cs / (2 * b) ≤ z * d ∧ z * d ≤ D ∧ c * z ^ 2 / 2 ≤ cs / 2 := by
+  have hzd : z * d ≤ D := by nlinarith
+  have hcz : 0 ≤ c * z ^ 2 / 2 := by positivity
+  refine ⟨?_, hzd, ?_⟩
+  · have h1 : b * D - cs / 2 ≤ b * (z * d) := by nlinarith
+    have h2 : D - cs / (2 * b) = (b * D - cs / 2) / b := by field_simp
+    rw [h2, div_le_iff₀ hb]
+    linarith
+  · nlinarith
+
+/-- Expensive channels: with share `z ≤ b d / c`, gap `d ≤ 1` and a nonnegative payoff, the effective gain is
+at most `b / c` and the resource cost at most `b² / c`. -/
+theorem routing_expensive (b c z d : ℝ) (hb : 0 < b) (hc : 0 < c) (hz0 : 0 ≤ z) (hd0 : 0 ≤ d)
+    (hd1 : d ≤ 1) (hzle : z ≤ b * d / c) (hpay : 0 ≤ b * d * z - c * z ^ 2 / 2) :
+    z * d ≤ b / c ∧ c * z ^ 2 / 2 ≤ b ^ 2 / c := by
+  have hz : z ≤ b / c := by
+    calc z ≤ b * d / c := hzle
+      _ ≤ b * 1 / c := by apply div_le_div_of_nonneg_right _ hc.le; nlinarith
+      _ = b / c := by ring
+  have hzd : z * d ≤ b / c := by
+    calc z * d ≤ z * 1 := by nlinarith
+      _ ≤ b / c := by linarith
+  refine ⟨hzd, ?_⟩
+  have h1 : c * z ^ 2 / 2 ≤ b * (z * d) := by nlinarith
+  have h2 : b * (z * d) ≤ b * (b / c) := by nlinarith
+  have h3 : b * (b / c) = b ^ 2 / c := by ring
+  linarith
+
 end Paper1Revision3
