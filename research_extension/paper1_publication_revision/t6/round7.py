@@ -11,16 +11,24 @@ Applied by build_revision.py after round5 (and after round6 once the P1M results
 
 COR = r'''
 
-\begin{corollary}[Robust supervision is uniform]\label{cor:robustuniform}
-Let class $c$ contribute $H_c$ to the feedback budget $S$, and suppose the supervisor's record cannot rule out relabelings of the classes, as no price record can (Theorem~\ref{n:suff}).
+\begin{theorem}[Without tags, uniform policies are minimax]\label{n:minimax}
+Let class $d$ contribute $H_d$ to the feedback budget, $U=\sum_dH_d$, and let a policy scale the feedback of the class carrying label $c$ by $\theta_c$, at cost $C(\theta)$. The resulting budget is $S'_\sigma=a+\sum_c\theta_cH_{\sigma(c)}$, where $\sigma$ is the unknown assignment of labels to classes, and its loss is $\ell(S'_\sigma)$. If $\ell$ is convex and $C$ is convex and unchanged when labels are permuted, the uniform policy that scales every class by $\bar\theta=K^{-1}\sum_c\theta_c$ has a budget $a+\bar\theta U$ that does not depend on $\sigma$, and
+\[
+\ell(a+\bar\theta U)+C(\bar\theta\mathbf 1)\ \le\ \frac1{K!}\sum_\sigma\ell(S'_\sigma)+C(\theta)\ \le\ \max_\sigma\ell(S'_\sigma)+C(\theta).
+\]
+No price record distinguishes labellings (Theorem~\ref{n:suff}), so against the worst labelling consistent with the record, every policy a supervisor can base on prices is weakly dominated by a uniform one.
+\end{theorem}
+
+The proof averages over labellings. Every label is carried by every class equally often, so the average budget is $a+\bar\theta U$ and the average relabeled policy is $\bar\theta\mathbf 1$; Jensen's inequality for $\ell$ and for $C$ gives the first inequality, and an average is at most a maximum. The theorem is machine-checked in full (\nolinkurl{PublicationRevision10.lean}). On 14,400 random economies with three convex losses and three costs, the uniform policy is never worse and is strictly better in 86\% of them (\nolinkurl{minimax/minimax_check.py}). Tags break the symmetry the proof uses: with verified labels the supervisor can tailor the policy to each class, and the gain from doing so is the value of tags studied in Theorem~\ref{n:disc} and Proposition~\ref{n:relabel}. A single halt shows the size of the gap.
+
+\begin{corollary}[What a halt guarantees]\label{cor:robustuniform}
+In the setting of Theorem~\ref{n:minimax}:
 \begin{enumerate}[label=(\roman*),itemsep=1pt]
-\item For every label $F$, halting the class labelled $F$ is guaranteed to lower the budget only by $\min_cH_c$, and some relabeling consistent with the record attains this.
+\item For every label $F$, halting the class labelled $F$ is guaranteed to lower the budget only by $\min_cH_c$, and some labelling consistent with the record attains this.
 \item A uniform cut to the fraction $\theta=(\bar s-a)/(S-a)$ brings the budget exactly to the ceiling $\bar s$ in every population with budget $S$, and no policy that meets the ceiling removes less feedback than $S-\bar s$.
 \end{enumerate}
-So a halt of one class meets the ceiling with certainty only if $\min_cH_c\ge S-\bar s$, while the uniform cut always meets it with the least removal.
-\end{corollary}
-
-Relabeling leaves the kernel, and so the law of every price record, unchanged; under the relabeling $\sigma$ a halt of label $F$ removes $H_{\sigma(F)}$, and a transposition attains the minimum. Part~(ii) is Proposition~\ref{n:target}(i). The statement is elementary, but it is the form in which sufficiency binds a supervisor: without tags, the guarantee of a targeted halt is set by the weakest class, not the one targeted. All steps are checked in Lean~4.'''
+So a halt of one class meets the ceiling with certainty only if $\min_cH_c\ge S-\bar s$, while the uniform cut always meets it with the least removal. Without tags, the guarantee of a targeted halt is set by the weakest class, not the one targeted.
+\end{corollary}'''
 
 COR_ANCHOR = r'The proof and a stable two-class example are in Supplement Section~\ref{app:revisiondecision}.'
 
@@ -29,6 +37,7 @@ NEWLEAN_ROWS = (
     r'Prop.~\ref{n:target}(i) & \texttt{target\_uniform\_iff}, \texttt{target\_uniform\_same} & none\\' '\n'
     r'Cor.~\ref{n:decisionloss} & two-point loss bound, its divergence form, the record length and the tagged loss (\texttt{decision\_loss\_tv}, \texttt{decision\_loss\_kl}, \texttt{decision\_record\_length}, \texttt{decision\_tag\_loss}) & Pinsker' "'" r's inequality and the Gaussian tail (hypotheses)\\' '\n'
     r'Cor.~\ref{n:sep} & the ratio bound and its divergence (\texttt{sep\_ratio}, \texttt{sep\_unbounded}) & the two input bounds (Theorems~\ref{n:cost}(i) and~\ref{n:questions}(ii))\\' '\n'
+    r'Theorem~\ref{n:minimax} & the whole theorem: equal label frequencies, the average budget and policy, Jensen for the loss and the cost, worst case (\texttt{perm\_sum\_const}, \texttt{perm\_average\_budget}, \texttt{perm\_average\_policy}, \texttt{minimax\_uniform}, \texttt{uniform\_budget\_label\_free}) & none\\' '\n'
     r'Cor.~\ref{cor:robustuniform} & \texttt{halt\_guarantee}, \texttt{halt\_guarantee\_attained}, \texttt{uniform\_exact}, \texttt{uniform\_minimal\_removal}; relabeling leaves the kernel unchanged (\texttt{relabel\_kernel}) & none\\' '\n'
 )
 NEWLEAN_ANCHOR = r'Theorem~\ref{n:uniformlog} & omitted coefficients'
@@ -76,8 +85,14 @@ TAIWAN_NEW = (TAIWAN_OLD + r' Under the registered rule that check is inconclusi
               r'not in 2022--2023.')
 
 DECL_OLD = r'Theorem~\ref{n:paradox} was added on the same day with AI assistance;'
-DECL_NEW = (r'Corollary~\ref{cor:robustuniform} was added on the same day with AI assistance and is checked in Lean~4 in '
-            r'full. ' + DECL_OLD)
+DECL_NEW = (r'Theorem~\ref{n:minimax} and Corollary~\ref{cor:robustuniform} were added on the same day with AI '
+            r'assistance and are checked in Lean~4 in full. ' + DECL_OLD)
+
+
+INTRO_ANCHOR = r'as its record grows (Theorem~\ref{n:paradox}).'
+INTRO_ADD = (r' Without tags, a uniform policy is also minimax: for any convex loss and any cost that ignores labels, it '
+             r'weakly dominates every policy a supervisor can base on prices, against the worst labelling consistent '
+             r'with the record (Theorem~\ref{n:minimax}).')
 
 
 def _rep(t, old, new):
@@ -106,10 +121,11 @@ def apply(t):
     t = _rep(t, INTRO_OLD, INTRO_NEW)
     t = _rep(t, TAIWAN_OLD, TAIWAN_NEW)
     t = _rep(t, DECL_OLD, DECL_NEW)
+    t = _rep(t, INTRO_ANCHOR, INTRO_ANCHOR + INTRO_ADD)
     for old in (r'seven Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision7.lean}',
                 r'six Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision6.lean}'):
         if t.count(old) == 1:
-            t = t.replace(old, r'nine Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision9.lean}')
+            t = t.replace(old, r'ten Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision10.lean}')
             break
     else:
         raise AssertionError("Lean file count sentence not found")
