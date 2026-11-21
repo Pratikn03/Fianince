@@ -166,6 +166,8 @@ replace(r'\bibitem[Dawid(1984)]', T6.BIB_CROCKER + '\n\n' + r'\bibitem[Dawid(198
 replace(r'\bibitem[Le~Cam(1964)]', T6.BIB_LACKER + '\n\n' + r'\bibitem[Le~Cam(1964)]')
 import round2 as _R2
 t = _R2.apply(t)
+import round3 as _R3
+t = _R3.apply(t)
 (NOTE / 'paper1_revised.tex').write_text(t)
 shutil.copy2(HERE/'validation/intervention_example.pdf', NOTE/'fig_intervention_revision.pdf')
 print('Wrote', NOTE / 'paper1_revised.tex', len(t.splitlines()), 'lines')
