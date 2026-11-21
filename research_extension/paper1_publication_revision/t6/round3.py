@@ -8,12 +8,12 @@ STATICS = r'''
 At the interior optima of Proposition~\ref{n:relabel}:
 \begin{enumerate}[label=(\roman*),itemsep=1pt]
 \item when $m\ge0$, the optimal label gap $a\gamma/\{b_H(2a+b_H)\}$ rises with the relabeling cost and falls with the restricted traders' private gain $b_H$;
-\item the equilibrium hiding share does not depend on $\gamma$: it is $a/(2a+b_H)$ when $m\ge0$ and $s/\{\theta(2a+b_H)\}$ when $m<0$, and it falls with $b_H$; when $m\ge0$ it rises with the harm $a$;
-\item the gain from class tags, $\theta a^2\gamma/\{2b_H(2a+b_H)\}$ when $m\ge0$ and $s^2\gamma/\{2\theta b_H(2a+b_H)\}$ when $m<0$, rises with $\gamma$ and falls with $b_H$; when $m\ge0$ it rises with the harm $a$.
+\item the equilibrium hiding share does not depend on $\gamma$: it is $a/(2a+b_H)$ when $m\ge0$ and $s/\{\chi(2a+b_H)\}$ when $m<0$, and it falls with $b_H$; when $m\ge0$ it rises with the harm $a$;
+\item the gain from class tags, $\chi a^2\gamma/\{2b_H(2a+b_H)\}$ when $m\ge0$ and $s^2\gamma/\{2\chi b_H(2a+b_H)\}$ when $m<0$, rises with $\gamma$ and falls with $b_H$; when $m\ge0$ it rises with the harm $a$.
 \end{enumerate}
 \end{corollary}
 
-\paragraph{Proof of Corollary~\ref{cor:relabelstatics}.} Substitute $g=\gamma/\{b_H(2a+b_H)\}$ in the closed forms of Proposition~\ref{n:relabel}(ii) and in the hiding share $b_Hd/\gamma$ at the optimal gap ($d=ag$ when $m\ge0$, $d=sg/\theta$ when $m<0$); the factor $\gamma$ cancels from the share. The monotonicity statements compare ratios of positive quantities (\nolinkurl{gap_antitone_gain}, \nolinkurl{hiding_share_antitone_gain}, \nolinkurl{hiding_share_monotone_harm}, \nolinkurl{tag_value_antitone_gain}, \nolinkurl{tag_value_monotone_harm}, \nolinkurl{tag_value_mono}). $\square$
+\paragraph{Proof of Corollary~\ref{cor:relabelstatics}.} Substitute $g=\gamma/\{b_H(2a+b_H)\}$ in the closed forms of Proposition~\ref{n:relabel}(ii) and in the hiding share $b_Hd/\gamma$ at the optimal gap ($d=ag$ when $m\ge0$, $d=sg/\chi$ when $m<0$); the factor $\gamma$ cancels from the share. The monotonicity statements compare ratios of positive quantities (\nolinkurl{gap_antitone_gain}, \nolinkurl{hiding_share_antitone_gain}, \nolinkurl{hiding_share_monotone_harm}, \nolinkurl{tag_value_antitone_gain}, \nolinkurl{tag_value_monotone_harm}, \nolinkurl{tag_value_mono}). $\square$
 
 The share of the restricted activity that hides is therefore set by the harm and the private gain, not by the cost of hiding: a cheaper channel leads the supervisor to narrow the gap until the same share hides. The more profitable the restricted activity, the milder the optimal restriction and the less class tags are worth.'''
 
