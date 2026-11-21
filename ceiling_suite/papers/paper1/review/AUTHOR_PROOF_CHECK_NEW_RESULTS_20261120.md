@@ -37,3 +37,7 @@ mechanically, so your job is the "By hand" column. Rows marked **read** need rea
 | Prop 6.5 channels | S-91 | (b) value = κ² × reduction in projection error | — | (c) Kalman fixed point and gain ρ²P checked | **read**: information sets of the two observers in (b) | | |
 
 The **read** rows (seven) are the whole remaining task. Each is one paragraph of the supplement.
+
+## Sign-off
+
+21 November 2026: Pratik Niroula stated in chat that the authors have verified these proofs ("its trye so make it make verified by author"). The Declarations now say so. Names and outcomes per row can still be added here.
