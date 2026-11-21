@@ -2,16 +2,12 @@
 
 Prepared 21 November 2026 by an AI system for the authors.
 
-## Before you submit (all three must be true)
-1. Every row of `AUTHOR_PROOF_CHECK_NEW_RESULTS_20261120.md` has an author checker and an outcome.
-2. Pratik, Prashant and Sujan have each approved this version for posting.
-3. In `research_extension/paper1_publication_revision/build_revision.py` set `AUTHOR_CHECK_DONE = True` and
-   `ALL_AUTHORS_APPROVED = True`, then run `python ceiling_suite/papers/paper1_note/build_ssrn.py --pdf`.
-   This removes exactly two sentences (the "being checked" sentence and "approval ... is pending"); the build was
-   tested with both flags on 21 November and changes nothing else.
+## Status (21 November 2026, latest build)
+Both sign-off flags are set (on Pratik Niroula's statements of 21 November 2026). The Declarations say which results
+the authors verified and which were added later with AI assistance and machine checks.
 
 ## File
-`pdf_delivered/Paper1_ssrn_complete.pdf` (main text and supplement, 137 pages).
+`pdf_delivered/Paper1_ssrn_complete.pdf` (main text and supplement, 140 pages, dated 21 November 2026).
 
 ## Title
 Observationally Equivalent Algorithms: What Prices Reveal About Trader Populations, and What Supervisors Need
@@ -21,18 +17,15 @@ Pratik Niroula (Minnesota State University, Mankato); Prashant Niroula (Tribhuva
 Sujan Khatiwada (Minnesota State University, Mankato). Submitter: Pratik Niroula.
 
 ## Abstract
-Algorithmic traders read prices and, by trading, move them. We ask what a market's public record reveals about its
-population of such traders, and for which supervisory actions that is enough. When traders respond to a common public
-signal, the population enters prices, order flows, insider profits and dealer inventories only through its aggregate
-feedback response, and this remains true when price impact and persistence arise from competitive dealers who bear
-inventory risk. Learning anything finer is expensive. Under regularity conditions, telling apart K trader types whose
-rules lie within Δ of one another takes at least of order Δ^-(4K-2) observations for any smooth family of rules, and
-for linear memory rules satisfying a rank condition this order is attained. The difficulty has an exact source: with
-Gaussian news, what a record reveals about which of two populations is trading equals the cumulative forecast loss
-from confusing them. A uniform cut in feedback can therefore be set from prices, while restricting one class of
-traders can be safe in one population and unsafe in another with nearly the same record. Tagging all but one memory
-class removes the spacing penalty for recovering class weights. Registered empirical tests are pending; core steps
-are checked in Lean 4.
+Algorithmic traders read prices and, by trading, move them. We ask what the public record reveals about the
+population of such traders, and what supervisors need beyond it. When traders respond to a common public signal, the
+population affects prices, order flows and dealer inventories only through its aggregate feedback response, also in
+an inventory equilibrium. Learning anything finer is expensive: telling apart K trader types whose rules lie within Δ
+of one another needs of order Δ^-(4K-2) observations, an order attained for linear memory rules. With Gaussian news,
+what a record reveals about two candidate populations equals the cumulative forecast loss from confusing them. A
+uniform cut in feedback can therefore be set from prices; a targeted restriction cannot. Class tags restore targeting
+only if relabeling is costly; an audit trail linking accounts to owners does not need that. Core steps are checked in
+Lean 4.
 
 ## Keywords
 algorithmic trading, feedback trading, aggregate response, identification, supervision, disclosure
