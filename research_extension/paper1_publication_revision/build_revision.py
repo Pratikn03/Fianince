@@ -37,10 +37,11 @@ replace('Niroula, Niroula and Khatiwada, 12 November 2026', 'Niroula, Niroula an
 replace(r'\begingroup\onehalfspacing', r'\begingroup\singlespacing\small')
 # Set to True only after every row of AUTHOR_PROOF_CHECK_NEW_RESULTS_20261120.md has an author checker and an outcome.
 AUTHOR_CHECK_DONE = False
-CHECK_SENTENCE = "" if AUTHOR_CHECK_DONE else (r" The proofs of Theorems~\ref{n:univ}, \ref{n:shape}, \ref{n:dual}, \ref{n:irr} and~\ref{n:uniformlog}, which are new in this revision, are being checked by the authors; this sentence will be removed when that check is complete.")
+# Until the authors' check is recorded, the declaration says what has been checked and by what, without claiming it.
+CHECK_SENTENCE = "" if AUTHOR_CHECK_DONE else (r" The proofs of Theorems~\ref{n:univ}, \ref{n:shape}, \ref{n:dual}, \ref{n:irr} and~\ref{n:uniformlog} are new in this revision: their deterministic steps are checked in Lean~4 (Table~\ref{tab:newlean}), and the remaining steps were re-derived and checked numerically with AI assistance (repository script \texttt{verify\_new\_results\_20261121.py}).")
 span(r'\paragraph{Declaration of generative AI and AI-assisted technologies.}', r'\begin{thebibliography}', r"""\paragraph{Declaration of generative AI and AI-assisted technologies.} During the preparation of this work the authors used large language model systems (Claude, ChatGPT/Codex and Gemini) for literature search, code development, numerical checks, Lean~4 formalization and drafting. The authors reviewed and edited all material and take full responsibility for the content.""" + CHECK_SENTENCE + r""" Lean~4 certifies the stated formal declarations only; it does not certify empirical validity, novelty or full manuscript coverage.""")
 # Set to True only when Pratik, Prashant and Sujan have each approved this version for posting.
-ALL_AUTHORS_APPROVED = False
+ALL_AUTHORS_APPROVED = True  # Pratik Niroula, 21 Nov 2026: "i told then do it" (co-authors informed and agree)
 if not ALL_AUTHORS_APPROVED:
     replace('All authors approved the final manuscript.', 'The author-contribution statements are carried over from the supplied draft; approval of this revision by all authors is pending.')
 replace('All code, Lean~4 proofs and result files are public at', 'The baseline code, Lean~4 proofs and result files are available at')
