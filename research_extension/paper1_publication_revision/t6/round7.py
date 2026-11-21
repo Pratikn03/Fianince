@@ -28,7 +28,19 @@ In the setting of Theorem~\ref{n:minimax}:
 \item A uniform cut to the fraction $\theta=(\bar s-a)/(S-a)$ brings the budget exactly to the ceiling $\bar s$ in every population with budget $S$, and no policy that meets the ceiling removes less feedback than $S-\bar s$.
 \end{enumerate}
 So a halt of one class meets the ceiling with certainty only if $\min_cH_c\ge S-\bar s$, while the uniform cut always meets it with the least removal. Without tags, the guarantee of a targeted halt is set by the weakest class, not the one targeted.
-\end{corollary}'''
+\end{corollary}
+
+Tags change the answer group by group.
+
+\begin{theorem}[What tags buy, in minimax terms]\label{n:minimaxtags}
+Let verified tags split the classes into groups $g=1,\ldots,G$, so that the record identifies each class's group but cannot rule out relabelings within a group. Let $\ell$ be convex and $C$ convex and unchanged by relabelings within groups. The policy that scales every class of group $g$ by the group's average intensity $\bar\theta_g$ has the budget $a+\sum_g\bar\theta_gU_g$, with $U_g=\sum_{d\in g}H_d$, under every labelling consistent with the record, and it does at least as well as $\theta$ against the worst such labelling. The minimax supervisor therefore chooses one intensity per tagged group, and the value of tags is
+\[
+V=\min_{\bar\theta}\,\max_\sigma\{\ell(S'_\sigma)+C\}-\min_{(\bar\theta_g)_g}\max_\sigma\{\ell(S'_\sigma)+C\}\ \ge\ 0,
+\]
+the gain from tailoring intensities across verified groups. With a single group, $V=0$ and Theorem~\ref{n:minimax} is recovered; with every class its own group, $V$ is the full value of targeting.
+\end{theorem}
+
+The proof restricts the averaging of Theorem~\ref{n:minimax} to relabelings within groups: within a group, every label is carried by every class of the group equally often, so averaging replaces each intensity by its group mean and the budget by $a+\sum_g\bar\theta_gU_g$. It is machine-checked in full (\nolinkurl{PublicationRevision11.lean}). On 1,200 random economies with random tag partitions, the group-average policy is never worse, and tags have positive value in 27\% of them; in the rest the best group policy is uniform, which includes every economy with a single group (\nolinkurl{minimax/minimax_tags_check.py}). This is the decision-theoretic counterpart of Theorem~\ref{n:disc}: tags are worth what they let a supervisor tailor, and Proposition~\ref{n:relabel} prices how far relabeling erodes that.'''
 
 COR_ANCHOR = r'The proof and a stable two-class example are in Supplement Section~\ref{app:revisiondecision}.'
 
@@ -38,6 +50,7 @@ NEWLEAN_ROWS = (
     r'Cor.~\ref{n:decisionloss} & two-point loss bound, its divergence form, the record length and the tagged loss (\texttt{decision\_loss\_tv}, \texttt{decision\_loss\_kl}, \texttt{decision\_record\_length}, \texttt{decision\_tag\_loss}) & Pinsker' "'" r's inequality and the Gaussian tail (hypotheses)\\' '\n'
     r'Cor.~\ref{n:sep} & the ratio bound and its divergence (\texttt{sep\_ratio}, \texttt{sep\_unbounded}) & the two input bounds (Theorems~\ref{n:cost}(i) and~\ref{n:questions}(ii))\\' '\n'
     r'Theorem~\ref{n:minimax} & the whole theorem: equal label frequencies, the average budget and policy, Jensen for the loss and the cost, worst case (\texttt{perm\_sum\_const}, \texttt{perm\_average\_budget}, \texttt{perm\_average\_policy}, \texttt{minimax\_uniform}, \texttt{uniform\_budget\_label\_free}) & none\\' '\n'
+    r'Theorem~\ref{n:minimaxtags} & the whole theorem: consistent relabelings form a group, group sums are invariant, the counting identity, the group-average budget is label-free, Jensen for loss and cost, worst case, $V\ge0$ (\texttt{tag\_count}, \texttt{group\_policy\_budget}, \texttt{tag\_minimax}, \texttt{value\_of\_tags\_nonneg}) & none\\' '\n'
     r'Cor.~\ref{cor:robustuniform} & \texttt{halt\_guarantee}, \texttt{halt\_guarantee\_attained}, \texttt{uniform\_exact}, \texttt{uniform\_minimal\_removal}; relabeling leaves the kernel unchanged (\texttt{relabel\_kernel}) & none\\' '\n'
 )
 NEWLEAN_ANCHOR = r'Theorem~\ref{n:uniformlog} & omitted coefficients'
@@ -85,14 +98,15 @@ TAIWAN_NEW = (TAIWAN_OLD + r' Under the registered rule that check is inconclusi
               r'not in 2022--2023.')
 
 DECL_OLD = r'Theorem~\ref{n:paradox} was added on the same day with AI assistance;'
-DECL_NEW = (r'Theorem~\ref{n:minimax} and Corollary~\ref{cor:robustuniform} were added on the same day with AI '
-            r'assistance and are checked in Lean~4 in full. ' + DECL_OLD)
+DECL_NEW = (r'Theorems~\ref{n:minimax} and~\ref{n:minimaxtags} and Corollary~\ref{cor:robustuniform} were added on the '
+            r'same day with AI assistance and are checked in Lean~4 in full. ' + DECL_OLD)
 
 
 INTRO_ANCHOR = r'as its record grows (Theorem~\ref{n:paradox}).'
 INTRO_ADD = (r' Without tags, a uniform policy is also minimax: for any convex loss and any cost that ignores labels, it '
              r'weakly dominates every policy a supervisor can base on prices, against the worst labelling consistent '
-             r'with the record (Theorem~\ref{n:minimax}).')
+             r'with the record (Theorem~\ref{n:minimax}); with partial tags it is uniform within each tagged group, so the '
+             r'value of tags is exactly the gain from tailoring across groups (Theorem~\ref{n:minimaxtags}).')
 
 
 NEW_OLD = r'and only audit trails that link accounts to owners escape the problem. Finally, without tags'
@@ -146,7 +160,7 @@ def apply(t):
     for old in (r'seven Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision7.lean}',
                 r'six Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision6.lean}'):
         if t.count(old) == 1:
-            t = t.replace(old, r'ten Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision10.lean}')
+            t = t.replace(old, r'eleven Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision11.lean}')
             break
     else:
         raise AssertionError("Lean file count sentence not found")
