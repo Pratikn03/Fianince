@@ -199,4 +199,25 @@ It is followed by one of two clauses:
     only the missing ones.
   - **What did not change.** `p1m_a1_core.py`, which does the computation, is unchanged (SHA-256 `11a99f59…`, as in
     `P1M_A1_SHA256SUMS`). The fixed runner's SHA-256 is `66e321f203ea0f487b6fdfb65e3e5159ff4a98ab5dac4c14cd3d6f17ec1c979c`.
+- **Part B: run (22 November 2026, after the run).**
+  - **The run.** Computed once in the first author's Colab, at 2026-11-22T04:53:32Z. That is after the protocol was
+    pushed (04:42:13 UTC).
+  - **Files.** `results/p1m_a1_partB_results.json` has SHA-256 `e6c18370…`. Its zip, as saved to Drive, has SHA-256
+    `e6a180af…`.
+  - **Hashes in the file.** All three match the frozen files: executor `8d8a70a3…`, P1M core `50df914b…`, A1 core
+    `11a99f59…`.
+  - **Data.** The period was 2013-01-02 to 2016-12-30, 982 trading days. The panel had 935 codes, with a universe of
+    300.
+  - **κ check.** The price equation's κ equals P1M's: `kappa_matches_P1M: true`.
+  - **Section-5 clause.** The primary decoupled interval for foreign feedback, [0.00108, 0.00152], contains Table 3's
+    estimate 0.00137. So the clause "which contains the estimate of Table 3" applies.
+  - **Sensitivity runs, foreign feedback.**
+
+    | Run | Estimate | 95% interval |
+    |---|---|---|
+    | J = 5 | 0.00134 | [0.00113, 0.00158] |
+    | J = 20 | 0.00124 | [0.00105, 0.00147] |
+    | AR(1) | 0.00141 | [0.00119, 0.00168] |
+
+  - **Cochrane–Orcutt** converged for every class in every run.
 
