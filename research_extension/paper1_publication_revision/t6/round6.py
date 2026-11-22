@@ -84,17 +84,17 @@ Class & $r_c$ & $w_c$ & $H_c$\\\midrule
 def paragraph(v, dirs):
     s1 = (r"\emph{First, prices separate the classes slowly.} Against the closest single-memory population, in which "
           r"the three classes share one decay, a stock-day of prices carries {rate_p} nats and a stock-day of tagged "
-          r"flows {rate_t}, {ratio} times more. Before any 5\% test could reach 80\% power, prices alone need at least "
+          r"flows {rate_t}, {ratio} times more. Before any 5\% test could reach 80\% power, prices alone need, to leading order, at least "
           r"{yrs_stock} years of one stock, or {yrs_panel} years of all {N} stocks treated as independent; the tagged "
           r"record needs at least {yrs_tag} years of one stock.")
     if not dirs["tags_faster"]:
         s1 = (r"\emph{First, against the closest single-memory population, prices carry {rate_p} nats per stock-day and "
               r"tagged flows {rate_t}: in this market the tags do not separate the classes faster than prices.} Before any "
-              r"5\% test could reach 80\% power, prices alone need at least {yrs_stock} years of one stock, or {yrs_panel} "
+              r"5\% test could reach 80\% power, prices alone need, to leading order, at least {yrs_stock} years of one stock, or {yrs_panel} "
               r"years of all {N} stocks treated as independent.")
     s2 = (r"\emph{Second, prices cannot fix a targeted halt.} With tags, foreign feedback contributes {H} to the "
           r"feedback budget (95\% interval [{lo}, {hi}]), so halting it changes the budget by minus that amount. The compositions that the whole panel record cannot tell apart, in "
-          r"the sense that no test exceeds its size by more than 0.10, imply contributions from {Hmin} to {Hmax}; even with each "
+          r"the sense that, to leading order (record length times the asymptotic divergence rate at most 0.02), no test exceeds its size by more than 0.10, imply contributions from {Hmin} to {Hmax}; even with each "
           r"class's contribution capped at twice the largest estimated one, from {Hmin_t} to {Hmax_t}. However long the "
           r"record, relabeling alone leaves {H_F}, {H_T} and {H_D} all possible.")
     if not dirs["targeted_wider_than_tags"]:
