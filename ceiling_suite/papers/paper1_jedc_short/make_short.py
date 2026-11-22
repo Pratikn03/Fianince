@@ -18,10 +18,14 @@ reports (ceiling_suite/papers/paper1/review/REFEREE_REPORTS_SIMULATED_20261121.m
 
 Every replacement must match exactly once, so a change in the received text stops the build.
 """
+import json
 import re
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parents[2] / 'research_extension/paper1_publication_revision/t6'))
+import round10  # noqa: E402  (P1M-A1 passages, applied only once the result files exist)
 SRC = HERE / 'received' / 'Paper1_JEDC_final.tex'
 OUT = HERE / 'Paper1_JEDC_main.tex'
 
@@ -286,12 +290,20 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
             r"""\item \emph{Uniform cut is pinned down by prices, given the grant.} Over the exact same indistinguishable set, the effect of cutting all feedback uniformly lies within the band $[0.0014, 0.0019]$.
 \end{enumerate}""" + TAIWAN_QUAL)
     t = rep(t, r"Two caveats discipline this calibration.", r"Two further caveats concern the data.")
+    if round10.RES_A.exists():
+        t = rep(t, round10.NOT_COMPUTED, round10.part_a_passage(json.loads(round10.RES_A.read_text())))
+    if round10.RES_B.exists():
+        second = (r"while the price-only comparisons let feedback memory vary with non-feedback flow held fixed.")
+        t = rep(t, second, second + " " + round10.part_b_sentence(json.loads(round10.RES_B.read_text()),
+                                                                   r"Table~\ref{tab:taiwan}"))
     t = rep(t, r"Second, as documented in Online Supplement Section~S6, a pre-registered out-of-sample reverse-causality diagnostic on 2019--2023 holdout data cannot rule out",
             r"Second, as documented in Supplement Section~\ref{S-sec:scope}, a pre-registered out-of-sample reverse-causality diagnostic on 2019--2023 holdout data cannot rule out")
     t = rep(t, r"Accordingly, these figures serve as an illustrative calibration",
             r"Positive feedback in foreign investors' daily flows, and the difficulty of separating it from prices responding to flows, are documented for Taiwan and other markets (Froot et al., 2001; Griffin et al., 2004; Richards, 2005). Accordingly, these figures serve as an illustrative calibration")
     t = rep(t, r"the same $(\Delta\eta)^{-(4K-2)}$ barrier operates with direct prudential significance.",
             r"the same $(\Delta\eta)^{-(4K-2)}$ barrier would apply with more prudential weight.")
+    t = rep(t, r"aggregate price persistence $\sum_{j=1}^5 a_j = 0.97$.} \\",
+            r"aggregate price persistence $\sum_{j=1}^5 a_j = 0.97$; within-stock $R^2$ of the price equation $0.95$ and of the rules $0.14$, $0.18$ and $0.10$.} \\")
     # ---------------------------------------------------------------- conclusion
     t = rep(t, r"First, market-wide interventions (such as uniform feedback cuts or market-design changes calibrated to aggregate response) are statistically well-posed from public prices and are minimax-optimal when class identities are unverified.",
             r"First, market-wide interventions (such as uniform feedback cuts or market-design changes calibrated to aggregate response) are statistically well-posed from public prices, given the market's persistence and a bound on memory, and are minimax-optimal over labelings when class identities are unverified.")

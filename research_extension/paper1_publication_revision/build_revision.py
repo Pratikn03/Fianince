@@ -179,6 +179,8 @@ import round7 as _R7
 t = _R7.apply(t)
 import round9 as _R9  # response to the two simulated referee reports of 21 November 2026
 t = _R9.apply(t)
+import round10 as _R10  # P1M-A1 results (protocol P1M_A1_protocol.md); applied only once they exist
+t = _R10.apply(t)
 (NOTE / 'paper1_revised.tex').write_text(t)
 shutil.copy2(HERE/'validation/intervention_example.pdf', NOTE/'fig_intervention_revision.pdf')
 print('Wrote', NOTE / 'paper1_revised.tex', len(t.splitlines()), 'lines')
