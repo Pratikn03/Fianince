@@ -185,3 +185,18 @@ It is followed by one of two clauses:
 ## 6. Post-result notes
 
 (Added after each run; nothing above this section changes.)
+
+- **Correction to the header.** The protocol says it was written at 04:45 UTC. That is wrong. It was written before
+  04:42 UTC and committed in `fc965bb` at 04:42:13 UTC. The first attempt at part A started at 04:42:20 UTC, after
+  the push.
+- **Fix 1, before any number existed (22 November 2026, 04:45 UTC).**
+  - **The bug.** The first attempt ran the 28 configurations one after another in one process. After 2 minutes no
+    configuration had finished. At that pace the run could pass the session's two-hour limit on a background process.
+    The runner writes its result only at the end, so a stop at the limit would have lost every finished number.
+  - **What was done.** It was stopped at 04:44:47 UTC. Its log was empty, and no result or partial file existed.
+  - **The fix.** `run_p1m_a1_part_a.py` now runs the configurations in two worker processes. It saves each finished
+    configuration at once to `results/p1m_a1_partA_partial/`. A restart loads finished configurations and computes
+    only the missing ones.
+  - **What did not change.** `p1m_a1_core.py`, which does the computation, is unchanged (SHA-256 `11a99f59…`, as in
+    `P1M_A1_SHA256SUMS`). The fixed runner's SHA-256 is `66e321f203ea0f487b6fdfb65e3e5159ff4a98ab5dac4c14cd3d6f17ec1c979c`.
+
