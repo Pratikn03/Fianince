@@ -38,7 +38,7 @@ Theorem 7.9, Proposition 7.7 is now Proposition 7.8, and Table 1 is now Table 2.
 | 3.3: the reset contract, passive upper bound, price records, memory bound | Partly | Theorem 4.4(iv) and the sentence after it state the reset contract. The abstract, Section 7.1 and the conclusion now say that a uniform cut needs the persistence and a memory bound. Section 7.1 gives the log-rate argument for the budget. Open: an upper bound for passive running-market data. |
 | 3.4: hidden assumptions | Partly | Table 2's note and Section 5 give the factor σ²I_f for non-Gaussian news. The conclusion lists fixed rules, the public fundamental and investor classes. Not added: idiosyncratic group shocks, and the dealers' lay-off counterparty. |
 | 3.5: the Lean checks cover less than the text says | Fixed | Section 7.2 names exactly what is checked in full and what is proved on paper. Theorem 7.9 now says that its Lean file checks the two bounds on (δ*)^(n-2), with Pinsker's inequality, unbiasedness and the power envelope as hypotheses. The main text points to the Supplement's table instead of naming files. The 14,400-economy and 1,200-economy Monte Carlo checks are removed. |
-| 3.6(b): the tagged interval rests on a restriction the counterfactual drops | Partly | Disclosed in the second qualification of Section 7.4. A decoupled specification has not been estimated; it needs the authors' approval. |
+| 3.6(b): the tagged interval rests on a restriction the counterfactual drops | Fixed | With the authors' approval, the decoupled specification was estimated under protocol P1M-A1, fixed and pushed before the run. Each class's flow is a free 10-day distributed lag of x, with AR(2) non-feedback flow, fitted by iterated Cochrane–Orcutt with P1M's price equation and date bootstrap. It was run once in the first author's Colab. Foreign feedback contributes 0.0013 (95% [0.0011, 0.0015]), which contains Table 3's 0.0014. The sensitivity runs are J = 5: 0.0013; J = 20: 0.0012; AR(1): 0.0014. The second Taiwan qualification and a supplement table report them. |
 | 3.6(c): the price deviation is not defined | Fixed | Section 7.4 defines it. So do the flow units and the stock universe. |
 | 3.6(d): the barrier reflects a weak signal | Partly | Disclosed: feedback contributes 0.0017 to a budget of 0.97, and the calibration illustrates the relative gap. |
 | 3.6(e): independence and the grant | Fixed (disclosed) | The third and fourth qualifications in Section 7.4. |
@@ -92,7 +92,7 @@ Theorem 7.9, Proposition 7.7 is now Proposition 7.8, and Table 1 is now Table 2.
 | 4 | Fixed | Remark 4.2 says the positive results assume that the pricing error is observed. |
 | 5 | Fixed in the main text | See A minor 7. |
 | 6 | Fixed (disclosed) | The calibrated economy lies outside the positive class, and the calibration's computations do not need positivity. |
-| 7 | Open | The price-equation estimates and fit are not shown beside Table 3. |
+| 7 | Fixed | Table 3's note gives the within-stock R² of the price equation (0.95) and of the three rules (0.14, 0.18, 0.10). |
 | 8 | Not changed | Proposition 4.5 and Corollary 7.2 remain results. |
 | 9 | Partly | Theorem 5.2 now cites the Supplement, not a thesis. The log lower bound for Φ still cites Niroula et al. (2026b). |
 
