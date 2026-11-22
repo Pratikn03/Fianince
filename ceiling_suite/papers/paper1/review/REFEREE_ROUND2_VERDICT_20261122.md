@@ -2,7 +2,7 @@
 
 **What this is.** This is a judgement of the revised 31-page main text and its 66-page Online Supplement. Each of the
 two earlier referees is imagined reading the revision. It was written by the same AI system that made the revisions,
-so it is **not** independent review. A fresh reader, human or AI, should check it.
+so it is **not** independent review.
 
 ## Verdicts
 
