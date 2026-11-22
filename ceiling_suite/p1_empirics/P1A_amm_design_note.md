@@ -2,6 +2,9 @@
 
 21 November 2026. Written by an AI system for the authors. Judgement, not independent review.
 
+**22 November 2026:** the liquidity-side test below is now drafted, with its power simulation, in
+`p1a_liquidity/P1A_liquidity_spec_DRAFT.md`. It is still not registered, and no data has been read.
+
 ## Correction to the plan of 21 November
 
 The plan called the AMM–CEX laboratory "the first direct test of Theorem n:suff". That was wrong, for this reason.
