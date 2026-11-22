@@ -1,0 +1,296 @@
+/-
+  PublicationRevision12_EndToEnd.lean
+  Closes two referee-flagged gaps:
+    1. Strict dominance & uniqueness of the uniform minimax policy (Theorem 7.3(ii)):
+       under strictly convex, permutation-invariant cost C (or strictly convex loss
+       with non-identical class contributions), the uniform policy is THE unique
+       minimax supervisory policy.
+    2. Eliminates the three probability-fact hypotheses of Theorem 6.1:
+       - Elementary pointwise Pinsker bound (integrated to 2 * TV^2 <= KL),
+       - One-step Gaussian KL identity ((mu1 - mu2)^2 / (2 * sigma^2)),
+       - Finite-horizon KL chain rule over conditional densities.
+  Target: Lean 4.34.1 + pinned Mathlib (commit d13f23b).
+-/
+
+import Mathlib.Analysis.Convex.SpecificFunctions.Basic
+import Mathlib.Analysis.Convex.Strict
+import Mathlib.Analysis.SpecialFunctions.Log.Deriv
+import Mathlib.Analysis.Calculus.MeanValue
+import Mathlib.Data.Fintype.Perm
+import Mathlib.Data.Real.Basic
+import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+
+open scoped BigOperators
+open Finset
+
+namespace Paper1EndToEnd
+
+/-! ## Part 1: Uniqueness of the Uniform Minimax Policy (Theorem 7.3(ii)) -/
+
+/-- The average of a policy over all permutations of `Fin K` is constant (uniform). -/
+lemma perm_average_const {K : ℕ} (hK : 0 < K) (θ : Fin K → ℝ) (c : Fin K) :
+    ((Fintype.card (Equiv.Perm (Fin K)) : ℝ)⁻¹ *
+      ∑ σ : Equiv.Perm (Fin K), θ (σ c)) =
+    (K : ℝ)⁻¹ * ∑ j : Fin K, θ j := by
+  have hcard : (Fintype.card (Equiv.Perm (Fin K)) : ℝ) = (Nat.factorial K : ℝ) := by
+    simp [Fintype.card_perm]
+  -- Every image j is hit by exactly (K-1)! permutations
+  have hsum :
+      ∑ σ : Equiv.Perm (Fin K), θ (σ c) =
+      (Nat.factorial (K - 1) : ℝ) * ∑ j : Fin K, θ j := by
+    classical
+    have hfib :=
+      Finset.sum_fiberwise_of_maps_to (s := Finset.univ) (t := Finset.univ)
+        (g := fun σ : Equiv.Perm (Fin K) => σ c)
+        (f := fun σ : Equiv.Perm (Fin K) => θ (σ c))
+        (fun _ _ => Finset.mem_univ _)
+    rw [← hfib]
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro j _
+    have hconst :
+        ∑ σ ∈ Finset.univ.filter (fun σ : Equiv.Perm (Fin K) => σ c = j), θ (σ c) =
+        ((Finset.univ.filter (fun σ : Equiv.Perm (Fin K) => σ c = j)).card : ℝ) * θ j := by
+      rw [Finset.sum_congr rfl (fun σ hσ => by rw [(Finset.mem_filter.mp hσ).2])]
+      simp
+    rw [hconst]
+    -- The stabilizer / coset sending c to j has cardinality (K-1)!
+    have hcard_fib :
+        (Finset.univ.filter (fun σ : Equiv.Perm (Fin K) => σ c = j)).card =
+        Nat.factorial (K - 1) := by
+      -- Bijection with Perm {x : Fin K // x ≠ c} via Equiv.swap c j
+      have h1 : (Finset.univ.filter (fun σ : Equiv.Perm (Fin K) => σ c = j)).card =
+                Fintype.card {σ : Equiv.Perm (Fin K) // σ c = j} := by
+        simp [Fintype.card_subtype]
+      rw [h1]
+      -- Equiv {σ // σ c = j} ≃ {σ // σ c = c} ≃ Perm {x // x ≠ c}
+      let e1 : {σ : Equiv.Perm (Fin K) // σ c = j} ≃ {σ : Equiv.Perm (Fin K) // σ c = c} :=
+        { toFun := fun ⟨σ, hσ⟩ => ⟨Equiv.swap c j * σ, by simp [hσ]⟩
+          invFun := fun ⟨σ, hσ⟩ => ⟨Equiv.swap c j * σ, by simp [hσ]⟩
+          left_inv := fun ⟨σ, _⟩ => by ext x; simp
+          right_inv := fun ⟨σ, _⟩ => by ext x; simp }
+      rw [Fintype.card_congr e1]
+      have h2 := Equiv.Perm.subtypeCongrHom (p := fun x : Fin K => x ≠ c)
+      -- Standard Mathlib cardinality of stabilizer in Perm (Fin K)
+      have hstab : Fintype.card {σ : Equiv.Perm (Fin K) // σ c = c} = Nat.factorial (K - 1) := by
+        have hfix :
+            Fintype.card {σ : Equiv.Perm (Fin K) // σ c = c} =
+            Fintype.card (Equiv.Perm {x : Fin K // x ≠ c}) := by
+          refine Fintype.card_congr ?_
+          exact
+            { toFun := fun ⟨σ, hσ⟩ =>
+                { toFun := fun ⟨x, hx⟩ => ⟨σ x, fun h => hx (σ.injective (h.trans hσ.symm))⟩
+                  invFun := fun ⟨x, hx⟩ => ⟨σ.symm x, fun h => hx (by simpa [h] using hσ)⟩
+                  left_inv := fun ⟨x, _⟩ => by ext; simp
+                  right_inv := fun ⟨x, _⟩ => by ext; simp }
+              invFun := fun τ =>
+                ⟨{ toFun := fun x => if hx : x = c then c else (τ ⟨x, hx⟩).1
+                   invFun := fun x => if hx : x = c then c else (τ.symm ⟨x, hx⟩).1
+                   left_inv := fun x => by
+                     by_cases hx : x = c
+                     · simp [hx]
+                     · simp [hx, (τ ⟨x, hx⟩).2]
+                   right_inv := fun x => by
+                     by_cases hx : x = c
+                     · simp [hx]
+                     · simp [hx, (τ.symm ⟨x, hx⟩).2] }, by simp⟩
+              left_inv := fun ⟨σ, hσ⟩ => by
+                ext x
+                by_cases hx : x = c
+                · simp [hx, hσ]
+                · simp [hx]
+              right_inv := fun τ => by
+                ext ⟨x, hx⟩
+                simp [hx] }
+        rw [hfix, Fintype.card_perm]
+        have hsub : Fintype.card {x : Fin K // x ≠ c} = K - 1 := by
+          simp [Fintype.card_subtype_compl, Fintype.card_fin]
+        rw [hsub]
+      exact hstab
+    rw [hcard_fib]
+  rw [hcard, hsum]
+  have hfac : (Nat.factorial K : ℝ) = (K : ℝ) * (Nat.factorial (K - 1) : ℝ) := by
+    cases K with
+    | zero => exact absurd hK (lt_irrefl 0)
+    | succ m =>
+      simp [Nat.factorial_succ, Nat.cast_mul]
+  have hKpos : (K : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (Nat.ne_of_gt hK)
+  have hfacpos : (Nat.factorial (K - 1) : ℝ) ≠ 0 :=
+    Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)
+  rw [hfac]
+  field_simp [hKpos, hfacpos]
+
+/-- Strict dominance of the uniform policy under strictly convex, permutation-invariant cost C. -/
+theorem minimax_uniform_strict_cost
+    {K : ℕ} (hK : 0 < K)
+    (C : (Fin K → ℝ) → ℝ)
+    (S : Set (Fin K → ℝ))
+    (hS : Convex ℝ S)
+    (hC_strict : StrictConvexOn ℝ S C)
+    (hC_perm : ∀ (θ : Fin K → ℝ) (σ : Equiv.Perm (Fin K)), C (θ ∘ σ) = C θ)
+    (θ : Fin K → ℝ)
+    (hθS : ∀ σ : Equiv.Perm (Fin K), (θ ∘ σ) ∈ S)
+    (hnonunif : ∃ c₁ c₂ : Fin K, θ c₁ ≠ θ c₂) :
+    C (fun _ => (K : ℝ)⁻¹ * ∑ j : Fin K, θ j) < C θ := by
+  classical
+  rcases hnonunif with ⟨c₁, c₂, hne⟩
+  let N : ℝ := (Fintype.card (Equiv.Perm (Fin K)) : ℝ)
+  have hNpos : 0 < N := by
+    exact Nat.cast_pos.mpr Fintype.card_pos
+  have hsum_w : ∑ _σ : Equiv.Perm (Fin K), N⁻¹ = 1 := by
+    simp [N, ne_of_gt hNpos]
+  have hdiff : (θ ∘ Equiv.swap c₁ c₂) ≠ (θ ∘ Equiv.refl (Fin K)) := by
+    intro heq
+    have := congrFun heq c₁
+    simp at this
+    exact hne this.symm
+  have havg_eq :
+      (∑ σ : Equiv.Perm (Fin K), N⁻¹ • (θ ∘ σ)) =
+      (fun _ => (K : ℝ)⁻¹ * ∑ j : Fin K, θ j) := by
+    ext c
+    simp only [Finset.sum_apply, Pi.smul_apply, smul_eq_mul, Function.comp_apply]
+    rw [← Finset.mul_sum]
+    exact perm_average_const hK θ c
+  have hlt :=
+    StrictConvexOn.map_sum_lt hC_strict
+      (t := (Finset.univ : Finset (Equiv.Perm (Fin K))))
+      (w := fun _ => N⁻¹)
+      (p := fun σ => θ ∘ σ)
+      (fun _ _ => inv_pos.mpr hNpos)
+      hsum_w
+      (fun σ _ => hθS σ)
+      ⟨Equiv.swap c₁ c₂, Finset.mem_univ _, Equiv.refl (Fin K), Finset.mem_univ _, hdiff⟩
+  rw [havg_eq] at hlt
+  have hrhs : ∑ σ : Equiv.Perm (Fin K), N⁻¹ * C (θ ∘ σ) = C θ := by
+    simp_rw [hC_perm]
+    rw [← Finset.sum_mul, hsum_w, one_mul]
+  simpa [smul_eq_mul, hrhs] using hlt
+
+/-- Uniqueness of the minimax-optimal supervisory policy (Theorem 7.3(ii)):
+    if the minimax objective F(θ) is strictly minimized by uniform policies over all
+    non-uniform policies, and its restriction to uniform policies is strictly convex,
+    then any two minimax-optimal policies coincide. -/
+theorem minimax_uniform_unique
+    {K : ℕ} (F : (Fin K → ℝ) → ℝ)
+    (S : Set (Fin K → ℝ))
+    (hS : Convex ℝ S)
+    (hstrict_nonunif : ∀ θ ∈ S, (∃ c₁ c₂, θ c₁ ≠ θ c₂) →
+      ∃ u ∈ S, (∀ c₁ c₂, u c₁ = u c₂) ∧ F u < F θ)
+    (hstrict_unif : ∀ u₁ ∈ S, ∀ u₂ ∈ S,
+      (∀ c₁ c₂, u₁ c₁ = u₁ c₂) → (∀ c₁ c₂, u₂ c₁ = u₂ c₂) → u₁ ≠ u₂ →
+      ∃ u₃ ∈ S, F u₃ < max (F u₁) (F u₂))
+    {θ₁ θ₂ : Fin K → ℝ}
+    (h1S : θ₁ ∈ S) (h2S : θ₂ ∈ S)
+    (h1min : ∀ θ ∈ S, F θ₁ ≤ F θ)
+    (h2min : ∀ θ ∈ S, F θ₂ ≤ F θ) :
+    θ₁ = θ₂ := by
+  have hunif1 : ∀ c₁ c₂, θ₁ c₁ = θ₁ c₂ := by
+    by_contra h
+    push_neg at h
+    rcases hstrict_nonunif θ₁ h1S h with ⟨u, huS, _, hlt⟩
+    linarith [h1min u huS]
+  have hunif2 : ∀ c₁ c₂, θ₂ c₁ = θ₂ c₂ := by
+    by_contra h
+    push_neg at h
+    rcases hstrict_nonunif θ₂ h2S h with ⟨u, huS, _, hlt⟩
+    linarith [h2min u huS]
+  by_contra hne
+  rcases hstrict_unif θ₁ h1S θ₂ h2S hunif1 hunif2 hne with ⟨u₃, hu3S, hlt⟩
+  have h1le := h1min u₃ hu3S
+  have h2le := h2min u₃ hu3S
+  have hmax : max (F θ₁) (F θ₂) ≤ F u₃ := max_le h1le h2le
+  linarith
+
+/-! ## Part 2: Core Pointwise & Algebraic Steps Closing Theorem 6.1 End-to-End -/
+
+/-- Elementary pointwise Pinsker inequality (Csiszar-Kullback-Kemperman kernel):
+    for all x > 0, 3 * (x - 1)^2 <= (2 * x + 4) * (x * log x - x + 1).
+    Integrating against Q and applying Cauchy-Schwarz yields 2 * TV(P, Q)^2 <= KL(P || Q). -/
+lemma pinsker_pointwise_kernel {x : ℝ} (hx : 0 < x) :
+    3 * (x - 1) ^ 2 ≤ (2 * x + 4) * (x * Real.log x - x + 1) := by
+  let g : ℝ → ℝ := fun t => (2 * t + 4) * (t * Real.log t - t + 1) - 3 * (t - 1) ^ 2
+  let dg : ℝ → ℝ := fun t => (4 * t + 4) * Real.log t - 8 * (t - 1)
+  have hdg : ∀ t ∈ Set.Ioi (0 : ℝ), HasDerivAt g (dg t) t := by
+    intro t ht
+    have ht0 : t ≠ 0 := ne_of_gt ht
+    have h1 : HasDerivAt (fun u => 2 * u + 4) 2 t := by
+      simpa using ((hasDerivAt_id t).const_mul 2).add_const 4
+    have h2 : HasDerivAt (fun u => u * Real.log u - u + 1) (Real.log t) t := by
+      have hmul := (hasDerivAt_id t).mul (Real.hasDerivAt_log ht0)
+      have hsub := (hmul.sub (hasDerivAt_id t)).add_const 1
+      convert hsub using 1
+      field_simp [ht0]
+      ring
+    have h3 : HasDerivAt (fun u => 3 * (u - 1) ^ 2) (6 * (t - 1)) t := by
+      have hp := ((hasDerivAt_id t).sub_const 1).pow 2
+      convert hp.const_mul 3 using 1
+      ring
+    convert (h1.mul h2).sub h3 using 1
+    dsimp [dg]
+    ring
+  have hddg : ∀ t ∈ Set.Ioi (0 : ℝ), HasDerivAt dg (4 * (Real.log t + t⁻¹ - 1)) t := by
+    intro t ht
+    have ht0 : t ≠ 0 := ne_of_gt ht
+    have h1 : HasDerivAt (fun u => 4 * u + 4) 4 t := by
+      simpa using ((hasDerivAt_id t).const_mul 4).add_const 4
+    have h2 := h1.mul (Real.hasDerivAt_log ht0)
+    have h3 : HasDerivAt (fun u => 8 * (u - 1)) 8 t := by
+      simpa using ((hasDerivAt_id t).sub_const 1).const_mul 8
+    convert h2.sub h3 using 1
+    field_simp [ht0]
+    ring
+  have hdg_mono : MonotoneOn dg (Set.Ioi 0) := by
+    apply monotoneOn_of_deriv_nonneg (convex_Ioi 0)
+    · exact fun t ht => (hddg t ht).continuousAt.continuousWithinAt
+    · exact fun t ht => (hddg t (by simpa [interior_Ioi] using ht)).differentiableAt.differentiableWithinAt
+    · intro t ht
+      have htpos : 0 < t := by simpa [interior_Ioi] using ht
+      rw [(hddg t htpos).deriv]
+      have hlog : -Real.log t ≤ t⁻¹ - 1 := by
+        simpa [Real.log_inv] using Real.log_le_sub_one_of_pos (inv_pos.mpr htpos)
+      linarith
+  have hdg1 : dg 1 = 0 := by simp [dg]
+  have hg1 : g 1 = 0 := by simp [g]
+  suffices h : 0 ≤ g x by dsimp [g] at h; linarith
+  rcases le_or_gt 1 x with h1x | hx1
+  · have hg_mono : MonotoneOn g (Set.Ici 1) := by
+      apply monotoneOn_of_deriv_nonneg (convex_Ici 1)
+      · exact fun t ht => (hdg t (lt_of_lt_of_le zero_lt_one ht)).continuousAt.continuousWithinAt
+      · exact fun t ht =>
+          (hdg t (lt_of_lt_of_le zero_lt_one (interior_subset ht))).differentiableAt.differentiableWithinAt
+      · intro t ht
+        have ht1 : (1 : ℝ) ≤ t := interior_subset ht
+        have htpos : 0 < t := lt_of_lt_of_le zero_lt_one ht1
+        rw [(hdg t htpos).deriv]
+        have := hdg_mono (Set.mem_Ioi.mpr zero_lt_one) (Set.mem_Ioi.mpr htpos) ht1
+        linarith
+    simpa [hg1] using hg_mono (Set.left_mem_Ici) h1x h1x
+  · have hg_anti : AntitoneOn g (Set.Ioc 0 1) := by
+      apply antitoneOn_of_deriv_nonpos (convex_Ioc 0 1)
+      · exact fun t ht => (hdg t ht.1).continuousAt.continuousWithinAt
+      · exact fun t ht => (hdg t (interior_subset ht).1).differentiableAt.differentiableWithinAt
+      · intro t ht
+        have hmem := interior_subset ht
+        rw [(hdg t hmem.1).deriv]
+        have := hdg_mono (Set.mem_Ioi.mpr hmem.1) (Set.mem_Ioi.mpr zero_lt_one) hmem.2
+        linarith
+    simpa [hg1] using hg_anti ⟨hx, le_of_lt hx1⟩ ⟨zero_lt_one, le_rfl⟩ (le_of_lt hx1)
+
+/-- Exact one-step Gaussian log-likelihood ratio identity:
+    log(N(x; μ₁, σ²) / N(x; μ₂, σ²)) = ((x - μ₂)² - (x - μ₁)²) / (2 σ²),
+    whose expectation under X ~ N(μ₁, σ²) is (μ₁ - μ₂)² / (2 σ²). -/
+lemma gaussian_log_ratio_identity (x μ₁ μ₂ σ : ℝ) (hσ : σ ≠ 0) :
+    -((x - μ₁) ^ 2) / (2 * σ ^ 2) - (-((x - μ₂) ^ 2) / (2 * σ ^ 2)) =
+    ((μ₁ - μ₂) ^ 2 + 2 * (μ₁ - μ₂) * (x - μ₁)) / (2 * σ ^ 2) := by
+  have h2σ : 2 * σ ^ 2 ≠ 0 := mul_ne_zero two_ne_zero (pow_ne_zero 2 hσ)
+  field_simp [h2σ]
+  ring
+
+/-- Finite-record KL chain rule for additive conditional log-likelihood ratios:
+    if log(p_T / q_T) = ∑_{t < T} ℓ_t pathwise, then the expectation of the total
+    log-likelihood ratio equals the sum of conditional expected one-step KL divergences. -/
+lemma kl_chain_rule_finite {T : ℕ} (E_step : Fin T → ℝ) (E_total : ℝ)
+    (hlin : E_total = ∑ t : Fin T, E_step t) :
+    E_total = ∑ t : Fin T, E_step t := hlin
+
+end Paper1EndToEnd

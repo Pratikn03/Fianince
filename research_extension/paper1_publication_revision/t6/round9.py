@@ -26,8 +26,9 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 NEARCRIT = ROOT / 'research_extension/fragility_reveals/nearcrit_admissible_results.json'
 
-# The corrected Theorem n:paradox and Supplement Propositions prop:nearcrit and prop:hidegame have not been read by
-# the authors yet. Set to True only after the first author says he has read and checked them.
+# The corrected Theorem n:paradox, the remarks on restrictions by horizon and on uniqueness, and Supplement
+# Propositions prop:nearcrit and prop:hidegame have not been read by the authors yet. Set to True only after the first author says
+# he has read and checked them.
 CORRECTIONS_CHECKED_BY_FIRST_AUTHOR = False
 
 
@@ -66,14 +67,17 @@ WHATSNEW_NEW = (r"That market-wide policies need only a reduced-form aggregate w
 LIT_ADD = (r"Feedback traders are central to models of destabilizing speculation and of return autocorrelation "
            r"\citep{delong1990,cutler1990,sentana1992}; inventory-based price impact goes back to \citet{ho1981} and "
            r"\citet{grossman1988}, and \citet{hendershott2014} measure it. Simulation-based estimation of agent-based "
-           r"models \citep{grazzini2015,platt2020} faces the same identification question in nonlinear models. "
+           r"models \citep{grazzini2015,platt2020} faces the same identification question in nonlinear models. Our "
+           r"identification result is global; where memories collide, the information matrix of "
+           r"\citet{rothenberg1971} is singular, and our rates say how fast identification weakens near a collision. "
+           r"Our minimax results are decisions under ambiguity in the sense of \citet{manski2000}. "
            r"Crowding among algorithmic and quantitative strategies is documented by \citet{chaboud2014} and "
            r"\citet{khandani2011} and analysed by \citet{stein2009}, and anonymity in limit-order markets, which "
            r"concerns who quotes rather than who trades on feedback, by \citet{foucault2007}. ")
 
 UNIFORM_REMARK = r'''
 
-\paragraph{What setting a uniform cut from prices requires.} Part~(i) takes the persistence $a$ as known, and that is a restriction on the population: a group with memory zero acts exactly like persistence (Supplement Theorem~\ref{thm:merged}(i)), so knowing $a$ amounts to assuming that every memory exceeds some $\underline r>0$, or to knowing which part of the response at the first lag is feedback. The budget also needs a bound on memory. It is the linear question $g(r)=1/(1-r)$, and by Theorem~\ref{n:questions}(iii) a group with memory close to one and negligible weight can move it at bounded divergence unless memories are bounded by some $\bar r<1$. Under both restrictions the budget is learned at nearly the parametric rate (Theorem~\ref{n:questions} and the paragraph after it); without them, the uniform cut inherits part of the composition problem. The instrument must also scale feedback traders while sparing arbitrageurs and dealers. Real instruments, such as transaction taxes, minimum resting times and order-to-trade limits, act with an incidence $\theta(r)$ that varies with the trader's horizon, so their effect on the budget is governed by $\int\theta(r)(1-r)^{-1}\,dM(r)$. Theorem~\ref{n:questions} sorts them: an incidence that is smooth in memory is cheap to evaluate from prices, and one that singles out a narrow band of memories is not.'''
+\paragraph{What setting a uniform cut from prices requires.} Part~(i) takes the persistence $a$ as known, and that is a restriction on the population: a group with memory zero acts exactly like persistence (Supplement Theorem~\ref{thm:merged}(i)), so knowing $a$ amounts to assuming that every memory exceeds some $\underline r>0$, or to knowing which part of the response at the first lag is feedback. The budget also needs a bound on memory. It is the linear question $g(r)=1/(1-r)$, and by Theorem~\ref{n:questions}(iii) a group with memory close to one and negligible weight can move it at bounded divergence unless memories are bounded by some $\bar r<1$. Under both restrictions the budget is learned at nearly the parametric rate: the taps beyond the first $L$ sum to at most $W\bar r^{L}/(1-\bar r)$, so summing the first $L\approx\log(1/\epsilon)/\log(1/\bar r)$ estimated taps gives the feedback weight $\sum_mk_m$, and with it the budget, to accuracy $\epsilon$ from order $\sigma^2\epsilon^{-2}\log(1/\epsilon)$ experiments. Without the restrictions, the uniform cut inherits part of the composition problem. The instrument must also scale feedback traders while sparing arbitrageurs and dealers. Real instruments, such as transaction taxes, minimum resting times and order-to-trade limits, act with an incidence $\theta(r)$ that varies with the trader's horizon, so their effect on the budget is the linear question with $g(r)=\theta(r)/(1-r)$, whose cost Theorem~\ref{n:questions} gives. An incidence that does not vary with memory gives the budget itself. One that singles out the memories below a cutoff $\hat r$ meets the barrier of Theorem~\ref{n:cost}. Place the moment-matched pair of that theorem, with a common persistence and total merged weight $W$, on $r_c+\Delta\eta[-1,1]$ with $r_c=\hat r+(1+x_K)\Delta\eta/2$, where $x_K<1$ is the largest Gauss node on $[-1,1]$. The Gauss--Radau economy then has an atom of weight $W/K^2$ below $\hat r$, and every memory of the Gauss economy lies above it. A restriction that halts feedback below $\hat r$ removes at least $\kappa W/K^2$ of the budget in one economy and nothing in the other, while the budgets differ by $O((\Delta\eta)^{2K-1})$ and the records are as hard to tell apart as in Theorem~\ref{n:cost}. A restriction by horizon, which needs no tags, is thus a policy for which composition decides whether a ceiling is met.'''
 
 MINIMAX_SENT_OLD = (r"No price record distinguishes labellings (Theorem~\ref{n:suff}), so against the worst labelling "
                     r"consistent with the record, every policy a supervisor can base on prices is weakly dominated by a "
@@ -84,7 +88,11 @@ MINIMAX_SENT_NEW = (r"Labels do not enter prices, so no record distinguishes lab
 MINIMAX_MC_OLD = (r"The theorem is machine-checked in full (\nolinkurl{PublicationRevision10.lean}). On 14,400 random "
                   r"economies with three convex losses and three costs, the uniform policy is never worse and is strictly "
                   r"better in 86\% of them (\nolinkurl{minimax/minimax_check.py}).")
-MINIMAX_MC_NEW = (r"The theorem is machine-checked in full (\nolinkurl{PublicationRevision10.lean}). The argument is the "
+MINIMAX_MC_NEW = (r"The theorem is machine-checked in full, for a cost convex on all of $\mathbb R^K$ "
+                  r"(\nolinkurl{PublicationRevision10.lean}) or only on $[0,1]^K$ "
+                  r"(\nolinkurl{PublicationRevision12.lean}). When $C$ is strictly convex on $[0,1]^K$, the uniform "
+                  r"policy strictly dominates every non-uniform one, so the minimax policy is unique and uniform; this "
+                  r"is machine-checked in the same file. The argument is the "
                   r"finite-group case of the Hunt--Stein theorem \citep[Chapter~8]{lehmann2005}. Because the law of the "
                   r"record does not depend on the labelling, it applies record by record, so it also covers policies "
                   r"that depend on the record. The comparison with the worst labelling, "
@@ -96,7 +104,22 @@ TAGS_MC_OLD = (r"It is machine-checked in full (\nolinkurl{PublicationRevision11
                r"random tag partitions, the group-average policy is never worse, and tags have positive value in 27\% of "
                r"them; in the rest the best group policy is uniform, which includes every economy with a single group "
                r"(\nolinkurl{minimax/minimax_tags_check.py}).")
-TAGS_MC_NEW = r"It is machine-checked in full (\nolinkurl{PublicationRevision11.lean})."
+TAGS_MC_NEW = (r"It is machine-checked in full, also for a cost convex only on $[0,1]^K$ "
+               r"(\nolinkurl{PublicationRevision11.lean}).")
+
+# The Lean record: PublicationRevision12.lean (22 November 2026) joins the list, and the rows of the two minimax
+# theorems name the declarations for a cost convex only on [0,1]^K and for uniqueness.
+LEAN_COUNT_OLD = r'eleven Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision11.lean}'
+LEAN_COUNT_NEW = r'twelve Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision12.lean}'
+LEAN_MINIMAX_ROW_OLD = (r"\texttt{perm\_average\_policy}, \texttt{minimax\_uniform}, \nolinkurl{uniform_budget_label_free}) "
+                        r"& none\\")
+LEAN_MINIMAX_ROW_NEW = (r"\texttt{perm\_average\_policy}, \texttt{minimax\_uniform}, \nolinkurl{uniform_budget_label_free}), "
+                        r"also for a cost convex only on $[0,1]^K$ (\nolinkurl{minimax_uniform_on}); for a strictly "
+                        r"convex cost, strict dominance and uniqueness (\nolinkurl{minimax_uniform_strict}, "
+                        r"\nolinkurl{minimax_unique}) & none\\")
+LEAN_TAGS_ROW_OLD = r"\texttt{tag\_minimax}, \texttt{value\_of\_tags\_nonneg}) & none\\"
+LEAN_TAGS_ROW_NEW = (r"\texttt{tag\_minimax}, \texttt{value\_of\_tags\_nonneg}), also for a cost convex only on "
+                     r"$[0,1]^K$ (\nolinkurl{tag_minimax_on}) & none\\")
 
 RELABEL_OLD = (r"Third, an audit trail that links accounts to owners keeps its full gain at every $\gamma$, so its "
                r"advantage over class tags is largest where relabeling is cheapest.")
@@ -340,6 +363,10 @@ NEW_BIB = r'''
 
 \bibitem[Marschak(1953)]{marschak1953} Marschak, J. (1953). Economic measurements for policy and prediction. In W.~C. Hood and T.~C. Koopmans (Eds.), \emph{Studies in Econometric Method}, Cowles Commission Monograph 14, 1--26. Wiley, New York.
 
+\bibitem[Manski(2000)]{manski2000} Manski, C.~F. (2000). Identification problems and decisions under ambiguity: Empirical analysis of treatment response and normative analysis of treatment choice. \emph{Journal of Econometrics} 95(2), 415--442.
+
+\bibitem[Rothenberg(1971)]{rothenberg1971} Rothenberg, T.~J. (1971). Identification in parametric models. \emph{Econometrica} 39(3), 577--591.
+
 \bibitem[Perez-Richet and Skreta(2022)]{perezrichet2022} Perez-Richet, E., and V. Skreta (2022). Test design under falsification. \emph{Econometrica} 90(3), 1109--1142.
 
 \bibitem[Platt(2020)]{platt2020} Platt, D. (2020). A comparison of economic agent-based model calibration methods. \emph{Journal of Economic Dynamics and Control} 113, 103859.
@@ -464,6 +491,21 @@ def apply(t):
     t = _rep(t, MINIMAX_SENT_OLD, MINIMAX_SENT_NEW)
     t = _rep(t, MINIMAX_MC_OLD, MINIMAX_MC_NEW)
     t = _rep(t, TAGS_MC_OLD, TAGS_MC_NEW)
+    # the registered tests, described as what they show and where they are recorded
+    t = _rep(t, r"The registered test is supportive, but its pre-specified diagnostic attributes the gain to reverse "
+                r"causality.",
+             r"The registered test is supportive, but its pre-specified diagnostic cannot separate the gain from "
+             r"prices revealing past flow.")
+    t = _rep(t, r"A prospective replication protocol on Binance perpetual futures is pre-specified with fixed "
+                r"development thresholds (August to October 2026) serving as an externally locked template for "
+                r"subsequent window observation.",
+             r"A prospective replication on Binance perpetual futures fixes its thresholds on a development window "
+             r"(August to October 2026); its protocol and development outputs were recorded with hashes in the "
+             r"authors' public repository before the evaluation window opened on 16 November 2026.")
+    assert t.count(LEAN_COUNT_OLD) >= 1, 'Lean file count not found'
+    t = t.replace(LEAN_COUNT_OLD, LEAN_COUNT_NEW)
+    t = _rep(t, LEAN_MINIMAX_ROW_OLD, LEAN_MINIMAX_ROW_NEW)
+    t = _rep(t, LEAN_TAGS_ROW_OLD, LEAN_TAGS_ROW_NEW)
     # labellings are pi, not sigma (sigma is a noise level throughout)
     a = t.index(r'\begin{theorem}[Without tags, uniform policies are minimax]')
     b = t.index(r'This is the decision-theoretic counterpart of Theorem~\ref{n:disc}', a)
@@ -538,13 +580,16 @@ def apply(t):
     old = r'and their proofs were read and checked by the first author.'
     if old in t:
         if CORRECTIONS_CHECKED_BY_FIRST_AUTHOR:
-            new = (r'and their proofs, including those of Theorem~\ref{n:paradox} and Supplement '
-                   r'Propositions~\ref{prop:nearcrit} and~\ref{prop:hidegame} in their present form, were read and '
-                   r'checked by the first author.')
+            new = (r'and their proofs, including those of Theorem~\ref{n:paradox}, the remark on restrictions by '
+                   r'horizon after Proposition~\ref{n:target}, the uniqueness remark after Theorem~\ref{n:minimax} and '
+                   r'Supplement Propositions~\ref{prop:nearcrit} and~\ref{prop:hidegame} in their present form, were '
+                   r'read and checked by the first author.')
         else:
-            new = (r'and the first author read and checked their proofs. Theorem~\ref{n:paradox} and Supplement '
-                   r'Propositions~\ref{prop:nearcrit} and~\ref{prop:hidegame} in their present form, also developed '
-                   r'with AI assistance, have not yet been checked by the authors.')
+            new = (r'and the first author read and checked their proofs. Theorem~\ref{n:paradox}, the remark on '
+                   r'restrictions by horizon after Proposition~\ref{n:target}, the uniqueness remark after '
+                   r'Theorem~\ref{n:minimax} and Supplement Propositions~\ref{prop:nearcrit} and~\ref{prop:hidegame} '
+                   r'in their present form, also developed with AI assistance, have not yet been checked by the '
+                   r'authors.')
         t = _rep(t, old, new)
     t, dropped = tidy_bib(t)
     assert 'this revision' not in t and 'earlier versions' not in t.lower(), 'revision-history wording left'

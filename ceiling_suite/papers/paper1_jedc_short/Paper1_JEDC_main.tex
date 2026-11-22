@@ -1,0 +1,842 @@
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{xr-hyper}
+\usepackage{hyperref}
+\externaldocument[S-]{Paper1_JEDC_online_supplement}
+\graphicspath{{../paper1_core/}{../paper1_note/}}
+
+\definecolor{jedcblue}{RGB}{24, 62, 114}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=jedcblue,
+  citecolor=jedcblue,
+  urlcolor=jedcblue,
+  pdftitle={Observationally Equivalent Algorithms: What Prices Reveal About Trader Populations, and What Supervisors Need},
+  pdfauthor={Pratik Niroula, Prashant Niroula, Sujan Khatiwada}
+}
+
+\setlength{\parskip}{4pt plus 1pt minus 1pt}
+\setlength{\parindent}{1.2em}
+\linespread{1.12}
+\emergencystretch=3em
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\scshape Niroula, Niroula, and Khatiwada}
+\fancyhead[R]{\small\scshape Observationally Equivalent Algorithms}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \fancyfoot[C]{\small\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{definition}[theorem]{Definition}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\KL}{\mathrm{KL}}
+\newcommand{\TV}{\mathrm{TV}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\supp}{\mathrm{supp}}
+
+\begin{document}
+
+\thispagestyle{empty}
+\begin{center}
+  {\LARGE\bfseries Observationally Equivalent Algorithms:\\[4pt]
+  What Prices Reveal About Trader Populations,\\[4pt]
+  and What Supervisors Need\par}
+  \vspace{1.2em}
+  {\large Pratik Niroula\footnote{Department of Computer Information Science, Minnesota State University, Mankato, MN 56001, USA. Email: \texttt{pratik.niroula@mnsu.edu}.} \qquad
+  Prashant Niroula\footnote{Faculty of Management, Tribhuvan University, Kirtipur, Nepal. Email: \texttt{prashantniroula20@gmail.com}.} \qquad
+  Sujan Khatiwada\footnote{Department of Electrical, Computer and Robotics Engineering, Minnesota State University, Mankato, MN 56001, USA. Email: \texttt{sujan.khatiwada@mnsu.edu}.}}
+  \vspace{0.8em}
+
+  {\normalsize November 2026}
+\end{center}
+
+\vspace{0.6em}
+\begin{abstract}
+\noindent
+Algorithmic traders read prices and move them. We show that a population of such traders affects prices, order flows and dealer inventories only through its aggregate feedback response, even in equilibrium, and that in the worst case separating $K$ trader types whose rules lie within $\Delta$ takes on the order of $\Delta^{-(4K-2)}$ observations. Given the market's persistence and a memory bound, a uniform cut in feedback can be set from prices and, without class tags, is minimax over labelings; targeted restrictions need tags, which help only if relabeling is costly. A calibration to Taiwan's tagged exchange flows illustrates the barrier.
+\end{abstract}
+
+\vspace{0.5em}
+\noindent\textbf{Keywords:} algorithmic trading; feedback trading; aggregate response; observational equivalence; market supervision; disclosure.\\
+\noindent\textbf{JEL Classification:} C32, D83, G14, G18.\\
+\noindent\textbf{Online Supplement and Replication:} References of the form ``Supplement Theorem~S4.1'' are to the Online Supplement, which states every result in full; the full working paper (Niroula et al., 2026d) collects every supplementary result. Technical lemmas, extended proofs, numerical robustness checks, and Lean~4 machine-checked formalizations of deterministic algebraic steps (with probabilistic and asymptotic steps proved on paper) are provided in the Online Supplement and public replication archive (\url{https://github.com/Pratikn03/Fianince}). Extensions to breach cascades, strategic insiders, and nonlinear or learning traders appear in a companion note (Niroula et al., 2026c).
+
+\newpage
+\setcounter{page}{1}
+
+\section{Introduction}
+
+\textbf{The economic question.} A financial market supervisor may know with high precision how strongly a market reacts to past prices while knowing almost nothing about which traders generate that reaction. These are fundamentally different objects of inference. If a policy scales every trader group's feedback response by the same factor, the aggregate market response is a sufficient statistic to evaluate the intervention. If instead a supervisor seeks to halt or restrict a specific trader class, that class's individual contribution is essential. This paper characterizes the exact boundary between what public prices reveal about trader populations and what requires class-tagged or owner-linked supervisory reporting.
+
+\textbf{Main results.} We embed heterogeneous feedback-trading algorithms into both a reduced-form linear market and a microfounded inventory-dealer equilibrium. Under a common public signal and fixed causal rules, the trader population enters all public market outcomes—transaction prices, total order flows, insider profits, and dealer inventories—solely through its aggregate flow map (Theorem~\ref{n:suff}). For linear rules, this map is the \emph{feedback kernel}, the moment sequence of the population's merged memory-rate measure. In Section~\ref{sec:equilibrium}, we derive price impact, and pricing-error persistence given the share of inventory that dealers carry over, from competitive, risk-averse overlapping-generations dealers who bear inventory risk. Equilibrium prices follow the exact same closed-loop recursion with effective impact and persistence and unchanged memory rates (Theorems~\ref{n:thm_inventory} and~\ref{n:thm_eqreduced}). Thus, observational equivalence and the sample-complexity barriers below are equilibrium phenomena rather than artifacts of mechanical price impact.
+
+Five economic results organize the analysis:
+\begin{enumerate}
+  \item \emph{Weak identification of composition.} Closely spaced trader types are severely under-identified from prices. Two moment-matched $K$-type populations whose memory rates lie within $\Delta$ produce aggregate-flow differences of order $\Delta^{2K-1}$, yielding a Gaussian information lower bound of order $\Delta^{-(4K-2)}$ observations—whether the supervisor observes prices passively or conducts active impulse probes (Theorem~\ref{n:cost}). This barrier extends to arbitrary smooth causal rule families (Theorem~\ref{n:univ}), matches a Prony and minimum-distance upper bound on separated shrinking clusters (Theorem~\ref{n:shape}), and does not vanish as the market approaches instability (Figure~\ref{fig:near-instability}).
+  \item \emph{Separation between market-wide and compositional questions.} Market-wide linear functionals of the merged measure (such as discounted feedback or single-lag taps) can be estimated at the standard parametric rate $\sigma^2 \epsilon^{-2}$ independent of memory spacing, whereas compositional weights require $\Delta^{-(4K-2)}$ observations (Theorem~\ref{n:questions} and Corollary~\ref{n:sep}). The same barrier decides whether a restriction by horizon, which halts feedback from traders with memories below a cutoff and needs no tags, meets a prudential ceiling (Proposition~\ref{n:target}(iii)). In a Gaussian feedback market, the Kullback--Leibler divergence between two candidate populations equals half the cumulative excess mean-squared forecast error from confusing them (Theorem~\ref{n:dual}, the Gaussian chain rule stated in market terms); composition is unnecessary for optimal price forecasting but indispensable for targeted attribution.
+  \item \emph{Minimax optimality of uniform policies without tags.} Because prices cannot distinguish label permutations, a uniform cut across all feedback activity does at least as well as every price-based policy against the worst labeling consistent with the record, for any convex loss and label-symmetric cost: it is minimax over labelings, Bayes under an exchangeable prior, and, when the cost is strictly convex, the unique minimax policy (Theorem~\ref{n:minimax}). Given the market's own persistence and a bound on memory, such a cut can be set from prices (Section~\ref{sec:supervision}). With verified partial tags partitioning classes into groups, a policy that is uniform within each tagged group is minimax-optimal, and the value of tags equals the exact gain from tailoring intensities across groups (Theorem~\ref{n:minimaxtags}).
+  \item \emph{Value of class-tagged disclosure and erosion under relabeling.} Class-tagged flow reports eliminate the spacing penalty for weight recovery (Theorem~\ref{n:disc}), reducing the sample requirement from order $(\Delta\eta)^{-(4K-2)}$ to a spacing-free constant. However, when restricted traders can route activity through accounts carrying another label at convex resource cost $\gamma$, the optimal targeted restriction is partial, the equilibrium share of restricted activity that hides is independent of $\gamma$, and class tags lose all value as $\gamma \to 0$ (Proposition~\ref{n:relabel}). An owner-linked audit trail that ties accounts to beneficial owners keeps its value, because we assume that it cannot be gamed.
+  \item \emph{The surveillance paradox.} Without class tags, an untagged algorithm facing a fixed level-$\alpha$ test crowds its memory rate toward its neighbor as the supervisor's record $N$ grows. Against the closest economy in which it trades like its neighbor, the divergence is of order $N\delta^4$ in the distance $\delta$, so crowding more than offsets the added data: when the algorithm best-responds, the supervisor's information about it falls like $N^{-1}$, detection collapses to the false-alarm rate $\alpha$, and the trader bears a permanent strategy distortion (Theorem~\ref{n:paradox}). Class tags eliminate this crowding.
+\end{enumerate}
+
+\textbf{What is new, and what is not.} The minimax rate $\Delta^{-(4K-2)}$ is the established rate for finite mixtures with near-colliding components (Heinrich and Kahn, 2018; Wu and Yang, 2020) and super-resolution of point sources (Batenkov et al., 2021), while the modulus characterization of linear functionals builds on Donoho (1994). We do not claim those statistical theorems as new. That market-wide policies need only a reduced-form aggregate while targeted ones need structure is Marschak's maxim and the logic of sufficient statistics for policy (Marschak, 1953; Chetty, 2009); what we add is the price of the structure in a feedback market. Our contribution is economic: we show that kernel sufficiency survives endogenous inventory-equilibrium pricing, where dealers' anticipation over-weights slow memories; characterize which linear questions about the population prices answer cheaply; prove the minimax optimality of uniform (and group-uniform) supervisory policies over labelings; solve the strategic relabeling disclosure game comparing class tags to owner-linked audit trails; and derive the rate at which an algorithm that best-responds to surveillance degrades what the supervisor learns. The equivalence between detection and forecast loss (Theorem~\ref{n:dual}) is the Gaussian chain rule applied to a feedback market; we use it to explain the separation, not as a new statistical result.
+
+\textbf{Empirical illustration.} Using daily class-tagged institutional order flows from the Taiwan Stock Exchange (300 stocks, 2013--2016, 270,060 stock-days), we calibrate our theoretical bounds to observed institutional rules (foreign investors, investment trusts, and dealers). With each class's non-feedback flow held at its estimated law, tagged flows carry $4.7 \times 10^5$ times more information per stock-day about class composition than prices alone. Granting a price-only supervisor the market's persistence, impact and non-feedback order flow, the effect of a uniform feedback cut over all compositions statistically indistinguishable from the full panel price record lies in $[0.0014, 0.0019]$. The effect of halting foreign feedback is not identified: relabeling alone leaves each class's estimated contribution possible, and classes with offsetting weights fill any cap placed on each class's contribution. A registered test did not establish that the tagged responses are causal feedback, so the calibration illustrates the barrier rather than testing the model.
+
+\subsection{Related literature}
+
+\textbf{Aggregation and observational equivalence.} Exponential memory is classical in dynamic economics, spanning adaptive expectations (Cagan, 1956; Nerlove, 1958), geometric distributed lags (Koyck, 1954), and steady-state Kalman filtering (Muth, 1960). That aggregate dynamics depend only on a distribution of micro coefficients dates back to Granger (1980), Forni and Lippi (1997), Zaffaroni (2004), and Pesaran and Chudik (2014), with recovery of the cross-sectional distribution forming the disaggregation problem (Celov et al., 2010). Observational equivalence in policy evaluation traces to Sargent (1976) and, for sufficient statistics in heterogeneous-agent macroeconomics, Auclert et al.\ (2024). A large literature studies heterogeneous fundamentalist and chartist asset-pricing models (Brock and Hommes, 1998; Hommes, 2006) and estimates trader shares from prices (Boswijk et al., 2007; Franke and Westerhoff, 2012; Lux and Zwinkels, 2018); our results establish precisely which features of a trader population are recoverable from prices and at what statistical cost. Feedback traders are central to models of destabilizing speculation and of return autocorrelation (De Long et al., 1990; Cutler et al., 1990; Sentana and Wadhwani, 1992), and simulation-based estimation of agent-based models (Grazzini and Richiardi, 2015; Platt, 2020) faces the same identification question in nonlinear models. Our identification result is global (Theorem~\ref{n:ident}); where memories collide, the information matrix of Rothenberg (1971) is singular, and Theorems~\ref{n:cost} and~\ref{n:shape} give the rate at which identification weakens near a collision. Our minimax results are decisions under ambiguity in the sense of Manski (2000). Our decision-theoretic framing connects Blackwell (1953) and Le Cam (1964) with data-driven control (van Waarde et al., 2020) and aggregate forecasting (L\"utkepohl, 1987; Hendry and Hubrich, 2011).
+
+\textbf{Microstructure, trader identity, and algorithmic supervision.} Prior microstructure studies show that broker or trader identity carries price-discovery information when order flow reflects private fundamentals (Frino et al., 2010; Linnainmaa and Saar, 2012), while Sanders et al.\ (2009) document weak predictive content of large-trader positions in agricultural futures. Our setting isolates a distinct mechanism: under a common public signal, identity is irrelevant for price discovery and forecasting, yet essential for assigning targeted supervisory interventions. Inventory-based price impact goes back to Ho and Stoll (1981) and Grossman and Miller (1988), and Hendershott and Menkveld (2014) measure it. Crowding among algorithmic and quantitative strategies is documented by Chaboud et al.\ (2014) and Khandani and Lo (2011) and analyzed by Stein (2009); pre-trade anonymity in limit-order markets, which concerns who quotes rather than who trades on feedback, is studied by Foucault et al.\ (2007). In regulatory policy, Budish et al.\ (2015) advocate market-wide structural remedies (frequent batch auctions), Kirilenko et al.\ (2017) use account-level audit-trail data to reconstruct the Flash Crash, and Menkveld (2016) surveys high-frequency trading. SEC Rule~613 established the Consolidated Audit Trail (CAT) to link orders to customer identities across venues (Securities and Exchange Commission, 2012). Our disclosure game—building on costly state falsification (Lacker and Weinberg, 1989; Crocker and Morgan, 1998)—provides a formal rationale for that architecture: market-wide remedies require only prices, targeted restrictions require class records, and cheap relabeling favors owner-linked audit trails. Acting on market information can degrade it (Bond et al., 2010; Bond and Goldstein, 2015), and manipulation muddles the signals a principal relies on (Frankel and Kartik, 2019, 2022; Perez-Richet and Skreta, 2022).
+
+\textbf{Roadmap.} Section~\ref{sec:model} presents the baseline model and unified notation. Section~\ref{sec:sufficiency} establishes kernel sufficiency and noiseless identification. Section~\ref{sec:equilibrium} derives price impact and persistence in an inventory equilibrium and proves that all identification results carry over. Section~\ref{sec:cost} quantifies the sample complexity of composition versus market-wide questions. Section~\ref{n:irr_sec} equates pairwise detection with forecast mismatch. Section~\ref{sec:supervision} analyzes minimax policy, disclosure, relabeling, the surveillance paradox, and the Taiwan calibration. Section~\ref{sec:conclusion} discusses scope and concludes. Appendix~\ref{app:proofs} collects self-contained proofs of the main economic theorems.
+
+\section{Model and Notation}\label{sec:model}
+
+Time is discrete, $t = 0, 1, 2, \dots$. Let $x_t$ denote the pricing error—the gap between the transaction price $p_t$ and the asset's fundamental value $F_t$. In the reduced-form benchmark, a dealer sector absorbs net order flow with price impact $\kappa > 0$, and arbitrage pulls the pricing error toward zero with persistence $a \in [0, 1)$. (Section~\ref{sec:equilibrium} derives both $a$ and $\kappa$ endogenously from competitive inventory-averse dealers.)
+
+There are $K \ge 1$ groups of feedback traders with adaptation rates $\eta_i \in (0, 1)$ and activity weights $q_i$. Group $i$ maintains an exponentially weighted average $y_{i,t}$ of past pricing errors and submits feedback flow $q_i y_{i,t}$:
+\begin{equation}\label{eq:baseline}
+  x_t = a x_{t-1} + \kappa \sum_{i=1}^K q_i y_{i,t-1} + \kappa v_t + \varepsilon_t,
+  \qquad
+  y_{i,t} = (1 - \eta_i) y_{i,t-1} + \eta_i x_t,
+\end{equation}
+where $v_t$ is an observer's executed probe trade (with $v_t \equiv 0$ under passive observation) and $\varepsilon_t$ is a price innovation (news). As shown in Supplement Lemma~\ref{S-lem:micro}, both a trading desk tracking a latent random-walk trend via a steady-state Kalman filter (Muth, 1960) and a desk updating via $L_2$-regularized online gradient descent satisfy the exact recursion in~\eqref{eq:baseline}.
+
+Write $r_i = 1 - \eta_i \in (0, 1)$ for group $i$'s \emph{memory rate} and $w_i = q_i \eta_i$ for its \emph{merged trading weight}. Define the \emph{merged measure} $M = \sum_{i=1}^K w_i \delta_{r_i}$, which sums weights over any groups sharing an identical memory rate. The \emph{feedback kernel} is the sequence of power moments of $M$:
+\begin{equation}\label{eq:kernel}
+  k_m = \sum_{i=1}^K w_i r_i^m = \int r^m \, dM(r), \qquad m = 0, 1, 2, \dots
+\end{equation}
+Total feedback flow is the causal convolution of past pricing errors with $k$. Define the \emph{feedback budget}
+\begin{equation}\label{eq:budget}
+  S = a + \kappa \sum_{i=1}^K q_i = a + \kappa \sum_{m=0}^\infty k_m.
+\end{equation}
+In the positive-feedback economy ($q_i \ge 0$), the closed-loop system~\eqref{eq:baseline} is Schur stable if and only if $S < 1$. Table~\ref{tab:notation} summarizes our unified notation across sections.
+
+\begin{table}[!htbp]
+\centering
+\caption{Summary of core notation across sections.}
+\label{tab:notation}
+\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Symbol & Economic meaning \\
+\midrule
+$x_t, F_t, p_t$ & Pricing error ($x_t = p_t - F_t$), public fundamental, and transaction price \\
+$a, \kappa$ & Pricing-error persistence ($a \in [0,1)$) and price impact ($\kappa > 0$) \\
+$\eta_i, r_i, q_i, w_i$ & Group $i$ adaptation rate, memory rate ($r_i = 1-\eta_i$), activity weight, merged weight ($w_i = q_i \eta_i$) \\
+$M, k_m, G(z)$ & Merged measure $\sum_i w_i \delta_{r_i}$, feedback kernel $k_m = \int r^m dM$, Stieltjes transform $\sum_i w_i/(z - r_i)$ \\
+$S, \bar{s}$ & Feedback budget $S = a + \kappa \sum_i q_i$ and prudential ceiling $\bar{s} \in (a, 1)$ \\
+$H_t, \bar{a}, A$ & Dealer inventory, dealer carry share, and CARA risk aversion (Section~\ref{sec:equilibrium}) \\
+$\Delta, \Delta\eta$ & Spread (half-width) of trader type parameters or memory rates around center $r_c$ \\
+$u_d, U, \theta_c$ & Class $d$ feedback contribution ($u_d = \kappa q_d$), total feedback $U = \sum_d u_d$, policy scale $\theta_c$ \\
+$\theta_{\mathcal{B}}, \theta_{\mathcal{H}}, \gamma, \alpha_{\mathcal{H}}$ & Retention rates for benign ($\mathcal{B}$) and harmful ($\mathcal{H}$) labels, relabeling cost $\gamma$, harm $\alpha_{\mathcal{H}} = -n_{\mathcal{H}}$ \\
+$\delta, \delta_0, n, J$ & Distance to the neighbor's memory, preferred distance, divergence exponent ($n = 4$), divergence $J = cN\delta^n$ \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\textbf{Observation regimes and the role of impact.} In the reduced-form identification analysis, the observer knows $(a, \kappa)$ and the noise law and observes $x_t$ (or a public signal from which $x_t$ is reconstructible). Giving the observer known $(a, \kappa)$ and exact observability of $x_t$ only strengthens the observer; hence all sample-complexity lower bounds hold \emph{a fortiori} when $(a, \kappa)$ must be estimated or when only raw transaction prices $p_t = F_t + x_t$ are observed with hidden fundamentals (Remark~\ref{rem:obs}). We analyze both passive price observation ($v_t = 0$) and active probing from a reset state. Reset probing is strictly an information-theoretic benchmark—not a proposed regulatory policy—demonstrating that even an unrealistically powerful probing supervisor cannot escape the $\Delta^{-(4K-2)}$ barrier. Finally, mechanical impact in~\eqref{eq:baseline} describes limit-order-book mechanics or inventory-averse dealers (Section~\ref{sec:equilibrium}); by contrast, a risk-neutral rational market maker who knows the aggregate flow rule nets out predictable feedback flow entirely, so prices reveal \emph{less}, not more, about the population (Niroula et al., 2026c, Proposition~C2.1(iv)).
+
+\section{Kernel Sufficiency and Identification}\label{sec:sufficiency}
+
+To establish sufficiency in full generality, embed the feedback population in a strategic market. An asset value $v$ is drawn, noise traders submit orders $z_t$, a strategic insider submits orders $X_t(v, \mathcal{H}_{t-1})$, and a dealer sets prices $P_t(\mathcal{H}_{t-1}, Y_t)$ from public history $\mathcal{H}_{t-1}$ and total order flow $Y_t = X_t + z_t + f_t$. Feedback groups update on a public signal $s_t = \mathcal{S}_t(p_0, \dots, p_t)$ and contribute aggregate flow $f_t = \sum_{m < t} k_m s_{t-1-m}$. The maps $X$, $P$, and $\mathcal{S}$ are arbitrary causal rules. The strategic players are the insider and the dealer; feedback-group rules are fixed, and their individual payoffs are not part of the payoff equivalence.
+
+\begin{theorem}[The kernel is sufficient]\label{n:suff}
+If two feedback-group configurations satisfy $k_m = k'_m$ for all $m < T$, then for every strategy profile $(X, P)$ and every realization of $(v, z)$, the price path, total order-flow path, insider trades and realized profit, and dealer inventory coincide on all dates $t \le T$. The two games share identical strategy sets and payoff functions, and hence identical equilibria under any solution concept defined from public histories and payoffs. The same holds for any finite population whose individual flows are causal linear functions of the public signal, with $k$ the sum of individual kernels. Group-level quantities, such as the weight of the largest group, are not invariant.
+\end{theorem}
+
+The proof is a short induction on dates (Appendix~\ref{app:proofs}). Its economic force lies in the object it isolates: a single population-level sequence $k$ settles every equilibrium concept simultaneously. Because the induction uses only that aggregate feedback flow is a fixed causal map of public signals, sufficiency extends to arbitrary nonlinear or profit-switching populations via the aggregate flow map (Supplement Section~\ref{S-sec:suff}). Moreover, equal kernels remain observationally equivalent even when anonymous aggregate order flow is added to the public record.
+
+The converse holds under the mechanical-impact observation experiment of Section~\ref{sec:model}:
+
+\begin{theorem}[What prices identify]\label{n:ident}
+In model~\eqref{eq:baseline}, fix known $(a, \kappa)$ and zero initial group states, and compare noiseless probe responses. Two economies produce identical price responses to every probe sequence if and only if their merged measures $M$ coincide.
+\end{theorem}
+
+Together, Theorems~\ref{n:suff} and~\ref{n:ident} establish that the feedback kernel (equivalently, the merged measure $M$, which has finitely many atoms) is a \emph{minimal identifying functional} of the trader population for prices: it determines everything prices can reveal, and noiseless prices determine it.
+
+\section{Sufficiency and Identification in Inventory Equilibrium}\label{sec:equilibrium}
+
+Section~\ref{sec:sufficiency} took price impact $\kappa$ and persistence $a$ as primitives. We now derive both from competitive, risk-averse dealers who carry inventory risk, taking as given the share $\bar{a}$ of inventory they carry from one period to the next, proving that kernel sufficiency and the $(\Delta\eta)^{-(4K-2)}$ identification barrier hold in equilibrium.
+
+\textbf{The inventory economy.} Consider an infinite-horizon discrete-time market:
+\begin{itemize}
+  \item \emph{Fundamental and price.} The asset's fundamental value $F_t$ follows a public random walk with i.i.d.\ innovations of variance $\sigma_F^2$. The transaction price is $p_t = F_t + x_t$, where $x_t$ is the equilibrium pricing error induced by dealer inventory absorption.
+  \item \emph{Feedback groups.} Group $i$ submits orders $u_{i,t+1} = r_i u_{i,t} + w_i x_t$, with memory rates $r_i = 1 - \eta_i \in (0, 1)$ and merged weights $w_i = q_i \eta_i$.
+  \item \emph{Exogenous flow.} Total customer order flow is $Y_t = \sum_{i=1}^K u_{i,t} + \xi_t$, where $\xi_t \sim N(0, \sigma_\xi^2)$ is i.i.d.\ noise trading (or supervisory probing priced by dealers as noise).
+  \item \emph{Competitive dealers.} Overlapping generations of dealers with CARA risk aversion $A > 0$ absorb customer flow and lay off a fraction $1 - \bar{a} \in (0, 1]$ of inventory each period, so aggregate dealer inventory evolves as $H_t = \bar{a} H_{t-1} - Y_t$. Market clearing requires $H_t = (\E_t[p_{t+1}] - p_t)/(A V)$, where $V = \Var_t(p_{t+1})$ is the one-step conditional price variance.
+\end{itemize}
+Let $G(D) = \sum_{i=1}^K w_i / (D - r_i) = \int (D - r)^{-1} \, dM(r)$ denote the Stieltjes transform of the merged measure $M$.
+
+\begin{theorem}[Price impact and persistence in inventory equilibrium]\label{n:thm_inventory}
+Consider stationary linear equilibria in which $x_t$ is linear in dealer inventory $H_t$ and next-period feedback trades $\{u_{i,t+1}\}$.
+\begin{enumerate}
+  \item[(i)] \emph{Characterization.} The pricing law
+  \[
+    x_t = -\kappa H_t + \kappa \sum_{i=1}^K \frac{u_{i,t+1}}{D - r_i}, \qquad D \neq 0, \; D \neq r_i,
+  \]
+  is an equilibrium if and only if the induced state dynamics are Schur stable and $(\kappa, D, V)$ solve
+  \begin{equation}\label{eq:eq-system}
+    D = 1 - \kappa G(D), \qquad \kappa(D - \bar{a}) = A V D, \qquad V = \sigma_F^2 + \frac{\kappa^2 \sigma_\xi^2}{D^2}.
+  \end{equation}
+  An unexpected unit of order flow moves the price by $\kappa / D$.
+  \item[(ii)] \emph{No-feedback benchmark.} When $w_i = 0$, $D = 1$ and $x_t = \bar{a} x_{t-1} + \kappa Y_t$. Persistence equals the dealer carry share $\bar{a}$, and impact solves $\kappa(1 - \bar{a}) = A(\sigma_F^2 + \kappa^2 \sigma_\xi^2)$. An equilibrium exists if and only if $\Lambda_0 \equiv (1 - \bar{a})^2 - 4 A^2 \sigma_F^2 \sigma_\xi^2 \ge 0$; when $\Lambda_0 > 0$, the low-impact root $\kappa_- \approx A \sigma_F^2 / (1 - \bar{a})$ is the equilibrium price of inventory risk.
+  \item[(iii)] \emph{Invariance.} The equilibrium tuple $(\kappa, D, V)$ and the resulting price process depend on the trader population solely through $G$, and hence solely through the merged measure $M$.
+  \item[(iv)] \emph{Small feedback.} Let $\Lambda_0 > 0$, fix $\delta > 0$ with $\max_i r_i < 1 - \delta$, and suppose $\epsilon = \sup_{|D - 1| \le \delta}(|G(D)| + |G'(D)|)$ is small. Then there exists a unique equilibrium near $(\kappa_-, 1)$, and with the aggregate feedback intensity $G(1) = \sum_i q_i$,
+  \[
+    D = 1 - \kappa_- G(1) + o(\epsilon), \qquad
+    \kappa = \kappa_- + \frac{\kappa_-^2(\bar{a} + 2 A \kappa_- \sigma_\xi^2)}{\sqrt{\Lambda_0}}\, G(1) + o(\epsilon).
+  \]
+  Positive feedback increases both equilibrium price impact $\kappa$ and unexpected shock impact $\kappa / D$.
+\end{enumerate}
+\end{theorem}
+
+\begin{remark}[Observability of pricing errors]\label{rem:obs}
+Dealers and feedback traders in Theorem~\ref{n:thm_inventory} observe $x_t = p_t - F_t$ because $F_t$ is public among market participants while inventory-induced mispricing $x_t$ is earned by risk-averse dealers. An outside supervisor who observes only raw transaction prices $p_t = F_t + x_t$ without observing the random-walk fundamental $F_t$ receives strictly less information. Every sample-complexity lower bound derived below therefore holds \emph{a fortiori} under unobserved fundamentals (while Supplement Corollary~\ref{S-cor:unknown_primitives} shows that unknown primitives do not alter the upper-bound rate under active probes). The positive results, identification and the upper bounds, assume that the pricing error is observed.
+\end{remark}
+
+\begin{remark}[Mispricing feedback versus raw-return feedback]\label{rem:returns}
+Theorem~\ref{n:thm_inventory} specifies feedback rules on the pricing error $x_t = p_t - F_t$, which isolates pure inventory-driven feedback in closed form. If algorithmic traders instead condition on raw price changes $\Delta p_t = \Delta F_t + \Delta x_t$, fundamental innovations $\Delta F_t$ enter the traders' memory states directly alongside inventory shocks. This introduces a second exogenous innovation channel. It does not alter pathwise kernel sufficiency (Theorem~\ref{n:suff}), which allows any public signal, and the lower bound of Theorem~\ref{n:univ}, which allows any smooth causal rule of the observed history, still applies when the observed innovations are Gaussian.
+\end{remark}
+
+\begin{theorem}[Identification results carry over to equilibrium]\label{n:thm_eqreduced}
+In any stationary equilibrium of Theorem~\ref{n:thm_inventory} with $D \neq \bar{a}$:
+\begin{enumerate}
+  \item[(i)] \emph{Exact reduced form.} Path by path, the equilibrium pricing error follows the closed loop~\eqref{eq:baseline} with effective persistence $a^* = \bar{a}/D$, effective impact $\kappa^* = \kappa/D$, unchanged memory rates $r_i$, and rescaled merged weights $\tilde{w}_i = w_i (D - \bar{a})/(D - r_i)$.
+  \item[(ii)] \emph{Transmission zeros.} The memory rates $r_i$ remain the exact transmission zeros of the equilibrium price response.
+  \item[(iii)] \emph{Identification boundary.} The effective merged measure $\tilde{M} = h M$, where $h(r) = (D - \bar{a})/(D - r)$ is positive whenever $D > \max_i r_i$, is in one-to-one correspondence with the primitive merged measure $M$. Thus $M$ remains the exact identifying functional of equilibrium prices.
+  \item[(iv)] \emph{Minimax rate preservation.} Under the uniform stability condition $a^* + \kappa^* W / (1 - r_c - \Delta\eta) < 1$ of Theorem~\ref{n:cost}, two inventory equilibria with identical primitives $(A, \sigma_F^2, \sigma_\xi^2, \bar{a})$ that differ only in their feedback-trader composition require $N \ge c \sigma^2 (\Delta\eta)^{-(4K-2)}$ reset experiments to be distinguished, each recording the equilibrium price response to a probe with Gaussian noise of variance $\sigma^2$.
+\end{enumerate}
+\end{theorem}
+
+Part~(iv) uses the reset contract of Section~\ref{sec:cost}, a benchmark for what data can reveal rather than a description of a running market. The proofs of Theorems~\ref{n:thm_inventory} and~\ref{n:thm_eqreduced} are given in Appendix~\ref{app:proofs}. Economically, forward-looking dealers anticipate predictable feedback trades and incorporate them into current quotes; rather than obscuring the memory rates, anticipation leaves $r_i$ untouched and up-weights slower-memory groups by $(D - \bar{a})/(D - r_i)$.
+
+To organize the decision-theoretic consequences of sufficiency, we state the following immediate corollary of Blackwell (1953) and Le Cam (1964):
+
+\begin{proposition}[What an intervention requires]\label{n:interv}
+Suppose supervisory observations depend on the trader population only through its aggregate flow map.
+\begin{enumerate}
+  \item[(i)] If the loss of an action depends on the population only through the flow map, the set of safe actions is identified by prices.
+  \item[(ii)] If two populations share the same flow map and an action is safe in one but unsafe in the other, every observation-based rule takes that action with identical probability in both.
+  \item[(iii)] If the observation laws of two populations lie within total-variation distance $\delta$, any rule that takes the action with probability $p$ where it is safe takes it with probability at least $p - \delta$ where it is unsafe.
+\end{enumerate}
+\end{proposition}
+
+\section{The Sample-Complexity Price of Composition}\label{sec:cost}
+
+Theorem~\ref{n:ident} establishes that groups with distinct memory rates are identifiable in principle. We now quantify how much data identification actually requires when memory rates are closely spaced, comparing passive price observation against the active-probing benchmark.
+
+\begin{theorem}[The cost of composition]\label{n:cost}
+Fix $K \ge 2$, a center memory rate $r_c \in (0,1)$, total merged weight $W > 0$, and spacing $\Delta\eta > 0$ such that every candidate economy is Schur stable.
+\begin{enumerate}
+  \item[(i)] \emph{Passive price observation.} When prices are observed passively as the stationary output of~\eqref{eq:baseline} driven by i.i.d.\ Gaussian news $\varepsilon_t \sim N(0, \sigma^2)$, there exist two $K$-group economies with rates in $r_c + \Delta\eta[-1,1]$ and positive weights whose merged measures match all moments of order $0, \dots, 2K-2$, and whose Kullback--Leibler divergence per observation is of exact order $(\Delta\eta)^{4K-2}$. Distinguishing them with both error probabilities below $1/4$ requires $T \ge c (\Delta\eta)^{-(4K-2)}$ passive observations.
+  \item[(ii)] \emph{Active probing is no cheaper.} Even if the supervisor can run $N$ independent reset experiments recording the noisy impulse response with Gaussian observation noise of variance $\sigma^2$, the same pair has impulse-response gap of order $(\Delta\eta)^{2K-1}$, requiring $N \ge c \sigma^2 (\Delta\eta)^{-(4K-2)}$ experiments.
+  \item[(iii)] \emph{Matching upper bound.} On any compact class of $\gamma$-separated rescaled rates with weights bounded away from zero, Prony's method applied to the first $2K$ estimated kernel values recovers the weights from $N = C \sigma^2 (\Delta\eta)^{-(4K-2)}$ reset experiments.
+\end{enumerate}
+\end{theorem}
+
+Part~(i) is Supplement Proposition~\ref{S-prop:passive}, part~(ii) Supplement Theorem~\ref{S-thm:kcohort}, and part~(iii) Supplement Proposition~\ref{S-prop:esprit}. The hard pair consists of the $K$-point Gauss--Legendre and Gauss--Radau quadrature rules scaled to $r_c + \Delta\eta[-1,1]$, which match all moments through degree $2K-2$ while differing at order $2K-1$. For two groups ($K=2$), halving the memory spread multiplies the required data by $2^6 = 64$; for three groups ($K=3$), by $2^{10} = 1{,}024$. Gaussian news is the least-favorable innovation law: for any regular non-Gaussian news law whose location divergence is quadratically bounded (such as Laplace innovations), the exponent $4K-2$ is unchanged, and the lower bounds shrink by at most the factor $\sigma^2 I_f$, where $I_f$ is the Fisher information for location of the news law; the factor is $2$ for Laplace news but can be large for heavy-tailed news (Supplement Section~\ref{S-sec:cost}).
+
+\textbf{The barrier does not lift near instability.} One might conjecture that as a market approaches instability ($S \uparrow 1$), feedback amplification magnifies compositional differences and makes traders easier to distinguish. The opposite holds. Give the hard pair of Theorem~\ref{n:cost} a common persistence and, by rescaling one economy's weights by a factor $1 + O((\Delta\eta)^{2K-1})$, a common feedback budget $S = 1 - \epsilon$. The passive KL divergence per observation then remains bounded by $C(\Delta\eta)^{4K-2}$ uniformly in $\epsilon > 0$ (Supplement Proposition~\ref{S-prop:nearcrit}). As Figure~\ref{fig:near-instability} illustrates, a market near instability reveals how close it is to instability, not who is trading in it. Table~\ref{tab:years} translates these lower bounds into illustrative calendar years of daily price data.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\linewidth]{fig_barrier_admissible.pdf}
+  \caption{The passive identification barrier near instability. Both panels plot the Gaussian Kullback--Leibler divergence per observation between the stationary price processes of the $K$-node Gauss and Gauss--Radau populations spread over $\Delta\eta$ around $r_c = 0.5$ (total weight $0.3$, impact $\kappa = 0.5$). Panel~(a): at a common persistence and a common feedback budget $1 - S = 10^{-6}$, information decays as $(\Delta\eta)^{4K-2}$ (fitted slopes $5.8$ and $9.9$). Panel~(b): with a common persistence and a common budget (solid; the Gauss--Radau weights rescaled by a factor $1 + O((\Delta\eta)^{2K-1})$), information stays bounded as $1 - S \to 0$. With a common persistence and no rescaling (dashed), the budgets differ by order $(\Delta\eta)^{2K-1}$; the information then grows roughly like $(1 - S)^{-1}$ until the margin reaches that gap, and levels off. Computed from the closed-form spectra; the code is in the replication archive.}
+  \label{fig:near-instability}
+\end{figure}
+
+\begin{table}[!htbp]
+\centering
+\caption{Illustrative years of daily price data below which no test separates the two populations of Theorem~\ref{n:cost}(i) with both error probabilities at $5\%$.}
+\label{tab:years}
+\small
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Groups & Memory rates & Half-lives (days) & $1 - S = 0.1$ & $1 - S = 10^{-6}$ \\
+\midrule
+$K = 2$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $31{,}000$        & $23{,}000$ \\
+        & $0.5 \pm 0.05$  & $0.9\text{--}1.2$  & $1.8 \times 10^6$ & $1.3 \times 10^6$ \\
+        & $0.8 \pm 0.1$   & $1.9\text{--}6.6$  & $280$             & $160$ \\
+        & $0.8 \pm 0.05$  & $2.4\text{--}4.3$  & $15{,}000$        & $8{,}100$ \\
+        & $0.9 \pm 0.05$  & $4.3\text{--}13.5$ & $480$             & $230$ \\
+        & $0.9 \pm 0.025$ & $5.2\text{--}8.9$  & $25{,}000$        & $11{,}000$ \\
+\midrule
+$K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times 10^8$ \\
+        & $0.5 \pm 0.05$  & $0.9\text{--}1.2$  & $1.9 \times 10^{11}$ & $1.2 \times 10^{11}$ \\
+\bottomrule
+\end{tabular}
+\vspace{4pt}
+\parbox{\linewidth}{\footnotesize\emph{Notes:} Lower bound $T \ge \ln(5)/\KL$ (Bretagnolle--Huber), computed from the closed-form Gaussian spectra at a common persistence and a common feedback budget $S$ (the Gauss--Radau weights rescaled to match the budget), $\kappa = 0.5$, and feedback share $\kappa \sum_i q_i = 0.3$ (total weight $0.6(1 - r_c)$ of the Gauss economy), assuming $252$ trading days per year. For 5-minute intraday memory horizons recorded continuously, divide by $417$. With non-Gaussian news the bounds can be smaller, by at most the factor $\sigma^2 I_f$ ($2$ for Laplace news). Entries are worst-case lower bounds for moment-matched pairs, not fitted venue horizons.}
+\end{table}
+
+\subsection{Which questions prices answer cheaply}
+
+Composition is only one functional of the merged measure $M$. Consider any linear functional $F_g(M) = \int g(r)\, dM(r)$ for continuous $g$ on $[0, \bar{r}]$ ($\bar{r} < 1$), with total mass at most $\bar{W}$, observed through the first $L$ kernel taps with $N(0, \sigma^2)$ noise across $N$ experiments. Write $\mathcal{R}(h) = (\sup h)_+ + (-\inf h)_+$ for the signed oscillation of $h$.
+
+\begin{theorem}[Which questions prices answer cheaply]\label{n:questions}
+Let $z_\beta$ denote the standard normal $\beta$-quantile and $\alpha \in (0, 1/2)$.
+\begin{enumerate}
+  \item[(i)] \emph{Exact modulus cost.} The minimum number of experiments $N_{\mathrm{cert}}(\epsilon; F_g)$ required to certify $F_g(M)$ to half-width $\epsilon$ at confidence level $1-\alpha$ is pinned, up to the quantile ratio $\lambda_\alpha = z_{1-\alpha/2}/z_{1-\alpha}$ (approximately $1.19$ at the $95\%$ level), by the polynomial approximation problem
+  \[
+    \omega_L(\delta) = \min_{c \in \R^L} \Bigl\{ \delta \|c\|_2 + \bar{W}\, \mathcal{R}\Bigl(g - \sum_{t < L} c_t r^t\Bigr) \Bigr\}
+  \]
+  evaluated at $\delta = 2 z_{1-\alpha} \sigma / \sqrt{N}$.
+  \item[(ii)] \emph{Cheap (parametric) questions.} $N_{\mathrm{cert}}(\epsilon; F_g) = O(\sigma^2 \epsilon^{-2})$—independent of the number of groups $K$ and their memory spacing—if and only if $g$ agrees on $[0, \bar{r}]$ with a power series having square-summable coefficients.
+  \item[(iii)] \emph{Impossible questions.} Without a memory bound $\bar{r} < 1$, any functional satisfying
+  \[
+    \limsup_{r \uparrow 1}\, |g(r)|\sqrt{1 - r} = \infty
+  \]
+  cannot be certified to any finite accuracy from any finite number of experiments.
+\end{enumerate}
+\end{theorem}
+
+Theorem~\ref{n:questions} (Supplement Theorem~\ref{S-thm:questions} and Proposition~\ref{S-prop:parametric}) specializes Donoho's (1994) modulus of continuity to our feedback market. It cleanly separates market-wide questions from compositional ones: a single kernel tap and discounted feedback $\int (1 - \beta r)^{-1} dM$ ($\beta < 1$) are parametric ($O(\sigma^2 \epsilon^{-2})$); total feedback weight $\Phi = \sum_m k_m$ sits on the boundary at $O(\sigma^2 \epsilon^{-2} \log(1/\epsilon))$ (Niroula et al., 2026b); and individual group weights are nonlinear functionals costing $(\Delta\eta)^{-(4K-2)}$.
+
+\begin{corollary}[Separation of market-wide and compositional inference]\label{n:sep}
+Fix $K \ge 2$, accuracy $\epsilon > 0$, and any cheap functional $F_g$ satisfying Theorem~\ref{n:questions}(ii). Over $K$-group populations with memory spacing $\Delta\eta$, the ratio of experiments needed to recover group weights within a fixed fraction of total weight to the experiments needed to certify $F_g$ within $\epsilon$ is at least $c \epsilon^2 (\Delta\eta)^{-(4K-2)}$, diverging as $\Delta\eta \to 0$.
+\end{corollary}
+
+\subsection{Beyond exponential memory: smooth rule families}
+
+The exponent $4K-2$ does not rely on exponential memory or linear trading rules. Index trader types by $\theta \in \Theta \subset \R$ with arbitrary causal rules $f_\theta(h)$ mapping public history $h = (x_t, x_{t-1}, \dots)$ to order flow, such as power-law memory, hump-shaped lags, fixed lookback windows, or saturating nonlinear rules. A population is a finite measure $\nu$ on $\Theta$ generating aggregate flow $F_\nu(h) = \int f_\theta(h)\, \nu(d\theta)$, entering prices via~\eqref{eq:baseline} with $\kappa F_\nu(h_{t-1})$ in place of the linear feedback term.
+
+\begin{theorem}[Lower bound for smooth families]\label{n:univ}
+Fix $K \ge 2$, center $\theta_c$, total weight $W > 0$, and spread $\Delta > 0$ with $[\theta_c - \Delta, \theta_c + \Delta] \subset \Theta$. Suppose $\theta \mapsto f_\theta(h)$ has $2K-1$ continuous derivatives at every history with $|\partial_\theta^{2K-1} f_\theta(h)| \le B(h)$, and conditional on past observations and probes, price innovations are independent $N(0, \sigma^2)$. Compare records from a common observed initial history under any predictable probe policy.
+\begin{enumerate}
+  \item[(i)] \emph{Flow gap.} There exist two $K$-type populations $\nu, \nu'$ supported on $[\theta_c - \Delta, \theta_c + \Delta]$ with positive weights summing to $W$ and Wasserstein distance $W_1(\nu, \nu') = d_K W \Delta$ ($d_K > 0$) such that, at every history $h$,
+  \[
+    |F_\nu(h) - F_{\nu'}(h)| \le \frac{2W}{(2K-1)!}\, B(h)\, \Delta^{2K-1}.
+  \]
+  \item[(ii)] \emph{Lower bound.} If $\E_\nu[B(h_t)^2] \le \bar{B}^2 < \infty$ uniformly across dates (and, for asymptotic claims, uniformly over spreads and policies), distinguishing $\nu$ from $\nu'$ with both error probabilities below $1/4$ requires at least
+  \[
+    T \ge \frac{((2K-1)!)^2}{4 \kappa^2 W^2 \bar{B}^2}\, \sigma^2 \Delta^{-(4K-2)}
+  \]
+  periods.
+\end{enumerate}
+\end{theorem}
+
+The self-contained proof in Appendix~\ref{app:proofs} applies Taylor's remainder theorem to the Gauss--Legendre and Gauss--Radau quadrature pair and invokes the sequential Gaussian KL chain rule, establishing the paper's headline $\Delta^{-(4K-2)}$ sample-complexity lower bound directly. For general linear memory kernels satisfying a local derivative rank condition, a matching upper bound holds within a shrinking cluster:
+
+\begin{theorem}[Recovery within a shrinking cluster of linear rules]\label{n:shape}
+Fix known $K \ge 2$, $a$, $\kappa > 0$, $\theta_c$, $L \ge 2K$, and the compact separated class
+\[
+  \mathcal{Z} = \{(s, w) : -1 \le s_1 < \dots < s_K \le 1,\; s_{i+1} - s_i \ge \gamma,\; \omega_{\min} \le w_i \le \omega_{\max}\},
+\]
+with $\gamma > 0$ and $0 < \omega_{\min} \le \omega_{\max} < \infty$. Let $g = (g_0, \dots, g_{L-1})$ be $C^{2K}$ near $\theta_c$ with derivative vectors of orders $0, \dots, 2K-1$ linearly independent at $\theta_c$, and let $k_m = \sum_i w_i g_m(\theta_c + \Delta s_i)$ with known $\Delta > 0$. From $N$ independent copies of the deterministic unit-impulse response $(h_0, \dots, h_L)$ plus independent $N(0, \sigma^2 I_{L+1})$ noise, there exist $\Delta_0 > 0$ and $C < \infty$ such that for all $0 < \Delta \le \Delta_0$, every exact minimum-distance estimator $\hat{z}$ over $\mathcal{Z}$ satisfies, with probability at least $1 - \delta$,
+\[
+  \|\hat{z} - z\| \le C \sigma \bigl(\sqrt{L+1} + \sqrt{2\log(1/\delta)}\bigr)\, N^{-1/2} \Delta^{-(2K-1)}.
+\]
+\end{theorem}
+
+The rank condition holds for both exponential memory $g_m(\theta) = (1-\theta)\theta^m$ ($\theta_c \in (0,1)$) and power-law memory $g_m(\theta) = (m+1)^{-\theta}$ ($\theta_c > 1$), matching the $\Delta^{-(4K-2)}$ sample order of Theorem~\ref{n:univ} (Supplement Section~\ref{S-app:incoming}). The estimator is an exact global minimizer over $\mathcal{Z}$, which is not convex; the theorem gives no algorithm that finds it.
+
+\section{What a Record Reveals: Identification Equals Forecast Loss}\label{n:irr_sec}
+
+Why can a supervisor calibrate a uniform feedback cut from prices while remaining unable to attribute feedback to individual classes? The next theorem states the Gaussian chain rule in market terms: in a Gaussian feedback market, the information a price record carries about two competing populations equals half the cumulative excess forecast loss from mistaking one for the other. Populations that forecast alike are therefore hard to tell apart, and a uniform cut depends only on what forecasts reveal.
+
+\begin{theorem}[Pairwise detection and forecast mismatch]\label{n:dual}
+Consider two causal aggregate flow maps $F, F'$ under common known $(a, \kappa)$, common observed initial information, independent $N(0, \sigma^2)$ innovations, and a common predictable probe policy. For a record of $T$ subsequent periods, define the one-step excess mean-squared forecast error and cumulative signal-to-noise ratio
+\[
+  V_t = \kappa^2 \E_P\bigl[(F(h_t) - F'(h_t))^2\bigr], \qquad \Lambda_T = \sigma^{-2} \sum_{t < T} V_t.
+\]
+Then $V_t$ is the exact excess mean-squared error of forecasting $x_{t+1}$ using the alternative conditional mean under the true law $P$, and
+\[
+  \KL(P_T \| P'_T) = \frac{\Lambda_T}{2}.
+\]
+Both testing errors can lie below $1/4$ only if $\Lambda_T > 1$. Moreover, for any countable family of candidate densities with prior mass $\pi_* > 0$ on the truth, the Bayesian mixture $q$ satisfies the pathwise regret bound $\log p_*(X_{1:T}) - \log q(X_{1:T}) \le \log(1/\pi_*)$.
+\end{theorem}
+
+The proof is given in Appendix~\ref{app:proofs} (combining the Gaussian chain rule with the mixture likelihood bound of Dawid, 1984 and Vovk, 2001). Furthermore, composition is unnecessary for forecasting the pricing error $x_t$ itself: with known parameters, the price record and the class-flow record yield the exact same optimal forecast, and for an unknown stable population, a fitted autoregression of order $L_T = \lceil c \log T \rceil$ attains the oracle risk up to $O(\sigma^2 \log T / T)$ (Ing and Wei, 2005), while a Bayesian $\mathrm{AR}(L)$ achieves uniform cumulative log-loss $O(\log^2(T+1)/T)$ across all stable populations (Supplement Theorems~\ref{S-n:irr} and~\ref{S-n:uniformlog}). What prices withhold from a supervisor is therefore not forecast accuracy, but the class attribution required for targeted policy.
+
+\section{Supervision, Minimax Policy, and Strategic Disclosure}\label{sec:supervision}
+
+We now derive the regulatory implications of observational equivalence, moving from static prudential ceilings to minimax policy design, class-tagged disclosure, strategic relabeling, endogenous crowding, and an empirical calibration.
+
+\subsection{Market-wide versus targeted interventions}
+
+Instantiating Proposition~\ref{n:interv}, suppose a supervisor must keep the feedback budget $S = a + \kappa \sum_i q_i$ below a prudential ceiling $\bar{s} \in (a, 1)$ in a positive, stable market with known $(a, \kappa)$.
+
+\begin{proposition}[Market-wide versus targeted action]\label{n:target}
+\begin{enumerate}
+  \item[(i)] \emph{Market-wide scaling.} Scaling all feedback activity uniformly by $\theta \in [0, 1]$ meets the ceiling if and only if $a + \theta(S - a) \le \bar{s}$, which depends on the population solely through the aggregate budget $S$ (and thus the kernel).
+  \item[(ii)] \emph{Targeted halt.} Halting the largest group does not. For every $K \ge 2$, there exist two $K$-group economies whose merged measures match moments $0, \dots, 2K-2$ (so their aggregate budgets differ only by $O((\Delta\eta)^{2K-1})$) while their largest groups differ by a fixed positive margin. Over a nonempty interval of ceilings $\bar{s}$, halting the largest group satisfies the ceiling in one economy and breaches it in the other; deciding between them from $N$ reset records with both errors at most $1/4$ requires $N \ge c \sigma^2 (\Delta\eta)^{-(4K-2)}$.
+  \item[(iii)] \emph{Restriction by horizon.} Halting the feedback of every group whose memory lies below a cutoff $\hat r \in (0, 1)$ does not either. Under the conditions of Theorem~\ref{n:cost}, for every $K \ge 2$ and all small $\Delta\eta > 0$, there exist two $K$-group economies with memories in $[\hat r - \Delta\eta, \hat r + 2\Delta\eta]$ whose merged measures match moments $0, \dots, 2K-2$, such that the restriction removes at least $\kappa W/K^2$ of the budget in one economy and nothing in the other, where $W$ is the total merged weight. Over a nonempty interval of ceilings $\bar{s}$, the restriction satisfies the ceiling in one economy and breaches it in the other; deciding between them from $N$ reset records with both errors at most $1/4$ requires $N \ge c \sigma^2 (\Delta\eta)^{-(4K-2)}$.
+\end{enumerate}
+\end{proposition}
+
+\textbf{What setting a uniform cut from prices requires.} Part~(i) of Proposition~\ref{n:target} takes the persistence $a$ as known, and that is a restriction on the population: a group with memory zero acts exactly like persistence (Supplement Theorem~\ref{S-thm:merged}(i)), so knowing $a$ amounts to assuming that every memory exceeds some $\underline{r} > 0$, or to knowing which part of the response at the first lag is feedback. The budget also needs a bound on memory. It is the linear functional with $g(r) = 1/(1-r)$, and by Theorem~\ref{n:questions}(iii) a group with memory close to one and negligible weight can move it at bounded divergence unless memories are bounded by some $\bar{r} < 1$. Under both restrictions the budget is learned at nearly the parametric rate: the taps beyond the first $L$ sum to at most $W\bar r^{L}/(1-\bar r)$, so summing the first $L \approx \log(1/\epsilon)/\log(1/\bar r)$ estimated taps gives the feedback weight $\sum_m k_m$, and with it the budget, to accuracy $\epsilon$ from order $\sigma^2\epsilon^{-2}\log(1/\epsilon)$ experiments. Without the restrictions, the uniform cut inherits part of the composition problem. The instrument must also scale feedback traders while sparing arbitrageurs and dealers. Real instruments, such as transaction taxes, minimum resting times and order-to-trade limits, act with an incidence $\theta(r)$ that varies with the trader's horizon, so their effect on the budget is the linear functional with $g(r) = \theta(r)/(1-r)$, whose cost Theorem~\ref{n:questions} gives. An incidence that does not vary with memory gives the budget itself. One that singles out the memories below a cutoff meets the barrier of Theorem~\ref{n:cost}: by part~(iii) of Proposition~\ref{n:target}, a restriction by horizon, which needs no tags, is a policy for which composition decides whether a ceiling is met.
+
+\begin{corollary}[Expected loss from weakly identified targeting]\label{n:decisionloss}
+In the hard pair of Proposition~\ref{n:target}, let economy~$0$ be the case where halting the largest class breaches $\bar{s}$ (incurring loss $b > 0$) while a uniform cut meets it, and economy~$1$ the case where both meet $\bar{s}$ (with unnecessary uniform restriction incurring loss $c > 0$). Under equal priors and observation laws $P_0, P_1$, every decision rule has average loss
+\[
+  R \ge \frac{\min(b, c)}{2}\bigl\{1 - \TV(P_0, P_1)\bigr\} \ge \frac{\min(b, c)}{2}\Bigl[1 - \sqrt{\KL(P_0 \| P_1)/2}\Bigr]_+.
+\]
+Under prices with $\KL(P_0 \| P_1) \le C T \Delta^{4K-2}$, achieving $R \le \epsilon \min(b, c)$ ($\epsilon < 1/2$) requires $T \ge 2(1 - 2\epsilon)^2 / (C \Delta^{4K-2})$. Under $N$ independent Gaussian class-tagged flow measurements with covariance $\tau^2 I$ and mean separation $d \neq 0$, the likelihood-ratio rule achieves $R_{\mathrm{tag}} \le \frac{1}{2}\max(b, c)\exp\{-N \|d\|^2 / (8\tau^2)\}$.
+\end{corollary}
+
+Figure~\ref{fig:intervention} illustrates this contrast in a two-class economy and an illustrative measurement experiment: halting the largest class produces qualitatively opposite prudential outcomes across nearly indistinguishable economies, whereas verified class reports cut the sample needed for a $5\%$ error by six orders of magnitude.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\linewidth]{fig_intervention_revision.pdf}
+  \caption{Intervention choice and the information value of class reports. Panel~A uses the two-class construction of Supplement Section~\ref{S-app:revisiondecision} ($a = 0.3$, $\kappa = 0.5$, $W = 0.2$, $r_c = 0.5$): a ceiling of $0.375$ separates the post-halt budgets while uniform scaling satisfies it in both economies. Panel~B fixes $\Delta = 0.05$ and compares exact likelihood-ratio error probabilities across $N$ independent repetitions (30 impulse-response coordinates vs.\ one verified class report, both with Gaussian measurement standard deviation $0.01$): achieving $5\%$ error requires roughly $2.03 \times 10^6$ public-response repetitions versus $2$ class reports. These are assumptions of an illustrative measurement experiment, not a passive-innovation model, a feasible live reset policy or a market calibration.}
+  \label{fig:intervention}
+\end{figure}
+
+\subsection{Minimax optimality of uniform policies}
+
+Let class $d \in \{1, \dots, K\}$ contribute $u_d = \kappa q_d$ to the feedback budget, with total feedback $U = \sum_{d=1}^K u_d$. A supervisory policy scales the class carrying label $c$ by $\theta_c \in [0, 1]$ at implementation cost $C(\theta)$. If $\pi$ is the unknown permutation assigning labels to underlying classes (a labeling), the post-policy budget is $S'_\pi = a + \sum_{c=1}^K \theta_c u_{\pi(c)}$ and the prudential loss is $\ell(S'_\pi)$.
+
+\begin{theorem}[Without tags, uniform policies are minimax]\label{n:minimax}
+Let $\ell$ be convex and $C$ be convex and permutation-invariant on $[0, 1]^K$.
+\begin{enumerate}
+  \item[(i)] \emph{Weak dominance.} For every policy $\theta \in [0, 1]^K$, the uniform policy $\bar{\theta}\mathbf{1}$ with $\bar{\theta} = K^{-1}\sum_{c=1}^K \theta_c$ yields budget $a + \bar{\theta} U$ independent of $\pi$ and satisfies
+  \[
+    \ell(a + \bar{\theta} U) + C(\bar{\theta}\mathbf{1})
+    \le \frac{1}{K!} \sum_{\pi} \ell(S'_\pi) + C(\theta)
+    \le \max_{\pi} \ell(S'_\pi) + C(\theta).
+  \]
+  Labels do not enter prices (Theorem~\ref{n:suff}), so no record distinguishes labelings; the uniform policy does at least as well as $\theta$ against the worst labeling (it is minimax) and on average over labelings (it is Bayes under an exchangeable prior).
+  \item[(ii)] \emph{Uniqueness.} If, in addition, $C$ is strictly convex on $[0, 1]^K$ (or $\ell$ is strictly convex on $[a, a + U]$ with $U > 0$ and not all $u_d$ equal), then $\bar{\theta}\mathbf{1}$ strictly dominates every non-uniform policy $\theta \neq \bar{\theta}\mathbf{1}$, and the minimax problem admits a unique solution $\bar{\theta}^*\mathbf{1}$: the uniform cut is the unique minimax policy over labelings.
+\end{enumerate}
+\end{theorem}
+
+\begin{corollary}[Guarantee of a single halt]\label{cor:robustuniform}
+In the setting of Theorem~\ref{n:minimax}:
+\begin{enumerate}
+  \item[(i)] Halting any single label $F$ is guaranteed to reduce the feedback budget only by $\min_d u_d$, and some labeling consistent with the price record attains this worst case.
+  \item[(ii)] A uniform cut to $\theta = (\bar{s} - a)/(S - a)$ achieves the ceiling $\bar{s}$ exactly in every population with budget $S$, and no policy meeting the ceiling removes less aggregate feedback than $S - \bar{s}$.
+\end{enumerate}
+\end{corollary}
+
+Verified partial tags break permutation symmetry across tagged groups while preserving it within each group:
+
+\begin{theorem}[Minimax value of partial tags]\label{n:minimaxtags}
+Suppose verified tags partition the classes into groups $g = 1, \dots, G$, so the record identifies each class's group membership but cannot distinguish relabelings within any group. If $\ell$ is convex and $C$ is convex and invariant to within-group permutations, then replacing $\theta$ by the group-average policy $\bar{\theta}_g = |g|^{-1} \sum_{c \in g} \theta_c$ yields budget $a + \sum_{g=1}^G \bar{\theta}_g U_g$ ($U_g = \sum_{d \in g} u_d$) under every consistent labeling and weakly dominates $\theta$ in minimax loss. The minimax value of tags is
+\[
+  V_{\mathrm{tag}} = \min_{\bar{\theta}} \max_{\pi} \{\ell(S'_\pi) + C\} - \min_{(\bar{\theta}_g)_g} \max_{\pi} \{\ell(S'_\pi) + C\} \ge 0,
+\]
+the exact gain from tailoring policy intensities across verified groups. As in Theorem~\ref{n:minimax}(ii), if $C$ is strictly convex on $[0, 1]^K$, the group-uniform minimizer is unique.
+\end{theorem}
+
+The proofs of Theorems~\ref{n:minimax} and~\ref{n:minimaxtags} and Corollary~\ref{cor:robustuniform} are short and self-contained (Appendix~\ref{app:proofs}). Theorem~\ref{n:minimax}(i), Corollary~\ref{cor:robustuniform} and the dominance part of Theorem~\ref{n:minimaxtags} are checked in Lean~4 in full, with the cost convex on $[0,1]^K$, and so is Theorem~\ref{n:minimax}(ii) for a strictly convex cost, uniqueness included (Supplement Table~\ref{S-tab:newlean}); the case of a strictly convex loss and the uniqueness claim of Theorem~\ref{n:minimaxtags} are proved on paper. The argument is the finite-group case of the Hunt--Stein theorem (Lehmann and Romano, 2005, Chapter~8). Because the law of the record does not depend on the labeling, it applies record by record, so it also covers policies that depend on the record. The comparison with the worst labeling also holds when $\ell$ and $C$ are only quasi-convex, as is the loss of missing a ceiling; the comparison with the average does not.
+
+\subsection{Class-tagged disclosure, relabeling, and the surveillance paradox}
+
+\begin{theorem}[Statistical value of class-tagged disclosure]\label{n:disc}
+Suppose that in addition to prices, the supervisor receives each class's order flow with independent Gaussian measurement noise. On the rich class of Theorem~\ref{n:cost}(iii), the number of experiments required to recover group weights drops from order $(\Delta\eta)^{-(4K-2)}$ to a constant independent of $\Delta\eta$, and for memory rates it drops to order $(\Delta\eta)^{-2}$.
+\end{theorem}
+
+As shown in Supplement Theorem~\ref{S-thm:partial}, tagging $m$ of $K$ groups lowers the composition exponent by $4$ per tag (to $4(K-m)-2$), so tagging all but one class removes the spacing penalty for weights entirely.
+
+Crucially, however, disclosure regimes operate on strategic traders. Before solving the strategic relabeling and surveillance-crowding games, the next lemma anchors their reduced-form payoffs directly in the inventory equilibrium of Section~\ref{sec:equilibrium} and the steady-state Kalman trading desk of Section~\ref{sec:model}.
+
+\begin{lemma}[Equilibrium microfoundation of disclosure and crowding payoffs]\label{lem:micro}
+\begin{enumerate}
+  \item[(i)] \emph{Welfare weights from equilibrium impact.} In the small-feedback equilibrium of Theorem~\ref{n:thm_inventory}(iv), each unit of aggregate feedback intensity $G(1) = \sum_j q_j$ raises equilibrium impact $\kappa$ by $\kappa_-^2(\bar{a} + 2A\kappa_-\sigma_\xi^2)/\sqrt{\Lambda_0} > 0$. Suppose the supervisor values a unit of feedback intensity, through the rise in impact and inventory risk it causes, at $\lambda_{\mathrm{ext}} > 0$, a parameter of its welfare criterion rather than an equilibrium object. If class $j \in \{\mathcal{H}, \mathcal{B}\}$ earns private value $b_j > 0$ per retained unit and adds $\phi_j$ to the feedback intensity, then the first-order net social value of a retained unit is $n_j = b_j - \lambda_{\mathrm{ext}} \phi_j$, yielding $n_{\mathcal{H}} < 0 < n_{\mathcal{B}}$ whenever $b_{\mathcal{H}} < \lambda_{\mathrm{ext}}\phi_{\mathcal{H}}$ and $b_{\mathcal{B}} > \lambda_{\mathrm{ext}}\phi_{\mathcal{B}}$.
+  \item[(ii)] \emph{Quadratic strategy-distortion cost from Kalman filtering.} Consider a trading desk tracking a latent random-walk trend $v_{t+1} = v_t + \zeta_{t+1}$ ($\Var(\zeta) = \sigma_\zeta^2 > 0$) from noisy signals $v_t + \nu_t$ ($\Var(\nu) = \sigma_\nu^2 > 0$) with exponential memory rate $r \in (0, 1)$, submitting the one-period optimal trade $u_t = \hat{v}_t / (\kappa + \lambda)$ that maximizes $\E[v_t u - \frac{1}{2}(\kappa + \lambda)u^2 \mid \hat{v}_t]$. Its stationary forecast-error variance is
+  \[
+    P(r) = \frac{\sigma_\zeta^2 + (1 - r)^2 \sigma_\nu^2}{1 - r^2}
+         = \frac{\sigma_\zeta^2}{1 - r^2} + \frac{2\sigma_\nu^2}{1 + r} - \sigma_\nu^2,
+  \]
+  which is strictly convex on $(0, 1)$ with a unique minimizer $r_0 \in (0, 1)$ and $P''(r_0) > 0$. Deviating from $r_0$ to $r$ incurs per-period expected profit loss
+  \[
+    \Pi(r_0) - \Pi(r) = \frac{P(r) - P(r_0)}{2(\kappa + \lambda)}
+    = k (r - r_0)^2 + O\!\left(|r - r_0|^3\right),
+    \qquad k = \frac{P''(r_0)}{4(\kappa + \lambda)} > 0.
+  \]
+  For a small trader group ($w_i \ll 1$), shifting $r_i$ alters the market-wide Stieltjes transform $G(D)$—and hence equilibrium impact $\kappa$ in Theorem~\ref{n:thm_inventory}(iv)—only at order $O(w_i)$, so the quadratic distortion cost $k(\delta_0 - \delta)^2$ of Theorem~\ref{n:paradox} is exact at leading order.
+\end{enumerate}
+\end{lemma}
+
+Class tags attached to accounts prevent a trader from hiding merely by tweaking its algorithm, but a restricted trader can still route orders through accounts carrying an unrestricted label.
+
+\begin{proposition}[Disclosure when labels can be gamed]\label{n:relabel}
+Fix one supervisory cycle. A share $\chi \in (0, 1)$ of feedback activity belongs to a harmful class $\mathcal{H}$ and $1 - \chi$ to a benign class $\mathcal{B}$. Each retained unit has net social value $n_{\mathcal{H}} < 0 < n_{\mathcal{B}}$, and $\mathcal{H}$ traders earn private gain $b_{\mathcal{H}} > 0$ per retained unit. Without disclosure, the supervisor chooses a uniform retention $\theta \in [0, 1]$. With class tags, the supervisor sets retention $\theta_{\mathcal{H}}$ for label $\mathcal{H}$ and $\theta_{\mathcal{B}} \ge \theta_{\mathcal{H}}$ for label $\mathcal{B}$, and $\mathcal{H}$ traders may route a share $z \in [0, 1]$ of their activity through $\mathcal{B}$ accounts at resource cost $\gamma z^2 / 2$ per unit ($\gamma > 0$). An owner-linked audit trail prevents relabeling ($z \equiv 0$). Write $\alpha_{\mathcal{H}} = -n_{\mathcal{H}} > 0$, $m = \chi n_{\mathcal{H}} + (1 - \chi) n_{\mathcal{B}}$, $s_{\mathcal{B}} = (1 - \chi) n_{\mathcal{B}}$, and $g = \gamma / \{b_{\mathcal{H}}(2\alpha_{\mathcal{H}} + b_{\mathcal{H}})\}$.
+\begin{enumerate}
+  \item[(i)] \emph{Optimal hiding.} $\mathcal{H}$ traders route $z^* = \min\{1,\, b_{\mathcal{H}}(\theta_{\mathcal{B}} - \theta_{\mathcal{H}})/\gamma\}$ through $\mathcal{B}$ labels.
+  \item[(ii)] \emph{Optimal policy and tag value.} Welfare is $\max\{0, m\}$ without disclosure and $s_{\mathcal{B}}$ under an audit trail (before fixed costs). Under class tags, let $V_C(\gamma)$ denote the welfare gain over the uniform cut:
+  \begin{itemize}
+    \item If $m \ge 0$: $\theta_{\mathcal{B}} = 1$, label gap $\theta_{\mathcal{B}} - \theta_{\mathcal{H}} = \min\{1, \alpha_{\mathcal{H}} g\}$, and $V_C = \chi \alpha_{\mathcal{H}}^2 g / 2$ when $\alpha_{\mathcal{H}} g \le 1$, else $V_C = \chi \alpha_{\mathcal{H}} - \chi / (2g)$.
+    \item If $m < 0$: $\theta_{\mathcal{H}} = 0$, $\theta_{\mathcal{B}} = \min\{1, s_{\mathcal{B}} g / \chi\}$, and $V_C = s_{\mathcal{B}}^2 g / (2\chi)$ when $s_{\mathcal{B}} g \le \chi$, else $V_C = s_{\mathcal{B}} - \chi / (2g)$.
+  \end{itemize}
+  In every case, the equilibrium hiding share lies strictly in $(0, 1)$, and at interior optima it is independent of $\gamma$: $z^* = \alpha_{\mathcal{H}}/(2\alpha_{\mathcal{H}} + b_{\mathcal{H}})$ when $m \ge 0$ and $z^* = s_{\mathcal{B}}/\{\chi(2\alpha_{\mathcal{H}} + b_{\mathcal{H}})\}$ when $m < 0$.
+  \item[(iii)] \emph{Audit trail versus class tags.} $V_C(\gamma)$ is continuous and strictly increasing in $\gamma$, with $V_C(\gamma) \to 0$ as $\gamma \to 0$, $V_C(\gamma) \to V_A \equiv s_{\mathcal{B}} - \max\{0, m\}$ as $\gamma \to \infty$, and $V_C(\gamma) < V_A$ for all $\gamma > 0$. Given fixed costs $F_C \le F_A$, an owner-linked audit trail strictly dominates class tags if and only if $F_A - F_C < V_A - V_C(\gamma)$, i.e., whenever relabeling cost $\gamma$ lies below a unique threshold $\gamma^*$.
+\end{enumerate}
+\end{proposition}
+
+The proof (Appendix~\ref{app:proofs}) yields three sharp economic takeaways. First, cheap relabeling restores observational equivalence in equilibrium: as $\gamma \to 0$, class tags become worthless. Second, the optimal targeted restriction is partial—when uniform retention is worthwhile ($m \ge 0$), the supervisor leaves the harmful label partly open; when $m < 0$, it also restricts the benign label because that label serves as the hiding channel. Third, an audit trail linking accounts to beneficial owners preserves its full value $V_A$ regardless of $\gamma$. This ranking is built in, because the audit trail is assumed not to be gameable. What it needs is a stable link from accounts to an owner, which can be pseudonymous: the Consolidated Audit Trail, for example, keeps consistent anonymized customer identifiers after the 2025 exemption from reporting names, addresses and years of birth (Securities and Exchange Commission, 2025). Labels that firms assign to their own algorithms are the gameable kind. That a principal should rely less on a signal that agents can manipulate is close to Frankel and Kartik (2022) and Perez-Richet and Skreta (2022). While Proposition~\ref{n:relabel} adopts linear per-unit values $(n_{\mathcal{H}}, n_{\mathcal{B}})$ for closed-form transparency, Supplement Theorem~\ref{S-thm:relabelgeneral} proves that the same limits—collapse of class-tag value as $\gamma \to 0$ and convergence to $V_A$ as $\gamma \to \infty$—hold for arbitrary concave private payoffs, general convex concealment costs, and any Lipschitz social welfare functional $U(e)$, including quadratic aggregate-feedback stability externalities $U(e) = \sum_j \chi_j b_j e_j - \frac{\lambda}{2}(\sum_j \chi_j w_j e_j)^2$ directly linked to the feedback budget of Section~\ref{sec:equilibrium}.
+
+Even without account relabeling, an untagged algorithm that anticipates targeting can disguise itself by shifting its trading rule toward its neighbor's, at a cost to its own strategy. The next result gives what the supervisor learns when the algorithm best-responds to a fixed test.
+
+\begin{theorem}[The surveillance paradox]\label{n:paradox}
+An untagged group chooses the distance $\delta \in [0, \delta_0]$ between its memory rate and its neighbor's; the neighbor and all other groups stay where they are. The supervisor tests the null that the group trades like its neighbor (one group in place of the two, with unknown memory and weight) at level $\alpha$ under every economy in the null. Detection triggers an inquiry that costs the group $L$, and moving costs it $k(\delta_0 - \delta)^2$, with $\delta_0, k, L > 0$. With $N$ observations, let $J$ be the divergence from the record with the group at distance $\delta$ to the closest record in the null. We take its leading order, $J = c N \delta^n$ with $n > 2$; for a group and its neighbor, $n = 4$. The test is unbiased, and its detection probability depends on $\delta$ only through $J$: it is $P_{\mathrm{d}}(J) \ge \alpha$. Let $\delta^*$ be an optimal distance and $J^* = c N (\delta^*)^n$.
+\begin{enumerate}
+  \item[(i)] \emph{Hiding is never complete.} Against every such test, $\delta^* > 0$, and $(\delta^*)^{n-2} \ge 2 k^2 \delta_0^2 / (2^n L^2 c N)$ whenever $\delta^* \le \delta_0 / 3$.
+  \item[(ii)] \emph{A good test forces crowding.} If the test's power satisfies $P_{\mathrm{d}}(J) - \alpha \ge \beta \min\{\sqrt{J}, \sqrt{\bar{J}}\}$ and the stakes are high ($L \beta \sqrt{\bar{J}} > k \delta_0^2$), then for every $N$,
+  \[
+    (\delta^*)^{n-2} \le \frac{4 k^2 \delta_0^2}{L^2 \beta^2 c N}.
+  \]
+  \item[(iii)] \emph{More data, less information.} Against such a test, for all large $N$, $\delta^* \asymp N^{-1/(n-2)}$ and the supervisor's information obeys $J^* \asymp N^{-2/(n-2)} \to 0$: like $N^{-1}$ for a group and its neighbor. The detection probability tends to $\alpha$, and the group's distortion cost $k(\delta_0 - \delta^*)^2$ tends to $k \delta_0^2$.
+  \item[(iv)] \emph{Tags reverse it.} With a verified class tag, detection does not depend on $\delta$, so $\delta^* = \delta_0$, and the supervisor learns the group's rule from its tagged flow (Theorem~\ref{n:disc}).
+\end{enumerate}
+\end{theorem}
+
+The exponent depends on what the supervisor knows. The record does not say which nearby memory is the neighbor's, so the null is composite. A single group with the pair's total weight and mean memory matches the kernel up to the spread of the two memories, which is of order $\delta^2$ in the kernel and $\delta^4$ in the divergence (Supplement Theorem~\ref{S-thm:merged}(ii) for probes and Proposition~\ref{S-prop:passive}(i) for passive prices; computed from the spectra, the fitted slope is $4.1$, Supplement Section~\ref{S-app:paradox}). A supervisor that knew the neighbor's memory and both weights would face a simple null with $n = 2$; then, against the Gaussian test with high stakes, hiding is complete once $N$ is large, and the record carries no information about the group. If several groups crowd together, $n$ is larger (numerically $8$ for a cluster of three), and the information falls more slowly. In the limiting Gaussian experiment, the one-sided test in the direction orthogonal to the null satisfies (ii) with $\beta = \sqrt{2}\phi(z_\alpha)$ and $\bar{J} = z_\alpha^2 / 2$ (Appendix~\ref{app:proofs}).
+
+Without tags, each new observation is more than offset by the crowding it provokes, and against a group that best-responds, supervision does not converge to knowledge of composition. The group pays for its invisibility with a distorted strategy: by Lemma~\ref{lem:micro}(ii), the cost $k(\delta_0 - \delta)^2$ is the leading-order profit loss of a Kalman-filtering desk that deviates from its optimal memory rate. Whether this is a failure depends on what the supervisor wants. If the conduct at $\delta_0$ is what it fears, the crowding is deterrence; what fails is learning, not necessarily welfare. This is the tension between acting on market information and preserving it (Bond et al., 2010; Bond and Goldstein, 2015), here for information about who trades rather than about fundamentals; Frankel and Kartik (2019) study how manipulation muddles a signal. The loss $L$ stands for the inquiry that detection triggers, for example a request to brokers for account records; without such an inquiry, detection would have no consequence (Theorem~\ref{n:minimax}). The theorem describes a best response to a fixed test, not an equilibrium: the neighbor does not move and the supervisor does not adapt its test. When several untagged groups position strategically, Supplement Proposition~\ref{S-prop:hidegame}(iv) shows that in any Nash equilibrium with bounded nearest-neighbor distances, every group's asymptotic detection probability is at most $\alpha + k_g \limsup_N \Delta_g^2 / L_g$; verified class tags remove both the crowding and the defensive repositioning.
+
+\subsection{Illustrative empirical calibration: Taiwan Stock Exchange tagged flows}
+
+To illustrate the magnitude of the identification barrier in an actual exchange dataset, we calibrate Theorems~\ref{n:cost} and~\ref{n:dual} using daily class-tagged net buying from the Taiwan Stock Exchange (TWSE) across three reported institutional classes—foreign investors, investment trusts, and dealers—over 2013--2016 ($300$ stocks, $270{,}060$ stock-days). We estimate each class's persistence $r_c$ and response $w_c$ to the prior day's price deviation, along with the market's lagged-flow impact $\kappa$ and price persistence $\sum_{j=1}^5 a_j$, using stock fixed effects and stationary date-block bootstrap confidence intervals (Table~\ref{tab:taiwan}). For each stock, the price deviation $x_t$ is the event-adjusted log price minus $\hat\beta$ times the log TAIEX, minus its trailing 60-day mean; it stands in for the model's pricing error. Each class's flow is its daily net buying scaled by the stock's average daily volume, so $\kappa$ is the response of $x$ to one day's average volume. The universe is the 300 four-digit stocks with the highest turnover over 2013--2016.
+
+\begin{table}[!htbp]
+\centering
+\caption{Estimated tagged trading rules in Taiwan, 2013--2016 (300 stocks, 270,060 stock-days; stock fixed effects with 95\% date-block bootstrap intervals).}
+\label{tab:taiwan}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Trader class & Persistence $r_c$ & Price response $w_c$ & Budget contribution $u_c = \kappa w_c / (1 - r_c)$ \\
+\midrule
+Foreign investors & $0.35 \; [0.31, 0.38]$ & $0.24 \; [0.21, 0.27]$ & $0.0014 \; [0.0012, 0.0016]$ \\
+Investment trusts & $0.41 \; [0.39, 0.43]$ & $0.066 \; [0.057, 0.076]$ & $4.2 \times 10^{-4} \; [3.3 \times 10^{-4}, 5.3 \times 10^{-4}]$ \\
+Dealers           & $0.33 \; [0.22, 0.42]$ & $-0.022 \; [-0.028, -0.017]$ & $-1.3 \times 10^{-4} \; [-1.8 \times 10^{-4}, -8.2 \times 10^{-5}]$ \\
+\midrule
+\multicolumn{4}{@{}l}{\footnotesize Lagged-flow price impact $\kappa = 0.0038 \; [0.0032, 0.0044]$; aggregate price persistence $\sum_{j=1}^5 a_j = 0.97$.} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Granting a price-only supervisor full knowledge of the impact function $\kappa$ and the law of non-feedback order flow (so only class composition is unknown) yields three quantitative contrasts (Supplement Section~\ref{S-app:barrier}). Both record lengths below compare feedback rules with each class's non-feedback flow held at its estimated law.
+\begin{enumerate}
+  \item \emph{Information gap.} Against the closest single-memory population, one stock-day of prices carries $1.7 \times 10^{-12}$~nats about class composition, whereas one stock-day of tagged flows carries $8.0 \times 10^{-7}$~nats—a factor of $4.7 \times 10^5$ more information. Reaching $80\%$ power at a $5\%$ test size from prices alone requires at least $2.7 \times 10^9$ years of one stock, or $9.1 \times 10^6$ years of all 300 stocks treated as independent.
+  \item \emph{Targeted halt is unidentified from prices.} With tags, halting foreign feedback lowers the feedback budget by $0.0014$ ($95\%$ CI $[0.0012, 0.0016]$). Across all compositions statistically indistinguishable from the full panel price record (no test exceeding its size by more than $0.10$), the implied effect of halting one class spans $[-0.028, 0.028]$ (and $[-0.0027, 0.0027]$ even if each class is capped at twice the largest estimated contribution). Even with an infinite price record, permutation relabeling alone leaves $0.0014$, $4.2 \times 10^{-4}$, and $-1.3 \times 10^{-4}$ observationally equivalent.
+  \item \emph{Uniform cut is pinned down by prices, given the grant.} Over the exact same indistinguishable set, the effect of cutting all feedback uniformly lies within the band $[0.0014, 0.0019]$.
+\end{enumerate}
+
+Four qualifications apply. First, the range $[-0.028, 0.028]$ in item~2 fills the cap by construction: two classes can share one memory with large weights of opposite sign, which leaves the aggregate kernel unchanged, so the width is set by the cap on each class's contribution, not by the data (the extreme compositions the search finds have weights $-9.0$, $4.6$ and $4.7$). Weights restricted to one sign would exclude these compositions; we have not computed the range under that restriction. The exact barrier, the relabeling set, does not depend on the cap. Second, the tagged intervals in Table~\ref{tab:taiwan} assume that each class's feedback decays at the persistence of its own flow, while the price-only comparisons let feedback memory vary with non-feedback flow held fixed. Third, item~3 rests on the grant: the price-only supervisor is given the persistences $a_j$, the impact $\kappa$ and the non-feedback law, all estimated with the tagged flows; with feedback contributing $0.0017$ to a budget of $0.97$, separating the two from prices alone is the problem that Proposition~\ref{n:target} assumes away. Fourth, the record lengths treat the 300 stocks as independent, which is generous to prices; the bootstrap resamples dates because they are not independent. The dealers' estimated response is negative, so the calibrated economy lies outside the positive class used for the lower bounds; the computations here (Whittle rates, Pinsker's inequality, relabeling) do not need positivity.
+
+Two further caveats concern the data. First, daily institutional flows exhibit small lagged price impact ($\kappa = 0.0038$), contributing $0.0017$ to an overall persistence budget of $0.97$ because daily aggregation blends intraday momentum with liquidity provision; thus Table~\ref{tab:taiwan} illustrates the \emph{relative} identification gap between uniform and targeted interventions rather than claiming that daily institutional flows destabilize Taiwanese equities. Second, as documented in Supplement Section~\ref{S-sec:scope}, a pre-registered out-of-sample reverse-causality diagnostic on 2019--2023 holdout data cannot rule out that daily price deviations partly reflect prior institutional order flow rather than pure causal feedback. Positive feedback in foreign investors' daily flows, and the difficulty of separating it from prices responding to flows, are documented for Taiwan and other markets (Froot et al., 2001; Griffin et al., 2004; Richards, 2005). Accordingly, these figures serve as an illustrative calibration of the relative identification gap between uniform and targeted cuts rather than a causal test of daily feedback destabilization; in intraday limit-order-book markets where aggregate feedback shares $\kappa \sum_i q_i$ are economically larger (as in the Section~\ref{sec:equilibrium} equilibrium calibrations underlying Figures~\ref{fig:near-instability} and~\ref{fig:intervention}), the same $(\Delta\eta)^{-(4K-2)}$ barrier would apply with more prudential weight.
+
+\section{Scope and Conclusion}\label{sec:conclusion}
+
+This paper characterizes the informational boundary between public market data and trader-level supervisory records in algorithmic feedback markets. Under both mechanical price impact and an endogenous inventory-dealer equilibrium, public prices reveal the population's aggregate feedback kernel—and nothing finer—at standard statistical rates, whereas separating closely spaced trader classes incurs a polynomial sample-complexity penalty of order $\Delta^{-(4K-2)}$ that persists even on the brink of instability.
+
+Three policy conclusions follow. First, market-wide interventions (such as uniform feedback cuts or market-design changes calibrated to aggregate response) are statistically well-posed from public prices, given the market's persistence and a bound on memory, and are minimax-optimal over labelings when class identities are unverified. Second, targeted restrictions aimed at specific trader classes require class-tagged flow reports, which eliminate the spacing penalty for weight recovery. Third, because strategic traders can erode class tags by routing orders across labels or crowd their strategies together under untagged surveillance, durable targeted supervision rests on owner-linked audit trails, which we assume cannot be gamed—such as the cross-venue customer linkage embedded in consolidated audit trail architectures.
+
+Several limitations define natural directions for future work. Our explicit identification and upper-bound theorems rely on linear causal rules with finite-dimensional exponential or smooth memory; extensions to drifting populations, hard position limits, breach cascades, and saturating or learning algorithms are analyzed in the companion working papers (Niroula et al., 2026c, 2026d). Our passive sample-complexity bounds assume Gaussian (or quadratically regular) innovations and exclude bounded-support noise laws. The surveillance result describes a best response to a fixed test, not an equilibrium between the supervisor and the traders. The Taiwan calibration grants the price-only supervisor the market's persistence and impact, and a registered test there did not establish that the tagged responses are feedback. Trader rules are fixed and respond to deviations from a public fundamental, and the classes in the calibration are investor types rather than algorithms. Finally, while our contribution is theoretical and calibrated to public exchange data, a direct causal empirical test of the supervisory separation would evaluate an exogenous, externally documented class-specific trading restriction against pre-specified predictions.
+
+\section*{Declarations}
+
+\textbf{Author contributions.} Pratik Niroula: conceptualization, methodology, formal analysis, software, investigation, data curation, writing (original draft). Prashant Niroula: validation (proofs, Lean~4 formalizations, and empirical calculations), writing (review and editing). Sujan Khatiwada: validation (proofs, Lean~4 formalizations, and empirical calculations), writing (review and editing). All authors approved the final manuscript.
+
+\textbf{Related manuscripts.} An earlier working paper of the same authors (Niroula et al., 2026a, dated 5 November 2026) studied the same model; this article supersedes it. The earlier paper, the companion note (Niroula et al., 2026c) and the full working paper (Niroula et al., 2026d) are in the repository cited below.\par\medskip
+
+\textbf{Funding and competing interests.} This research received no external funding. The authors declare no competing interests.
+
+\textbf{Data and code availability.} All empirical data are publicly available from the Taiwan Stock Exchange (\url{https://www.twse.com.tw}). Replication scripts, numerical checks, and Lean~4 formalization files are archived at \url{https://github.com/Pratikn03/Fianince}.
+
+\textbf{Declaration of generative AI and AI-assisted technologies.} During the preparation of this manuscript, the authors used large language model tools (Claude, ChatGPT/Codex, and Gemini) to assist with literature cross-checking, numerical verification scripts, Lean~4 formalization coding, drafting, and language editing. The authors take full responsibility for the content of the publication. The first author read and checked the proofs of the results developed with AI assistance up to 21 November 2026. Proposition~\ref{n:target}(iii), Theorem~\ref{n:minimax}(ii), Lemma~\ref{lem:micro} and Theorem~\ref{n:paradox} of this paper and Propositions~\ref{S-prop:nearcrit} and~\ref{S-prop:hidegame} of the Supplement, in their present form, were added or corrected with AI assistance on 21--22 November 2026 and have not yet been checked by the authors. Lean~4 checks certify only the formal statements listed in the Supplement's machine-check tables and in the repository; they do not certify the probabilistic steps, empirical validity or novelty.
+
+\appendix
+\section{Proofs of Main Economic Results}\label{app:proofs}
+
+\begin{proof}[Proof of Theorem~\ref{n:suff}]
+We argue by strong induction on $t \le T$ for any fixed strategy profile $(X, P)$ and realization $(v, z)$. Suppose prices and total order flows coincide across the two economies for all dates $j < t$. Then: (1) public signals $s_j = \mathcal{S}_j(p_0, \dots, p_j)$ coincide for all $j < t$; (2) aggregate feedback flow $f_t = \sum_{m < t} k_m s_{t-1-m}$ coincides because $k_m = k'_m$ for $m < T$; (3) the insider's order $X_t(v, \mathcal{H}_{t-1})$ coincides by causality; and (4) total order flow $Y_t = X_t + z_t + f_t$ and the dealer's price $P_t(\mathcal{H}_{t-1}, Y_t)$ coincide by causality. Hence price and flow paths, realized insider profit $\sum_{t < T}(v - p_t) X_t$, and dealer inventory $-\sum_{t < T} Y_t$ coincide pathwise. Because strategy sets and expected payoffs over $(v, z)$ are identical, best-response correspondences and equilibria coincide under any solution concept defined from public histories and payoffs. For any finite linear population with individual kernels $\kappa^{(j)}$, $f_t = \sum_j \sum_{m < t} \kappa_m^{(j)} s_{t-1-m} = \sum_{m < t} k_m s_{t-1-m}$ with $k = \sum_j \kappa^{(j)}$, so the identical induction applies.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{n:thm_inventory}]
+\emph{(i)} Conjecture $x_t = -\kappa H_t + \sum_i \beta_i u_{i,t+1}$ and set $D = 1 - \sum_i \beta_i w_i$. Using $\E_t[\xi_{t+1}] = 0$, $\E_t[H_{t+1}] = \bar{a} H_t - \sum_i u_{i,t+1}$, and $\E_t[u_{i,t+2}] = r_i u_{i,t+1} + w_i \E_t[x_{t+1}]$, taking conditional expectations gives
+\[
+  D\, \E_t[x_{t+1}] = -\kappa \bar{a} H_t + \sum_i (\kappa + \beta_i r_i) u_{i,t+1}.
+\]
+The dealer optimality condition $x_t = \E_t[x_{t+1}] - A V H_t$ must hold identically in $(H_t, \{u_{i,t+1}\})$. Matching coefficients on $u_{i,t+1}$ yields $\beta_i = (\kappa + \beta_i r_i)/D$, so $\beta_i = \kappa / (D - r_i)$. Substituting into $D = 1 - \sum_i \beta_i w_i$ gives $D = 1 - \kappa G(D)$, and matching coefficients on $H_t$ gives $\kappa(D - \bar{a}) = A V D$. For the one-step innovation $\delta = x_{t+1} - \E_t[x_{t+1}]$, we have $\delta = \kappa \xi_{t+1} + \sum_i \beta_i w_i \delta$, hence $\delta = (\kappa/D)\xi_{t+1}$ and $V = \sigma_F^2 + \kappa^2 \sigma_\xi^2 / D^2$. Conversely, any stable solution of~\eqref{eq:eq-system} satisfies dealer optimality and variance consistency in every state.
+
+\emph{(ii)} Setting $w_i = 0$ yields $G \equiv 0$, $D = 1$, $x_t = -\kappa H_t = \bar{a} x_{t-1} + \kappa Y_t$, and the quadratic $A \sigma_\xi^2 \kappa^2 - (1 - \bar{a})\kappa + A \sigma_F^2 = 0$, whose discriminant is $\Lambda_0 = (1 - \bar{a})^2 - 4 A^2 \sigma_F^2 \sigma_\xi^2$.
+
+\emph{(iii)} System~\eqref{eq:eq-system} depends on the population solely through $G(D) = \int (D - r)^{-1} dM(r)$, hence solely through $M$.
+
+\emph{(iv)} Define $\Phi(\kappa, D; M) = \bigl(D + \kappa G(D) - 1,\; \kappa(D - \bar{a}) - A(\sigma_F^2 D + \kappa^2 \sigma_\xi^2 / D)\bigr)$. At $M = 0$, $\Phi(\kappa_-, 1; 0) = 0$ with triangular Jacobian $\partial_D \Phi_1 = 1$, $\partial_\kappa \Phi_1 = 0$, and $\partial_\kappa \Phi_2 = (1 - \bar{a}) - 2 A \kappa_- \sigma_\xi^2 = \sqrt{\Lambda_0} > 0$. The implicit function theorem yields a unique continuous branch near $(\kappa_-, 1)$ for small $G$. Linearizing gives $dD = -\kappa_- G(1)$ and $d\kappa = -\kappa_-(\bar{a} + 2 A \kappa_- \sigma_\xi^2)\, dD / \sqrt{\Lambda_0}$, with $G(1) = \sum_i w_i/(1 - r_i) = \sum_i q_i$. Stability holds by continuity of eigenvalues from $M = 0$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{n:thm_eqreduced}]
+\emph{(i)} Write $D x_t = -\kappa H_t + \sum_i \beta_i r_i u_{i,t}$ and $x_{t-1} = -\kappa H_{t-1} + \sum_i \beta_i u_{i,t}$, where $\beta_i = \kappa/(D - r_i)$. Substituting $H_t = \bar{a} H_{t-1} - \sum_i u_{i,t} - \xi_t$ yields
+\[
+  D x_t - \bar{a} x_{t-1} = \kappa \xi_t + \sum_i \bigl(\kappa + \beta_i(r_i - \bar{a})\bigr) u_{i,t} = \kappa \xi_t + \sum_i \kappa \frac{D - \bar{a}}{D - r_i}\, u_{i,t}.
+\]
+Dividing by $D$ and defining $\tilde{u}_{i,t} = \frac{D - \bar{a}}{D - r_i} u_{i,t}$ gives $x_t = a^* x_{t-1} + \kappa^*(\xi_t + \sum_i \tilde{u}_{i,t})$ and $\tilde{u}_{i,t+1} = r_i \tilde{u}_{i,t} + \tilde{w}_i x_t$ pathwise, with $(a^*, \kappa^*, \tilde{w}_i)$ as stated. Because $\kappa \neq 0$ and $D \neq \bar{a}$, the state transformation is invertible and preserves stability.
+
+\emph{(ii)}-- \emph{(iii)} Part~(ii) follows from Supplement Theorem~\ref{S-thm:minphase}(i) applied to the closed loop in~(i). For~(iii), $G(D) = \sum_i \tilde{w}_i/(D - \bar{a})$ turns $D = 1 - \kappa G(D)$ into $D = 1 - \kappa^* \tilde{M}([0,1])/(1 - a^*)$, which recovers $D$, $\bar{a} = a^* D$, $\kappa = \kappa^* D$, and $M = h^{-1} \tilde{M}$ uniquely.
+
+\emph{(iv)} Given any hard pair $(a^*, \kappa^*, W, r_c, \Delta\eta)$ satisfying the stability condition $a^* + \kappa^* W / (1 - r_c - \Delta\eta) < 1$, we have $\kappa^* W / (1 - a^*) < 1 - r_c - \Delta\eta$, so setting $D = 1 - \kappa^* W/(1 - a^*)$ ensures $D > r_c + \Delta\eta \ge \max_i r_i$. Choosing $\bar{a} = a^* D$, $\kappa = \kappa^* D$, any $\sigma_F^2, \sigma_\xi^2 > 0$, $A = \kappa^* D(1 - a^*)/(\sigma_F^2 + \kappa^{*2} \sigma_\xi^2)$, and $w_i = \tilde{w}_i(D - r_i)/(D - \bar{a}) > 0$ realizes both economies as equilibria with identical primitives $(A, \sigma_F^2, \sigma_\xi^2, \bar{a})$ and identical $(\kappa, D)$, preserving the $(\Delta\eta)^{-(4K-2)}$ lower bound.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{n:univ}]
+Let $G_K$ denote the $K$-point Gauss--Legendre quadrature rule on $[-1, 1]$ normalized to unit mass, and let $R_K$ denote the $K$-point Gauss--Radau rule with fixed endpoint $-1$, also normalized to unit mass. Both measures have positive weights; $G_K$ integrates every polynomial of degree at most $2K - 1$ exactly, and $R_K$ integrates every polynomial of degree at most $2K - 2$ exactly. Hence $\int P\, dG_K = \int P\, dR_K$ for every polynomial $P$ of degree at most $2K - 2$. Because $R_K$ places positive mass at $-1$ while $G_K$ does not, their 1-Wasserstein distance satisfies $d_K = W_1(G_K, R_K) > 0$. Define $\nu$ and $\nu'$ as the pushforwards of $W G_K$ and $W R_K$ under $s \mapsto \theta_c + \Delta s$; then both have $K$ atoms in $[\theta_c - \Delta, \theta_c + \Delta]$, total mass $W$, identical moments of orders $0, \dots, 2K - 2$ about $\theta_c$, and $W_1(\nu, \nu') = d_K W \Delta$.
+
+\emph{(i)} Fix any history $h$. By Taylor's theorem with Lagrange remainder, $f_\theta(h) = P_h(\theta) + \rho_h(\theta)$, where $P_h$ is a polynomial of degree $2K - 2$ in $\theta - \theta_c$ and $|\rho_h(\theta)| \le B(h)|\theta - \theta_c|^{2K-1}/(2K - 1)!$. Since $P_h$ integrates identically under $\nu$ and $\nu'$,
+\[
+  |F_\nu(h) - F_{\nu'}(h)|
+  = \Bigl|\int \rho_h\, d\nu - \int \rho_h\, d\nu'\Bigr|
+  \le \int |\rho_h|\, d\nu + \int |\rho_h|\, d\nu'
+  \le \frac{2W}{(2K - 1)!}\, B(h)\, \Delta^{2K-1}.
+\]
+
+\emph{(ii)} Let $P$ and $P'$ be the laws of the $T$-period record under $\nu$ and $\nu'$ from the common initial law and common predictable probe policy. Conditional on the past and probe $v_t$, $x_t$ is Gaussian with variance $\sigma^2$ and conditional means differing by $\kappa(F_\nu(h_{t-1}) - F_{\nu'}(h_{t-1}))$. By the chain rule for Kullback--Leibler divergence, part~(i), and the uniform moment bound $\E_\nu[B(h_t)^2] \le \bar{B}^2$,
+\[
+  \KL(P \| P')
+  = \sum_{t=1}^T \E_P\Bigl[\frac{\kappa^2 \bigl(F_\nu(h_{t-1}) - F_{\nu'}(h_{t-1})\bigr)^2}{2\sigma^2}\Bigr]
+  \le T\, \frac{2 \kappa^2 W^2 \bar{B}^2}{\sigma^2 ((2K - 1)!)^2}\, \Delta^{4K-2}.
+\]
+Any test with both error probabilities strictly below $1/4$ satisfies $\TV(P, P') > 1/2$, which by Pinsker's inequality implies $\KL(P \| P') > 1/2$. Rearranging yields the stated lower bound on $T$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{n:dual}]
+Conditional on the observed history $h_t$ and predictable probe $v_t$, $x_{t+1}$ has variance $\sigma^2$ under both $P$ and $P'$, with conditional means differing by $d_t = \kappa(F(h_t) - F'(h_t))$. The one-step Gaussian KL divergence is $d_t^2 / (2\sigma^2)$. Since initial laws and conditional probe laws match, the chain rule gives $\KL(P_T \| P'_T) = (2\sigma^2)^{-1} \sum_{t < T} \E_P[d_t^2] = \Lambda_T / 2$. Under $P$, the forecast error of the alternative conditional mean is $\varepsilon_{t+1} + d_t$, whose conditional mean-squared error is $\sigma^2 + d_t^2$, so excess MSE is $V_t = \E_P[d_t^2]$. If both testing errors are strictly below $1/4$, their sum is below $1/2$, so $\TV(P_T, P'_T) > 1/2$, and Pinsker's inequality gives $\KL(P_T \| P'_T) > 1/2$, i.e., $\Lambda_T > 1$. Finally, $q(X_{1:T}) = \sum_j \pi_j p_j(X_{1:T}) \ge \pi_* p_*(X_{1:T})$ pointwise, yielding $\log(p_*/q) \le \log(1/\pi_*)$.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{n:target}(iii)]
+Let $x_K < 1$ be the largest node of the $K$-point Gauss--Legendre rule on $[-1, 1]$, and place the hard pair of Theorem~\ref{n:cost}, with a common persistence and total merged weight $W$, on $r_c + \Delta\eta[-1, 1]$ with $r_c = \hat r + (1 + x_K)\Delta\eta/2$. Its memories lie in $[\hat r - \Delta\eta, \hat r + 2\Delta\eta]$. The Gauss--Radau economy has an atom of weight $W/K^2$ at $r_c - \Delta\eta < \hat r$, because the endpoint weight of the $K$-point Gauss--Radau rule on $[-1, 1]$ is $2/K^2$. Every memory of the Gauss economy is at least $r_c - x_K\Delta\eta > \hat r$. Group $i$ contributes $\kappa q_i = \kappa w_i/(1 - r_i)$ to the budget, so the restriction removes at least $\kappa W/K^2$ in the Gauss--Radau economy and nothing in the Gauss economy. The budgets themselves, $a + \kappa\int (1 - r)^{-1}\,dM(r)$, differ by $O((\Delta\eta)^{2K-1})$, because the merged measures match moments $0, \dots, 2K-2$ and $(1 - r)^{-1}$ is smooth near $r_c$. For small $\Delta\eta$ the budgets after the restriction therefore differ by at least $\kappa W/(2K^2)$, and every ceiling between them is met in one economy and breached in the other. The record length is that of Theorem~\ref{n:cost}(ii), which concerns the same pair.
+\end{proof}
+
+\begin{proof}[Proof of Theorems~\ref{n:minimax} and~\ref{n:minimaxtags} and Corollary~\ref{cor:robustuniform}]
+For Theorem~\ref{n:minimax}, averaging over all $K!$ permutations $\pi \in S_K$ places every label on every class equally often:
+\[
+  \frac{1}{K!} \sum_{\pi \in S_K} S'_\pi = a + \sum_{c=1}^K \theta_c \Bigl(\frac{1}{K} \sum_{d=1}^K u_d\Bigr) = a + \bar{\theta} U,
+  \qquad
+  \frac{1}{K!} \sum_{\pi \in S_K} \theta \circ \pi = \bar{\theta}\mathbf{1}.
+\]
+By convexity of $\ell$ and $C$ (and permutation invariance of $C$), Jensen's inequality gives part~(i):
+\[
+  \ell(a + \bar{\theta} U) + C(\bar{\theta}\mathbf{1})
+  \le \frac{1}{K!} \sum_{\pi} \ell(S'_\pi) + C(\theta)
+  \le \max_{\pi} \ell(S'_\pi) + C(\theta).
+\]
+For part~(ii), suppose $\theta \in [0, 1]^K$ is non-uniform, so $\theta_{c_1} \neq \theta_{c_2}$ for some $c_1 \neq c_2$. Then the transposition $\tau = (c_1\, c_2)$ satisfies $\theta \circ \tau \neq \theta$. Since $\bar{\theta}\mathbf{1} = \frac{1}{K!}\sum_{\pi \in S_K} (\theta \circ \pi)$ is a strictly positive convex combination of points that are not all equal, strict convexity and permutation invariance of $C$ yield $C(\bar{\theta}\mathbf{1}) < \frac{1}{K!}\sum_\pi C(\theta \circ \pi) = C(\theta)$, giving strict dominance. (Similarly, if $u_{d_1} \neq u_{d_2}$ and $\theta_{c_1} \neq \theta_{c_2}$, swapping the assignment of $d_1, d_2$ to $c_1, c_2$ produces distinct budgets $S'_{\pi_1} \neq S'_{\pi_2}$, so strict convexity of $\ell$ yields $\ell(a + \bar{\theta} U) < \frac{1}{K!}\sum_\pi \ell(S'_\pi) \le \max_\pi \ell(S'_\pi)$.) Hence every minimax-optimal policy must be uniform; on the compact interval $[0, 1]$, the strictly convex continuous function $\bar{\theta} \mapsto \ell(a + \bar{\theta} U) + C(\bar{\theta}\mathbf{1})$ attains a unique minimizer $\bar{\theta}^*$. Thus $\bar{\theta}^*\mathbf{1}$ is the unique minimax supervisory policy.
+For Corollary~\ref{cor:robustuniform}, halting label $F$ yields post-halt budget $S - u_{\pi(F)}$, whose worst case over $\pi$ is $S - \min_d u_d$ (attained whenever $\pi(F) \in \arg\min_d u_d$). A uniform cut $\theta = (\bar{s} - a)/(S - a)$ yields budget $a + \theta(S - a) = \bar{s}$ exactly and removes total feedback $(1 - \theta)(S - a) = S - \bar{s}$, the algebraic minimum needed to reach $\bar{s}$. For Theorem~\ref{n:minimaxtags}, restrict the averaging group to the product of within-group permutations $\prod_{g=1}^G S_g$: within each group $g$, every label averages to $\bar{\theta}_g$, so the averaged budget is $a + \sum_g \bar{\theta}_g U_g$ and the identical Jensen argument yields the minimax bound and $V_{\mathrm{tag}} \ge 0$.
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{lem:micro}]
+\emph{(i)} Linearizing social welfare around the no-feedback equilibrium of Theorem~\ref{n:thm_inventory}(iv), each retained unit of class $j$ yields private surplus $b_j$ and raises aggregate feedback intensity by $\phi_j$, increasing equilibrium impact $\kappa$ proportionally to $\kappa_-^2(\bar{a} + 2A\kappa_-\sigma_\xi^2)/\sqrt{\Lambda_0} > 0$. Valuing a unit of feedback intensity at $\lambda_{\mathrm{ext}} > 0$, the supervisor's valuation of the rise in impact and inventory risk, gives the first-order net social value $n_j = b_j - \lambda_{\mathrm{ext}}\phi_j$, with $n_{\mathcal{H}} < 0 < n_{\mathcal{B}}$ under the stated sign conditions.
+
+\emph{(ii)} Under $\hat{v}_{t+1} = r \hat{v}_t + (1 - r)(v_t + \nu_t)$, the forecast error $e_t = v_t - \hat{v}_t$ evolves as $e_{t+1} = r e_t + \zeta_{t+1} - (1 - r)\nu_t$. Taking stationary variances with independent innovations gives $P(r) = r^2 P(r) + \sigma_\zeta^2 + (1 - r)^2 \sigma_\nu^2$, so
+\[
+  P(r) = \frac{\sigma_\zeta^2 + (1 - r)^2 \sigma_\nu^2}{1 - r^2}
+       = \frac{\sigma_\zeta^2}{1 - r^2} + \frac{2\sigma_\nu^2}{1 + r} - \sigma_\nu^2,
+\]
+using $(1 - r)^2 / (1 - r^2) = (1 - r)/(1 + r) = 2/(1 + r) - 1$. Differentiating twice on $(0, 1)$ gives
+\[
+  P'(r) = \frac{2 r \sigma_\zeta^2}{(1 - r^2)^2} - \frac{2\sigma_\nu^2}{(1 + r)^2},
+  \qquad
+  P''(r) = \frac{2\sigma_\zeta^2(1 + 3r^2)}{(1 - r^2)^3} + \frac{4\sigma_\nu^2}{(1 + r)^3} > 0.
+\]
+Since $P'(0) = -2\sigma_\nu^2 < 0$, $\lim_{r \uparrow 1} P'(r) = +\infty$, and $P''(r) > 0$ throughout $(0, 1)$, $P$ is strictly convex with a unique interior minimizer $r_0 \in (0, 1)$ satisfying $P'(r_0) = 0$. Substituting the one-period optimal trade $u_t = \hat{v}_t / (\kappa + \lambda)$ into expected profit gives $\Pi(r) = \frac{1}{2(\kappa + \lambda)}\bigl(\E[v_t^2] - P(r)\bigr)$ (since $\E[v_t \hat{v}_t] - \frac{1}{2}\E[\hat{v}_t^2] = \frac{1}{2}\E[v_t^2] - \frac{1}{2}\E[(v_t - \hat{v}_t)^2]$), so
+\[
+  \Pi(r_0) - \Pi(r) = \frac{P(r) - P(r_0)}{2(\kappa + \lambda)}
+  = \frac{P''(r_0)}{4(\kappa + \lambda)}(r - r_0)^2 + O\!\left(|r - r_0|^3\right).
+\]
+Finally, by Theorem~\ref{n:thm_inventory}(iv), $\partial \kappa / \partial r_i = O(w_i)$, so for a small group ($w_i \ll 1$) the induced equilibrium shift in $\kappa$ is of order $O(w_i)$, leaving $k = P''(r_0)/(4(\kappa + \lambda))$ invariant at leading order.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{n:relabel}]
+\emph{(i)} An $\mathcal{H}$ trader maximizes $b_{\mathcal{H}}\{(1 - z)\theta_{\mathcal{H}} + z \theta_{\mathcal{B}}\} - \gamma z^2/2 = b_{\mathcal{H}}\theta_{\mathcal{H}} + b_{\mathcal{H}}(\theta_{\mathcal{B}} - \theta_{\mathcal{H}})z - \gamma z^2/2$ over $z \in [0, 1]$, which is strictly concave with unique maximizer $z^* = \min\{1,\, b_{\mathcal{H}}(\theta_{\mathcal{B}} - \theta_{\mathcal{H}})/\gamma\}$.
+
+\emph{(ii)} Without disclosure, welfare is $m\theta$, maximized at $\max\{0, m\}$. Under an audit trail ($z \equiv 0$), welfare $\chi \theta_{\mathcal{H}} n_{\mathcal{H}} + s_{\mathcal{B}} \theta_{\mathcal{B}}$ is maximized at $(\theta_{\mathcal{H}}, \theta_{\mathcal{B}}) = (0, 1)$ with value $s_{\mathcal{B}}$. Under class tags, write $d = \theta_{\mathcal{B}} - \theta_{\mathcal{H}} \in [0, \theta_{\mathcal{B}}]$. Any policy with $b_{\mathcal{H}} d \ge \gamma$ induces $z^* = 1$ and welfare $m\theta_{\mathcal{B}} - \chi\gamma/2 < m\theta_{\mathcal{B}}$, strictly dominated by $d = 0$. For $b_{\mathcal{H}} d < \gamma$, substituting $z^* = b_{\mathcal{H}} d / \gamma$ into social welfare $m\theta_{\mathcal{B}} + \chi \alpha_{\mathcal{H}} d (1 - z^*) - \chi \gamma (z^*)^2 / 2$ yields
+\[
+  W(\theta_{\mathcal{B}}, d) = m\theta_{\mathcal{B}} + \chi \Bigl(\alpha_{\mathcal{H}} d - \frac{d^2}{2g}\Bigr),
+  \qquad g = \frac{\gamma}{b_{\mathcal{H}}(2\alpha_{\mathcal{H}} + b_{\mathcal{H}})}.
+\]
+Maximizing over $d \in [0, \theta_{\mathcal{B}}]$ gives $d^* = \min\{\theta_{\mathcal{B}}, \hat{d}\}$ where $\hat{d} = \alpha_{\mathcal{H}} g < \gamma / b_{\mathcal{H}}$ (so $b_{\mathcal{H}} d < \gamma$ never binds). The concentrated objective $\varphi(\theta_{\mathcal{B}}) = s_{\mathcal{B}}\theta_{\mathcal{B}} - \chi \theta_{\mathcal{B}}^2 / (2g)$ for $\theta_{\mathcal{B}} \le \hat{d}$ and $m\theta_{\mathcal{B}} + \chi \alpha_{\mathcal{H}}^2 g / 2$ for $\theta_{\mathcal{B}} \ge \hat{d}$ is concave and $C^1$. If $m \ge 0$, $\varphi$ is nondecreasing, so $\theta_{\mathcal{B}} = 1$ and $d^* = \min\{1, \alpha_{\mathcal{H}} g\}$. If $m < 0$, $\varphi'(\theta_{\mathcal{B}}) = 0$ at $\hat{\theta}_{\mathcal{B}} = s_{\mathcal{B}} g / \chi < \hat{d}$, so $\theta_{\mathcal{B}} = \min\{1, s_{\mathcal{B}} g / \chi\}$ and $\theta_{\mathcal{H}} = 0$. Substituting $d^*$ into $z^* = b_{\mathcal{H}} d^* / \gamma$ gives $z^* \in (0, \alpha_{\mathcal{H}}/(2\alpha_{\mathcal{H}} + b_{\mathcal{H}})] \subset (0, 1)$, independent of $\gamma$ at interior optima.
+
+\emph{(iii)} Each branch of $V_C(\gamma)$ is strictly increasing in $g \propto \gamma$, continuous at the kink ($\alpha_{\mathcal{H}} g = 1$ or $s_{\mathcal{B}} g = \chi$), satisfies $V_C(\gamma) \to 0$ as $\gamma \to 0$ and $V_C(\gamma) \uparrow V_A$ as $\gamma \to \infty$, and remains strictly below $V_A$ for all finite $\gamma > 0$. Hence $V_A - V_C(\gamma)$ decreases strictly from $V_A$ to $0$, yielding the threshold characterization.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{n:paradox}]
+\emph{(i)} The test rejects with probability at most $\alpha$ under the closest economy in the null, and with the group at distance $\delta$ it rejects with a probability that exceeds this by at most the total variation between the two records, which is at most $\sqrt{J/2}$ by Pinsker's inequality. So moving from $\delta = 0$ to a small $\delta > 0$ changes expected cost by at most $-2k\delta_0\delta + k\delta^2 + L\sqrt{cN\delta^n/2}$, which is negative near zero because $n > 2$; hence $\delta^* > 0$. If $\delta^* \le \delta_0/3$, then $2\delta^* \le \delta_0$ is feasible; optimality of $\delta^*$ against $2\delta^*$, together with $P_{\mathrm{d}}(J^*) \ge \alpha$ and Pinsker's inequality, gives
+\[
+  k\delta_0\delta^* \le k\bigl[(\delta_0 - \delta^*)^2 - (\delta_0 - 2\delta^*)^2\bigr] \le L\sqrt{cN(2\delta^*)^n/2}.
+\]
+Squaring and dividing by $(\delta^*)^2$ yields $(\delta^*)^{n-2} \ge 2k^2\delta_0^2/(2^n L^2 cN)$.
+
+\emph{(ii)} At $\delta = 0$ the record is in the null, so the detection probability is at most $\alpha$. Optimality of $\delta^*$ against $\delta = 0$ gives
+\[
+  L\bigl(P_{\mathrm{d}}(J^*) - \alpha\bigr) \le k\bigl[\delta_0^2 - (\delta_0 - \delta^*)^2\bigr] \le \min\{k\delta_0^2,\; 2k\delta_0\delta^*\}.
+\]
+If $J^* \ge \bar{J}$, the power envelope implies $L\beta\sqrt{\bar{J}} \le k\delta_0^2$, contradicting the high-stakes condition. Thus $J^* < \bar{J}$ and $L\beta\sqrt{cN(\delta^*)^n} \le 2k\delta_0\delta^*$; squaring and dividing by $(\delta^*)^2$ gives the bound.
+
+\emph{(iii)} For all sufficiently large $N$, part~(ii) forces $\delta^* \le \delta_0/3$, so (i) and (ii) hold together: $(\delta^*)^{n-2} \asymp N^{-1}$, i.e., $\delta^* \asymp N^{-1/(n-2)}$, and $J^* = cN(\delta^*)^n \asymp N \cdot N^{-n/(n-2)} = N^{-2/(n-2)} \to 0$. Hence $P_{\mathrm{d}}(J^*) \le \alpha + \sqrt{J^*/2} \to \alpha$ and $k(\delta_0 - \delta^*)^2 \to k\delta_0^2$.
+
+\emph{(iv)} Under a tag, detection does not depend on $\delta$, so $k(\delta_0 - \delta)^2$ is minimized at $\delta^* = \delta_0$.
+
+\emph{The Gaussian test.} In the limiting Gaussian experiment, let the null be a linear subspace and the alternative lie at distance $t$ from it. The test that rejects when the component of the observation orthogonal to the null exceeds $z_\alpha$ has level $\alpha$ under every null economy and power $\Phi(t - z_\alpha)$, and $J = t^2/2$. As a function of $t = \sqrt{2J}$ the power is convex on $[0, z_\alpha]$, so it lies above its tangent at zero: $P_{\mathrm{d}}(J) - \alpha \ge \phi(z_\alpha)\sqrt{2J}$ for $J \le z_\alpha^2/2$, and it is increasing beyond. The two bounds on $(\delta^*)^{n-2}$ in (i) and (ii), and the comparisons of costs behind them, are checked in Lean~4 for every exponent $n \ge 2$ (Supplement Table~\ref{S-tab:newlean}); Pinsker's inequality, unbiasedness and the power envelope enter there as hypotheses, and the rates in (iii) follow from the two bounds.
+\end{proof}
+
+\section*{References}
+\begin{list}{}{\small\setlength{\leftmargin}{1.8em}\setlength{\itemindent}{-1.8em}\setlength{\itemsep}{3pt}\setlength{\parsep}{0pt}}
+
+\item Auclert, A., Rognlie, M., Straub, L., 2024. The intertemporal Keynesian cross. \emph{Journal of Political Economy} 132(12), 4068--4121.
+
+\item Batenkov, D., Goldman, G., Yomdin, Y., 2021. Super-resolution of near-colliding point sources. \emph{Information and Inference: A Journal of the IMA} 10(2), 515--572.
+
+\item Blackwell, D., 1953. Equivalent comparisons of experiments. \emph{Annals of Mathematical Statistics} 24(2), 265--272.
+
+\item Bond, P., Goldstein, I., 2015. Government intervention and information aggregation by prices. \emph{Journal of Finance} 70(6), 2777--2812.
+
+\item Bond, P., Goldstein, I., Prescott, E.S., 2010. Market-based corrective actions. \emph{Review of Financial Studies} 23(2), 781--820.
+
+\item Boswijk, H.P., Hommes, C.H., Manzan, S., 2007. Behavioral heterogeneity in stock prices. \emph{Journal of Economic Dynamics and Control} 31(6), 1938--1970.
+
+\item Brock, W.A., Hommes, C.H., 1998. Heterogeneous beliefs and routes to chaos in a simple asset pricing model. \emph{Journal of Economic Dynamics and Control} 22(8--9), 1235--1274.
+
+\item Budish, E., Cramton, P., Shim, J., 2015. The high-frequency trading arms race: Frequent batch auctions as a market design response. \emph{Quarterly Journal of Economics} 130(4), 1547--1621.
+
+\item Cagan, P., 1956. The monetary dynamics of hyperinflation. In: Friedman, M.\ (Ed.), \emph{Studies in the Quantity Theory of Money}. University of Chicago Press, pp.\ 25--117.
+
+\item Celov, D., Leipus, R., Philippe, A., 2010. Asymptotic normality of the mixture density estimator in a disaggregation scheme. \emph{Journal of Nonparametric Statistics} 22(4), 425--442.
+
+\item Chaboud, A.P., Chiquoine, B., Hjalmarsson, E., Vega, C., 2014. Rise of the machines: Algorithmic trading in the foreign exchange market. \emph{Journal of Finance} 69(5), 2045--2084.
+
+\item Chetty, R., 2009. Sufficient statistics for welfare analysis: A bridge between structural and reduced-form methods. \emph{Annual Review of Economics} 1, 451--488.
+
+\item Crocker, K.J., Morgan, J., 1998. Is honesty the best policy? Curtailing insurance fraud through optimal incentive contracts. \emph{Journal of Political Economy} 106(2), 355--375.
+
+\item Cutler, D.M., Poterba, J.M., Summers, L.H., 1990. Speculative dynamics and the role of feedback traders. \emph{American Economic Review} 80(2), 63--68.
+
+\item Dawid, A.P., 1984. Statistical theory: The prequential approach. \emph{Journal of the Royal Statistical Society, Series A} 147(2), 278--292.
+
+\item De Long, J.B., Shleifer, A., Summers, L.H., Waldmann, R.J., 1990. Positive feedback investment strategies and destabilizing rational speculation. \emph{Journal of Finance} 45(2), 379--395.
+
+\item Donoho, D.L., 1994. Statistical estimation and optimal recovery. \emph{Annals of Statistics} 22(1), 238--270.
+
+\item Forni, M., Lippi, M., 1997. \emph{Aggregation and the Microfoundations of Dynamic Macroeconomics}. Oxford University Press.
+
+\item Foucault, T., Moinas, S., Theissen, E., 2007. Does anonymity matter in electronic limit order markets? \emph{Review of Financial Studies} 20(5), 1707--1747.
+
+\item Franke, R., Westerhoff, F., 2012. Structural stochastic volatility in asset pricing dynamics: Estimation and model contest. \emph{Journal of Economic Dynamics and Control} 36(8), 1193--1211.
+
+\item Frankel, A., Kartik, N., 2019. Muddled information. \emph{Journal of Political Economy} 127(4), 1739--1776.
+
+\item Frankel, A., Kartik, N., 2022. Improving information from manipulable data. \emph{Journal of the European Economic Association} 20(1), 79--115.
+
+\item Frino, A., Johnstone, D., Zheng, H., 2010. Anonymity, stealth trading, and the information content of broker identity. \emph{Financial Review} 45(3), 501--522.
+
+\item Froot, K.A., O'Connell, P.G.J., Seasholes, M.S., 2001. The portfolio flows of international investors. \emph{Journal of Financial Economics} 59(2), 151--193.
+
+\item Granger, C.W.J., 1980. Long memory relationships and the aggregation of dynamic models. \emph{Journal of Econometrics} 14(2), 227--238.
+
+\item Grazzini, J., Richiardi, M., 2015. Estimation of ergodic agent-based models by simulated minimum distance. \emph{Journal of Economic Dynamics and Control} 51, 148--165.
+
+\item Griffin, J.M., Nardari, F., Stulz, R.M., 2004. Are daily cross-border equity flows pushed or pulled? \emph{Review of Economics and Statistics} 86(3), 641--657.
+
+\item Grossman, S.J., Miller, M.H., 1988. Liquidity and market structure. \emph{Journal of Finance} 43(3), 617--633.
+
+\item Heinrich, P., Kahn, J., 2018. Strong identifiability and optimal minimax rates for finite mixture estimation. \emph{Annals of Statistics} 46(6A), 2844--2870.
+
+\item Hendershott, T., Menkveld, A.J., 2014. Price pressures. \emph{Journal of Financial Economics} 114(3), 405--423.
+
+\item Hendry, D.F., Hubrich, K., 2011. Combining disaggregate forecasts or combining disaggregate information to forecast an aggregate. \emph{Journal of Business \& Economic Statistics} 29(2), 216--227.
+
+\item Ho, T., Stoll, H.R., 1981. Optimal dealer pricing under transactions and return uncertainty. \emph{Journal of Financial Economics} 9(1), 47--73.
+
+\item Hommes, C.H., 2006. Heterogeneous agent models in economics and finance. In: Tesfatsion, L., Judd, K.L.\ (Eds.), \emph{Handbook of Computational Economics}, Vol.~2. Elsevier, pp.\ 1109--1186.
+
+\item Ing, C.-K., Wei, C.-Z., 2005. Order selection for same-realization predictions in autoregressive processes. \emph{Annals of Statistics} 33(5), 2423--2474.
+
+\item Khandani, A.E., Lo, A.W., 2011. What happened to the quants in August 2007? Evidence from factors and transactions data. \emph{Journal of Financial Markets} 14(1), 1--46.
+
+\item Kirilenko, A., Kyle, A.S., Samadi, M., Tuzun, T., 2017. The Flash Crash: High-frequency trading in an electronic market. \emph{Journal of Finance} 72(3), 967--998.
+
+\item Koyck, L.M., 1954. \emph{Distributed Lags and Investment Analysis}. North-Holland, Amsterdam.
+
+\item Lacker, J.M., Weinberg, J.A., 1989. Optimal contracts under costly state falsification. \emph{Journal of Political Economy} 97(6), 1345--1363.
+
+\item Le Cam, L., 1964. Sufficiency and approximate sufficiency. \emph{Annals of Mathematical Statistics} 35(4), 1419--1455.
+
+\item Lehmann, E.L., Romano, J.P., 2005. \emph{Testing Statistical Hypotheses}, 3rd ed. Springer, New York.
+
+\item Linnainmaa, J.T., Saar, G., 2012. Lack of anonymity and the inference from order flow. \emph{Review of Financial Studies} 25(5), 1414--1456.
+
+\item L\"utkepohl, H., 1987. \emph{Forecasting Aggregated Vector ARMA Processes}. Lecture Notes in Economics and Mathematical Systems 284. Springer, Berlin.
+
+\item Lux, T., Zwinkels, R.C.J., 2018. Empirical validation of agent-based models. In: Hommes, C., LeBaron, B.\ (Eds.), \emph{Handbook of Computational Economics}, Vol.~4. Elsevier, pp.\ 437--488.
+
+\item Manski, C.F., 2000. Identification problems and decisions under ambiguity: Empirical analysis of treatment response and normative analysis of treatment choice. \emph{Journal of Econometrics} 95(2), 415--442.
+
+\item Marschak, J., 1953. Economic measurements for policy and prediction. In: Hood, W.C., Koopmans, T.C.\ (Eds.), \emph{Studies in Econometric Method}. Cowles Commission Monograph 14. Wiley, New York, pp.\ 1--26.
+
+\item Menkveld, A.J., 2016. The economics of high-frequency trading: Taking stock. \emph{Annual Review of Financial Economics} 8, 1--24.
+
+\item Muth, J.F., 1960. Optimal properties of exponentially weighted forecasts. \emph{Journal of the American Statistical Association} 55(290), 299--306.
+
+\item Nerlove, M., 1958. Adaptive expectations and cobweb phenomena. \emph{Quarterly Journal of Economics} 72(2), 227--240.
+
+\item Niroula, P., Alkhushayni, S., Chen, Y., Bhavsar, M., Niroula, P., 2026b. From human markets to machine markets: Transient amplification, an exact depth condition, and a maximal pre-trade guard. Working paper, Minnesota State University, Mankato.
+
+\item Niroula, P., Niroula, P., Khatiwada, S., 2026a. What prices cannot tell a market supervisor: The cost of identifying trader groups and the value of class disclosure. Working paper, 5 November 2026, \url{https://github.com/Pratikn03/Fianince}.
+
+\item Niroula, P., Niroula, P., Khatiwada, S., 2026c. After a breach, and beyond linear rules: Companion results to ``Observationally equivalent algorithms''. Working paper, \url{https://github.com/Pratikn03/Fianince}.
+
+\item Niroula, P., Niroula, P., Khatiwada, S., 2026d. Observationally equivalent algorithms: Full working paper with all supplementary results. Working paper, \url{https://github.com/Pratikn03/Fianince}.
+
+\item Perez-Richet, E., Skreta, V., 2022. Test design under falsification. \emph{Econometrica} 90(3), 1109--1142.
+
+\item Pesaran, M.H., Chudik, A., 2014. Aggregation in large dynamic panels. \emph{Journal of Econometrics} 178(2), 273--285.
+
+\item Platt, D., 2020. A comparison of economic agent-based model calibration methods. \emph{Journal of Economic Dynamics and Control} 113, 103859.
+
+\item Richards, A., 2005. Big fish in small ponds: The trading behavior and price impact of foreign investors in Asian emerging equity markets. \emph{Journal of Financial and Quantitative Analysis} 40(1), 1--27.
+
+\item Rothenberg, T.J., 1971. Identification in parametric models. \emph{Econometrica} 39(3), 577--591.
+
+\item Sanders, D.R., Irwin, S.H., Merrin, R.P., 2009. Smart money: The forecasting ability of CFTC large traders in agricultural futures markets. \emph{Journal of Agricultural and Resource Economics} 34(2), 276--296.
+
+\item Sargent, T.J., 1976. The observational equivalence of natural and unnatural rate theories of macroeconomics. \emph{Journal of Political Economy} 84(3), 631--640.
+
+\item Securities and Exchange Commission, 2012. Consolidated Audit Trail. Final Rule, Release No.\ 34-67457, 18 July 2012.
+
+\item Securities and Exchange Commission, 2025. Press release 2025-38, 10 February 2025: exemption from reporting the names, addresses and years of birth of natural persons to the Consolidated Audit Trail. \url{https://www.sec.gov/newsroom/press-releases/2025-38}.
+
+\item Sentana, E., Wadhwani, S., 1992. Feedback traders and stock return autocorrelations: Evidence from a century of daily data. \emph{Economic Journal} 102(411), 415--425.
+
+\item Stein, J.C., 2009. Presidential address: Sophisticated investors and market efficiency. \emph{Journal of Finance} 64(4), 1517--1548.
+
+\item van Waarde, H.J., Eising, J., Trentelman, H.L., Camlibel, M.K., 2020. Data informativity: A new perspective on data-driven analysis and control. \emph{IEEE Transactions on Automatic Control} 65(11), 4753--4768.
+
+\item Vovk, V., 2001. Competitive on-line statistics. \emph{International Statistical Review} 69(2), 213--248.
+
+\item Wu, Y., Yang, P., 2020. Optimal estimation of Gaussian mixtures via denoised method of moments. \emph{Annals of Statistics} 48(4), 1981--2007.
+
+\item Zaffaroni, P., 2004. Contemporaneous aggregation of linear dynamic models in large economies. \emph{Journal of Econometrics} 120(1), 75--102.
+
+\end{list}
+
+\end{document}

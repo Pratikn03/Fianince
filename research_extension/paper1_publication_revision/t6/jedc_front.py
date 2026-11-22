@@ -3,7 +3,7 @@ Highlights and the cover letter are separate files (ceiling_suite/papers/paper1/
 import re
 
 ABSTRACT = (r"Algorithmic traders read prices and move them. We show that a population of such traders "
-            r"affects prices, order flows and dealer inventories only through its aggregate feedback response, also in "
+            r"affects prices, order flows and dealer inventories only through its aggregate feedback response, even in "
             r"equilibrium, and that in the worst case separating $K$ trader types whose rules lie within $\Delta$ takes "
             r"on the order of $\Delta^{-(4K-2)}$ observations. Given the market's persistence and a memory bound, a "
             r"uniform cut in feedback can be set from prices and, without class tags, is minimax over labellings; "
