@@ -7,7 +7,7 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
 | Use | File |
 |---|---|
 | Manuscript (upload as the main file) | `pdf_delivered/Paper1_JEDC_main.pdf`: 35 pages, 85-word abstract, title page with keywords and JEL codes, proofs of the main results in Appendix A |
-| Online Supplement (upload as supplementary material) | `pdf_delivered/Paper1_JEDC_online_supplement.pdf`: 67 pages, every result in full, machine-check tables |
+| Online Supplement (upload as supplementary material) | `pdf_delivered/Paper1_JEDC_online_supplement.pdf`: 69 pages, every result in full, machine-check tables |
 | Both in one file, for reading | `pdf_delivered/Paper1_JEDC_main_and_supplement.pdf` |
 | SSRN posting | `pdf_delivered/Paper1_ssrn_complete.pdf`: 101 pages, the long working version |
 | Cited, not submitted | `pdf_delivered/Paper1_full_working_paper.pdf` (156 pages, Niroula et al., 2026d); the companion note (2026c); the earlier working paper of 5 November 2026 (2026a) |
@@ -22,7 +22,7 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
 
 1. **The first author reads the seven results that were added or corrected on 21–22 November 2026:**
    - Proposition 7.1(iii);
-   - Proposition 7.1(iv), named instruments (added 22 November);
+   - Theorem 7.1(iv), derived instruments;
    - Theorem 7.3(ii);
    - Lemma 7.7;
    - Theorem 7.9;
@@ -111,7 +111,7 @@ The additional results below were added or corrected with AI assistance and have
 - [ ] Main Proposition 4.5(i), identification of the flow map in the specified experiment.
 - [ ] Main Theorems 4.4(iv) and 5.1, existential equilibrium construction, uniform stability, observed taps and passive and reset tests.
 - [ ] Main Theorems 5.2 and 5.5, modulus, growing depth, confidence domains and the compact moment inverse.
-- [ ] Main Proposition 7.1(i)–(iv), Corollary 7.2 and Corollary 7.4(ii), fixed-policy response, largest-weight quadrature pair, risk bound, Gaussian tap sample sizes and feasible scaling.
+- [ ] Main Proposition 7.1(i)–(iii), Corollary 7.2 and Corollary 7.4(ii), fixed-policy response, largest-weight quadrature pair, risk bound and feasible scaling.
 - [ ] Main Theorems 7.3, 7.5 and 7.6, continuity and attainment, partial-tag minimax and tagged reset rate.
 - [ ] Main Lemma 7.7(ii), fixed-impact plug-in profit comparison.
 - [ ] Main Proposition 7.8 and Theorem 7.9, cost-gap endpoints, routing branches, fixed-test incentives and known-direction Gaussian example.
@@ -122,3 +122,11 @@ The additional results below were added or corrected with AI assistance and have
 - [ ] Supplement routing proofs for Proposition 7.8, Proposition S15.2 and Theorem S15.4, fixed cost thresholds, tie selection and reachability.
 - [ ] Review the unchanged Taiwan values and revised interpretation in Section 7.4, Supplement Section S19 and Table 3. Publish a versioned development-data manifest and a permitted replication route. Treat the rate-based horizons and local search ranges as illustrative.
 - [ ] Confirm the live JEDC format, highlights and deposition instructions, verify CRediT statements reflect actual work, and obtain final approval from all authors. The first author alone may change the author-check flags after verification.
+
+## Derived instrument result
+
+- [ ] Theorem 7.1(iv)(a)–(d) and the supplement section “Derived incidence of price and quantity instruments” were added with AI assistance and have not yet been checked by the authors. Check the perceived-profit optimization, quadratic and proportional charges, scheduled revisions, and turnover-cap formula.
+- [ ] Verify the Taylor coefficient bound, reference-record plug-in proof, and the moment-matched budget and binary-decision lower bounds. The budget accuracy in the lower bound shrinks with the memory spread.
+- [ ] Verify the stable local equilibrium expansion and the conditional adjustable-memory extension. Confirm the interpretation of scheduled holdings and expected turnover before making any venue-specific claim.
+- [ ] Reproduce the synthetic diagnostics and the hypothetical Taiwan calculation from archived coefficients. Keep the P1M and P1M-A1 results and causal interpretation separate.
+- [ ] Check the scope of the five rational Lean identities. The optimizer over real scales, analytic estimates, lower bounds and general-equilibrium arguments are paper proofs.

@@ -95,18 +95,14 @@ If $J^* \ge \bar{J}$, the power envelope implies $L\beta\sqrt{\bar{J}} \le k\del
 
 UNIFORM_REMARK = r"""
 
-\textbf{Information needed for a uniform cut.} The supervisor needs $\kappa$, the pre-policy budget and the non-feedback persistence $a$. A zero-memory group is observationally equivalent to persistence (Supplement Theorem~\ref{S-thm:merged}(i)). A lower bound on memory can separate the two in a finite-group reset experiment (Supplement Corollary~\ref{S-cor:unknown_primitives}). An upper bound $\bar r<1$ controls the unobserved tail of the budget: $\sum_{m\ge L} k_m\le W\bar r^L/(1-\bar r)$. In the direct tap experiment of Theorem~\ref{thm:cheap}, summing the first $L$ taps gives accuracy $\epsilon$ using order $\sigma^2\epsilon^{-2}\log(1/\epsilon)$ repetitions as the depth grows logarithmically. Without the upper bound, the budget can vary without limit at bounded divergence. A known uniform scaling uses the budget alone; a sharp cutoff may need composition even when it needs no labels. Smooth benchmark incidences in part~(iv) measure a reduction from a few taps, while testing the resulting ceiling also requires the initial budget and a credible model for any dealer or trader response."""
+\textbf{Information needed for a uniform cut.} A zero-memory group is observationally equivalent to persistence (Supplement Theorem~\ref{S-thm:merged}(i)). For known $(a,\kappa)$ and a memory bound $\bar r<1$, the omitted tail is at most $W\bar r^L/(1-\bar r)$. Summing noisy taps at logarithmic depth gives the budget to accuracy $\epsilon$ with order $\sigma^2\epsilon^{-2}\log(1/\epsilon)$ experiments. Certification of a post-policy ceiling also requires a model of the market's response."""
 
 HORIZON_ITEM = r"""  \item[(iii)] \emph{Restriction by horizon.} Halting the feedback of every group whose memory lies below a cutoff $\hat r \in (0, 1)$ does not either. Under the conditions of Theorem~\ref{thm:cost}, for every $K \ge 2$ and all small $\Delta\eta > 0$, there exist two $K$-group economies with memories in $[\hat r - \Delta\eta, \hat r + 2\Delta\eta]$ whose merged measures match moments $0, \dots, 2K-2$, such that the restriction removes at least $\kappa W/K^2$ of the budget in one economy and nothing in the other, where $W$ is the total merged weight. Over a nonempty interval of ceilings $\bar{s}$, the restriction satisfies the ceiling in one economy and breaches it in the other; deciding between them from $N$ reset records with both errors at most $1/4$ requires $N \ge c \sigma^2 (\Delta\eta)^{-(4K-2)}$.
-  \item[(iv)] \emph{Benchmark instrument incidence.} At fixed $(a,\kappa)$, an intervention removing share $\theta(r_i)\in[0,1]$ of group $i$'s activity lowers the budget by $\kappa\int \theta(r)/(1-r)\,dM(r)$. A turnover-tax benchmark assumes attenuation $\theta(r)=\lambda(1-r)$, $\lambda\in[0,1]$, giving the reduction $\kappa\lambda k_0$. A resting-time benchmark assumes the first $h\ge1$ geometric response taps are suppressed, giving $\theta(r)=1-r^h$ and reduction $\kappa\sum_{m<h}k_m$. For $\epsilon>0$ and known $\kappa$, under independent direct tap measurements as in Theorem~\ref{thm:cheap} with $L\ge h$, sufficient positive integer sample sizes round up $z_{1-\alpha/2}^2 \kappa^2 \lambda^2 \sigma^2/\epsilon^2$ and $z_{1-\alpha/2}^2 \kappa^2 h\sigma^2/\epsilon^2$, respectively. If $\lambda=0$ the reduction is known. Neither calculation requires a memory bound. A cutoff at $1-1/h$ is part~(iii) for $h>1$; for $h=1$ it removes no group.
+
 """
 
 HORIZON_PROOF = r"""\begin{proof}[Proof of Proposition~\ref{prop:interventions}(iii)]
 Let $x_K < 1$ be the largest node of the $K$-point Gauss--Legendre rule on $[-1, 1]$, and place the hard pair of Theorem~\ref{thm:cost}, with a common persistence and total merged weight $W$, on $r_c + \Delta\eta[-1, 1]$ with $r_c = \hat r + (1 + x_K)\Delta\eta/2$. Its memories lie in $[\hat r - \Delta\eta, \hat r + 2\Delta\eta]$. The Gauss--Radau economy has an atom of weight $W/K^2$ at $r_c - \Delta\eta < \hat r$, because the endpoint weight of the $K$-point Gauss--Radau rule on $[-1, 1]$ is $2/K^2$. Every memory of the Gauss economy is at least $r_c - x_K\Delta\eta > \hat r$. Group $i$ contributes $\kappa q_i = \kappa w_i/(1 - r_i)$ to the budget, so the restriction removes at least $\kappa W/K^2$ in the Gauss--Radau economy and nothing in the Gauss economy. The budgets themselves, $a + \kappa\int (1 - r)^{-1}\,dM(r)$, differ by $O((\Delta\eta)^{2K-1})$, because the merged measures match moments $0, \dots, 2K-2$ and $(1 - r)^{-1}$ is smooth near $r_c$. For small $\Delta\eta$ the budgets after the restriction therefore differ by at least $\kappa W/(2K^2)$, and every ceiling between them is met in one economy and breached in the other. The record length is that of Theorem~\ref{thm:cost}(ii), which concerns the same pair.
-\end{proof}
-
-\begin{proof}[Proof of Proposition~\ref{prop:interventions}(iv)]
-Group $i$ contributes $\kappa q_i = \kappa w_i/(1 - r_i) = \kappa w_i \sum_{m \ge 0} r_i^m$ to the budget. (a) Removing the share $\lambda(1 - r_i)$ of its activity lowers its contribution by $\kappa\lambda w_i$, and summing over groups gives $\kappa\lambda \sum_i w_i = \kappa\lambda k_0$. (b) Removing the share $1 - r_i^h$ lowers it by $\kappa w_i (1 - r_i^h)/(1 - r_i) = \kappa w_i \sum_{m < h} r_i^m$, and summing gives $\kappa \sum_{m < h} k_m$. In the observation model of Theorem~\ref{thm:cheap}, each of the first $L \ge h$ taps is observed in each of $N$ experiments with independent $N(0, \sigma^2)$ noise, so the averages $\hat k_m$ are unbiased with variance $\sigma^2/N$. The estimators $\kappa\lambda \hat k_0$ and $\kappa \sum_{m < h} \hat k_m$ are therefore Gaussian with standard deviations $\kappa\lambda\sigma/\sqrt{N}$ and $\kappa\sigma\sqrt{h/N}$, and rounding up makes the Gaussian half-width at most $\epsilon$. Both reductions are $\kappa F_g$ with $g(r) = \lambda$ and $g(r) = \sum_{m < h} r^m$, polynomials of degree below $L$, so the approximation term in Theorem~\ref{thm:cheap}(i) vanishes, the rate is the parametric one of part~(ii), and no bound on memory enters. The cutoff lies in $(0,1)$ for $h>1$ and below all positive memories for $h=1$.
 \end{proof}
 
 """
@@ -172,6 +168,48 @@ The first two noiseless class-flow coordinates are $w_i h_0$ and $w_i(h_1+r_i h_
 
 """
 
+
+INSTRUMENT_THEOREM = r"""
+
+At fixed memories, let a desk choose a nonnegative scale $q$ for the normalized filter $y_t=(1-r)\sum_{j\ge0}r^j x_{t-1-j}$ of a centered stationary Gaussian reference price signal. At revision dates spaced $h$ periods apart it holds its exposure until the next revision. Its perceived expected return for period $j$ of that exposure is $\beta \rho^j y_t$ for $j=0,\ldots,h-1$, with common $\beta,b>0$ and $0\le\rho\le1$. The desk uses the reference covariance to evaluate risk and volume. The parameters $\beta,b,\rho$ describe preferences and beliefs and are given to the observer. Write $V=\operatorname{Var}(y_t)$, $D_h=\Var(y_t-y_{t-h})$, $T_h=h^{-1}\sqrt{2D_h/\pi}$, and $A_h=h^{-1}\sum_{j<h}\rho^j$. Per-date perceived gain less risk and trading costs is
+\[
+ (\beta A_h V-\tau T_h)q-\tfrac12(bV+\nu D_h/h)q^2,
+ \qquad q\ge0,\quad qT_h\le c .
+\]
+Here $\tau$ charges expected traded volume and $\nu$ charges squared changes at revision dates. Allow $c=\infty$. A group consists of desks with the same memory. If $q^0(r)>0$ is baseline scale per desk and $q^1(r)$ is its policy scale, the reduction at fixed $(a,\kappa)$ is $\kappa F_g(M)$ for $g(r)=(1-q^1(r)/q^0(r))/(1-r)$. With scheduled revisions the relevant quantity is the response to a constant signal, averaged over the revision cycle.
+
+\begin{instrumentthm}[Derived incidence of price and quantity instruments]\label{thm:instruments}
+Assume $0<\bar r<1$, memories in $[0,\bar r]$, a bounded total merged weight, and known $\kappa$. The reference covariances satisfy a uniform geometric decay bound and the spectrum is uniformly positive. Use the direct Gaussian tap experiment of Theorem~\ref{thm:cheap} and an independent stationary record of the reference signal of length $n$.
+\begin{enumerate}
+\item[(a)] \emph{Trading costs.} With $h=1,\ \tau=0,\ c=\infty$, imposing a sufficiently small quadratic charge from zero gives a square-summable Taylor series for $g$. With sufficient tap depth, the budget reduction is estimable at fixed confidence to error $O(n^{-1/2}+\sigma N^{-1/2})$. A proportional transaction tax can fail the parametric criterion even with every desk active: for white-noise reference prices its active incidence is $1-q^1/q^0=d\sqrt{1+r}$ for a positive tax multiplier $d$.
+\item[(b)] \emph{Scheduled revisions.} Changing the schedule from daily to every $h$ periods at a common small $\nu$, with $\tau=0$ and no cap, gives a square-summable term in $g$ plus $(1-A_h)/(1-r)$. The first term is estimated at the rate in (a). When $\rho=1$ this is the whole effect. Otherwise the second term needs the initial aggregate feedback budget. The signed reduction can be negative. The response concerns scheduled holdings. A cancellation constraint for orders resting in a book requires an execution model.
+\item[(c)] \emph{Exit.} Under a proportional tax, a transversal zero of $\beta V-\tau T_1$ at an interior memory gives a kink in $g$. For the reset model of Theorem~\ref{thm:cost}, with a common reference law, there are moment-matched $K$-group alternatives near the threshold with budget reductions separated by order $\Delta\eta$. In one economy a desk type exits and in the other all types remain active. To distinguish these decisions, or estimate the reduction at a sufficiently small constant times $\Delta\eta$, requires $N\ge c_*\sigma^2(\Delta\eta)^{-(4K-2)}$ at fixed error probabilities below one quarter.
+\item[(d)] \emph{Turnover caps.} With daily revisions, when a positive per-desk cap crosses smooth unconstrained turnover transversally, $g$ has a kink. The lower bounds in (c) apply to the reduction and to deciding whether the cap binds. The gap is of order $\Delta\eta$ for both types of continuous threshold.
+\end{enumerate}
+\end{instrumentthm}
+"""
+
+INSTRUMENT_PROOF = r"""\begin{proof}[Proof of Theorem~\ref{thm:instruments}]
+Concavity gives $q=\min\{c/T_h,(\beta A_hV-\tau T_h)_+/(bV+\nu D_h/h)\}$. At revision dates the conditional perceived payoff and the quadratic risk cost scale with $V$, while Gaussian changes give expected absolute volume $qT_h$ per date. A constant signal produces constant $y$, so the ratio of scales gives the stated budget formula after aggregation.
+
+Write $\gamma_j=\E[x_t x_{t-j}]$, $B(z)=\sum_{j\in\mathbb Z}\gamma_j z^{|j|}$,
+$B_h(z)=\sum_{j\in\mathbb Z}\gamma_{j+h} z^{|j|}$, and $C_h(z)=2(B(z)-B_h(z))/(1-z)$. Summing by the difference of the filter indices gives $V=(1-r)B(r)/(1+r)$ and $D_h/V=(1-r)C_h(r)/B(r)$. The geometric bound extends the series past the unit circle. Since $B(1)=B_h(1)$, $C_h$ extends there too. The real part of $B$ is uniformly positive on the circle by the spectral bound, and hence in the disk. For the quadratic charge from zero,
+\[
+ g=\frac{\nu C_1}{bB+\nu(1-r)C_1}.
+\]
+For scheduled revisions, division by the old scale gives
+\[
+ g=\frac{1-A_h}{1-r}+
+ \frac{A_h\nu(C_h/h-C_1)}{bB+\nu(1-r)C_h/h}.
+\]
+Small $\nu$ keeps both denominators bounded away from zero throughout the disk. The analytic terms have uniformly bounded square-summable Taylor coefficients. For a white-noise reference with variance $\gamma_0$, $T_1/V=2\sqrt{(1+r)/(\pi\gamma_0)}$. Thus $d=2\tau/(\beta\sqrt{\pi\gamma_0})$ in (a). The analytic continuation from an active interval grows like $(1-r)^{-1}$, whereas a square-summable Taylor series is bounded by its coefficient norm times $(1-r^2)^{-1/2}$. The same argument applies to the first term in (b) when $A_h<1$.
+
+For the plug-in estimate, Wick's formula bounds the variance of each sample covariance up to lag $\lfloor n/2\rfloor$ by $C/n$. Summing errors with geometrically decaying weights on $[0,\bar r]$ gives uniform error $O_P(n^{-1/2})$ for the analytic term, after flooring denominators. Fit a degree-$<L$ polynomial to it in uniform norm with a known coefficient-norm bound. The truncated true series is feasible with error $O(\bar r^L)$. The resulting integrated bias is bounded by total mass times $O_P(n^{-1/2}+\bar r^L)$. Given the independent reference record, the tap statistic's variance is $O(\sigma^2/N)$ by the norm bound. Take logarithmic depth to make the tail no larger than the sampling errors.
+
+At an interior transversal exit or binding point $r_*$, the positive part gives a nonzero jump $J$ of the one-sided derivative of $g$. Locally $g(r)=g(r_*)+g'_-(r-r_*)+J(r-r_*)_++O((r-r_*)^2)$. Reflect the Gauss--Legendre and left Gauss--Radau pair of Theorem~\ref{thm:cost} and place it so that only the Radau endpoint lies on the clipped side, at distance $u\Delta\eta$ for a fixed $u>0$. A reflection of the construction for Proposition~\ref{prop:interventions}(iii) gives the opposite orientation if needed. The affine terms cancel, and the lone endpoint generates a nonzero term of magnitude $|J|Wu\Delta\eta/K^2$. The quadratic remainder is $O((\Delta\eta)^2)$. The common reference record carries no additional information about the pair. The reset KL is $O(N(\Delta\eta)^{4K-2}/\sigma^2)$ from moment cancellation. Applying the same two-point test to the binary decision or to estimates with disjoint accuracy intervals proves the bounds. For caps, the policy scale is $\min(q^0,c/T_1)$ and the same derivative jump follows at a transversal binding point.
+\end{proof}
+
+"""
 def build(text):
     t = reletter(text)
     # ---------------------------------------------------------------- preamble and front matter
@@ -179,13 +217,17 @@ def build(text):
             "\\usepackage{fancyhdr}\n\\usepackage{xr-hyper}\n\\usepackage{hyperref}\n"
             "\\externaldocument[S-]{Paper1_JEDC_online_supplement}\n"
             "\\graphicspath{{../paper1_core/}{../paper1_note/}}\n")
-    t = rep(t, "\\linespread{1.12}\n", "\\linespread{1.12}\n\\emergencystretch=3em\n")
+    t = rep(t, "\\linespread{1.12}\n", "\\linespread{1.10}\n\\emergencystretch=3em\n")
     t = re.sub(r"(\\begin\{abstract\}\n\\noindent\n).*?(\n\\end\{abstract\})",
                lambda m: m.group(1) + ABSTRACT + m.group(2), t, count=1, flags=re.S)
     t = rep(t, r"\noindent\textbf{Online Supplement and Replication:} Technical lemmas,",
             r"\noindent\textbf{Online Supplement and Replication:} References of the form ``Supplement Theorem~S4.1'' are to the Online Supplement, which states every result in full; the full working paper (Niroula et al., 2026d) collects every supplementary result. Technical lemmas,")
     t = rep(t, r"\textbf{Funding and competing interests.}",
             r"\textbf{Related manuscripts.} An earlier working paper of the same authors (Niroula et al., 2026a, dated 5 November 2026) studied the same model; this article supersedes it. The earlier paper, the companion note (Niroula et al., 2026c) and the full working paper (Niroula et al., 2026d) are in the repository cited below.\par\medskip" + "\n\n" + r"\textbf{Funding and competing interests.}")
+    t = rep(t, "\\newtheorem{theorem}{Theorem}[section]\n",
+            "\\newtheorem{theorem}{Theorem}[section]\n"
+            "\\newtheorem{instrumentthm}{Theorem}\n"
+            "\\renewcommand{\\theinstrumentthm}{\\thetheorem(iv)}\n")
     # ---------------------------------------------------------------- introduction
     t = rep(t, r"In a Gaussian feedback market, the Kullback--Leibler divergence between two candidate populations equals half the cumulative excess mean-squared forecast error from confusing them (Theorem~\ref{thm:forecast-kl}); hence composition",
             r"In a Gaussian feedback market, the Kullback--Leibler divergence between two candidate populations equals half the cumulative excess forecast MSE divided by innovation variance (Theorem~\ref{thm:forecast-kl}, the Gaussian chain rule stated in market terms); composition")
@@ -206,7 +248,7 @@ def build(text):
     t = rep(t, r"provides a formal rationale for that architecture: market-wide remedies require only prices, targeted restrictions require class records, and relabeling incentives necessitate owner-linked audit trails.",
             r"provides a formal rationale for that architecture: market-wide remedies require only prices, targeted restrictions require class records, and cheap relabeling favors owner-linked audit trails. Acting on market information can degrade it (Bond et al., 2010; Bond and Goldstein, 2015), and manipulation muddles the signals a principal relies on (Frankel and Kartik, 2019, 2022; Perez-Richet and Skreta, 2022).")
     t = rep(t, r"whereas compositional weights require $\Delta^{-(4K-2)}$ observations (Theorem~\ref{thm:cheap} and Corollary~\ref{cor:sep}).",
-            r"whereas compositional weights require $\Delta^{-(4K-2)}$ observations (Theorem~\ref{thm:cheap} and Corollary~\ref{cor:sep}). The same lower bound can apply when an enforceable horizon cutoff replaces a class label (Proposition~\ref{prop:interventions}(iii)).")
+            r"whereas compositional weights require $\Delta^{-(4K-2)}$ observations (Theorem~\ref{thm:cheap} and Corollary~\ref{cor:sep}). The same lower bound can apply when an enforceable horizon cutoff replaces a class label (Proposition~\ref{prop:interventions}(iii)). Derived quadratic costs give a parametric benchmark. Proportional taxes can fail even before exit, and exit and binding caps give lower bounds at shrinking accuracy (Theorem~\ref{thm:instruments}).")
     # ---------------------------------------------------------------- model, sufficiency, equilibrium
     t = rep(t, r"$D, D_0, p, J$ & Distance to neighbor's memory, preferred distance, divergence exponent ($p > 2$), divergence $J = cND^p$ \\",
             r"$\delta, \delta_0, n, J$ & Distance to the neighbor's memory, preferred distance, divergence exponent ($n = 4$), divergence $J = cN\delta^n$ \\")
@@ -277,12 +319,12 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
 
 \begin{corollary}[Expected loss from weakly identified targeting]""",
             HORIZON_ITEM + r"""\end{enumerate}
-\end{proposition}""" + UNIFORM_REMARK + r"""
+\end{proposition}""" + UNIFORM_REMARK + INSTRUMENT_THEOREM + r"""
 
 \begin{corollary}[Expected loss from weakly identified targeting]""")
     t = rep(t, r"Figure~\ref{fig:intervention} illustrates this contrast in a two-class economy: halting the largest class produces qualitatively opposite prudential outcomes across nearly indistinguishable economies, whereas a single verified class report collapses decision error by six orders of magnitude in sample size.",
             r"Figure~\ref{fig:intervention} illustrates this contrast in a two-class economy and an illustrative measurement experiment: halting the largest class produces qualitatively opposite prudential outcomes across nearly indistinguishable economies, whereas verified class reports cut the sample needed for a $5\%$ error by six orders of magnitude.")
-    t = rep(t, r"\includegraphics[width=\linewidth]{fig2.png}", r"\includegraphics[width=\linewidth]{fig_intervention_revision.pdf}")
+    t = rep(t, r"\includegraphics[width=\linewidth]{fig2.png}", r"\includegraphics[width=.87\linewidth]{fig_intervention_revision.pdf}")
     t = rep(t, r"Panel~A uses the two-class construction of Online Supplement Section~S17",
             r"Panel~A uses the two-class construction of Supplement Section~\ref{S-app:revisiondecision}")
     t = rep(t, r"achieving $5\%$ error requires roughly $2.03 \times 10^6$ public-response repetitions versus $2$ class reports.}",
@@ -350,7 +392,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
             r"\multicolumn{4}{@{}l}{\footnotesize Within-stock $R^2$: price equation $0.95$; rules $0.14$ (Foreign), $0.18$ (Trust) and $0.10$ (Dealers).} \\")
     # ---------------------------------------------------------------- conclusion
     t = rep(t, r"First, market-wide interventions (such as uniform feedback cuts or market-design changes calibrated to aggregate response) are statistically well-posed from public prices and are minimax-optimal when class identities are unverified.",
-            r"First, the budget for a uniform feedback cut can be estimated from kernel taps, given the market's persistence, impact and a bound on memory. Uniform policies are minimax over labelings in the fixed-population decision problem.")
+            r"First, the budget for a uniform feedback cut can be estimated from kernel taps, given the market's persistence, impact and a bound on memory. Uniform policies are minimax over labelings in the fixed-population decision problem. The measurement cost depends on the derived incidence. Proportional taxes and threshold policies can require more information (Theorem~\ref{thm:instruments}).")
     t = rep(t, r"durable targeted supervision requires owner-linked audit trails—such as",
             r"owner-linked reporting can support targeted supervision when the link is reliable, as illustrated by")
     t = rep(t, r"Our passive sample-complexity bounds assume Gaussian (or quadratically regular) innovations and exclude bounded-support noise laws.",
@@ -359,7 +401,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     old_ai = r"All mathematical proofs, economic arguments, empirical calculations, and formal statements were independently verified and edited by the authors, who take full responsibility for the content of the publication."
     if CORRECTIONS_CHECKED_BY_FIRST_AUTHOR:
         new_ai = (r"The authors take full responsibility for the content of the publication. The first author read and "
-                  r"checked the proofs, including those of Proposition~\ref{prop:interventions}(iii) and~(iv), Theorem~\ref{thm:minimax}(ii), Lemma~\ref{lem:micro}, "
+                  r"checked the proofs, including those of Proposition~\ref{prop:interventions}(iii), Theorem~\ref{thm:minimax}(ii), Lemma~\ref{lem:micro}, "
                   r"Theorem~\ref{thm:paradox} and Supplement Propositions~\ref{S-prop:nearcrit} and~\ref{S-prop:hidegame} "
                   r"in their present form. Lean~4 checks certify only the formal statements listed in the Supplement's "
                   r"machine-check tables and in the repository; they do not certify the probabilistic steps, empirical "
@@ -367,7 +409,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     else:
         new_ai = (r"The authors take full responsibility for the content of the publication. The first author read and "
                   r"checked the proofs of the results developed with AI assistance up to 21 November 2026. "
-                  r"Proposition~\ref{prop:interventions}(iii) and~(iv), Theorem~\ref{thm:minimax}(ii), Lemma~\ref{lem:micro} and Theorem~\ref{thm:paradox} of this paper and "
+                  r"Proposition~\ref{prop:interventions}(iii), Theorem~\ref{thm:minimax}(ii), Lemma~\ref{lem:micro} and Theorem~\ref{thm:paradox} of this paper and "
                   r"Propositions~\ref{S-prop:nearcrit} and~\ref{S-prop:hidegame} of the Supplement, in their present form, "
                   r"were added or corrected with AI assistance on 21--22 November 2026 and have not yet been checked by "
                   r"the authors. Lean~4 checks certify only the formal statements listed in the Supplement's "
@@ -385,14 +427,18 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
         r"were also corrected with AI assistance and have not yet been checked by the authors. "
         r"The Taiwan calibration wording was corrected against the archived outputs."
     )
-    t = rep(t, old_ai, new_ai + review_ai)
+    instrument_ai = (
+        r" Theorem~\ref{thm:instruments} and Supplement Section~\ref{S-app:instruments} "
+        r"were added with AI assistance and have not yet been checked by the authors."
+    )
+    t = rep(t, old_ai, new_ai + review_ai + instrument_ai)
     t = rep(t, r"to assist with literature cross-checking, numerical verification scripts, Lean~4 formalization coding, and language editing.",
             r"to assist with literature cross-checking, numerical verification scripts, Lean~4 formalization coding, drafting, and language editing.")
     # ---------------------------------------------------------------- appendix
     t = rep(t, r"Part~(ii) follows from Online Supplement Theorem~S4.3(i) applied to the closed loop in~(i).",
             r"Part~(ii) follows from Supplement Theorem~\ref{S-thm:minphase}(i) applied to the closed loop in~(i).")
     t = rep(t, r"\begin{proof}[Proof of Theorems~\ref{thm:minimax} and~\ref{thm:partial-minimax} and Corollary~\ref{cor:halt}]",
-            POLICY_PROOFS + HORIZON_PROOF + r"\begin{proof}[Proof of Theorems~\ref{thm:minimax} and~\ref{thm:partial-minimax} and Corollary~\ref{cor:halt}]")
+            POLICY_PROOFS + HORIZON_PROOF + INSTRUMENT_PROOF + r"\begin{proof}[Proof of Theorems~\ref{thm:minimax} and~\ref{thm:partial-minimax} and Corollary~\ref{cor:halt}]")
     a = t.index(r"\begin{proof}[Proof of Theorems~\ref{thm:minimax} and~\ref{thm:partial-minimax} and Corollary~\ref{cor:halt}]")
     b = t.index(r"\end{proof}", a)
     t = t[:a] + t[a:b].replace(r"\sigma", r"\pi") + t[b:]
@@ -452,7 +498,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     t = rep(t, 'A large literature studies heterogeneous fundamentalist and chartist asset-pricing models (Brock and Hommes, 1998; Hommes, 2006) and estimates trader shares from prices (Boswijk et al., 2007; Franke and Westerhoff, 2012; Lux and Zwinkels, 2018);',
             "A large literature studies heterogeneous fundamentalist and chartist asset-pricing models (Brock and Hommes, 1998; Hommes, 2006) and estimates trader shares from prices (Boswijk et al., 2007; Franke and Westerhoff, 2012; Lux and Zwinkels, 2018); Brock and Hommes model fitness-driven switching among predictors. We fix the rules and masses, so variation in their composition enters through moments of one measure. Heinrich and Kahn's local mixture rate concerns the mixing law in a sampling model. Here the kernel is observed through a feedback recursion or a separate tap experiment.")
     t = rep(t, 'Budish et al.\\ (2015) advocate market-wide structural remedies (frequent batch auctions),',
-            'Budish et al.\\ (2015) model cancellation and liquidity provision in continuous limit-order books and propose frequent batch auctions. Our resting-time and turnover-tax incidences are maintained benchmarks for executed feedback, without a model of cancellations, execution, or tax elasticities. Kirilenko et al.\\ (2017)')
+            'Budish et al.\\ (2015) analyze continuous-book cancellation and batch auctions. Colliard and Hoffmann (2017) document volume, liquidity and composition responses to a transaction tax. Theorem~\\ref{thm:instruments} derives incidence for a perceived-return benchmark with fixed memories. Its scheduled holding rule abstracts from order cancellation and execution. Kirilenko et al.\\ (2017)')
     t = rep(t, '\\begin{proof}[Proof of Theorem~\\ref{thm:smooth}]', COMPOSITION_PROOFS + '\\begin{proof}[Proof of Theorem~\\ref{thm:smooth}]')
     t = rep(t, 'evaluated at $\\delta = 2 z_{1-\\alpha} \\sigma / \\sqrt{N}$.', 'The necessary and sufficient conditions use the same modulus.')
     t = rep(t, 'proves that the same limits—collapse of class-tag value as $\\gamma \\to 0$ and convergence to $V_A$ as $\\gamma \\to \\infty$—hold for arbitrary concave private payoffs, general convex concealment costs, and any Lipschitz social welfare functional $U(e)$,', 'extends the limits to Lipschitz social welfare and private payoffs with slopes bounded above and bounded away from zero, under the stated routing-cost conditions. The cheap-routing collapse requires all labels to be reachable. This covers')
@@ -464,6 +510,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
             'at each fixed parameter under the conditions of the forecasting result a fitted autoregression of order $L_T = \\lceil c \\log T \\rceil$ attains the oracle risk up to')
     t = rep(t, 'Replication scripts, numerical checks, and Lean~4 formalization files',
             'The protocols and archived Taiwan outputs are under \\nolinkurl{ceiling_suite/p1_empirics}. Replication scripts, numerical checks, and Lean~4 formalization files')
+    t = rep(t, '\\setlength{\\itemsep}{3pt}\\setlength{\\parsep}{0pt}', '\\setlength{\\itemsep}{1pt}\\setlength{\\parsep}{0pt}')
     # ---------------------------------------------------------------- references
     t = add_references(t)
     # ---------------------------------------------------------------- labels shared with the supplement
@@ -486,6 +533,7 @@ LABELS = {
 }
 
 NEW_REFS = [
+    r"Colliard, J.-E., Hoffmann, P., 2017. Financial transaction taxes, market composition, and liquidity. \emph{Journal of Finance} 72(6), 2685--2716.",
     r"Bond, P., Goldstein, I., 2015. Government intervention and information aggregation by prices. \emph{Journal of Finance} 70(6), 2777--2812.",
     r"Bond, P., Goldstein, I., Prescott, E.S., 2010. Market-based corrective actions. \emph{Review of Financial Studies} 23(2), 781--820.",
     r"Chaboud, A.P., Chiquoine, B., Hjalmarsson, E., Vega, C., 2014. Rise of the machines: Algorithmic trading in the foreign exchange market. \emph{Journal of Finance} 69(5), 2045--2084.",
