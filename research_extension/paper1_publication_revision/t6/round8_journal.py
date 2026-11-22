@@ -23,6 +23,9 @@ import re
 
 FULL_KEY = 'niroula2026full'
 BIB_ANCHOR = r'\bibitem[Batenkov et~al.(2021)]{batenkov2021}'
+RELATED_ANCHOR = r'collects companion results on breaches and nonlinear rules.'
+RELATED_JOURNAL = (r' \citet{niroula2026full} is the full working paper of this article, with every supplementary '
+                   r'result.')
 BIB = (r'\bibitem[Niroula et~al.(2026d)]{niroula2026full} Niroula, P., P. Niroula, and S. Khatiwada (2026d). '
        r'Observationally equivalent algorithms: Full working paper with all supplementary results. Working paper, '
        r'21 November 2026, \url{https://github.com/Pratikn03/Fianince}.' + '\n\n')
@@ -38,7 +41,8 @@ SUPP_CUTS = [
     (r'\section{One running market, news of any law, and the value of tags in money}', r'\section{The hard pair: moment gap'),
     (r'\subsection{The pooling moment map: Jacobian and global immersion}', r'\section{Do the rates survive real market noise?}'),
     (r'\section{What prices hide, in economic terms}', r'\section{Pricing, evasion and the choice of an audit trail}'),
-    (r'\paragraph{Moved from the main text.}', r'\paragraph{Numerical evidence and formal scope.}',
+    (r'The next result gives a conditional upper bound in a different, fixed-history flow experiment.',
+     r'\paragraph{Numerical evidence and formal scope.}',
      r'\section{Smooth-family lower bounds and forecast comparisons}'),
     # equilibrium: keep sufficiency, the inventory equilibrium, disclosure in equilibrium, rents and the halt
     (r'\begin{theorem}[Fragility: where liquidity disappears]', r'\paragraph{A misjudged dealer and a targeted halt.}',
@@ -79,8 +83,8 @@ MAIN_EDITS = [
     (r'''\paragraph{Drift and position limits.} Two extensions are in the supplement. If the population drifts by at most $v$ per period, its weights can be tracked with error of order $\min\{1,(\sigma^2v(\Delta\eta)^{-(4K-2)}/n)^{1/3}\}$ and no better, while market-wide quantities are tracked at the cube-root rate whatever the spacing (Supplement Theorem~\ref{thm:track}); a group that expects to be targeted can crowd its memory toward its neighbour's, which tags tied to accounts prevent (Supplement Proposition~\ref{prop:hidegame}). With hard position limits, populations with the same kernel give identical paths until a limit is reached, while probes that push traders to their limits identify the signed capacity measure (Supplement Theorems~\ref{thm:satsuff}, \ref{thm:stress} and~\ref{thm:satident}).''',
      r'''\paragraph{Drift and position limits.} A group that expects to be targeted can crowd its memory toward its neighbour's, which tags tied to accounts prevent (Supplement Proposition~\ref{prop:hidegame} and Theorem~\ref{n:paradox}). The full working paper \citep{niroula2026full} adds two extensions. If the population drifts by at most $v$ per period, its weights can be tracked with error of order $\min\{1,(\sigma^2v(\Delta\eta)^{-(4K-2)}/n)^{1/3}\}$ and no better, while market-wide quantities are tracked at the cube-root rate whatever the spacing. With hard position limits, populations with the same kernel give identical paths until a limit is reached, while probes that push traders to their limits identify the signed capacity measure.'''),
     (r'''The uniqueness of the pure equilibrium in Supplement Section~\ref{app:nashtight} is certified by interval arithmetic (\texttt{nash\_certify.py}). ''', ''),
-    (r'''This section supplies the corrected proofs of Theorem~\ref{n:univ}, Proposition~\ref{n:univup}, Theorem~\ref{n:irr} and Proposition~\ref{n:exc}.''',
-     r'''This section supplies the corrected proof of Theorem~\ref{n:univ} and lists the machine-checked steps of the results new in this revision.'''),
+    (r'''This section supplies the proofs of Theorem~\ref{n:univ}, Proposition~\ref{n:univup}, Theorem~\ref{n:irr} and Proposition~\ref{n:exc}.''',
+     r'''This section supplies the proof of Theorem~\ref{n:univ} and lists machine-checked steps.'''),
 ]
 
 MAIN_EDITS += [
@@ -97,8 +101,8 @@ MAIN_EDITS += [
      ''),
     (r"""\paragraph{Machine check.} The divergence of a moving window, Le Cam's two-point step, the bias--noise trade-off, the observer-effect inequality and parts (ii)--(iv) of Proposition~\ref{prop:hidegame} are machine-checked (\texttt{p1\_track\_kl\_window}, \texttt{p1\_track\_two\_point}, \texttt{p1\_track\_tradeoff}, \texttt{p1\_observer\_floor}, \texttt{p1\_hiding\_detection\_bound}, \texttt{p1\_hiding\_tag\_no\_crowding}, \nolinkurl{Paper1TrackingGame.lean}; \texttt{p1\_hiding\_nash\_bound}, \nolinkurl{Paper1NewsLawHiding.lean}).""",
      r"""\paragraph{Machine check.} Parts (ii)--(iv) of Proposition~\ref{prop:hidegame} are machine-checked (\texttt{p1\_hiding\_detection\_bound}, \texttt{p1\_hiding\_tag\_no\_crowding}, \nolinkurl{Paper1TrackingGame.lean}; \texttt{p1\_hiding\_nash\_bound}, \nolinkurl{Paper1NewsLawHiding.lean})."""),
-    (r"""This section gives three results: a speed limit on tracking a moving population, a floor on what probing can learn about traders who learn from prices, and an equilibrium in which surveillance without tags pushes algorithms together and never detects them.""",
-     r"""This section gives an equilibrium in which surveillance without tags pushes algorithms together and never detects them, and the equilibrium identification rate. A speed limit on tracking a moving population and a floor on what probing can learn about traders who learn from prices are in the full working paper \citep{niroula2026full}."""),
+    (r"""This section gives three results: a speed limit on tracking a moving population, a floor on what probing can learn about traders who learn from prices, and a bound on detection in any equilibrium in which surveillance without tags pushes algorithms together.""",
+     r"""This section bounds detection in any equilibrium in which surveillance without tags pushes algorithms together, and gives the rate at which the supervisor learns when one group best-responds to a fixed test. A speed limit on tracking a moving population and a floor on what probing can learn about traders who learn from prices are in the full working paper \citep{niroula2026full}."""),
     (r'\section{The hard pair: moment gap, largest weights, Jacobian and extensions}\label{app:openres}',
      r'\section{The hard pair: moment gap and largest weights}\label{app:openres}'),
     (r"""This section gives the exact size of the moment gap behind the constants of Theorem~\ref{thm:kcohort}, compares the largest weights of the hard pair, proves global immersion of the pooling moment map, existence and uniqueness of pure Nash equilibrium, and the extension of passive lower bounds to Gaussian-convolved news.""",
@@ -213,7 +217,10 @@ def apply(full_tex, full_aux):
                             r'\end{tabular}', removed)
     t, report = cite_removed(t, removed, nums)
     t = _rep(t, BIB_ANCHOR, BIB + BIB_ANCHOR)
+    t = _rep(t, RELATED_ANCHOR, RELATED_ANCHOR + RELATED_JOURNAL)
+    import round9
+    t, bib_dropped = round9.tidy_bib(t)
     left = [m.group(1) for m in re.finditer(r'\\(?:ref|eqref)\{([^}]+)\}', t) if m.group(1) in removed]
     assert not left, left
     return t, {'removed_labels': sorted(removed), 'citations_added': report, 'rows_dropped': d1 + d2,
-               'chars_removed': sum(len(r) for r in removed_text)}
+               'chars_removed': sum(len(r) for r in removed_text), 'references_dropped': bib_dropped}

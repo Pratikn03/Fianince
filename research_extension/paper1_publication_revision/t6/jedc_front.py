@@ -1,14 +1,14 @@
-"""Journal (JEDC) submission version: the journal version with a 98-word abstract and no working-paper date line.
+"""Journal (JEDC) submission version: the journal version with an abstract under 100 words and no working-paper date line.
 Highlights and the cover letter are separate files (ceiling_suite/papers/paper1/review/JEDC_SUBMISSION_20261121.md)."""
 import re
 
-ABSTRACT = (r"Algorithmic traders read prices and, by trading, move them. We show that the population of such traders "
+ABSTRACT = (r"Algorithmic traders read prices and move them. We show that a population of such traders "
             r"affects prices, order flows and dealer inventories only through its aggregate feedback response, also in "
-            r"equilibrium, and that separating $K$ trader types whose rules lie within $\Delta$ needs of order "
-            r"$\Delta^{-(4K-2)}$ observations. A uniform cut in feedback can therefore be set from prices and, without "
-            r"class tags, is the minimax supervisory policy; targeted restrictions need tags, which help only if "
-            r"relabeling is costly. In Taiwan's tagged exchange flows, prices pin down a uniform cut but cannot "
-            r"attribute feedback to trading classes.")
+            r"equilibrium, and that in the worst case separating $K$ trader types whose rules lie within $\Delta$ takes "
+            r"on the order of $\Delta^{-(4K-2)}$ observations. Given the market's persistence and a memory bound, a "
+            r"uniform cut in feedback can be set from prices and, without class tags, is minimax over labellings; "
+            r"targeted restrictions need tags, which help only if relabeling is costly. A calibration to Taiwan's "
+            r"tagged exchange flows illustrates the barrier.")
 
 
 def apply(ssrn_tex):

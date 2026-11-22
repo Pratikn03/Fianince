@@ -4,6 +4,12 @@ A group chooses its memory distance D in [0, D0] to its neighbour, paying k(D0-D
 power of the supervisor's level-alpha test as a function of the divergence J = c N D^n. Here pi is the exact power of
 the Neyman-Pearson test in a Gaussian shift experiment with divergence J: Phi(sqrt(2J) - z_alpha). The script finds the
 optimal D on a fine grid for N over twelve decades, and checks the two-sided bounds of the theorem and the rates.
+
+Exponents (21 November 2026, after the simulated referee reports): n = 4 is the exponent for one group against the
+closest economy in which it trades like its neighbour (exponent_check.py: fitted slope 4.1); n = 8 is the exponent
+for a cluster of three that shrinks together (fitted slope 8.0). The first version of this script used n = 6 and 10,
+taken from the moment-matched pairs of Theorem n:cost, which answer a different question. n = 2 (a simple null that
+knows the neighbour's memory) is run last as a diagnostic: there part (i) fails and hiding becomes complete.
 """
 import numpy as np
 from scipy.stats import norm
@@ -20,7 +26,7 @@ Js = np.linspace(1e-12, 20, 200000)
 assert np.all(pi(Js) - alpha >= beta * np.minimum(np.sqrt(Js), np.sqrt(Jbar)) - 1e-12)
 assert np.all(pi(Js) - alpha <= np.sqrt(Js / 2) + 1e-12)   # Pinsker: power - size <= TV <= sqrt(KL/2)
 
-for n in (6, 10):
+for n in (4, 8):
     rows = []
     for N in np.logspace(2, 14, 13):
         # optimum on a log-spaced grid refined around the best point
@@ -46,3 +52,19 @@ for n in (6, 10):
           f"detection at N=1e14: {rows[-1][3]:.4f} (alpha {alpha})")
     for r in rows[::3]:
         print(f"   N={r[0]:.0e}  D*={r[1]:.3e}  J*={r[2]:.3e}  power={r[3]:.4f}")
+
+# Diagnostic: a simple null (n = 2). Part (i) of the theorem needs n > 2; here complete hiding is optimal for large N.
+n = 2
+for N in np.logspace(2, 12, 6):
+    D = np.concatenate([[0.0], np.logspace(-8, 0, 200001) * D0])
+    obj = k * (D0 - D) ** 2 + L * pi(c * N * D ** n)
+    print(f"n=2 diagnostic: N={N:.0e}  optimal D={D[int(np.argmin(obj))]:.3e}")
+
+# Low stakes (n = 4): when detection costs less than moving, L(1 - alpha) < k D0^2, the group hides for moderate N and
+# stops hiding once data are plentiful.
+n, Llow = 4, 1.0
+for N in np.logspace(0, 16, 9):
+    D = np.concatenate([[0.0], np.logspace(-9, 0, 300001) * D0])
+    obj = k * (D0 - D) ** 2 + Llow * pi(c * N * D ** n)
+    i = int(np.argmin(obj))
+    print(f"low stakes (L={Llow}), n=4: N={N:.0e}  optimal D={D[i]:.3e}  detection={pi(c * N * D[i] ** n):.4f}")

@@ -110,8 +110,10 @@ INTRO_ADD = (r' Without tags, a uniform policy is also minimax: for any convex l
 
 
 NEW_OLD = r'and only audit trails that link accounts to owners escape the problem. Finally, without tags'
-NEW_NEW = (r'and only audit trails that link accounts to owners escape the problem. Without tags, a uniform policy is '
-           r'minimax for every convex loss (Theorem~\ref{n:minimax}). Finally, without tags')
+NEW_NEW = (r'and an audit trail that links accounts to owners keeps its value, because we assume that it cannot be '
+           r'gamed. Without tags, a uniform policy is minimax over the labellings the record allows, for every convex '
+           r'loss, and with partial tags the minimax policy is uniform within each tagged group '
+           r'(Theorems~\ref{n:minimax} and~\ref{n:minimaxtags}). Finally, without tags')
 ABS_OLD = r'A uniform cut in feedback can therefore be set from prices; a targeted restriction cannot.'
 ABS_NEW = (r'A uniform cut in feedback can therefore be set from prices, and without class tags it is the minimax '
            r'policy; a targeted restriction cannot be set from prices.')
@@ -130,8 +132,8 @@ CHK_NEW = (r'Proposition~\ref{n:relabel}, Supplement Proposition~\ref{prop:relab
            r'developed on 21 November 2026 with AI assistance. Their deterministic steps are checked in Lean~4 '
            r'(Theorems~\ref{n:minimax} and~\ref{n:minimaxtags} and Corollary~\ref{cor:robustuniform} in full); their '
            r'closed forms, bounds and rates are also checked by computation (\texttt{t6\_check.py}, '
-           r'\texttt{paradox\_check.py}, \texttt{minimax\_check.py}, \texttt{minimax\_tags\_check.py}); and their '
-           r'proofs were read and checked by the first author.')
+           r'\texttt{paradox\_check.py}, \texttt{exponent\_check.py}, \texttt{minimax\_check.py}, '
+           r'\texttt{minimax\_tags\_check.py}); and their proofs were read and checked by the first author.')
 
 
 def _rep(t, old, new):
@@ -160,7 +162,8 @@ def apply(t):
     t = _rep(t, INTRO_OLD, INTRO_NEW)
     t = _rep(t, TAIWAN_OLD, TAIWAN_NEW)
     t = _rep(t, DECL_OLD, DECL_NEW)
-    t = _rep(t, INTRO_ANCHOR, INTRO_ANCHOR + INTRO_ADD)
+    # INTRO_ADD repeated the minimax sentence of the 'What is new' paragraph (both referees); it is no longer added.
+    assert t.count(INTRO_ANCHOR) == 1, 'intro anchor'
     if t.count(NEW_OLD) == 1:
         t = t.replace(NEW_OLD, NEW_NEW)
     t = _rep(t, ABS_OLD, ABS_NEW)
