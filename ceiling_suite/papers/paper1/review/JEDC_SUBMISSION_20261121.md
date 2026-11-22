@@ -6,7 +6,7 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
 
 | Use | File |
 |---|---|
-| Manuscript (upload as the main file) | `pdf_delivered/Paper1_JEDC_main.pdf`: 32 pages, 100-word abstract, title page with keywords and JEL codes, proofs of the main results in Appendix A |
+| Manuscript (upload as the main file) | `pdf_delivered/Paper1_JEDC_main.pdf`: 33 pages, 100-word abstract, title page with keywords and JEL codes, proofs of the main results in Appendix A |
 | Online Supplement (upload as supplementary material) | `pdf_delivered/Paper1_JEDC_online_supplement.pdf`: 67 pages, every result in full, machine-check tables |
 | Both in one file, for reading | `pdf_delivered/Paper1_JEDC_main_and_supplement.pdf` |
 | SSRN posting | `pdf_delivered/Paper1_ssrn_complete.pdf`: 101 pages, the long version with the same corrections |
@@ -20,8 +20,9 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
 
 ## Before sending: the authors' own checks
 
-1. **The first author reads the six results that were added or corrected on 21–22 November 2026:**
+1. **The first author reads the seven results that were added or corrected on 21–22 November 2026:**
    - Proposition 7.1(iii);
+   - Proposition 7.1(iv), named instruments (added 22 November);
    - Theorem 7.3(ii);
    - Lemma 7.7;
    - Theorem 7.9;

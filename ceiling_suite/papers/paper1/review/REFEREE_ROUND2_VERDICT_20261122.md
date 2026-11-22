@@ -71,7 +71,9 @@ These numbers are judgement, not measurement.
    Prashant Niroula and Sujan Khatiwada validated proofs, Lean files and calculations.
 3. **Done on 22 November: the two Taiwan analyses** (sign-restricted weights; a decoupled specification). Both support
    the text.
-4. **Extend Proposition 7.1(iii) to named instruments.** Cover a transaction tax and a minimum resting time, each
-   with a stated incidence θ(r), using Theorem 5.2. This is Referee B's paper.
+4. **Done on 22 November: named instruments, Proposition 7.1(iv).** A turnover tax lowers the budget by κλk₀ and a
+   minimum resting time with smooth incidence by κ Σ_{m<h} k_m; both are certified at the parametric rate without a
+   memory bound, while a hard horizon cutoff is part (iii). The incidences are stated, not derived, and order-to-trade
+   limits are not covered. It is a seventh result for the first author to check.
 5. **Let the paper rest for a week before submitting.** Results dated the day before submission invite the
    comment that the paper has not stabilized.
