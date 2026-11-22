@@ -220,4 +220,43 @@ It is followed by one of two clauses:
     | AR(1) | 0.00141 | [0.00119, 0.00168] |
 
   - **Cochrane–Orcutt** converged for every class in every run.
+- **Part A: run (22 November 2026, after the run).**
+  - **The run.** Computed once here from the stored P1M estimate. It started at 04:45 UTC and finished at
+    05:28:24 UTC, with the runner of fix 1. No configuration was computed twice.
+  - **Files.** `results/p1m_a1_partA_results.json` has SHA-256 `311a31e0…`. Hashes in the file: A1 core `11a99f59…`,
+    P1M core `50df914b…`, runner `66e321f2…`, P1M result `b7ad67bb…`. The 28 per-configuration files are in
+    `results/p1m_a1_partA_partial/`.
+  - **Results on the whole-panel record, positive class (P).**
+    - At every spacing up to 0.10 and in both boxes, H′_Foreign spans [0, 0.00176].
+    - U′ lies in [0.00158, 0.00184]. At γ = 0.02 and 0.05 with the primary box, the search found a maximum of
+      0.00176 instead.
+    - The estimate is not in this class, because the dealers' weight is negative.
+  - **Results, tagged signs (T).**
+    - The primary-box maximum is the cap at γ ≤ 0.02 (0.028). It is 0.026 at γ = 0.05 and 0.0195 at γ = 0.10.
+    - The tight-box maximum is the cap (0.00274) at every spacing.
+    - In the box scan, the maximum equals the cap at 1, 5 and 10 times max|Ĥ_c|, at γ = 0 and 0.05.
+    - At γ ≤ 0.01 the relabelings that keep the signs (Foreign ↔ Trust) lie in the class, so 0.00042 and 0.00137 are
+      both possible.
+  - **One-stock record.** P: H′_Foreign [0, 0.0035], U′ [0.00013, 0.0046]. T: H′_Foreign [0, 0.028], U′ [−0.0014,
+    0.0054].
+  - **Section-5 clauses.**
+    - Clause 1, the variant-P range covers at least 90% of [0, P0Umax]: **holds**. The width is 0.00176 against
+      0.9 × 0.00184.
+    - Clause 2, the variant-T maximum at γ = 0 is at least 0.99·h̄: **holds**.
+    - Clause 3, the variant-P range at γ = 0.05 narrows by more than half: **does not hold**. The widths are equal.
+  - **Added after the run, with no template sentence and no number changed.**
+    1. **Main text.** One sentence after the passage: "With every weight nonnegative, the range is the same for
+       memories up to 0.10 apart." This reports the direction opposite to clause 3. Its condition is checked in code
+       (`round10.post_run_main`).
+    2. **Supplement.** One sentence after the table's lead: "Under the tagged signs the maximum equals the cap … with
+       all weights nonnegative the range is the same at every spacing and both caps." Its condition is checked in code
+       (`round10.post_run_supp`).
+  - **Reading note.** On the positive class, the targeted range does not depend on the cap or on the spacing. The
+    reason is the weak signal: feedback contributes 0.0017 to a budget of 0.97. Under the tagged signs, the dealers'
+    negative weight can offset a large foreign weight, so there the cap sets the range.
+- **Also added after both runs, with no template sentence and no number changed.**
+  - **The 31-page main text's introduction** gains one sentence summarizing the two results: "Even with every class's
+    weight nonnegative, the compositions the panel cannot tell apart allow anything from none to nearly all of the
+    total feedback, and the tagged estimate survives decoupling feedback from each class's flow persistence."
+  - **The part-B supplement table** reports effects in units of 10⁻⁴, so that it fits the page.
 

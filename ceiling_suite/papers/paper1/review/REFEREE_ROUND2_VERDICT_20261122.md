@@ -45,11 +45,10 @@ These numbers are judgement, not measurement.
 1. **The contribution is incremental (A).** What is new is the equilibrium mapping (Theorems 4.1 and 4.4), the
    cheap-question characterization (Theorem 5.2), the relabeling game, the corrected paradox and Proposition
    7.1(iii). Each is modest, and A will say so.
-2. **Taiwan (A and B).**
-   - The targeted range equals the cap, and the range with weights of one sign was not computed.
-   - The tagged interval rests on a restriction that the counterfactual drops.
-   - The registered test does not establish feedback.
-   - These points are disclosed but not fixed. Each fix is a new analysis and needs the authors' approval.
+2. **Taiwan (A and B).** Two of the three points are now answered. Both analyses were run under protocol P1M-A1, fixed before the runs.
+   - **The targeted range.** It was recomputed on the theory's positive class, with memories up to 0.10 apart. Prices still leave foreign feedback anywhere from 0 to 0.0018, nearly all of the total, while the uniform cut stays in [0.0016, 0.0018].
+   - **The tagged interval.** It survives a decoupled specification: 0.0013 [0.0011, 0.0015] against 0.0014.
+   - **Not answered.** The registered test still does not establish feedback, and the signal is small.
 3. **Instruments (B).** B asked for a classification of real instruments by incidence. The paper now has the
    framework and one sharp case, the horizon restriction, but not named instruments.
 4. **Running markets (A).** The upper bounds still use the reset contract. There is no passive upper bound.
@@ -70,8 +69,8 @@ These numbers are judgement, not measurement.
    `research_extension/paper1_publication_revision/t6/round9.py`, and rebuild.
 2. **Make the CRediT statement true.** It must state what each co-author actually did. It currently says that
    Prashant Niroula and Sujan Khatiwada validated proofs, Lean files and calculations.
-3. **Approve and run the two Taiwan analyses**, sign-restricted weights and a decoupled specification, or cut the
-   targeted-halt range from the main text.
+3. **Done on 22 November: the two Taiwan analyses** (sign-restricted weights; a decoupled specification). Both support
+   the text.
 4. **Extend Proposition 7.1(iii) to named instruments.** Cover a transaction tax and a minimum resting time, each
    with a stated incidence θ(r), using Theorem 5.2. This is Referee B's paper.
 5. **Let the paper rest for a week before submitting.** Results dated the day before submission invite the

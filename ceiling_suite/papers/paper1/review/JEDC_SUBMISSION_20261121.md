@@ -6,11 +6,11 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
 
 | Use | File |
 |---|---|
-| Manuscript (upload as the main file) | `pdf_delivered/Paper1_JEDC_main.pdf`: 31 pages, 100-word abstract, title page with keywords and JEL codes, proofs of the main results in Appendix A |
-| Online Supplement (upload as supplementary material) | `pdf_delivered/Paper1_JEDC_online_supplement.pdf`: 66 pages, every result in full, machine-check tables |
+| Manuscript (upload as the main file) | `pdf_delivered/Paper1_JEDC_main.pdf`: 32 pages, 100-word abstract, title page with keywords and JEL codes, proofs of the main results in Appendix A |
+| Online Supplement (upload as supplementary material) | `pdf_delivered/Paper1_JEDC_online_supplement.pdf`: 67 pages, every result in full, machine-check tables |
 | Both in one file, for reading | `pdf_delivered/Paper1_JEDC_main_and_supplement.pdf` |
-| SSRN posting | `pdf_delivered/Paper1_ssrn_complete.pdf`: 100 pages, the long version with the same corrections |
-| Cited, not submitted | `pdf_delivered/Paper1_full_working_paper.pdf` (155 pages, Niroula et al., 2026d); the companion note (2026c); the earlier working paper of 5 November 2026 (2026a) |
+| SSRN posting | `pdf_delivered/Paper1_ssrn_complete.pdf`: 101 pages, the long version with the same corrections |
+| Cited, not submitted | `pdf_delivered/Paper1_full_working_paper.pdf` (156 pages, Niroula et al., 2026d); the companion note (2026c); the earlier working paper of 5 November 2026 (2026a) |
 
 **How to build:**
 1. `ceiling_suite/papers/paper1_note/build_ssrn.py --pdf` builds the long versions.

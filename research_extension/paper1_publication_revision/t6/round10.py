@@ -90,6 +90,25 @@ def _box_label(box):
     return "$" + box.replace("xmaxH", "") + r"\max_c|\hat H_c|$"
 
 
+def post_run_main(RA):
+    """Added after the run (protocol section 6): the variant-P range does not narrow with the required spacing."""
+    w = [_cell(RA, "P", g)["H_Foreign"]["max"] - _cell(RA, "P", g)["H_Foreign"]["min"] for g in (0.0, 0.01, 0.02, 0.05, 0.10)]
+    if max(w) - min(w) <= 0.01 * max(w):
+        return r" With every weight nonnegative, the range is the same for memories up to $0.10$ apart."
+    return ""
+
+
+def post_run_supp(RA):
+    """Added after the run (protocol section 6): under the tagged signs, the maximum is the cap in the box scan."""
+    keys = [k for k in RA["configs"] if k.startswith("T_g") and "_x" in k]
+    if keys and all(abs(RA["configs"][k]["H_Foreign"]["max"] - RA["configs"][k]["hbar"]) <= 0.01 * RA["configs"][k]["hbar"]
+                    for k in keys):
+        return (r" Under the tagged signs the maximum equals the cap at one, five and ten times the largest estimated "
+                r"contribution, at spacing $0$ and $0.05$, so there the cap, not the record, sets the range; with all "
+                r"weights nonnegative the range is the same at every spacing and both caps.")
+    return ""
+
+
 def part_a_table(RA):
     rows = []
     for key, c in RA["configs"].items():
@@ -102,7 +121,7 @@ def part_a_table(RA):
                     f"{c['n_feasible_starts']}/{c['n_starts']} & {rel}\\\\")
     return (r'''
 
-\paragraph{The ranges on the theory's class (P1M-A1, part A).} Protocol \nolinkurl{P1M_A1_protocol.md}, fixed before the run, recomputes the targeted and uniform ranges above with the alternative compositions restricted to memories in $[0,0.99]$, weights either all nonnegative (P, the class of the lower bounds) or with the signs of the tagged estimates (T), and memories at least $\gamma$ apart. The indistinguishable set, the boxes and the starts are P1M's; every feasible point the search visits is pooled, so the true ranges contain those reported. The last column lists the halt effects of the estimate's relabelings that lie in the class, which every record length leaves possible.
+\paragraph{The ranges on the theory's class (P1M-A1, part A).} Protocol \nolinkurl{P1M_A1_protocol.md}, fixed before the run, recomputes the targeted and uniform ranges above with the alternative compositions restricted to memories in $[0,0.99]$, weights either all nonnegative (P, the class of the lower bounds) or with the signs of the tagged estimates (T), and memories at least $\gamma$ apart. The indistinguishable set, the boxes and the starts are P1M's; every feasible point the search visits is pooled, so the true ranges contain those reported. The last column lists the halt effects of the estimate's relabelings that lie in the class, which every record length leaves possible.''' + post_run_supp(RA) + r'''
 
 \begin{center}\footnotesize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{cclcccc>{\raggedright\arraybackslash}p{0.17\textwidth}}\toprule
@@ -126,28 +145,39 @@ def part_b_sentence(RB, table_ref):
     return s
 
 
+def _two(v):
+    """Two significant digits as a plain number (effects in units of 1e-4)."""
+    if abs(v) < 1e-12:
+        return "0"
+    d = max(1 - int(math.floor(math.log10(abs(v)))), 0)
+    return f"{round(v, d):.{d}f}".replace("-", "$-$")
+
+
 def part_b_table(RB):
     rows = []
     names = {"primary": r"$J=10$, AR(2)", "J5": r"$J=5$, AR(2)", "J20": r"$J=20$, AR(2)", "AR1": r"$J=10$, AR(1)"}
     for label, R in RB["runs"].items():
         ci = R["bootstrap"]["ci"]
-        cells = [f"{sig(ci[k]['est'])} [{sig(ci[k]['ci95'][0])}, {sig(ci[k]['ci95'][1])}]"
+        cells = [f"{_two(1e4 * ci[k]['est'])} [{_two(1e4 * ci[k]['ci95'][0])}, {_two(1e4 * ci[k]['ci95'][1])}]"
                  for k in ("H_Foreign", "H_Trust", "H_Dealers", "U")]
-        phis = "/".join(sig(R["rules"][c]["phi"][0]) for c in ("Foreign", "Trust", "Dealers"))
+        phis = ", ".join(_two(R["rules"][c]["phi"][0]) for c in ("Foreign", "Trust", "Dealers"))
         rows.append(f"{names.get(label, label)} & " + " & ".join(cells) + f" & {phis}\\\\")
     kap = RB.get("kappa_matches_P1M")
-    return (r'''
+    rp = RB.get("restricted_P1M")
+    restricted = ("" if not rp else " The restricted estimates of the table above are " +
+                  ", ".join(_two(1e4 * v) for v in rp["H"]) + " and " + _two(1e4 * rp["U"]) + ".")
+    return (r"""
 
-\paragraph{Rules with feedback decoupled from flow persistence (P1M-A1, part B).} Under the same protocol, each class's flow is $u_{c,t}=\alpha_{c,s}+\sum_{j=1}^{J}\beta_{c,j}x_{t-j}+e_{c,t}$ with autoregressive non-feedback flow $e_{c,t}$, estimated by iterated Cochrane--Orcutt with stock fixed effects; $H_c=\kappa\sum_j\beta_{c,j}$, with P1M's price equation and date bootstrap. ''' +
-            ("The price equation's $\\kappa$ equals P1M's. " if kap else "") + r'''The last column gives $\phi_1$ for Foreign, Trust and Dealers.
+\paragraph{Rules with feedback decoupled from flow persistence (P1M-A1, part B).} Under the same protocol, each class's flow is $u_{c,t}=\alpha_{c,s}+\sum_{j=1}^{J}\beta_{c,j}x_{t-j}+e_{c,t}$ with autoregressive non-feedback flow $e_{c,t}$, estimated by iterated Cochrane--Orcutt with stock fixed effects; $H_c=\kappa\sum_j\beta_{c,j}$, with P1M's price equation and date bootstrap. """ +
+            ("The price equation's $\\kappa$ equals P1M's. " if kap else "") + r"""Effects are in units of $10^{-4}$, with 95\% intervals; the last column gives $\phi_1$ for Foreign, Trust and Dealers.""" + restricted + r"""
 
-\begin{center}\footnotesize\setlength{\tabcolsep}{3pt}
+\begin{center}\footnotesize\setlength{\tabcolsep}{4pt}
 \begin{tabular}{lccccc}\toprule
-Run & $H_{\mathrm F}$ & $H_{\mathrm T}$ & $H_{\mathrm D}$ & $U$ & $\phi_1$\\\midrule
-''' + "\n".join(rows) + r'''
+Run & $H_{\mathrm F}$ & $H_{\mathrm T}$ & $H_{\mathrm D}$ & $U$ & $\phi_1$ (F, T, D)\\\midrule
+""" + "\n".join(rows) + r"""
 \bottomrule\end{tabular}
 \end{center}
-''')
+""")
 
 
 LONG_SECOND_END = r"tagged flows carry little information about feedback memory (the $5{,}738$ years above)."
@@ -163,7 +193,7 @@ def apply(t):
     """The long version (applied by build_revision.py after round9)."""
     if RES_A.exists():
         RA = json.loads(RES_A.read_text())
-        t = _rep(t, NOT_COMPUTED, part_a_passage(RA))
+        t = _rep(t, NOT_COMPUTED, part_a_passage(RA) + post_run_main(RA))
         t = _rep(t, SUPP_ANCHOR, SUPP_ANCHOR + part_a_table(RA))
     if RES_B.exists():
         RB = json.loads(RES_B.read_text())
