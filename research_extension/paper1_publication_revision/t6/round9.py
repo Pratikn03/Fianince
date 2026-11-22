@@ -134,7 +134,7 @@ TAIWAN_TAIL = (r"The barrier is this large partly because lagged institutional f
                r"($\kappa=0.0038$): the three classes together contribute $0.0017$ to a feedback budget of $0.97$.")
 TAIWAN_QUAL = r'''
 
-\paragraph{What the calibration shows and what it does not.} Five qualifications apply. First, the targeted range fills the box by construction. Two classes can share one memory with large weights of opposite sign, which leaves the aggregate kernel unchanged, so the range is set by the cap on each class's contribution, not by the data. Weights restricted to one sign would exclude these compositions; we have not computed the range under that restriction. The exact barrier, the relabeling set, does not depend on the cap. Second, the tagged intervals assume that each class's feedback decays at the persistence of its own flow, while the price-only comparisons let feedback memory vary with non-feedback flow held fixed; under the second model, tagged flows carry little information about feedback memory (the $5{,}738$ years above). Third, the uniform cut is fixed by prices only because the supervisor is granted the price persistences $a_j$, the impact $\kappa$ and the non-feedback law, all estimated with the tagged flows. With feedback contributing $0.0017$ to a budget of $0.97$ and memories near $0.35$, separating the two from prices alone is the problem that Proposition~\ref{n:target} assumes away (see the paragraph after it). Fourth, the record lengths treat the 300 stocks as independent, which is generous to prices; the bootstrap resamples dates because they are not independent. Positive feedback in foreign investors' daily flows, and the difficulty of separating it from prices responding to flows, are documented for Taiwan and other markets \citep{froot2001,griffin2004,richards2005}. The dealers' estimated weight is negative, so the calibrated economy lies outside the positive class of Sections~\ref{n:cost_sec}--\ref{n:sup}; the computations here (Whittle rates, Pinsker's inequality, relabeling) do not need positivity. Fifth, every divergence here is the record length times the asymptotic (Whittle) divergence rate, so the ranges and record lengths are leading-order approximations, not finite-record guarantees. At the estimates, the exact divergence of a $900$-day record, the median per stock, exceeds that approximation by about $4\%$ for the compositions we checked, and by about $2\%$ at $1{,}500$ days (\nolinkurl{p1m_finite_record_check.py}): the finite-record set of indistinguishable compositions is slightly smaller than the one used, so the ranges are, if anything, slightly wide. The record lengths above are far longer, where the approximation is closer still.'''
+\paragraph{What the calibration shows and what it does not.} Five qualifications apply. First, the targeted range fills the box by construction. Two classes can share one memory with large weights of opposite sign, which leaves the aggregate kernel unchanged, so the range is set by the cap on each class's contribution, not by the data. Weights restricted to one sign would exclude these compositions; we have not computed the range under that restriction. The exact barrier, the relabeling set, does not depend on the cap. Second, the tagged intervals assume that each class's feedback decays at the persistence of its own flow, while the price-only comparisons let feedback memory vary with non-feedback flow held fixed; under the second model, tagged flows carry little information about feedback memory (the $5{,}738$ years above). Third, the uniform cut is fixed by prices only because the supervisor is granted the price persistences $a_j$, the impact $\kappa$ and the non-feedback law, all estimated with the tagged flows. With feedback contributing $0.0017$ to a budget of $0.97$ and memories near $0.35$, separating the two from prices alone is the problem that Proposition~\ref{n:target} assumes away (see the paragraph after it). Fourth, the record lengths treat the 300 stocks as independent, which is generous to prices; the bootstrap resamples dates because they are not independent. Positive feedback in foreign investors' daily flows, and the difficulty of separating it from prices responding to flows, are documented for Taiwan and other markets \citep{froot2001,griffin2004,richards2005}. The dealers' estimated weight is negative, so the calibrated economy lies outside the positive class of Sections~\ref{n:cost_sec}--\ref{n:sup}; the computations here (Whittle rates, Pinsker's inequality, relabeling) do not need positivity. Fifth, the calendar conversions and search rely on record length times the asymptotic Whittle rate. A plug-in Gaussian check at selected alternatives (\nolinkurl{p1m_finite_record_check.py}) compares this quantity with exact finite-record divergence. It does not give a uniform bound over the search.'''
 
 BARRIER_DEF_OLD = (r"The measurement follows \nolinkurl{P1M_measurement_protocol.md}, fixed before the run, on the P1T "
                    r"development period (2013-01-02 to 2016-12-30, designated for exploration; no later date is loaded).")
@@ -240,9 +240,8 @@ TABLE_FOOT_NEW = (r"computed as in Figure~\ref{n:fig_barrier}, at a common persi
                   r"(the Gauss--Radau weights rescaled to match the budget), impact $\kappa=0.5$ and feedback share "
                   r"$\kappa\sum_iq_i=0.3$ (total weight $0.6(1-r_c)$ of the Gauss economy at centre rate $r_c$).")
 TABLE_FOOT_END_OLD = r"divide by $417$. Two significant digits.}"
-TABLE_FOOT_END_NEW = (r"divide by $417$. With non-Gaussian news the bounds can be smaller, by at most the factor "
-                      r"$\sigma^2I^*_f$ of Theorem~\ref{n:cost} ($2$ for Laplace news), which can be large for "
-                      r"heavy-tailed news. Two significant digits.}")
+TABLE_FOOT_END_NEW = (r"divide by $417$. The conversion uses a stationary divergence rate "
+                      r"in place of finite-record KL per observation.}")
 
 RELATED = (r"\paragraph{Related manuscripts.} This article grows out of \citet{niroula2026a}, an earlier working paper "
            r"of the same authors on the same model. It cites that paper only for results not reproduced here: "
@@ -480,6 +479,58 @@ def tidy_bib(t):
     return t[:head_end] + new_body + t[b:], [k for _, k, _ in dropped]
 
 
+
+def apply_referee_corrections(t):
+    """Scope the statistical experiments and update paper-level proof coverage."""
+    t = _rep(t, r"then for $\alpha<1/4$ no finite $N$ certifies",
+             r"then no finite $N$ certifies")
+    t = _rep(t, r"(ii) By duality for best uniform approximation,",
+             r"(ii) If $E_T(g)=0$, take $M=M'=0$. Otherwise, by duality for best uniform approximation,")
+    start = t.index(r"(iii) Compare $M_0=0$ with $M_1=c\,\delta_r$.")
+    end = t.index("\n\n(iv)", start)
+    t = t[:start] + r"""(iii) Compare $M_0=0$ with $M_1=c\delta_r$ for $c=d\sigma\sqrt{(1-r^2)/N}$ and $0<d<1-2\alpha$. For $r$ near one the mass is at most $\bar W$, and the KL even using all taps is bounded by $Nc^2/[2\sigma^2(1-r^2)]=d^2/2$. Pinsker gives total variation at most $d/2$. The answers differ by $c|g(r)|$, which is unbounded along a sequence $r\uparrow1$. For separation greater than $2\epsilon$, the event that the certificate contains $F_g(M_0)$ would force total variation at least $1-2\alpha$.""" + t[end:]
+    start = t.index(r"\paragraph{Price records.} The theorem is stated for observed kernel taps.")
+    end = t.index("\n\n", start)
+    t = t[:start] + r"""\paragraph{Price records.} The first $T+1$ impulse price taps are determined by the first $T$ kernel taps, so exact-equality counterexamples transfer to that depth. With known $(a,\kappa)$ and a fixed depth the triangular inverse is smooth, giving a fixed-dimensional plug-in estimate from repeated noisy price responses. This estimate has dependent, generally non-Gaussian errors. The modulus and confidence intervals here apply to direct kernel-tap measurements. Growing-depth guarantees for price-only records require separate bounds on the reconstructed statistic and its error.""" + t[end:]
+    t = _rep(t, r"part (iii) and the parametric direction of Proposition~\ref{prop:parametric} are machine-checked",
+             r"the earlier narrower algebraic impossibility comparison and the parametric direction of Proposition~\ref{prop:parametric} correspond to declarations")
+    t = _rep(t, r"and are proved on paper." + "\n\n" + r"\paragraph{Numerical check.} With two groups at memories",
+             r"and are proved on paper. The extended confidence range in (iii) is proved on paper." + "\n\n" + r"\paragraph{Numerical check.} With two groups at memories")
+    t = _rep(t, r"For the moment-matched two-group economies of Theorem~\ref{thm:twocohort},",
+             r"For the moment-matched two-group economies of Theorem~\ref{thm:twocohort}, holding $\tau\ne0$ fixed as $\Delta\eta\to0$,")
+    t = _rep(t, r"Higher terms are smaller by a factor of the spacing:",
+             r"Higher terms are smaller as spacing shrinks with a fixed nonzero leading moment coefficient (in part (ii), fixed $\tau$):")
+    t = _rep(t, r"In the setting of Theorem~\ref{prop:esprit}, suppose in addition that every memory rate",
+             r"In the setting of Theorem~\ref{prop:esprit}, observe through $h_{2K+1}$ and observe an independent pre-probe quote with the same noise variance in each reset. Suppose every memory rate")
+    t = _rep(t, r"whenever $\epsilon_N\le c_0$,",
+             r"whenever $\epsilon_N\sqrt{\log(8K/\beta)}\le c_0$,")
+    t = _rep(t, r"once $\epsilon_N\le c_0$,",
+             r"under the stated confidence-dependent condition,")
+    t = _rep(t, r"With a tag, detection does not depend on $\delta$,",
+             r"For a tag-based inquiry with a memory-independent detection probability,")
+    t = _rep(t, r"For the limiting Gaussian experiment, let the null be a linear subspace and the alternative lie at distance $t$ from it. The test that rejects when the component of the observation orthogonal to the null exceeds $z_\alpha$",
+             r"In a Gaussian shift experiment, suppose a known unit direction is normal to the null subspace and alternatives have positive projection $t$ along it. The test that rejects when this projection exceeds $z_\alpha=\Phi^{-1}(1-\alpha)$")
+    t = _rep(t, r"The divergence $cN\delta^n$ is the leading order, with $c$ depending on the market.",
+             r"The best-response bounds use a stipulated record KL and a power envelope. A spectral slope alone supplies neither the finite-record power envelope nor a detector for an unknown normal direction.")
+    t = _rep(t, r"minimize $k(\delta_0-\delta)^2+LP_{\rm d}(cN\delta^n)$ over $(0,\delta_0]$",
+             r"minimize $k(\delta_0-\delta)^2+LP_{\rm d}(cN\delta^n)$ over $[0,\delta_0]$")
+    t = _rep(t, r"the set of $\gamma$ at which it exceeds $F_A-F_C$ is an interval $(0,\gamma^*)$, empty when $F_A-F_C\ge V_A$.",
+             r"the trail strictly dominates for all finite $\gamma>0$ if the cost gap is zero, for no $\gamma>0$ if the gap is at least $V_A$, and below a unique positive finite cutoff otherwise.")
+    t = _rep(t, r"The indistinguishable set uses $n\cdot\mathrm{rate}\le0.02$, so by Pinsker no test exceeds its size by more than $0.10$ (\nolinkurl{pinsker_indistinguishable}); the record lengths are Pinsker's necessary lengths (\nolinkurl{pinsker_record_length}). Ranges are the extremes found by SLSQP from the estimate, its five relabelings and 40 random starts, so the true ranges contain them.",
+             r"The search uses $n\cdot\mathrm{rate}\le0.02$ as a proxy for a finite-record KL constraint. Pinsker maps that ceiling to a $0.10$ power gap if it bounds the actual record KL. The calendar lengths use the same rate substitution. The two rates use separately fitted single-memory comparators. The panel conversion assumes independent stocks. The SLSQP endpoints from the estimate, its five relabelings and 40 random starts are inner ranges for the proxy; global extrema remain open.")
+    t = _rep(t, r"Write $W_C(c)$ for the best welfare under class tags,",
+             r"Assume each channel set is nonempty and each routing cost is positive. For a fixed selection among private best responses, write $W_C(c)$ for the supremum of welfare under class tags,")
+    t = _rep(t, r"the maxima are within the same bound.", r"the suprema are within the same bound.")
+    t = _rep(t, r"and so the difference of maxima.", r"and so the difference of suprema.")
+    t = _rep(t, r"the whole theorem: equal label frequencies,", r"equal label frequencies,")
+    t = _rep(t, r"the whole theorem: consistent relabelings form a group,", r"consistent relabelings form a group,")
+    t = _rep(t, r"for a strictly convex cost, strict dominance and uniqueness (\nolinkurl{minimax_uniform_strict}, \nolinkurl{minimax_unique}) & none\\",
+             r"for a strictly convex cost, strict dominance and at most one minimizer (\nolinkurl{minimax_uniform_strict}, \nolinkurl{minimax_unique}) & existence with continuity; strict-loss case\\")
+    t = _rep(t, r"\begin{thebibliography}",
+             r" Statements or proofs of Theorem~\ref{prop:passive}(ii), Corollary~\ref{cor:unknown_primitives}, Theorem~\ref{thm:questions}(ii)--(iii), Propositions~\ref{prop:hidegame} and~\ref{prop:relabelK}, Theorem~\ref{thm:relabelgeneral}, and the supplemental arguments for the main surveillance and audit-trail results, were added or corrected with AI assistance on 22 November 2026 and have not yet been checked by the authors. The Taiwan calibration wording was corrected using its archived outputs." + "\n\n" + r"\begin{thebibliography}")
+    return t
+
+
 def apply(t):
     t = re.sub(r"(\\begin\{abstract\}\n\\noindent ).*?(\n\\end\{abstract\})",
                lambda m: m.group(1) + ABSTRACT + m.group(2), t, count=1, flags=re.S)
@@ -591,6 +642,7 @@ def apply(t):
                    r'in their present form, also developed with AI assistance, have not yet been checked by the '
                    r'authors.')
         t = _rep(t, old, new)
+    t = apply_referee_corrections(t)
     t, dropped = tidy_bib(t)
     assert 'this revision' not in t and 'earlier versions' not in t.lower(), 'revision-history wording left'
     return t

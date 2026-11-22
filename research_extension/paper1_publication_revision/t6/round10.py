@@ -94,7 +94,7 @@ def post_run_main(RA):
     """Added after the run (protocol section 6): the variant-P range does not narrow with the required spacing."""
     w = [_cell(RA, "P", g)["H_Foreign"]["max"] - _cell(RA, "P", g)["H_Foreign"]["min"] for g in (0.0, 0.01, 0.02, 0.05, 0.10)]
     if max(w) - min(w) <= 0.01 * max(w):
-        return r" With every weight nonnegative, the range is the same for memories up to $0.10$ apart."
+        return r" With every weight nonnegative, the reported search range is the same for memories up to $0.10$ apart."
     return ""
 
 
@@ -121,7 +121,7 @@ def part_a_table(RA):
                     f"{c['n_feasible_starts']}/{c['n_starts']} & {rel}\\\\")
     return (r'''
 
-\paragraph{The ranges on the theory's class (P1M-A1, part A).} Protocol \nolinkurl{P1M_A1_protocol.md}, fixed before the run, recomputes the targeted and uniform ranges above with the alternative compositions restricted to memories in $[0,0.99]$, weights either all nonnegative (P, the class of the lower bounds) or with the signs of the tagged estimates (T), and memories at least $\gamma$ apart. The indistinguishable set, the boxes and the starts are P1M's; every feasible point the search visits is pooled, so the true ranges contain those reported. The last column lists the halt effects of the estimate's relabelings that lie in the class, which every record length leaves possible.''' + post_run_supp(RA) + r'''
+\paragraph{The ranges on the theory's class (P1M-A1, part A).} Protocol \nolinkurl{P1M_A1_protocol.md}, fixed before the run, recomputes the targeted and uniform ranges above with the alternative compositions restricted to memories in $[0,0.99]$, weights either all nonnegative (P, the class of the lower bounds) or with the signs of the tagged estimates (T), and memories at least $\gamma$ apart. The spectral-rate constraint, boxes and starts are P1M's. The reported endpoints come from feasible points visited by the search. Global extrema are unknown. The last column lists the halt effects of the estimate's relabelings that lie in the class, which every record length leaves possible.''' + post_run_supp(RA) + r'''
 
 \begin{center}\footnotesize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{cclcccc>{\raggedright\arraybackslash}p{0.17\textwidth}}\toprule
