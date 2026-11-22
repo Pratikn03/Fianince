@@ -54,6 +54,7 @@ def supplement_tex():
     bib = t[b0:b1]
     doc = pre + '\\begin{document}\n' + body + '\n' + bib + '\n\\end{document}\n'
     doc, dropped = round9.tidy_bib(doc)
+    doc = round9.longtable_newlean(doc)
     return doc, n, dropped
 
 

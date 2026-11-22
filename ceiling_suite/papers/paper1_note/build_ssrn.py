@@ -24,6 +24,8 @@ SOURCE=REV/'source/ceiling_suite/papers/paper1_note'
 # t6/round8_journal.py, which cites the full working paper, with numbers from its .aux, for every result it removes.
 full=(SOURCE/'paper1_revised.tex').read_text()
 full=full.replace(r'\date{Working paper,',r'\date{Full working paper with all supplementary results,',1)
+sys.path.insert(0,str(REV/'t6'))
+import round9 as _r9  # noqa: E402
 (HERE/'paper1_full.tex').write_text(full)
 shutil.copy2(SOURCE/'fig_intervention_revision.pdf',HERE/'fig_intervention_revision.pdf')
 sys.path.insert(0,str(REV/'t6'))
@@ -47,7 +49,7 @@ def pdflatex(stem,passes,validate=True):
 def journal_cut():
     tex,report=round8_journal.apply((HERE/'paper1_full.tex').read_text(),(HERE/'paper1_full.aux').read_text())
     tex=tex.replace(r'\date{Full working paper with all supplementary results,',r'\date{Working paper,',1)
-    (HERE/'paper1_ssrn.tex').write_text(tex)
+    (HERE/'paper1_ssrn.tex').write_text(_r9.longtable_newlean(tex))
     (REV/'validation'/'journal_cut_report.json').write_text(json.dumps(report,indent=1))
     print(f"Journal version: {len(report['removed_labels'])} labelled items moved to the full working paper, "
           f"{len(report['citations_added'])} references now cite it, {report['rows_dropped']} coverage rows dropped.")
@@ -65,7 +67,7 @@ if args.pdf:
     journal_cut()
     pdflatex('paper1_ssrn',3)
     import jedc_front
-    (HERE/'paper1_jedc.tex').write_text(jedc_front.apply((HERE/'paper1_ssrn.tex').read_text()))
+    (HERE/'paper1_jedc.tex').write_text(_r9.longtable_newlean(jedc_front.apply((HERE/'paper1_ssrn.tex').read_text())))
     pdflatex('paper1_jedc',3)
     from pypdf import PdfReader,PdfWriter
     pages={}

@@ -1763,10 +1763,17 @@ Part (i) restates the comparison of losses. Part (ii) says that disclosure is va
 
 \section{Smooth-family lower bounds and forecast comparisons}\label{app:univirr}
 
-This section supplies the proof of Theorem~\ref{n:univ} and lists machine-checked steps. The deterministic steps of these results are machine-checked in twelve Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision12.lean} (in \nolinkurl{research_extension/paper1_publication_revision/}), which build against the same pinned Mathlib with only Lean's three standard axioms. The probabilistic steps are on paper. Table~\ref{tab:newlean} gives the division.
-\begin{table}[ht]\centering\small
-\begin{tabular}{>{\raggedright\arraybackslash}p{0.15\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}>{\raggedright\arraybackslash}p{0.30\textwidth}}\toprule
+This section supplies the proof of Theorem~\ref{n:univ} and lists machine-checked steps. The deterministic steps of these results are machine-checked in thirteen Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision13.lean} (in \nolinkurl{research_extension/paper1_publication_revision/}), which build against the same pinned Mathlib with only Lean's three standard axioms. The probabilistic steps are on paper. Table~\ref{tab:newlean} gives the division.
+{\footnotesize
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.44\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
+\caption{Machine-checked steps of the results listed.}\label{tab:newlean}\\
+\toprule
 Result & Machine-checked (Lean declaration) & On paper only\\\midrule
+\endfirsthead
+\toprule
+Result & Machine-checked (Lean declaration) & On paper only\\\midrule
+\endhead
+
 Theorem~\ref{n:univ} & moment cancellation and flow gap (\texttt{matched\_polynomial}, \texttt{flow\_gap}); errors below $1/4$ need $\Lambda>1$ (\texttt{errors\_need\_unit\_loss}); sample-size inversion (\texttt{sample\_size\_lower\_bound}) & Gaussian KL chain rule; Pinsker's inequality; existence of the Gauss and Gauss--Radau rules\\
 Theorem~\ref{n:shape} & signed atomic measures with vanishing moments are zero (\texttt{vandermonde\_signed\_zero}); remainder absorption (\texttt{inverse\_remainder\_absorption}) & Lipschitz inverse on the compact class; Lipschitz bounds of the response map\\
 Theorem~\ref{n:dual} & squared-error mismatch (\texttt{forecast\_mismatch\_identity}); $\Lambda>1$ (\texttt{errors\_need\_unit\_loss}); Bayesian-mixture regret (\texttt{bayes\_mixture\_regret}); the whole theorem assembled from its three probability inputs (\texttt{dual\_end\_to\_end}) & the three inputs: one-step Gaussian KL, chain rule, Pinsker's inequality\\
@@ -1781,10 +1788,14 @@ Cor.~\ref{n:sep} & the ratio bound and its divergence (\texttt{sep\_ratio}, \tex
 Theorem~\ref{n:minimax} & equal label frequencies, the average budget and policy, Jensen for the loss and the cost, worst case (\texttt{perm\_sum\_const}, \texttt{perm\_average\_budget}, \texttt{perm\_average\_policy}, \texttt{minimax\_uniform}, \nolinkurl{uniform_budget_label_free}), also for a cost convex only on $[0,1]^K$ (\nolinkurl{minimax_uniform_on}); for a strictly convex cost, strict dominance and at most one minimizer (\nolinkurl{minimax_uniform_strict}, \nolinkurl{minimax_unique}) & existence with continuity; strict-loss case\\
 Theorem~\ref{n:minimaxtags} & consistent relabelings form a group, group sums are invariant, the counting identity, the group-average budget is label-free, Jensen for loss and cost, worst case, $V\ge0$ (\texttt{tag\_count}, \texttt{group\_policy\_budget}, \texttt{tag\_minimax}, \texttt{value\_of\_tags\_nonneg}), also for a cost convex only on $[0,1]^K$ (\nolinkurl{tag_minimax_on}) & none\\
 Cor.~\ref{cor:robustuniform} & \texttt{halt\_guarantee}, \texttt{halt\_guarantee\_attained}, \texttt{uniform\_exact}, \texttt{uniform\_minimal\_removal}; relabeling leaves the kernel unchanged (\texttt{relabel\_kernel}) & none\\
-Theorem~\ref{n:uniformlog} & omitted coefficients at most $S\bar r^{L}$ (\texttt{geometric\_tail}, \texttt{tail\_budget}); $T\bar r^{2L}\le1$ (\texttt{order\_choice}); log-determinant Jensen step (\texttt{sum\_log\_le}) & Gaussian integral; trace bound; diagonalization\\\bottomrule
-\end{tabular}
-\caption{Machine-checked steps of the results listed.}\label{tab:newlean}
-\end{table}
+Theorem~\ref{n:uniformlog} & omitted coefficients at most $S\bar r^{L}$ (\texttt{geometric\_tail}, \texttt{tail\_budget}); $T\bar r^{2L}\le1$ (\texttt{order\_choice}); log-determinant Jensen step (\texttt{sum\_log\_le}) & Gaussian integral; trace bound; diagonalization\\Theorem~\ref{n:questions} & half-width of the affine certificate as half the modulus objective (\nolinkurl{halfwidth_modulus}); divergence $d^2/2$ of the point-mass comparison in (iii) (\nolinkurl{impossible_divergence}) & Gaussian coverage, total variation, Pinsker's inequality, the minimax exchange, the converse in (ii)\\
+Theorem~\ref{n:shape} & absorption of the Taylor remainder (\nolinkurl{absorption}) & injectivity and the Jacobian of the moment map, compactness, the Gaussian norm bound\\
+Prop.~\ref{n:target}(ii) & consecutive orthogonal polynomials have no common zero (\nolinkurl{no_common_zero}); a node cannot recur (\nolinkurl{node_no_recur}); weights from Lagrange polynomials (\nolinkurl{weight_from_lagrange}) & exactness of the quasi-orthogonal rule, the three-term recurrence of the Legendre polynomials, finiteness of weight level sets\\
+Prop.~\ref{n:target}(iv) & the two budget reductions (\nolinkurl{tax_reduction}, \nolinkurl{resting_reduction}) & Gaussian sampling of the taps\\
+Cor.~\ref{n:decisionloss} & loss at least $\min(b,c)$ times the mean error (\nolinkurl{decision_loss_min}) & total variation\\
+Theorem~\ref{n:disc} & tagged coordinates determine weight and memory (\nolinkurl{tagged_inversion}) & sampling rates, the two-point lower bound\\
+\bottomrule
+\end{longtable}}
 
 \paragraph{The hard pair.} Let $G_K$ be the $K$-node Gauss--Legendre rule on $[-1,1]$, normalized to unit mass, and $R_K$ the $K$-node Gauss--Radau rule with fixed node $-1$, normalized the same way. Both have positive weights; $G_K$ integrates polynomials of degree at most $2K-1$ exactly and $R_K$ those of degree at most $2K-2$ \citep[Section~3.4]{szego1975}. Hence $\int p\,dG_K=\int p\,dR_K$ for every polynomial $p$ of degree at most $2K-2$. The two rules are different measures ($R_K$ has an atom at $-1$ and $G_K$ does not), so $d_K=W_1(G_K,R_K)>0$. For centre $\theta_c$, spread $\Delta$ and total weight $W$, let $\nu$ and $\nu'$ be the images of $WG_K$ and $WR_K$ under $s\mapsto\theta_c+\Delta s$. They have $K$ atoms each in $[\theta_c-\Delta,\theta_c+\Delta]$, positive weights summing to $W$, equal moments of order $0,\ldots,2K-2$ about $\theta_c$, and $W_1(\nu,\nu')=d_KW\Delta$, since $W_1$ scales linearly under dilation and mass.
 

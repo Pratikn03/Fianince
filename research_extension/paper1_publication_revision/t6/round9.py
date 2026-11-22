@@ -110,7 +110,7 @@ TAGS_MC_NEW = (r"It is machine-checked in full, also for a cost convex only on $
 # The Lean record: PublicationRevision12.lean (22 November 2026) joins the list, and the rows of the two minimax
 # theorems name the declarations for a cost convex only on [0,1]^K and for uniqueness.
 LEAN_COUNT_OLD = r'eleven Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision11.lean}'
-LEAN_COUNT_NEW = r'twelve Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision12.lean}'
+LEAN_COUNT_NEW = r'thirteen Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision13.lean}'
 LEAN_MINIMAX_ROW_OLD = (r"\texttt{perm\_average\_policy}, \texttt{minimax\_uniform}, \nolinkurl{uniform_budget_label_free}) "
                         r"& none\\")
 LEAN_MINIMAX_ROW_NEW = (r"\texttt{perm\_average\_policy}, \texttt{minimax\_uniform}, \nolinkurl{uniform_budget_label_free}), "
@@ -120,6 +120,41 @@ LEAN_MINIMAX_ROW_NEW = (r"\texttt{perm\_average\_policy}, \texttt{minimax\_unifo
 LEAN_TAGS_ROW_OLD = r"\texttt{tag\_minimax}, \texttt{value\_of\_tags\_nonneg}) & none\\"
 LEAN_TAGS_ROW_NEW = (r"\texttt{tag\_minimax}, \texttt{value\_of\_tags\_nonneg}), also for a cost convex only on "
                      r"$[0,1]^K$ (\nolinkurl{tag_minimax_on}) & none\\")
+
+LEAN13_ANCHOR = '\\end{tabular}\n\\caption{Machine-checked steps of the results listed.}'
+LEAN13_ROWS = (r"Theorem~\ref{n:questions} & half-width of the affine certificate as half the modulus objective (\nolinkurl{halfwidth_modulus}); divergence $d^2/2$ of the point-mass comparison in (iii) (\nolinkurl{impossible_divergence}) & Gaussian coverage, total variation, Pinsker's inequality, the minimax exchange, the converse in (ii)\\" + "\n"
+               r"Theorem~\ref{n:shape} & absorption of the Taylor remainder (\nolinkurl{absorption}) & injectivity and the Jacobian of the moment map, compactness, the Gaussian norm bound\\" + "\n"
+               r"Prop.~\ref{n:target}(ii) & consecutive orthogonal polynomials have no common zero (\nolinkurl{no_common_zero}); a node cannot recur (\nolinkurl{node_no_recur}); weights from Lagrange polynomials (\nolinkurl{weight_from_lagrange}) & exactness of the quasi-orthogonal rule, the three-term recurrence of the Legendre polynomials, finiteness of weight level sets\\" + "\n"
+               r"Prop.~\ref{n:target}(iv) & the two budget reductions (\nolinkurl{tax_reduction}, \nolinkurl{resting_reduction}) & Gaussian sampling of the taps\\" + "\n"
+               r"Cor.~\ref{n:decisionloss} & loss at least $\min(b,c)$ times the mean error (\nolinkurl{decision_loss_min}) & total variation\\" + "\n"
+               r"Theorem~\ref{n:disc} & tagged coordinates determine weight and memory (\nolinkurl{tagged_inversion}) & sampling rates, the two-point lower bound\\" + "\n")
+
+
+def longtable_newlean(t):
+    """The machine-check table (label tab:newlean) is longer than a page: set it as a longtable that breaks across
+    pages, with the header repeated, instead of a float that LaTeX cannot place."""
+    lab = '\\caption{Machine-checked steps of the results listed.}\\label{tab:newlean}'
+    if lab not in t:
+        return t
+    e = t.index(lab)
+    if '\\begin{longtable}' in t[max(0, e - 600):e]:
+        return t
+    end_tab = t.rindex('\\end{tabular}', 0, e)
+    beg = t.rindex('\\begin{table}', 0, end_tab)
+    btab = t.index('\\begin{tabular}', beg)
+    line_end = t.index('\n', btab)
+    line = t[btab + len('\\begin{tabular}'):line_end]
+    assert line.endswith('\\toprule'), line[-40:]
+    spec = line[:-len('\\toprule')]
+    spec = (spec.replace('0.15\\textwidth', '0.17\\textwidth').replace('0.47\\textwidth', '0.44\\textwidth')
+            .replace('0.30\\textwidth', '0.29\\textwidth'))
+    body = t[line_end + 1:end_tab]
+    head_end = body.index('\\midrule') + len('\\midrule')
+    head, rows = '\\toprule\n' + body[:head_end], body[head_end:]
+    stop = t.index('\\end{table}', e) + len('\\end{table}')
+    new = ('{\\footnotesize\n\\begin{longtable}' + spec + '\n' + lab + '\\\\\n' + head + '\n\\endfirsthead\n' + head
+           + '\n\\endhead\n' + rows + '\\end{longtable}}')
+    return t[:beg] + new + t[stop:]
 
 RELABEL_OLD = (r"Third, an audit trail that links accounts to owners keeps its full gain at every $\gamma$, so its "
                r"advantage over class tags is largest where relabeling is cheapest.")
@@ -557,6 +592,12 @@ def apply(t):
     t = t.replace(LEAN_COUNT_OLD, LEAN_COUNT_NEW)
     t = _rep(t, LEAN_MINIMAX_ROW_OLD, LEAN_MINIMAX_ROW_NEW)
     t = _rep(t, LEAN_TAGS_ROW_OLD, LEAN_TAGS_ROW_NEW)
+    _lab = t.index(r'\label{tab:newlean}')
+    _end = t.rindex('\\end{tabular}', 0, _lab)
+    if '\\bottomrule' in t[_end - 40:_end]:
+        _end = t.rindex('\\bottomrule', 0, _end)
+    assert 'PublicationRevision13' not in t[:_lab] or 'halfwidth_modulus' not in t[:_lab]
+    t = t[:_end] + LEAN13_ROWS + t[_end:]
     # labellings are pi, not sigma (sigma is a noise level throughout)
     a = t.index(r'\begin{theorem}[Without tags, uniform policies are minimax]')
     b = t.index(r'This is the decision-theoretic counterpart of Theorem~\ref{n:disc}', a)
