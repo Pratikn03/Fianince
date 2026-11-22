@@ -51,12 +51,18 @@ the theorem's liquidity-side content in a market it was not built for.
 - **Binance spot one-second klines** from the public archive (data.binance.vision). Their coverage of the windows is
   checked in the exploration.
 
-**Pools.** Every Uniswap v3 pool whose two tokens map to a Binance USDT or USDC pair and that meets two activity floors
+**Pools.** Every Uniswap v3 pool whose two tokens map to a Binance USDT or USDC pair and that meets the activity floors
 in the development window:
-- pool volume above a floor, to be set in the exploration;
-- the Binance pair trades in at least 90% of seconds.
+- the candidates are the 55 tokens in `p1a_dev.py` (`TOKENS`), each against WETH, USDC, USDT and WBTC, at all four fee
+  tiers: 840 pools in 210 pairs. Their addresses are computed by CREATE2, and the code checks the method against five
+  known pools;
+- at least 100 swaps in every week;
+- each Binance leg trades in at least 90% of seconds;
+- pool volume above a floor, set in the exploration; counts are reported at $1M, $5M and $20M of median weekly volume;
+- a data check: the median basis lies within ±50 bps, which catches a wrong token or decimals mapping.
 
-The list is fixed from the development window before the test window is read.
+Tokens that migrated or merged during 2024–2026 (MATIC, RNDR, OCEAN, AGIX) are left out, so that the list can be used
+on the test window. The list is fixed from the development window before the test window is read.
 
 **Independence.** Pools of one token pair, at different fee tiers or on different chains, share their arbitrageurs and
 their Binance price, so they are not independent. Standard errors are therefore clustered by pair, and the
@@ -74,23 +80,30 @@ and run in the first author's Colab with his Google account.
 
 ## 3. Measurements (pool-week)
 
-- **Basis.** For each block b, x_b = log(pool price after the block's last swap) − log(Binance one-second close at the
-  block's timestamp), in basis points.
+- **Basis.** For each block b, x_b = log(pool price after the block's last swap) − log(Binance close of the second
+  before the block's timestamp), in basis points.
 - **Aggregate response R (the control).**
-  - Each week, regress net pool flow on the basis: buyer-initiated swap volume minus seller-initiated, in units of the
-    pool's in-range liquidity, over the next three blocks, on the basis x_b. R is minus the slope, so a larger R means
-    arbitrage closes the basis faster.
-  - It is computed separately on odd and even blocks, giving R1 and R2, the two halves used against errors in
-    variables.
+  - Each week, regress net pool flow over the next three blocks on the basis x_b. Flow is buyer-initiated minus
+    seller-initiated swap volume in units of the pool's in-range liquidity, 2·Δy/(L·√P), which is the move in log price
+    the flow would cause. R is minus the slope, so a larger R means arbitrage closes the basis faster. The basis is
+    winsorized at the 1st and 99th percentiles within each pool-week-half.
+  - It is computed separately on odd and even UTC hours, giving R1 and R2, the two halves used against errors in
+    variables. A basis observation whose three-block window reaches into the next hour is dropped, so the halves share
+    no flows. (The first draft split odd and even blocks. Neighbouring blocks' windows overlap, so those halves would
+    have shared flows and correlated errors.)
   - The three individual lags are also reported.
 - **Composition C (primary).** The Herfindahl index, across sending addresses, of the week's arbitrage volume.
   Arbitrage volume is swaps that move the pool price toward the Binance price. Secondary measures:
   - the top address's share;
   - the number of addresses with at least 1% of the volume;
   - whether the top address changed from the previous week.
-- **Depth D.** The log of the time-weighted mean USD depth within ±1% of the pool price, from active liquidity.
-  - Liquidity minted and burned within the same block (JIT) is excluded in the primary measure and included in a
-    secondary one.
+- **Depth D.** The log of the time-weighted mean USD depth within ±1% of the pool price.
+  - In-range liquidity L is replayed event by event: each swap reports it, and mints and burns whose range contains
+    the current tick move it. Depth is L·√P·(√1.01 − 1/√1.01) in token1, valued in USD. This treats L as constant
+    across the ±1% band; the full tick profile would need every position since 2021.
+  - The state is taken after each block's last event, so liquidity minted and burned within the same block (JIT) is
+    excluded in the primary measure. A secondary measure, taken at each swap, includes it; the calibration does not
+    need it.
 - **Controls.**
   - log Binance realized volatility (one-second returns) and log Binance volume;
   - median gas base fee;
@@ -289,10 +302,13 @@ Cells: P(supportive | gamma = 0) / P(supportive | gamma = 0.10) / P(contrary | g
 
 ## 7. Steps, and who does what
 
-1. **Development extraction.**
-   - The AI system writes the BigQuery queries, with a dry-run cost estimate first.
-   - The first author runs them once in Colab, on 2024-01 to 2024-06 only.
-2. **Exploration of the development window only.** Measure four things:
+1. **Development extraction.** `P1A_Dev_Window_Colab.ipynb` (built by `make_p1a_dev_notebook.py` from `p1a_dev.py`,
+   tested on synthetic data by `test_p1a_dev.py`):
+   - it runs dry-run cost estimates first and stops unless the total is below 950 GB, within the BigQuery sandbox's
+     free 1 TB a month; each query is capped at its estimate;
+   - the first author runs it once in Colab. The code refuses any date after 2024-06-30;
+   - it computes no estimate of composition's effect on depth.
+2. **Exploration of the development window only.** The same notebook measures four things:
    - the correlation of R1 and R2 after removing pool and week effects. The simulation's reliabilities 0.6, 0.8 and
      0.95 correspond to correlations of about 0.37, 0.61 and 0.88;
    - the correlation of C and the instrument Z after removing pool and week effects. The instrument strengths 0.15,
