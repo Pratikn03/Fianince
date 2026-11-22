@@ -125,7 +125,6 @@ LEAN13_ANCHOR = '\\end{tabular}\n\\caption{Machine-checked steps of the results 
 LEAN13_ROWS = (r"Theorem~\ref{n:questions} & half-width of the affine certificate as half the modulus objective (\nolinkurl{halfwidth_modulus}); divergence $d^2/2$ of the point-mass comparison in (iii) (\nolinkurl{impossible_divergence}) & Gaussian coverage, total variation, Pinsker's inequality, the minimax exchange, the converse in (ii)\\" + "\n"
                r"Theorem~\ref{n:shape} & absorption of the Taylor remainder (\nolinkurl{absorption}) & injectivity and the Jacobian of the moment map, compactness, the Gaussian norm bound\\" + "\n"
                r"Prop.~\ref{n:target}(ii) & consecutive orthogonal polynomials have no common zero (\nolinkurl{no_common_zero}); a node cannot recur (\nolinkurl{node_no_recur}); weights from Lagrange polynomials (\nolinkurl{weight_from_lagrange}) & exactness of the quasi-orthogonal rule, the three-term recurrence of the Legendre polynomials, finiteness of weight level sets\\" + "\n"
-               r"Prop.~\ref{n:target}(iv) & the two budget reductions (\nolinkurl{tax_reduction}, \nolinkurl{resting_reduction}) & Gaussian sampling of the taps\\" + "\n"
                r"Cor.~\ref{n:decisionloss} & loss at least $\min(b,c)$ times the mean error (\nolinkurl{decision_loss_min}) & total variation\\" + "\n"
                r"Theorem~\ref{n:disc} & tagged coordinates determine weight and memory (\nolinkurl{tagged_inversion}) & sampling rates, the two-point lower bound\\" + "\n")
 

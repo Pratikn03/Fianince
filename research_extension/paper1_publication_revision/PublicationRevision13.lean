@@ -8,7 +8,8 @@ The revision of 22 November 2026 moved the proofs of Theorems `n:questions` and 
 deterministic steps. The probabilistic steps (Gaussian coverage, total variation, Pinsker's inequality, the minimax
 exchange, compactness) are on paper and are not claimed here.
 
-* `tax_reduction`, `resting_reduction`: the budget reductions of Proposition `n:target`(iv).
+* `tax_reduction`, `resting_reduction`: the budget reductions of the benchmark incidences in the first form of
+  Proposition `n:target`(iv), since replaced by the derived incidences of Theorem `thm:instruments`; kept, not cited.
 * `no_common_zero`: consecutive members of a three-term recurrence with nonzero coefficients never vanish together
   (used in the proof of Proposition `n:target`(ii): a quadrature node cannot recur as the parameter varies).
 * `node_no_recur`: a point that is a node for two parameter values is a common zero of `p_K` and `p_{K-1}`.
