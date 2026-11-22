@@ -179,10 +179,10 @@ At fixed memories, let a desk choose a nonnegative scale $q$ for the normalized 
 Here $\tau$ charges expected traded volume and $\nu$ charges squared changes at revision dates. Allow $c=\infty$. A group consists of desks with the same memory. If $q^0(r)>0$ is baseline scale per desk and $q^1(r)$ is its policy scale, the reduction at fixed $(a,\kappa)$ is $\kappa F_g(M)$ for $g(r)=(1-q^1(r)/q^0(r))/(1-r)$. With scheduled revisions the relevant quantity is the response to a constant signal, averaged over the revision cycle.
 
 \begin{instrumentthm}[Derived incidence of price and quantity instruments]\label{thm:instruments}
-Assume $0<\bar r<1$, memories in $[0,\bar r]$, a bounded total merged weight, and known $\kappa$. The reference covariances satisfy a uniform geometric decay bound and the spectrum is uniformly positive. Use the direct Gaussian tap experiment of Theorem~\ref{thm:cheap} and an independent stationary record of the reference signal of length $n$.
+Assume $0<\bar r<1$, memories in $[0,\bar r]$, a bounded total merged weight, and known $\kappa$ in the tap experiment. The reference covariances satisfy a uniform geometric decay bound and the spectrum is uniformly positive. The benchmark experiment uses Gaussian taps and an independent reference sample as in Theorem~\ref{thm:cheap}. A passive alternative uses a single observed stationary pricing-error record from \eqref{eq:baseline}, with known $a$, $S\le\bar S<1$ and unknown innovation variance bounded above and away from zero. Under this alternative the desk uses the pre-policy price law as its reference.
 \begin{enumerate}
-\item[(a)] \emph{Trading costs.} With $h=1,\ \tau=0,\ c=\infty$, imposing a sufficiently small quadratic charge from zero gives a square-summable Taylor series for $g$. With sufficient tap depth, the budget reduction is estimable at fixed confidence to error $O(n^{-1/2}+\sigma N^{-1/2})$. A proportional transaction tax can fail the parametric criterion even with every desk active: for white-noise reference prices its active incidence is $1-q^1/q^0=d\sqrt{1+r}$ for a positive tax multiplier $d$.
-\item[(b)] \emph{Scheduled revisions.} Changing the schedule from daily to every $h$ periods at a common small $\nu$, with $\tau=0$ and no cap, gives a square-summable term in $g$ plus $(1-A_h)/(1-r)$. The first term is estimated at the rate in (a). When $\rho=1$ this is the whole effect. Otherwise the second term needs the initial aggregate feedback budget. The signed reduction can be negative. The response concerns scheduled holdings. A cancellation constraint for orders resting in a book requires an execution model.
+\item[(a)] \emph{Trading costs.} With $h=1,\ \tau=0,\ c=\infty$, imposing a sufficiently small quadratic charge from zero gives a square-summable Taylor series for $g$. At logarithmic tap depth the reduction is estimable to error $O_P(n^{-1/2}+\sigma N^{-1/2})$. The passive alternative gives error $O_P(n^{-1/2})$ without a separate reference sample, taps, or knowledge of $\kappa$. A proportional transaction tax can fail the parametric criterion even with every desk active: for white-noise reference prices its active incidence is $1-q^1/q^0=d\sqrt{1+r}$ for a positive tax multiplier $d$.
+\item[(b)] \emph{Scheduled revisions.} Changing the schedule from daily to every $h$ periods at a common small $\nu$, with $\tau=0$ and no cap, gives a square-summable term in $g$ plus $(1-A_h)/(1-r)$. The analytic term is estimable at the rates in (a). When $\rho=1$ this is the whole effect. Otherwise the second term needs the initial aggregate feedback budget. The signed reduction can be negative. The response concerns scheduled holdings. A cancellation constraint for orders resting in a book requires an execution model.
 \item[(c)] \emph{Exit.} Under a proportional tax, a transversal zero of $\beta V-\tau T_1$ at an interior memory gives a kink in $g$. For the reset model of Theorem~\ref{thm:cost}, with a common reference law, there are moment-matched $K$-group alternatives near the threshold with budget reductions separated by order $\Delta\eta$. In one economy a desk type exits and in the other all types remain active. To distinguish these decisions, or estimate the reduction at a sufficiently small constant times $\Delta\eta$, requires $N\ge c_*\sigma^2(\Delta\eta)^{-(4K-2)}$ at fixed error probabilities below one quarter.
 \item[(d)] \emph{Turnover caps.} With daily revisions, when a positive per-desk cap crosses smooth unconstrained turnover transversally, $g$ has a kink. The lower bounds in (c) apply to the reduction and to deciding whether the cap binds. The gap is of order $\Delta\eta$ for both types of continuous threshold.
 \end{enumerate}
@@ -206,6 +206,15 @@ Small $\nu$ keeps both denominators bounded away from zero throughout the disk. 
 
 For the plug-in estimate, Wick's formula bounds the variance of each sample covariance up to lag $\lfloor n/2\rfloor$ by $C/n$. Summing errors with geometrically decaying weights on $[0,\bar r]$ gives uniform error $O_P(n^{-1/2})$ for the analytic term, after flooring denominators. Fit a degree-$<L$ polynomial to it in uniform norm with a known coefficient-norm bound. The truncated true series is feasible with error $O(\bar r^L)$. The resulting integrated bias is bounded by total mass times $O_P(n^{-1/2}+\bar r^L)$. Given the independent reference record, the tap statistic's variance is $O(\sigma^2/N)$ by the norm bound. Take logarithmic depth to make the tail no larger than the sampling errors.
 
+
+In the passive alternative write $J(z)=\kappa\sum_{m\ge0}k_mz^m$ and $Q(z)=1-z(a+J(z))$. The memory and stability margins bound $Q$ away from zero on a disk larger than the unit disk and yield uniform geometric covariance decay. The stationary spectrum is $f=\sigma^2/|Q|^2$ in the covariance-series normalization. With $\ell_j$ the positive Fourier coefficients of $\log f$ under $z=e^{-i\omega}$ and $Q(0)=1$,
+\[
+ Q(z)=\exp\{-\textstyle\sum_{j\ge1}\ell_j z^j\},\qquad J(z)=(1-Q(z))/z-a .
+\]
+The constant coefficient absorbs the variance scale. A covariance series estimated to logarithmic lag depth has uniform error $O_P(\log n/\sqrt n)$, so linearizing its log leaves an $o_P(n^{-1/2})$ remainder. Each linear Fourier coefficient is a Gaussian quadratic form whose squared matrix Frobenius norm is bounded by $C/n$ times the squared sum of its Fourier weights. Parseval bounds the weights of $e^{ij\omega}/f$ uniformly in $j$. Geometric summation on any interior circle gives $\|\hat J-J\|_s=O_P(n^{-1/2})$.
+
+Estimate $g$ from the same sample covariances. The analytic terms extend uniformly to a disk larger than the unit disk, so their coefficients have a uniform weighted sum bound $\sum_m R^m|c_m|\le B$ for some $R>1$. Fit the pilot at logarithmic depth under that bound. Its fitted polynomial approximates $g$ on the memory interval with $O_P(n^{-1/2})$ error by the preceding approximation argument. Choose $R^{-1}<s<1$. Cauchy's estimate gives $|\sum_m\hat c_m(\hat J_m-J_m)|\le B\|\hat J-J\|_s$. Integrating the weight error costs at most $\kappa M([0,\bar r])\|\hat g-g\|_\infty$. These pathwise bounds allow both fits to use the same observations. Supplement Section~\ref{S-app:passiveincidence} gives details.
+
 At an interior transversal exit or binding point $r_*$, the positive part gives a nonzero jump $J$ of the one-sided derivative of $g$. Locally $g(r)=g(r_*)+g'_-(r-r_*)+J(r-r_*)_++O((r-r_*)^2)$. Reflect the Gauss--Legendre and left Gauss--Radau pair of Theorem~\ref{thm:cost} and place it so that only the Radau endpoint lies on the clipped side, at distance $u\Delta\eta$ for a fixed $u>0$. A reflection of the construction for Proposition~\ref{prop:interventions}(iii) gives the opposite orientation if needed. The affine terms cancel, and the lone endpoint generates a nonzero term of magnitude $|J|Wu\Delta\eta/K^2$. The quadratic remainder is $O((\Delta\eta)^2)$. The common reference record carries no additional information about the pair. The reset KL is $O(N(\Delta\eta)^{4K-2}/\sigma^2)$ from moment cancellation. Applying the same two-point test to the binary decision or to estimates with disjoint accuracy intervals proves the bounds. For caps, the policy scale is $\min(q^0,c/T_1)$ and the same derivative jump follows at a transversal binding point.
 \end{proof}
 
@@ -217,11 +226,11 @@ def build(text):
             "\\usepackage{fancyhdr}\n\\usepackage{xr-hyper}\n\\usepackage{hyperref}\n"
             "\\externaldocument[S-]{Paper1_JEDC_online_supplement}\n"
             "\\graphicspath{{../paper1_core/}{../paper1_note/}}\n")
-    t = rep(t, "\\linespread{1.12}\n", "\\linespread{1.10}\n\\emergencystretch=3em\n")
+    t = rep(t, "\\linespread{1.12}\n", "\\linespread{1.08}\n\\emergencystretch=3em\n")
     t = re.sub(r"(\\begin\{abstract\}\n\\noindent\n).*?(\n\\end\{abstract\})",
                lambda m: m.group(1) + ABSTRACT + m.group(2), t, count=1, flags=re.S)
     t = rep(t, r"\noindent\textbf{Online Supplement and Replication:} Technical lemmas,",
-            r"\noindent\textbf{Online Supplement and Replication:} References of the form ``Supplement Theorem~S4.1'' are to the Online Supplement, which states every result in full; the full working paper (Niroula et al., 2026d) collects every supplementary result. Technical lemmas,")
+            r"\noindent\textbf{Online Supplement and Replication:} References of the form ``Supplement Theorem~S4.1'' are to the Online Supplement, which states every result in full; the full working paper (Niroula et al., 2026d) collects further results on the feedback model. Technical lemmas,")
     t = rep(t, r"\textbf{Funding and competing interests.}",
             r"\textbf{Related manuscripts.} An earlier working paper of the same authors (Niroula et al., 2026a, dated 5 November 2026) studied the same model; this article supersedes it. The earlier paper, the companion note (Niroula et al., 2026c) and the full working paper (Niroula et al., 2026d) are in the repository cited below.\par\medskip" + "\n\n" + r"\textbf{Funding and competing interests.}")
     t = rep(t, "\\newtheorem{theorem}{Theorem}[section]\n",
@@ -248,7 +257,7 @@ def build(text):
     t = rep(t, r"provides a formal rationale for that architecture: market-wide remedies require only prices, targeted restrictions require class records, and relabeling incentives necessitate owner-linked audit trails.",
             r"provides a formal rationale for that architecture: market-wide remedies require only prices, targeted restrictions require class records, and cheap relabeling favors owner-linked audit trails. Acting on market information can degrade it (Bond et al., 2010; Bond and Goldstein, 2015), and manipulation muddles the signals a principal relies on (Frankel and Kartik, 2019, 2022; Perez-Richet and Skreta, 2022).")
     t = rep(t, r"whereas compositional weights require $\Delta^{-(4K-2)}$ observations (Theorem~\ref{thm:cheap} and Corollary~\ref{cor:sep}).",
-            r"whereas compositional weights require $\Delta^{-(4K-2)}$ observations (Theorem~\ref{thm:cheap} and Corollary~\ref{cor:sep}). The same lower bound can apply when an enforceable horizon cutoff replaces a class label (Proposition~\ref{prop:interventions}(iii)). Derived quadratic costs give a parametric benchmark. Proportional taxes can fail even before exit, and exit and binding caps give lower bounds at shrinking accuracy (Theorem~\ref{thm:instruments}).")
+            r"whereas compositional weights require $\Delta^{-(4K-2)}$ observations (Theorem~\ref{thm:cheap} and Corollary~\ref{cor:sep}). The same lower bound can apply when an enforceable horizon cutoff replaces a class label (Proposition~\ref{prop:interventions}(iii)). Derived quadratic costs admit parametric estimation from a passive Gaussian pricing-error record with a known anchor. Proportional taxes can fail even before exit, and exit and binding caps give lower bounds at shrinking accuracy (Theorem~\ref{thm:instruments}).")
     # ---------------------------------------------------------------- model, sufficiency, equilibrium
     t = rep(t, r"$D, D_0, p, J$ & Distance to neighbor's memory, preferred distance, divergence exponent ($p > 2$), divergence $J = cND^p$ \\",
             r"$\delta, \delta_0, n, J$ & Distance to the neighbor's memory, preferred distance, divergence exponent ($n = 4$), divergence $J = cN\delta^n$ \\")
@@ -384,7 +393,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     t = rep(t, r"Second, as documented in Online Supplement Section~S6, a pre-registered out-of-sample reverse-causality diagnostic on 2019--2023 holdout data cannot rule out",
             r"Second, as documented in Supplement Section~\ref{S-sec:scope}, the separately registered P1T primary holdout supported incremental prediction of foreign net flow. Its pre-specified reverse-causality diagnostic leaves open")
     t = rep(t, r"Accordingly, these figures serve as an illustrative calibration",
-            r"Positive feedback in foreign investors' daily flows, and the difficulty of separating it from prices responding to flows, are documented for Taiwan and other markets (Froot et al., 2001; Griffin et al., 2004; Richards, 2005). Accordingly, these figures serve as an illustrative calibration")
+            r"Positive feedback in foreign investors' daily flows, and the difficulty of separating it from prices responding to flows, are documented for Taiwan and other markets (Froot et al., 2001; Griffin et al., 2004; Richards, 2005). Wu and Wang (2020) report higher day-trading activity after Taiwan's tax reduction. Their turnover outcome leaves the signed feedback response by trader type unmeasured. Accordingly, these figures serve as an illustrative calibration")
     t = rep(t, r"the same $(\Delta\eta)^{-(4K-2)}$ barrier operates with direct prudential significance.",
             r"the same $(\Delta\eta)^{-(4K-2)}$ barrier would apply with more prudential weight.")
     t = rep(t, r"aggregate price persistence $\sum_{j=1}^5 a_j = 0.97$.} \\",
@@ -392,7 +401,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
             r"\multicolumn{4}{@{}l}{\footnotesize Within-stock $R^2$: price equation $0.95$; rules $0.14$ (Foreign), $0.18$ (Trust) and $0.10$ (Dealers).} \\")
     # ---------------------------------------------------------------- conclusion
     t = rep(t, r"First, market-wide interventions (such as uniform feedback cuts or market-design changes calibrated to aggregate response) are statistically well-posed from public prices and are minimax-optimal when class identities are unverified.",
-            r"First, the budget for a uniform feedback cut can be estimated from kernel taps, given the market's persistence, impact and a bound on memory. Uniform policies are minimax over labelings in the fixed-population decision problem. The measurement cost depends on the derived incidence. Proportional taxes and threshold policies can require more information (Theorem~\ref{thm:instruments}).")
+            r"First, the budget for a uniform feedback cut can be estimated from kernel taps, given the market's persistence, impact and a bound on memory. Uniform policies are minimax over labelings in the fixed-population decision problem. In the Gaussian model a passive pricing-error record suffices for the smooth quadratic effect. Proportional taxes and threshold policies can require more information (Theorem~\ref{thm:instruments}).")
     t = rep(t, r"durable targeted supervision requires owner-linked audit trails—such as",
             r"owner-linked reporting can support targeted supervision when the link is reliable, as illustrated by")
     t = rep(t, r"Our passive sample-complexity bounds assume Gaussian (or quadratically regular) innovations and exclude bounded-support noise laws.",
@@ -429,7 +438,8 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     )
     instrument_ai = (
         r" Theorem~\ref{thm:instruments} and Supplement Section~\ref{S-app:instruments} "
-        r"were added with AI assistance and have not yet been checked by the authors."
+        r"were added with AI assistance and have not yet been checked by the authors. This includes the passive-price "
+        r"extension and its proof in Supplement Section~\ref{S-app:passiveincidence}."
     )
     t = rep(t, old_ai, new_ai + review_ai + instrument_ai)
     t = rep(t, r"to assist with literature cross-checking, numerical verification scripts, Lean~4 formalization coding, and language editing.",
@@ -510,7 +520,9 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
             'at each fixed parameter under the conditions of the forecasting result a fitted autoregression of order $L_T = \\lceil c \\log T \\rceil$ attains the oracle risk up to')
     t = rep(t, 'Replication scripts, numerical checks, and Lean~4 formalization files',
             'The protocols and archived Taiwan outputs are under \\nolinkurl{ceiling_suite/p1_empirics}. Replication scripts, numerical checks, and Lean~4 formalization files')
-    t = rep(t, '\\setlength{\\itemsep}{3pt}\\setlength{\\parsep}{0pt}', '\\setlength{\\itemsep}{1pt}\\setlength{\\parsep}{0pt}')
+    t = rep(t, '\\small\\setlength{\\leftmargin}{1.8em}',
+            '\\small\\linespread{1}\\selectfont\\setlength{\\leftmargin}{1.8em}')
+    t = rep(t, '\\setlength{\\itemsep}{3pt}\\setlength{\\parsep}{0pt}', '\\setlength{\\itemsep}{0.5pt}\\setlength{\\parsep}{0pt}')
     # ---------------------------------------------------------------- references
     t = add_references(t)
     # ---------------------------------------------------------------- labels shared with the supplement
@@ -533,6 +545,7 @@ LABELS = {
 }
 
 NEW_REFS = [
+    r"Wu, C.-H., Wang, T.-Y., 2020. The effects of reducing the securities transaction tax on day trading: Evidence from the Taiwan stock market. \emph{Journal of Accounting Review} 70, 135--169.",
     r"Colliard, J.-E., Hoffmann, P., 2017. Financial transaction taxes, market composition, and liquidity. \emph{Journal of Finance} 72(6), 2685--2716.",
     r"Bond, P., Goldstein, I., 2015. Government intervention and information aggregation by prices. \emph{Journal of Finance} 70(6), 2777--2812.",
     r"Bond, P., Goldstein, I., Prescott, E.S., 2010. Market-based corrective actions. \emph{Review of Financial Studies} 23(2), 781--820.",

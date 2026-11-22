@@ -7,7 +7,7 @@ Drafted by an AI system for the authors. The authors decide and edit before use.
 | Use | File |
 |---|---|
 | Manuscript (upload as the main file) | `pdf_delivered/Paper1_JEDC_main.pdf`: 35 pages, 85-word abstract, title page with keywords and JEL codes, proofs of the main results in Appendix A |
-| Online Supplement (upload as supplementary material) | `pdf_delivered/Paper1_JEDC_online_supplement.pdf`: 69 pages, every result in full, machine-check tables |
+| Online Supplement (upload as supplementary material) | `pdf_delivered/Paper1_JEDC_online_supplement.pdf`: 71 pages, every result in full, machine-check tables |
 | Both in one file, for reading | `pdf_delivered/Paper1_JEDC_main_and_supplement.pdf` |
 | SSRN posting | `pdf_delivered/Paper1_ssrn_complete.pdf`: 101 pages, the long working version |
 | Cited, not submitted | `pdf_delivered/Paper1_full_working_paper.pdf` (156 pages, Niroula et al., 2026d); the companion note (2026c); the earlier working paper of 5 November 2026 (2026a) |
@@ -130,3 +130,9 @@ The additional results below were added or corrected with AI assistance and have
 - [ ] Verify the stable local equilibrium expansion and the conditional adjustable-memory extension. Confirm the interpretation of scheduled holdings and expected turnover before making any venue-specific claim.
 - [ ] Reproduce the synthetic diagnostics and the hypothetical Taiwan calculation from archived coefficients. Keep the P1M and P1M-A1 results and causal interpretation separate.
 - [ ] Check the scope of the five rational Lean identities. The optimizer over real scales, analytic estimates, lower bounds and general-equilibrium arguments are paper proofs.
+
+## Passive-price extension and Taiwan policy evidence
+
+- [ ] The passive-price part of Theorem 7.1(iv)(a)–(b) and the supplementary proof were added with AI assistance and have not yet been checked by the authors. Verify normalized spectral factorization, the interior-circle rate and the same-record weighted-polynomial argument.
+- [ ] Reproduce the new synthetic diagnostics and distinguish the observed pricing-error series and known anchor in the proof from a raw tape with an unrestricted latent component.
+- [ ] Verify the citation to Wu and Wang (2020), the TWSE public schema receipt and the distinction between aggregate turnover evidence and desk-level feedback incidence. The latter still needs authorized, linked executions and a credible comparison.

@@ -183,6 +183,8 @@ import round10 as _R10  # P1M-A1 results (protocol P1M_A1_protocol.md); applied 
 t = _R10.apply(t)
 import round11 as _R11  # derived instrument incidences and synthetic diagnostics
 t = _R11.apply(t)
+import round12 as _R12  # passive prices and Taiwan policy evidence
+t = _R12.apply(t)
 (NOTE / 'paper1_revised.tex').write_text(t)
 shutil.copy2(HERE/'validation/intervention_example.pdf', NOTE/'fig_intervention_revision.pdf')
 print('Wrote', NOTE / 'paper1_revised.tex', len(t.splitlines()), 'lines')
