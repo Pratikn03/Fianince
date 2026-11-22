@@ -110,7 +110,7 @@ TAGS_MC_NEW = (r"It is machine-checked in full, also for a cost convex only on $
 # The Lean record: PublicationRevision12.lean (22 November 2026) joins the list, and the rows of the two minimax
 # theorems name the declarations for a cost convex only on [0,1]^K and for uniqueness.
 LEAN_COUNT_OLD = r'eleven Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision11.lean}'
-LEAN_COUNT_NEW = r'thirteen Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision13.lean}'
+LEAN_COUNT_NEW = r'fourteen Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision14.lean}'
 LEAN_MINIMAX_ROW_OLD = (r"\texttt{perm\_average\_policy}, \texttt{minimax\_uniform}, \nolinkurl{uniform_budget_label_free}) "
                         r"& none\\")
 LEAN_MINIMAX_ROW_NEW = (r"\texttt{perm\_average\_policy}, \texttt{minimax\_uniform}, \nolinkurl{uniform_budget_label_free}), "
@@ -126,7 +126,8 @@ LEAN13_ROWS = (r"Theorem~\ref{n:questions} & half-width of the affine certificat
                r"Theorem~\ref{n:shape} & absorption of the Taylor remainder (\nolinkurl{absorption}) & injectivity and the Jacobian of the moment map, compactness, the Gaussian norm bound\\" + "\n"
                r"Prop.~\ref{n:target}(ii) & consecutive orthogonal polynomials have no common zero (\nolinkurl{no_common_zero}); a node cannot recur (\nolinkurl{node_no_recur}); weights from Lagrange polynomials (\nolinkurl{weight_from_lagrange}) & exactness of the quasi-orthogonal rule, the three-term recurrence of the Legendre polynomials, finiteness of weight level sets\\" + "\n"
                r"Cor.~\ref{n:decisionloss} & loss at least $\min(b,c)$ times the mean error (\nolinkurl{decision_loss_min}) & total variation\\" + "\n"
-               r"Theorem~\ref{n:disc} & tagged coordinates determine weight and memory (\nolinkurl{tagged_inversion}) & sampling rates, the two-point lower bound\\" + "\n")
+               r"Theorem~\ref{n:disc} & tagged coordinates determine weight and memory (\nolinkurl{tagged_inversion}) & sampling rates, the two-point lower bound\\" + "\n"
+               r"Section~\ref{app:passiveincidence} & Fourier first-moment budget (\texttt{fourier\_first\_moment\_budget}, \texttt{fourier\_first\_moment\_disk}), truncation tail (\texttt{fourier\_truncation\_tail}), spectral floor Lipschitz (\texttt{spectral\_floor\_lipschitz}), quadrature error (\texttt{quadrature\_fourier\_error}), transfer factor and function errors (\texttt{transfer\_factor\_error}, \texttt{transfer\_function\_error}), incidence estimator bound (\texttt{incidence\_estimator\_bound}) (\nolinkurl{PublicationRevision14.lean}) & stationary Gaussian likelihood, spectral estimation, uniform central limit theorem, and Parseval isometry\\" + "\n")
 
 
 def longtable_newlean(t):

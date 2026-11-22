@@ -5,7 +5,7 @@ Exact rational identities for the deterministic algebra of the instrument theore
 These declarations do not formalize real analysis, the Gaussian observation model,
 the optimizer's boundary conditions, or the statistical rate.
 -/
-namespace Paper1InstrumentIncidence
+namespace CurrentMM
 
 def payoff (gain curvature q : Rat) : Rat :=
   gain * q - curvature * q * q / 2
@@ -58,4 +58,4 @@ theorem kink_endpoint_gap
   rw [sameAffineContribution]
   grind
 
-end Paper1InstrumentIncidence
+end CurrentMM

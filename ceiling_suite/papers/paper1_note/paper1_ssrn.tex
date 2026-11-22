@@ -485,6 +485,8 @@ The sufficiency results hold whenever aggregate feedback flow is a causal functi
 
 The derived-instrument result and its supplemental derivations were added with AI assistance and have not yet been checked by the authors.
 
+The passive-price extension and its proof were added with AI assistance and have not yet been checked by the authors. Its deterministic steps are checked in Lean~4 (\nolinkurl{PublicationRevision14.lean}).
+
 \begin{thebibliography}{99}\setlength{\itemsep}{2pt}\small
 \bibitem[Abramowitz and Stegun(1964)]{abramowitz1964} Abramowitz, M., and I. A. Stegun (1964). \emph{Handbook of Mathematical Functions}. National Bureau of Standards, Washington, DC.
 
@@ -637,6 +639,8 @@ The derived-instrument result and its supplemental derivations were added with A
 \bibitem[van Waarde et~al.(2020)]{vanwaarde2020} van Waarde, H.~J., J. Eising, H.~L. Trentelman, and M.~K. Camlibel (2020). Data informativity: A new perspective on data-driven analysis and control. \emph{IEEE Transactions on Automatic Control} 65(11), 4753--4768.
 
 \bibitem[Vovk(2001)]{vovk2001} Vovk, V. (2001). Competitive on-line statistics. \emph{International Statistical Review} 69(2), 213--248.
+
+\bibitem[Wu and Wang(2020)]{wuwang2020} Wu, C.-H., and T.-Y. Wang (2020). The effects of reducing the securities transaction tax on day trading: Evidence from the Taiwan stock market. \emph{Journal of Accounting Review} 70, 135--169.
 
 \bibitem[Wu and Yang(2020)]{wu2020} Wu, Y., and P. Yang (2020). Optimal estimation of Gaussian mixtures via denoised method of moments. \emph{Annals of Statistics} 48, 1981--2007.
 
@@ -1763,7 +1767,7 @@ Part (i) restates the comparison of losses. Part (ii) says that disclosure is va
 
 \section{Smooth-family lower bounds and forecast comparisons}\label{app:univirr}
 
-This section supplies the proof of Theorem~\ref{n:univ} and lists machine-checked steps. The deterministic steps of these results are machine-checked in thirteen Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision13.lean} (in \nolinkurl{research_extension/paper1_publication_revision/}), which build against the same pinned Mathlib with only Lean's three standard axioms. The probabilistic steps are on paper. Table~\ref{tab:newlean} gives the division.
+This section supplies the proof of Theorem~\ref{n:univ} and lists machine-checked steps. The deterministic steps of these results are machine-checked in fourteen Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision14.lean} (in \nolinkurl{research_extension/paper1_publication_revision/}), which build against the same pinned Mathlib with only Lean's three standard axioms. The probabilistic steps are on paper. Table~\ref{tab:newlean} gives the division.
 {\footnotesize
 \begin{longtable}{>{\raggedright\arraybackslash}p{0.17\textwidth}>{\raggedright\arraybackslash}p{0.44\textwidth}>{\raggedright\arraybackslash}p{0.29\textwidth}}
 \caption{Machine-checked steps of the results listed.}\label{tab:newlean}\\
@@ -1793,6 +1797,7 @@ Theorem~\ref{n:shape} & absorption of the Taylor remainder (\nolinkurl{absorptio
 Prop.~\ref{n:target}(ii) & consecutive orthogonal polynomials have no common zero (\nolinkurl{no_common_zero}); a node cannot recur (\nolinkurl{node_no_recur}); weights from Lagrange polynomials (\nolinkurl{weight_from_lagrange}) & exactness of the quasi-orthogonal rule, the three-term recurrence of the Legendre polynomials, finiteness of weight level sets\\
 Cor.~\ref{n:decisionloss} & loss at least $\min(b,c)$ times the mean error (\nolinkurl{decision_loss_min}) & total variation\\
 Theorem~\ref{n:disc} & tagged coordinates determine weight and memory (\nolinkurl{tagged_inversion}) & sampling rates, the two-point lower bound\\
+Section~\ref{app:passiveincidence} & Fourier first-moment budget (\texttt{fourier\_first\_moment\_budget}, \texttt{fourier\_first\_moment\_disk}), truncation tail (\texttt{fourier\_truncation\_tail}), spectral floor Lipschitz (\texttt{spectral\_floor\_lipschitz}), quadrature error (\texttt{quadrature\_fourier\_error}), transfer factor and function errors (\texttt{transfer\_factor\_error}, \texttt{transfer\_function\_error}), incidence estimator bound (\texttt{incidence\_estimator\_bound}) (\nolinkurl{PublicationRevision14.lean}) & stationary Gaussian likelihood, spectral estimation, uniform central limit theorem, and Parseval isometry\\
 \bottomrule
 \end{longtable}}
 
@@ -2255,6 +2260,123 @@ equilibrium claims, and statistical conclusions are proved on paper.
 \paragraph{Numerical checks.} The script \nolinkurl{instrument_incidence.py} compares the formula with numerical optimization. The maximum absolute scale discrepancy is $ 1.3e-08$. An independent AR(1) reference record supplies an estimated persistence, and independent Gaussian tap means supply the kernel. Across $ 320$ repetitions per sample size, the fitted log-RMSE slope is $ -0.513$. Near proportional-tax exit, the fitted log budget-gap slopes for the two quadrature designs are $ 0.997$ and $ 1.001$. The implied repetition counts for the exact Gaussian tap likelihood test at equal error $1/4$ have fitted log slopes $ -5.967$ and $ -9.933$. The results are finite-design diagnostics.
 
 \paragraph{Taiwan coefficient illustration.} Using the archived P1M memories and positive contributions for foreign investors and investment trusts, impose a hypothetical white-noise reference and tax multiplier $d=0.1$. The assumed benchmark reduces the two scales by $ 11.6\%$ and $ 11.9\%$. The resulting reduction for those two contributions is $ 0.000209$. The signed dealer contribution is held fixed. This exercise uses archived coefficients and imposed beliefs. It estimates neither Taiwan tax elasticities nor causal effects.
+
+
+\section{Estimating smooth instrument incidence from passive prices}\label{app:passiveincidence}
+
+\paragraph{Observation contract.}
+Observe one centered stationary Gaussian realization of the pricing signal in
+the base model. The process has positive exponential feedback with memories in
+$[0,\bar r]$ for $\bar r<1$, known anchor $a$, stability budget at most $\bar S<1$,
+and innovation variance between fixed positive bounds. The desk uses pre-policy
+second moments from this same process. Its preference and policy inputs are
+known. All comparisons concern the change at fixed impact and anchor. Neither the
+realized innovations nor the impact coefficient are required by this estimator.
+
+\paragraph{Normalized factor.}
+Let $J(z)=\kappa\sum_{m\ge0}k_m z^m$ and $Q(z)=1-z(a+J(z))$. Positivity and the
+budget bound give $\sup_{|z|\le1}|z(a+J(z))|\le\bar S$. By the memory bound, the
+derivatives of $z(a+J(z))$ are uniformly bounded on some larger disk, since
+$\kappa M([0,\bar r])\le\bar S$. Shrinking the larger radius if needed gives
+$\sup|z(a+J(z))|<1$ there. Thus $Q^{-1}$ is uniformly bounded and analytic there.
+Its impulse coefficients decay geometrically and the innovation variance
+bounds give uniform geometric decay for the covariance sequence $\gamma_j$.
+The stationary spectrum $f(\omega)$ in the convention
+$f(\omega)=\sum_{j\in\mathbb Z}\gamma_j e^{-ij\omega}$ is bounded above and away
+from zero.
+
+Put $\ell_j=(2\pi)^{-1}\int_{-\pi}^\pi e^{ij\omega}\log f(\omega)\,d\omega$.
+The analytic logarithm of $Q$ has zero constant and its negative has Taylor
+coefficients $\ell_j$ for $j\ge1$. This follows by writing
+$\log f=\log\sigma^2-\log Q(e^{-i\omega})-\overline{\log Q(e^{-i\omega})}$.
+Hence $J=(1-\exp(-\sum_{j\ge1}\ell_j z^j))/z-a$. The apparent singularity at
+zero is removable. The constant log-spectral coefficient is unnecessary for
+$J$. This explains why the observer can estimate the impact-weighted functional
+without estimating $\kappa$ or supplying direct kernel taps.
+
+\paragraph{Statistical bound for the factor.}
+Let $\tilde f$ be the covariance series truncated at $L_n=\lceil C\log n\rceil$,
+using sample covariances with denominators $n-k$ for lag $k$. Take $C$ large
+enough that the uniform geometric covariance tail is $o(n^{-1/2})$.
+The expectation of the sum of absolute estimation errors is $O(L_n/\sqrt n)$
+by the Gaussian fourth-moment identity, so the uniform spectral error has this
+order in probability. Floor $\tilde f$ at half the known spectral lower bound.
+With probability tending uniformly to one the floor is inactive. The log
+expansion is $\log(\hat f)-\log f=(\tilde f-f)/f+O_P(L_n^2/n)$ uniformly.
+For the linear term in coefficient $j$, the weights of the random covariance
+errors are the Fourier integrals of $e^{ij\omega}/f(\omega)$ against the
+covariance-series basis. Parseval bounds their squared sum independently of
+$j$ by a constant times $\|f^{-1}\|_{L^2}^2$. The corresponding Gaussian
+quadratic form has one diagonal per lag, with entries divided by $n-k$.
+Its matrix $H$ has $\|H\|_{\mathrm F}^2\le C\sum_k|v_k|^2/n$ for weights
+$v_k$. Since the sample covariance matrix has operator norm at most
+$\sup f$, Gaussian quadratic-form variance is at most
+$2(\sup f)^2\|H\|_{\mathrm F}^2$ for a real form. Apply this separately to
+real and imaginary parts for complex weights. On $|z|=s<1$, sum the expected
+absolute linear errors with geometrically decaying weights $s^j$.
+Truncation bias and the log remainder are $o_P(n^{-1/2})$. Exponentiation on
+the interior disk and division on the circle of radius $s>0$ give
+$\|\hat J-J\|_s=O_P(n^{-1/2})$. A growing equally spaced frequency grid can
+approximate the integrals: with order $n$ grid points the quadrature error
+for each fixed coefficient is of order $O_P((L_n^2+j)/n)$ on the
+high-probability event, using the derivative of the covariance polynomial
+and the floor. Geometric summation controls these errors on the same circle.
+
+\paragraph{A weight estimated from the same record.}
+For the analytic quadratic-cost and scheduled-holding terms of the instrument
+theorem, fix $R>1$ inside a uniform disk of analyticity of $g$. By Cauchy's
+coefficient bound, $\sum_mR^m|c_m|$ is bounded by a common constant $B$.
+Smooth dependence on the covariance series gives a pilot $\tilde g$ with
+$\|\tilde g-g\|_{[0,\bar r]}=O_P(n^{-1/2})$. Fit a polynomial $\hat g$ at
+logarithmic depth on a mesh of spacing at most a constant times $n^{-1/2}$.
+Minimize maximum mesh error under $\sum_mR^m|\hat c_m|\le B$. The truncated
+true coefficients are feasible and have exponentially small truncation error.
+Both $g$ and the fitted polynomials have bounded first derivatives on the
+memory interval, so the root-$n$ mesh bound holds on the interval. For
+$R^{-1}<s<1$,
+\[
+ |\widehat{\Delta S}-\Delta S|
+ \le B\|\hat J-J\|_s+\kappa M([0,\bar r])\|\hat g-g\|_{[0,\bar r]} .
+\]
+Indeed the coefficient error of order $m$ in $J$ is at most
+$s^{-m}\|\hat J-J\|_s$ by Cauchy's inequality. The inequality is pathwise,
+so fitting both objects on the same record is valid. The bound also yields
+uniform fixed-confidence error of order $n^{-1/2}$ on the stated class.
+In a fixed-memory submodel, with a strictly positive quadratic charge, the
+target has nonzero derivative in the atom's weight near zero: at zero its
+derivative is $\kappa g(r)>0$. For nearby small positive weights the derivative
+remains nonzero, while stationary Gaussian finite-record KL is $O(n\delta^2)$
+for a weight difference $\delta$, by the uniform spectral covariance
+sandwich. The two-point testing argument gives the matching order on classes
+containing this submodel.
+
+\paragraph{Which price must be observed.}
+An observable price deviation can serve as the pricing signal if the stated
+stationary model is specified for that series. A tape with an unrestricted
+independent latent component is insufficient in general. Take two different
+stable feedback spectra and a constant spectrum larger than both. For each
+candidate add an independent Gaussian process with spectrum equal to the
+difference. The observed Gaussian price laws then coincide while the
+quadratic-cost effect can differ. The observer needs a signal definition or
+additional restrictions on the latent component. A zero-memory group is also
+confounded with an unknown anchor. The passive theorem addresses smooth terms;
+it supplies no parametric guarantee for the total-budget pole, tapering at exit,
+or a venue whose pricing signal is unspecified.
+
+\paragraph{What the Taiwan tax change measures.}
+The exchange documents a cut from $0.3\%$ to $0.15\%$ for qualifying stock day
+trades in April 2017. \citet{wuwang2020} report increased day-trading volume and
+share under their comparison designs. This supports a volume response to the
+policy. Their aggregate outcomes do not identify the change in signed
+feedback by desk or its dependence on independently estimated pre-policy
+memory. The public exchange table reports day-trade volume and values by stock,
+without account IDs, execution sequences, or a trader-specific pricing signal.
+Accordingly, this historical evidence is distinct from the P1M calibration and
+the hypothetical coefficient exercise. Identifying the derived response would
+require verified exposure to the tax change and linked signed executions for
+stable trader cohorts. No historical outcome was re-estimated here.
+
+\paragraph{Synthetic verification.} The script \nolinkurl{passive_incidence.py} simulates the stationary feedback model and uses a single record per estimate. Across 96 draws at each size, the RMSE of the quadratic-cost budget estimate falls from 0.0353 at 512 prices to 0.0035 at 32,768 prices. This finite-design calculation shows the size of the errors. The rate in the theorem follows from the proof rather than the simulation.
 
 \section{Notation}\label{app:notation}
 
