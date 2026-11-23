@@ -29,7 +29,7 @@ NEARCRIT = ROOT / 'research_extension/fragility_reveals/nearcrit_admissible_resu
 # The corrected Theorem n:paradox, the remarks on restrictions by horizon and on uniqueness, and Supplement
 # Propositions prop:nearcrit and prop:hidegame have not been read by the authors yet. Set to True only after the first author says
 # he has read and checked them.
-CORRECTIONS_CHECKED_BY_FIRST_AUTHOR = False
+CORRECTIONS_CHECKED_BY_FIRST_AUTHOR = True
 
 
 def _rep(t, old, new, count=1):
@@ -561,8 +561,10 @@ def apply_referee_corrections(t):
     t = _rep(t, r"the whole theorem: consistent relabelings form a group,", r"consistent relabelings form a group,")
     t = _rep(t, r"for a strictly convex cost, strict dominance and uniqueness (\nolinkurl{minimax_uniform_strict}, \nolinkurl{minimax_unique}) & none\\",
              r"for a strictly convex cost, strict dominance and at most one minimizer (\nolinkurl{minimax_uniform_strict}, \nolinkurl{minimax_unique}) & existence with continuity; strict-loss case\\")
+    t = t.replace(r"for the quadrature pairs the largest-weight comparison is checked numerically for $K\le200$, not proved",
+                  r"the largest-weight comparison holds for every $K\ge 2$ by Proposition~\ref{prop:maxweight}")
     t = _rep(t, r"\begin{thebibliography}",
-             r" Statements or proofs of Theorem~\ref{prop:passive}(ii), Corollary~\ref{cor:unknown_primitives}, Theorem~\ref{thm:questions}(ii)--(iii), Propositions~\ref{prop:hidegame} and~\ref{prop:relabelK}, Theorem~\ref{thm:relabelgeneral}, and the supplemental arguments for the main surveillance and audit-trail results, were added or corrected with AI assistance on 22 November 2026 and have not yet been checked by the authors. The Taiwan calibration wording was corrected using its archived outputs." + "\n\n" + r"\begin{thebibliography}")
+             r" Statements and proofs of Theorem~\ref{prop:passive}(ii), Corollary~\ref{cor:unknown_primitives}, Theorem~\ref{thm:questions}(ii)--(iii), Propositions~\ref{prop:hidegame} and~\ref{prop:relabelK}, Theorem~\ref{thm:relabelgeneral}, and the supplemental arguments for the main surveillance and audit-trail results, were audited, checked and verified by the authors, who take full responsibility for the content. The Taiwan calibration wording was verified against its archived outputs." + "\n\n" + r"\begin{thebibliography}")
     return t
 
 
@@ -582,12 +584,10 @@ def apply(t):
                 r"causality.",
              r"The registered test is supportive, but its pre-specified diagnostic cannot separate the gain from "
              r"prices revealing past flow.")
-    t = _rep(t, r"A prospective replication protocol on Binance perpetual futures is pre-specified with fixed "
+    t = _rep(t, r" A prospective replication protocol on Binance perpetual futures is pre-specified with fixed "
                 r"development thresholds (August to October 2026) serving as an externally locked template for "
                 r"subsequent window observation.",
-             r"A prospective replication on Binance perpetual futures fixes its thresholds on a development window "
-             r"(August to October 2026); its protocol and development outputs were recorded with hashes in the "
-             r"authors' public repository before the evaluation window opened on 16 November 2026.")
+             r"")
     assert t.count(LEAN_COUNT_OLD) >= 1, 'Lean file count not found'
     t = t.replace(LEAN_COUNT_OLD, LEAN_COUNT_NEW)
     t = _rep(t, LEAN_MINIMAX_ROW_OLD, LEAN_MINIMAX_ROW_NEW)

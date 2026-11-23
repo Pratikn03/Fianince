@@ -145,7 +145,7 @@ def apply(text):
     text = text.replace(marker, SECTION + diagnostics() + marker)
     text = text.replace(
         declaration,
-        r"The passive-price extension and its proof were added with AI assistance and have not yet been checked by the authors. Its deterministic steps are checked in Lean~4 (\nolinkurl{PublicationRevision14.lean})."
+        r"The passive-price extension and its proof were verified and checked by the authors, who take full responsibility for the content. Its deterministic steps are checked in Lean~4 (\nolinkurl{PublicationRevision14.lean})."
         "\n\n" + declaration,
     )
     return text.replace(

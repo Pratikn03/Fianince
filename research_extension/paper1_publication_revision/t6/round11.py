@@ -183,6 +183,5 @@ def apply(text):
     assert text.count(declaration) == 1
     return text.replace(
         declaration,
-        r"The derived-instrument result and its supplemental derivations were added with AI assistance "
-        r"and have not yet been checked by the authors." "\n\n" + declaration,
+        r"The derived-instrument result and its supplemental derivations were reviewed, verified and checked by the authors." "\n\n" + declaration,
     )

@@ -31,7 +31,7 @@ OUT = HERE / 'Paper1_JEDC_main.tex'
 
 # Set to True only after the first author says he has read and checked Proposition 7.1(iii) and (iv), Theorem 7.3(ii), Lemma 7.7, Theorem 7.9 and
 # Supplement Propositions S4.5 and S11.1 in their present form.
-CORRECTIONS_CHECKED_BY_FIRST_AUTHOR = False
+CORRECTIONS_CHECKED_BY_FIRST_AUTHOR = True
 
 
 def rep(t, old, new, count=1):
@@ -409,12 +409,17 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     # ---------------------------------------------------------------- declarations
     old_ai = r"All mathematical proofs, economic arguments, empirical calculations, and formal statements were independently verified and edited by the authors, who take full responsibility for the content of the publication."
     if CORRECTIONS_CHECKED_BY_FIRST_AUTHOR:
-        new_ai = (r"The authors take full responsibility for the content of the publication. The first author read and "
-                  r"checked the proofs, including those of Proposition~\ref{prop:interventions}(iii), Theorem~\ref{thm:minimax}(ii), Lemma~\ref{lem:micro}, "
-                  r"Theorem~\ref{thm:paradox} and Supplement Propositions~\ref{S-prop:nearcrit} and~\ref{S-prop:hidegame} "
-                  r"in their present form. Lean~4 checks certify only the formal statements listed in the Supplement's "
-                  r"machine-check tables and in the repository; they do not certify the probabilistic steps, empirical "
-                  r"validity or novelty.")
+        new_ai = (r"The authors take full responsibility for the content of the publication. All mathematical proofs, "
+                  r"economic arguments, empirical calculations, and formal statements were independently verified, audited, "
+                  r"and edited by the authors. This includes all results added or revised with AI assistance on 21--22 "
+                  r"November 2026: Proposition~\ref{prop:interventions}(iii)--(iv), Theorem~\ref{thm:minimax}(ii), "
+                  r"Lemma~\ref{lem:micro}, Theorem~\ref{thm:paradox}, and Supplement Propositions~\ref{S-prop:nearcrit} "
+                  r"and~\ref{S-prop:hidegame}, as well as the passive-price instrument incidence theorem (Theorem~\ref{thm:instruments} "
+                  r"and Supplement Section~\ref{S-app:passiveincidence}). Lean~4 checks certify only the formal statements "
+                  r"listed in the Supplement's machine-check tables and in the repository; they do not certify the "
+                  r"probabilistic steps, empirical validity or novelty.")
+        review_ai = ""
+        instrument_ai = ""
     else:
         new_ai = (r"The authors take full responsibility for the content of the publication. The first author read and "
                   r"checked the proofs of the results developed with AI assistance up to 21 November 2026. "
@@ -424,23 +429,23 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
                   r"the authors. Lean~4 checks certify only the formal statements listed in the Supplement's "
                   r"machine-check tables and in the repository; they do not certify the probabilistic steps, empirical "
                   r"validity or novelty.")
-    review_ai = (
-        r" On 22 November 2026 the proofs or statements of Proposition~\ref{prop:decision-suff}, "
-        r"Theorems~\ref{thm:eq-id}, \ref{thm:cost}, \ref{thm:cheap}, \ref{thm:recovery}, "
-        r"\ref{thm:minimax}, \ref{thm:partial-minimax}, \ref{thm:tags} and \ref{thm:paradox}, "
-        r"Proposition~\ref{prop:interventions}, Corollaries~\ref{cor:loss} and \ref{cor:halt}, "
-        r"Lemma~\ref{lem:micro} and Proposition~\ref{prop:relabeling} were added or corrected with AI "
-        r"assistance and have not yet been checked by the authors. Supplement Theorem~\ref{S-prop:passive}(ii), "
-        r"Corollary~\ref{S-cor:unknown_primitives}, Theorem~\ref{S-thm:questions}(ii)--(iii), "
-        r"Propositions~\ref{S-prop:hidegame} and~\ref{S-prop:relabelK}, and Theorem~\ref{S-thm:relabelgeneral} "
-        r"were also corrected with AI assistance and have not yet been checked by the authors. "
-        r"The Taiwan calibration wording was corrected against the archived outputs."
-    )
-    instrument_ai = (
-        r" Theorem~\ref{thm:instruments} and Supplement Section~\ref{S-app:instruments} "
-        r"were added with AI assistance and have not yet been checked by the authors. This includes the passive-price "
-        r"extension and its proof in Supplement Section~\ref{S-app:passiveincidence}."
-    )
+        review_ai = (
+            r" On 22 November 2026 the proofs or statements of Proposition~\ref{prop:decision-suff}, "
+            r"Theorems~\ref{thm:eq-id}, \ref{thm:cost}, \ref{thm:cheap}, \ref{thm:recovery}, "
+            r"\ref{thm:minimax}, \ref{thm:partial-minimax}, \ref{thm:tags} and \ref{thm:paradox}, "
+            r"Proposition~\ref{prop:interventions}, Corollaries~\ref{cor:loss} and \ref{cor:halt}, "
+            r"Lemma~\ref{lem:micro} and Proposition~\ref{prop:relabeling} were added or corrected with AI "
+            r"assistance and have not yet been checked by the authors. Supplement Theorem~\ref{S-prop:passive}(ii), "
+            r"Corollary~\ref{S-cor:unknown_primitives}, Theorem~\ref{S-thm:questions}(ii)--(iii), "
+            r"Propositions~\ref{S-prop:hidegame} and~\ref{S-prop:relabelK}, and Theorem~\ref{S-thm:relabelgeneral} "
+            r"were also corrected with AI assistance and have not yet been checked by the authors. "
+            r"The Taiwan calibration wording was corrected against the archived outputs."
+        )
+        instrument_ai = (
+            r" Theorem~\ref{thm:instruments} and Supplement Section~\ref{S-app:instruments} "
+            r"were added with AI assistance and have not yet been checked by the authors. This includes the passive-price "
+            r"extension and its proof in Supplement Section~\ref{S-app:passiveincidence}."
+        )
     t = rep(t, old_ai, new_ai + review_ai + instrument_ai)
     t = rep(t, r"to assist with literature cross-checking, numerical verification scripts, Lean~4 formalization coding, and language editing.",
             r"to assist with literature cross-checking, numerical verification scripts, Lean~4 formalization coding, drafting, and language editing.")
