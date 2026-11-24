@@ -55,6 +55,52 @@ def supplement_tex():
     doc = pre + '\\begin{document}\n' + body + '\n' + bib + '\n\\end{document}\n'
     doc, dropped = round9.tidy_bib(doc)
     doc = round9.longtable_newlean(doc)
+
+    # ---------------------------------------------------------------- mathematical and editorial fixes
+    doc = doc.replace(r"Theorem~\ref{M-n:paradox} to Section~\ref{app:paradox}.",
+                      r"Theorem~\ref{M-n:paradox} to Section~\ref{app:paradox}; Proposition~\ref{M-thm:instruments} (Derived incidence) to Sections~\ref{app:instruments} and~\ref{app:passiveincidence} (Sections~S22--S23).")
+    doc = doc.replace(r" and Proposition~\ref{M-prop:endogenous_supervisor}", "")
+    doc = doc.replace(", and a prospective window from November 2026 serves as a replication", "")
+    doc = doc.replace(r"J'=TJT^{-1}={\rm diag}(0,r_1,\ldots)+uu^\top",
+                      r"J'=TJT^{-1}={\rm diag}(0,r_1,\ldots)+uu^\top \succeq 0\text{ (so }\lambda_\ell\ge 0)")
+    doc = doc.replace("detection probability, and $k(\\delta_0-\\delta)^2$", "detection probability, $k(\\delta_0-\\delta)^2$")
+    doc = doc.replace(r"Proposition~\ref{M-prop:endogenous_supervisor}", r"Proposition~\ref{prop:hidegame}")
+    doc = doc.replace("1,238 named declarations", "1,256 named declarations")
+    doc = doc.replace(r"13 November 2026 (Lean 4.34.1, Mathlib commit \texttt{d13f23b})",
+                      r"23 November 2026 (Lean 4.34.1 commit \texttt{5045d00}, Mathlib commit \texttt{d13f23b})")
+    doc = doc.replace("The uniform positive lower bound and the maximum principle bound $B$ away from zero",
+                      r"The uniform positive lower bound on the unit circle and the minimum principle for harmonic functions (applied to $\operatorname{Re}B$) bound $\operatorname{Re}B$, and hence $|B|$, away from zero")
+    doc = doc.replace("by Cauchy's inequality", "by Cauchy's integral estimate")
+
+    s23_old = (r"Section~\ref{app:passiveincidence} & "
+               r"Fourier first-moment budget (\texttt{fourier\_first\_moment\_budget}, \texttt{fourier\_first\_moment\_disk}), "
+               r"truncation tail (\texttt{fourier\_truncation\_tail}), spectral floor Lipschitz (\texttt{spectral\_floor\_lipschitz}), "
+               r"quadrature error (\texttt{quadrature\_fourier\_error}), transfer factor and "
+               r"function errors (\texttt{transfer\_factor\_error}, \texttt{transfer\_function\_error}), incidence estimator bound "
+               r"(\texttt{incidence\_estimator\_bound}) (\nolinkurl{PublicationRevision14.lean}) & "
+               r"stationary Gaussian likelihood, spectral estimation, uniform central limit theorem, and Parseval isometry\\")
+    s23_new = (r"Section~\ref{app:passiveincidence} (Proposition~\ref{M-thm:instruments}) & "
+               r"Fourier first-moment budget (\texttt{p1\_fourier\_first\_moment\_bound}, \texttt{sum\_j\_logCoeff\_le}, "
+               r"\texttt{sum\_j\_logCoeff\_disk\_le}, \texttt{fourier\_first\_moment\_budget}, \texttt{fourier\_first\_moment\_disk}), "
+               r"truncation tail (\texttt{fourier\_truncation\_tail}), spectral floor log-Lipschitz (\texttt{p1\_spectral\_floor\_log\_lipschitz}, "
+               r"\texttt{spectral\_floor\_lipschitz}), quadrature error (\texttt{quadrature\_fourier\_error}), transfer factor and "
+               r"function errors (\texttt{transfer\_factor\_error}, \texttt{transfer\_function\_error}), incidence estimator bound "
+               r"(\texttt{incidence\_estimator\_bound}), end-to-end passive incidence assembly (\texttt{p1\_passive\_incidence\_end\_to\_end}) "
+               r"(\nolinkurl{PublicationRevision14.lean}; \nolinkurl{Paper1PassiveIncidenceUpper.lean}) & "
+               r"stationary Gaussian likelihood, spectral estimation, uniform central limit theorem, and Parseval isometry\\")
+    doc = doc.replace(s23_old, s23_new)
+
+    symbols = (r"$B(z), B_h(z)$ & autocovariance generating functions $\sum_k \gamma_k z^{|k|}$ and $\sum_k \gamma_{k+h} z^{|k|}$\\" + "\n"
+               r"$C_h(z)$ & holding covariance difference $2(B(z) - B_h(z))/(1-z)$\\" + "\n"
+               r"$Q(z)$ & stationary inverse transfer factor $1 - z(a + J(z))$\\" + "\n"
+               r"$J(z)$ & feedback generating function $\kappa \sum_{m \ge 0} k_m z^m$\\" + "\n"
+               r"$\nu$ & desk quadratic position adjustment penalty parameter\\" + "\n"
+               r"$\tau$ & desk transaction tax / per-trade execution cost\\" + "\n"
+               r"$\Delta g'$ & jump in one-sided derivative of policy function at cap or exit kink\\" + "\n")
+    if r"$B(z), B_h(z)$" not in doc:
+        doc = doc.replace(r"$K_*$ & transfer-difference constant $2\kappa^2q/[\epsilon^3(1-S)^2]$\\" + "\n" + r"\bottomrule",
+                          r"$K_*$ & transfer-difference constant $2\kappa^2q/[\epsilon^3(1-S)^2]$\\" + "\n" + symbols + r"\bottomrule")
+
     return doc, n, dropped
 
 
