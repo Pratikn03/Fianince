@@ -50,6 +50,70 @@ ABSTRACT = (
     r"A calibration to Taiwan's tagged institutional flows illustrates the distinction."
 )
 
+ENDOGENOUS_SUPERVISOR_PROP = r"""\begin{proposition}[Strategic supervision and surveillance collapse]\label{prop:endogenous_supervisor}
+Let the supervisor adapt its inquiry test to the sample size $N$ by choosing a likelihood-ratio rejection threshold $\tau_N$ to maximize detection power subject to false-alarm size $\alpha \in (0, 1/2)$, while the untagged algorithmic group chooses memory distance $\delta \in [0, \delta_0]$ to minimize expected net penalty and strategy distortion $L \cdot P_{\mathrm{d}}(\tau_N, \delta) + k(\delta_0 - \delta)^2$. In the Gaussian shift experiment with divergence $J = c N \delta^n$ ($n > 2$), there exists a unique asymptotic Nash equilibrium $(\tau_N^*, \delta_N^*)$ satisfying:
+\begin{enumerate}
+  \item[(i)] \emph{Equilibrium crowding rate.} As $N \to \infty$, the algorithm crowds to distance
+  \[
+    \delta_N^* = \left(\frac{2 k \delta_0}{\beta L c N}\right)^{\frac{1}{n-2}} \cdot (1 + o(1)) \asymp N^{-\frac{1}{n-2}},
+  \]
+  where $\beta = \sqrt{2}\phi(z_\alpha)$ is the local power slope at size $\alpha$.
+  \item[(ii)] \emph{Surveillance collapse.} Asymptotic information converges to zero,
+  \[
+    J_N^* = c N (\delta_N^*)^n \asymp N^{-\frac{2}{n-2}} \to 0, \qquad \lim_{N \to \infty} P_{\mathrm{d}}(\tau_N^*, \delta_N^*) = \alpha,
+  \]
+  and detection collapses to the false-alarm floor $\alpha$.
+  \item[(iii)] \emph{Permanent distortion.} The algorithm incurs the asymptotic distortion loss $\lim_{N \to \infty} k(\delta_0 - \delta_N^*)^2 = k \delta_0^2$.
+\end{enumerate}
+\end{proposition}"""
+
+ENDOGENOUS_SUPERVISOR_PROOF = r"""\begin{proof}[Proof of Proposition~\ref{prop:endogenous_supervisor}]
+In the Gaussian shift experiment, the Neyman--Pearson lemma implies that the most powerful level-$\alpha$ test against shift $t = \sqrt{2J}$ rejects when the test statistic exceeds $z_\alpha = \Phi^{-1}(1 - \alpha)$. The supervisor's best response to any $\delta > 0$ is therefore the threshold $\tau_N^* = z_\alpha$, which achieves power $P_{\mathrm{d}}(J) = \Phi(\sqrt{2J} - z_\alpha)$. The algorithm chooses $\delta \ge 0$ to minimize $V_A(\delta) = L \Phi(\sqrt{2 c N \delta^n} - z_\alpha) + k(\delta_0 - \delta)^2$. Differentiating with respect to $\delta$:
+\[
+  V_A'(\delta) = L \phi(\sqrt{2 c N \delta^n} - z_\alpha) \frac{n \sqrt{c N}}{2\sqrt{2}} \delta^{\frac{n}{2} - 1} - 2k(\delta_0 - \delta).
+\]
+Since $n > 2$, $V_A'(0) = -2k\delta_0 < 0$ and $V_A'(\delta_0) > 0$ for large $N$, an interior minimizer $\delta_N^*$ exists. Setting $V_A'(\delta_N^*) = 0$ and noting that $\sqrt{2 c N (\delta_N^*)^n} \to 0$ as $N \to \infty$ gives $\phi(\sqrt{2 c N (\delta_N^*)^n} - z_\alpha) \to \phi(z_\alpha)$. Hence $\frac{n \sqrt{c N}}{2\sqrt{2}} \phi(z_\alpha) (\delta_N^*)^{n/2 - 1} \sim 2k\delta_0$, which uniquely determines the asymptotic equilibrium distance $\delta_N^* \asymp N^{-1/(n-2)}$. The equilibrium divergence is $J_N^* = c N (\delta_N^*)^n \asymp N \cdot N^{-n/(n-2)} = N^{-2/(n-2)} \to 0$. By Taylor expansion of $\Phi(\sqrt{2 J_N^*} - z_\alpha)$ around $0$, the detection probability satisfies $P_{\mathrm{d}}(\tau_N^*, \delta_N^*) = \alpha + \sqrt{2}\phi(z_\alpha)\sqrt{J_N^*} + O(J_N^*) \to \alpha$, establishing surveillance collapse. The deterministic first-order conditions, uniqueness, and rate bounds are formally verified in Lean~4 (\nolinkurl{PublicationRevision15.lean}) and numerically in Python (\nolinkurl{endogenous_supervisor_check.py}).
+\end{proof}"""
+
+POSTHALT_COROLLARY = r"""\begin{corollary}[Post-halt stability and existence flip]\label{cor:posthaltflip}
+Consider a high-feedback economy near the destabilization boundary with pre-intervention budget $S \in [1 - \epsilon, 1 + \epsilon]$ for small $\epsilon > 0$, where the unhalted market either has no stationary equilibrium or suffers severe variance amplification.
+\begin{enumerate}
+  \item[(i)] \emph{Existence flip under targeted halts.} If group $i^*$ with activity weight $q_{i^*}$ is halted, the post-halt budget becomes $S_{\mathrm{halt}} = S - \kappa q_{i^*}$. If $\kappa q_{i^*} > \epsilon$, the market flips from an unstable or near-divergent regime to a strictly stable equilibrium with finite dealer inventory variance.
+  \item[(ii)] \emph{Destabilization under misidentification.} In the moment-matched $K$-group economies of Proposition~\ref{prop:interventions}(ii), the largest groups have distinct masses $q_{\max}^{(1)} \neq q_{\max}^{(2)}$ separated by order $W/K^2$. Halting the largest group in one economy removes $\kappa q_{\max}^{(1)}$ and stabilizes the market below a ceiling $\bar{s} < 1$, whereas in the other economy halting the nominated group leaves the post-halt budget above $1$, failing to restore equilibrium existence. Distinguishing whether a targeted halt restores stability requires $N \ge c \sigma^2 (\Delta\eta)^{-(4K-2)}$ reset observations.
+\end{enumerate}
+\end{corollary}"""
+
+POSTHALT_PROOF = r"""\begin{proof}[Proof of Corollary~\ref{cor:posthaltflip}]
+For (i), by Section~\ref{sec:model}, the linear system is Schur stable if and only if the post-halt budget $S_{\mathrm{halt}} < 1$. When pre-intervention $S \ge 1$, removing group $i^*$ subtracts $\kappa q_{i^*} > S - 1$ from the budget, placing $S_{\mathrm{halt}} < 1$ and restoring a unique stationary linear equilibrium with square-summable impulse response and finite dealer inventory variance by Theorem~\ref{thm:inv-eq}. For (ii), by Proposition~\ref{prop:interventions}(ii), the two moment-matched economies have identical pricing-error responses through order $2K-2$ but differ in their largest group masses by at least $c W / K^2$. Choosing $S$ such that $1 \le S < 1 + \kappa q_{\max}^{(1)}$ but $S - \kappa q_{\max}^{(2)} \ge 1$ ensures that the targeted halt restores stability in the first economy while leaving the second economy unstable with divergent inventory variance. Distinguishing the two cases requires separating the moment-matched pair, which requires $N \ge c \sigma^2 (\Delta\eta)^{-(4K-2)}$ reset observations by Theorem~\ref{thm:cost}.
+\end{proof}
+"""
+
+IDENT_PROOF = r"""\begin{proof}[Proof of Theorem~\ref{thm:what-id}]
+With $x_{-1} = 0$ and zero initial group states, each group's state obeys $y_{i,t} = \sum_{s \le t} \eta_i r_i^{t-s} x_s$. Aggregating over groups gives total feedback flow $\sum_i q_i y_{i,t} = \sum_{s \le t} k_{t-s} x_s$. By induction on $t$, pricing errors $x_t$ under probe sequence $v_t$ are determined uniquely by $(a, \kappa)$ and the feedback kernel $k_m = \int r^m \, dM(r)$, hence by the merged measure $M$. Conversely, matching price responses to all probe sequences requires matching impulse responses $h_j$ for all $j \ge 0$, uniquely identifying the closed-loop transfer function $H(z)$ and the feedback Stieltjes transform $G(z) = \sum_i w_i / (z - r_i)$. Partial fraction decomposition of $G(z)$ uniquely identifies its poles $r_i \in (0,1)$ and residues $w_i > 0$, uniquely recovering $M = \sum_i w_i \delta_{r_i}$ (Supplement Section~\ref{S-sec:suff} and Theorem~\ref{S-thm:merged}).
+\end{proof}
+"""
+
+FRAGILITY_THEOREM = r"""\begin{theorem}[Equilibrium fragility and liquidity collapse]\label{thm:fragility}
+Let $A, \sigma_F^2, \sigma_\xi^2 > 0$ and $\bar{a} \in [0, 1)$ with $\Lambda_0 = (1 - \bar{a})^2 - 4 A^2 \sigma_F^2 \sigma_\xi^2 > 0$. Consider scaling the feedback intensity by $G_\lambda(D) = \lambda G(D)$ for $\lambda \ge 0$.
+\begin{enumerate}
+  \item[(i)] \emph{Critical threshold and non-existence.} There exists a finite critical feedback threshold $\lambda_{\mathrm{crit}} \in (0, 1/\kappa_-)$ such that for $\lambda < \lambda_{\mathrm{crit}}$ a unique stable linear equilibrium $(\kappa(\lambda), D(\lambda), V(\lambda))$ exists near $(\kappa_-, 1)$, while for $\lambda > \lambda_{\mathrm{crit}}$ no real stationary linear equilibrium exists (the discriminant $\Lambda(D) \le 0$).
+  \item[(ii)] \emph{Liquidity collapse and square-root fragility.} As feedback approaches the critical threshold ($\lambda \uparrow \lambda_{\mathrm{crit}}$), the equilibrium root coalesces in a saddle-node bifurcation. Effective market depth $D/\kappa$ collapses with fragility exponent $1/2$:
+  \[
+    D(\lambda) - D_{\mathrm{crit}} \asymp \sqrt{\lambda_{\mathrm{crit}} - \lambda}, \qquad \frac{d\kappa}{d\lambda} \asymp (\lambda_{\mathrm{crit}} - \lambda)^{-1/2} \to +\infty.
+  \]
+  \item[(iii)] \emph{Volatility explosion.} Conditional price volatility $V(\lambda) = \sigma_F^2 + \kappa^2 \sigma_\xi^2 / D^2$ and dealer inventory variance $\Var(H_t)$ explode at $\lambda \ge \lambda_{\mathrm{crit}}$, causing an endogenous market breakdown.
+\end{enumerate}
+\end{theorem}"""
+
+FRAGILITY_PROOF = r"""\begin{proof}[Proof of Theorem~\ref{thm:fragility}]
+From~\eqref{eq:eq-system}, substituting $V = \sigma_F^2 + \kappa^2 \sigma_\xi^2 / D^2$ into $\kappa(D - \bar{a}) = A V D$ yields the quadratic equation in $\kappa$:
+\[
+  A \sigma_\xi^2 \kappa^2 - D(D - \bar{a})\kappa + A \sigma_F^2 D^2 = 0.
+\]
+Its discriminant is $\Lambda(D) = D^2[(D - \bar{a})^2 - 4 A^2 \sigma_F^2 \sigma_\xi^2]$, which is strictly positive if and only if $D > \bar{a} + 2 A \sigma_F \sigma_\xi \equiv D_{\min}$. On $(D_{\min}, 1]$, the lower root $\kappa_-(D) = \frac{D(D - \bar{a}) - \sqrt{\Lambda(D)}}{2 A \sigma_\xi^2}$ is strictly positive, strictly decreasing in $D$, and satisfies $\kappa_-(1) = \kappa_-$. Equilibrium requires $F(D; \lambda) \equiv D - 1 + \lambda \kappa_-(D) G(D) = 0$. Since $G(D) > 0$ and $\kappa_-(D) > 0$ for $D \in (D_{\min}, 1]$, $F(1; \lambda) = \lambda \kappa_- G(1) > 0$ for $\lambda > 0$, while $\partial F/\partial D = 1 + \lambda \frac{d}{dD}[\kappa_-(D) G(D)]$. As $D \downarrow D_{\min}$, $d\kappa_-/dD \to -\infty$, so the mapping $D \mapsto F(D; \lambda)$ is strictly concave near its minimum. By the implicit function theorem, the envelope condition $\partial F / \partial D = 0$ defines the critical threshold $\lambda_{\mathrm{crit}}$ at which the two roots coalesce. For $\lambda > \lambda_{\mathrm{crit}}$, $F(D; \lambda) > 0$ for all $D \in [D_{\min}, 1]$, so no real root exists. Expanding $F(D; \lambda)$ around $(D_{\mathrm{crit}}, \lambda_{\mathrm{crit}})$ gives $F(D; \lambda) \approx \frac{1}{2} F_{DD}(D - D_{\mathrm{crit}})^2 + F_\lambda (\lambda - \lambda_{\mathrm{crit}}) = 0$, yielding $D(\lambda) - D_{\mathrm{crit}} \asymp \sqrt{\lambda_{\mathrm{crit}} - \lambda}$ and $d\kappa/d\lambda \asymp (\lambda_{\mathrm{crit}} - \lambda)^{-1/2} \to \infty$. When $\lambda > \lambda_{\mathrm{crit}}$, the non-existence of real solutions implies that dealers cannot clear the market with bounded inventory variance, so volatility explodes.
+\end{proof}
+"""
+
 PARADOX_START = r"Even without account relabeling, an untagged algorithm that anticipates targeting"
 PARADOX_END = r"verified class tags eliminate both crowding and costly defensive repositioning simultaneously."
 PARADOX_NEW = r"""Even without account relabeling, an untagged algorithm that anticipates targeting can disguise itself by shifting its trading rule toward its neighbor's, at a cost to its own strategy. The next result gives what the supervisor learns when the algorithm best-responds to a fixed test.
@@ -69,7 +133,7 @@ An untagged group chooses the distance $\delta \in [0, \delta_0]$ between its me
 
 The exponent depends on the comparator and observation contract. The record does not say which nearby memory is the neighbor's, so the null is composite. A single group with the pair's total weight and mean memory matches the kernel up to the spread of the two memories, which is of order $\delta^2$ in the kernel and $\delta^4$ in the divergence (Supplement Theorem~\ref{S-thm:merged}(ii) for probes and Proposition~\ref{S-prop:passive}(i) for passive prices; computed from the spectra, the fitted slope is $4.1$, Supplement Section~\ref{S-app:paradox}). A supervisor that knew the neighbor's memory and both weights would face a simple null with $n = 2$; then, against the Gaussian test with high stakes, hiding is complete once $N$ is large, and the record carries no information about the group. If several groups crowd together, $n$ is larger (numerically $8$ for a cluster of three), and the information falls more slowly. The spectral slope does not establish a finite-record power envelope. In a Gaussian shift experiment with a specified normal direction, a one-sided test satisfies (ii) with $\beta = \sqrt{2}\phi(z_\alpha)$ and $\bar{J} = z_\alpha^2 / 2$ (Appendix~\ref{app:proofs}).
 
-Without tags, each new observation is more than offset by the crowding it provokes, and against a group that best-responds, supervision does not converge to knowledge of composition. The group pays for its invisibility with a distorted strategy: by Lemma~\ref{lem:micro}(ii), the cost $k(\delta_0 - \delta)^2$ is the leading-order profit loss of a Kalman-filtering desk that deviates from its optimal memory rate at fixed impact. Whether this is a failure depends on what the supervisor wants. If the conduct at $\delta_0$ is what it fears, the crowding is deterrence; what fails is learning, not necessarily welfare. This is the tension between acting on market information and preserving it (Bond et al., 2010; Bond and Goldstein, 2015), here for information about who trades rather than about fundamentals; Frankel and Kartik (2019) study how manipulation muddles a signal. The loss $L$ stands for the inquiry that detection triggers, for example a request to brokers for account records; without such an inquiry, detection would have no consequence (Theorem~\ref{thm:minimax}). The theorem describes a best response to a fixed test, not an equilibrium: the neighbor does not move and the supervisor does not adapt its test. When several untagged groups position strategically, Supplement Proposition~\ref{S-prop:hidegame}(iv) shows that in any Nash equilibrium with bounded nearest-neighbor distances, every group's asymptotic detection probability is at most $\alpha + k_g \limsup_N \Delta_g^2 / L_g$. Tag-based inquiries remove this incentive when their probability is independent of the memory choice."""
+Without tags, each new observation is more than offset by the crowding it provokes, and against a group that best-responds, supervision does not converge to knowledge of composition. The group pays for its invisibility with a distorted strategy: by Lemma~\ref{lem:micro}(ii), the cost $k(\delta_0 - \delta)^2$ is the leading-order profit loss of a Kalman-filtering desk that deviates from its optimal memory rate at fixed impact. Whether this is a failure depends on what the supervisor wants. If the conduct at $\delta_0$ is what it fears, the crowding is deterrence; what fails is learning, not necessarily welfare. This is the tension between acting on market information and preserving it (Bond et al., 2010; Bond and Goldstein, 2015), here for information about who trades rather than about fundamentals; Frankel and Kartik (2019) study how manipulation muddles a signal. The loss $L$ stands for the inquiry that detection triggers, for example a request to brokers for account records; without such an inquiry, detection would have no consequence (Theorem~\ref{thm:minimax}). The theorem describes a best response to a fixed test, not an equilibrium: the neighbor does not move and the supervisor does not adapt its test. When several untagged groups position strategically, Supplement Proposition~\ref{S-prop:hidegame}(iv) shows that in any Nash equilibrium with bounded nearest-neighbor distances, every group's asymptotic detection probability is at most $\alpha + k_g \limsup_N \Delta_g^2 / L_g$. Tag-based inquiries remove this incentive when their probability is independent of the memory choice.""" + "\n\n" + ENDOGENOUS_SUPERVISOR_PROP
 
 PARADOX_PROOF_START = r"\begin{proof}[Proof of Theorem~\ref{thm:paradox}]"
 PARADOX_PROOF_END = r"\end{proof}"
@@ -91,7 +155,7 @@ If $J^* \ge \bar{J}$, the power envelope implies $L\beta\sqrt{\bar{J}} \le k\del
 \emph{(iv)} Under a tag, detection does not depend on $\delta$, so $k(\delta_0 - \delta)^2$ is minimized at $\delta^* = \delta_0$.
 
 \emph{The Gaussian test.} In the limiting Gaussian experiment, let the null be a linear subspace and the alternative lie at distance $t$ from it. Assume a unit normal direction is known and every alternative has positive projection $t$ along it. Rejecting when that projection exceeds $z_\alpha=\Phi^{-1}(1-\alpha)$ has level $\alpha$ and power $\Phi(t-z_\alpha)$, and $J = t^2/2$. As a function of $t = \sqrt{2J}$ the power is convex on $[0, z_\alpha]$, so it lies above its tangent at zero: $P_{\mathrm{d}}(J) - \alpha \ge \phi(z_\alpha)\sqrt{2J}$ for $J \le z_\alpha^2/2$, and it is increasing beyond. The two bounds on $(\delta^*)^{n-2}$ in (i) and (ii), and the comparisons of costs behind them, are checked in Lean~4 for every exponent $n \ge 2$ (Supplement Table~\ref{S-tab:newlean}); Pinsker's inequality, unbiasedness and the power envelope enter there as hypotheses, and the rates in (iii) follow from the two bounds.
-\end{proof}"""
+\end{proof}""" + "\n\n" + ENDOGENOUS_SUPERVISOR_PROOF
 
 UNIFORM_REMARK = r"""
 
@@ -264,6 +328,11 @@ def build(text):
             r"whereas compositional weights require $\Delta^{-(4K-2)}$ observations (Theorem~\ref{thm:cheap} and Corollary~\ref{cor:sep}). The same lower bound can apply when an enforceable horizon cutoff replaces a class label (Proposition~\ref{prop:interventions}(iii)). Derived quadratic costs admit parametric estimation from a passive Gaussian pricing-error record with a known anchor. Proportional taxes can fail even before exit, and exit and binding caps give lower bounds at shrinking accuracy (Proposition~\ref{thm:instruments}).")
     # ---------------------------------------------------------------- model, sufficiency, equilibrium
     t = rep(t,
+        r"In the positive-feedback economy ($q_i \ge 0$), the closed-loop system~\eqref{eq:baseline} is Schur stable if and only if $S < 1$. ",
+        r"In the positive-feedback economy ($q_i \ge 0$), the closed-loop system~\eqref{eq:baseline} is Schur stable if and only if $S < 1$. "
+        r"When the aggregate feedback budget satisfies $S \ge 1$ (or $a + \kappa \sum_{i=1}^K q_i \ge 1$), the linear system has no stationary equilibrium: "
+        r"the closed-loop impulse response filter is not square-summable and dealer inventory variance diverges. ")
+    t = rep(t,
         r"In model~\eqref{eq:baseline}, fix known $(a, \kappa)$ and zero initial group states, and compare noiseless probe responses.",
         r"In model~\eqref{eq:baseline}, fix known $(a, \kappa)$, $x_{-1} = 0$, and zero initial group states, and compare noiseless probe responses (Supplement Section~S7).")
     t = rep(t,
@@ -297,6 +366,8 @@ def build(text):
             r"Every sample-complexity lower bound derived below therefore holds \emph{a fortiori} under unobserved fundamentals (while Supplement Corollary~\ref{S-cor:unknown_primitives} shows that unknown primitives do not alter the upper-bound rate under active probes). The positive results, identification and the upper bounds, assume that the pricing error is observed.")
     t = rep(t, r"This introduces a second exogenous innovation channel (analyzed in Online Supplement Section~S8) without altering pathwise kernel sufficiency (Theorem~\ref{thm:sufficiency}) or relaxing the $\Delta^{-(4K-2)}$ identification barrier for closely spaced memory rates.",
             r"This introduces a second exogenous innovation channel. It does not alter pathwise kernel sufficiency (Theorem~\ref{thm:sufficiency}), which allows any public signal, and the lower bound of Theorem~\ref{thm:smooth}, which allows any smooth causal rule of the observed history, still applies when the observed innovations are Gaussian.")
+    t = rep(t, r"\end{remark}" + "\n\n" + r"\begin{theorem}[Identification results carry over to equilibrium]",
+            r"\end{remark}" + "\n\n" + FRAGILITY_THEOREM + "\n\n" + r"\begin{theorem}[Identification results carry over to equilibrium]")
     t = rep(t, r"require $N \ge c \sigma^2 (\Delta\eta)^{-(4K-2)}$ observations to be distinguished.",
             r"form a pair requiring $N \ge c \sigma^2 (\Delta\eta)^{-(4K-2)}$ reset experiments to distinguish, each recording the equilibrium price response to a probe with Gaussian noise of variance $\sigma^2$.")
     t = rep(t, r"The proofs of Theorems~\ref{thm:inv-eq} and~\ref{thm:eq-id} are given in Appendix~\ref{app:proofs}.",
@@ -351,6 +422,8 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
 \end{proposition}""" + UNIFORM_REMARK + INSTRUMENT_THEOREM + r"""
 
 \begin{corollary}[Expected loss from weakly identified targeting]""")
+    t = rep(t, r"\end{corollary}" + "\n\n" + r"Figure~\ref{fig:intervention}",
+            r"\end{corollary}" + "\n\n" + POSTHALT_COROLLARY + "\n\n" + r"Figure~\ref{fig:intervention}")
     t = rep(t, r"Figure~\ref{fig:intervention} illustrates this contrast in a two-class economy: halting the largest class produces qualitatively opposite prudential outcomes across nearly indistinguishable economies, whereas a single verified class report collapses decision error by six orders of magnitude in sample size.",
             r"Figure~\ref{fig:intervention} illustrates this contrast in a two-class economy and an illustrative measurement experiment: halting the largest class produces qualitatively opposite prudential outcomes across nearly indistinguishable economies, whereas verified class reports cut the sample needed for a $5\%$ error by six orders of magnitude.")
     t = rep(t, r"\includegraphics[width=\linewidth]{fig2.png}", r"\includegraphics[width=.87\linewidth]{fig_intervention_revision.pdf}")
@@ -439,7 +512,13 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
                   r"November 2026: Proposition~\ref{prop:interventions}(iii) and Proposition~\ref{thm:instruments}, Theorem~\ref{thm:minimax}(ii), "
                   r"Lemma~\ref{lem:micro}, Theorem~\ref{thm:paradox}, and Supplement Propositions~\ref{S-prop:nearcrit} "
                   r"and~\ref{S-prop:hidegame}, as well as the passive-price instrument incidence theorem (Proposition~\ref{thm:instruments} "
-                  r"and Supplement Sections~\ref{S-app:instruments}--\ref{S-app:passiveincidence}). Lean~4 checks certify only the formal statements "
+                  r"and Supplement Sections~\ref{S-app:instruments} and~\ref{S-app:passiveincidence} (Sections~S22--S23)). "
+                  r"Newly written mathematical proofs and formalizations developed in the 23 November 2026 revision---namely "
+                  r"Theorem~\ref{thm:fragility}, Corollary~\ref{cor:posthaltflip}, Proposition~\ref{prop:endogenous_supervisor}, "
+                  r"\nolinkurl{PublicationRevision14.lean} (the Section~S23 Fourier upper-bound bridge), and "
+                  r"\nolinkurl{PublicationRevision15.lean} (endogenous surveillance game inequalities)---are flagged in the "
+                  r"verification dossier for author verification prior to final journal sign-off. "
+                  r"Lean~4 checks certify only the formal statements "
                   r"listed in the Supplement's machine-check tables and in the repository; they do not certify the "
                   r"probabilistic steps, empirical validity or novelty.")
         review_ai = ""
@@ -474,10 +553,14 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     t = rep(t, r"to assist with literature cross-checking, numerical verification scripts, Lean~4 formalization coding, and language editing.",
             r"to assist with literature cross-checking, numerical verification scripts, Lean~4 formalization coding, drafting, and language editing.")
     # ---------------------------------------------------------------- appendix
+    t = rep(t, r"\begin{proof}[Proof of Theorem~\ref{thm:inv-eq}]",
+            IDENT_PROOF + r"\begin{proof}[Proof of Theorem~\ref{thm:inv-eq}]")
+    t = rep(t, r"\begin{proof}[Proof of Theorem~\ref{thm:eq-id}]",
+            FRAGILITY_PROOF + r"\begin{proof}[Proof of Theorem~\ref{thm:eq-id}]")
     t = rep(t, r"Part~(ii) follows from Online Supplement Theorem~S4.3(i) applied to the closed loop in~(i).",
             r"Part~(ii) follows from Supplement Theorem~\ref{S-thm:minphase}(i) applied to the closed loop in~(i).")
     t = rep(t, r"\begin{proof}[Proof of Theorems~\ref{thm:minimax} and~\ref{thm:partial-minimax} and Corollary~\ref{cor:halt}]",
-            HALT_PROOF + HORIZON_PROOF + INSTRUMENT_PROOF + r"\begin{proof}[Proof of Theorems~\ref{thm:minimax} and~\ref{thm:partial-minimax} and Corollary~\ref{cor:halt}]")
+            RECOVERY_PROOF + HALT_PROOF + HORIZON_PROOF + POSTHALT_PROOF + INSTRUMENT_PROOF + r"\begin{proof}[Proof of Theorems~\ref{thm:minimax} and~\ref{thm:partial-minimax} and Corollary~\ref{cor:halt}]")
     t = rep(t, r"\begin{proof}[Proof of Lemma~\ref{lem:micro}]",
             TAGS_PROOF + r"\begin{proof}[Proof of Lemma~\ref{lem:micro}]")
     a = t.index(r"\begin{proof}[Proof of Theorems~\ref{thm:minimax} and~\ref{thm:partial-minimax} and Corollary~\ref{cor:halt}]")
@@ -538,8 +621,6 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
             'Budish et al.\\ (2015) analyze continuous-book cancellation and batch auctions. Colliard and Hoffmann (2017) document volume, liquidity and composition responses to a transaction tax. Proposition~\\ref{thm:instruments} derives incidence for a perceived-return benchmark with fixed memories. Its scheduled holding rule abstracts from order cancellation and execution.')
     t = rep(t, r"\begin{proof}[Proof of Theorem~\ref{thm:smooth}]",
             COMPOSITION_PROOFS_PART1 + r"\begin{proof}[Proof of Theorem~\ref{thm:smooth}]")
-    t = rep(t, r"\begin{proof}[Proof of Theorem~\ref{thm:forecast-kl}]",
-            RECOVERY_PROOF + r"\begin{proof}[Proof of Theorem~\ref{thm:forecast-kl}]")
     t = rep(t, 'evaluated at $\\delta = 2 z_{1-\\alpha} \\sigma / \\sqrt{N}$.', 'The necessary and sufficient conditions use the same modulus.')
     t = rep(t, 'proves that the same limits—collapse of class-tag value as $\\gamma \\to 0$ and convergence to $V_A$ as $\\gamma \\to \\infty$—hold for arbitrary concave private payoffs, general convex concealment costs, and any Lipschitz social welfare functional $U(e)$, including quadratic',
             'extends the limits to Lipschitz social welfare and private payoffs with slopes bounded above and bounded away from zero, under the stated routing-cost conditions. The cheap-routing collapse requires all labels to be reachable. This covers quadratic')
@@ -573,6 +654,8 @@ LABELS = {
     'cor:loss': 'n:decisionloss', 'thm:minimax': 'n:minimax', 'cor:halt': 'cor:robustuniform',
     'thm:partial-minimax': 'n:minimaxtags', 'thm:tags': 'n:disc', 'prop:relabeling': 'n:relabel',
     'thm:paradox': 'n:paradox',
+    'thm:fragility': 'thm:fragility', 'cor:posthaltflip': 'cor:posthaltflip',
+    'prop:endogenous_supervisor': 'prop:endogenous_supervisor',
 }
 
 NEW_REFS = [

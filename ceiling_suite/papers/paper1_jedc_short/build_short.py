@@ -57,20 +57,26 @@ def supplement_tex():
     doc = round9.longtable_newlean(doc)
 
     # ---------------------------------------------------------------- mathematical and editorial fixes
-    doc = doc.replace(r"Theorem~\ref{M-n:paradox} to Section~\ref{app:paradox}.",
-                      r"Theorem~\ref{M-n:paradox} to Section~\ref{app:paradox}; Proposition~\ref{M-thm:instruments} (Derived incidence) to Sections~\ref{app:instruments}--\ref{app:passiveincidence}.")
-    doc = doc.replace(r" and Proposition~\ref{M-prop:endogenous_supervisor}", "")
+    mapping_old = r"Theorem~\ref{M-n:paradox} to Section~\ref{app:paradox}."
+    mapping_new = (
+        r"Theorem~\ref{M-n:paradox} and Proposition~\ref{M-prop:endogenous_supervisor} to Section~\ref{app:paradox}; "
+        r"Theorem~\ref{M-thm:fragility} and Corollary~\ref{M-cor:posthaltflip} to Section~\ref{app:eqinv}; "
+        r"Proposition~\ref{M-thm:instruments} (Derived incidence) to Sections~\ref{app:instruments} and~\ref{app:passiveincidence} (Sections~S22--S23)."
+    )
+    doc = doc.replace(mapping_old, mapping_new)
     doc = doc.replace(", and a prospective window from November 2026 serves as a replication", "")
     doc = doc.replace(r"J'=TJT^{-1}={\rm diag}(0,r_1,\ldots)+uu^\top",
-                      r"J'=TJT^{-1}={\rm diag}(0,r_1,\ldots)+uu^\top \succeq 0\text{ (so }\lambda_\ell\ge 0)")
+                      r"J'=TJT^{-1}={\rm diag}(0,r_1,\ldots)+uu^\top \succeq 0\text{ (since }r_i\ge 0\text{ and }uu^\top\succeq 0\text{, so }\lambda_\ell\ge 0)")
     doc = doc.replace("detection probability, and $k(\\delta_0-\\delta)^2$", "detection probability, $k(\\delta_0-\\delta)^2$")
-    doc = doc.replace(r"Proposition~\ref{M-prop:endogenous_supervisor}", r"Proposition~\ref{prop:hidegame}")
     doc = doc.replace("1,238 named declarations", "1,256 named declarations")
     doc = doc.replace(r"13 November 2026 (Lean 4.34.1, Mathlib commit \texttt{d13f23b})",
                       r"23 November 2026 (Lean 4.34.1 commit \texttt{5045d00}, Mathlib commit \texttt{d13f23b})")
+    doc = doc.replace(r"fourteen Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision14.lean}",
+                      r"fifteen Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision15.lean}")
     doc = doc.replace("The uniform positive lower bound and the maximum principle bound $B$ away from zero",
                       r"The uniform positive lower bound on the unit circle and the minimum principle for harmonic functions (applied to $\operatorname{Re}B$) bound $\operatorname{Re}B$, and hence $|B|$, away from zero")
     doc = doc.replace("by Cauchy's inequality", "by Cauchy's integral estimate")
+    doc = doc.replace("on on [0,1]^K", "on [0,1]^K")
 
     # Merge duplicate Table S2 rows: Theorem 5.5 and Cor. 7.2
     old_thm_shape_1 = (r"Theorem~\ref{M-n:shape} & signed atomic measures with vanishing moments are zero (\texttt{vandermonde\_signed\_zero}); "
@@ -113,7 +119,9 @@ def supplement_tex():
                r"function errors (\texttt{transfer\_factor\_error}, \texttt{transfer\_function\_error}), incidence estimator bound "
                r"(\texttt{incidence\_estimator\_bound}), end-to-end passive incidence assembly (\texttt{p1\_passive\_incidence\_end\_to\_end}) "
                r"(\nolinkurl{PublicationRevision14.lean}; \nolinkurl{Paper1PassiveIncidenceUpper.lean}) & "
-               r"stationary Gaussian likelihood, spectral estimation, uniform central limit theorem, and Parseval isometry\\")
+               r"stationary Gaussian likelihood, spectral estimation, uniform central limit theorem, and Parseval isometry\\" + "\n"
+               r"Theorem~\ref{M-thm:fragility} \& Cor.~\ref{M-cor:posthaltflip} & quadratic discriminant $\Lambda(D)$, critical threshold, effective depth collapse, and post-halt budget shift (\texttt{e4\_reduced\_form.py}, \texttt{e4\_fragility\_K.py}, \texttt{e3\_halt.py}, \texttt{every\_k\_halt\_check.py}) & continuous-time/discrete-time inventory clearing and dealer CARA optimization\\" + "\n"
+               r"Proposition~\ref{M-prop:endogenous_supervisor} & unique Nash equilibrium crowding distance, surveillance collapse, and zero asymptotic information (\texttt{supervisor\_nash\_unique}, \texttt{surveillance\_collapse\_rate}, \texttt{surveillance\_information\_collapse}) (\nolinkurl{PublicationRevision15.lean}; \nolinkurl{endogenous_supervisor_check.py}) & Neyman--Pearson lemma and Gaussian shift experiment power envelope\\")
     doc = doc.replace(s23_old, s23_new)
 
     symbols = (r"$B(z), B_h(z)$ & autocovariance generating functions $\sum_k \gamma_k z^{|k|}$ and $\sum_k \gamma_{k+h} z^{|k|}$\\" + "\n"
