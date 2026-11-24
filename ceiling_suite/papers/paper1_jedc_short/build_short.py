@@ -58,7 +58,7 @@ def supplement_tex():
 
     # ---------------------------------------------------------------- mathematical and editorial fixes
     doc = doc.replace(r"Theorem~\ref{M-n:paradox} to Section~\ref{app:paradox}.",
-                      r"Theorem~\ref{M-n:paradox} to Section~\ref{app:paradox}; Proposition~\ref{M-thm:instruments} (Derived incidence) to Sections~\ref{app:instruments} and~\ref{app:passiveincidence} (Sections~S22--S23).")
+                      r"Theorem~\ref{M-n:paradox} to Section~\ref{app:paradox}; Proposition~\ref{M-thm:instruments} (Derived incidence) to Sections~\ref{app:instruments}--\ref{app:passiveincidence}.")
     doc = doc.replace(r" and Proposition~\ref{M-prop:endogenous_supervisor}", "")
     doc = doc.replace(", and a prospective window from November 2026 serves as a replication", "")
     doc = doc.replace(r"J'=TJT^{-1}={\rm diag}(0,r_1,\ldots)+uu^\top",
@@ -71,6 +71,32 @@ def supplement_tex():
     doc = doc.replace("The uniform positive lower bound and the maximum principle bound $B$ away from zero",
                       r"The uniform positive lower bound on the unit circle and the minimum principle for harmonic functions (applied to $\operatorname{Re}B$) bound $\operatorname{Re}B$, and hence $|B|$, away from zero")
     doc = doc.replace("by Cauchy's inequality", "by Cauchy's integral estimate")
+
+    # Merge duplicate Table S2 rows: Theorem 5.5 and Cor. 7.2
+    old_thm_shape_1 = (r"Theorem~\ref{M-n:shape} & signed atomic measures with vanishing moments are zero (\texttt{vandermonde\_signed\_zero}); "
+                       r"remainder absorption (\texttt{inverse\_remainder\_absorption}) & "
+                       r"Lipschitz inverse on the compact class; Lipschitz bounds of the response map\\")
+    new_thm_shape_1 = (r"Theorem~\ref{M-n:shape} & signed atomic measures with vanishing moments are zero (\texttt{vandermonde\_signed\_zero}); "
+                       r"remainder absorption (\texttt{inverse\_remainder\_absorption}); "
+                       r"absorption of the Taylor remainder (\nolinkurl{absorption}) & "
+                       r"Lipschitz inverse on the compact class; Lipschitz bounds of the response map; "
+                       r"injectivity and the Jacobian of the moment map, compactness, the Gaussian norm bound\\")
+    doc = doc.replace(old_thm_shape_1, new_thm_shape_1)
+    old_thm_shape_2 = (r"Theorem~\ref{M-n:shape} & absorption of the Taylor remainder (\nolinkurl{absorption}) & "
+                       r"injectivity and the Jacobian of the moment map, compactness, the Gaussian norm bound\\" + "\n")
+    doc = doc.replace(old_thm_shape_2, "")
+
+    old_cor_loss_1 = (r"Cor.~\ref{M-n:decisionloss} & two-point loss bound, its divergence form, the record length and the tagged loss "
+                      r"(\texttt{decision\_loss\_tv}, \texttt{decision\_loss\_kl}, \texttt{decision\_record\_length}, \texttt{decision\_tag\_loss}) & "
+                      r"Pinsker's inequality and the Gaussian tail (hypotheses)\\")
+    new_cor_loss_1 = (r"Cor.~\ref{M-n:decisionloss} & two-point loss bound, its divergence form, the record length and the tagged loss "
+                      r"(\texttt{decision\_loss\_tv}, \texttt{decision\_loss\_kl}, \texttt{decision\_record\_length}, \texttt{decision\_tag\_loss}); "
+                      r"loss at least $\min(b,c)$ times the mean error (\nolinkurl{decision_loss_min}) & "
+                      r"Pinsker's inequality and the Gaussian tail (hypotheses); total variation\\")
+    doc = doc.replace(old_cor_loss_1, new_cor_loss_1)
+    old_cor_loss_2 = (r"Cor.~\ref{M-n:decisionloss} & loss at least $\min(b,c)$ times the mean error (\nolinkurl{decision_loss_min}) & "
+                      r"total variation\\" + "\n")
+    doc = doc.replace(old_cor_loss_2, "")
 
     s23_old = (r"Section~\ref{app:passiveincidence} & "
                r"Fourier first-moment budget (\texttt{fourier\_first\_moment\_budget}, \texttt{fourier\_first\_moment\_disk}), "
