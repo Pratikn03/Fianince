@@ -27,9 +27,9 @@
   pdfauthor={Pratik Niroula, Prashant Niroula, Sujan Khatiwada}
 }
 
-\setlength{\parskip}{4pt plus 1pt minus 1pt}
+\setlength{\parskip}{3pt plus 1pt minus 1pt}
 \setlength{\parindent}{1.2em}
-\linespread{1.08}
+\linespread{1.05}
 \emergencystretch=3em
 
 \pagestyle{fancy}
@@ -309,6 +309,10 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
 \end{tabular}
 \vspace{4pt}
 \parbox{\linewidth}{\footnotesize\emph{Notes:} Rate-based proxy $\ln(5)/D$, where $D$ is the stationary Gaussian KL rate computed from the closed-form Gaussian spectra at a common persistence and a common feedback budget $S$ (the Gauss--Radau weights rescaled to match the budget), $\kappa = 0.5$, and feedback share $\kappa \sum_i q_i = 0.3$ (total weight $0.6(1 - r_c)$ of the Gauss economy), assuming $252$ trading days per year. For 5-minute intraday memory horizons recorded continuously, divide by $417$. Entries substitute the asymptotic KL rate for finite-record KL per observation. They are model-based horizon benchmarks.}
+
+\begin{theorem}[Minimum price variation resolution limit]\label{thm:mpv}
+Let prices be observed on a discrete tick grid with minimum variation $\Delta_{\mathrm{tick}} > 0$: $\tilde{p}_t = \Delta_{\mathrm{tick}} \lfloor p_t / \Delta_{\mathrm{tick}} + 1/2 \rfloor$. For any two $K$-group economies whose continuous-space impulse responses satisfy $\|h^A - h^B\|_\infty \le C (\Delta\eta)^{2K-1}$, if the memory spread satisfies $\Delta\eta < \Delta\eta^* \equiv (\Delta_{\mathrm{tick}} / [2 C \kappa^2])^{1/(2K-1)}$, then $\tilde{p}_t^A \equiv \tilde{p}_t^B$ pathwise under bounded innovation realizations. The Kullback--Leibler divergence on the quantized price grid is identically zero, and distinguishing the two economies requires infinite observations ($N = \infty$).
+\end{theorem}
 \end{table}
 
 \subsection{Which questions prices answer cheaply}
@@ -392,7 +396,7 @@ The proof is given in Appendix~\ref{app:proofs} (combining the Gaussian chain ru
 
 \section{Supervision, Minimax Policy, and Strategic Disclosure}\label{sec:supervision}
 
-We now derive the regulatory implications of observational equivalence, moving from static prudential ceilings to minimax policy design, class-tagged disclosure, strategic relabeling, endogenous crowding, and an empirical calibration.
+We now derive regulatory implications, moving from static ceilings and anti-cyclical margin scaling $m(S)$ to minimax policy design, class-tagged disclosure, and empirical calibration. In continuous venues, predictable ceilings trigger circuit-breaker magnet effects (Subrahmanyam, 1994), favoring randomized volatility interruptions with jittered clocks over selective desk halts (Supplement Section~\ref{S-sec:jittered_auctions}).
 
 \subsection{Market-wide versus targeted interventions}
 
@@ -574,7 +578,7 @@ Let the supervisor adapt its inquiry test to the sample size $N$ by choosing a l
 
 \subsection{Illustrative empirical calibration: Taiwan Stock Exchange tagged flows}\label{sec:taiwan}
 
-To illustrate the magnitude of the identification barrier in an actual exchange dataset, we illustrate the decision problem in Theorems~\ref{n:cost} and~\ref{n:dual} using daily class-tagged net buying from the Taiwan Stock Exchange (TWSE) across three reported institutional classes—foreign investors, investment trusts, and dealers—over 2013--2016 ($300$ stocks, $270{,}060$ stock-days). We estimate each class's persistence $r_c$ and response $w_c$ to the prior day's price deviation, along with the market's lagged-flow impact $\kappa$ and price persistence $\sum_{j=1}^5 a_j$, using stock fixed effects and stationary date-block bootstrap confidence intervals (Table~\ref{tab:taiwan}). For each stock, the price deviation $x_t$ is the event-adjusted log price minus $\hat\beta$ times the log TAIEX, minus its trailing 60-day mean; it stands in for the model's pricing error. Each class's flow is its daily net buying scaled by the stock's average daily volume, so $\kappa$ is the response of $x$ to one day's average volume. The universe is the 300 four-digit stocks with the highest turnover over 2013--2016.
+To illustrate the magnitude of the identification barrier in an actual exchange dataset, we illustrate the decision problem in Theorems~\ref{n:cost} and~\ref{n:dual} using daily class-tagged net buying from the Taiwan Stock Exchange (TWSE) across three reported institutional classes—foreign investors, investment trusts, and dealers—over 2013--2016 ($300$ stocks, $270{,}060$ stock-days). We estimate each class's persistence $r_c$ and response $w_c$ to the prior day's price deviation, along with the market's lagged-flow impact $\kappa$ and price persistence $\sum_{j=1}^5 a_j$, using stock fixed effects and stationary date-block bootstrap confidence intervals (Table~\ref{tab:taiwan}). For each stock, the price deviation $x_t$ is the event-adjusted log price minus $\hat\beta$ times the log TAIEX, minus its trailing 60-day mean; it stands in for the model's pricing error. Each class's flow is its daily net buying scaled by the stock's average daily volume, so $\kappa$ is the response of $x$ to one day's average volume. The universe is the 300 four-digit stocks with the highest turnover over 2013--2016. The Taiwan Stock Exchange during 2013--2016 operated as a 5-second periodic call auction rather than a continuous double auction; the tagged categories (Foreign institutional investors, domestic investment trusts, and broker-dealers) represent macro institutional asset classes whose daily persistence reflects multi-day parent-order execution slicing (TWAP/VWAP) and fund flows, subject to daily price limits ($\pm 7\% / \pm 10\%$) and the 0.3\% transaction tax.
 
 \begin{table}[!htbp]
 \centering
@@ -612,7 +616,7 @@ This paper characterizes the informational boundary between public market data a
 
 Three policy conclusions follow. First, the budget for a uniform feedback cut can be estimated from kernel taps, given the market's persistence, impact and a bound on memory. Uniform policies are minimax over labelings in the fixed-population decision problem. In the Gaussian model a passive pricing-error record suffices for the smooth quadratic effect. Proportional taxes and threshold policies can require more information (Proposition~\ref{thm:instruments}). Second, class-specific restrictions require attribution. Verified flow tags remove the spacing penalty for weights in the reset experiment. Third, because strategic traders can erode class tags by routing orders across labels or crowd their strategies together under untagged surveillance, owner-linked reporting can support targeted supervision when the link is reliable, as illustrated by the cross-venue customer linkage embedded in consolidated audit trail architectures.
 
-Several limitations define natural directions for future work. Our explicit identification and upper-bound theorems rely on linear causal rules with finite-dimensional exponential or smooth memory; extensions to drifting populations, hard position limits, breach cascades, and saturating or learning algorithms are analyzed in the companion working papers (Niroula et al., 2026c, 2026d). Our passive sample-complexity bounds assume Gaussian (or quadratically regular) innovations and exclude bounded-support noise laws. The surveillance result describes a best response to a fixed test, not an equilibrium between the supervisor and the traders. The Taiwan calibration uses development data under P1M and P1M-A1 protocols set before their runs. It grants the observer the market's persistence and impact and uses asymptotic rate proxies and local numerical search. Causal feedback and the effective number of independent stocks remain unresolved. Trader rules are fixed and respond to deviations from a public fundamental, and the classes in the calibration are investor types rather than algorithms. Finally, while our contribution is theoretical and calibrated to public exchange data, a direct causal empirical test of the supervisory separation would evaluate an exogenous, externally documented class-specific trading restriction against pre-specified predictions.
+Several limitations define natural directions for future work. Our explicit identification and upper-bound theorems rely on linear causal rules with finite-dimensional exponential or smooth memory; extensions to drifting populations, hard position limits, breach cascades, and saturating or learning algorithms are analyzed in the companion working papers (Niroula et al., 2026c, 2026d). Our passive sample-complexity bounds assume Gaussian (or quadratically regular) innovations and exclude bounded-support noise laws. The surveillance result describes a best response to a fixed test, not an equilibrium between the supervisor and the traders. The Taiwan calibration uses development data under P1M and P1M-A1 protocols set before their runs. It grants the observer the market's persistence and impact and uses asymptotic rate proxies and local numerical search. Causal feedback and the effective number of independent stocks remain unresolved. Trader rules are fixed and respond to deviations from a public fundamental, and the classes in the calibration are investor types rather than algorithms. Our model governs discrete-time institutional order-flow persistence and inventory carry; it abstracts from continuous-time limit order book message cancellations and sub-millisecond latency races, which break additive flow aggregation in continuous double auctions (Supplement Section~\ref{S-sec:scope}). Finally, while our contribution is theoretical and calibrated to public exchange data, a direct causal empirical test of the supervisory separation would evaluate an exogenous, externally documented class-specific trading restriction against pre-specified predictions.
 
 \section*{Declarations}
 

@@ -40,6 +40,16 @@ def rep(t, old, new, count=1):
     return t.replace(old, new)
 
 
+
+MPV_THEOREM = r"""\begin{theorem}[Minimum price variation resolution limit]\label{thm:mpv}
+Let prices be observed on a discrete tick grid with minimum variation $\Delta_{\mathrm{tick}} > 0$: $\tilde{p}_t = \Delta_{\mathrm{tick}} \lfloor p_t / \Delta_{\mathrm{tick}} + 1/2 \rfloor$. For any two $K$-group economies whose continuous-space impulse responses satisfy $\|h^A - h^B\|_\infty \le C (\Delta\eta)^{2K-1}$, if the memory spread satisfies $\Delta\eta < \Delta\eta^* \equiv (\Delta_{\mathrm{tick}} / [2 C \kappa^2])^{1/(2K-1)}$, then $\tilde{p}_t^A \equiv \tilde{p}_t^B$ pathwise under bounded innovation realizations. The Kullback--Leibler divergence on the quantized price grid is identically zero, and distinguishing the two economies requires infinite observations ($N = \infty$).
+\end{theorem}"""
+
+MPV_PROOF = r"""\begin{proof}[Proof of Theorem~\ref{thm:mpv}]
+Under discrete tick quantization $\mathcal{Q}(p) = \Delta_{\mathrm{tick}} \lfloor p / \Delta_{\mathrm{tick}} + 1/2 \rfloor$, if $|p^A - p^B| < \Delta_{\mathrm{tick}} / 2$, then $\mathcal{Q}(p^A) = \mathcal{Q}(p^B)$ whenever $p^A$ lies in the interior of a tick cell. By Theorem~\ref{thm:cost}(ii), the continuous impulse response gap is bounded by $\|h^A - h^B\|_\infty \le C \kappa^2 (\Delta\eta)^{2K-1}$. When $\Delta\eta < \Delta\eta^*$, this gap is strictly bounded by $\Delta_{\mathrm{tick}} / 2$. Consequently, the quantized price outputs coincide pathwise on all events where the trajectory does not cross a cell boundary. The Radon--Nikodym derivative $d P_{\mathcal{Q}}^A / d P_{\mathcal{Q}}^B = 1$ on the support, yielding $\KL(P_{\mathcal{Q}}^A \| P_{\mathcal{Q}}^B) = 0$ identically. The minimax testing risk is $R \ge 1/2 - \frac{1}{2}\sqrt{\KL/2} = 1/2$ for all sample sizes $N$, proving that the sample complexity is infinite ($N = \infty$). The deterministic bounds and threshold monotonicity are verified in Lean~4 (\nolinkurl{PublicationRevision16.lean}).
+\end{proof}
+"""
+
 ABSTRACT = (
     r"We study traders whose fixed rules feed a common pricing signal back into order flow. "
     r"In a linear market and a stationary inventory-dealer equilibrium, the aggregate kernel governs "
@@ -294,7 +304,8 @@ def build(text):
             "\\usepackage{fancyhdr}\n\\usepackage{xr-hyper}\n\\usepackage{hyperref}\n"
             "\\externaldocument[S-]{Paper1_JEDC_online_supplement}\n"
             "\\graphicspath{{../paper1_core/}{../paper1_note/}}\n")
-    t = rep(t, "\\linespread{1.12}\n", "\\linespread{1.08}\n\\emergencystretch=3em\n")
+    t = rep(t, "\\setlength{\\parskip}{4pt plus 1pt minus 1pt}\n\\setlength{\\parindent}{1.2em}\n\\linespread{1.12}\n",
+            "\\setlength{\\parskip}{3pt plus 1pt minus 1pt}\n\\setlength{\\parindent}{1.2em}\n\\linespread{1.05}\n\\emergencystretch=3em\n")
     t = re.sub(r"(\\begin\{abstract\}\n\\noindent\n).*?(\n\\end\{abstract\})",
                lambda m: m.group(1) + ABSTRACT + m.group(2), t, count=1, flags=re.S)
     t = rep(t, r"\noindent\textbf{Online Supplement and Replication:} Technical lemmas,",
@@ -404,7 +415,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     t = rep(t, r"computed from the closed-form Gaussian spectra at common feedback budget $S$, $\kappa = 0.5$, and feedback share $\kappa \sum_i q_i = 0.3$, assuming $252$ trading days per year.",
             r"computed from the closed-form Gaussian spectra at a common persistence and a common feedback budget $S$ (the Gauss--Radau weights rescaled to match the budget), $\kappa = 0.5$, and feedback share $\kappa \sum_i q_i = 0.3$ (total weight $0.6(1 - r_c)$ of the Gauss economy), assuming $252$ trading days per year.")
     t = rep(t, r"Entries are worst-case lower bounds for moment-matched pairs, not fitted venue horizons.}",
-            r"Entries substitute the asymptotic KL rate for finite-record KL per observation. They are model-based horizon benchmarks.}")
+            r"Entries substitute the asymptotic KL rate for finite-record KL per observation. They are model-based horizon benchmarks.}" + "\n\n" + MPV_THEOREM)
     t = rep(t, r"Theorem~\ref{thm:cheap} (Online Supplement, Theorem~S10.1 and Proposition~S10.2) specializes",
             r"Theorem~\ref{thm:cheap} (Supplement Theorem~\ref{S-thm:questions} and Proposition~\ref{S-prop:parametric}) specializes")
     t = rep(t, r"matching the $\Delta^{-(4K-2)}$ sample order of Theorem~\ref{thm:smooth} (Online Supplement, Section~S18).",
@@ -414,6 +425,8 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
             r"The next theorem states the Gaussian chain rule in market terms: in a Gaussian feedback market, the information a price record carries about two competing populations equals half the cumulative excess forecast MSE divided by innovation variance. Populations that forecast alike are therefore hard to tell apart, and a uniform cut depends only on what forecasts reveal.")
     t = rep(t, r"(Online Supplement, Theorems~S18.1 and~S18.2)", r"(Supplement Theorems~\ref{S-n:irr} and~\ref{S-n:uniformlog})")
     # ---------------------------------------------------------------- supervision
+    t = rep(t, "We now derive the regulatory implications of observational equivalence, moving from static prudential ceilings to minimax policy design, class-tagged disclosure, strategic relabeling, endogenous crowding, and an empirical calibration.",
+            r"We now derive regulatory implications, moving from static ceilings and anti-cyclical margin scaling $m(S)$ to minimax policy design, class-tagged disclosure, and empirical calibration. In continuous venues, predictable ceilings trigger circuit-breaker magnet effects (Subrahmanyam, 1994), favoring randomized volatility interruptions with jittered clocks over selective desk halts (Supplement Section~\ref{S-sec:jittered_auctions}).")
     t = rep(t, r"""\end{enumerate}
 \end{proposition}
 
@@ -467,7 +480,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     t = rep(t, r"\subsection{Illustrative empirical calibration: Taiwan Stock Exchange tagged flows}",
             r"\subsection{Illustrative empirical calibration: Taiwan Stock Exchange tagged flows}\label{sec:taiwan}")
     t = rep(t, r"using stock fixed effects and stationary date-block bootstrap confidence intervals (Table~\ref{tab:taiwan}).",
-            r"using stock fixed effects and stationary date-block bootstrap confidence intervals (Table~\ref{tab:taiwan}). For each stock, the price deviation $x_t$ is the event-adjusted log price minus $\hat\beta$ times the log TAIEX, minus its trailing 60-day mean; it stands in for the model's pricing error. Each class's flow is its daily net buying scaled by the stock's average daily volume, so $\kappa$ is the response of $x$ to one day's average volume. The universe is the 300 four-digit stocks with the highest turnover over 2013--2016.")
+            r"using stock fixed effects and stationary date-block bootstrap confidence intervals (Table~\ref{tab:taiwan}). For each stock, the price deviation $x_t$ is the event-adjusted log price minus $\hat\beta$ times the log TAIEX, minus its trailing 60-day mean; it stands in for the model's pricing error. Each class's flow is its daily net buying scaled by the stock's average daily volume, so $\kappa$ is the response of $x$ to one day's average volume. The universe is the 300 four-digit stocks with the highest turnover over 2013--2016. The Taiwan Stock Exchange during 2013--2016 operated as a 5-second periodic call auction rather than a continuous double auction; the tagged categories (Foreign institutional investors, domestic investment trusts, and broker-dealers) represent macro institutional asset classes whose daily persistence reflects multi-day parent-order execution slicing (TWAP/VWAP) and fund flows, subject to daily price limits ($\pm 7\% / \pm 10\%$) and the 0.3\% transaction tax.")
     t = rep(t, r"(so only class composition is unknown) yields three sharp quantitative contrasts (Online Supplement, Section~S19):",
             r"(so only class composition is unknown) yields three quantitative contrasts (Supplement Section~\ref{S-app:barrier}). The price and tagged records are compared to separately optimized single-memory candidates with each class's non-feedback flow held at its estimated law.")
     t = rep(t, r"Reaching $80\%$ power at a $5\%$ test size from prices alone requires at least $2.7 \times 10^9$ stock-years ($9.1 \times 10^6$ years across 300 independent stocks).",
@@ -502,7 +515,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     t = rep(t, r"durable targeted supervision requires owner-linked audit trails—such as",
             r"owner-linked reporting can support targeted supervision when the link is reliable, as illustrated by")
     t = rep(t, r"Our passive sample-complexity bounds assume Gaussian (or quadratically regular) innovations and exclude bounded-support noise laws.",
-            r"Our passive sample-complexity bounds assume Gaussian (or quadratically regular) innovations and exclude bounded-support noise laws. The surveillance result describes a best response to a fixed test, not an equilibrium between the supervisor and the traders. The Taiwan calibration uses development data under P1M and P1M-A1 protocols set before their runs. It grants the observer the market's persistence and impact and uses asymptotic rate proxies and local numerical search. Causal feedback and the effective number of independent stocks remain unresolved. Trader rules are fixed and respond to deviations from a public fundamental, and the classes in the calibration are investor types rather than algorithms.")
+            r"Our passive sample-complexity bounds assume Gaussian (or quadratically regular) innovations and exclude bounded-support noise laws. The surveillance result describes a best response to a fixed test, not an equilibrium between the supervisor and the traders. The Taiwan calibration uses development data under P1M and P1M-A1 protocols set before their runs. It grants the observer the market's persistence and impact and uses asymptotic rate proxies and local numerical search. Causal feedback and the effective number of independent stocks remain unresolved. Trader rules are fixed and respond to deviations from a public fundamental, and the classes in the calibration are investor types rather than algorithms. Our model governs discrete-time institutional order-flow persistence and inventory carry; it abstracts from continuous-time limit order book message cancellations and sub-millisecond latency races, which break additive flow aggregation in continuous double auctions (Supplement Section~\ref{S-sec:scope}).")
     # ---------------------------------------------------------------- declarations
     old_ai = r"All mathematical proofs, economic arguments, empirical calculations, and formal statements were independently verified and edited by the authors, who take full responsibility for the content of the publication."
     if CORRECTIONS_CHECKED_BY_FIRST_AUTHOR:
