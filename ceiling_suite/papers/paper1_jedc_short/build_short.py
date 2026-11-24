@@ -61,7 +61,7 @@ def supplement_tex():
     mapping_new = (
         r"Theorem~\ref{M-n:paradox} and Proposition~\ref{M-prop:endogenous_supervisor} to Section~\ref{app:paradox}; "
         r"Theorem~\ref{M-thm:fragility} and Corollary~\ref{M-cor:posthaltflip} to Section~\ref{app:eqinv}; "
-        r"Proposition~\ref{M-thm:instruments} (Derived incidence) to Sections~\ref{app:instruments} and~\ref{app:passiveincidence} (Sections~S22--S23)."
+        r"Proposition~\ref{M-thm:instruments} (Derived incidence) to Sections~\ref{app:instruments}--\ref{app:passiveincidence}."
     )
     doc = doc.replace(mapping_old, mapping_new)
     doc = doc.replace(", and a prospective window from November 2026 serves as a replication", "")

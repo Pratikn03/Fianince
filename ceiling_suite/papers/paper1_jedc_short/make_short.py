@@ -512,7 +512,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
                   r"November 2026: Proposition~\ref{prop:interventions}(iii) and Proposition~\ref{thm:instruments}, Theorem~\ref{thm:minimax}(ii), "
                   r"Lemma~\ref{lem:micro}, Theorem~\ref{thm:paradox}, and Supplement Propositions~\ref{S-prop:nearcrit} "
                   r"and~\ref{S-prop:hidegame}, as well as the passive-price instrument incidence theorem (Proposition~\ref{thm:instruments} "
-                  r"and Supplement Sections~\ref{S-app:instruments} and~\ref{S-app:passiveincidence} (Sections~S22--S23)). "
+                  r"and Supplement Sections~\ref{S-app:instruments}--\ref{S-app:passiveincidence}). "
                   r"Newly written mathematical proofs and formalizations developed in the 23 November 2026 revision---namely "
                   r"Theorem~\ref{thm:fragility}, Corollary~\ref{cor:posthaltflip}, Proposition~\ref{prop:endogenous_supervisor}, "
                   r"\nolinkurl{PublicationRevision14.lean} (the Section~S23 Fourier upper-bound bridge), and "
@@ -633,8 +633,8 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     t = rep(t, 'Replication scripts, numerical checks, and Lean~4 formalization files',
             'The protocols and archived Taiwan outputs are under \\nolinkurl{ceiling_suite/p1_empirics}. Replication scripts, numerical checks, and Lean~4 formalization files')
     t = rep(t, '\\small\\setlength{\\leftmargin}{1.8em}',
-            '\\small\\linespread{1}\\selectfont\\setlength{\\leftmargin}{1.8em}')
-    t = rep(t, '\\setlength{\\itemsep}{3pt}\\setlength{\\parsep}{0pt}', '\\setlength{\\itemsep}{0.5pt}\\setlength{\\parsep}{0pt}')
+            '\\footnotesize\\linespread{0.95}\\selectfont\\setlength{\\leftmargin}{1.5em}')
+    t = rep(t, '\\setlength{\\itemsep}{3pt}\\setlength{\\parsep}{0pt}', '\\setlength{\\itemsep}{0pt}\\setlength{\\parsep}{0pt}')
     # ---------------------------------------------------------------- references
     t = add_references(t)
     # ---------------------------------------------------------------- labels shared with the supplement
@@ -643,6 +643,30 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     left = re.findall(r"Online Supplement[^.]{0,40}S\d", t)
     assert not left, left
     assert 'p = 6' not in t and 'p=6' not in t and 'equilibrium information' not in t
+
+    # Appendix layout tightening and audit label synchronization
+    app_setup = (r'\appendix' + '\n' +
+                 r'\small' + '\n' +
+                 r'\setlength{\abovedisplayskip}{3pt plus 1pt minus 1pt}' + '\n' +
+                 r'\setlength{\belowdisplayskip}{3pt plus 1pt minus 1pt}' + '\n' +
+                 r'\setlength{\abovedisplayshortskip}{1pt plus 1pt}' + '\n' +
+                 r'\setlength{\belowdisplayshortskip}{1pt plus 1pt}' + '\n')
+    t = t.replace(r'\appendix' + '\n', app_setup)
+    t = t.replace(r'\label{n:ident}', r'\label{n:ident}\label{thm:what-id}')
+    t = t.replace(r'\label{n:decisionloss}', r'\label{n:decisionloss}\label{thm:decisionloss}')
+    t = t.replace(r'\label{thm:instruments}', r'\label{thm:instruments}\label{prop:instrument_bound}')
+    t = t.replace(r'Proof of Theorem~\ref{n:ident}', r'Proof of Theorem~\ref{thm:what-id}')
+    t = t.replace(r'\begin{proof}[Proof of Theorem~\ref{n:univ}]',
+                  r'\begin{proof}[Proof of Theorem~\ref{thm:decisionloss} and Theorem~\ref{n:univ}]')
+    t = t.replace(r'\begin{proof}[Proof of Proposition~\ref{thm:instruments}]',
+                  r'\begin{proof}[Proof of Proposition~\ref{prop:instrument_bound}]')
+    t = t.replace(r'\begin{proof}[Proof of Theorems~\ref{n:minimax}',
+                  r'\begin{proof}[Proof of Theorem~\ref{n:minimax}')
+    t = t.replace(r'(\mbox{\nolinkurl{PublicationRevision13.lean}}; Supplement Table~\ref{S-tab:newlean})',
+                  '(PublicationRevision13.lean; Supplement Table S2)')
+    t = t.replace(r'(\mbox{\nolinkurl{PublicationRevision13.lean}}; Supplement Table S2)',
+                  '(PublicationRevision13.lean; Supplement Table S2)')
+
     return t
 
 
