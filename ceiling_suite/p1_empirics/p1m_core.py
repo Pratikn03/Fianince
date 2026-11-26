@@ -94,12 +94,17 @@ def universe_mask(prep, T):
     return m
 
 
-def build_equations(prep, mask, delay=DELAY, p=P_LAGS, dealer="DealerTotal"):
+def build_equations(prep, mask, delay=DELAY, p=P_LAGS, dealer="DealerTotal", exclude_limits=False):
     """mask: dates (bool, length T) to use. Returns the moment objects for the three rule equations, the price
-    equation, and the class-specific-impact diagnostic."""
+    equation, the class-specific-impact diagnostic, and a differenced (Beveridge-Nelson) robustness equation."""
     x = prep["x"]
     N, T = x.shape
     base = prep["usable"] & universe_mask(prep, T) & mask[None, :]
+    if exclude_limits and "limit" in prep:
+        lim = np.asarray(prep["limit"], dtype=bool)
+        bad_lim = lim.copy()
+        bad_lim[:, 1:] |= lim[:, :-1]
+        base &= ~bad_lim
     u = class_flows(prep, dealer)
     eqs = {}
     sig = lag(x, delay)
@@ -109,6 +114,9 @@ def build_equations(prep, mask, delay=DELAY, p=P_LAGS, dealer="DealerTotal"):
     xl = [lag(x, j) for j in range(1, p + 1)]
     eqs["price"] = fe_moments(x, xl + [lag(Usum, 1)], base)
     eqs["price_by_class"] = fe_moments(x, xl + [lag(u[c], 1) for c in CLASSES], base)
+    dx = x - lag(x, 1)
+    dxl = [lag(dx, j) for j in range(1, p + 1)]
+    eqs["price_diff"] = fe_moments(dx, dxl + [lag(Usum, 1)], base)
     return eqs
 
 

@@ -315,7 +315,40 @@ def class_flows(P):
     return out
 
 
-def prepare(P, dev_mask, top_n=300, min_share=0.95, trail=60, post_listing=60):
+def twse_tick_size(price):
+    """Exact TWSE 6-tier minimum tick size schedule (Operating Rules Art. 62)."""
+    p = np.asarray(price, dtype=float)
+    return np.select(
+        [p < 10.0, p < 50.0, p < 100.0, p < 500.0, p < 1000.0],
+        [0.01, 0.05, 0.1, 0.5, 1.0],
+        default=5.0,
+    )
+
+
+def twse_limit_mask(close, prev_close, dates):
+    """Exact regime- and tick-aware TWSE price limit indicator (+-7% before 2015-06-01, +-10% from 2015-06-01)."""
+    close = np.asarray(close, dtype=float)
+    prev_close = np.asarray(prev_close, dtype=float)
+    N, T = close.shape
+    limit = np.zeros((N, T), dtype=bool)
+    for t, d in enumerate(dates):
+        pct = 0.07 if str(d) < "20150601" else 0.10
+        p0 = prev_close[:, t]
+        c = close[:, t]
+        fin = np.isfinite(p0) & (p0 > 0) & np.isfinite(c)
+        if not np.any(fin):
+            continue
+        up_raw = p0 * (1.0 + pct)
+        dn_raw = p0 * (1.0 - pct)
+        t_up = twse_tick_size(up_raw)
+        t_dn = twse_tick_size(dn_raw)
+        lim_up = np.floor((up_raw + 1e-12) / t_up) * t_up
+        lim_dn = np.ceil((dn_raw - 1e-12) / t_dn) * t_dn
+        limit[:, t] = fin & ((c >= lim_up - 1e-6) | (c <= lim_dn + 1e-6))
+    return limit
+
+
+def prepare(P, dev_mask, top_n=300, min_share=0.95, trail=60, post_listing=60, post_halt=5):
     """Universe, flow scaling, beta, market-reference basis x, limit indicator and usable-origin masks."""
     N, T = P.close.shape
     traded = np.isfinite(P.vol) & (P.vol > 0) & np.isfinite(P.close)
@@ -324,18 +357,29 @@ def prepare(P, dev_mask, top_n=300, min_share=0.95, trail=60, post_listing=60):
     ret[:, 1:] = logc[:, 1:] - logc[:, :-1]
     prev_close = np.full((N, T), np.nan)
     prev_close[:, 1:] = P.close[:, :-1]
-    limit = np.abs(P.close - prev_close) >= 0.095 * prev_close
-    limit &= np.isfinite(prev_close)
+    limit = twse_limit_mask(P.close, prev_close, P.dates)
     ri = np.full(T, np.nan)
     ri[1:] = np.diff(np.log(P.index))
     excl = P.event.copy()
     excl[:, 1:] |= P.event[:, :-1]
-    # first `post_listing` traded days of a stock that starts trading after the first date
+    # first `post_listing` traded days of a stock that starts trading after the first date, plus `post_halt` on resume
     first = np.argmax(traded, axis=1)
     for i in range(N):
-        if first[i] > 0:
-            excl[i, first[i]:first[i] + post_listing] = True
-    # universe on development days
+        has_started = False
+        was_halted = False
+        for t in range(T):
+            if traded[i, t]:
+                if not has_started:
+                    has_started = True
+                    if t > 0:
+                        excl[i, t:min(T, t + post_listing)] = True
+                elif was_halted:
+                    excl[i, t:min(T, t + post_halt)] = True
+                    was_halted = False
+            elif has_started:
+                was_halted = True
+                excl[i, t] = True
+    # universe on development days (no look-ahead into post-dev dates)
     dev = dev_mask[None, :]
     usable_share = (traded & ~excl & dev).sum(1) / max(dev_mask.sum(), 1)
     turnover = np.where(dev & traded, P.value, np.nan)
@@ -350,12 +394,28 @@ def prepare(P, dev_mask, top_n=300, min_share=0.95, trail=60, post_listing=60):
         m = dev_mask & traded[i] & ~excl[i] & ~limit[i] & np.isfinite(ret[i]) & np.isfinite(ri)
         if m.sum() > 100:
             X = ri[m]
-            beta[i] = float(np.dot(X - X.mean(), ret[i, m] - ret[i, m].mean()) / np.dot(X - X.mean(), X - X.mean()))
-    # adjusted log level: event-day return replaced by beta * index return; missing returns count as 0
-    adj = np.where(P.event, beta[:, None] * ri[None, :], ret)
-    adj = np.where(np.isfinite(adj), adj, 0.0)
-    level = np.cumsum(adj, axis=1)
+            denom = np.dot(X - X.mean(), X - X.mean())
+            beta[i] = float(np.dot(X - X.mean(), ret[i, m] - ret[i, m].mean()) / denom) if denom > 0 else 0.0
+    # Gap-preserving spliced log level: preserves close-to-close return across non-event halts (never zeroes NaN gap)
     logI = np.log(P.index)
+    level = np.zeros((N, T), dtype=float)
+    for i in range(N):
+        b_i = beta[i] if np.isfinite(beta[i]) else 0.0
+        last_t = -1
+        for t in range(T):
+            if traded[i, t] and np.isfinite(logc[i, t]):
+                if last_t >= 0:
+                    has_ev = bool(P.event[i, last_t + 1:t + 1].any())
+                    if has_ev and np.isfinite(logI[t]) and np.isfinite(logI[last_t]):
+                        inc = b_i * (logI[t] - logI[last_t])
+                    else:
+                        inc = logc[i, t] - logc[i, last_t]
+                    level[i, t] = level[i, last_t] + inc
+                else:
+                    level[i, t] = 0.0
+                last_t = t
+            elif t > 0:
+                level[i, t] = level[i, t - 1]
     basis = level - beta[:, None] * (logI[None, :] - logI[0])
     x = np.full((N, T), np.nan)
     for t in range(trail, T):
@@ -367,7 +427,7 @@ def prepare(P, dev_mask, top_n=300, min_share=0.95, trail=60, post_listing=60):
     usable = np.zeros((N, T), bool)
     usable[:, 1:-1] = valid[:, :-2] & valid[:, 1:-1] & valid[:, 2:]
     usable[:, 1:-1] &= np.isfinite(x[:, 1:-1]) & np.isfinite(x[:, :-2])
-    res.update({"U": U, "x": x, "u": u, "limit": limit.astype(float), "usable": usable, "beta": beta})
+    res.update({"U": U, "x": x, "u": u, "limit": limit.astype(float), "usable": usable, "beta": beta, "level": level})
     return res
 
 

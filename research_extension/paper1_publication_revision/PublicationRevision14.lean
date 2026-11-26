@@ -29,13 +29,13 @@ incidence from a single passive price record:
 7. `spectral_floor_log_lipschitz`: Lipschitz continuity of the log-spectral transformation under the spectral
    floor f_hat = max(f_tilde, f_lower / 2) via Mathlib's Mean Value Theorem on [f_lower / 2, ∞).
 8. `spectral_floor_lipschitz`: projection and Lipschitz property of the spectral floor.
-9. `quadrature_fourier_error`: bound on numerical integration error for the Fourier coefficients using
-   an M-point equidistant frequency mesh.
+9. `quadrature_fourier_error`: bound on the normalized `M`-point equidistant quadrature error from
+   cell-average deviations via `Finset` summation.
 10. `transfer_factor_error`: connects log-spectral Fourier estimation error, truncation tail, and the
     first-moment budget to the error in the transfer factor Q̂(z) - Q(z).
 11. `transfer_function_error`: bounds the causal transfer error ‖Ĵ - J‖_s on circle of radius s > 0.
-12. `incidence_estimator_bound`: connects the transfer function bound ‖Ĵ - J‖_s and the pilot weight
-    polynomial approximation ‖ĝ - g‖ to the total incidence error |ΔŜ - ΔS|.
+12. `incidence_estimator_bound`: decomposes `|∑ ĝ_m Ĵ_m - ΔS|` into transfer-function error
+    weighted by the `s⁻¹`-norm of `ĝ`, pilot weight error scaled by `‖J‖_∞`, and truncation tail.
 13. `passive_incidence_end_to_end`: end-to-end assembly chaining the spectral floor, DFT quadrature,
     series truncation tail, transfer factor and function bounds, and pilot error to the final incidence error.
 
@@ -693,11 +693,38 @@ theorem spectral_floor_lipschitz (f0 f_tilde f_lower : ℝ) (hf_low : 0 < f_lowe
 
 /-! ## 7. Quadrature and Transfer Bounds -/
 
-/-- Quadrature integration bound: numerical integration on an M-point grid with derivative
-bound D produces an integration error of at most π * D / M. -/
-theorem quadrature_fourier_error (integral_true quadrature_approx D M : ℝ) (_hM : 0 < M)
-    (_hD : 0 ≤ D) (h_quad : |quadrature_approx - integral_true| ≤ Real.pi * D / M) :
-    |quadrature_approx - integral_true| ≤ Real.pi * D / M := h_quad
+/-- Quadrature integration bound: averaging `M` equidistant frequency bins whose local
+cell-average minus grid-point deviations are each bounded by `π * D / M` yields total
+quadrature error at most `π * D / M`. -/
+theorem quadrature_fourier_error (f_cell f_grid : ℕ → ℝ) (D : ℝ) (M : ℕ)
+    (hM : 0 < M) (_hD : 0 ≤ D)
+    (hcell : ∀ k ∈ Finset.range M, |f_cell k - f_grid k| ≤ Real.pi * D / (M : ℝ)) :
+    |(1 / (M : ℝ)) * ∑ k ∈ Finset.range M, f_grid k -
+      (1 / (M : ℝ)) * ∑ k ∈ Finset.range M, f_cell k| ≤ Real.pi * D / (M : ℝ) := by
+  have hM_pos : (0 : ℝ) < M := Nat.cast_pos.mpr hM
+  have hM_ne : (M : ℝ) ≠ 0 := ne_of_gt hM_pos
+  have hrew : (1 / (M : ℝ)) * ∑ k ∈ Finset.range M, f_grid k -
+      (1 / (M : ℝ)) * ∑ k ∈ Finset.range M, f_cell k =
+      (1 / (M : ℝ)) * ∑ k ∈ Finset.range M, (f_grid k - f_cell k) := by
+    rw [Finset.sum_sub_distrib, mul_sub]
+  rw [hrew, abs_mul, abs_of_pos (by positivity)]
+  have hsum_abs : |∑ k ∈ Finset.range M, (f_grid k - f_cell k)| ≤
+      ∑ k ∈ Finset.range M, |f_grid k - f_cell k| := Finset.abs_sum_le_sum_abs _ _
+  have hsum_bd : ∑ k ∈ Finset.range M, |f_grid k - f_cell k| ≤
+      (M : ℝ) * (Real.pi * D / (M : ℝ)) := by
+    calc ∑ k ∈ Finset.range M, |f_grid k - f_cell k|
+        = ∑ k ∈ Finset.range M, |f_cell k - f_grid k| := by
+          refine Finset.sum_congr rfl fun k _ => abs_sub_comm _ _
+      _ ≤ ∑ _k ∈ Finset.range M, (Real.pi * D / (M : ℝ)) :=
+          Finset.sum_le_sum fun k hk => hcell k hk
+      _ = (M : ℝ) * (Real.pi * D / (M : ℝ)) := by
+          rw [Finset.sum_const, Finset.card_range, nsmul_eq_mul]
+  calc (1 / (M : ℝ)) * |∑ k ∈ Finset.range M, (f_grid k - f_cell k)|
+      ≤ (1 / (M : ℝ)) * ∑ k ∈ Finset.range M, |f_grid k - f_cell k| :=
+        mul_le_mul_of_nonneg_left hsum_abs (by positivity)
+    _ ≤ (1 / (M : ℝ)) * ((M : ℝ) * (Real.pi * D / (M : ℝ))) :=
+        mul_le_mul_of_nonneg_left hsum_bd (by positivity)
+    _ = Real.pi * D / (M : ℝ) := by field_simp [hM_ne]
 
 /-- Transfer factor error: bound |Q̂(z) - Q(z)| from the log difference.
 If |log Q̂(z) - log Q(z)| ≤ E and |log Q(z)| ≤ B0, then by mean-value theorem for exp,
@@ -728,12 +755,65 @@ theorem transfer_function_error (Q_true Q_hat s a : ℝ) (hs : 0 < s) :
   have : (1 - Q_hat) / s - a - ((1 - Q_true) / s - a) = (Q_true - Q_hat) / s := by ring
   rw [this, abs_div, abs_sub_comm Q_true Q_hat, abs_of_pos hs]
 
-/-- Incidence estimator bound: connects the transfer function error ‖Ĵ - J‖_s
-and the pilot weight polynomial error ‖ĝ - g‖ to the total incidence error |ΔŜ - ΔS|. -/
-theorem incidence_estimator_bound (ΔS_hat ΔS : ℝ) (B norm_J_diff kappa M0 norm_g_diff : ℝ)
-    (_hB : 0 ≤ B) (_hkappa : 0 ≤ kappa) (_hM0 : 0 ≤ M0)
-    (h_decomp : |ΔS_hat - ΔS| ≤ B * norm_J_diff + kappa * M0 * norm_g_diff) :
-    |ΔS_hat - ΔS| ≤ B * norm_J_diff + kappa * M0 * norm_g_diff := h_decomp
+/-- Incidence estimator bound: decomposes `|∑ ĝ_m Ĵ_m - ΔS|` into transfer-function error
+weighted by the `s⁻¹`-norm of `ĝ`, pilot weight error scaled by `‖J‖_∞`, and truncation tail. -/
+theorem incidence_estimator_bound (g g_hat J J_hat : ℕ → ℝ) (ΔS : ℝ) (K_tr : ℕ)
+    (s B norm_J_diff M0 norm_g_diff tail : ℝ)
+    (hs : 0 < s) (hJdiff : 0 ≤ norm_J_diff) (_hM0 : 0 ≤ M0)
+    (hg_hat_norm : ∑ m ∈ Finset.range K_tr, |g_hat m| / s ^ m ≤ B)
+    (hJ_bd : ∀ m ∈ Finset.range K_tr, |J_hat m - J m| ≤ norm_J_diff / s ^ m)
+    (hJ_sup : ∀ m ∈ Finset.range K_tr, |J m| ≤ M0)
+    (hg_bd : ∑ m ∈ Finset.range K_tr, |g_hat m - g m| ≤ norm_g_diff)
+    (htail : |∑ m ∈ Finset.range K_tr, g m * J m - ΔS| ≤ tail) :
+    |∑ m ∈ Finset.range K_tr, g_hat m * J_hat m - ΔS| ≤
+      B * norm_J_diff + M0 * norm_g_diff + tail := by
+  have hsplit : ∑ m ∈ Finset.range K_tr, g_hat m * J_hat m - ΔS =
+      (∑ m ∈ Finset.range K_tr, g_hat m * (J_hat m - J m)) +
+      (∑ m ∈ Finset.range K_tr, (g_hat m - g m) * J m) +
+      (∑ m ∈ Finset.range K_tr, g m * J m - ΔS) := by
+    have h1 : ∑ m ∈ Finset.range K_tr, g_hat m * (J_hat m - J m) +
+        ∑ m ∈ Finset.range K_tr, (g_hat m - g m) * J m =
+        ∑ m ∈ Finset.range K_tr, (g_hat m * J_hat m - g m * J m) := by
+      rw [← Finset.sum_add_distrib]
+      refine Finset.sum_congr rfl fun m _ => by ring
+    rw [h1, Finset.sum_sub_distrib]
+    ring
+  have hterm1 : |∑ m ∈ Finset.range K_tr, g_hat m * (J_hat m - J m)| ≤ B * norm_J_diff := by
+    calc |∑ m ∈ Finset.range K_tr, g_hat m * (J_hat m - J m)|
+        ≤ ∑ m ∈ Finset.range K_tr, |g_hat m * (J_hat m - J m)| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ m ∈ Finset.range K_tr, |g_hat m| * |J_hat m - J m| := by
+          refine Finset.sum_congr rfl fun m _ => abs_mul _ _
+      _ ≤ ∑ m ∈ Finset.range K_tr, |g_hat m| * (norm_J_diff / s ^ m) :=
+          Finset.sum_le_sum fun m hm => mul_le_mul_of_nonneg_left (hJ_bd m hm) (abs_nonneg _)
+      _ = (∑ m ∈ Finset.range K_tr, |g_hat m| / s ^ m) * norm_J_diff := by
+          rw [Finset.sum_mul]
+          refine Finset.sum_congr rfl fun m _ => ?_
+          have hsp : s ^ m ≠ 0 := pow_ne_zero m (ne_of_gt hs)
+          field_simp [hsp]
+      _ ≤ B * norm_J_diff := mul_le_mul_of_nonneg_right hg_hat_norm hJdiff
+  have hterm2 : |∑ m ∈ Finset.range K_tr, (g_hat m - g m) * J m| ≤ M0 * norm_g_diff := by
+    calc |∑ m ∈ Finset.range K_tr, (g_hat m - g m) * J m|
+        ≤ ∑ m ∈ Finset.range K_tr, |(g_hat m - g m) * J m| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ = ∑ m ∈ Finset.range K_tr, |g_hat m - g m| * |J m| := by
+          refine Finset.sum_congr rfl fun m _ => abs_mul _ _
+      _ ≤ ∑ m ∈ Finset.range K_tr, |g_hat m - g m| * M0 :=
+          Finset.sum_le_sum fun m hm => mul_le_mul_of_nonneg_left (hJ_sup m hm) (abs_nonneg _)
+      _ = M0 * ∑ m ∈ Finset.range K_tr, |g_hat m - g m| := by
+          rw [← Finset.sum_mul, mul_comm]
+      _ ≤ M0 * norm_g_diff := mul_le_mul_of_nonneg_left hg_bd _hM0
+  calc |∑ m ∈ Finset.range K_tr, g_hat m * J_hat m - ΔS|
+      = |(∑ m ∈ Finset.range K_tr, g_hat m * (J_hat m - J m) +
+          ∑ m ∈ Finset.range K_tr, (g_hat m - g m) * J m) +
+          (∑ m ∈ Finset.range K_tr, g m * J m - ΔS)| := by rw [hsplit]
+    _ ≤ |∑ m ∈ Finset.range K_tr, g_hat m * (J_hat m - J m) +
+          ∑ m ∈ Finset.range K_tr, (g_hat m - g m) * J m| +
+          |∑ m ∈ Finset.range K_tr, g m * J m - ΔS| := abs_add_le _ _
+    _ ≤ |∑ m ∈ Finset.range K_tr, g_hat m * (J_hat m - J m)| +
+          |∑ m ∈ Finset.range K_tr, (g_hat m - g m) * J m| + tail :=
+        add_le_add (abs_add_le _ _) htail
+    _ ≤ B * norm_J_diff + M0 * norm_g_diff + tail := by linarith
 
 /-! ## 8. End-to-End Chaining Assembly -/
 

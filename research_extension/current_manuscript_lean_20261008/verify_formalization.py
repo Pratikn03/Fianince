@@ -55,11 +55,18 @@ def main():
     (HERE / "axiom_audit.jsonl").write_text("\n".join(json.dumps(row) for row in rows) + "\n")
     (HERE / "checked_theorem_types.json").write_text(json.dumps(named, indent=2) + "\n")
     body_dir = ROOT / "research_extension/gap_closure_20261006/publication_completion"
-    manuscript_paths = [ROOT / "paper/Machine_Markets_JF_Submission.tex"] + [body_dir / (s + ".tex")
+    manuscript_paths = [
+        ROOT / "ceiling_suite/papers/paper1_jedc_short/Paper1_JEDC_main.tex",
+        ROOT / "ceiling_suite/papers/paper1_jedc_short/Paper1_JEDC_online_supplement.tex",
+        ROOT / "paper/Machine_Markets_JF_Submission.tex",
+    ] + [body_dir / (s + ".tex")
         for s in ["resource_frontier", "capital_frontier", "trader_capital_frontier", "natural_excitation_boundary"]]
     manuscript_paths.append(ROOT / "thesis/ch4_paper3.tex")
     source_hashes = {str(p.relative_to(ROOT)): sha(p) for p in manuscript_paths}
     lean_hashes = {str(p.relative_to(HERE)): sha(p) for p in sorted((HERE / "CurrentProofs").glob("*.lean"))}
+    pub_rev_dir = ROOT / "research_extension/paper1_publication_revision"
+    for p in sorted(pub_rev_dir.glob("PublicationRevision*.lean")):
+        lean_hashes[str(p.relative_to(ROOT))] = sha(p)
     for name in ["CurrentProofs.lean", "AxiomAudit.lean", "lakefile.toml", "lake-manifest.json", "lean-toolchain"]:
         lean_hashes[name] = sha(HERE / name)
     actual_mathlib = subprocess.check_output(["git", "-C", str(HERE / ".lake/packages/mathlib"),

@@ -18,22 +18,22 @@ def rules(K):
 
 def kl_rate(K, rc, d, eps, kappa=0.5, share=0.3, n=400001):
     (xg, wg), (xr, wr) = rules(K)
-    W = 0.6 * (1 - rc)            # total weight, as in the footnote
-    pops = []
-    for x, w in ((xg, wg), (xr, wr)):
-        r, ww = rc + d * x, W * w
-        a = 1 - eps - kappa * np.sum(ww / (1 - r))
-        pops.append((a, r, ww))
+    W = 2 * share * (1 - rc)      # Gauss total weight = 0.6*(1 - rc), as in Table 2 footnote
+    rg, wwg = rc + d * xg, W * wg
+    rr = rc + d * xr
+    budget = kappa * np.sum(wwg / (1 - rg))
+    wwr = wr * (budget / (kappa * np.sum(wr / (1 - rr))))   # rescale Radau weights for common (a, S)
+    a = 1 - eps - budget
     om = np.concatenate([-np.logspace(-9, np.log10(np.pi), n // 2)[::-1], np.logspace(-9, np.log10(np.pi), n // 2)])
     z = np.exp(1j * om)
-    def D(a, r, w):
+    def D(r, w):
         return z - a - kappa * np.sum(w[None, :] * z[:, None] / (z[:, None] - r[None, :]), axis=1)
-    u = np.abs(D(*pops[0])) ** 2 / np.abs(D(*pops[1])) ** 2
+    u = np.abs(D(rg, wwg)) ** 2 / np.abs(D(rr, wwr)) ** 2
     return float(np.trapezoid(u - 1 - np.log(u), om) / (4 * np.pi))
 
 
-rows = [(2, .5, .1, 20000, 16000), (2, .5, .05, 1.2e6, 9.0e5), (2, .8, .1, 100, 69), (2, .8, .05, 6000, 3900),
-        (2, .9, .05, 120, 77), (2, .9, .025, 7000, 4300), (3, .5, .1, 1.5e8, 9.9e7), (3, .5, .05, 1.5e11, 9.6e10)]
+rows = [(2, .5, .1, 31000, 23000), (2, .5, .05, 1.8e6, 1.3e6), (2, .8, .1, 280, 160), (2, .8, .05, 15000, 8100),
+        (2, .9, .05, 480, 230), (2, .9, .025, 25000, 11000), (3, .5, .1, 2.0e8, 1.3e8), (3, .5, .05, 1.9e11, 1.2e11)]
 bad = 0
 for K, rc, d, y1, y2 in rows:
     got = [np.log(5) / kl_rate(K, rc, d, e) / 252 for e in (0.1, 1e-6)]
