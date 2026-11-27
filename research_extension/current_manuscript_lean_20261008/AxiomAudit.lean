@@ -966,6 +966,8 @@ run_cmd do
   `CurrentMM.p1_crowding_divergence_bound,
   `CurrentMM.p1_tv_bound_from_divergence,
   `CurrentMM.p1_trail_beats_prices,
+  `CurrentMM.p1_pilot_difference,
+  `CurrentMM.p1_one_atom_recovery,
   `CurrentMM.p1_walsh_quadratic_bound,
   `CurrentMM.p1_running_tap_mse,
   `CurrentMM.p1_running_prony_upper,

@@ -1,8 +1,8 @@
-# Author check: Theorems 5.2, 7.1 and 7.12 (added 27 November 2026)
+# Author check: the four theorems added on 27 November 2026 (5.2, 7.1, 7.3 and 7.13)
 
-Once you have checked all three theorems, set `AUTHORS_CHECKED_1127 = True` in
+Once you have checked all four theorems, set `AUTHORS_CHECKED_1127 = True` in
 `ceiling_suite/papers/paper1_jedc_short/sharpen_1127.py` and rebuild. The AI declaration then covers 21–27 November.
-Until then, it says that these three theorems are being checked.
+Until then, it says that these four theorems are being checked.
 
 ## Theorem 5.2 (one passive price record attains the rates). Proof: Appendix A
 
@@ -33,29 +33,43 @@ What to check most carefully: step 2 assumes a ≥ 0 and positive weights, and s
   - The tap-measurement rate uses a four-line argument: a truncation tail below ε/(2κ), and the Gaussian tail of a
     sum of L tap averages.
   - The passive version is Theorem 5.2(i).
-  - Minimax optimality is Theorem 7.5(i).
+  - Minimax optimality is Theorem 7.6(i).
 - **(ii)** Proposition 7.2(ii) covers halting the largest group, with memories in r_c + Δη[−1, 1]. Proposition
   7.2(iii) covers the horizon cutoff, with memories in [r̂ − Δη, r̂ + 2Δη]. Both intervals have length at most 3Δη.
-- **(iii)** Theorem 7.8, over its families.
+- **(iii)** Theorem 7.9, over its families.
 
 What to check: in (i), the noise bound N ≥ 8κ²σ²L log(2/β)/ε² comes from P(|Z| > t) ≤ 2e^{−t²/2}.
 
-## Theorem 7.12 (more data does not substitute for records). Proof: Appendix A
+## Theorem 7.3 (a pilot learns what prediction cannot). Proof: Appendix A
+
+1. Before the restriction the taps are k_m = ∫ r^m dM. During the pilot they are ∫ r^m dM_R̄, because the retained
+   rules, impact and persistence are unchanged. So the difference is ∫ r^m dM_R (`pilot_difference`).
+2. **(ii)** The budget effect is κ Σ_m (difference of taps). Truncate at depth L. The noise variance is
+   κ²Lσ²(1/N0 + 1/N1). The argument is the same as for Theorem 7.1(i).
+3. **(iii)** Apply Theorem 5.1(iii) to each side separately. For one group on a side: ŵ = k̂0, and
+   |k̂1/k̂0 − r| ≤ 2(|e1| + r|e0|)/w when |e0| ≤ w/2 (`one_atom_recovery`).
+
+What to check: the assumption that the restriction leaves impact and persistence unchanged, or that they are known in
+both regimes. In equilibrium they move (Theorem 4.1), and the paper says so.
+
+## Theorem 7.13 (more data does not substitute for records). Proof: Appendix A
 
 1. **(i)** Split each density as a = min(p0, p1) plus the excess. Then E W ≤ (1 − TV) W_∅ + TV × ½(max W0 + max W1).
    This step uses ½(W(θ,0) + W(θ,1)) ≤ W_∅ for every θ. The finite-record version is machine-checked as
    `voi_le_tv_mul_gain`. Pinsker's inequality then gives the KL form.
-2. **(ii)** Theorem 7.11(ii) gives (δ*)^(n−2) ≤ B_N = 4k²δ0²/(L²β²cN). At n = 4 this gives
+2. **(ii)** Theorem 7.12(ii) gives (δ*)^(n−2) ≤ B_N = 4k²δ0²/(L²β²cN). At n = 4 this gives
    J* ≤ 16k⁴δ0⁴/(L⁴β⁴cN) (`crowding_divergence_bound`), and then √(J*/2) ≤ 2√2 k²δ0²/(L²β²√(cN))
    (`tv_bound_from_divergence`).
 3. **(iii)** The threshold N̄ = 8k⁴δ0⁴V*²/(L⁴β⁴c(V* − F_A)²) (`trail_beats_prices`). The price record's gain stays
    below V* because Gaussian laws at finite divergence have TV < 1.
 
-What to check: in (ii), the theorem takes Theorem 7.11's targeting test as given. It does not cover every
+What to check: in (ii), the theorem takes Theorem 7.12's targeting test as given. It does not cover every
 record-based rule the supervisor might use in equilibrium.
 
 ## Numerical check
 
 - Theorem 5.2: `ceiling_suite/p1_theory/passive_upper_check.py`, with results in `passive_upper_check_results.json`.
-- Theorem 7.12: `ceiling_suite/p1_theory/record_value_check.py`, with results in `record_value_check_results.json`.
+- Theorem 7.3: `ceiling_suite/p1_theory/pilot_check.py`. The pilot's error is flat in the spacing (slope 0.02); from
+  prices alone the slope is −2.8 until the error saturates.
+- Theorem 7.13: `ceiling_suite/p1_theory/record_value_check.py`, with results in `record_value_check_results.json`.
   The bound holds for N from 10 to 10⁸, and the total variation falls with slope −0.48.

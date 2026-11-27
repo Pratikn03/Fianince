@@ -23,7 +23,7 @@ import re
 # Set to True only after the first author has read and checked Theorems 7.1 and 5.2 (added 27 November 2026).
 AUTHORS_CHECKED_1127 = False
 
-MOVED_LABELS = ('thm:mpv', 'cor:posthaltflip', 'prop:endogenous_supervisor')
+MOVED_LABELS = ('thm:mpv', 'cor:posthaltflip', 'prop:endogenous_supervisor', 'n:univ', 'n:shape')
 
 
 def rep(t, old, new, count=1):
@@ -132,6 +132,14 @@ FIG3_NEW = (
 )
 
 
+SMOOTH_STUB = (r"\textbf{Beyond exponential memory.} The exponent $4K-2$ does not rely on exponential memory or linear "
+               r"rules: for any family of causal rules smooth in a type parameter, with $2K-1$ bounded derivatives, two "
+               r"$K$-type populations within $\Delta$ give flow gaps of order $\Delta^{2K-1}$ and need of order "
+               r"$\sigma^2\Delta^{-(4K-2)}$ observations to tell apart, and for linear rules satisfying a local derivative "
+               r"rank condition (exponential and power-law memory among them) minimum-distance recovery attains that order "
+               r"(Supplement Theorems~\ref{S-n:univ} and~\ref{S-n:shape})." + "\n\n")
+
+
 def main_text(t):
     """Apply the 27 November revision to the main text; return (text, moved blocks)."""
     moved = {}
@@ -189,6 +197,15 @@ def main_text(t):
             r"while memory-independent tag inquiries eliminate crowding altogether. " + SUPERVISOR_STUB)
     t = rep(t, r"GLRT slowing; Proposition~\ref{prop:endogenous_supervisor})",
             r"GLRT slowing; Supplement Proposition~\ref{S-prop:endogenous_supervisor})")
+    # Section 5.2 (smooth families) moves to the supplement, which already proves both theorems.
+    t, moved['smooth'] = cut(t, r"\subsection{Beyond exponential memory: smooth rule families}", "may be computationally costly.\n")
+    t = rep(t, r"\section{What a Record Reveals: Identification Equals Forecast Loss}",
+            SMOOTH_STUB + r"\section{What a Record Reveals: Identification Equals Forecast Loss}")
+    t, _ = cut(t, r"\begin{proof}[Proof of Theorem~\ref{n:univ}]", "\\end{proof}\n")
+    t, _ = cut(t, r"\begin{proof}[Proof of Theorem~\ref{n:shape}]", "\\end{proof}\n")
+    t = t.replace(r"Theorems~\ref{n:cost} and~\ref{n:shape}", r"Theorem~\ref{n:cost} and Supplement Theorem~\ref{S-n:shape}")
+    for lab in ('n:univ', 'n:shape'):
+        t = t.replace(r"Theorem~\ref{" + lab + "}", r"Supplement Theorem~\ref{S-" + lab + "}")
     for lab in MOVED_LABELS:
         assert '{' + lab + '}' not in t, lab
     # ---------------------------------------------------------------- Taiwan
@@ -213,12 +230,13 @@ def main_text(t):
             SEPARATION_PROOF + r"\begin{proof}[Proof of Proposition~\ref{n:target}(i)--(ii) and Corollary~\ref{n:decisionloss}]")
     t = passive_upper(t)
     t = record_value(t)
+    t = pilot(t)
     old_decl = "(including all extensions finalized during 21--26 November 2026)"
     if AUTHORS_CHECKED_1127:
         t = rep(t, old_decl, "(including all extensions finalized during 21--27 November 2026)")
     else:
         t = rep(t, old_decl, r"(including all extensions finalized during 21--26 November 2026; Theorems~\ref{n:passiveupper}, "
-                             r"\ref{n:separation} and~\ref{n:recordvalue}, added on 27 November 2026, are being checked "
+                             r"\ref{n:separation}, \ref{n:pilot} and~\ref{n:recordvalue}, added on 27 November 2026, are being checked "
                              r"by the authors)")
     return t, moved
 
@@ -231,6 +249,8 @@ def _to_supplement(block, main_labels):
     block = re.sub(r"Supplement (Section|Sections|Proposition|Theorem|Table|Lemma|Corollary)~\\ref\{S-",
                    r"\1~\\ref{", block)
     block = block.replace(r'\ref{S-', r'\ref{')
+    for lab in ('eq:baseline',):
+        block = block.replace('\\eqref{' + lab + '}', '\\eqref{M-' + lab + '}').replace('\\ref{' + lab + '}', '\\ref{M-' + lab + '}')
     block = re.sub(r"(?<!Main )Appendix~\\ref\{M-app:proofs\}", r"Main Appendix~\\ref{M-app:proofs}", block)
     return block
 
@@ -268,6 +288,12 @@ def supplement(doc, moved, main_labels):
     head = r"\subsection{The surveillance paradox}\label{app:paradox}" + "\n"
     doc = rep(doc, head, head + "\n" + r"\noindent The next result was moved from the main text "
               r"(Section~\ref{M-sec:supervision})." + " " + sup + "\n")
+    smooth = _to_supplement(moved['smooth'], main_labels).replace(
+        r"The self-contained proof in Main Appendix~\ref{M-app:proofs} applies", r"The proof in this section applies")
+    smooth = smooth.replace(r"\subsection{Beyond exponential memory: smooth rule families}", "")
+    head = r"\section{Smooth-family lower bounds and forecast comparisons}\label{app:univirr}" + "\n"
+    doc = rep(doc, head, head + "\n" + r"\noindent Theorems~\ref{n:univ} and~\ref{n:shape} were moved from the main text "
+              r"(Section~\ref{M-sec:cost})." + "\n" + smooth + "\n")
     # Table S2: say what Lean checks.
     doc = rep(doc, r"small-feedback impact derivative, $n_{\mathcal{H}}<0<n_{\mathcal{B}}$ separation, Kalman variance "
                    r"identity, strict convexity $P''(r)>0$, and monotone $P'(r)$ (\texttt{micro\_welfare\_weight\_separation}, "
@@ -294,6 +320,7 @@ def supplement(doc, moved, main_labels):
     _nd = _Path(__file__).resolve().parents[3] / 'research_extension/current_manuscript_lean_20261008/named_declarations.json'
     n_decl = len(_json.loads(_nd.read_text()))
     doc = record_value_supplement(doc, n_decl if n_decl != 1310 else None, 146)  # one module added (Paper1RecordValue)
+    doc = pilot_supplement(doc)
     return doc
 
 
@@ -358,8 +385,8 @@ def passive_upper(t):
                r"close the traders' memories are;",
             r"which kernel-tap records, or a single passive price record, estimate at a near-parametric rate however "
             r"close the traders' memories are (Theorem~\ref{n:passiveupper});")
-    t = rep(t, r"matches a Prony and minimum-distance upper bound on separated shrinking clusters (Theorem~\ref{n:shape}),",
-            r"matches a Prony and minimum-distance upper bound on separated shrinking clusters (Theorem~\ref{n:shape}), is "
+    t = rep(t, r"matches a Prony and minimum-distance upper bound on separated shrinking clusters (Supplement Theorem~\ref{S-n:shape}),",
+            r"matches a Prony and minimum-distance upper bound on separated shrinking clusters (Supplement Theorem~\ref{S-n:shape}), is "
             r"attained up to a logarithmic factor from one passive price record (Theorem~\ref{n:passiveupper}),")
     t = rep(t, r"characterize which linear functionals prices answer at parametric rates,",
             r"show that one passive price record attains the composition rate up to a logarithm and learns the budget at a "
@@ -442,3 +469,56 @@ def record_value_supplement(doc, n_decl=None, n_modules=None):
     if n_decl:
         doc = rep(doc, "1,310 named declarations in 145 modules", f"{n_decl:,} named declarations in {n_modules} modules")
     return doc
+
+
+# ==================================================================== Theorem: a pilot learns what prediction cannot
+
+PILOT_THEOREM = r"""\textbf{A pilot learns what prediction cannot.} Proposition~\ref{n:target}(ii)--(iii) prices the decision before a restriction is imposed. Once a restriction is in force, the record changes: the groups it removes leave the kernel, so the change in the response is the removed groups' own kernel. A finite mixture offers nothing comparable, because its components cannot be switched off.
+
+\begin{theorem}[A pilot learns what prediction cannot]\label{n:pilot}
+Fix known $(a, \kappa)$, a memory bound $\bar r < 1$ and total merged weight at most $\bar W$. A restriction removes a set $R$ of groups---every group with memory below a cutoff $\hat r$, or a class---and leaves the other rules, impact and persistence unchanged. Write $M = M_R + M_{\bar R}$ for the merged measures of the removed and retained groups. The supervisor records $N_0$ experiments before the restriction and $N_1$ during a pilot, each recording kernel taps with independent $N(0, \sigma^2)$ noise (or, by Theorem~\ref{n:passiveupper}, one passive record in each regime).
+\begin{enumerate}
+  \item[(i)] \emph{Before.} Without a pilot ($N_1 = 0$), deciding whether the restriction meets a ceiling can require $N_0 \ge c \sigma^2 (\Delta\eta)^{-(4K-2)}$ (Proposition~\ref{n:target}(ii)--(iii)).
+  \item[(ii)] \emph{The effect.} The taps before the restriction minus the taps during the pilot are the moments of $M_R$. The restriction's budget effect $\kappa \int (1 - r)^{-1}\, dM_R$ is therefore estimated to accuracy $\epsilon$ with probability at least $1 - \beta$ from $N_0 = N_1 = O(\sigma^2 \kappa^2 \epsilon^{-2} \log(1/\epsilon) \log(1/\beta))$ records, whatever the number of groups and their spacing.
+  \item[(iii)] \emph{Composition across the cut.} On the compact classes of Theorem~\ref{n:cost}(iii), $M_{\bar R}$ is recovered from the pilot taps and $M_R$ from the difference, each at the rate of Theorem~\ref{n:cost}(iii) for its own number of groups: the exponent $4K - 2$ falls to $\max\{4K_R - 2, 4K_{\bar R} - 2\}$, where $K_R$ and $K_{\bar R}$ count the removed and retained groups. With one group on each side of the cut and weights at least $w_{\min} > 0$, weights and memories are recovered to accuracy $\epsilon$ from $O(\sigma^2 \epsilon^{-2} w_{\min}^{-2})$ records in each regime, independent of $\Delta\eta$, by $\hat w = \hat k_0$ and $\hat r = \hat k_1 / \hat k_0$ on each side.
+\end{enumerate}
+\end{theorem}
+
+The contrast between~(i) and~(ii)--(iii) is the economic content. A targeted restriction that cannot be evaluated in advance from prices can be evaluated after a pilot, from prices alone, so phased or temporary restrictions are informative in a way that forecasts are not; randomized market-structure pilots such as the SEC's 2016--2018 Tick Size Pilot are the institutional form, and Supplement Proposition~\ref{S-prop:natural_exp} gives the cross-sectional design for a class ban. What a pilot cannot supply is the first decision: the restriction is imposed once without the information. In equilibrium a restriction also moves impact and persistence (Theorem~\ref{n:thm_inventory}), and the statement takes them as known in both regimes. In a simulation of two groups at $0.5 \mp \Delta\eta$ (weights $0.09$ and $0.11$, $4{,}000$ reset records per regime, tap noise $0.01$, $400$ replications; replication archive), the pilot's weight error is flat in the spacing (fitted slope $0.02$ over $\Delta\eta \in [0.01, 0.2]$), while Prony on pre-restriction taps alone has error growing with slope $-2.8$ until it saturates at the size of the weights.
+
+"""
+
+PILOT_PROOF = r"""\begin{proof}[Proof of Theorem~\ref{n:pilot}]
+Part~(i) is Proposition~\ref{n:target}(ii)--(iii). Before the restriction the taps are $k_m = \int r^m\, dM$; during the pilot they are $k^1_m = \int r^m\, dM_{\bar R}$, because the retained rules, impact and persistence are unchanged. Hence $k_m - k^1_m = \int r^m\, dM_R$ (machine-checked for finite populations). \emph{(ii)} The budget effect is $\kappa \sum_m (k_m - k^1_m)$; estimate it by $\kappa \sum_{m < L} (\hat k_m - \hat k^1_m)$. The tail is at most $\kappa \bar W \bar r^L / (1 - \bar r)$, and the noise is Gaussian with variance $\kappa^2 L \sigma^2 (N_0^{-1} + N_1^{-1})$, so the argument for Theorem~\ref{n:separation}(i) gives the rate. \emph{(iii)} Apply Theorem~\ref{n:cost}(iii) separately to $M_{\bar R}$ and $M_R$, whose taps are estimated with errors $O_P(\sigma N_1^{-1/2})$ and $O_P(\sigma (N_0^{-1/2} + N_1^{-1/2}))$. With one atom $w\delta_r$ on a side, $k_0 = w$ and $k_1 = w r$; if the tap errors satisfy $|e_0| \le w/2$, then $|\hat w - w| = |e_0|$ and $|\hat r - r| \le 2(|e_1| + r|e_0|)/w$ (machine-checked), which is $O(\sigma/(w_{\min}\sqrt N))$ and does not involve $\Delta\eta$.
+\end{proof}
+
+"""
+
+PILOT_ROW = (r"Theorem~\ref{M-n:pilot} & before-minus-pilot taps equal the removed groups' moments, and the one-group "
+             r"recovery bound $|\hat k_1/\hat k_0 - r| \le 2(|e_1| + r|e_0|)/w$ (\texttt{pilot\_difference}, "
+             r"\texttt{one\_atom\_recovery}) (\nolinkurl{PublicationRevision19.lean}; \nolinkurl{Paper1RecordValue.lean}) "
+             r"& Gaussian tap noise, truncation at logarithmic depth, and Theorem~\ref{M-n:cost}(iii) on each side\\" + "\n")
+
+
+def pilot(t):
+    t = rep(t, r"\textbf{Endogenous desk adjustments to taxes, holding schedules, and caps.}",
+            PILOT_THEOREM + r"\textbf{Endogenous desk adjustments to taxes, holding schedules, and caps.}")
+    t = rep(t, r"\begin{proof}[Proof of Proposition~\ref{n:target}(iii)]", PILOT_PROOF + r"\begin{proof}[Proof of Proposition~\ref{n:target}(iii)]")
+    t = rep(t, r"verified class tags remove that penalty.", r"verified class tags, or a pilot of the restriction itself, remove that penalty.")
+    t = rep(t, r"composition is unnecessary for optimal price forecasting but indispensable for targeted attribution.",
+            r"composition is unnecessary for optimal price forecasting but indispensable for targeted attribution. "
+            r"Prediction and experimentation differ, however: once a targeted restriction is piloted, prices alone learn "
+            r"its effect at a near-parametric rate, and the composition exponent falls to that of the groups on each side "
+            r"of the cut (Theorem~\ref{n:pilot}).")
+    t = rep(t, r"We do not claim those statistical theorems as new.",
+            r"We do not claim those statistical theorems as new. Three statistical results here have no counterpart in "
+            r"that literature, because they use features a mixture lacks: a single closed-loop price record attains the "
+            r"rate (Theorem~\ref{n:passiveupper}), the barrier survives the approach to instability (Supplement "
+            r"Proposition~\ref{S-prop:nearcrit}), and a restriction deletes part of the population, so a pilot collapses "
+            r"the exponent (Theorem~\ref{n:pilot}).")
+    return t
+
+
+def pilot_supplement(doc):
+    return rep(doc, r"Theorem~\ref{M-n:recordvalue} & value of information",
+               PILOT_ROW + r"Theorem~\ref{M-n:recordvalue} & value of information")

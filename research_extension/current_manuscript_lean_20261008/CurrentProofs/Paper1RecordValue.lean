@@ -106,4 +106,33 @@ theorem p1_trail_beats_prices (A V F c N : ℝ) (hA : 0 < A) (hc : 0 < c) (hFV :
     _ < Real.sqrt (c * N) * (V - F) := mul_lt_mul_of_pos_right hlt hVF
     _ = (V - F) * Real.sqrt (c * N) := by ring
 
+/-- Theorem 7.13 (pilot), deterministic identity: the taps before a restriction minus the taps during it are the
+moments of the removed groups' merged measure. -/
+theorem p1_pilot_difference {ι : Type*} (s : Finset ι) (p : ι → Prop) [DecidablePred p] (w r : ι → ℝ) (m : ℕ) :
+    ∑ i ∈ s, w i * r i ^ m - ∑ i ∈ s.filter (fun i => ¬ p i), w i * r i ^ m
+      = ∑ i ∈ s.filter p, w i * r i ^ m := by
+  rw [← Finset.sum_filter_add_sum_filter_not s p]
+  ring
+
+/-- Theorem 7.13 (pilot), one group on a side: from taps `k0 = w + e0`, `k1 = w r + e1` with `|e0| ≤ w/2`, the
+memory estimate `k1/k0` is within `2(|e1| + r|e0|)/w` of `r`. -/
+theorem p1_one_atom_recovery (w r e0 e1 : ℝ) (hw : 0 < w) (hr : 0 ≤ r) (he0 : |e0| ≤ w / 2) :
+    |(w * r + e1) / (w + e0) - r| ≤ 2 * (|e1| + r * |e0|) / w := by
+  have h1 := abs_le.mp he0
+  have hlow : w / 2 ≤ w + e0 := by linarith
+  have hden : 0 < w + e0 := by linarith
+  have key : (w * r + e1) / (w + e0) - r = (e1 - r * e0) / (w + e0) := by
+    field_simp
+    ring
+  have hnum : |e1 - r * e0| ≤ |e1| + r * |e0| := by
+    calc |e1 - r * e0| ≤ |e1| + |r * e0| := abs_sub _ _
+      _ = |e1| + r * |e0| := by rw [abs_mul, abs_of_nonneg hr]
+  have hX : 0 ≤ |e1| + r * |e0| := by positivity
+  rw [key, abs_div, abs_of_pos hden, div_le_iff₀ hden]
+  calc |e1 - r * e0| ≤ |e1| + r * |e0| := hnum
+    _ = 2 * (|e1| + r * |e0|) / w * (w / 2) := by field_simp
+    _ ≤ 2 * (|e1| + r * |e0|) / w * (w + e0) := by
+        apply mul_le_mul_of_nonneg_left hlow
+        positivity
+
 end CurrentMM
