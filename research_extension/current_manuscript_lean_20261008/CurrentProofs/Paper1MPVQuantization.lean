@@ -70,15 +70,20 @@ theorem p1_sub_tick_closed_loop_coincidence (C vbar delta_eta alpha pA pB : ℝ)
   have htot := p1_sub_tick_response_gap C vbar delta_eta alpha pA m K hC hv halpha hoff hgap
   exact p1_quantized_cell_coincidence alpha pA pB m halpha (by linarith)
 
+/-- Arithmetic only: equal cell probabilities contribute zero difference. -/
 theorem p1_sub_tick_zero_divergence_bound (qA qB : ℝ) (heq : qA = qB) :
     |qA - qB| = 0 := by
   simp [heq]
 
+/-- Arithmetic only: `(1 - √0)/2 = 1/2`, the value at `J = 0` of the two-point risk bound. The risk bound
+itself is proved on paper. -/
 theorem p1_zero_divergence_minimax_risk (_N : ℝ) :
     (1 - Real.sqrt 0) / 2 = (1 : ℝ) / 2 := by
   rw [Real.sqrt_zero]
   ring
 
+/-- Arithmetic only: with zero divergence per sample, `N` samples carry divergence `N * 0`, below any positive
+threshold. The step to unbounded sample complexity is proved on paper. -/
 theorem p1_sample_complexity_infinite (c_err : ℝ) (hc : 0 < c_err) (N : ℝ) :
     N * 0 < c_err := by
   rw [mul_zero]

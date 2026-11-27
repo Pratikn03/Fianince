@@ -10,6 +10,10 @@ import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Ring
 import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.FieldSimp
+import Mathlib.Analysis.Calculus.Deriv.Pow
+import Mathlib.Analysis.Calculus.Deriv.Add
+import Mathlib.Analysis.Calculus.Deriv.Inv
+import Mathlib.Analysis.Calculus.Deriv.Mul
 
 /-!
 # Paper 1, Publication Revision 18: Fragility, Microfoundations, Minimax Uniqueness & Batch Clearing
@@ -202,6 +206,8 @@ theorem p1_post_halt_capacity_withdrawal_flip (A dA sF sXi abar D : ℝ)
 
 /-! ## 2. Lemma 7.7 (`lem:micro`) -/
 
+/-- Positivity of the impact-derivative factor. The second and third conjuncts restate the hypotheses `hH` and
+`hB`: the sign separation `n_H < 0 < n_B` is assumed here, not derived. -/
 theorem p1_micro_welfare_weight_separation (kMinus abar A sXi2 lam0 lamExt bH bB phiH phiB : ℝ)
     (hk : 0 < kMinus) (ha : 0 ≤ abar) (hA : 0 < A) (hsXi : 0 < sXi2) (hlam0 : 0 < lam0)
     (hH : bH < lamExt * phiH) (hB : lamExt * phiB < bB) :
@@ -233,6 +239,7 @@ theorem p1_kalman_stationary_var_identity (sz2 snu2 r : ℝ) (hr0 : 0 < r) (hr1 
   field_simp [h1mr2, h1pr]
   ring
 
+/-- Positivity of the second-derivative formula; `p1_kalmanPderiv_hasDerivAt` shows it is the second derivative. -/
 theorem p1_kalman_stationary_var_strict_convex (sz2 snu2 r kappa lam : ℝ)
     (hsz : 0 < sz2) (hsnu : 0 < snu2) (hr0 : 0 < r) (hr1 : r < 1) (hkl : 0 < kappa + lam) :
     0 < p1_p1_kalmanPsecondDeriv sz2 snu2 r ∧
@@ -270,6 +277,48 @@ theorem p1_kalman_deriv_strict_mono (sz2 snu2 r1 r2 : ℝ)
     apply div_lt_div_of_pos_left (by positivity) (sq_pos_of_pos h1pr1)
     nlinarith
   linarith
+
+/-- Added 27 November 2026: `p1_p1_kalmanPderiv` and `p1_p1_kalmanPsecondDeriv` are the first and second
+derivatives of `p1_kalmanP` on `(-1, 1)` (previously only the formulas were checked). -/
+theorem p1_kalmanP_hasDerivAt (sz2 snu2 r : ℝ) (hr0 : -1 < r) (hr1 : r < 1) :
+    HasDerivAt (fun x => p1_kalmanP sz2 snu2 x) (p1_p1_kalmanPderiv sz2 snu2 r) r := by
+  have hd : (1 - r ^ 2) ≠ 0 := by nlinarith
+  have h1 : (1 + r) ≠ 0 := by linarith
+  have h3 : (1 - r) ≠ 0 := by linarith
+  have hnum : HasDerivAt (fun x : ℝ => sz2 + (1 - x) ^ 2 * snu2) (-(2 * (1 - r)) * snu2) r := by
+    have h := ((((hasDerivAt_id' r).const_sub 1).pow 2).mul_const snu2).const_add sz2
+    convert h using 1; push_cast; ring
+  have hden : HasDerivAt (fun x : ℝ => 1 - x ^ 2) (-(2 * r)) r := by
+    have h := (hasDerivAt_pow 2 r).const_sub 1
+    convert h using 1; push_cast; ring
+  have hq := hnum.div hden hd
+  unfold p1_kalmanP p1_p1_kalmanPderiv
+  convert hq using 1
+  field_simp
+  ring
+
+/-- The second-derivative link. -/
+theorem p1_kalmanPderiv_hasDerivAt (sz2 snu2 r : ℝ) (hr0 : -1 < r) (hr1 : r < 1) :
+    HasDerivAt (fun x => p1_p1_kalmanPderiv sz2 snu2 x) (p1_p1_kalmanPsecondDeriv sz2 snu2 r) r := by
+  have hd : (1 - r ^ 2) ≠ 0 := by nlinarith
+  have h1 : (1 + r) ≠ 0 := by linarith
+  have h3 : (1 - r) ≠ 0 := by linarith
+  have hn : HasDerivAt (fun x : ℝ => 2 * x * sz2) (2 * sz2) r := by
+    have h := ((hasDerivAt_id' r).const_mul 2).mul_const sz2
+    convert h using 1; ring
+  have hden : HasDerivAt (fun x : ℝ => (1 - x ^ 2) ^ 2) (2 * (1 - r ^ 2) * (-(2 * r))) r := by
+    have h := ((hasDerivAt_pow 2 r).const_sub 1).pow 2
+    convert h using 1; push_cast; ring
+  have hA := hn.div hden (pow_ne_zero 2 hd)
+  have hden2 : HasDerivAt (fun x : ℝ => (1 + x) ^ 2) (2 * (1 + r)) r := by
+    have h := ((hasDerivAt_id' r).const_add 1).pow 2
+    convert h using 1; push_cast; ring
+  have hB := (hasDerivAt_const r (2 * snu2)).div hden2 (pow_ne_zero 2 h1)
+  have hsum := hA.sub hB
+  unfold p1_p1_kalmanPderiv p1_p1_kalmanPsecondDeriv
+  convert hsum using 1
+  field_simp
+  ring
 
 /-! ## 3. Theorems 7.4 & 7.6 (`n:minimax`, `n:minimaxtags`) -/
 

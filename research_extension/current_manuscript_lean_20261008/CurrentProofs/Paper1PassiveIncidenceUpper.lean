@@ -745,6 +745,41 @@ theorem p1_transfer_factor_error (Q_true Q_hat _log_diff B0 E : ℝ) (_hE : 0 �
   refine hlip.trans ?_
   exact mul_le_mul_of_nonneg_left h_diff (by positivity)
 
+/-- Added 27 November 2026: `exp` is `exp(B)`-Lipschitz on `(-∞, B]` (the hypothesis of
+`p1_transfer_factor_error`). -/
+theorem p1_exp_lipschitz_below (B x y : ℝ) (hx : x ≤ B) (hy : y ≤ B) :
+    |Real.exp x - Real.exp y| ≤ Real.exp B * |x - y| := by
+  rcases le_total x y with h | h
+  · have := Real.add_one_le_exp (x - y)
+    have key : Real.exp y - Real.exp x ≤ Real.exp y * (y - x) := by
+      have e : Real.exp x = Real.exp y * Real.exp (x - y) := by rw [← Real.exp_add]; ring_nf
+      rw [e]; nlinarith [Real.exp_pos y]
+    have hey : Real.exp y ≤ Real.exp B := Real.exp_le_exp.mpr hy
+    have hxy : Real.exp x ≤ Real.exp y := Real.exp_le_exp.mpr h
+    rw [abs_sub_comm, abs_of_nonneg (by linarith), abs_sub_comm, abs_of_nonneg (by linarith)]
+    nlinarith
+  · have := Real.add_one_le_exp (y - x)
+    have key : Real.exp x - Real.exp y ≤ Real.exp x * (x - y) := by
+      have e : Real.exp y = Real.exp x * Real.exp (y - x) := by rw [← Real.exp_add]; ring_nf
+      rw [e]; nlinarith [Real.exp_pos x]
+    have hex : Real.exp x ≤ Real.exp B := Real.exp_le_exp.mpr hx
+    have hyx : Real.exp y ≤ Real.exp x := Real.exp_le_exp.mpr h
+    rw [abs_of_nonneg (by linarith), abs_of_nonneg (by linarith)]
+    nlinarith
+
+/-- Transfer-factor bound with the exponential Lipschitz hypothesis discharged. -/
+theorem p1_transfer_factor_error_unconditional (Q_true Q_hat B0 E : ℝ) (hE : 0 ≤ E) (hQ_hat_pos : 0 < Q_hat)
+    (hQ_true_pos : 0 < Q_true) (h_diff : |Real.log Q_hat - Real.log Q_true| ≤ E)
+    (h_bound : Real.log Q_true ≤ B0) :
+    |Q_hat - Q_true| ≤ Real.exp (B0 + E) * E := by
+  have hx : Real.log Q_hat ≤ B0 + E := by
+    have := (abs_le.mp h_diff).2; linarith
+  have hy : Real.log Q_true ≤ B0 + E := by linarith
+  have h := p1_exp_lipschitz_below (B0 + E) _ _ hx hy
+  rw [Real.exp_log hQ_hat_pos, Real.exp_log hQ_true_pos] at h
+  calc |Q_hat - Q_true| ≤ Real.exp (B0 + E) * |Real.log Q_hat - Real.log Q_true| := h
+    _ ≤ Real.exp (B0 + E) * E := mul_le_mul_of_nonneg_left h_diff (Real.exp_pos _).le
+
 /-- Transfer function error: on circle |z| = s > 0, |Ĵ(z) - J(z)| = |Q̂(z) - Q(z)| / s. -/
 theorem p1_transfer_function_error (Q_true Q_hat s a : ℝ) (hs : 0 < s) :
     let J_true := (1 - Q_true) / s - a

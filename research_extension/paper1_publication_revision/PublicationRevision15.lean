@@ -180,8 +180,8 @@ theorem supervisor_effort_collapse (c N B4 L_sup c_min J C : ℝ)
   calc L_sup * J - C ≤ (L_sup * B4) / (c * N) - c_min := by linarith
     _ < 0 := by linarith
 
-/-- 6b. General-n Stackelberg collapse: for any decay bound `J ≤ J_bound` (`O(N^{-2/(n-2)})`) with
-`L_sup * J_bound < c_min ≤ C`, net supervisory commitment surplus is strictly negative for all `n > 2`. -/
+/-- 6b. Stackelberg collapse, final step: for any bound `J ≤ J_bound` with `L_sup * J_bound < c_min ≤ C`, net
+supervisory surplus is strictly negative. The rate of `J_bound` in `N`, and its dependence on `n`, are on paper. -/
 theorem supervisor_effort_collapse_general (L_sup c_min J C J_bound : ℝ)
     (h_J : J ≤ J_bound) (h_C : c_min ≤ C) (h_small : L_sup * J_bound < c_min)
     (hL_sup : 0 ≤ L_sup) :
@@ -189,7 +189,8 @@ theorem supervisor_effort_collapse_general (L_sup c_min J C J_bound : ℝ)
   have hret : L_sup * J ≤ L_sup * J_bound := mul_le_mul_of_nonneg_left h_J hL_sup
   linarith
 
-/-- 7. Simultaneous-move non-existence of pure Nash equilibrium: at `(α = 0, δ = δ0)` profitable
+/-- 7. The two payoff inequalities behind the paper's argument that no pure Nash equilibrium exists (the
+best-response argument is on paper): at `(α = 0, δ = δ0)` profitable
 inspection `C(α) < V_det * (pd0 - α)` breaks `(0, δ0)`, while high-stakes crowding makes pure `α ≥ α_min`
 earn negative surplus relative to `α = 0`. -/
 theorem simultaneous_no_pure_ne (V_det pd0 pd_best alpha J_sqrt c_min C_alpha : ℝ)

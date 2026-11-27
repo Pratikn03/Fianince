@@ -135,6 +135,8 @@ theorem p1_supervisor_effort_collapse (c N B4 L_sup c_min J C : ℝ)
     linarith
   linarith
 
+/-- Stackelberg collapse, final step: for any bound `J ≤ J_bound` with `L_sup * J_bound < c_min ≤ C`, net
+supervisory surplus is strictly negative. The rate of `J_bound` in `N`, and its dependence on `n`, are on paper. -/
 theorem p1_supervisor_effort_collapse_general (L_sup c_min J C J_bound : ℝ)
     (h_J : J ≤ J_bound) (h_C : c_min ≤ C) (h_small : L_sup * J_bound < c_min)
     (hL_sup : 0 ≤ L_sup) :
@@ -142,6 +144,8 @@ theorem p1_supervisor_effort_collapse_general (L_sup c_min J C J_bound : ℝ)
   have hret : L_sup * J ≤ L_sup * J_bound := mul_le_mul_of_nonneg_left h_J hL_sup
   linarith
 
+/-- The two payoff inequalities behind the paper's argument that no pure Nash equilibrium exists; the
+best-response argument is on paper. -/
 theorem p1_simultaneous_no_pure_ne (V_det pd0 pd_best alpha J_sqrt c_min C_alpha : ℝ)
     (hV : 0 ≤ V_det) (hC : c_min ≤ C_alpha) (h_pd0 : C_alpha < V_det * (pd0 - alpha))
     (h_pd_best : pd_best - alpha ≤ J_sqrt) (h_small : V_det * J_sqrt < c_min) :
