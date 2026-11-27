@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 
 from passive_incidence import (
+    estimate_adaptive,
     fit_bounded_polynomial,
     fitted_spectrum,
     impact_weighted_taps,
@@ -10,6 +11,7 @@ from passive_incidence import (
     quadratic_weight,
     sample_covariances,
     simulation,
+    synthetic_observations,
 )
 
 
@@ -48,6 +50,13 @@ class PassiveCertificateTests(unittest.TestCase):
         receipt = simulation(repetitions=4, sample_sizes=(512, 2048))
         self.assertTrue(all(np.isfinite(r["rmse"]) for r in receipt["rows"]))
         self.assertGreater(receipt["truth"], 0)
+
+    def test_adaptive_non_oracle_decay(self):
+        rng = np.random.default_rng(17)
+        nodes, weights = np.array([.2, .55, .75]), np.array([.08, .10, .12])
+        x = synthetic_observations(nodes, weights, .2, .5, 4096, rng)
+        est = estimate_adaptive(x, anchor=.2, max_memory=.8, quadratic=.1, risk=1.)
+        self.assertTrue(np.isfinite(est) and 0.002 < est < 0.03)
 
 
 if __name__ == "__main__":

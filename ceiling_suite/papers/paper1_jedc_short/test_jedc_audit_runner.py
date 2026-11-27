@@ -138,8 +138,8 @@ def run_audit_checks():
 
     # Check 19: Table S2 Lean declaration sync
     check(19, "Table S2 Lean declaration sync",
-          "1,288" in supp_text and "seventeen" in supp_text.lower(),
-          "Found sync to 17 Lean files and 1,288 declarations in Table S2")
+          "1,289" in supp_text and "seventeen" in supp_text.lower(),
+          "Found sync to 17 Lean files and 1,289 declarations in Table S2")
 
     # Check 20: Table S24 notation table update
     check(20, "Table S24 notation table update",
@@ -347,7 +347,7 @@ def run_audit_checks():
           "Confirmed Main & Supplement structural, minimax, and TWSE provenance repairs")
 
     # Check 55: Extended Lean Revision 15 & 17 new theorem names synced with Table S2
-    new_rev_thms = ("supervisor_effort_collapse_general", "simultaneous_no_pure_ne", "apc_stressed_lookback_floor")
+    new_rev_thms = ("supervisor_effort_collapse_general", "simultaneous_no_pure_ne", "apc_stressed_lookback_floor", "class_removal_kernel_did")
     missing_new_lean = [nm for nm in new_rev_thms if f"theorem {nm}" not in rev_src or nm.replace("_", r"\_") not in supp_text]
     check(55, "Round-3 new Lean 4 declarations (Rev 15/17) synced with Table S2",
           len(missing_new_lean) == 0,
@@ -357,6 +357,13 @@ def run_audit_checks():
     check(56, "Legal accuracy (MiFID II Art. 53(1)/18(3), RTS 8/9) & S24 PSD Roll deconvolution",
           "Art.\\ 53(1)/18(3)" in main_text and "Art.\\ 48" not in main_text and "Toeplitz positive-semidefinite" in supp_text,
           "Confirmed accurate MiFID II articles and PSD-regularized Roll deconvolution")
+
+    # Check 57: Data-driven passive_diagnostics.json (no n=32768 plateau) & natural-experiment Proposition prop:natural_exp
+    pdiag = json.loads((REPO_ROOT / "research_extension" / "paper1_publication_revision" / "passive_tax_followup" / "passive_diagnostics.json").read_text())
+    pdiag_ok = pdiag.get("tail_4x_rmse_ratio", 0.0) > 1.90 and pdiag["rows"][-1]["rmse"] < 0.0025
+    check(57, "Data-driven passive truncation (no S23 plateau) & natural-experiment Proposition S19.1",
+          pdiag_ok and "prop:natural_exp" in supp_text and "S-prop:natural_exp" in main_text and "0.00232" in supp_text,
+          f"passive tail_4x_rmse_ratio={pdiag.get('tail_4x_rmse_ratio'):.3f}, rmse_32768={pdiag['rows'][-1]['rmse']:.5f}")
 
     print("=" * 80)
     passed = sum(1 for _, _, s, _ in results if s == "PASS")

@@ -168,4 +168,25 @@ theorem apc_stressed_lookback_floor (m_var99 m_stress_floor m_conc b_apc phi : �
   refine ⟨le_max_left _ _, max_eq_right hle, ?_⟩
   linarith
 
+/-- 8. Exogenous class-removal Difference-in-Differences (Supplement Proposition `prop:natural_exp`):
+removing feedback kernel `K_S` when endogenous impact shifts from `κ₀` to `κ₀ - d_κ K_S` changes
+autoregressive feedback `κ K` by `-(κ₀ + d_κ K_rem) K_S`, leaving fixed-impact error `-d_κ K_rem K_S`
+(strictly separating stocks with distinct `K_S` even at identical unconditional turnover `V`). -/
+theorem class_removal_kernel_did (kap0 d_kap K_rem K_S1 K_S2 : ℝ)
+    (hpos : 0 < kap0 + d_kap * K_rem) (hsep : K_S1 < K_S2) :
+    ((kap0 - d_kap * K_S1) * K_rem - kap0 * (K_rem + K_S1)) =
+      -(kap0 + d_kap * K_rem) * K_S1 ∧
+    ((kap0 - d_kap * K_S1) * K_rem - kap0 * (K_rem + K_S1)) - (-kap0 * K_S1) =
+      -d_kap * K_rem * K_S1 ∧
+    ((kap0 - d_kap * K_S2) * K_rem - kap0 * (K_rem + K_S2)) <
+      ((kap0 - d_kap * K_S1) * K_rem - kap0 * (K_rem + K_S1)) := by
+  refine ⟨by ring, by ring, ?_⟩
+  have hdiff :
+      ((kap0 - d_kap * K_S1) * K_rem - kap0 * (K_rem + K_S1)) -
+      ((kap0 - d_kap * K_S2) * K_rem - kap0 * (K_rem + K_S2)) =
+      (kap0 + d_kap * K_rem) * (K_S2 - K_S1) := by ring
+  have hsub : 0 < K_S2 - K_S1 := sub_pos.mpr hsep
+  have hprod : 0 < (kap0 + d_kap * K_rem) * (K_S2 - K_S1) := mul_pos hpos hsub
+  linarith
+
 end Paper1Revision17

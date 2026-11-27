@@ -521,6 +521,7 @@ run_cmd do
   `CurrentMM.p1_ho_stoll_joint_carry_reduction,
   `CurrentMM.p1_apc_margin_buffer_bounds,
   `CurrentMM.p1_apc_stressed_lookback_floor,
+  `CurrentMM.p1_class_removal_kernel_did,
   `CurrentMM.p1_thm_merged_general_alpha_testing_bound,
   `CurrentMM.p1_thm_quantity_general_alpha,
   `CurrentMM.p1_thm_capital_general_alpha,
