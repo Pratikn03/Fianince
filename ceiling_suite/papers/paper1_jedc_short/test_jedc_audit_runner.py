@@ -59,8 +59,8 @@ def run_audit_checks():
 
     # Check 4: Theorem 4.1(iv) Banach space C^1 IFT
     check(4, "Theorem 4.1(iv) Banach space C^1 IFT",
-          "Banach space" in main_text and "C^1" in main_text,
-          "Implicit function theorem specified on Banach space C^1")
+          "Banach space" in supp_text and "C^1" in supp_text and "n:thm_inventory" in main_text,
+          "Implicit function theorem specified on Banach space C^1 (proof in Supplement S7 since 27 Nov)")
 
     # Check 5: Theorem 4.4 nondegeneracy hypotheses
     check(5, "Theorem 4.4 nondegeneracy hypotheses",
@@ -94,8 +94,9 @@ def run_audit_checks():
 
     # Check 11: Proposition thm:instruments sequential [theorem] numbering
     check(11, "Proposition thm:instruments sequential numbering without collision",
-          r"\begin{proposition}[Partial-equilibrium incidence" in main_text and r"\thesection.1A" not in main_text,
-          "Confirmed sequential Proposition numbering on thm:instruments")
+          r"\begin{proposition}[Partial-equilibrium incidence" in supp_text and r"\thesection.1A" not in main_text
+          and r"\thesection.1A" not in supp_text and "S-thm:instruments" in main_text,
+          "Instrument proposition moved to Supplement S22 (27 Nov); numbering sequential")
 
     # Check 12: Symbol disambiguation
     check(12, "Symbol disambiguation: Delta g' and Table 1 Delta eta",
@@ -154,8 +155,8 @@ def run_audit_checks():
 
     # Check 22: Theorem 4.2 (thm:fragility) presence & proof
     check(22, "Theorem 4.2 (thm:fragility) presence & proof",
-          "thm:fragility" in main_text and "Proof of Theorem~\\ref{thm:fragility}" in main_text,
-          "Found Theorem 4.2 statement and Appendix A proof")
+          r"\label{thm:fragility}" in main_text and "Proof of Theorem~\\ref{M-thm:fragility}" in supp_text,
+          "Fragility theorem in the main text; proof in Supplement S7 (since 27 Nov)")
 
     # Check 23: Corollary 7.3 (cor:posthaltflip) presence & proof
     check(23, "Corollary 7.3 (cor:posthaltflip) presence & proof",

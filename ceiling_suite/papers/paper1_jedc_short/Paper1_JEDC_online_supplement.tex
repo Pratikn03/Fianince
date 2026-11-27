@@ -43,13 +43,14 @@
 \graphicspath{{../paper1_core/}{../paper1_note/}}
 \externaldocument[][nocite]{../paper1_note/paper1b_companion}
 \externaldocument[M-]{Paper1_JEDC_main}
+\providecommand{\TV}{\mathrm{TV}}\providecommand{\Var}{\mathrm{Var}}\providecommand{\supp}{\mathrm{supp}}
 \begin{document}
 \singlespacing\small\sloppy
 \renewcommand{\topfraction}{0.9}\renewcommand{\bottomfraction}{0.8}\renewcommand{\textfraction}{0.07}\renewcommand{\floatpagefraction}{0.75}
 \setcounter{page}{1}\renewcommand{\thepage}{S-\arabic{page}}\renewcommand{\thesection}{S\arabic{section}}\setcounter{table}{0}\renewcommand{\thetable}{S\arabic{table}}\setcounter{figure}{0}\renewcommand{\thefigure}{S\arabic{figure}}
 \begin{center}{\Large Online Supplement}\\[4pt]{\large Observationally Equivalent Algorithms}\\[2pt]{\normalsize Niroula, Niroula and Khatiwada, November 2026}\end{center}
 
-\noindent Sections~S1--S7 state every result in full, with the remarks, machine-check notes and the results that the main text omits. The remaining sections give the proofs, further results, machine checks and notation. Theorem numbers in the supplement are those of these sections, not of the main text. The main text's results correspond to them as follows: Theorems~\ref{M-n:thm_inventory} and~\ref{M-n:thm_eqreduced} to Theorems~\ref{thm:inventory} and~\ref{thm:eqreduced}; Theorem~\ref{M-n:suff} to Theorem~\ref{thm:eqinv} and Proposition~\ref{prop:anylinear}; Theorem~\ref{M-n:ident} to Theorem~\ref{thm:merged}(i); Theorem~\ref{M-n:cost} to Theorems~\ref{thm:kcohort}, \ref{prop:esprit} and~\ref{prop:passive}; Proposition~\ref{M-n:target} to Propositions~\ref{prop:target}(i) and~\ref{prop:targetK}; Theorem~\ref{M-n:disc} to Theorem~\ref{thm:discvalue}; Proposition~\ref{M-n:relabel} to Section~\ref{app:relabel}; Theorem~\ref{M-n:paradox} to Section~\ref{app:paradox} (and Proposition~\ref{prop:endogenous_supervisor}, moved from the main text, is proved in Section~\ref{app:paradox}); Theorem~\ref{M-thm:fragility} is proved in Main Appendix~\ref{M-app:proofs} and Corollary~\ref{cor:posthaltflip} in Section~\ref{sec:mixed_sign} (with dealer-entry unfolding in Section~\ref{sec:mixed_sign}); Theorem~\ref{thm:mpv} is proved in Section~\ref{sec:mpv_supp}; Proposition~\ref{M-thm:instruments} is proved in Main Appendix~\ref{M-app:proofs} and Sections~\ref{app:instruments}--\ref{app:passiveincidence}. 
+\noindent Sections~S1--S7 state every result in full, with the remarks, machine-check notes and the results that the main text omits. The remaining sections give the proofs, further results, machine checks and notation. Theorem numbers in the supplement are those of these sections, not of the main text. The main text's results correspond to them as follows: Theorems~\ref{M-n:thm_inventory} and~\ref{M-n:thm_eqreduced} to Theorems~\ref{thm:inventory} and~\ref{thm:eqreduced}; Theorem~\ref{M-n:suff} to Theorem~\ref{thm:eqinv} and Proposition~\ref{prop:anylinear}; Theorem~\ref{M-n:ident} to Theorem~\ref{thm:merged}(i); Theorem~\ref{M-n:cost} to Theorems~\ref{thm:kcohort}, \ref{prop:esprit} and~\ref{prop:passive}; Proposition~\ref{M-n:target} to Propositions~\ref{prop:target}(i) and~\ref{prop:targetK}; Theorem~\ref{M-n:disc} to Theorem~\ref{thm:discvalue}; Proposition~\ref{M-n:relabel} to Section~\ref{app:relabel}; Theorem~\ref{M-n:paradox} to Section~\ref{app:paradox} (and Proposition~\ref{prop:endogenous_supervisor}, moved from the main text, is proved in Section~\ref{app:paradox}); Theorem~\ref{M-thm:fragility} is proved in Main Appendix~\ref{M-app:proofs} and Corollary~\ref{cor:posthaltflip} in Section~\ref{sec:mixed_sign} (with dealer-entry unfolding in Section~\ref{sec:mixed_sign}); Theorem~\ref{thm:mpv} is proved in Section~\ref{sec:mpv_supp}; Proposition~\ref{thm:instruments} is proved in Main Appendix~\ref{M-app:proofs} and Sections~\ref{app:instruments}--\ref{app:passiveincidence}. 
 
 \section{Model and motivating examples}\label{sec:model}
 
@@ -442,6 +443,182 @@ Discretize trading into frequent uniform-price call auctions \citep{budish2015} 
 The deterministic call-auction, permutation-invariance, order-splitting, kernel-convolution, clearing-price monotonicity, and sniping-fraction claims are formalized in Lean~4 (\nolinkurl{PublicationRevision17.lean}, \nolinkurl{PublicationRevision18.lean}); stochastic clock distributions are proved on paper.
 
 \section{Proofs of the main results}\label{app:proofs}
+
+\noindent The proofs of main-text results other than Theorems~\ref{M-n:suff}, \ref{M-thm:what-id}, \ref{M-n:passiveupper}, \ref{M-n:separation} and~\ref{M-n:pilot}, which Main Appendix~\ref{M-app:proofs} proves, are given first.
+
+\begin{proof}[Proof of Theorem~\ref{M-n:thm_inventory}]
+\emph{(i)} Conjecture $x_t = -\kappa H_t + \sum_i \beta_i u_{i,t+1}$ and set $D = 1 - \sum_i \beta_i w_i$. Using $\E_t[\xi_{t+1}] = 0$, $\E_t[H_{t+1}] = \bar{a} H_t - \sum_i u_{i,t+1}$, and $\E_t[u_{i,t+2}] = r_i u_{i,t+1} + w_i \E_t[x_{t+1}]$, taking conditional expectations gives
+\[
+  D\, \E_t[x_{t+1}] = -\kappa \bar{a} H_t + \sum_i (\kappa + \beta_i r_i) u_{i,t+1}.
+\]
+The dealer optimality condition $x_t = \E_t[x_{t+1}] - A V H_t$ must hold identically in $(H_t, \{u_{i,t+1}\})$. Matching coefficients on $u_{i,t+1}$ yields $\beta_i = (\kappa + \beta_i r_i)/D$, so $\beta_i = \kappa / (D - r_i)$. Substituting into $D = 1 - \sum_i \beta_i w_i$ gives $D = 1 - \kappa S_M(D)$, and matching coefficients on $H_t$ gives $\kappa(D - \bar{a}) = A V D$. For the one-step innovation $\delta = x_{t+1} - \E_t[x_{t+1}]$, we have $\delta = \kappa \xi_{t+1} + \sum_i \beta_i w_i \delta$, hence $\delta = (\kappa/D)\xi_{t+1}$ and $V = \sigma_F^2 + \kappa^2 \sigma_\xi^2 / D^2$. Conversely, any stable solution of~main-text~\eqref{M-eq:eq-system} satisfies dealer optimality and variance consistency in every state.
+
+\emph{(ii)} Setting $w_i = 0$ yields $S_M \equiv 0$, $D = 1$, $x_t = -\kappa H_t = \bar{a} x_{t-1} + \kappa Y_t$, and the quadratic $A \sigma_\xi^2 \kappa^2 - (1 - \bar{a})\kappa + A \sigma_F^2 = 0$, whose discriminant is $\Lambda_0 = (1 - \bar{a})^2 - 4 A^2 \sigma_F^2 \sigma_\xi^2$.
+
+\emph{(iii)} The main-text system~\eqref{M-eq:eq-system} depends on the population solely through $S_M(D) = \int (D - r)^{-1} dM(r)$, hence solely through $M$.
+
+\emph{(iv)} Define $\Phi(\kappa, D; M) = \bigl(D + \kappa S_M(D) - 1,\; \kappa(D - \bar{a}) - A(\sigma_F^2 D + \kappa^2 \sigma_\xi^2 / D)\bigr)$. At $M = 0$, $\Phi(\kappa_-, 1; 0) = 0$ with triangular Jacobian $\partial_D \Phi_1 = 1$, $\partial_\kappa \Phi_1 = 0$, and $\partial_\kappa \Phi_2 = (1 - \bar{a}) - 2 A \kappa_- \sigma_\xi^2 = \sqrt{\Lambda_0} > 0$. The implicit function theorem applied on the Banach space $C^1([1-\delta, 1+\delta])$ for $S_M$ yields a unique continuous branch near $(\kappa_-, 1)$ for small $\epsilon = \|S_M\|_{C^1}$. Linearizing gives $dD = -\kappa_- S_M(1)$ and $d\kappa = -\kappa_-(\bar{a} + 2 A \kappa_- \sigma_\xi^2)\, dD / \sqrt{\Lambda_0}$, with $S_M(1) = \sum_i w_i/(1 - r_i) = \sum_i q_i$. Stability holds by continuity of eigenvalues from $M = 0$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{M-thm:fragility}]
+Substituting $V = \sigma_F^2 + \kappa^2 \sigma_\xi^2 / D^2$ into $\kappa(D - \bar{a}) = A V D$ yields $A \sigma_\xi^2 \kappa^2 - D(D - \bar{a})\kappa + A \sigma_F^2 D^2 = 0$, whose discriminant $\Lambda(D) = D^2[(D - \bar{a})^2 - 4 A^2 \sigma_F^2 \sigma_\xi^2]$ is positive iff $D > D_{\min}$. On $(D_{\min}, 1]$, both quadratic roots $\kappa_\pm(D) = [D(D - \bar{a}) \pm \sqrt{\Lambda(D)}]/(2 A \sigma_\xi^2)$ are strictly positive with $\kappa_+(D) > \kappa_-(D)$ and $\kappa_-(1) = \kappa_-$. For $D \in (\max(D_{\min}, \max_i r_i), 1]$ with $w_i > 0$, $S_M(D) > 0$ and is strictly decreasing in $D$, while $\kappa_-(D)$ decreases on $(D_{\min}, 1]$ and $d\kappa_-/dD \to -\infty$ as $D \downarrow D_{\min}$ (and $S_M(D) \to +\infty$ as $D \downarrow \max_i r_i$). Setting $F_\pm(D; \lambda) \equiv D - 1 + \lambda \kappa_\pm(D) S_M(D)$, we have $F_-(1; \lambda) = \lambda \kappa_- S_M(1) > 0$, $F_-(D; 0) = D - 1 < 0$ for $D < 1$, and $F_-(D; \lambda) \to +\infty$ as $D \downarrow D_* \equiv \max(D_{\min}, \max_i r_i)$. Thus $\lambda_{\mathrm{crit}} = \sup_{D \in (D_*, 1)} (1 - D)/[\kappa_-(D) S_M(D)] > 0$ is attained at an interior point $D_{\mathrm{crit}} \in (D_*, 1)$; because both $\kappa_-(D)$ and $S_M(D)$ strictly decrease on $(D_*, 1]$ and $1 - D_{\mathrm{crit}} < 1$, $\kappa_-(D_{\mathrm{crit}}) S_M(D_{\mathrm{crit}}) > \kappa_- S_M(1)$, proving strictly $\lambda_{\mathrm{crit}} < [\kappa_- S_M(1)]^{-1}$, with $F_+(D;\lambda) > F_-(D;\lambda) > 0$ for all $\lambda > \lambda_{\mathrm{crit}}$ so neither root exists on $(D_*, 1]$. At the interior fold $D_{\mathrm{crit}} > D_*$, $\Lambda(D_{\mathrm{crit}}) > 0$. By Vieta's identity on the quadratic $A \sigma_\xi^2 \kappa^2 - D(D-\bar{a})\kappa + A \sigma_F^2 D^2 = 0$, the two roots satisfy $\kappa_-(D) < \kappa_+(D)$ and $\kappa_+(D)\kappa_-(D) = (\sigma_F^2/\sigma_\xi^2) D^2$, so $[\kappa_-(D)/D]^2 \sigma_\xi^2 < \kappa_+(D)\kappa_-(D)\sigma_\xi^2/D^2 = \sigma_F^2$ and hence $V(\lambda_{\mathrm{crit}}) = \sigma_F^2 + (\kappa_{\mathrm{crit}}/D_{\mathrm{crit}})^2 \sigma_\xi^2 < 2\sigma_F^2 < \infty$. Also by Theorem~\ref{M-n:thm_eqreduced}(i), $S^*(\lambda_{\mathrm{crit}}) = 1 - \frac{D_{\mathrm{crit}}-\bar{a}}{D_{\mathrm{crit}}}\frac{S_M(1)}{S_M(D_{\mathrm{crit}})} < 1$ because $D_{\mathrm{crit}} > \bar{a}$ and $S_M(D_{\mathrm{crit}}) > S_M(1) > 0$, keeping $\Var(H_t) < \infty$. At the non-degenerate fold ($F_D = 0, F_{DD} > 0, F_\lambda > 0$), expanding $F_-(D; \lambda) \approx \frac{1}{2} F_{DD}(D - D_{\mathrm{crit}})^2 + F_\lambda(\lambda - \lambda_{\mathrm{crit}})$ yields $D - D_{\mathrm{crit}} \asymp \sqrt{\lambda_{\mathrm{crit}} - \lambda}$ and $d\kappa/d\lambda, dV/d\lambda, d\Var(H_t)/d\lambda \asymp (\lambda_{\mathrm{crit}} - \lambda)^{-1/2} \to +\infty$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{M-n:thm_eqreduced}]
+\emph{(i)} Write $D x_t = -\kappa H_t + \sum_i \beta_i r_i u_{i,t}$ and $x_{t-1} = -\kappa H_{t-1} + \sum_i \beta_i u_{i,t}$, where $\beta_i = \kappa/(D - r_i)$. Substituting $H_t = \bar{a} H_{t-1} - \sum_i u_{i,t} - \xi_t$ yields
+\[
+  D x_t - \bar{a} x_{t-1} = \kappa \xi_t + \sum_i \bigl(\kappa + \beta_i(r_i - \bar{a})\bigr) u_{i,t} = \kappa \xi_t + \sum_i \kappa \frac{D - \bar{a}}{D - r_i}\, u_{i,t}.
+\]
+Dividing by $D$ and defining $\tilde{u}_{i,t} = \frac{D - \bar{a}}{D - r_i} u_{i,t}$ gives $x_t = a^* x_{t-1} + \kappa^*(\xi_t + \sum_i \tilde{u}_{i,t})$ and $\tilde{u}_{i,t+1} = r_i \tilde{u}_{i,t} + \tilde{w}_i x_t$ pathwise, with $(a^*, \kappa^*, \tilde{w}_i)$ as stated. Because $\kappa \neq 0$ and $D \neq \bar{a}$, the state transformation is invertible and preserves stability.
+
+\emph{(ii)}-- \emph{(iii)} Part~(ii) follows from Theorem~\ref{thm:minphase}(i) applied to the closed loop in~(i). For~(iii), $S_M(D) = \sum_i \tilde{w}_i/(D - \bar{a})$ turns $D = 1 - \kappa S_M(D)$ into $D = 1 - \kappa^* \tilde{M}([0,1])/(1 - a^*)$, which recovers $D$, $\bar{a} = a^* D$, $\kappa = \kappa^* D$, and $M = h^{-1} \tilde{M}$ uniquely.
+
+\emph{(iv)} Given any hard pair $(a^*, \kappa^*, W, r_c, \Delta\eta)$ satisfying the stability condition $a^* + \kappa^* W / (1 - r_c - \Delta\eta) < 1$, we have $\kappa^* W / (1 - a^*) < 1 - r_c - \Delta\eta$, so setting $D = 1 - \kappa^* W/(1 - a^*)$ ensures $D > r_c + \Delta\eta \ge \max_i r_i$. Choosing $\bar{a} = a^* D$, $\kappa = \kappa^* D$, any $\sigma_F^2, \sigma_\xi^2 > 0$, $A = \kappa^* D(1 - a^*)/(\sigma_F^2 + \kappa^{*2} \sigma_\xi^2)$, and $w_i = \tilde{w}_i(D - r_i)/(D - \bar{a}) > 0$ realizes both economies as equilibria with identical primitives $(A, \sigma_F^2, \sigma_\xi^2, \bar{a})$ and identical $(\kappa, D)$, preserving the $(\Delta\eta)^{-(4K-2)}$ lower bound.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{M-n:cost}]
+Let $n=2K-1$ and normalize the $K$-node Gauss--Legendre and left Gauss--Radau rules to mass one. Both integrate degree $n-1$ exactly. Their degree-$n$ moments differ because the monic polynomial $(s+1)\prod_{j>1}(s-s_j)^2$ vanishes at all Radau nodes and has positive integral, which the Gauss rule integrates exactly. Scale the nodes by $r_c+\Delta\eta s$ and masses by $W$. Taylor expansion gives $|\Delta k_m|\le 2W\binom{m}{n}(\Delta\eta)^n(r_c+\Delta\eta)^{m-n}$ for $m\ge n$, with zero difference before that and $|\Delta k_n|\asymp(\Delta\eta)^n$. In particular $\|\Delta k\|_1=O((\Delta\eta)^n)$ uniformly.
+
+Write the innovation filter as $B_X(z)=[1-az-\kappa z\sum_{m\ge0}k_{X,m}z^m]^{-1}$ in the lag variable and the reset response as $h_X=\kappa B_X$. The uniform stability bound gives bounded $\ell^1$ norms of the filters by the geometric series for the inverse. Subtracting the inverse filters shows $\|h_1-h_0\|_2\le C\|\Delta k\|_1$; the first nonzero difference is $\kappa^2\Delta k_n$ at lag $n+1$. The reset KL is $N\|h_1-h_0\|_2^2/(2\sigma^2)$ for the observed taps. Both errors at most $1/4$ imply TV at least $1/2$ and KL at least $1/2$ by Pinsker.
+
+For stationary prices the spectral ratio is $f_1/f_0=|B_1/B_0|^2=1+O((\Delta\eta)^n)$ uniformly, with spectra bounded above and away from zero. The leading ratio term is twice the real part of a nonzero analytic function on the disk which vanishes at zero: use the resolvent identity and the leading Taylor term of $\sum_m \Delta k_m z^m$, whose coefficient at $z^n$ is nonzero. Its real part cannot vanish identically on the unit circle: it is harmonic on the disk, so it would then vanish on the whole disk by the maximum and minimum principles for harmonic functions, making the function an imaginary constant, which is zero because the function vanishes at zero. The integral of its square over the circle is therefore positive. Thus the Gaussian spectral integral of $(f_1/f_0)-1-\log(f_1/f_0)$ has exact order $(\Delta\eta)^{2n}$. For finite records the uniform ratio bound sandwiches the two Toeplitz covariance matrices, putting the eigenvalues of their relative covariance within $O((\Delta\eta)^n)$ of one. Summing the quadratic bound on $\lambda-1-\log\lambda$ gives KL $\le CT(\Delta\eta)^{2n}$, so the same testing argument applies.
+
+For recovery, the impulse recursion inverts the first $2K$ kernel taps triangularly, with nonzero divisor $\kappa h_0=\kappa^2$. Averaging independent Gaussian responses gives tap errors $O_P(\sigma/\sqrt N)$ at fixed depth. Centering the kernel moments at $r_c$ and dividing moment $j$ by $(\Delta\eta)^j$ gives errors $O_P(\sigma/(\sqrt N(\Delta\eta)^n))$. On the separated class the ordered rescaled moment map is injective by the Vandermonde equations for the difference of two atomic measures. Its Jacobian is a nonsingular confluent Vandermonde with weights bounded away from zero. The inverse function theorem and compactness give a uniformly Lipschitz local inverse. On its domain the Prony reconstruction returns that inverse, giving the stated fixed-accuracy rate.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{M-n:questions}]
+The largest difference of $F_g$ between two positive measures of mass at most $\bar W$ with tap distance at most $\delta$ is the displayed modulus. To see this, enforce the norm constraint by infimizing $\delta\|c\|_2-c\cdot(k_1-k_0)$ over $c$. Exchange infimum and supremum by convex minimax on the weak-star compact pair of measure sets. The residual supremum is $\bar W\mathcal R(g-p_c)$, with $p_c(r)=\sum_{t<L}c_t r^t$. Two Gaussian means at tap distance below $2z_{1-\alpha}\sigma/\sqrt N$ have TV below $1-2\alpha$, so uniform coverage forces answer separation at most $2\epsilon$. Continuity of the modulus gives the boundary. For sufficiency center the residual range and use the affine tap estimate. Its worst-case bias is at most $\bar W\mathcal R(g-p_c)/2$ and its standard deviation is $\sigma\|c\|_2/\sqrt N$.
+
+If the coefficients of $g$ belong to $\ell^2$, truncation gives uniform residual $O(\bar r^L)$ by Cauchy--Schwarz. Choose logarithmic depth to make it $O(\epsilon)$ with bounded coefficient norm. Conversely the necessary condition with $N=O(\sigma^2\epsilon^{-2})$ gives polynomial approximants with bounded coefficient norms and residual tending to zero. Pad their coefficients with zeros and extract a weakly convergent subsequence in $\ell^2$. Point evaluation on $[0,\bar r]$ is continuous on coefficient space, so the limit represents $g$. For (iii) compare zero mass with $c\delta_r$ where $c=d\sigma\sqrt{(1-r^2)/N}$, with $0<d<1-2\alpha$ and $d$ small enough that $c\le\bar W$. Even with all taps observed, the divergence of the averaged record is $N\sum_m c^2r^{2m}/(2\sigma^2)=d^2/2$, so by Pinsker's inequality the total variation is at most $d/2<1-2\alpha$, yet the answer separation $c\,|g(r)|$ is unbounded as $r\uparrow1$. This contradicts uniform coverage.
+\end{proof}
+
+
+\begin{proof}[Proof of Proposition~\ref{M-n:target}(i)--(ii) and Corollary~\ref{M-n:decisionloss}]
+Uniform scaling multiplies the feedback part of $S$ by $\theta$. For the halt, take the quadrature rules at the zeros of $p_K-cp_{K-1}$, where $p_j$ are orthonormal for the uniform probability on $[-1,1]$. For small $c$ the zeros stay simple and interior. The interpolatory rule integrates degree $2K-2$ exactly: divide by $p_K-cp_{K-1}$ and use orthogonality of the quotient of degree at most $K-2$. Products of the Lagrange polynomials show that their squared norms are the weights. Normalizing them to an orthonormal basis gives weight $1/\sum_{j<K}p_j(s)^2$ at a node $s$. As $c$ varies, a node cannot recur, since consecutive orthogonal polynomials have no common zero by the three-term recurrence. Each weight level set is finite, so two such rules have distinct largest weights. After shifting and scaling, Taylor expansion of $(1-r)^{-1}$ gives an $O((\Delta\eta)^{2K-1})$ difference in total feedback. The largest activities converge to the different largest masses divided by $1-r_c$, giving separated post-halt budgets for small spacing. The reset KL proof above applies to this moment-matched pair.
+
+For the binary decision let $A$ be the event of choosing the halt. Its excess loss is $(bP_0(A)+cP_1(A^c))/2\ge \min(b,c)(1-\TV)/2$. Apply Pinsker and solve for the required length. For equal-covariance Gaussian records the equal-prior likelihood rule has each error $\Phi(-\sqrt{N}\|d\|/(2\tau))$; the normal tail bound gives the displayed risk bound.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{M-n:target}(iii)]
+Let $x_K < 1$ be the largest node of the $K$-point Gauss--Legendre rule on $[-1, 1]$, and place the hard pair of Theorem~\ref{M-n:cost}, with a common persistence and total merged weight $W$, on $r_c + \Delta\eta[-1, 1]$ with $r_c = \hat r + (1 + x_K)\Delta\eta/2$. Its memories lie in $[\hat r - \Delta\eta, \hat r + 2\Delta\eta]$. The Gauss--Radau economy has an atom of weight $W/K^2$ at $r_c - \Delta\eta < \hat r$, because the endpoint weight of the $K$-point Gauss--Radau rule on $[-1, 1]$ is $2/K^2$. Every memory of the Gauss economy is at least $r_c - x_K\Delta\eta > \hat r$. Group $i$ contributes $\kappa q_i = \kappa w_i/(1 - r_i)$ to the budget, so the restriction removes at least $\kappa W/K^2$ in the Gauss--Radau economy and nothing in the Gauss economy. The budgets themselves, $a + \kappa\int (1 - r)^{-1}\,dM(r)$, differ by $O((\Delta\eta)^{2K-1})$, because the merged measures match moments $0, \dots, 2K-2$ and $(1 - r)^{-1}$ is smooth near $r_c$. For small $\Delta\eta$ the budgets after the restriction therefore differ by at least $\kappa W/(2K^2)$, and every ceiling between them is met in one economy and breached in the other. The record length is that of Theorem~\ref{M-n:cost}(ii), which concerns the same pair.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{prop:instrument_bound}]
+Concavity gives $q=\min\{c/T_h,(\beta A_hV-\tau T_h)_+/(bV+\nu D_h/h)\}$. At revision dates the conditional perceived payoff and the quadratic risk cost scale with $V$, while Gaussian changes give expected absolute volume $qT_h$ per date. A constant signal produces constant $y$, so the ratio of scales gives the stated budget formula after aggregation.
+
+Write $\gamma_j=\E[x_t x_{t-j}]$, $B(z)=\sum_{j\in\mathbb Z}\gamma_j z^{|j|}$,
+$B_h(z)=\sum_{j\in\mathbb Z}\gamma_{j+h} z^{|j|}$, and $C_h(z)=2(B(z)-B_h(z))/(1-z)$. Summing by the difference of the filter indices gives $V=(1-r)B(r)/(1+r)$ and $D_h/V=(1-r)C_h(r)/B(r)$. The geometric bound extends the series past the unit circle. Since $B(1)=B_h(1)$, $C_h$ extends there too. The real part of $B$ is uniformly positive on the circle by the spectral bound, and hence in the disk. For the quadratic charge from zero,
+\[
+ g=\frac{\nu C_1}{bB+\nu(1-r)C_1}.
+\]
+For scheduled revisions, division by the old scale gives
+\[
+ g=\frac{1-A_h}{1-r}+
+ \frac{A_h\nu(C_h/h-C_1)}{bB+\nu(1-r)C_h/h}.
+\]
+Small $\nu$ keeps both denominators bounded away from zero throughout the disk. The analytic terms have uniformly bounded square-summable Taylor coefficients. For a white-noise reference with variance $\gamma_0$, $T_1/V=2\sqrt{(1+r)/(\pi\gamma_0)}$. Thus $d=2\tau/(\beta\sqrt{\pi\gamma_0})$ in (a). The analytic continuation from an active interval grows like $(1-r)^{-1}$, whereas a square-summable Taylor series is bounded by its coefficient norm times $(1-r^2)^{-1/2}$. The same argument applies to the first term in (b) when $A_h<1$.
+
+For the plug-in estimate, Wick's formula bounds the variance of each sample covariance up to lag $\lfloor n/2\rfloor$ by $C/n$. Summing errors with geometrically decaying weights on $[0,\bar r]$ gives uniform error $O_P(n^{-1/2})$ for the analytic term, after flooring denominators. Fit a degree-$<L$ polynomial to it in uniform norm with a known coefficient-norm bound. The truncated true series is feasible with error $O(\bar r^L)$. The resulting integrated bias is bounded by total mass times $O_P(n^{-1/2}+\bar r^L)$. Given the independent reference record, the tap statistic's variance is $O(\sigma^2/N)$ by the norm bound. Take logarithmic depth to make the tail no larger than the sampling errors.
+
+
+In the passive alternative write $J(z)=\kappa\sum_{m\ge0}k_mz^m$ and $Q(z)=1-z(a+J(z))$. The memory and stability margins bound $Q$ away from zero on a disk larger than the unit disk and yield uniform geometric covariance decay. The stationary spectrum is $f=\sigma^2/|Q|^2$ in the covariance-series normalization. With $\ell_j$ the positive Fourier coefficients of $\log f$ under $z=e^{-i\omega}$ and $Q(0)=1$,
+\[
+ Q(z)=\exp\{-\textstyle\sum_{j\ge1}\ell_j z^j\},\qquad J(z)=(1-Q(z))/z-a .
+\]
+The constant coefficient absorbs the variance scale. A covariance series estimated to logarithmic lag depth has uniform error $O_P(\log n/\sqrt n)$, so linearizing its log leaves an $o_P(n^{-1/2})$ remainder. Each linear Fourier coefficient is a Gaussian quadratic form whose squared matrix Frobenius norm is bounded by $C/n$ times the squared sum of its Fourier weights. Parseval bounds the weights of $e^{ij\omega}/f$ uniformly in $j$. Geometric summation on any interior circle gives $\|\hat J-J\|_s=O_P(n^{-1/2})$.
+
+Estimate $g$ from the same sample covariances. The analytic terms extend uniformly to a disk larger than the unit disk, so their coefficients have a uniform weighted sum bound $\sum_m R^m|c_m|\le B$ for some $R>1$. Fit the pilot at logarithmic depth under that bound. Its fitted polynomial approximates $g$ on the memory interval with $O_P(n^{-1/2})$ error by the preceding approximation argument. Choose $R^{-1}<s<1$. Cauchy's integral estimate gives $|\sum_m\hat c_m(\hat J_m-J_m)|\le B\|\hat J-J\|_s$. Integrating the weight error costs at most $\kappa M([0,\bar r])\|\hat g-g\|_\infty$. These pathwise bounds allow both fits to use the same observations. Section~\ref{app:passiveincidence} gives details.
+
+At an interior transversal exit or binding point $r_*$, the positive part gives a nonzero jump $\Delta g'$ of the one-sided derivative of $g$. Locally $g(r)=g(r_*)+g'_-(r-r_*)+\Delta g'(r-r_*)_++O((r-r_*)^2)$. Reflect the Gauss--Legendre and left Gauss--Radau pair of Theorem~\ref{M-n:cost} and place it so that only the Radau endpoint lies on the clipped side, at distance $u\Delta\eta$ for a fixed $u>0$. A reflection of the construction for Proposition~\ref{M-n:target}(iii) gives the opposite orientation if needed. The affine terms cancel, and the lone endpoint generates a nonzero term of magnitude $|\Delta g'|Wu\Delta\eta/K^2$. The quadratic remainder is $O((\Delta\eta)^2)$. The common reference record carries no additional information about the pair. The reset KL is $O(N(\Delta\eta)^{4K-2}/\sigma^2)$ from moment cancellation. Applying the same two-point test to the binary decision or to estimates with disjoint accuracy intervals proves the bounds. For caps, the policy scale is $\min(q^0,c/T_1)$ and the same derivative jump follows at a transversal binding point.
+\end{proof}
+
+\begin{proof}[Proof of Theorems~\ref{M-n:minimax} and~\ref{n:minimaxtags} and Corollary~\ref{cor:robustuniform}]
+For Theorem~\ref{M-n:minimax}, averaging over all $K!$ permutations $\pi \in S_K$ places every label on every class equally often:
+\[
+  \frac{1}{K!} \sum_{\pi \in S_K} S'_\pi = a + \sum_{c=1}^K \theta_c \Bigl(\frac{1}{K} \sum_{d=1}^K u_d\Bigr) = a + \bar{\theta} U,
+  \qquad
+  \frac{1}{K!} \sum_{\pi \in S_K} \theta \circ \pi = \bar{\theta}\mathbf{1}.
+\]
+By convexity of $\ell$ and $C$ (and permutation invariance of $C$), Jensen's inequality gives part~(i):
+\[
+  \ell(a + \bar{\theta} U) + C(\bar{\theta}\mathbf{1})
+  \le \frac{1}{K!} \sum_{\pi} \ell(S'_\pi) + C(\theta)
+  \le \max_{\pi} \ell(S'_\pi) + C(\theta).
+\]
+For part~(ii), suppose $\theta \in [0, 1]^K$ is non-uniform, so $\theta_{c_1} \neq \theta_{c_2}$ for some $c_1 \neq c_2$. Then the transposition $\tau = (c_1\, c_2)$ satisfies $\theta \circ \tau \neq \theta$. Since $\bar{\theta}\mathbf{1} = \frac{1}{K!}\sum_{\pi \in S_K} (\theta \circ \pi)$ is a strictly positive convex combination of points that are not all equal, strict convexity and permutation invariance of $C$ yield $C(\bar{\theta}\mathbf{1}) < \frac{1}{K!}\sum_\pi C(\theta \circ \pi) = C(\theta)$, giving strict dominance. (Similarly, if $u_{d_1} \neq u_{d_2}$ and $\theta_{c_1} \neq \theta_{c_2}$, swapping the assignment of $d_1, d_2$ to $c_1, c_2$ produces distinct budgets $S'_{\pi_1} \neq S'_{\pi_2}$, so strict convexity of $\ell$ yields $\ell(a + \bar{\theta} U) < \frac{1}{K!}\sum_\pi \ell(S'_\pi) \le \max_\pi \ell(S'_\pi)$.) Hence every minimax-optimal policy must be uniform; on the compact interval $[0, 1]$, the strictly convex continuous function $\bar{\theta} \mapsto \ell(a + \bar{\theta} U) + C(\bar{\theta}\mathbf{1})$ attains a unique minimizer $\bar{\theta}^*$. Thus $\bar{\theta}^*\mathbf{1}$ is the unique minimax supervisory policy.
+For Corollary~\ref{cor:robustuniform}, halting label $c$ leaves budget $S - u_{\pi(c)}$, whose worst case over $\pi$ is $S - \min_d u_d$, attained whenever $\pi(c) \in \arg\min_d u_d$. A uniform cut $\theta = (\bar{s} - a)/(S - a)$ yields budget $a + \theta(S - a) = \bar{s}$ exactly and removes total feedback $(1 - \theta)(S - a) = S - \bar{s}$, the algebraic minimum needed to reach $\bar{s}$. For Theorem~\ref{n:minimaxtags}, restrict the averaging group to the product of within-group permutations $\prod_{g=1}^G S_g$: within each group $g$, every label averages to $\bar{\theta}_g$, so the averaged budget is $a + \sum_g \bar{\theta}_g U_g$ and the identical Jensen argument yields the minimax bound and $V_{\mathrm{tag}} \ge 0$.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{M-n:disc}]
+The first two noiseless class-flow coordinates are $w_i h_0$ and $w_i(h_1+r_i h_0)$. Since $h_0=\kappa>0$ and $w_i$ is bounded below, sample averages of these and of the price taps estimate both parameters with error $O_P(N^{-1/2})$ uniformly, using ratios on an event where denominators stay bounded away from zero. This suffices for fixed weight accuracy and for the specified shrinking rate accuracy. In an interior ball choose two rate vectors separated by more than twice the target, with identical weights. Their physical rates differ by $O(\Delta\eta)$, and the finite observed means differ by $O(\Delta\eta)$ by smoothness. Thus the Gaussian two-point bound requires order $(\Delta\eta)^{-2}$ tagged experiments. The untagged weight comparison follows from Theorem~\ref{M-n:cost}.
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{M-lem:micro}]
+\emph{(i)} Linearizing social welfare around the no-feedback equilibrium of Theorem~\ref{M-n:thm_inventory}(iv), each retained unit of class $j$ yields private surplus $b_j$ and raises aggregate feedback intensity by $\phi_j$, increasing equilibrium impact $\kappa$ proportionally to $\kappa_-^2(\bar{a} + 2A\kappa_-\sigma_\xi^2)/\sqrt{\Lambda_0} > 0$. Valuing a unit of feedback intensity at $\lambda_{\mathrm{ext}} > 0$, the supervisor's valuation of the rise in impact and inventory risk, gives the first-order net social value $n_j = b_j - \lambda_{\mathrm{ext}}\phi_j$, with $n_{\mathcal{H}} < 0 < n_{\mathcal{B}}$ under the stated sign conditions.
+
+\emph{(ii)} Under $\hat{v}_{t+1} = r \hat{v}_t + (1 - r)(v_t + \nu_t)$, the forecast error $e_t = v_t - \hat{v}_t$ evolves as $e_{t+1} = r e_t + \zeta_{t+1} - (1 - r)\nu_t$. Taking stationary variances with independent innovations gives $P(r) = r^2 P(r) + \sigma_\zeta^2 + (1 - r)^2 \sigma_\nu^2$, so
+\[
+  P(r) = \frac{\sigma_\zeta^2 + (1 - r)^2 \sigma_\nu^2}{1 - r^2}
+       = \frac{\sigma_\zeta^2}{1 - r^2} + \frac{2\sigma_\nu^2}{1 + r} - \sigma_\nu^2,
+\]
+using $(1 - r)^2 / (1 - r^2) = (1 - r)/(1 + r) = 2/(1 + r) - 1$. Differentiating twice on $(0, 1)$ gives
+\[
+  P'(r) = \frac{2 r \sigma_\zeta^2}{(1 - r^2)^2} - \frac{2\sigma_\nu^2}{(1 + r)^2},
+  \qquad
+  P''(r) = \frac{2\sigma_\zeta^2(1 + 3r^2)}{(1 - r^2)^3} + \frac{4\sigma_\nu^2}{(1 + r)^3} > 0.
+\]
+Since $P'(0) = -2\sigma_\nu^2 < 0$, $\lim_{r \uparrow 1} P'(r) = +\infty$, and $P''(r) > 0$ throughout $(0, 1)$, $P$ is strictly convex with a unique interior minimizer $r_0 \in (0, 1)$ satisfying $P'(r_0) = 0$. Substituting the plug-in trade at the same date and fixed impact $u_t = \hat{v}_t / (\kappa + \lambda)$ into expected profit gives $\Pi(r) = \frac{1}{2(\kappa + \lambda)}\bigl(\E[v_t^2] - P(r)\bigr)$ (since $\E[v_t \hat{v}_t] - \frac{1}{2}\E[\hat{v}_t^2] = \frac{1}{2}\E[v_t^2] - \frac{1}{2}\E[(v_t - \hat{v}_t)^2]$), so
+\[
+  \Pi(r_0) - \Pi(r) = \frac{P(r) - P(r_0)}{2(\kappa + \lambda)}
+  = \frac{P''(r_0)}{4(\kappa + \lambda)}(r - r_0)^2 + O\!\left(|r - r_0|^3\right).
+\]
+The term $\E[v_t^2]$ may grow with calendar time but cancels when the two rules are compared at the same date.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{M-n:recordvalue}]
+\emph{(i)} Let $p_0, p_1$ be densities of $P_0, P_1$ with respect to $P_0 + P_1$, let $a = \min(p_0, p_1)$, and let $\theta(x)$ be the policy. Since $\tfrac12\{W(\theta, 0) + W(\theta, 1)\} \le W_\varnothing$ for every $\theta$, $\int a = 1 - \TV(P_0, P_1)$ and $\int (p_0 - a) = \int (p_1 - a) = \TV(P_0, P_1)$,
+\begin{align*}
+  \mathbb{E}\, W &= \int a\, \tfrac12\{W(\theta(x), 0) + W(\theta(x), 1)\} \\
+  &\quad + \tfrac12 \int (p_0 - a) W(\theta(x), 0) + \tfrac12 \int (p_1 - a) W(\theta(x), 1) \\
+  &\le (1 - \TV) W_\varnothing + \TV\, \tfrac12\{\max_\theta W(\theta, 0) + \max_\theta W(\theta, 1)\}.
+\end{align*}
+Subtracting $W_\varnothing$ gives the first bound, and Pinsker's inequality the second. \emph{(ii)} By Theorem~\ref{M-n:paradox}(ii), $(\delta^*)^{n-2} \le B_N$ for every $N$, so $J^* = cN(\delta^*)^n \le cN B_N^{n/(n-2)}$; at $n = 4$ this is $16 k^4 \delta_0^4 / (L^4 \beta^4 cN)$. Part~(i) with $\KL(P_1 \| P_0) = J^*$ gives the bound. \emph{(iii)} The owner-linked record yields $W_\varnothing + V^* - F_A$ and the price record at most $W_\varnothing + V_P(N)$; the threshold is the solution of $2\sqrt{2} k^2 \delta_0^2 V^* / (L^2 \beta^2 \sqrt{cN}) < V^* - F_A$. Gaussian laws at finite divergence have total variation below one, so $V_P(N) \le \TV\, V^* < V^*$.
+\end{proof}
+
+\begin{proof}[Proof of Proposition~\ref{M-n:relabel}]
+\emph{(i)} An $\mathcal{H}$ trader maximizes $b_{\mathcal{H}}\{(1 - z)\theta_{\mathcal{H}} + z \theta_{\mathcal{B}}\} - \gamma z^2/2 = b_{\mathcal{H}}\theta_{\mathcal{H}} + b_{\mathcal{H}}(\theta_{\mathcal{B}} - \theta_{\mathcal{H}})z - \gamma z^2/2$ over $z \in [0, 1]$, which is strictly concave with unique maximizer $z^* = \min\{1,\, b_{\mathcal{H}}(\theta_{\mathcal{B}} - \theta_{\mathcal{H}})/\gamma\}$.
+
+\emph{(ii)} Without disclosure, welfare is $m\theta$, maximized at $\max\{0, m\}$. Under an audit trail ($z \equiv 0$), welfare $\chi \theta_{\mathcal{H}} n_{\mathcal{H}} + s_{\mathcal{B}} \theta_{\mathcal{B}}$ is maximized at $(\theta_{\mathcal{H}}, \theta_{\mathcal{B}}) = (0, 1)$ with value $s_{\mathcal{B}}$. Under class tags, write $d = \theta_{\mathcal{B}} - \theta_{\mathcal{H}} \in [0, \theta_{\mathcal{B}}]$. Any policy with $b_{\mathcal{H}} d \ge \gamma$ induces $z^* = 1$ and welfare $m\theta_{\mathcal{B}} - \chi\gamma/2 < m\theta_{\mathcal{B}}$, strictly dominated by $d = 0$. For $b_{\mathcal{H}} d < \gamma$, substituting $z^* = b_{\mathcal{H}} d / \gamma$ into social welfare $m\theta_{\mathcal{B}} + \chi \alpha_{\mathcal{H}} d (1 - z^*) - \chi \gamma (z^*)^2 / 2$ yields
+\[
+  W(\theta_{\mathcal{B}}, d) = m\theta_{\mathcal{B}} + \chi \Bigl(\alpha_{\mathcal{H}} d - \frac{d^2}{2g}\Bigr),
+  \qquad g = \frac{\gamma}{b_{\mathcal{H}}(2\alpha_{\mathcal{H}} + b_{\mathcal{H}})}.
+\]
+Maximizing over $d \in [0, \theta_{\mathcal{B}}]$ gives $d^* = \min\{\theta_{\mathcal{B}}, \hat{d}\}$ where $\hat{d} = \alpha_{\mathcal{H}} g < \gamma / b_{\mathcal{H}}$ (so $b_{\mathcal{H}} d < \gamma$ never binds). The concentrated objective $\varphi(\theta_{\mathcal{B}}) = s_{\mathcal{B}}\theta_{\mathcal{B}} - \chi \theta_{\mathcal{B}}^2 / (2g)$ for $\theta_{\mathcal{B}} \le \hat{d}$ and $m\theta_{\mathcal{B}} + \chi \alpha_{\mathcal{H}}^2 g / 2$ for $\theta_{\mathcal{B}} \ge \hat{d}$ is concave and $C^1$. If $m \ge 0$, $\varphi$ is nondecreasing (with a flat region above $\hat d$ when $m=0$), so $\theta_{\mathcal{B}} = 1$ and $d^* = \min\{1, \alpha_{\mathcal{H}} g\}$. If $m < 0$, $\varphi'(\theta_{\mathcal{B}}) = 0$ at $\hat{\theta}_{\mathcal{B}} = s_{\mathcal{B}} g / \chi < \hat{d}$, so $\theta_{\mathcal{B}} = \min\{1, s_{\mathcal{B}} g / \chi\}$ and $\theta_{\mathcal{H}} = 0$. Substituting $d^*$ into $z^* = b_{\mathcal{H}} d^* / \gamma$ gives $z^* \in (0, \alpha_{\mathcal{H}}/(2\alpha_{\mathcal{H}} + b_{\mathcal{H}})] \subset (0, 1)$, independent of $\gamma$ at interior optima.
+
+\emph{(iii)} Each branch of $V_C(\gamma)$ is strictly increasing in $g \propto \gamma$, continuous at the kink ($\alpha_{\mathcal{H}} g = 1$ or $s_{\mathcal{B}} g = \chi$), satisfies $V_C(\gamma) \to 0$ as $\gamma \to 0$ and $V_C(\gamma) \uparrow V_A$ as $\gamma \to \infty$, and remains strictly below $V_A$ for all finite $\gamma > 0$. Hence $V_A - V_C(\gamma)$ decreases strictly from $V_A$ to $0$, yielding the threshold characterization.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{M-n:paradox}]
+\emph{(i)} The test rejects with probability at most $\alpha$ under the closest economy in the null, and with the group at distance $\delta$ it rejects with a probability that exceeds this by at most the total variation between the two records, which is at most $\sqrt{J/2}$ by Pinsker's inequality. So moving from $\delta = 0$ to a small $\delta > 0$ changes expected cost by at most $-2k\delta_0\delta + k\delta^2 + L\sqrt{cN\delta^n/2}$, which is negative near zero because $n > 2$; hence $\delta^* > 0$. If $\delta^* \le \delta_0/3$, then $2\delta^* \le \delta_0$ is feasible; optimality of $\delta^*$ against $2\delta^*$, together with $P_{\mathrm{d}}(J^*) \ge \alpha$ and Pinsker's inequality, gives
+\[
+  k\delta_0\delta^* \le k\bigl[(\delta_0 - \delta^*)^2 - (\delta_0 - 2\delta^*)^2\bigr] \le L\sqrt{cN(2\delta^*)^n/2}.
+\]
+Squaring and dividing by $(\delta^*)^2$ yields $(\delta^*)^{n-2} \ge 2k^2\delta_0^2/(2^n L^2 cN)$.
+
+\emph{(ii)} At $\delta = 0$ the record is in the null, so the detection probability is at most $\alpha$. Optimality of $\delta^*$ against $\delta = 0$ gives
+\[
+  L\bigl(P_{\mathrm{d}}(J^*) - \alpha\bigr) \le k\bigl[\delta_0^2 - (\delta_0 - \delta^*)^2\bigr] \le \min\{k\delta_0^2,\; 2k\delta_0\delta^*\}.
+\]
+If $J^* \ge \bar{J}$, the power envelope implies $L\beta\sqrt{\bar{J}} \le k\delta_0^2$, contradicting the high-stakes condition. Thus $J^* < \bar{J}$ and $L\beta\sqrt{cN(\delta^*)^n} \le 2k\delta_0\delta^*$; squaring and dividing by $(\delta^*)^2$ gives the bound.
+
+\emph{(iii)} For all sufficiently large $N$, part~(ii) forces $\delta^* \le \delta_0/3$, so (i) and (ii) hold together: $(\delta^*)^{n-2} \asymp N^{-1}$, i.e., $\delta^* \asymp N^{-1/(n-2)}$, and $J^* = cN(\delta^*)^n \asymp N \cdot N^{-n/(n-2)} = N^{-2/(n-2)} \to 0$. Hence $P_{\mathrm{d}}(J^*) \le \alpha + \sqrt{J^*/2} \to \alpha$ and $k(\delta_0 - \delta^*)^2 \to k\delta_0^2$.
+
+\emph{(iv)} Under a tag, detection does not depend on $\delta$, so $k(\delta_0 - \delta)^2$ is minimized at $\delta^* = \delta_0$.
+
+\emph{The Gaussian test.} In the limiting Gaussian experiment, let the null be a linear subspace and the alternative lie at distance $t$ from it. Assume a unit normal direction is known and every alternative has positive projection $t$ along it. Rejecting when that projection exceeds $z_\alpha=\Phi^{-1}(1-\alpha)$ has level $\alpha$ and power $\Phi(t-z_\alpha)$, and $J = t^2/2$. As a function of $t = \sqrt{2J}$ the power is convex on $[0, z_\alpha]$, so it lies above its tangent at zero: $P_{\mathrm{d}}(J) - \alpha \ge \phi(z_\alpha)\sqrt{2J}$ for $J \le z_\alpha^2/2$, and it is increasing beyond. The two bounds on $(\delta^*)^{n-2}$ in (i) and (ii), and the comparisons of costs behind them, are checked in Lean~4 for every exponent $n \ge 2$ (Table~\ref{tab:newlean}); Pinsker's inequality, unbiasedness and the power envelope enter there as hypotheses, and the rates in (iii) follow from the two bounds.
+\end{proof}
+
+
 
 \paragraph{A lemma used in the proofs.}
 \begin{lemma}[Positive price-response geometry]\label{lem:cm}
@@ -843,6 +1020,28 @@ Raising margin requirements mechanically as crisis stress rises (e.g., hyperboli
 While stressed-lookback $m_{\mathrm{floor}}^{\mathrm{stress}} \ge m_{\mathrm{VaR},99}$ holds, releasing $b_{\mathrm{APC}}$ offsets moderate volatility increases without procyclical margin hikes (\nolinkurl{PublicationRevision17.lean}); extreme shocks exceeding $m_{\mathrm{floor}}^{\mathrm{stress}}$ still trigger mandatory 99\% VaR escalations. Because CCP initial-margin schedules bind only on margined clearing-member positions---missing unmargined cash Securities Investment Trust Enterprises (`SITEs'), intraday-flat algorithmic desks ($Q_{c,\mathrm{EOD}}=0$), and net-omnibus customer accounts---uniform $\theta \mathbf{1}$ prudential surcharges must operate at the venue order-flow level, restricting MiFID~II RTS~8 exemptions to registered market makers and NYSE/Cboe Designated Market Makers.
 
 \section{The supervisory decision in detail}\label{app:decisionfull}
+
+\noindent The next results were moved from the main text (Section~\ref{M-sec:supervision}).
+
+\begin{corollary}[Guarantee of a single halt]\label{cor:robustuniform}
+In the setting of Theorem~\ref{M-n:minimax}:
+\begin{enumerate}
+  \item[(i)] Halting any single label $c \in \{1,\dots,K\}$ leaves worst-case post-halt budget $\max_\pi (S - u_{\pi(c)}) = S - \min_d u_d$, attained whenever $\pi(c) \in \arg\min_d u_d$ (reducing $S$ by at most $\min_d u_d$ when $u_d \ge 0$, and raising $S$ when $\min_d u_d < 0$).
+  \item[(ii)] Holding dealer capacity and impact parameters $(a, \kappa)$ fixed, if $S>a$ and $a\le\bar{s}\le S$, a uniform cut to $\theta = (\bar{s} - a)/(S - a)$ achieves the ceiling $\bar{s}$ exactly in every population with budget $S$, and no policy meeting the ceiling removes less aggregate feedback than $S - \bar{s}$.
+\end{enumerate}
+\end{corollary}
+
+Verified partial tags break permutation symmetry across tagged groups while preserving it within each group:
+
+\begin{theorem}[Minimax value of partial tags]\label{n:minimaxtags}
+Suppose verified tags partition the classes into groups $g = 1, \dots, G$, so the record identifies each class's group membership but cannot distinguish relabelings within any group. With the same continuous cost and convex loss in both regimes, suppose $C$ is convex and invariant to within-group permutations. Then replacing $\theta$ by the group-average policy $\bar{\theta}_g = |g|^{-1} \sum_{c \in g} \theta_c$ yields budget $a + \sum_{g=1}^G \bar{\theta}_g U_g$ ($U_g = \sum_{d \in g} u_d$) under every consistent labeling and weakly dominates $\theta$ in minimax loss. The minimax value of tags is
+\[
+  V_{\mathrm{tag}} = \min_{\bar{\theta}} \max_{\pi} \{\ell(S'_\pi) + C\} - \min_{(\bar{\theta}_g)_g} \max_{\pi} \{\ell(S'_\pi) + C\} \ge 0,
+\]
+the exact gain from tailoring policy intensities across verified groups. As in Theorem~\ref{M-n:minimax}(ii), if $C$ is strictly convex on $[0, 1]^K$, the group-uniform minimizer is unique.
+\end{theorem}
+
+
 This section completes Section~\ref{sec:supervision}.
 
 \paragraph{Proof of Proposition~\ref{prop:target}.}
@@ -1317,13 +1516,13 @@ Prop.~\ref{M-n:target}(i) & \texttt{target\_uniform\_iff}, \texttt{target\_unifo
 Cor.~\ref{M-n:decisionloss} & two-point loss bound, its divergence form, the record length and the tagged loss (\texttt{decision\_loss\_tv}, \texttt{decision\_loss\_kl}, \texttt{decision\_record\_length}, \texttt{decision\_tag\_loss}); loss at least $\min(b,c)$ times the mean error (\nolinkurl{decision_loss_min}) & Pinsker's inequality and the Gaussian tail (hypotheses); total variation\\
 Cor.~\ref{M-n:sep} & the ratio bound and its divergence (\texttt{sep\_ratio}, \texttt{sep\_unbounded}) & the two input bounds (Theorems~\ref{M-n:cost}(i) and~\ref{M-n:questions}(ii))\\
 Theorem~\ref{M-n:minimax} & equal label frequencies, the average budget and policy, Jensen for the loss and the cost, worst case (\texttt{perm\_sum\_const}, \texttt{perm\_average\_budget}, \texttt{perm\_average\_policy}, \texttt{minimax\_uniform}, \nolinkurl{uniform_budget_label_free}), also for a cost convex only on $[0,1]^K$ (\nolinkurl{minimax_uniform_on}); for a strictly convex cost, strict dominance and at most one minimizer (\nolinkurl{minimax_uniform_strict}, \nolinkurl{minimax_unique}) & compact existence (\nolinkurl{minimax_compact_existence}) and strict-loss dominance (\nolinkurl{minimax_strict_loss_dominance}) (\nolinkurl{PublicationRevision18.lean}); exchangeable-prior integration\\
-Theorem~\ref{M-n:minimaxtags} & consistent relabelings form a group, group sums are invariant, the counting identity, the group-average budget is label-free, Jensen for loss and cost, worst case, $V\ge0$ (\texttt{tag\_count}, \texttt{group\_policy\_budget}, \texttt{tag\_minimax}, \texttt{value\_of\_tags\_nonneg}), also for a cost convex only on $[0,1]^K$ (\nolinkurl{tag_minimax_on}) & group-uniform strict-cost uniqueness (\nolinkurl{minimax_partial_tags_strict_unique}, \nolinkurl{PublicationRevision18.lean}); compact existence via \nolinkurl{minimax_compact_existence}\\
-Cor.~\ref{M-cor:robustuniform} & \texttt{halt\_guarantee}, \texttt{halt\_guarantee\_attained}, \texttt{uniform\_exact}, \texttt{uniform\_minimal\_removal}; relabeling leaves the kernel unchanged (\texttt{relabel\_kernel}) & none\\
+Theorem~\ref{n:minimaxtags} & consistent relabelings form a group, group sums are invariant, the counting identity, the group-average budget is label-free, Jensen for loss and cost, worst case, $V\ge0$ (\texttt{tag\_count}, \texttt{group\_policy\_budget}, \texttt{tag\_minimax}, \texttt{value\_of\_tags\_nonneg}), also for a cost convex only on $[0,1]^K$ (\nolinkurl{tag_minimax_on}) & group-uniform strict-cost uniqueness (\nolinkurl{minimax_partial_tags_strict_unique}, \nolinkurl{PublicationRevision18.lean}); compact existence via \nolinkurl{minimax_compact_existence}\\
+Cor.~\ref{cor:robustuniform} & \texttt{halt\_guarantee}, \texttt{halt\_guarantee\_attained}, \texttt{uniform\_exact}, \texttt{uniform\_minimal\_removal}; relabeling leaves the kernel unchanged (\texttt{relabel\_kernel}) & none\\
 Theorem~\ref{n:uniformlog} & omitted coefficients at most $S\bar r^{L}$ (\texttt{geometric\_tail}, \texttt{tail\_budget}); $T\bar r^{2L}\le1$ (\texttt{order\_choice}); log-determinant Jensen step (\texttt{sum\_log\_le}) & Gaussian integral; trace bound; diagonalization\\
 Theorem~\ref{M-n:questions} & half-width of the affine certificate as half the modulus objective (\nolinkurl{halfwidth_modulus}); divergence $d^2/2$ of the point-mass comparison in (iii) (\nolinkurl{impossible_divergence}) & Gaussian coverage, total variation, Pinsker's inequality, the minimax exchange, the converse in (ii)\\
 Prop.~\ref{M-n:target}(ii) & consecutive orthogonal polynomials have no common zero (\nolinkurl{no_common_zero}); a node cannot recur (\nolinkurl{node_no_recur}); weights from Lagrange polynomials (\nolinkurl{weight_from_lagrange}) & exactness of the quasi-orthogonal rule, the three-term recurrence of the Legendre polynomials, finiteness of weight level sets\\
 Theorem~\ref{M-n:disc} & tagged coordinates determine weight and memory (\nolinkurl{tagged_inversion}) & sampling rates, the two-point lower bound\\
-Section~\ref{app:passiveincidence} (Proposition~\ref{M-thm:instruments}) & Fourier first-moment budget (\texttt{p1\_fourier\_first\_moment\_bound}, \texttt{p1\_sum\_j\_logCoeff\_le}, \texttt{p1\_sum\_j\_logCoeff\_disk\_le}, \texttt{p1\_fourier\_first\_moment\_budget}, \texttt{p1\_fourier\_first\_moment\_disk}), truncation tail (\texttt{p1\_fourier\_truncation\_tail}), spectral floor log-Lipschitz (\texttt{p1\_spectral\_floor\_log\_lipschitz}, \texttt{p1\_spectral\_floor\_lipschitz}), cell-average equidistant quadrature error (\texttt{p1\_quadrature\_fourier\_error}), transfer factor and function errors, the factor bound with its exponential Lipschitz step proved (\texttt{p1\_transfer\_factor\_error}, \texttt{p1\_exp\_lipschitz\_below}, \texttt{p1\_transfer\_factor\_error\_unconditional}, \texttt{p1\_transfer\_function\_error}), Cauchy coefficient incidence estimator bound (\texttt{p1\_incidence\_estimator\_bound}), deterministic end-to-end error assembly conditional on sample-covariance and floor bounds (\texttt{p1\_passive\_incidence\_end\_to\_end}) and constrained desk quadratic optimum (\texttt{instrument\_desk\_constrained\_opt}) (\nolinkurl{PublicationRevision14.lean}, \nolinkurl{PublicationRevision18.lean}; \nolinkurl{Paper1PassiveIncidenceUpper.lean}, \nolinkurl{Paper1FragilityAndDesign.lean}) & fourth-moment covariance convergence, uniform spectral floor probability, central limit theorem, and Parseval isometry\\
+Section~\ref{app:passiveincidence} (Proposition~\ref{thm:instruments}) & Fourier first-moment budget (\texttt{p1\_fourier\_first\_moment\_bound}, \texttt{p1\_sum\_j\_logCoeff\_le}, \texttt{p1\_sum\_j\_logCoeff\_disk\_le}, \texttt{p1\_fourier\_first\_moment\_budget}, \texttt{p1\_fourier\_first\_moment\_disk}), truncation tail (\texttt{p1\_fourier\_truncation\_tail}), spectral floor log-Lipschitz (\texttt{p1\_spectral\_floor\_log\_lipschitz}, \texttt{p1\_spectral\_floor\_lipschitz}), cell-average equidistant quadrature error (\texttt{p1\_quadrature\_fourier\_error}), transfer factor and function errors, the factor bound with its exponential Lipschitz step proved (\texttt{p1\_transfer\_factor\_error}, \texttt{p1\_exp\_lipschitz\_below}, \texttt{p1\_transfer\_factor\_error\_unconditional}, \texttt{p1\_transfer\_function\_error}), Cauchy coefficient incidence estimator bound (\texttt{p1\_incidence\_estimator\_bound}), deterministic end-to-end error assembly conditional on sample-covariance and floor bounds (\texttt{p1\_passive\_incidence\_end\_to\_end}) and constrained desk quadratic optimum (\texttt{instrument\_desk\_constrained\_opt}) (\nolinkurl{PublicationRevision14.lean}, \nolinkurl{PublicationRevision18.lean}; \nolinkurl{Paper1PassiveIncidenceUpper.lean}, \nolinkurl{Paper1FragilityAndDesign.lean}) & fourth-moment covariance convergence, uniform spectral floor probability, central limit theorem, and Parseval isometry\\
 Theorem~\ref{M-thm:fragility} \& Cor.~\ref{cor:posthaltflip}(i) & discriminant positivity, ordered roots, Vieta variance bound $V<2\sigma_F^2$, $S^*(\lambda_{\mathrm{crit}})<1$, $\lambda_{\mathrm{crit}}$ upper bound, and post-halt capacity-withdrawal flip (\texttt{fragility\_discriminant\_pos\_iff}, \texttt{fragility\_quadratic\_roots\_ordered}, \texttt{fragility\_vieta\_variance\_bound}, \texttt{fragility\_effective\_budget\_lt\_one}, \texttt{fragility\_lambda\_crit\_upper\_bound}, \texttt{post\_halt\_capacity\_withdrawal\_flip}) (\nolinkurl{PublicationRevision18.lean}; \nolinkurl{Paper1FragilityAndDesign.lean}) & critical fold $F_{DD}>0$ square-root asymptotics\\
 Cor.~\ref{cor:posthaltflip}(ii) & see Prop.~\ref{M-n:target}(ii) (\texttt{no\_common\_zero}, \texttt{node\_no\_recur}, \texttt{weight\_from\_lagrange}) & window feasibility $\kappa q_{\max}^{(2)} < 1 - \bar s$ and $(\Delta\eta)^{-(4K-2)}$ sample bound\\
 Prop.~\ref{M-n:target}(iii) & endpoint atom $W/K^2$ and budget separation via Prob/moments (\texttt{p1\_every\_k\_halt}, \nolinkurl{Paper1EveryKHalt.lean}) & Gauss--Radau vs Gauss node ordering and $(\Delta\eta)^{-(4K-2)}$ bound\\
@@ -1661,56 +1860,32 @@ Lean checks the finite-sample consequence of parts (i) and (iii), not the diverg
 
 The table lists, for each main result, the Lean~4 declarations that check it and what is proved only on paper. The inherited project has 1,316 named declarations in 146 modules and builds against a pinned Mathlib. The table also cites 24 further modules that check results stated here; each was compared with the statement it checks, and the rows list every difference of scope. The modules still uncited are supporting lemmas of cited results (Pinsker's inequality for events, the Hammersley--Chapman--Robbins bound, Jackson's theorem, Prony steps) or arithmetic-only steps that are not used to credit any result. Its complete local rebuild and strict axiom scan are recorded in the repository. All nineteen revision files are audited under the same strict axiom scan; counts are not a measure of manuscript semantic coverage. A full build on 26 November 2026 (Lean 4.34.1 commit \texttt{5045d00}, Mathlib commit \texttt{d13f23b}) passed, together with the axiom audit below; the receipt, which records the SHA-256 hash of every source file, is recorded in \nolinkurl{formal_verification_receipt.json}. An axiom audit of every named declaration finds only Lean's three standard axioms (\texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}). A machine check confirms the formal statement, not that it matches the prose. The prose statements above say where the two differ.
 
-\begin{longtable}{>{\raggedright\arraybackslash}p{0.19\textwidth}>{\raggedright\arraybackslash}p{0.43\textwidth}>{\raggedright\arraybackslash}p{0.3\textwidth}}
-\toprule
-Result & Declarations (module) & On paper only\\
-\midrule
-\endhead
-Lemma~\ref{lem:micro} & \texttt{tracking\_gain\_explicit\_root}, \texttt{tracking\_prior\_riccati\_equation} (\nolinkurl{Microfoundations.lean}); the third example's recursion, \texttt{p1\_proportional\_trade\_recursion} (\nolinkurl{Paper1StressIdentification.lean}) & Convergence of sample covariances. The third example's first-order condition is assumed in the checked statement, not derived\\
-Theorem~\ref{thm:eqinv} (sufficiency) & \texttt{p1\_eqAggFlow\_kernel}, \texttt{p1\_eqAggFlow\_of\_kernel}, \texttt{p1\_kernel\_of\_eqAggFlow}, \texttt{p1\_eq\_market\_invariance}, \texttt{p1\_eq\_insider\_profit\_invariance}, \texttt{p1\_eq\_group\_level\_differs} (\nolinkurl{Paper1EquilibriumInvariance.lean}) & The unbounded-horizon moment statement; the passage from pathwise equality to equal equilibria\\
-Proposition~\ref{prop:anylinear} & \texttt{p1\_anylinear\_flow\_kernel}, \texttt{p1\_anylinear\_iff}, \texttt{p1\_anylinear\_invariance} (\nolinkurl{Paper1CoreExtensions.lean}) & The passage from pathwise equality to equal equilibria\\
-Theorem~\ref{thm:inventory} & \texttt{p1\_inventory\_foc}, \texttt{p1\_inventory\_innovation}, \texttt{p1\_inventory\_benchmark} (\nolinkurl{Paper1InventoryEquilibrium.lean}); \texttt{p1\_inventory\_small\_feedback} (\nolinkurl{Paper1InventoryIFT.lean}) & Part (iii); the version of part (iv) uniform over small group measures\\
-Theorem~\ref{thm:eqreduced} & \texttt{p1\_eq\_realize\_D}, \texttt{p1\_eq\_realize\_dealer}, \texttt{p1\_eq\_scaled\_cohort} (\nolinkurl{Paper1EquilibriumReducedForm.lean}) & Parts (ii)--(iii), and part (iv) beyond the realization\\
-Theorem~\ref{thm:kcohort} & \texttt{p1\_thm\_kcohort\_lower\_bound\_uniform} (\nolinkurl{Paper1KCohortUniform.lean}); \texttt{p1\_thm\_kcohort\_lower\_bound\_weights}, \texttt{p1\_thm\_kcohort\_lower\_bound\_W1} (\nolinkurl{Paper1KCohortEstimators.lean}) & The matching lower order of the response gap; the checked pair is a binomial moment-matched pair of the same order\\
-Theorem~\ref{prop:esprit} & \texttt{p1\_thm\_prony\_upper\_bound} (\nolinkurl{Paper1PronyUpper.lean}) & ---\\
-Theorem~\ref{thm:minphase} & \texttt{p1\_thm\_minphase\_zeros} (\nolinkurl{Paper1MinPhase.lean}); \texttt{p1\_thm\_minphase\_spectrum\_H}, \texttt{p1\_thm\_minphase\_spectrum\_merged} (\nolinkurl{Paper1SpectralH.lean}); model link \texttt{p1\_eigen\_iff\_bottom\_root}, \texttt{p1\_schur\_stable\_iff\_poles\_in\_disk}, \texttt{p1\_impulse\_generating} (\nolinkurl{Paper1ModelLink.lean}) & ---\\
-Theorem~\ref{prop:passive} & \texttt{p1\_thm\_passive\_cost\_matched}, \texttt{p1\_thm\_passive\_cost\_gauss\_radau\_two} (\nolinkurl{Paper1PassiveMatched.lean}); \nolinkurl{p1_thm_passive_cost_gauss_radau_three} (\nolinkurl{Paper1GaussRadau3.lean}); \texttt{p1\_thm\_passive\_cost\_every\_K} (\nolinkurl{Paper1PassiveKCohort.lean}) & The divergence-rate statements; the stationary limit; Gauss--Radau exactness for general $K$ enters as a hypothesis\\
-Proposition~\ref{prop:target} & \texttt{p1\_prop\_target\_two\_cohorts}, \texttt{p1\_prop\_target\_every\_K} (\nolinkurl{Paper1SupervisorySeparation.lean}) & The checked two-group pair is a different moment-matched pair from the Gauss and Gauss--Radau pair, with the same orders; the every-$K$ version assumes a dominant-group margin; the largest-weight comparison holds for every $K\ge 2$ by Proposition~\ref{prop:maxweight}\\
-Proposition~\ref{prop:targetK} and Lemma~\ref{lem:everyK} & The counting step of Lemma~\ref{lem:everyK}(iii) only: \texttt{p1\_largest\_value\_not\_constant}, \texttt{p1\_largest\_weight\_not\_constant} (\nolinkurl{Paper1EveryKHalt.lean}) & Lemma~\ref{lem:everyK}(i)--(ii), the finiteness of the level sets, and all of Proposition~\ref{prop:targetK}\\
-Proposition~\ref{prop:nearcrit} & Steps 2 and 3: the lower bound $|D_A|\ge c_3(\epsilon+|\omega|)$ (\texttt{p1\_nearcrit\_lower}), the uniform ratio bound (\texttt{p1\_ratio\_bound}), $|u-1|\le4\rho$ and $u-1-\log u\le2(u-1)^2$, and the rate bound $16\rho^2$ from Whittle's formula (\texttt{p1\_nearcrit\_kl\_bound}) (\nolinkurl{Paper1NearCritical.lean}) & Whittle's formula; Step 1 (the kernel-gap bound); the local properties of $D^*$ from primitivity and their uniformity in $\Delta\eta$\\
-Theorem~\ref{thm:partial} & Part (i) in full on joint price and tagged-flow records: \texttt{p1\_partial\_lower\_bound\_joint}, \texttt{p1\_partial\_lower\_bound\_matched} (\nolinkurl{Paper1PartialDisclosureLower.lean}); algebraic steps of (ii), (iii): \nolinkurl{Paper1PartialDisclosure.lean}; the deterministic core of (ii), subtract-then-Prony with existence, uniqueness and the weight bound $L\delta$, $\delta=2^{2K'}\eta(\Delta\eta)^{-(2K'-1)}$: \texttt{p1\_partial\_upper\_deterministic} (\nolinkurl{Paper1PartialDisclosureUpper.lean}) & The $O_P(N^{-1/2})$ rates of the tagged estimates that feed $\eta$ (Monte Carlo checks in the text)\\
-Proposition~\ref{prop:hiding} & (i) from sufficiency (\texttt{hiding\_sufficiency}); (ii) the cap (\texttt{hiding\_cap}); (iii) adoption and its eventual form (\texttt{hiding\_adopt}, \texttt{hiding\_eventually}) (\nolinkurl{PublicationRevision8.lean}) & That targeting depends on the record only through its law, which is Theorem~\ref{thm:eqinv}\\
-Proposition~\ref{prop:tagged} & \texttt{p1\_tagged\_iv\_determinant\_bound} (\nolinkurl{Paper1TaggedIV.lean}); \texttt{p1\_iv\_boundary\_decomposition} (\nolinkurl{Paper1IVBoundary.lean}) & The stationary IV central limit theorem\\
-Proposition~\ref{prop:hidegame} & Parts (ii) and (iii) of the game (\texttt{p1\_hiding\_detection\_bound}, \texttt{p1\_hiding\_tag\_no\_crowding}, \nolinkurl{Paper1TrackingGame.lean}); part (iv), group by group (\texttt{p1\_hiding\_nash\_bound}, \nolinkurl{Paper1NewsLawHiding.lean}) & Part (i) of the game\\
-
-Proposition~\ref{prop:nearcritn} & The eigenvalue step: $n$ eigenvalues within $4\rho$ of one give divergence at most $16n\rho^2$ (\texttt{p1\_nearcrit\_finite\_sample}, \nolinkurl{Paper1OpenResolved.lean}) & The Toeplitz sandwich\\
-Companion Theorem~\ref{thm:cascade} & Rounds below every fixed point and convergence to the least one, the contraction bound, the jump (\texttt{p1\_cascade\_iterate\_le\_fixed}, \texttt{p1\_cascade\_rounds\_converge}, \texttt{p1\_cascade\_contraction}, \texttt{p1\_cascade\_jump}, \nolinkurl{Paper1OpenResolved.lean}) & The derivative step of (iii)\\
-Companion Proposition~\ref{prop:insider} & $\mathrm{Re}\,(1-w)^{-1}\ge(1+s)^{-1}$, the symbol bound, netting of public flow (\texttt{p1\_re\_inv\_one\_sub\_ge}, \texttt{p1\_no\_manipulation\_symbol}, \texttt{p1\_netting\_prefix}, \nolinkurl{Paper1OpenResolved.lean}) & The Toeplitz representation, (i), (iii), and the step to conditional expectations in (iv)\\
-Companion Proposition~\ref{prop:deadband} & The bias of a bounded deviation through a stable closed loop (\texttt{p1\_deadband\_bias}, \nolinkurl{Paper1OpenResolved.lean}); the Prony step of Theorem~\ref{prop:esprit} & The reduction of group flows to the recursion\\
-Proposition~\ref{prop:gap} & none & All of it (the Gauss--Radau error formula is classical); exact check in 60-digit arithmetic for $K\le30$\\
-Companion Proposition~\ref{prop:reecascade} & Three equilibria from the intermediate value theorem (\texttt{p1\_cascade\_three\_equilibria}, \nolinkurl{Paper1OpenResolved.lean}) & The equilibrium condition, (ii), (iv)\\
-Companion Proposition~\ref{prop:smoothn} & The sup-norm contraction step, through \texttt{p1\_deadband\_bias} & The expansion, the $\ell^2$ bound and the test bound\\
-Companion Proposition~\ref{prop:stressrate} & none & All of it\\
-Companion Proposition~\ref{prop:learners} & The deterministic pathwise step (\texttt{p1\_flow\_market\_invariance}) & The randomized induction, (iii)\\
-Companion Proposition~\ref{prop:insidergame} & The symbol bound behind (i), through \texttt{p1\_no\_manipulation\_symbol} & Existence, (ii)--(iv)\\
-Companion Proposition~\ref{prop:cascadedyn} & The geometric bound of (i) and the price path of (iii) (\texttt{p1\_cascade\_rounds\_geometric}, \texttt{p1\_slow\_capital\_fall}, \nolinkurl{Paper1OpenResolved2.lean}) & The limits in (i) and (ii), the equilibrium condition in (iii), (iv)\\
-Companion Proposition~\ref{prop:hardrate} & none & All of it\\
-Companion Proposition~\ref{prop:nlcost} & The closed-loop bias bound in (i), through \texttt{p1\_deadband\_bias} & The Taylor bound, (ii), (iii)\\
-Proposition~\ref{prop:maxweight} & The two polynomial inequalities behind the central binomial bounds (\texttt{p1\_centralbinom\_q\_step}, \texttt{p1\_centralbinom\_r\_step}, \nolinkurl{Paper1OpenResolved2.lean}) & The Sonin-function bounds and the asymptotics; exact rational check for $K\ge62$, 30-digit check for $K\le61$\\
-Theorem~\ref{thm:questions}, Proposition~\ref{prop:parametric} & For finite populations: the tap identity and weak duality, the upper half of (iv) (\texttt{p1\_question\_weak\_duality}); the affine estimate of (i) (\texttt{p1\_question\_truncation\_error}); part (iii) (\texttt{p1\_long\_memory\_impossible}); the parametric direction of the proposition, modulus at most $\delta A+2\bar WA\bar r^L/\sqrt{1-\bar r^2}$ (\texttt{p1\_parametric\_modulus}) (\nolinkurl{Paper1QuestionsCost.lean}) & The lower half of (iv) (Sion's minimax theorem and the total-variation lower bound); (ii) (duality for best uniform approximation); the converse of the proposition (weak compactness in $\ell^2$); measures that are not finitely supported\\
-Proposition~\ref{prop:endogenous_kappa} & The displayed bound of part (ii), as an arithmetic step: \nolinkurl{p1_endogenous_contraction_sensitivity} (\nolinkurl{Paper1ClaimRepairs.lean}) & Part (i), and the fixed-point argument of part (ii)\\
-Proposition~\ref{prop:strategic} & Two arithmetic steps: \nolinkurl{p1_camouflage_unprofitable}, \nolinkurl{p1_sybil_share_count_bound} (\nolinkurl{Paper1ClaimRepairs.lean}) & The determinant factor of part (i) and the economic arguments\\
-Proposition~\ref{prop:choice} & none & All of it\\
-Theorem~\ref{thm:merged} and Theorem~\ref{M-n:ident} & (i) for the model: the price response obeys the closed loop with the cohort kernel, deconvolution, identification of the merged measure, its converse and identification from finitely many noise-free observations (\nolinkurl{p1_impulse_closed_loop_recursion}, \nolinkurl{p1_thm_merged_model_identification}, \nolinkurl{p1_thm_merged_model_converse}, \nolinkurl{Paper1MergedModel.lean}; \nolinkurl{p1_thm_merged_deconvolution}, \nolinkurl{p1_thm_merged_measure_identified}, \nolinkurl{Paper1Identification.lean}; \nolinkurl{p1_thm_merged_model_finite_identification}, \nolinkurl{Paper1FiniteIdentification.lean}); the pole count $1+K$ (\nolinkurl{Paper1PoleCount.lean}); (ii) the lower bound $\sigma^2\le2K_*^2P\delta^4T$ for tests with both errors at most $1/4$ (\nolinkurl{p1_thm_merged_separation_power}, \nolinkurl{Paper1MergedSeparation.lean}) & Minimality of the realization from lowest terms (a standard result of linear systems)\\
-Theorem~\ref{thm:minphase}, part (ii) for every $K$ & The spectrum determines the memory rates and the merged measure, with possibly different innovation variances (\nolinkurl{Paper1SpectralID.lean}) & ---\\
-Theorem~\ref{thm:kcohort}, further steps & The kernel moment gap $|k_m-k'_m|\le2W\binom mn d^n(c+d)^{m-n}$ (\nolinkurl{p1_thm_kcohort_kernel_moment_gap}, \nolinkurl{Paper1MomentGap.lean}); the lower bound from a kernel gap and its $K$-group form (\nolinkurl{p1_thm_lower_bound_from_kernel_gap}, \nolinkurl{p1_thm_kcohort_lower_bound_formal}, \nolinkurl{Paper1LowerBound.lean}); every error level (\nolinkurl{Paper1GeneralLevel.lean}) & ---\\
-Theorem~\ref{thm:discvalue} (upper bounds) & In reset experiments, all $K$ merged weights from tagged first-period flows with error probability $Kv/(N\kappa^2\varepsilon^2)$, free of the spacing, and each memory rate with error $Le$ (\nolinkurl{p1_thm_tagged_recovery_all_classes}, \nolinkurl{Paper1Tagged.lean}; \nolinkurl{p1_thm_tagged_rate_recovery}, \nolinkurl{Paper1TaggedRates.lean}) & The stationary-record version (Proposition~\ref{prop:tagged})\\
-Corollary~\ref{cor:unknown_primitives} & (i) persistence acts as a memory-rate-zero group; (ii) identification of $(\kappa,a,M)$ (\nolinkurl{p1_cor_unknown_primitives_recursion}, \nolinkurl{p1_cor_unknown_primitives_identification}, \nolinkurl{Paper1UnknownPrimitives.lean}) & Part (iii), the estimator's rate\\
-\bottomrule
-\end{longtable}
+The full table, mapping each earlier result to the Lean~4 declarations that check it and to what is proved only on paper, is in the replication archive (\nolinkurl{ceiling_suite/papers/paper1_jedc_short/lean_mapping_table.tex}); Table~\ref{tab:newlean} covers the results added in this revision.
 
 
 \section{Derived incidence of price and quantity instruments}\label{app:instruments}
+
+\noindent The next results were moved from the main text (Section~\ref{M-sec:supervision}).
+
+\textbf{Endogenous desk adjustments to taxes, holding schedules, and caps.} When policy acts indirectly through trading costs or quantity limits rather than direct scaling, certifying the post-policy budget requires mapping the instrument into each desk's chosen trading intensity. Suppose a desk with fixed memory rate $r$ chooses scale $q \ge 0$ on the normalized filter $y_t=(1-r)\sum_{j\ge0}r^j x_{t-1-j}$ of a centered stationary Gaussian reference price signal (observed over a reference sample of length $n$), revising its exposure every $h$ periods at known preference and belief parameters $\beta, b > 0$ and $\rho \in [0, 1]$ (perceiving period-$j$ expected return $\beta \rho^j y_t$). Writing $V=\operatorname{Var}(y_t)$, $D_h=\Var(y_t-y_{t-h})$, $T_h=h^{-1}\sqrt{2D_h/\pi}$, and $A_h=h^{-1}\sum_{j<h}\rho^j$, per-date perceived surplus under a proportional volume tax $\tau$, quadratic adjustment charge $\nu$, and turnover cap $c \in (0, \infty]$ is
+\[
+ (\beta A_h V-\tau T_h)q-\tfrac12(bV+\nu D_h/h)q^2,
+ \qquad q\ge0,\quad qT_h\le c .
+\]
+Aggregating desks of common memory rate $r$ from baseline scale $q^0(r)>0$ to policy scale $q^1(r)$ (evaluated at cycle-averaged constant-signal exposure) reduces the fixed-$(a,\kappa)$ feedback budget by $\kappa F_g(M)$, where $g(r)=(1-q^1(r)/q^0(r))/(1-r)$.
+
+\begin{proposition}[Partial-equilibrium incidence of price and quantity instruments]\label{thm:instruments}\label{prop:instrument_bound}
+Fix $0 < \bar{r} < 1$, bounded total merged weight, common $(\beta, b, \rho)$, and pre-policy covariances and impact $(V, D_h, a, \kappa)$ away from kinks, with memories in $[r_{\min}, \bar{r}]$ ($r_{\min} > 0$) when $(a, \kappa)$ are estimated jointly or $[0, \bar{r}]$ when $a$ is known. Consider either the benchmark experiment of $N$ Gaussian impulse-response records (with known $\kappa$) plus an independent length-$n$ reference sample, or a single passive stationary pricing-error record of length $n$ from~main-text~\eqref{M-eq:baseline} with known $a$, $S \le \bar{S} < 1$, and innovation variance bounded above and away from zero.
+\begin{enumerate}
+\item[(i)] \emph{Trading costs.} With $h=1$, $\tau=0$, and $c=\infty$, a sufficiently small quadratic charge $\nu > 0$ yields a square-summable Taylor series for $g$: the budget reduction is estimable at logarithmic lag depth with error $O_P(n^{-1/2}+\sigma N^{-1/2})$, and from the passive record alone with error $O_P(n^{-1/2})$ without impulse probes, a separate reference sample, or known $\kappa$. By contrast, a proportional tax $\tau > 0$ can violate square-summability even when all desks remain active ($1-q^1/q^0=d\sqrt{1+r}$, $d > 0$, under white-noise reference prices).
+\item[(ii)] \emph{Scheduled revisions.} Lengthening the revision cycle from $1$ to $h$ dates at small $\nu > 0$ ($\tau=0, c=\infty$) decomposes $g$ into a square-summable component estimable at the rates in~(i) plus $(1-A_h)/(1-r)$, which vanishes when $\rho=1$ and otherwise requires the initial aggregate budget (allowing a negative net reduction in cycle-averaged exposure).
+\item[(iii)] \emph{Exit.} Under a proportional tax, a transversal zero of $\beta V-\tau T_1$ at an interior memory rate creates a kink in $g$. In the reset model of Theorem~\ref{M-n:cost} under a common reference law, there exist moment-matched $K$-group pairs near the exit threshold---one with exit, one with all groups active---whose budget reductions differ by order $\Delta\eta$, requiring $N\ge c_*\sigma^2(\Delta\eta)^{-(4K-2)}$ records to separate with both error probabilities below $1/4$.
+\item[(iv)] \emph{Turnover caps.} With $h = 1$, a positive per-desk cap $c$ crossing smooth unconstrained turnover transversally likewise induces an order-$\Delta\eta$ kink in $g$, so the $(\Delta\eta)^{-(4K-2)}$ lower bound of~(iii) applies both to estimating the reduction and to deciding whether the cap binds.
+\end{enumerate}
+\end{proposition}
+
+Proposition~\ref{thm:instruments} evaluates partial-equilibrium incidence for scheduled holdings at fixed $(V, D_h, a, \kappa)$; modeling resting-order cancellation requires a limit-order execution model, finite closed-loop policies shift $(V, D_h)$ and $(\kappa, D, a^*)$ via Theorem~\ref{M-n:thm_inventory} (Sections~\ref{app:instruments}--\ref{app:passiveincidence}), and unexempted proportional taxes in mixed-sign markets can drive out low-margin contrarian liquidity suppliers ($w_i < 0$) first, raising net $S$ (Section~\ref{sec:margin_scaling}).
+
 
 \paragraph{Perceived profits and the constant-signal response.}
 A desk chooses a scale $q\ge0$ for exposure $q y_t$ at revision dates, with
@@ -2008,38 +2183,6 @@ Under discrete rounding $\mathcal{Q}(p) = \Delta_{\mathrm{tick}} \lfloor p / \De
 
 \subsection{Discrete Roll-bounce deconvolution vs.\ infill pre-averaging}\label{sec:preaveraging}
 When observed prices contain additive i.i.d.\ microstructure noise $\tilde{x}_t = x_t + \eta_t$ with $\E[\eta_t] = 0$, $\operatorname{Var}(\eta_t) = \sigma_\eta^2$ \citep{roll1984}, raw lag-zero sample autocovariances suffer $O(1)$ upward bias $+\sigma_\eta^2$, attenuating cepstral coefficients $\ell_j$ and inducing spurious feedback poles. In our discrete-time unit-step ARMA model, $\operatorname{Cov}(\eta_t, \eta_{t-m}) = 0$ for every lag $m \ge 1$, so higher-lag sample autocovariances $\hat{\gamma}_m(\tilde{x}) = \gamma_m(x) + O_P(n^{-1/2})$ ($m \ge 1$) remain unbiased. Crucially, naively subtracting an estimated noise variance $\hat\sigma_\eta^2$ at lag~$0$ without joint Toeplitz positive-semidefinite regularization can produce negative deconvolved spectra ($\tilde f^{\mathrm{deconv}}(\omega) \le 0$) and hit spectral floors, while unrestricted high-order shifted Yule--Walker Hankel systems become rank-deficient once $L > K+1$. Instead, parametric estimation fits a positive rational ARMA/spectral factor $f_x(\omega) = \sigma_x^2 / |Q(e^{-i\omega})|^2 \ge f_{\min} > 0$ directly to lags $m \ge 1$ (or via Toeplitz-PSD-constrained Whittle/covariance matching), guaranteeing PSD spectra and restoring the $O_P(n^{-1/2})$ parametric rate. Conversely, in the high-frequency infill Ornstein--Uhlenbeck limit ($\Delta_n \to 0$), adjacent signal increments shrink relative to bounce noise, requiring level pre-averaged realized kernels over blocks $k_n = \lceil c_w n^{1/2}\rceil$ with triangle weights $w_j = \min(u, 1-u)$ \citep{jacod2009,barndorff2008} and noise-bias subtraction across $0 \le m < k_n$, which yields the infill noise-limited rate $O_P(n^{-1/4})$.
-
-\section{Notation}\label{app:notation}
-
-\begin{longtable}{p{0.18\textwidth}p{0.72\textwidth}}
-\toprule
-Symbol & Meaning\\
-\midrule
-\endhead
-$x_t$ & pricing error (price minus fundamental)\\
-$a$ & price persistence (anchor), $0\le a<1$\\
-$\kappa$ & price impact per unit of executed quantity\\
-$q_i,\ \eta_i,\ r_i$ & group weight, adaptation rate, memory rate $r_i=1-\eta_i$\\
-$w_i=q_i\eta_i$ & merged weight\\
-$M=\sum_iw_i\delta_{r_i}$ & merged rate--weight measure\\
-$k_m,\ G(z),$\newline $S_M(D)$ & feedback kernel, frequency transfer $G(z)=\sum_{m\ge0} k_m z^{-m}=z S_M(z)$, and main-text Stieltjes transform $S_M(D)=\int (D-r)^{-1}\,dM(r)$\\
-$H(z),\ h_j$ & closed-loop transfer function and impulse response, $h_0=\kappa$\\
-$J,\ S$ & state transition matrix and $S=a+\kappa\sum q_i$\\
-$v_t,\ V$ & executed probe quantity and total quantity $\sum|v_t|$\\
-$d_T$ & impulse-response difference between hypotheses, first $T$ taps\\
-$\sigma$ & observation-noise standard deviation\\
-$\delta,\ \Delta\eta$ & half-separation of a known pair; spacing of unknown groups\\
-$K_*$ & transfer-difference constant $2\kappa^2q/[\epsilon^3(1-S)^2]$\\
-$B(z), B_h(z)$ & autocovariance generating functions $\sum_k \gamma_k z^{|k|}$ and $\sum_k \gamma_{k+h} z^{|k|}$\\
-$C_h(z)$ & holding covariance difference $2(B(z) - B_h(z))/(1-z)$\\
-$Q(z)$ & stationary inverse transfer factor $1 - z(a + J(z))$\\
-$J(z)$ & feedback generating function $\kappa \sum_{m \ge 0} k_m z^m$\\
-$\nu$ & desk quadratic position adjustment penalty parameter\\
-$\tau$ & desk transaction tax / per-trade execution cost\\
-$\Delta g'$ & jump in one-sided derivative of policy function at cap or exit kink\\
-\bottomrule
-\end{longtable}
-
 
 \begin{thebibliography}{99}\setlength{\itemsep}{2pt}\small
 \bibitem[Abramowitz and Stegun(1964)]{abramowitz1964} Abramowitz, M., and I. A. Stegun (1964). \emph{Handbook of Mathematical Functions}. National Bureau of Standards, Washington, DC.

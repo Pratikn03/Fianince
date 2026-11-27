@@ -28,6 +28,7 @@ sys.path.insert(0, str(HERE.parents[2] / 'research_extension/paper1_publication_
 import round10  # noqa: E402  (P1M-A1 passages, applied only once the result files exist)
 sys.path.insert(0, str(HERE))
 import sharpen_1127  # noqa: E402  (revision of 27 November 2026)
+import final_cut_1127  # noqa: E402  (final restructuring, 27 November 2026)
 
 MOVED = {}  # blocks moved to the supplement by sharpen_1127
 SRC = HERE / 'received' / 'Paper1_JEDC_final.tex'
@@ -729,8 +730,10 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
     t = t.replace(' — ', '---').replace('—', '---').replace(' ---or', '---or')
 
     t, moved = sharpen_1127.main_text(t)
+    t = final_cut_1127.main_text(t, moved)
     MOVED.clear()
     MOVED.update(moved)
+    MOVED['_main_tex'] = t
     return t
 
 
