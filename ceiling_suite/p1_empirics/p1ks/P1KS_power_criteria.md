@@ -95,6 +95,49 @@ The choice is fixed in the spec before registration.
 `p1ks_power.py` (tests in `test_p1ks_power.py`) implements the simulation above. It takes the calibration JSON as its
 only input. It was written and tested on synthetic inputs on 27 November 2026, before the calibration output existed.
 
-## Results
+## Results (27 November 2026)
 
-(Filled in after the calibration and the simulation are run.)
+**Calibration.** `P1KS_Dev_Window_Naver_Colab.ipynb` was run once by the author. Its code hash, `032cced2...`, matches
+the committed `p1ks_dev.py`. It read only data dated before 2020. The output is
+`results/p1ks_dev_calibration_20261127.json`:
+- 700 sampled; 439 estimated;
+- 178 failed on short history;
+- 83 dropped for unadjusted split jumps;
+- all prices came from siseJson;
+- trend page size 60.
+
+| Quantity | Large (top quarter by traded value) | Other |
+|---|---|---|
+| Stocks with full-window estimates | 110 | 324 |
+| Foreign contribution c, median [5%, 95%] | −0.00012 [−0.0023, 0.0023] | −0.00006 [−0.0020, 0.0036] |
+| Between-half correlation of ĉ | −0.007 | 0.20 |
+| s.d. of placebo change in Ŝ (prices only) | 0.018 | 0.019 |
+| Aggregate budget Ŝ, median | 0.966 | 0.964 |
+
+**Power simulation.** `p1ks_power.py` was run once, at commit `e898299`, with 2,000 replications per case and seed
+20261127. Output: `p1ks_power_results.json`.
+
+| Case | Required | Result | Met? |
+|---|---|---|---|
+| θ = 0 | rejection 3–7% | 5.4% | Yes |
+| θ = 1 | power ≥ 80% | 5.3% | **No** |
+| θ = 0.5 | power ≥ 50% | 4.5% | **No** |
+
+**Verdict: the design fails. It is not registered, and no 2020–2025 data will be read for it.**
+
+**Why it fails.** There are two reasons, and either one is enough.
+1. **The predictor is not reliable.** The two-half estimates of the foreign contribution are uncorrelated among large
+   stocks (−0.007). The reliability of the full-window estimate is therefore floored at zero, and the predictor carries
+   no stock-level information about the true contribution.
+2. **The effect is too small.** Even with a perfectly measured predictor, the predicted effect is tiny relative to the
+   noise in the outcome. The spread of c is about 0.0015, while the 250-day noise in ΔŜ is about 0.029. With 350
+   treated stocks, the slope's standard error is about 0.029 / (0.0015 · √350) ≈ 1.0 against a predicted slope of
+   θ ≤ 1, so power at θ = 1 would be about 26%.
+
+**What the development window describes (not a test).** At daily frequency, foreign feedback adds about ±0.002 to a
+budget near 0.965, the same order as in Taiwan (0.0014 of 0.97). This is the paper's own point: at daily frequency
+the stakes of targeting by class are small, and the gap is informational rather than economic. A causal test of the
+separation would need a market or frequency in which class feedback is a material share of the budget.
+
+The design parameters are not adjusted to pass. Any new design is a new test, with its own committed criteria and the
+author's approval.
