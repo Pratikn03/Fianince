@@ -138,8 +138,8 @@ def run_audit_checks():
 
     # Check 19: Table S2 Lean declaration sync
     check(19, "Table S2 Lean declaration sync",
-          "1,306" in supp_text and "eighteen" in supp_text.lower(),
-          "Found sync to 18 Lean files and 1,306 declarations in Table S2")
+          "1,310" in supp_text and "eighteen" in supp_text.lower(),
+          "Found sync to 18 Lean files and 1,310 declarations in Table S2")
 
     # Check 20: Table S24 notation table update
     check(20, "Table S24 notation table update",
@@ -158,13 +158,15 @@ def run_audit_checks():
 
     # Check 23: Corollary 7.3 (cor:posthaltflip) presence & proof
     check(23, "Corollary 7.3 (cor:posthaltflip) presence & proof",
-          "cor:posthaltflip" in main_text and "Proof of Corollary~\\ref{cor:posthaltflip}" in main_text,
-          "Found Corollary 7.3 post-halt existence flip and Appendix A proof")
+          "S-cor:posthaltflip" in main_text and "\\label{cor:posthaltflip}" in supp_text
+          and "Proof of Corollary~\\ref{cor:posthaltflip}" in supp_text,
+          "Corollary moved to the supplement (27 Nov) with its proof; main text points to it")
 
     # Check 24: Proposition 7.11 (prop:endogenous_supervisor) presence & proof
     check(24, "Proposition 7.11 (prop:endogenous_supervisor) presence & proof",
-          "prop:endogenous_supervisor" in main_text and "Proof of Proposition~\\ref{prop:endogenous_supervisor}" in main_text,
-          "Found Proposition 7.11 strategic surveillance collapse and proof")
+          "S-prop:endogenous_supervisor" in main_text and "\\label{prop:endogenous_supervisor}" in supp_text
+          and "Proof of Proposition~\\ref{prop:endogenous_supervisor}" in supp_text,
+          "Proposition moved to the supplement (27 Nov) with its proof; main text points to it")
 
     # Check 25: Table S2 new upgrade rows present
     check(25, "Table S2 new upgrade rows present",
@@ -178,8 +180,8 @@ def run_audit_checks():
 
     # Check 27: MPV Resolution Limit Theorem (Theorem 5.2) present in Section 5
     check(27, "MPV Resolution Limit Theorem (Theorem 5.2)",
-          "thm:mpv" in main_text and "Minimum price variation" in main_text,
-          "Found Theorem thm:mpv in Section 5")
+          "S-thm:mpv" in main_text and "Minimum price variation" in supp_text,
+          "Tick-grid theorem moved to the supplement (27 Nov); Section 5 points to it")
 
     # Check 28: Frequent Batch Auction kernel restoration theorem (Theorem S6.1) in Supplement
     check(28, "Frequent Batch Auction kernel restoration theorem",
@@ -210,8 +212,8 @@ def run_audit_checks():
 
     # Check 33: Concession that tagged flow persistence reflects parent-order slicing
     check(33, "Concession that persistence reflects parent-order slicing",
-          "parent-order" in main_text and "slicing" in main_text,
-          "Found TWAP/VWAP parent-order slicing explanation in Section 7.4")
+          "consistent with (but not shown to be) the slicing of parent orders" in main_text,
+          "Slicing stated as consistent with the lags, not as shown (27 Nov)")
 
     # Check 34: Pre-averaged realized kernel formulation in Supplement Section S23.4
     check(34, "Pre-averaged realized kernel formulation in Supplement",
@@ -261,9 +263,9 @@ def run_audit_checks():
     # Check 41: Theorem 5.2 (thm:mpv) is NOT trapped inside a table float
     tables = re.findall(r"\\begin\{table\}.*?\\end\{table\}", main_text, re.S)
     mpv_in_table = any("thm:mpv" in tbl for tbl in tables)
-    check(41, "Theorem thm:mpv placed in body text outside Table floats",
-          not mpv_in_table and "Proof of Theorem~\\ref{thm:mpv}" in main_text,
-          "Confirmed thm:mpv is outside table environments and proved in Appendix A")
+    check(41, "Theorem thm:mpv outside Table floats and proved in the supplement",
+          not mpv_in_table and "Proof of Theorem~\\ref{thm:mpv}" in supp_text,
+          "Confirmed thm:mpv is outside table environments and proved in Supplement Section S24")
 
     # Check 42: Procyclical margin formula m_0 / (1 - \mu S) eliminated
     check(42, "Procyclical hyperbolic margin m_0/(1 - mu S) eliminated",
@@ -304,7 +306,7 @@ def run_audit_checks():
 
     # Check 47: Prop 7.11 Stackelberg vs simultaneous game, GLRT, and Conclusion reconciliation
     check(47, "Prop 7.11 Stackelberg/simultaneous framing, GLRT, and Conclusion reconciliation",
-          r"\frac{4 k \delta_0}{n \beta L}" in main_text and "Stackelberg" in main_text and r"simultaneous\_no\_pure\_ne" in supp_text,
+          r"\frac{4 k \delta_0}{n \beta L}" in supp_text and "Stackelberg" in main_text and r"simultaneous\_no\_pure\_ne" in supp_text,
           "Confirmed Option A Proposition 7.11 Stackelberg/simultaneous game framing and GLRT scaling")
 
     # Check 48: Supplement S18.2 Proof of Theorem n:irr (with w_i>=0, a>=0) and S23 population Toeplitz fix
@@ -343,7 +345,7 @@ def run_audit_checks():
 
     # Check 54: Round-3 Theorem fixes (7.4(ii) max interval, Cor 7.3(ii) q_max^(2), Cor OLG timing, TWSE March 2020 & provenance)
     check(54, "Round-3 Theorem 7.4(ii), Cor 7.3(ii), OLG timing, and TWSE 23 March 2020 / provenance fixes",
-          r"a + \sum_d \max(0, u_d)" in main_text and r"\kappa q_{\max}^{(2)} < 1 - \bar{s}" in main_text and "23~March~2020" in main_text and "23~March~2020" in supp_text and "first-differenced checks appear in Supplement" not in main_text,
+          r"a + \sum_d \max(0, u_d)" in main_text and r"\kappa q_{\max}^{(2)} < 1 - \bar{s}" in supp_text and "23~March~2020" in main_text and "23~March~2020" in supp_text and "first-differenced checks appear in Supplement" not in main_text,
           "Confirmed Main & Supplement structural, minimax, and TWSE provenance repairs")
 
     # Check 55: Extended Lean Revision 15 & 17 new theorem names synced with Table S2

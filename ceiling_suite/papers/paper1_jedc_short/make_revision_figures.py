@@ -25,43 +25,44 @@ plt.rcParams.update({
 
 def make_twse_sensitivity_figure():
     data = json.loads((ROOT / "ceiling_suite/p1_empirics/p1_round3_sensitivity_results.json").read_text())
-    hold = data["p1t_updated_holdout"]
-    reg = data["p1t_regime_split_20200323"]
-    stab = hold["diagnostics"]["stability"]
+    regd = json.loads((ROOT / "ceiling_suite/p1_empirics/results/p1t_holdout_registered_A4.json").read_text())
+    hold = data["p1t_updated_holdout"]   # post hoc: limit and post-halt days masked
+    reg = data["p1t_regime_split_20200323"]   # post hoc: split at the 23 March 2020 switch
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.2, 2.55), constrained_layout=True)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.2, 2.75), constrained_layout=True)
 
-    # Panel A: Out-of-Sample Holdout & 23 March 2020 Regime Split
+    # Panel A: registered holdout first, then the post hoc reruns, each labelled.
     labels = [
-        "Pooled (2019-23)",
-        "Pre-Mar 2020 (5s Call)",
-        "Post-Mar 2020 (Cont.)",
-        "2019",
-        "2020",
-        "2021",
-        "2022",
-        "2023",
-        "Reverse Causality",
+        "Registered: pooled 2019-23",
+        "Registered: 2019",
+        "Registered: 2020",
+        "Registered: 2021",
+        "Registered: 2022",
+        "Registered: 2023",
+        "Registered: reverse causality",
+        "Post hoc: limit days masked",
+        "Post hoc: pre-Mar 2020 (5s call)",
+        "Post hoc: post-Mar 2020 (cont.)",
     ]
     entries = [
+        regd["primary_block20"],
+        regd["stability"]["2019"],
+        regd["stability"]["2020"],
+        regd["stability"]["2021"],
+        regd["stability"]["2022"],
+        regd["stability"]["2023"],
+        regd["reverse_causality"],
         hold["primary_block20"],
         reg["pre_20200323_call_auction_5s"]["Foreign_block20"],
         reg["post_20200323_continuous_matching"]["Foreign_block20"],
-        stab["2019"],
-        stab["2020"],
-        stab["2021"],
-        stab["2022"],
-        stab["2023"],
-        hold["diagnostics"]["reverse_causality"],
     ]
     y_pos = np.arange(len(labels))[::-1]
     ests = [e["D"] for e in entries]
     los = [e["D"] - e["ci95"][0] for e in entries]
     his = [e["ci95"][1] - e["D"] for e in entries]
     colors = [
-        "#1f4e78", "#2e75b6", "#0b5394",
-        "#4a7ebb", "#4a7ebb", "#4a7ebb", "#7f8c8d", "#7f8c8d",
-        "#c0392b",
+        "#1f4e78", "#4a7ebb", "#4a7ebb", "#4a7ebb", "#7f8c8d", "#7f8c8d", "#c0392b",
+        "#b9770e", "#b9770e", "#b9770e",
     ]
 
     ax1.axvline(0.0, color="#444444", linestyle="--", linewidth=0.9)
@@ -75,7 +76,7 @@ def make_twse_sensitivity_figure():
     ax1.set_xticks([-0.04, 0.00, 0.04, 0.08, 0.12, 0.16])
     ax1.set_xlim(-0.062, 0.162)
     ax1.set_xlabel(r"Out-of-sample Foreign forecast gain $\hat{D}_{\mathrm{OOS}}$ (95% CI)")
-    ax1.set_title("Panel A: TWSE Holdout, Regime Split & Placebo")
+    ax1.set_title("Panel A: TWSE holdout (registered) and later reruns")
     ax1.grid(axis="x", linestyle=":", alpha=0.5)
 
     # Panel B: P1M Specification Sensitivity (Memory Rates r_c with 95% CIs on all 3 specs)

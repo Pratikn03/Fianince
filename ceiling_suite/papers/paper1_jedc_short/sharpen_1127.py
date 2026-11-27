@@ -1,0 +1,279 @@
+"""Revision of 27 November 2026: sharper claims, one headline theorem, three side results moved to the supplement.
+
+Applied last, to the main text written by make_short.build and to the supplement written by build_short.supplement_tex.
+Every replacement asserts that its target occurs exactly once, so a change upstream fails loudly.
+
+Main text:
+  * abstract restated around the supervisory separation; "prices alone" and "durable targeting requires" removed;
+  * new Theorem (The supervisory separation), label n:separation, at the head of Section 7, with a proof in Appendix A;
+  * introduction: the central result stated first; item 1 cites the near-instability proposition, not the figure;
+    item 4 says what is assumed about owner-linked records; item 5 states the class of tests; Taiwan paragraph
+    states the grant and the leading-order caveat;
+  * the uniform-cut paragraph states the measurement model it uses (direct kernel taps), as the supplement does;
+  * Taiwan: the registered holdout (D = 0.0426) is reported as the registered result; the limit-masked rerun and the
+    regime split are labelled post hoc; "reflect TWAP/VWAP slicing" becomes "consistent with"; the supplement's
+    non-claim is stated;
+  * Theorem thm:mpv, Corollary cor:posthaltflip and Proposition prop:endogenous_supervisor, with their proofs, move to
+    the supplement; one sentence each stays in the main text.
+
+Supplement: receives the three results; Table S2 rows say what Lean checks; the declaration count is 1,310.
+"""
+import re
+
+MOVED_LABELS = ('thm:mpv', 'cor:posthaltflip', 'prop:endogenous_supervisor')
+
+
+def rep(t, old, new, count=1):
+    n = t.count(old)
+    assert n == count, (old[:140], n, count)
+    return t.replace(old, new)
+
+
+def cut(t, start, end):
+    """Remove t[start .. end] inclusive of both markers; return (new text, removed block)."""
+    a = t.index(start)
+    b = t.index(end, a) + len(end)
+    assert t.count(start) == 1, start[:80]
+    return t[:a] + t[b:], t[a:b]
+
+
+ABSTRACT_OLD_START = r"We study financial markets in which heterogeneous trading algorithms"
+ABSTRACT_OLD_END = r"illustrate the magnitude of this informational gap."
+ABSTRACT_NEW = (
+    r"We study financial markets in which heterogeneous trading algorithms feed a common public pricing signal back "
+    r"into order flow. In a linear market and in a stationary inventory-dealer equilibrium, every public "
+    r"outcome---prices, volume, dealer inventories and optimal forecasts---depends on the trader population only "
+    r"through its aggregate feedback kernel. This yields a supervisory separation. Once persistence and impact are "
+    r"known, whether a uniform feedback cut meets a stability ceiling can be learned from the aggregate response at a "
+    r"cost that does not depend on how close the traders' memories are, and without class tags the uniform cut is "
+    r"minimax over labelings. Whether a targeted restriction meets the same ceiling can require of order "
+    r"$\Delta^{-(4K-2)}$ observations when $K$ classes have memory rates within $\Delta$, even near instability or "
+    r"under active probes; verified class tags remove that penalty. Cheap relabeling across accounts erodes tags, "
+    r"and untagged surveillance invites traders to crowd their memories. Class-tagged flows from the Taiwan Stock "
+    r"Exchange calibrate the gap."
+)
+
+CENTRAL = (
+    r"\textbf{The central result.} The paper's central result is a supervisory separation "
+    r"(Theorem~\ref{n:separation}). Given persistence, impact and a memory bound, whether a uniform feedback cut "
+    r"meets a stability ceiling depends on the population only through the aggregate budget, which "
+    r"$O(\sigma^2\epsilon^{-2}\log(1/\epsilon))$ kernel-tap records estimate to accuracy $\epsilon$ however close "
+    r"the traders' memories are; without tags, the uniform cut is minimax over labelings. Whether a targeted "
+    r"restriction meets the same ceiling can require $c\sigma^2(\Delta\eta)^{-(4K-2)}$ records, and verified class "
+    r"tags remove that dependence on spacing for class weights. The five results below supply the pieces, and the "
+    r"last two ask how far tags survive strategic traders." + "\n\n"
+)
+
+SEPARATION = r"""\subsection{The supervisory separation}\label{sec:separation}
+
+The results of this section combine into one statement. Fix $K \ge 2$, known $(a, \kappa)$, a memory bound $\bar r < 1$ on total merged weight at most $\bar W$, and a ceiling $\bar s \in (a, 1)$ in a positive, stable market. Records are $N$ independent experiments with Gaussian noise of variance $\sigma^2$: direct kernel-tap measurements as in Theorem~\ref{n:questions} for part~(i), and the reset contract of Theorem~\ref{n:cost} for parts~(ii) and~(iii).
+
+\begin{theorem}[The supervisory separation]\label{n:separation}
+\begin{enumerate}
+  \item[(i)] \emph{Uniform cuts need only the aggregate.} Whether scaling all feedback by $\theta \in [0, 1]$ meets $\bar s$ depends on the population only through the budget $S$. For every $\epsilon \in (0, 1)$ and $\beta \in (0, 1)$, $S$ is estimated to accuracy $\epsilon$ with probability at least $1 - \beta$ from $N = O(\sigma^2 \kappa^2 \epsilon^{-2} \log(1/\epsilon) \log(1/\beta))$ records at tap depth $O(\log(1/\epsilon))$, with constants depending only on $(\kappa, \bar r, \bar W)$ and not on the number of groups or the spacing of their memory rates. Without tags, for convex prudential loss and continuous, convex, label-symmetric cost, uniform scaling is minimax over labelings.
+  \item[(ii)] \emph{Targeted restrictions need composition.} For halting the largest group, and for halting every group whose memory lies below a cutoff, there are pairs of $K$-group economies with memory rates in an interval of length $3\Delta\eta$ on which, over a nonempty interval of ceilings, the restriction meets $\bar s$ in one economy and breaches it in the other; deciding which, with both error probabilities at most $1/4$, requires $N \ge c\, \sigma^2 (\Delta\eta)^{-(4K-2)}$ records.
+  \item[(iii)] \emph{Verified tags remove the spacing penalty for weights.} If each class's flow is also recorded at the first two response dates, then over the families of Theorem~\ref{n:disc} recovering class weights to a fixed accuracy below half the weight gap of the hard pair requires a number of experiments that does not grow as $\Delta\eta \to 0$; recovering memory rates to accuracy $c_0 \Delta\eta$ still requires order $(\Delta\eta)^{-2}$.
+\end{enumerate}
+\end{theorem}
+
+Part~(i) is a statement about the aggregate alone; parts~(ii) and~(iii) say that composition is what a targeted rule needs and what tags supply. The rest of the section proves the parts and asks how far tags survive traders who respond to them: relabeling erodes tags (Proposition~\ref{n:relabel}) and untagged tests invite crowding (Theorem~\ref{n:paradox}).
+
+"""
+
+SEPARATION_PROOF = r"""\begin{proof}[Proof of Theorem~\ref{n:separation}]
+\emph{(i)} The first claim is Proposition~\ref{n:target}(i). For the rate, write $S = a + \kappa \sum_{m \ge 0} k_m$ and estimate $\sum_{m < L} k_m$ by the sum of the $L$ tap averages. Because $|k_m| \le \bar W \bar r^m$, the omitted tail is at most $\bar W \bar r^L / (1 - \bar r)$, which is below $\epsilon / (2\kappa)$ once $L \ge \log(2\kappa \bar W / (\epsilon(1 - \bar r))) / \log(1/\bar r)$. The sum of $L$ independent tap averages has Gaussian error with variance $L \sigma^2 / N$, so it is within $\epsilon / (2\kappa)$ with probability at least $1 - \beta$ once $N \ge 8 \kappa^2 \sigma^2 L \log(2/\beta) / \epsilon^2$. Neither bound involves $K$ or the memory spacing. Minimax optimality is Theorem~\ref{n:minimax}(i). \emph{(ii)} Proposition~\ref{n:target}(ii) for the largest group (memories in $r_c + \Delta\eta[-1, 1]$) and Proposition~\ref{n:target}(iii) for the cutoff (memories in $[\hat r - \Delta\eta, \hat r + 2\Delta\eta]$). \emph{(iii)} Theorem~\ref{n:disc}.
+\end{proof}
+
+"""
+
+MPV_STUB = (r"Rounding prices to the exchange's tick grid does not rescue identification either: the barrier survives Gaussian "
+            r"dithering, and it becomes absolute when shocks stay inside one tick cell (Supplement "
+            r"Theorem~\ref{S-thm:mpv}).")
+
+POSTHALT_STUB = (r"A halt can also fail in equilibrium for a different reason: if it removes dealer risk-bearing capacity, "
+                 r"endogenous impact can pass the fold of Theorem~\ref{thm:fragility} (Supplement "
+                 r"Corollary~\ref{S-cor:posthaltflip}).")
+
+SUPERVISOR_STUB = (r"If the supervisor also chooses how hard to monitor, crowding makes committed monitoring unprofitable for "
+                   r"large records under high stakes, and equilibrium auditing must be randomized (Supplement "
+                   r"Proposition~\ref{S-prop:endogenous_supervisor}).")
+
+TAIWAN_HOLDOUT_OLD_START = r"Second, in the 2019--2023 out-of-sample holdout (Figure~\ref{fig:twse_sensitivity};"
+TAIWAN_HOLDOUT_OLD_END = r"rather than pure causal feedback."
+TAIWAN_HOLDOUT_NEW = (
+    r"Second, in the registered 2019--2023 out-of-sample holdout (Figure~\ref{fig:twse_sensitivity}; Supplement "
+    r"Sections~\ref{S-sec:scope} and~\ref{S-app:barrier}), let $\hat D_{\mathrm{OOS}}$ denote the proportional "
+    r"out-of-sample MSE reduction in forecasting class flow from $x_{t-1}$ beyond own-flow persistence. The registered "
+    r"primary statistic is $\hat D_{\mathrm{OOS}} = 0.0426$ for foreign flow ($95\%$ block-20 interval "
+    r"$[0.0206, 0.0643]$, block-60 $p = 0.0024$), which meets the registered supportive criterion; it is positive in "
+    r"2019--2021 and not distinguishable from zero in 2022 ($0.0141$) or 2023 ($-0.0158$), trust and proprietary "
+    r"dealer flows are null ($p_{\mathrm{Holm}} = 1.0$), finite-sample plug-in standard errors are severely "
+    r"downward-biased relative to the block bootstrap, and the registered reverse-causality placebo "
+    r"($-0.0065$, $[-0.0316, 0.0165]$) cannot rule out that daily price deviations partly reflect prior institutional "
+    r"order flow rather than pure causal feedback. Two later analyses, not registered, point the same way: masking "
+    r"price-limit and post-halt days gives $0.0410$ ($[0.0197, 0.0623]$), and splitting at the 23~March~2020 switch to "
+    r"continuous matching gives $0.0319$ before and $0.0421$ after. We do not claim that tagged flow in Taiwan "
+    r"responds causally to price deviations."
+)
+
+FIG3_OLD_START = r"\caption{TWSE empirical sensitivity and 2019--2023 out-of-sample holdout."
+FIG3_OLD_END = r"$\hat{\kappa}_{\Delta x}=0.00209$).}"
+FIG3_NEW = (
+    r"\caption{TWSE 2019--2023 out-of-sample holdout and specification sensitivity. Panel~A: foreign proportional MSE "
+    r"gain $\hat{D}_{\mathrm{OOS}}$ with $95\%$ block-20 intervals. Rows marked ``registered'' are the registered "
+    r"holdout (pooled $0.0426$, annual subsamples, reverse-causality placebo $-0.0065$); rows marked ``post hoc'' were "
+    r"run after the holdout was opened (limit and post-halt days masked, $0.0410$; split at the 23~March~2020 switch to "
+    r"continuous matching, $0.0319 \to 0.0421$). Panel~B: estimated persistence $\hat{r}_c$ ($95\%$ CI) across "
+    r"Baseline, Limit-Excluded ($\hat{\kappa}=0.00409$), and First-Differenced $\Delta x_t$ ($\sum \hat{a}_j=-0.109$, "
+    r"$\hat{\kappa}_{\Delta x}=0.00209$).}"
+)
+
+
+def main_text(t):
+    """Apply the 27 November revision to the main text; return (text, moved blocks)."""
+    moved = {}
+    # ---------------------------------------------------------------- abstract
+    a = t.index(ABSTRACT_OLD_START)
+    b = t.index(ABSTRACT_OLD_END, a) + len(ABSTRACT_OLD_END)
+    t = t[:a] + ABSTRACT_NEW + t[b:]
+    # ---------------------------------------------------------------- introduction
+    t = rep(t, "Five economic results organize the analysis:", CENTRAL + "Five economic results organize the analysis:")
+    t = rep(t, r"and does not vanish as the market approaches instability (Figure~\ref{fig:near-instability}).",
+            r"and does not vanish as the market approaches instability (Supplement Proposition~\ref{S-prop:nearcrit}; "
+            r"Figure~\ref{fig:near-instability}).")
+    t = rep(t, r"An owner-linked audit trail that ties accounts to beneficial owners retains its value whenever "
+               r"beneficial-ownership links prevent cross-account routing.",
+            r"Records that link accounts to beneficial owners keep their value only to the extent that they make such "
+            r"routing visible; the model takes this as a property of the audit trail, not as a result.")
+    t = rep(t, r"Against any standard local-power test, a high-stakes untagged algorithm",
+            r"Against a fixed-level test whose power grows at least like the square root of the divergence, a "
+            r"high-stakes untagged algorithm")
+    t = rep(t, r"Holding each class's non-feedback flow law fixed, tagged flows carry $4.7 \times 10^5$ times more "
+               r"information per stock-day about composition than prices alone. Given market persistence, impact, and "
+               r"non-feedback flow, a spectral-rate search",
+            r"Granting a price-only supervisor the market's persistence, impact and non-feedback flow law, tagged "
+            r"flows carry, at leading order, $4.7 \times 10^5$ times more information per stock-day about composition "
+            r"than prices. On the same grant, a spectral-rate search")
+    t = rep(t, r"solve the strategic relabeling game between class tags and owner-linked audit trails,",
+            r"combine these into a supervisory separation between uniform and targeted rules (Theorem~\ref{n:separation}), "
+            r"solve the strategic relabeling game between class tags and owner-linked audit trails,")
+    # ---------------------------------------------------------------- Section 7 headline theorem
+    marker = r"\subsection{Market-wide versus targeted interventions}"
+    t = rep(t, marker, SEPARATION + marker)
+    t = rep(t, r"summing noisy impulse-response lags at logarithmic depth estimates $S$ to accuracy $\epsilon$ in "
+               r"$O(\sigma^2\epsilon^{-2}\log(1/\epsilon))$ experiments.",
+            r"summing noisy kernel-tap measurements at logarithmic depth estimates $S$ to accuracy $\epsilon$ in "
+            r"$O(\sigma^2\epsilon^{-2}\log(1/\epsilon))$ experiments (Theorem~\ref{n:separation}(i)); price-only "
+            r"impulse records need separate growing-depth bounds on the reconstructed taps (Supplement "
+            r"Section~\ref{S-app:questions}).")
+    # ---------------------------------------------------------------- move three side results
+    t, moved['thm:mpv'] = cut(t, r"Discrete exchange tick grids do not rescue compositional identification",
+                              "\\end{theorem}\n")
+    t = rep(t, r"\subsection{Which questions prices answer cheaply}",
+            MPV_STUB + "\n\n" + r"\subsection{Which questions prices answer cheaply}")
+    t, moved['thm:mpv_proof'] = cut(t, r"\begin{proof}[Proof of Theorem~\ref{thm:mpv}]", "\\end{proof}\n")
+    t, moved['cor:posthaltflip'] = cut(t, r"\begin{corollary}[Ceiling stabilization versus dealer-capacity withdrawal]",
+                                       "\\end{corollary}\n")
+    t = rep(t, r"Figure~\ref{fig:intervention} illustrates this contrast",
+            POSTHALT_STUB + "\n\n" + r"Figure~\ref{fig:intervention} illustrates this contrast")
+    t, moved['cor:posthaltflip_proof'] = cut(t, r"\begin{proof}[Proof of Corollary~\ref{cor:posthaltflip}]",
+                                             "\\end{proof}\n")
+    t, moved['prop:endogenous_supervisor'] = cut(
+        t, r"Endogenizing the supervisor's monitoring intensity sharpens this tension", "\\end{proposition}\n")
+    t, moved['prop:endogenous_supervisor_proof'] = cut(
+        t, r"\begin{proof}[Proof of Proposition~\ref{prop:endogenous_supervisor}]", "\\end{proof}\n")
+    t = rep(t, r"while memory-independent tag inquiries eliminate crowding altogether.",
+            r"while memory-independent tag inquiries eliminate crowding altogether. " + SUPERVISOR_STUB)
+    t = rep(t, r"GLRT slowing; Proposition~\ref{prop:endogenous_supervisor})",
+            r"GLRT slowing; Supplement Proposition~\ref{S-prop:endogenous_supervisor})")
+    for lab in MOVED_LABELS:
+        assert '{' + lab + '}' not in t, lab
+    # ---------------------------------------------------------------- Taiwan
+    t = rep(t, r"while unconstrained distributed lags reflect day-1 TWAP/VWAP parent-order slicing reversal followed by "
+               r"multi-day persistence",
+            r"while unconstrained distributed lags show a day-1 reversal followed by multi-day persistence, consistent "
+            r"with (but not shown to be) the slicing of parent orders by TWAP/VWAP algorithms")
+    a = t.index(TAIWAN_HOLDOUT_OLD_START)
+    b = t.index(TAIWAN_HOLDOUT_OLD_END, a) + len(TAIWAN_HOLDOUT_OLD_END)
+    t = t[:a] + TAIWAN_HOLDOUT_NEW + t[b:]
+    a = t.index(FIG3_OLD_START)
+    b = t.index(FIG3_OLD_END, a) + len(FIG3_OLD_END)
+    t = t[:a] + FIG3_NEW + t[b:]
+    # ---------------------------------------------------------------- conclusion
+    t = rep(t, r"First, market-wide feedback cuts are minimax-optimal over unknown labelings and can be calibrated from "
+               r"impulse-response lags given market persistence, impact, and a memory bound",
+            r"First, market-wide feedback cuts are minimax-optimal over unknown labelings and can be calibrated from "
+            r"the aggregate response given market persistence, impact, and a memory bound, at a cost free of the "
+            r"traders' spacing (Theorem~\ref{n:separation})")
+    # ---------------------------------------------------------------- appendix proof of the new theorem
+    t = rep(t, r"\begin{proof}[Proof of Proposition~\ref{n:target}(i)--(ii) and Corollary~\ref{n:decisionloss}]",
+            SEPARATION_PROOF + r"\begin{proof}[Proof of Proposition~\ref{n:target}(i)--(ii) and Corollary~\ref{n:decisionloss}]")
+    return t, moved
+
+
+def _to_supplement(block, main_labels):
+    """Rewrite a main-text block for the supplement: main labels get M-, supplement labels lose S-."""
+    for lab in sorted(main_labels):
+        for cmd in ('ref', 'eqref'):
+            block = block.replace('\\' + cmd + '{' + lab + '}', '\\' + cmd + '{M-' + lab + '}')
+    block = re.sub(r"Supplement (Section|Sections|Proposition|Theorem|Table|Lemma|Corollary)~\\ref\{S-",
+                   r"\1~\\ref{", block)
+    block = block.replace(r'\ref{S-', r'\ref{')
+    block = re.sub(r"(?<!Main )Appendix~\\ref\{M-app:proofs\}", r"Main Appendix~\\ref{M-app:proofs}", block)
+    return block
+
+
+def supplement(doc, moved, main_labels):
+    main_labels = set(main_labels) - set(MOVED_LABELS)
+    # Every reference to the moved results now points inside the supplement.
+    for lab in MOVED_LABELS:
+        doc = doc.replace('{M-' + lab + '}', '{' + lab + '}')
+    doc = rep(doc, r"(and Proposition~\ref{prop:endogenous_supervisor} is proved in Main Appendix~\ref{M-app:proofs}, "
+                   r"extending Section~\ref{app:paradox})",
+              r"(and Proposition~\ref{prop:endogenous_supervisor}, moved from the main text, is proved in "
+              r"Section~\ref{app:paradox})")
+    doc = rep(doc, r"Theorem~\ref{M-thm:fragility} and Corollary~\ref{cor:posthaltflip} are proved in Main "
+                   r"Appendix~\ref{M-app:proofs}",
+              r"Theorem~\ref{M-thm:fragility} is proved in Main Appendix~\ref{M-app:proofs} and "
+              r"Corollary~\ref{cor:posthaltflip} in Section~\ref{sec:mixed_sign}")
+    doc = rep(doc, r"Theorem~\ref{thm:mpv} is proved in Main Appendix~\ref{M-app:proofs} (details in "
+                   r"Section~\ref{sec:mpv_supp})",
+              r"Theorem~\ref{thm:mpv} is proved in Section~\ref{sec:mpv_supp}")
+    # Insert the moved results where their details already are.
+    mpv = (_to_supplement(moved['thm:mpv'], main_labels) + "\n" + _to_supplement(moved['thm:mpv_proof'], main_labels)
+           .replace(r" (Section~\ref{sec:mpv_supp})", ""))
+    head = r"\subsection{Minimum price variation and stochastic dithering details}\label{sec:mpv_supp}" + "\n"
+    doc = rep(doc, head, head + "\n" + r"\noindent This result was moved from the main text (Section~\ref{M-sec:cost})."
+              + " " + mpv + "\n")
+    post = (_to_supplement(moved['cor:posthaltflip'], main_labels) + "\n"
+            + _to_supplement(moved['cor:posthaltflip_proof'], main_labels))
+    head = (r"\subsection{Mixed-sign stability, no-arbitrage spread bounds, and two-timescale dealer entry}"
+            r"\label{sec:mixed_sign}" + "\n")
+    doc = rep(doc, head, head + "\n" + r"\noindent The next result was moved from the main text "
+              r"(Section~\ref{M-sec:supervision})." + "\n\n" + post + "\n")
+    sup = (_to_supplement(moved['prop:endogenous_supervisor'], main_labels) + "\n"
+           + _to_supplement(moved['prop:endogenous_supervisor_proof'], main_labels))
+    head = r"\subsection{The surveillance paradox}\label{app:paradox}" + "\n"
+    doc = rep(doc, head, head + "\n" + r"\noindent The next result was moved from the main text "
+              r"(Section~\ref{M-sec:supervision})." + " " + sup + "\n")
+    # Table S2: say what Lean checks.
+    doc = rep(doc, r"small-feedback impact derivative, $n_{\mathcal{H}}<0<n_{\mathcal{B}}$ separation, Kalman variance "
+                   r"identity, strict convexity $P''(r)>0$, and monotone $P'(r)$ (\texttt{micro\_welfare\_weight\_separation}, "
+                   r"\texttt{kalman\_stationary\_var\_identity}, ",
+              r"small-feedback impact derivative (the separation $n_{\mathcal{H}}<0<n_{\mathcal{B}}$ is a hypothesis of the "
+              r"Lean statement, not derived there), Kalman variance identity, the formulas for $P'$ and $P''$ as the "
+              r"derivatives of $P$, strict convexity $P''(r)>0$, and monotone $P'(r)$ "
+              r"(\texttt{micro\_welfare\_weight\_separation}, \texttt{kalman\_stationary\_var\_identity}, "
+              r"\texttt{kalmanP\_hasDerivAt}, \texttt{kalmanPderiv\_hasDerivAt}, ")
+    doc = rep(doc, r"Stackelberg general-$n$ collapse, simultaneous non-existence of pure NE,",
+              r"the final inequality of the Stackelberg collapse, the two payoff inequalities behind non-existence of a "
+              r"pure NE (the best-response argument is on paper),")
+    doc = rep(doc, r"zero-divergence inequality, and deterministic",
+              r"the arithmetic of the zero-divergence case (the risk bound and unbounded sample complexity are proved on "
+              r"paper), and deterministic")
+    doc = rep(doc, r"transfer factor and function errors (\texttt{p1\_transfer\_factor\_error}",
+              r"transfer factor and function errors, the factor bound with its exponential Lipschitz step proved "
+              r"(\texttt{p1\_transfer\_factor\_error}, \texttt{p1\_exp\_lipschitz\_below}, "
+              r"\texttt{p1\_transfer\_factor\_error\_unconditional}")
+    doc = rep(doc, "1,306 named declarations", "1,310 named declarations")
+    return doc

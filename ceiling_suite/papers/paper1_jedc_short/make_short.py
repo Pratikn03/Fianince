@@ -26,6 +26,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[2] / 'research_extension/paper1_publication_revision/t6'))
 import round10  # noqa: E402  (P1M-A1 passages, applied only once the result files exist)
+sys.path.insert(0, str(HERE))
+import sharpen_1127  # noqa: E402  (revision of 27 November 2026)
+
+MOVED = {}  # blocks moved to the supplement by sharpen_1127
 SRC = HERE / 'received' / 'Paper1_JEDC_final.tex'
 OUT = HERE / 'Paper1_JEDC_main.tex'
 
@@ -724,6 +728,9 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
                   r'\noindent Extended derivations and the exact mapping between deterministic proof steps and Lean~4 formalizations appear in the Online Supplement (Sections~\ref{S-app:proofs} and~\ref{S-app:verification} and Table~\ref{S-tab:newlean}).')
     t = t.replace(' — ', '---').replace('—', '---').replace(' ---or', '---or')
 
+    t, moved = sharpen_1127.main_text(t)
+    MOVED.clear()
+    MOVED.update(moved)
     return t
 
 

@@ -382,6 +382,7 @@ def check(stem):
 def main():
     (HERE / (MAIN + '.tex')).write_text(make_short.build(make_short.SRC.read_text()))
     doc, n, dropped = supplement_tex()
+    doc = make_short.sharpen_1127.supplement(doc, make_short.MOVED, make_short.LABELS.values())
     (HERE / (SUPP + '.tex')).write_text(doc)
     print(f'supplement: {n} references to the main text rewritten; {len(dropped)} uncited references dropped')
     for _ in range(3):
