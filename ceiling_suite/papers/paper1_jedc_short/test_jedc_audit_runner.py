@@ -92,10 +92,10 @@ def run_audit_checks():
           "cauchy's integral estimate" in supp_text.lower() or "cauchy integral" in supp_text.lower(),
           "Found Cauchy integral estimate terminology")
 
-    # Check 11: Proposition 7.1A distinct labeling
-    check(11, "Proposition 7.1A distinct labeling without collision",
-          r"\renewcommand{\theinstrumentprop}{\thesection.1A}" in main_text or "7.1A" in main_text,
-          "Confirmed distinct Proposition 7.1A numbering avoiding collision with 7.1")
+    # Check 11: Proposition thm:instruments sequential [theorem] numbering
+    check(11, "Proposition thm:instruments sequential numbering without collision",
+          r"\begin{proposition}[Partial-equilibrium incidence" in main_text and r"\thesection.1A" not in main_text,
+          "Confirmed sequential Proposition numbering on thm:instruments")
 
     # Check 12: Symbol disambiguation
     check(12, "Symbol disambiguation: Delta g' and Table 1 Delta eta",
