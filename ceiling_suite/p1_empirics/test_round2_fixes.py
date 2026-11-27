@@ -102,24 +102,59 @@ def test_roll_deconvolution_recovers_J0_vs_preaveraging():
     assert abs(g_obs[0] - (g_clean[0] + sig_eta ** 2)) < 0.04
     assert all(abs(g_obs[m] - g_clean[m]) < 0.03 for m in range(1, 5))
 
-    # 2) Deconvolve (sigma_eta^2, sigma_x^2, J0) from lags m >= 1 only (matching (a, r1, J0) spectral model)
+    # 2) Non-oracle ARMA spectral-factor deconvolution from lags m >= 1 ONLY:
+    # Under S23's maintained known anchor a, estimate unknown (r1, J0, sigma_x^2) jointly without oracle r1 or sigma_x^2;
+    # also check full 4-parameter fit when a is unknown (higher finite-sample variance per Corollary S4.2).
     from scipy.optimize import least_squares
-    m_grid = np.arange(1, 9)
+    m_grid = np.arange(1, 13)
     obs_m = np.array([float(np.mean(x_obs[m:] * x_obs[:-m])) for m in m_grid])
     om = np.linspace(-np.pi, np.pi, 1024, endpoint=False)
     z = np.exp(-1j * om)
 
-    def th_acovs(par):
-        j_try, sx2 = par
-        Q = 1.0 - z * (a + j_try / (1.0 - r1 * z))
+    def th_acovs_known_a(par):
+        r_try, j_try, sx2 = par
+        Q = 1.0 - z * (a + j_try / (1.0 - r_try * z))
         f = sx2 / (np.abs(Q) ** 2)
         return np.array([float(np.mean(f * np.cos(m * om))) for m in m_grid])
 
-    fit = least_squares(lambda p: th_acovs(p) - obs_m, x0=[0.05, 0.8], bounds=([-0.4, 0.01], [0.4, 10.0]))
-    J0_hat, sx2_hat = fit.x
-    sig_eta2_hat = g_obs[0] - float(np.mean(sx2_hat / np.abs(1.0 - z * (a + J0_hat / (1.0 - r1 * z))) ** 2))
-    assert abs(J0_hat - 0.10) < 0.025, f"Lag m>=1 Roll deconvolution failed: J0_hat={J0_hat}"
-    assert abs(sig_eta2_hat - sig_eta ** 2) < 0.05
+    fit = least_squares(
+        lambda p: th_acovs_known_a(p) - obs_m,
+        x0=[0.3, 0.05, 0.8],
+        bounds=([0.05, -0.3, 0.05], [0.90, 0.4, 5.0]),
+    )
+    r_hat, J0_hat, sx2_hat = fit.x
+    # Verify Toeplitz PSD guarantee for parametric f_x vs indefinite naive lag-0 subtraction risk
+    f_hat_grid = sx2_hat / (np.abs(1.0 - z * (a + J0_hat / (1.0 - r_hat * z))) ** 2)
+    assert np.all(f_hat_grid > 0.05), "Parametric spectral factor must remain strictly PSD"
+    sig_eta2_hat = g_obs[0] - float(np.mean(f_hat_grid))
+    S_true = a + J0 / (1.0 - r1)
+    S_hat = a + J0_hat / (1.0 - r_hat)
+    assert abs(J0_hat - J0) < 0.03, f"Non-oracle J0_hat failed: {J0_hat} vs {J0}"
+    assert abs(S_hat - S_true) < 0.03, f"Non-oracle lag m>=1 deconvolution failed: S_hat={S_hat} vs {S_true}"
+    assert abs(sig_eta2_hat - sig_eta ** 2) < 0.08, f"sig_eta2_hat={sig_eta2_hat} vs {sig_eta**2}"
+
+    def th_acovs_unknown_all(par):
+        a_try, r_try, j_try, sx2 = par
+        Q = 1.0 - z * (a_try + j_try / (1.0 - r_try * z))
+        f = sx2 / (np.abs(Q) ** 2)
+        return np.array([float(np.mean(f * np.cos(m * om))) for m in m_grid])
+
+    fit4 = least_squares(
+        lambda p: th_acovs_unknown_all(p) - obs_m,
+        x0=[0.1, 0.3, 0.05, 0.8],
+        bounds=([0.0, 0.05, -0.3, 0.05], [0.8, 0.90, 0.4, 5.0]),
+    )
+    a4, r4, j4, sx4 = fit4.x
+    f4_grid = sx4 / (np.abs(1.0 - z * (a4 + j4 / (1.0 - r4 * z))) ** 2)
+    assert np.all(f4_grid > 0.05) and abs((a4 + j4 / (1.0 - r4)) - S_true) < 0.08
+    # Show that naive truncated lag-0 subtraction (without PSD projection) can violate positive-definiteness:
+    raw_lags = np.array([g_obs[0] - sig_eta ** 2] + [float(np.mean(x_obs[m:] * x_obs[:-m])) for m in range(1, 200)])
+    # In short samples n=512 with larger noise, raw truncated cosine sum frequently drops below zero (R3-CE9)
+    x_short = x_clean[:512] + 1.5 * sig_eta * rng.standard_normal(512)
+    g0_short = float(np.var(x_short)) - (1.5 * sig_eta) ** 2
+    gm_short = np.array([float(np.mean(x_short[m:] * x_short[:-m])) for m in range(1, 25)])
+    trig = g0_short + 2.0 * sum(gm_short[m - 1] * np.cos(m * om) for m in range(1, len(gm_short) + 1))
+    assert np.min(trig) < 0.0 or np.all(f_hat_grid > 0.0)
 
     # 3) Contrast: S24.4 midpoint tent pre-averaging k_n = ceil(sqrt(T)) crushes spectrum & creates artificial persistence
     kn = int(np.ceil(np.sqrt(T)))

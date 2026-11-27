@@ -103,12 +103,15 @@ theorem p1_sheppard_dither_factor_bounds (alpha sigma : ℝ)
   have hquot_lt : alpha ^ 2 / (12 * sigma ^ 2) < 1 := (div_lt_one hden).mpr hdither
   constructor <;> linarith
 
-theorem p1_hmm_double_quantization_factor_bounds (alpha sigma : ℝ)
-    (halpha : 0 < alpha) (hsigma : 0 < sigma) (hhmm : alpha ^ 2 < 6 * sigma ^ 2) :
-    0 < 1 - alpha ^ 2 / (6 * sigma ^ 2) ∧ 1 - alpha ^ 2 / (6 * sigma ^ 2) < 1 := by
+theorem p1_hmm_double_quantization_factor_bounds (alpha sigma a : ℝ)
+    (halpha : 0 < alpha) (hsigma : 0 < sigma) (ha : a ^ 2 < 1)
+    (hhmm : (1 - a ^ 2) * alpha ^ 2 < 6 * sigma ^ 2) :
+    0 < 1 - (1 - a ^ 2) * alpha ^ 2 / (6 * sigma ^ 2) ∧
+    1 - (1 - a ^ 2) * alpha ^ 2 / (6 * sigma ^ 2) < 1 := by
   have hden : 0 < 6 * sigma ^ 2 := by positivity
-  have hquot_pos : 0 < alpha ^ 2 / (6 * sigma ^ 2) := by positivity
-  have hquot_lt : alpha ^ 2 / (6 * sigma ^ 2) < 1 := (div_lt_one hden).mpr hhmm
+  have h1ma : 0 < 1 - a ^ 2 := by linarith
+  have hquot_pos : 0 < (1 - a ^ 2) * alpha ^ 2 / (6 * sigma ^ 2) := by positivity
+  have hquot_lt : (1 - a ^ 2) * alpha ^ 2 / (6 * sigma ^ 2) < 1 := (div_lt_one hden).mpr hhmm
   constructor <;> linarith
 
 end CurrentMM

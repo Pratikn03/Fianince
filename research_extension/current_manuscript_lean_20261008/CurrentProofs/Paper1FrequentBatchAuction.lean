@@ -112,4 +112,17 @@ theorem p1_apc_margin_buffer_bounds (m_var99 m_floor m_conc b_apc phi : ℝ)
   have h2 : b_apc * (1 - phi) ≤ b_apc * 1 := mul_le_mul_of_nonneg_left (by linarith) hb
   constructor <;> linarith
 
+theorem p1_apc_stressed_lookback_floor (m_var99 m_stress_floor m_conc b_apc phi : ℝ)
+    (hconc : 0 ≤ m_conc) (hb : 0 ≤ b_apc) (hphi0 : 0 ≤ phi) (hphi1 : phi ≤ 1)
+    (hstress : m_var99 ≤ m_stress_floor) :
+    m_var99 ≤ max m_var99 (m_stress_floor + m_conc + b_apc * (1 - phi)) ∧
+    max m_var99 (m_stress_floor + m_conc + b_apc * (1 - phi)) =
+      m_stress_floor + m_conc + b_apc * (1 - phi) ∧
+    m_stress_floor + m_conc + b_apc * (1 - phi) ≤ m_stress_floor + m_conc + b_apc := by
+  have h1 : 0 ≤ b_apc * (1 - phi) := mul_nonneg hb (by linarith)
+  have h2 : b_apc * (1 - phi) ≤ b_apc * 1 := mul_le_mul_of_nonneg_left (by linarith) hb
+  have hle : m_var99 ≤ m_stress_floor + m_conc + b_apc * (1 - phi) := by linarith
+  refine ⟨le_max_left _ _, max_eq_right hle, ?_⟩
+  linarith
+
 end CurrentMM

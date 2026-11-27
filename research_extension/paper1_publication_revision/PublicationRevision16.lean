@@ -140,14 +140,17 @@ theorem sheppard_dither_factor_bounds (alpha sigma : ℝ)
   have hquot_lt : alpha ^ 2 / (12 * sigma ^ 2) < 1 := (div_lt_one hden).mpr hdither
   constructor <;> linarith
 
-/-- 10. Passive two-step AR(1) HMM double-quantization first-order factor `1 - α² / (6 σ²)`
-(twice Sheppard's loss) lies strictly in `(0, 1)` whenever `α² < 6 σ²`. -/
-theorem hmm_double_quantization_factor_bounds (alpha sigma : ℝ)
-    (halpha : 0 < alpha) (hsigma : 0 < sigma) (hhmm : alpha ^ 2 < 6 * sigma ^ 2) :
-    0 < 1 - alpha ^ 2 / (6 * sigma ^ 2) ∧ 1 - alpha ^ 2 / (6 * sigma ^ 2) < 1 := by
+/-- 10. Passive stationary AR(1) HMM double-quantization first-order Whittle factor for `a`:
+`1 - (1 - a²) α² / (6 σ²)` lies strictly in `(0, 1)` whenever `a² < 1` and `(1 - a²) α² < 6 σ²`. -/
+theorem hmm_double_quantization_factor_bounds (alpha sigma a : ℝ)
+    (halpha : 0 < alpha) (hsigma : 0 < sigma) (ha : a ^ 2 < 1)
+    (hhmm : (1 - a ^ 2) * alpha ^ 2 < 6 * sigma ^ 2) :
+    0 < 1 - (1 - a ^ 2) * alpha ^ 2 / (6 * sigma ^ 2) ∧
+    1 - (1 - a ^ 2) * alpha ^ 2 / (6 * sigma ^ 2) < 1 := by
   have hden : 0 < 6 * sigma ^ 2 := by positivity
-  have hquot_pos : 0 < alpha ^ 2 / (6 * sigma ^ 2) := by positivity
-  have hquot_lt : alpha ^ 2 / (6 * sigma ^ 2) < 1 := (div_lt_one hden).mpr hhmm
+  have h1ma : 0 < 1 - a ^ 2 := by linarith
+  have hquot_pos : 0 < (1 - a ^ 2) * alpha ^ 2 / (6 * sigma ^ 2) := by positivity
+  have hquot_lt : (1 - a ^ 2) * alpha ^ 2 / (6 * sigma ^ 2) < 1 := (div_lt_one hden).mpr hhmm
   constructor <;> linarith
 
 end Paper1Revision16

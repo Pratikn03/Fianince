@@ -141,7 +141,8 @@ theorem ho_stoll_joint_carry_reduction (abar lam0 kappa : ℝ)
     exact div_lt_self hapos hden
   · exact div_lt_self hkap hden
 
-/-- 7. Two-tier EMIR/SEC-compliant APC margin + concentration add-on never breaches the 99% MPOR VaR floor. -/
+/-- 7. Calm-regime two-tier APC margin + concentration add-on never breaches the 99% MPOR VaR floor
+(conditional on calm regime `m_var99 ≤ m_floor`). -/
 theorem apc_margin_buffer_bounds (m_var99 m_floor m_conc b_apc phi : ℝ)
     (hvar : m_var99 ≤ m_floor) (hconc : 0 ≤ m_conc) (hb : 0 ≤ b_apc)
     (hphi0 : 0 ≤ phi) (hphi1 : phi ≤ 1) :
@@ -150,5 +151,21 @@ theorem apc_margin_buffer_bounds (m_var99 m_floor m_conc b_apc phi : ℝ)
   have h1 : 0 ≤ b_apc * (1 - phi) := mul_nonneg hb (by linarith)
   have h2 : b_apc * (1 - phi) ≤ b_apc * 1 := mul_le_mul_of_nonneg_left (by linarith) hb
   constructor <;> linarith
+
+/-- 7b. Stressed-lookback APC floor: the two-tier schedule `max(m_var99, ...)` unconditionally
+respects the 99% VaR floor, and whenever stressed lookback dominates current VaR (`m_var99 ≤ m_stress_floor`),
+reduces cleanly to the countercyclical buffer schedule without procyclical escalation. -/
+theorem apc_stressed_lookback_floor (m_var99 m_stress_floor m_conc b_apc phi : ℝ)
+    (hconc : 0 ≤ m_conc) (hb : 0 ≤ b_apc) (hphi0 : 0 ≤ phi) (hphi1 : phi ≤ 1)
+    (hstress : m_var99 ≤ m_stress_floor) :
+    m_var99 ≤ max m_var99 (m_stress_floor + m_conc + b_apc * (1 - phi)) ∧
+    max m_var99 (m_stress_floor + m_conc + b_apc * (1 - phi)) =
+      m_stress_floor + m_conc + b_apc * (1 - phi) ∧
+    m_stress_floor + m_conc + b_apc * (1 - phi) ≤ m_stress_floor + m_conc + b_apc := by
+  have h1 : 0 ≤ b_apc * (1 - phi) := mul_nonneg hb (by linarith)
+  have h2 : b_apc * (1 - phi) ≤ b_apc * 1 := mul_le_mul_of_nonneg_left (by linarith) hb
+  have hle : m_var99 ≤ m_stress_floor + m_conc + b_apc * (1 - phi) := by linarith
+  refine ⟨le_max_left _ _, max_eq_right hle, ?_⟩
+  linarith
 
 end Paper1Revision17

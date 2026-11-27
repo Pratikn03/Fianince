@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Automated 40-Check Referee-Proof Economic Engineering Audit Runner for JEDC Submission.
-Evaluates all 40 mathematical, structural, institutional, and econometric criteria
-from the Master Implementation Plan.
+Extended Referee-Proof Economic Engineering Audit Runner for JEDC Submission.
+Evaluates mathematical, structural, institutional, bibliographic, Lean 4, and econometric criteria.
 """
 
 import json
@@ -23,9 +22,9 @@ SUPP_LOG = HERE / "Paper1_JEDC_online_supplement.log"
 RECEIPT_JSON = REPO_ROOT / "research_extension" / "current_manuscript_lean_20261008" / "formal_verification_receipt.json"
 
 
-def run_40_checks():
+def run_audit_checks():
     print("=" * 80)
-    print("RUNNING 52-CHECK EXTENDED ECONOMIC ENGINEERING AUDIT SUITE")
+    print("RUNNING EXTENDED ECONOMIC ENGINEERING AUDIT SUITE")
     print("=" * 80)
 
     main_text = MAIN_TEX.read_text(errors="replace")
@@ -139,8 +138,8 @@ def run_40_checks():
 
     # Check 19: Table S2 Lean declaration sync
     check(19, "Table S2 Lean declaration sync",
-          "1,285" in supp_text and "seventeen" in supp_text.lower(),
-          "Found sync to 17 Lean files and 1,285 declarations in Table S2")
+          "1,288" in supp_text and "seventeen" in supp_text.lower(),
+          "Found sync to 17 Lean files and 1,288 declarations in Table S2")
 
     # Check 20: Table S24 notation table update
     check(20, "Table S24 notation table update",
@@ -243,12 +242,12 @@ def run_40_checks():
           supp_pages >= 72,
           f"Supplement PDF has {supp_pages} pages (target >= 72)")
 
-    # Check 39: Main and supplement PDF compile cleanly with 0 undefined references
-    has_main_undef = "undefined references" in main_log.lower()
-    has_supp_undef = "undefined references" in supp_log.lower()
-    check(39, "PDFs compile with 0 undefined references and 0 errors",
-          not has_main_undef and not has_supp_undef,
-          "Confirmed 0 undefined references across main and supplement logs")
+    # Check 39: Main and supplement PDF compile cleanly with 0 undefined/duplicate/math-shift warnings
+    has_main_bad = any(w in main_log.lower() for w in ("undefined references", "token not allowed in a pdf string", "destination with the same identifier"))
+    has_supp_bad = any(w in supp_log.lower() for w in ("undefined references", "token not allowed in a pdf string", "destination with the same identifier", "there were undefined citations"))
+    check(39, "PDFs compile with 0 undefined refs/citations/hyperref/page.1 warnings",
+          not has_main_bad and not has_supp_bad,
+          "Confirmed clean compilation logs without undefined citations, hyperref math-shift, or duplicate page.1")
 
     # Check 40: Lean 4 verification receipt certifies >= 1,265 named theorems
     receipt_data = json.loads(RECEIPT_JSON.read_text())
@@ -303,15 +302,15 @@ def run_40_checks():
           "dollar pricing error per share" in main_text and "S_M(D)" in main_text and "S_M(D)" in supp_text,
           "Confirmed dollar-per-share theory convention and S_M(D)/G(z) symbol split")
 
-    # Check 47: Prop 7.11 Option A (4 k delta_0 / (n beta L), low-stakes reversal, GLRT, concluded reconciliation)
-    check(47, "Prop 7.11 simultaneous game prefactor, low-stakes reversal, GLRT, and Conclusion reconciliation",
-          r"\frac{4 k \delta_0}{n \beta L}" in main_text and "GLRT" in main_text and "not an equilibrium between the supervisor" not in main_text,
-          "Confirmed Option A Proposition 7.11 FOC prefactor, GLRT scaling, and reconciled Conclusion")
+    # Check 47: Prop 7.11 Stackelberg vs simultaneous game, GLRT, and Conclusion reconciliation
+    check(47, "Prop 7.11 Stackelberg/simultaneous framing, GLRT, and Conclusion reconciliation",
+          r"\frac{4 k \delta_0}{n \beta L}" in main_text and "Stackelberg" in main_text and r"simultaneous\_no\_pure\_ne" in supp_text,
+          "Confirmed Option A Proposition 7.11 Stackelberg/simultaneous game framing and GLRT scaling")
 
-    # Check 48: Supplement S18.2 Proof of Theorem n:irr and S23 population Toeplitz covariance fix
-    check(48, "Supplement S18.2 Proof of Theorem n:irr and S23 population Toeplitz covariance fix",
-          r"\begin{proof}[Proof of Theorem~\ref{n:irr}]" in supp_text and "population Toeplitz covariance matrix" in supp_text,
-          "Confirmed Theorem n:irr proof and S23 Toeplitz fix in Online Supplement")
+    # Check 48: Supplement S18.2 Proof of Theorem n:irr (with w_i>=0, a>=0) and S23 population Toeplitz fix
+    check(48, "Supplement S18.2 Proof of Theorem n:irr (nonnegative hypotheses) and S23 Toeplitz fix",
+          r"\begin{proof}[Proof of Theorem~\ref{n:irr}]" in supp_text and "nonnegative weights" in supp_text and "population Toeplitz covariance matrix" in supp_text,
+          "Confirmed Theorem n:irr nonnegative hypotheses/proof and S23 Toeplitz fix in Online Supplement")
 
     # Check 49: Table S2 minimaxtags uniqueness note and Table S1 Gaussian-control H3 labeling
     check(49, "Table S2 minimaxtags entry and Table S1 Gaussian-control H3 labeling",
@@ -328,10 +327,36 @@ def run_40_checks():
           "DealerOwn" in main_text and "-1.235" in main_text and "-1.235" in supp_text and "tab:p1t_holdout" in supp_text and "0.0238" in supp_text,
           "Confirmed full TWSE empirical disclosure across Main Section 7.4 and Supplement Section S19")
 
-    # Check 52: Round-2 institutional microstructure & hazard/margin fixes in Supplement S6.1/S8/S24
-    check(52, "Round-2 Supplement S6.1/S8/S24 microstructure, hazard, and HMM fixes",
-          r"\tilde{Y}_t = Y_t - \E_{t-1}[Y_t]" in supp_text and r"s_{\mathrm{eff}}/2" in supp_text and r"hmm\_double\_quantization\_factor\_bounds" in supp_text and r"m_{\mathrm{VaR},99}" in supp_text,
-          "Confirmed innovation Kyle filtering, half-spread bound, VaR-floored APC margin, and HMM double-quantization")
+    # Check 52: Round-3 Supplement S6.1/S8/S24 microstructure, Nyquist omega=pi, hazard, and AR(1) HMM fixes
+    check(52, "Round-3 Supplement S6.1/S8/S24 microstructure, Nyquist sign, hazard, and AR(1) HMM fixes",
+          r"\tilde{Y}_t = Y_t - \E_{t-1}[Y_t]" in supp_text and r"s_{\mathrm{eff}}/2" in supp_text and r"hmm\_double\_quantization\_factor\_bounds" in supp_text and r"m_{\mathrm{VaR},99}" in supp_text and r"1 + a + \kappa\sum_{m\ge 0} (-1)^m k_m > 0" in supp_text and "memoryless truncated-exponential" not in supp_text,
+          "Confirmed Nyquist omega=pi sign, stress-thresholded hazard, AR(1) HMM factor, and removal of truncated-exponential claim")
+
+    # Check 53: Round-3 Bibliography completeness (8 new Supp keys + Main SEC 2025 citation) & no .py scripts in Lean column
+    req_bib_keys = ("barndorff2008", "border1987", "brillinger1965", "hinich1982", "jacod2009", "mackowiak2009", "mancini2009", "sims2003")
+    missing_bib = [k for k in req_bib_keys if f"{{{k}}}" not in supp_text or k not in supp_text]
+    table_s2_slice = supp_text[supp_text.find("Machine-checked steps"):supp_text.find(r"\end{longtable}", supp_text.find("Machine-checked steps"))]
+    py_in_lean_col = bool(re.search(r"e4\_reduced\_form\.py", table_s2_slice))
+    check(53, "Supplement 8 bibliography entries cited & Table S2 Lean column free of Python scripts",
+          len(missing_bib) == 0 and not py_in_lean_col and "Securities and Exchange Commission, 2025" in main_text[:main_text.find(r"\section*{References}")],
+          f"Missing bib keys: {missing_bib}; py in Lean col: {py_in_lean_col}")
+
+    # Check 54: Round-3 Theorem fixes (7.4(ii) max interval, Cor 7.3(ii) q_max^(2), Cor OLG timing, TWSE March 2020 & provenance)
+    check(54, "Round-3 Theorem 7.4(ii), Cor 7.3(ii), OLG timing, and TWSE 23 March 2020 / provenance fixes",
+          r"a + \sum_d \max(0, u_d)" in main_text and r"\kappa q_{\max}^{(2)} < 1 - \bar{s}" in main_text and "23~March~2020" in main_text and "23~March~2020" in supp_text and "first-differenced checks appear in Supplement" not in main_text,
+          "Confirmed Main & Supplement structural, minimax, and TWSE provenance repairs")
+
+    # Check 55: Extended Lean Revision 15 & 17 new theorem names synced with Table S2
+    new_rev_thms = ("supervisor_effort_collapse_general", "simultaneous_no_pure_ne", "apc_stressed_lookback_floor")
+    missing_new_lean = [nm for nm in new_rev_thms if f"theorem {nm}" not in rev_src or nm.replace("_", r"\_") not in supp_text]
+    check(55, "Round-3 new Lean 4 declarations (Rev 15/17) synced with Table S2",
+          len(missing_new_lean) == 0,
+          f"Missing new Lean declarations: {missing_new_lean}")
+
+    # Check 56: Legal citations (MiFID II Art. 53(1)/18(3), RTS 8/9 accuracy, and S24 PSD deconvolution)
+    check(56, "Legal accuracy (MiFID II Art. 53(1)/18(3), RTS 8/9) & S24 PSD Roll deconvolution",
+          "Art.\\ 53(1)/18(3)" in main_text and "Art.\\ 48" not in main_text and "Toeplitz positive-semidefinite" in supp_text,
+          "Confirmed accurate MiFID II articles and PSD-regularized Roll deconvolution")
 
     print("=" * 80)
     passed = sum(1 for _, _, s, _ in results if s == "PASS")
@@ -351,4 +376,4 @@ def run_40_checks():
 
 
 if __name__ == "__main__":
-    sys.exit(run_40_checks())
+    sys.exit(run_audit_checks())

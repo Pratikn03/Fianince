@@ -98,34 +98,41 @@ def main():
             print(f"    At N=1e2: D*={D_stars[0]:.3e}, J*={J_stars[0]:.3e}, power={pi(J_stars[0]):.4f}")
             print(f"    At N=1e12: D*={D_stars[-1]:.3e}, J*={J_stars[-1]:.3e}, power={pi(J_stars[-1]):.4f} (baseline {alpha})")
 
-        # Now test strategic supervisor optimization over alpha in [0, 0.20]
-        print(f"\n  Strategic Supervisor Optimization (cost c_0 * alpha with c_0 = {c_0}):")
+        # Now test Stackelberg supervisor commitment over alpha in [0, 0.20] and verify no pure NE under simultaneous moves
+        print(f"\n  Stackelberg Supervisor Optimization (cost c_0 * alpha with c_0 = {c_0}):")
         alpha_candidates = np.linspace(0.00, 0.20, 41)
         for N in [1e2, 1e4, 1e6, 1e8, 1e10, 1e12]:
             best_alpha = 0.0
             best_welfare = -1e9
             for a in alpha_candidates:
                 if a == 0.0:
-                    # No test: D* = D0, J = c N D0^n, but power = 0, cost = 0
                     welfare = 0.0
                 else:
                     z_a = norm.ppf(1 - a)
-                    b_a = np.sqrt(2) * norm.pdf(z_a)
                     pi_a = lambda J: norm.cdf(np.sqrt(np.maximum(2 * J, 0.0)) - z_a)
-
-                    # Trader best response
                     D_grid = np.concatenate([[0.0], np.logspace(-6, 0, 20001) * D0])
                     obj = k * (D0 - D_grid) ** 2 + L * pi_a(c * N * D_grid ** n)
                     D_opt = D_grid[int(np.argmin(obj))]
                     J_opt = c * N * (D_opt ** n)
-                    net_power = pi_a(J_opt) - a  # Net detection power beyond size
+                    net_power = pi_a(J_opt) - a
                     welfare = V_detect * net_power - c_0 * a
-
                 if welfare > best_welfare:
                     best_welfare = welfare
                     best_alpha = a
+            if N >= 1e8 and n == 4:
+                assert best_alpha == 0.0, f"Stackelberg commitment did not collapse at N={N}: {best_alpha}"
+            print(f"    N = {N:.0e} -> Stackelberg alpha* = {best_alpha:.3f}, Supervisor Net Surplus = {best_welfare:.4f}")
 
-            print(f"    N = {N:.0e} -> Optimal alpha* = {best_alpha:.3f}, Supervisor Net Surplus = {best_welfare:.4f}")
+        if n == 4:
+            # Verify simultaneous-move non-existence of pure NE & mixed-strategy indifference at alpha_min=0.05, c_min=2.0
+            N_sim, a_sim, c_sim = 1e10, 0.05, 2.0
+            z_sim = norm.ppf(1 - a_sim)
+            pi_sim = lambda J: norm.cdf(np.sqrt(np.maximum(2 * J, 0.0)) - z_sim)
+            sup_gain_at_D0 = V_detect * (pi_sim(c * N_sim * D0 ** 4) - a_sim) - c_sim
+            assert sup_gain_at_D0 > 0, "Deviation to alpha_min must be profitable at delta=D0"
+            p_sup_mix = (k * (D0 ** 2)) / (L * (pi_sim(c * N_sim * D0 ** 4) - pi_sim(0.0)))
+            assert 0.0 < p_sup_mix < 1.0, "Mixed NE randomization weight must lie strictly in (0, 1)"
+            print(f"    Simultaneous-move check (N=1e10): pure NE ruled out (dev gain at D0 = {sup_gain_at_D0:.2f} > 0); mixed-NE prob benchmark p*={p_sup_mix:.4f}")
 
     # Low-stakes regime reversal check: L*(1 - alpha) < k*D0^2 => D* -> D0
     print("\n--- Low-Stakes Corner Reversal Check ---")

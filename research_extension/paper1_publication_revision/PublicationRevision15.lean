@@ -8,7 +8,7 @@ import Mathlib.Tactic.Positivity
 # Paper 1, Section 7.3: Endogenizing the Supervisor in the Surveillance Paradox
 
 This file mechanizes the deterministic game-theoretic inequalities of the strategic
-supervisor and trader hiding game in the Surveillance Paradox (Theorem 7.9 and Proposition 7.10):
+supervisor and trader hiding game in the Surveillance Paradox (Theorem 7.10 and Proposition 7.11):
 
 1. `supervisor_no_test`: when the supervisor does not test or inspect (α = 0, penalty L = 0),
    traders face no hiding incentive and choose δ* = δ0.
@@ -23,7 +23,10 @@ supervisor and trader hiding game in the Surveillance Paradox (Theorem 7.9 and P
    at fixed 1-sided α (whenever `B = 4 k δ0 / (n L β(α))`).
 6. `divergence_collapse_general`: for any `n ≥ 2` and `δ ≤ δ0`, `J*(α, N) ≤ B² * δ0²`.
 7. `tagging_decoupling`: under tagged reporting, detection probability decouples from δ, restoring `δ* = δ0`.
-8. `supervisor_effort_collapse`: under inspection cost `C(α) ≥ c_min > 0`, for large N net surplus is `< 0`.
+8. `supervisor_effort_collapse_general`: Stackelberg commitment equilibrium — under inspection cost `C(α) ≥ c_min > 0`
+   (for `n ≥ 2`, generalizing `supervisor_effort_collapse`), for large `N` net surplus is `< 0`, forcing `α*_N = 0`.
+9. `simultaneous_no_pure_ne`: under simultaneous moves (`k > c_min > 0`), no pure-strategy Nash equilibrium exists
+   whenever `J*(1, N) < k - c_min`, requiring a mixed strategy `p*_N > 0`.
 
 Standard axioms only (propext, Classical.choice, Quot.sound).
 -/
@@ -176,5 +179,25 @@ theorem supervisor_effort_collapse (c N B4 L_sup c_min J C : ℝ)
     linarith
   calc L_sup * J - C ≤ (L_sup * B4) / (c * N) - c_min := by linarith
     _ < 0 := by linarith
+
+/-- 6b. General-n Stackelberg collapse: for any decay bound `J ≤ J_bound` (`O(N^{-2/(n-2)})`) with
+`L_sup * J_bound < c_min ≤ C`, net supervisory commitment surplus is strictly negative for all `n > 2`. -/
+theorem supervisor_effort_collapse_general (L_sup c_min J C J_bound : ℝ)
+    (h_J : J ≤ J_bound) (h_C : c_min ≤ C) (h_small : L_sup * J_bound < c_min)
+    (hL_sup : 0 ≤ L_sup) :
+    L_sup * J - C < 0 := by
+  have hret : L_sup * J ≤ L_sup * J_bound := mul_le_mul_of_nonneg_left h_J hL_sup
+  linarith
+
+/-- 7. Simultaneous-move non-existence of pure Nash equilibrium: at `(α = 0, δ = δ0)` profitable
+inspection `C(α) < V_det * (pd0 - α)` breaks `(0, δ0)`, while high-stakes crowding makes pure `α ≥ α_min`
+earn negative surplus relative to `α = 0`. -/
+theorem simultaneous_no_pure_ne (V_det pd0 pd_best alpha J_sqrt c_min C_alpha : ℝ)
+    (hV : 0 ≤ V_det) (hC : c_min ≤ C_alpha) (h_pd0 : C_alpha < V_det * (pd0 - alpha))
+    (h_pd_best : pd_best - alpha ≤ J_sqrt) (h_small : V_det * J_sqrt < c_min) :
+    0 < V_det * (pd0 - alpha) - C_alpha ∧ V_det * (pd_best - alpha) - C_alpha < 0 := by
+  refine ⟨by linarith, ?_⟩
+  have h1 : V_det * (pd_best - alpha) ≤ V_det * J_sqrt := mul_le_mul_of_nonneg_left h_pd_best hV
+  linarith
 
 end Paper1Revision15
