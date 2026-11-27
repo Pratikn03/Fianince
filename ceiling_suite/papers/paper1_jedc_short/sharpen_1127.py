@@ -208,6 +208,7 @@ def main_text(t):
     # ---------------------------------------------------------------- appendix proof of the new theorem
     t = rep(t, r"\begin{proof}[Proof of Proposition~\ref{n:target}(i)--(ii) and Corollary~\ref{n:decisionloss}]",
             SEPARATION_PROOF + r"\begin{proof}[Proof of Proposition~\ref{n:target}(i)--(ii) and Corollary~\ref{n:decisionloss}]")
+    t = passive_upper(t)
     return t, moved
 
 
@@ -276,4 +277,82 @@ def supplement(doc, moved, main_labels):
               r"(\texttt{p1\_transfer\_factor\_error}, \texttt{p1\_exp\_lipschitz\_below}, "
               r"\texttt{p1\_transfer\_factor\_error\_unconditional}")
     doc = rep(doc, "1,306 named declarations", "1,310 named declarations")
+    doc = passive_upper_supplement(doc)
     return doc
+
+
+# ==================================================================== passive upper bound (27 November 2026, part 2)
+
+PASSIVE_THEOREM = r"""\textbf{One passive price record attains the rates.} The upper bound in Theorem~\ref{n:cost}(iii) uses reset experiments. A single stationary record suffices too, because feedback flow is a causal filter of past pricing errors: with $v_t \equiv 0$, \eqref{eq:baseline} reads $x_t - a x_{t-1} = \kappa \sum_{j \ge 0} k_j x_{t-1-j} + \varepsilon_t$, an autoregression of infinite order whose coefficients are the kernel taps.
+
+\begin{theorem}[One passive price record attains the rates]\label{n:passiveupper}
+Fix known $(a, \kappa)$ with $a \ge 0$, $\kappa > 0$, and a margin $m \in (0, 1)$. Consider positive economies ($w_i \ge 0$) with budget $S \le 1 - m$, memory rates at most $\bar r < 1$ and total merged weight at most $\bar W$, observed through one stationary record $x_{1-L}, \dots, x_T$ of~\eqref{eq:baseline} with $v_t \equiv 0$ and i.i.d.\ $N(0, \sigma^2)$ news. Let $\hat\theta \in \R^L$ be the least-squares coefficients of $x_t - a x_{t-1}$ on $(x_{t-1}, \dots, x_{t-L})$, $\hat k = \hat\theta / \kappa$ and $\hat S = a + \sum_{j < L} \hat\theta_j$. For $\beta \in (0, 1/3)$ and $T \ge 128 L^2 / (m^4 \beta)$, with probability at least $1 - 3\beta$,
+\[
+  \|\hat k - (k_0, \dots, k_{L-1})\|_2 \le \frac{8\sqrt{L}}{\kappa}\Bigl(\frac{1}{m\sqrt{T\beta}} + \frac{\rho_L}{m^2 \beta}\Bigr),
+  \qquad \rho_L = \frac{\kappa \bar W \bar r^L}{1 - \bar r},
+\]
+and $|\hat S - S| \le \kappa\sqrt{L}\, \|\hat k - (k_0, \dots, k_{L-1})\|_2 + \rho_L$. The news variance $\sigma^2$ does not enter.
+\begin{enumerate}
+  \item[(i)] \emph{The budget.} With $L$ of order $\log(1/(\epsilon\beta))$, $|\hat S - S| \le \epsilon$ with probability at least $1 - 3\beta$ once $T \ge C \epsilon^{-2} \beta^{-1} \log^2(1/(\epsilon\beta))$, whatever the number of groups and the spacing of their memories.
+  \item[(ii)] \emph{Composition.} On the compact class of Theorem~\ref{n:cost}(iii) (rates $r_c + \Delta\eta\, s$ with $s$ $\gamma$-separated, weights in $[w_{\min}, w_{\max}]$, $w_{\min} > 0$, spacing $\Delta\eta \le \Delta\eta_0$), Prony's method applied to $\hat k_0, \dots, \hat k_{2K-1}$ recovers every weight to accuracy $\epsilon \in (0, \epsilon_0]$ with probability at least $1 - 3\beta$ once $L$ is of order $\log(1/(\epsilon\beta\Delta\eta))$ and
+  \[
+    T \ge C \epsilon^{-2} \beta^{-1} (\Delta\eta)^{-(4K-2)} \log\frac{1}{\epsilon\beta\Delta\eta}.
+  \]
+\end{enumerate}
+The constants $C$ and $\epsilon_0$ depend only on $(\kappa, m, \bar r, \bar W)$ and, in~(ii), on $K$, $r_c$, $\Delta\eta_0$ and the class.
+\end{theorem}
+
+With Theorem~\ref{n:cost}(i), part~(ii) gives the passive sample requirement for composition, $(\Delta\eta)^{-(4K-2)}$ up to a logarithmic factor, from the record a supervisor actually has. Part~(i) does the same for the uniform cut: given $(a, \kappa)$, its budget is learned from passive prices at a near-parametric rate. The first step is the classical long autoregression \citep[Berk, 1974]{}; what the feedback market adds is that the autoregressive coefficients are the kernel taps, that positivity bounds the spectral density away from zero and infinity uniformly in the population, and that the tap error therefore does not depend on the spacing. In a simulation of a two-group economy from one stationary record ($a = 0.1$, $\kappa = 1$, $r_c = 0.45$, total weight $0.2$, memory offsets $\pm 0.5\,\Delta\eta$, $30$ lags, $40$ replications; replication archive), tap errors are flat in the spacing (fitted slope $-0.04$) and fall like $T^{-0.42}$, and weight errors have fitted slopes $-2.5$ in $\log\Delta\eta$ over $\Delta\eta \in [0.36, 0.70]$ (the asymptotic exponent $-3$ is approached as the spacing shrinks) and $-0.45$ in $\log T$.
+
+"""
+
+PASSIVE_PROOF = r"""\begin{proof}[Proof of Theorem~\ref{n:passiveupper}]
+Because $y_{i,t-1} = \eta_i \sum_{j \ge 0} r_i^j x_{t-1-j}$, equation~\eqref{eq:baseline} with $v_t \equiv 0$ reads $x_t - a x_{t-1} = \sum_{j \ge 0} \theta_j x_{t-1-j} + \varepsilon_t$ with $\theta_j = \kappa k_j \ge 0$. Let $A(z) = 1 - a z - \sum_{j \ge 0} \theta_j z^{j+1}$. On $|z| \le 1$, $|A(z) - 1| \le a + \sum_j \theta_j = S \le 1 - m$, so $A$ has no zero in the closed disc, the record is causal in the news, and $m \le |A(e^{i\omega})| \le 2$. The spectral density $f = \sigma^2 / (2\pi |A(e^{-i\omega})|^2)$ lies in $[\sigma^2/(8\pi), \sigma^2/(2\pi m^2)]$, so the covariance matrix $\Gamma$ of $X_t = (x_{t-1}, \dots, x_{t-L})$ has eigenvalues in $[\sigma^2/4, \sigma^2/m^2]$, $\gamma(0) \le \sigma^2/m^2$, and by Parseval $\sum_u \gamma(u)^2 = 2\pi \int f^2 \le \sigma^4/m^4$.
+
+Write $x_t - a x_{t-1} = X_t^\top \theta_{0:L-1} + \varrho_t + \varepsilon_t$ with $\varrho_t = \sum_{j \ge L} \theta_j x_{t-1-j}$, so that $\hat\theta - \theta_{0:L-1} = \hat\Gamma^{-1} T^{-1} \sum_t X_t (\varrho_t + \varepsilon_t)$ with $\hat\Gamma = T^{-1} \sum_t X_t X_t^\top$. (a) For a stationary Gaussian record each entry of $\hat\Gamma - \Gamma$ has variance at most $2 T^{-1} \sum_u \gamma(u)^2$, so $E\|\hat\Gamma - \Gamma\|_F^2 \le 2 L^2 \sigma^4 / (m^4 T)$; by Chebyshev's inequality $\|\hat\Gamma - \Gamma\|_{\mathrm{op}} \le \sigma^2/8$, hence $\|\hat\Gamma^{-1}\|_{\mathrm{op}} \le 8/\sigma^2$, with probability at least $1 - 128 L^2/(m^4 T) \ge 1 - \beta$. (b) $\varepsilon_t$ is independent of $(X_s, \varepsilon_s, X_t)$ for $s < t$, so $E\|T^{-1} \sum_t X_t \varepsilon_t\|^2 = L \gamma(0) \sigma^2 / T$, and this norm is at most $\sigma^2 \sqrt{L/(m^2 T \beta)}$ with probability at least $1 - \beta$. (c) $\operatorname{Var} \varrho_t \le \rho_L^2 \gamma(0)$ with $\rho_L \ge \sum_{j \ge L} \theta_j$, so $E\|T^{-1} \sum_t X_t \varrho_t\| \le \sqrt{L}\, \gamma(0) \rho_L$, and this norm is at most $\sqrt{L}\, \sigma^2 \rho_L / (m^2 \beta)$ with probability at least $1 - \beta$. On the intersection, $\|\hat\theta - \theta_{0:L-1}\|_2 \le 8\sqrt{L}\{(m\sqrt{T\beta})^{-1} + \rho_L/(m^2\beta)\}$, the displayed bound; and $|\hat S - S| = |\sum_{j < L} (\hat\theta_j - \theta_j) - \sum_{j \ge L} \theta_j| \le \sqrt{L}\, \|\hat\theta - \theta_{0:L-1}\|_2 + \rho_L$.
+
+\emph{(i)} Take the least $L$ with $8 L \rho_L / (m^2 \beta) + \rho_L \le \epsilon/2$, of order $\log(1/(\epsilon\beta))$, and
+\[ T \ge \max\{256 L^2 / (m^2 \beta \epsilon^2),\ 128 L^2/(m^4\beta)\}. \]
+\emph{(ii)} By the proof of Theorem~\ref{n:cost}(iii) there are $c_0, C_P$, depending only on the class, such that if the first $2K$ taps are known to within $\tau \le c_0 (\Delta\eta)^{2K-1}$ in Euclidean norm, Prony's method returns every weight to within $C_P \tau (\Delta\eta)^{-(2K-1)}$. Set $\epsilon_0 = c_0 C_P$ and $\tau = \epsilon (\Delta\eta)^{2K-1} / C_P$. On the class, rates are at most $\bar r = r_c + \Delta\eta_0 \max_{s,i} |s_i| < 1$ and total weight at most $K w_{\max}$. Take the least $L \ge 2K$ with $8\sqrt{L}\, \rho_L / (\kappa m^2 \beta) \le \tau/2$, of order $\log(1/(\epsilon\beta\Delta\eta))$, and
+\[ T \ge \max\{256 L / (\kappa^2 m^2 \beta \tau^2),\ 128 L^2/(m^4\beta)\}, \]
+which is the stated order.
+\end{proof}
+
+"""
+
+
+def passive_upper(t):
+    t = rep(t, r"\textbf{The barrier does not lift near instability.}",
+            PASSIVE_THEOREM + r"\textbf{The barrier does not lift near instability.}")
+    t = rep(t, r"\begin{proof}[Proof of Theorem~\ref{n:questions}]", PASSIVE_PROOF + r"\begin{proof}[Proof of Theorem~\ref{n:questions}]")
+    t = t.replace(r"\citep[Berk, 1974]{}", r"(Berk, 1974)")
+    t = rep(t, r"with constants depending only on $(\kappa, \bar r, \bar W)$ and not on the number of groups or the spacing of "
+               r"their memory rates.",
+            r"with constants depending only on $(\kappa, \bar r, \bar W)$ and not on the number of groups or the spacing of "
+            r"their memory rates; if $S \le 1 - m$ for a fixed margin $m$, one passive price record of length "
+            r"$O(\epsilon^{-2}\log^2(1/\epsilon))$ suffices as well.")
+    t = rep(t, r"Neither bound involves $K$ or the memory spacing. Minimax optimality is Theorem~\ref{n:minimax}(i).",
+            r"Neither bound involves $K$ or the memory spacing. The passive version is "
+            r"Theorem~\ref{n:passiveupper}(i). Minimax optimality is Theorem~\ref{n:minimax}(i).")
+    t = rep(t, r"; price-only impulse records need separate growing-depth bounds on the reconstructed taps (Supplement "
+               r"Section~\ref{S-app:questions}).",
+            r"; one passive price record suffices at rate $O(\epsilon^{-2}\log^2(1/\epsilon))$ "
+            r"(Theorem~\ref{n:passiveupper}(i)).")
+    t = rep(t, r"which $O(\sigma^2\epsilon^{-2}\log(1/\epsilon))$ kernel-tap records estimate to accuracy $\epsilon$ however "
+               r"close the traders' memories are;",
+            r"which kernel-tap records, or a single passive price record, estimate at a near-parametric rate however "
+            r"close the traders' memories are (Theorem~\ref{n:passiveupper});")
+    t = rep(t, r"matches a Prony and minimum-distance upper bound on separated shrinking clusters (Theorem~\ref{n:shape}),",
+            r"matches a Prony and minimum-distance upper bound on separated shrinking clusters (Theorem~\ref{n:shape}), is "
+            r"attained up to a logarithmic factor from one passive price record (Theorem~\ref{n:passiveupper}),")
+    t = rep(t, r"characterize which linear functionals prices answer at parametric rates,",
+            r"show that one passive price record attains the composition rate up to a logarithm and learns the budget at a "
+            r"near-parametric rate, characterize which linear functionals prices answer at parametric rates,")
+    return t
+
+
+def passive_upper_supplement(doc):
+    return rep(doc, r"Growing-depth guarantees for price-only records require separate bounds on the reconstructed "
+                    r"statistic and its error.",
+               r"For a single passive record, least-squares autoregression on logarithmically many lags gives such "
+               r"growing-depth guarantees (Main Theorem~\ref{M-n:passiveupper}).")
