@@ -20,6 +20,9 @@ Supplement: receives the three results; Table S2 rows say what Lean checks; the 
 """
 import re
 
+# Set to True only after the first author has read and checked Theorems 7.1 and 5.2 (added 27 November 2026).
+AUTHORS_CHECKED_1127 = False
+
 MOVED_LABELS = ('thm:mpv', 'cor:posthaltflip', 'prop:endogenous_supervisor')
 
 
@@ -209,6 +212,12 @@ def main_text(t):
     t = rep(t, r"\begin{proof}[Proof of Proposition~\ref{n:target}(i)--(ii) and Corollary~\ref{n:decisionloss}]",
             SEPARATION_PROOF + r"\begin{proof}[Proof of Proposition~\ref{n:target}(i)--(ii) and Corollary~\ref{n:decisionloss}]")
     t = passive_upper(t)
+    old_decl = "(including all extensions finalized during 21--26 November 2026)"
+    if AUTHORS_CHECKED_1127:
+        t = rep(t, old_decl, "(including all extensions finalized during 21--27 November 2026)")
+    else:
+        t = rep(t, old_decl, r"(including all extensions finalized during 21--26 November 2026; Theorems~\ref{n:passiveupper} "
+                             r"and~\ref{n:separation}, added on 27 November 2026, are being checked by the authors)")
     return t, moved
 
 

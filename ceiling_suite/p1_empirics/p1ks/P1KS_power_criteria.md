@@ -79,6 +79,22 @@ The calibration therefore uses the following, all fixed before any data were rea
 The first schema probe was `P1KS_Naver_Probe_Colab.ipynb`. It prints column names, row counts and the earliest
 reachable date only. The test design and the pass criteria above are unchanged; only the data source changes.
 
+## Open item before registration: treatment assignment
+
+The treated set is the KOSPI 200 and KOSDAQ 150 constituents on 3 May 2021. Naver keeps no history of constituents,
+and KRX requires a login. Candidate sources, in order:
+1. KRX periodic-review announcements (June and December), chained from a dated full list.
+2. Archived daily portfolio files of KOSPI 200 and KOSDAQ 150 index ETFs.
+3. Treatment inferred from which stocks show any short-selling volume in May 2021, since the others were still
+   banned. This uses test-window data for the treatment indicator only, and only after registration.
+
+The choice is fixed in the spec before registration.
+
+## Power simulation
+
+`p1ks_power.py` (tests in `test_p1ks_power.py`) implements the simulation above. It takes the calibration JSON as its
+only input. It was written and tested on synthetic inputs on 27 November 2026, before the calibration output existed.
+
 ## Results
 
 (Filled in after the calibration and the simulation are run.)
