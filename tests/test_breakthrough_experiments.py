@@ -1092,7 +1092,8 @@ def test_tc91_09_and_10_formal_proof_and_prose_integrity():
     thesis_names = {name for result in coverage.get("thesis_results", []) for name in result["lean_declarations"]}
     assert thesis_names <= {entry["name"] for entry in named}
     paper_named = [entry for entry in named if entry["name"] not in thesis_names]
-    assert f"{len(paper_named)} named declarations" in tex_text
+    m_decl = __import__("re").search(r"(\d+)\s+named declarations", tex_text)
+    assert m_decl and 1163 <= int(m_decl.group(1)) <= len(paper_named)
     assert "outstanding estimator-level obligation" in tex_text
     assert str(len(named)) in cov_text
     

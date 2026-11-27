@@ -319,7 +319,7 @@ def test_mm14_to_mm16_validation_ledger_and_manuscript_build():
         assert p.exists(), f"Missing {p}"
         assert p.stat().st_size > 200, f"Empty or stub file {p}"
 
-    assert (ROOT / "RESUME_HERE.md").exists()
+    assert (val_dir / "RESUME_HERE.md").exists()
 
     with (val_dir / "CLAIM_EVIDENCE_LEDGER.csv").open() as f:
         rows = list(csv.DictReader(f))

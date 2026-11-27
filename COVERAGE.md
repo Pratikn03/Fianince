@@ -1,14 +1,12 @@
-> **29 October source-revision boundary:** this table predates the economic-review corrections. In particular, revised `prop:driftguard`, the sufficiency scope of `thm:forward`, and other changed statements do not inherit full formalization from their labels. The committed receipt records 520 named theorems and incomplete full-manuscript coverage; no new Lean rebuild or proof of these revisions is claimed. See [the current audit ledger](studies/economic_review_20261029/CLAIM_LEDGER.csv).
-
 # Lean 4 Formalization Coverage Matrix (`COVERAGE.md`)
 
-This document provides an explicit, item-by-item audit of what is formalized in the repository's Lean 4 projects and how each Lean declaration relates to the mathematical statements in the October 2026 manuscripts (**Paper 1**: `ceiling_suite/paper1/` and **Paper 2**: `ceiling_suite/paper2/`).
+This document provides an explicit, item-by-item audit of what is formalized in the repository's Lean 4 projects and how each Lean declaration relates to the mathematical statements across the manuscripts (**Paper 1**: `ceiling_suite/papers/paper1_jedc_short/` & `ceiling_suite/paper1/`; **Paper 2**: `ceiling_suite/paper2/`).
 
 ## Summary of Lean 4 Projects
 
 | Project | Toolchain & Setup | Declarations | Axioms | Scope |
 |---|---|---|---|---|
-| [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) | Lean 4.34.1 + Mathlib (`d13f23b7`) | **1238** named theorems across 144 modules in `CurrentProofs/` | `propext`, `Classical.choice`, `Quot.sound` (`0 sorry`) | Primary formalization over `ℝ` (`MeasureTheory`, `Matrix`, `EuclideanSpace`, `InformationTheory.klDiv`, `IsGreatest`, `sSup`). |
+| [`research_extension/current_manuscript_lean_20261008/`](research_extension/current_manuscript_lean_20261008/) | Lean 4.34.1 + Mathlib (`d13f23b7`) | **1289** named theorems across `CurrentProofs/` + 17 `PublicationRevision*.lean` files | `propext`, `Classical.choice`, `Quot.sound` (`0 sorry`) | Primary formalization over `ℝ` (`MeasureTheory`, `Matrix`, `EuclideanSpace`, `InformationTheory.klDiv`, `IsGreatest`, `sSup`). |
 | [`lean_proofs/`](lean_proofs/) | Plain Lean 4.34.1 (no Mathlib, over `Rat`) | **183** named theorems across 14 modules in `Proofs/` (437 audited declarations in `MachineMarkets`) | Standard axioms (`0 sorry`) | Exact rational arithmetic, polynomial identities, and numerical witness checks (`decide +kernel`, `grind`). |
 | [`research_extension/mechanism_formal_v1/`](research_extension/mechanism_formal_v1/) | Plain Lean 4.29.1 | **26** named theorems | Standard axioms (`0 sorry`) | Finite-game exact arithmetic checks (`decide +kernel`) for a worked disclosure example. |
 

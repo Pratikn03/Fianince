@@ -21,7 +21,8 @@ def verify(pdf=False):
     assert receipt["named_theorems"] == count
     assert receipt["full_manuscript_formalization_complete"] is False
     for relative, expected in receipt["formal_source_sha256"].items():
-        assert hashlib.sha256((formal / relative).read_bytes()).hexdigest() == expected, relative
+        fpath = formal / relative if (formal / relative).is_file() else ROOT / relative
+        assert hashlib.sha256(fpath.read_bytes()).hexdigest() == expected, relative
     readme = (ROOT / "README.md").read_text()
     coverage = (ROOT / "COVERAGE.md").read_text()
     assert f"{count} named theorems" in readme and f"**{count}** named theorems" in coverage

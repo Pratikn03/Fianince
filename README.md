@@ -1,129 +1,102 @@
-# Machine Markets: Auditable Memory, Financial Identification Limits, and Pre-Trade Safety Under Feedback
-
-## Current Paper 1 revision — 14 November 2026
-
-The consolidated author-review revision incorporates the incoming SSRN additions, corrected proof assumptions, a global pooling certificate, an intervention-loss example, and the complete offline diagnostic failures. Start with the [combined paper](pdf_delivered/Paper1_ssrn_complete.pdf), [main paper](pdf_delivered/Paper1_ssrn_main.pdf), [supplement](pdf_delivered/Paper1_ssrn_supplement.pdf), and [59-gap research audit](pdf_delivered/Paper1_Research_Audit.pdf). The [revision source and reproduction guide](research_extension/paper1_publication_revision/README.md) distinguish formal checks, synthetic experiments, inherited evidence and pending real-data studies.
-
-Rebuild with `.venv/bin/python ceiling_suite/papers/paper1_note/build_ssrn.py --pdf`. This is the canonical Paper 1 SSRN build; the dated versions below are historical or separate manuscripts. The registered empirical files and counters are unchanged. The unregistered offline candidate failed several calibration diagnostics and is not cleared for confirmatory use. Human author review and independent proof review remain pending.
-
-## Paper 1 working-paper release — 5 November 2026
-
-The current review release adds 16 Lean theorem declarations for the exact two-group supervisory witness, a Gaussian unsafe-halt event bound, robustness and after-cost information acquisition. The full proof project builds and its strict axiom audit covers 803 named declarations across the programme. These counts do not establish complete manuscript equivalence.
-
-- [SSRN working-paper candidate](ceiling_suite/papers/paper1/paper1_ssrn.pdf) and [full development version](ceiling_suite/papers/paper1/paper1.pdf).
-- [Source-bound proof receipt](research_extension/current_manuscript_lean_20261008/paper1_release_receipt.json), [release scope](studies/supervisory_release_20261105/RELEASE_REVIEW.md), and [submission metadata including AI disclosure](studies/supervisory_release_20261105/SSRN_METADATA.md).
-- [Accounting code and 4,608 sensitivity configurations](studies/supervisory_release_20261105/). General-K supervisory dominance remains conditional; the scalar observation contract is hypothetical. Human manuscript review and novelty assessment remain separate obligations.
-
+# Observationally Equivalent Algorithms & Machine Markets
 
 [![CI](https://github.com/Pratikn03/Fianince/actions/workflows/ci.yml/badge.svg)](https://github.com/Pratikn03/Fianince/actions/workflows/ci.yml)
-[![Lean 4](https://img.shields.io/badge/Lean_4-recorded_receipt-blue.svg)](research_extension/current_manuscript_lean_20261008/formal_verification_receipt.json)
+[![Lean 4.34.1](https://img.shields.io/badge/Lean_4.34.1-1%2C289_theorems_(0_sorry)-blue.svg)](research_extension/current_manuscript_lean_20261008/formal_verification_receipt.json)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)](LICENSE)
 
-> **29 October review branch:** supported source corrections and exploratory experiments are documented in [the research plan](studies/economic_review_20261029/RESEARCH_PLAN.md). Start with [the Colab notebook](studies/economic_review_20261029/Economic_Review_Experiments.ipynb). The current modular sources are `ceiling_suite/papers/paper1/` and `ceiling_suite/papers/paper2/`; the six current PDFs are rebuilt for the 29 October development revision, including the checked author-returned experiment record. Historical registered results remain unchanged.
->
-> **Formalization boundary:** the committed 25 October receipt records 520 named theorems and explicitly reports `full_manuscript_formalization_complete: false`. It is a historical build receipt, not an independent rebuild in this branch. The current 20 November 2026 rebuild records 1238 named theorems across 144 proof modules in `research_extension/current_manuscript_lean_20261008/` (fresh `lake build`, 9,069 jobs, and a strict axiom audit: standard axioms only), and COVERAGE.md tags 76 environments: 30 `full`, 27 `conditional`, 19 `arithmetic`. Existing name mappings do not establish semantic coverage of revised propositions. See [COVERAGE.md](COVERAGE.md) and the new [claim ledger](studies/economic_review_20261029/CLAIM_LEDGER.csv) for their distinct purposes.
-
----
-
-## Current thesis and verification
-
-The current thesis is [`thesis/thesis.pdf`](thesis/thesis.pdf), with source [`thesis/thesis.tex`](thesis/thesis.tex). See [`thesis/READINESS.md`](thesis/READINESS.md) for completed work, limitations and submission blockers. The thesis includes the completed B2 language-model experiment (three primaries passed, the warning-lead primary failed); its exact model revision was not archived. Pending studies are not counted as results. The standalone [`margin_monitor`](margin_monitor/README.md) package reports a conditional margin sign, not an unrestricted stability or solvency verdict.
-
-```bash
-python thesis/verify_thesis_numbers.py
-python thesis/checks/check_b2_supplement.py --check
-python scripts/verify_thesis_release.py --pdf
-PYTHONPATH=margin_monitor pytest margin_monitor/tests -q
-sh thesis/build_thesis.sh
-```
-
-## October 2026 Manuscripts (`ceiling_suite/`)
-
-This repository contains the LaTeX sources, replication code, pre-registered notebooks, and Lean 4 formalizations for two companion working papers:
-
-1. **Paper 1 — *Auditable Memory and Financial Identification Limits in Electronic Limit Order Books***  
-   - **Working Paper PDF**: [`ceiling_suite/paper1/paper1.pdf`](ceiling_suite/paper1/paper1.pdf) (99 pp., with appendices)  
-   - ***Quantitative Economics* submission format**: [`ceiling_suite/papers/versions/Paper1_QE.pdf`](ceiling_suite/papers/versions/Paper1_QE.pdf) (83 pp., with supplement)  
-   - **Core Contribution**: Establishes what an observer can and cannot learn about hidden adaptive trading cohorts from price and order-flow records, including merged rate-weight equivalence, minimax $(\Delta\eta)^{-(4K-2)}$ cohort-separation sample complexity, spectral dissipation lower bounds, and finite-window abstention limits.
-
-2. **Paper 2 — *From Human Markets to Machine Markets: Transient Amplification, an Exact Depth Condition, and a Maximal Pre-Trade Guard*** (Niroula, Alkhushayni, Chen, Bhavsar and Niroula)  
-   - **Working Paper PDF**: [`ceiling_suite/paper2/paper2.pdf`](ceiling_suite/paper2/paper2.pdf) (133 pp., with appendices)  
-   - ***Journal of Finance* submission format**: [`ceiling_suite/papers/versions/Paper2_JF.pdf`](ceiling_suite/papers/versions/Paper2_JF.pdf) (116 pp., including the Internet Appendix)  
-   - **Core Contribution**: Connects closed-loop limit-order-book feedback and partial identification to financial safety:
-     - **Transient Amplification (Sections 3–4)**: Non-normal Kreiss bounds, the peak-overshoot theorem (depletion versus momentum, with the confluent peak lag), and the closed-form summed response $S = \tilde\kappa / (m - q\tilde\kappa)$.
-     - **Information Limits for Safety (Section 5)**: Constructive two-market ambiguity witness (`ex:witness`), total-variation capacity-loss bound (`prop:twoworld`), Markov–Krein finite-window bounds and unboundedness without a memory bound (`thm:window`), and parametric-rate safety certification $N = O(\sigma^2\epsilon^{-2}\log(1/\epsilon))$ (`thm:certcost`).
-     - **Identification-Free & Uncertainty-Aware Pre-Trade Guard (Section 6)**: Quantity-gate duality (`eq:gate` & `thm:guard`), compatible-set soundness (`lem:sound`), optimal uncertainty-aware admission $\alpha^* = \min\{1, c_I/(\kappa\Phi^+)\}$ (`thm:robustguard`), and multi-step balance-sheet forward solvency (`thm:forward`).
-     - **Decision Value of Disclosure & Equilibrium Fragility (Sections 7–8)**: Monotonicity and strictness of optimal admission under disclosure refinement $\Theta_{O'} \subseteq \Theta_O$ (`thm:disclosure`) and equilibrium under-supply of fragility absorption (`prop:equil`).
+Public replication archive, LaTeX manuscript sources, pre-registered empirical pipelines, and Lean 4 formalizations for the **Machine Markets** research program by **Pratik Niroula**, **Prashant Niroula**, **Sujan Khatiwada**, and coauthors.
 
 ---
 
-## Repository Structure
+## Primary Manuscripts (`pdf_delivered/`)
+
+### 1. Paper 1 (*JEDC* Submission) — *Observationally Equivalent Algorithms: What Prices Reveal About Trader Populations, and What Supervisors Need*
+**Authors:** Pratik Niroula, Prashant Niroula, and Sujan Khatiwada (November 2026)
+
+- **Main Manuscript (35 pp.):** [`pdf_delivered/Paper1_JEDC_main.pdf`](pdf_delivered/Paper1_JEDC_main.pdf)
+- **Online Supplement (83 pp.):** [`pdf_delivered/Paper1_JEDC_online_supplement.pdf`](pdf_delivered/Paper1_JEDC_online_supplement.pdf)
+- **Combined Manuscript + Supplement (118 pp.):** [`pdf_delivered/Paper1_JEDC_main_and_supplement.pdf`](pdf_delivered/Paper1_JEDC_main_and_supplement.pdf)
+- **Companion Working Papers:**
+  - Extended SSRN Working Paper: [`pdf_delivered/Paper1_ssrn_complete.pdf`](pdf_delivered/Paper1_ssrn_complete.pdf)
+  - Full Archival Working Paper: [`pdf_delivered/Paper1_full_working_paper.pdf`](pdf_delivered/Paper1_full_working_paper.pdf)
+  - Companion Note (Breach Cascades & Nonlinear Rules): [`pdf_delivered/paper1b_companion.pdf`](pdf_delivered/paper1b_companion.pdf)
+
+**Summary:** Characterizes the exact statistical and decision-theoretic boundary between what public market prices reveal about heterogeneous feedback-trading populations and what requires class-tagged or beneficial-owner-linked supervisory reporting. Establishes kernel sufficiency in both reduced-form and endogenous CARA-normal overlapping-generations inventory-dealer equilibria, proves the $(\Delta\eta)^{-(4K-2)}$ minimax sample-complexity barrier for separating colliding trader types alongside $O(\sigma^2\epsilon^{-2})$ parametric estimation of smooth market-wide functionals, proves Hunt–Stein minimax optimality of uniform cuts over unknown labelings, solves the strategic account-relabeling and surveillance-paradox games, and calibrates the identification gap to daily class-tagged institutional flows on the Taiwan Stock Exchange (TWSE).
+
+---
+
+### 2. Paper 2 — *From Human Markets to Machine Markets: Transient Amplification, an Exact Depth Condition, and a Maximal Pre-Trade Guard*
+**Authors:** Pratik Niroula, S. Alkhushayni, Y. Chen, M. Bhavsar, and Prashant Niroula
+
+- **Working Paper:** [`ceiling_suite/paper2/paper2.pdf`](ceiling_suite/paper2/paper2.pdf) | [`ceiling_suite/papers/versions/Paper2_JF.pdf`](ceiling_suite/papers/versions/Paper2_JF.pdf)
+- **Summary:** Connects non-normal transient amplification and partial identification in closed-loop limit order books to pre-trade solvency guards, proving Kreiss/overshoot bounds, parametric safety certification $N = O(\sigma^2\epsilon^{-2}\log(1/\epsilon))$, and maximal uncertainty-aware admission rules.
+
+---
+
+### 3. Doctoral Thesis & Standalone Software Package
+
+- **Consolidated Thesis:** [`thesis/thesis.pdf`](thesis/thesis.pdf) (source: [`thesis/thesis.tex`](thesis/thesis.tex); readiness & scope: [`thesis/READINESS.md`](thesis/READINESS.md))
+- **Python Package (`margin_monitor`):** [`margin_monitor/`](margin_monitor/README.md) — standalone conditional margin-sign diagnostic library with unit tests.
+
+---
+
+## Lean 4 Formal Verification Scope
+
+Deterministic algebraic, combinatorial, game-theoretic, and spectral-approximation steps are machine-checked in **Lean 4.34.1** against pinned Mathlib (`d13f23b723b8a846827a245b89c10fc7d3f11612`), recorded in [`formal_verification_receipt.json`](research_extension/current_manuscript_lean_20261008/formal_verification_receipt.json):
+
+- **Audited Proof Inventory:** `1289 named theorems` across `CurrentProofs/` and 17 `PublicationRevision*.lean` modules (`3,178` project constants scanned; zero `sorry`; standard Lean axioms `propext`, `Classical.choice`, and `Quot.sound` only).
+- **Explicit Coverage Boundary:** [`COVERAGE.md`](COVERAGE.md) classifies 76 environments across the baseline suite (30 `full`, 27 `conditional`, 19 `arithmetic`), and Paper 1 Online Supplement Table S2 documents the exact division between machine-checked deterministic lemmas and paper-proved probabilistic steps (Gaussian KL chain rule, Whittle asymptotics, Pinsker's inequality, and central limit theorems).
+
+---
+
+## Repository Layout
 
 ```text
 .
-├── COVERAGE.md                                     # Item-by-item Lean 4 coverage table (full / conditional / arithmetic)
+├── pdf_delivered/                                  # Canonical compiled PDFs & Colab replication notebook
+│   ├── Paper1_JEDC_main.pdf                        # Paper 1 JEDC main manuscript (35 pp.)
+│   ├── Paper1_JEDC_online_supplement.pdf           # Paper 1 JEDC Online Supplement (83 pp.)
+│   ├── Paper1_JEDC_main_and_supplement.pdf         # Combined main + supplement (118 pp.)
+│   └── P1_Round3_Referee_Sensitivity_Colab.ipynb   # Self-contained TWSE sensitivity & regime-split notebook
 ├── ceiling_suite/
-│   ├── paper1/                                     # Paper 1 modular LaTeX sources & paper1.pdf
-│   ├── paper2/                                     # Paper 2 modular LaTeX sources & paper2.pdf
-│   ├── papers/
-│   │   ├── versions/                               # Paper1_QE.pdf (83 pp.) & Paper2_JF.pdf (116 pp.)
-│   │   ├── hardening/                              # Numerical checks behind the October 2026 theorem hardening
-│   │   └── research_extension/information_safety/  # Python verification & simulation suite for Sections 5–7 (T01–T15)
-│   ├── Part15_InfoSafety_Untouched.ipynb           # Pre-registered Part 15 untouched-days empirical notebook
-│   ├── Part16_Untouched_Symbols.ipynb              # Pre-registered Part 16 untouched-symbols empirical notebook
-│   ├── Part17_NewVenue_Coinbase.ipynb              # Pre-registered Part 17 new-venue (Coinbase) notebook
-│   ├── Part18_PostHoc_Placebo_Baselines.ipynb      # Post-hoc Part 18 placebo and guard baselines
-│   ├── REPLICATION_README.md                       # Guide to Parts 1–18 replication notebooks and scripts
-│   └── verify_ceiling_suite_lean_proofs.py         # Verifies the LaTeX label to Lean 4 declaration mapping
-│
+│   ├── papers/paper1_jedc_short/                   # Paper 1 JEDC builders (make_short.py, build_short.py) & 57-check audit
+│   ├── p1_empirics/                                # TWSE T86/MI_INDEX executors, pre-registered specs, & unit tests
+│   ├── paper1/ & paper2/                           # Modular working-paper LaTeX sources
+│   └── REPLICATION_README.md                       # Guide to empirical notebooks and archived outputs
 ├── research_extension/
-│   └── current_manuscript_lean_20261008/           # Primary Lean 4.34.1 + Mathlib formalization (see recorded receipt and coverage boundary)
-│       ├── CurrentProofs/                          # 33 Mathlib proof modules over ℝ (InfoSafetyExtensions.lean: Sections 5–8 and the hardening results)
-│       ├── AxiomAudit.lean                         # Kernel axiom auditor
-│       ├── axiom_audit.jsonl                       # Kernel-checked theorem types and axiom footprints
-│       └── verify_formalization.py                 # Builds Mathlib project and writes formal_verification_receipt.json
-│
-├── lean_proofs/                                    # Companion plain-Lean rational arithmetic checks (0 sorry)
-└── tests/                                          # Automated pytest verification suite
+│   ├── current_manuscript_lean_20261008/           # Primary Lean 4.34.1 + Mathlib project & strict axiom auditor
+│   └── paper1_publication_revision/                # PublicationRevision1–17.lean & passive/paradox numerical suites
+├── lean_proofs/                                    # Plain-Lean exact rational arithmetic verification suite
+├── margin_monitor/                                 # Standalone Python package & pytest suite
+├── thesis/                                         # Thesis LaTeX sources & provenance verification scripts
+└── tests/                                          # Repository-wide automated pytest suite
 ```
 
 ---
 
-## Reproduction & Verification Commands
+## Quick-Start Reproduction Commands
 
 ```bash
-# 1. Run the Lean 4 + Mathlib build and strict axiom audit:
-python3 research_extension/current_manuscript_lean_20261008/verify_formalization.py
+# 1. Build Paper 1 JEDC Main (35 pp.) + Online Supplement (83 pp.) and run all 57 audit checks:
+.venv/bin/python ceiling_suite/papers/paper1_jedc_short/build_short.py
+.venv/bin/python ceiling_suite/papers/paper1_jedc_short/test_jedc_audit_runner.py
 
-# 2. Verify the label-to-declaration mapping across Paper 1 and Paper 2:
-python3 ceiling_suite/verify_ceiling_suite_lean_proofs.py
-# Optional strict gate (currently fails until missing/revised coverage is resolved):
-# python3 ceiling_suite/verify_ceiling_suite_lean_proofs.py --require-complete
+# 2. Run Paper 1 empirical & numerical verification suites (TWSE synthetic panels, passive incidence, paradox):
+.venv/bin/python ceiling_suite/p1_empirics/test_round2_fixes.py
+.venv/bin/python research_extension/paper1_publication_revision/paradox/endogenous_supervisor_check.py
+(cd research_extension/paper1_publication_revision/passive_tax_followup && ../../../.venv/bin/python -m unittest test_passive_incidence)
+(cd ceiling_suite/p1_empirics && ../../.venv/bin/python test_p1m_core.py && ../../.venv/bin/python test_p1m_a1_core.py)
 
-# 3. Run the Information-Safety unit tests and all data-free results (T01–T15):
-pytest ceiling_suite/papers/research_extension/information_safety/tests -q
-(cd ceiling_suite/papers/research_extension/information_safety && python3 run_all.py)
+# 3. Build all Lean 4.34.1 + Mathlib proofs and regenerate formal_verification_receipt.json:
+(cd research_extension/current_manuscript_lean_20261008 && python3 verify_formalization.py)
 
-# 4. Run the full repository pytest suite:
-pytest tests/ -v
-
-# 5. Recompile Paper 1 and Paper 2 PDFs (working papers + QE/JF versions):
-sh ceiling_suite/papers/build_p1.sh && sh ceiling_suite/papers/build_p2.sh && python3 ceiling_suite/papers/versions/build_versions.py
-
-# 6. End-to-end clean reproduction (fresh venv, tests, results, LaTeX, ledger audit; Lean optional):
-SKIP_LEAN=1 sh reproduce_paper_suite.sh
+# 4. Run repository pytest & thesis verification gates:
+.venv/bin/python scripts/verify_thesis_release.py
+.venv/bin/pytest tests/ -q
 ```
 
 ---
 
-## License
+## Citation & License
 
-Apache 2.0 License. See [`COVERAGE.md`](COVERAGE.md) and [`ceiling_suite/REPLICATION_README.md`](ceiling_suite/REPLICATION_README.md) for detailed formalization and empirical replication documentation.
-
-
-## Paper 1 operational-observation revision (5 November 2026)
-
-The [revision review](studies/paper1_uplift_20261105/NOVELTY_AND_OBSERVATION_REVIEW.md) compares the closest technical and finance results and checks provider observation definitions. The [36-statement ledger](studies/paper1_uplift_20261105/CLAIM_VERIFICATION_LEDGER.md) preserves remaining semantic obligations. A five-channel tagged-flow/price simulation retains all 60 acquisition configurations and six contract stress cases. The pricing and account-evasion propositions now state explicit conditional scope.
-
-The source inventory is 1137 named declarations across 126 Lean modules; use the source-bound release receipt for actual build status. Counts are not counts of completely formalized manuscript statements. Full manuscript formalization, the all-K supervisory weight-gap construction, executable decision-rule correspondence and external market validation are not declared complete. The refreshed Paper 1 PDF baselines belong to this intentional source revision.
-
-Final prose alignment removes unconfirmed author approval and treats the public class-report evidence as descriptive. The acquisition illustration prices supplied records; self-funded probing requires its execution and capital account as well.
+Licensed under the [Apache License 2.0](LICENSE). See [`CITATION.cff`](CITATION.cff) for BibTeX/CFF citation metadata.
