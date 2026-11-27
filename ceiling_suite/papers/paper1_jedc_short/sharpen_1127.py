@@ -212,12 +212,14 @@ def main_text(t):
     t = rep(t, r"\begin{proof}[Proof of Proposition~\ref{n:target}(i)--(ii) and Corollary~\ref{n:decisionloss}]",
             SEPARATION_PROOF + r"\begin{proof}[Proof of Proposition~\ref{n:target}(i)--(ii) and Corollary~\ref{n:decisionloss}]")
     t = passive_upper(t)
+    t = record_value(t)
     old_decl = "(including all extensions finalized during 21--26 November 2026)"
     if AUTHORS_CHECKED_1127:
         t = rep(t, old_decl, "(including all extensions finalized during 21--27 November 2026)")
     else:
-        t = rep(t, old_decl, r"(including all extensions finalized during 21--26 November 2026; Theorems~\ref{n:passiveupper} "
-                             r"and~\ref{n:separation}, added on 27 November 2026, are being checked by the authors)")
+        t = rep(t, old_decl, r"(including all extensions finalized during 21--26 November 2026; Theorems~\ref{n:passiveupper}, "
+                             r"\ref{n:separation} and~\ref{n:recordvalue}, added on 27 November 2026, are being checked "
+                             r"by the authors)")
     return t, moved
 
 
@@ -287,6 +289,11 @@ def supplement(doc, moved, main_labels):
               r"\texttt{p1\_transfer\_factor\_error\_unconditional}")
     doc = rep(doc, "1,306 named declarations", "1,310 named declarations")
     doc = passive_upper_supplement(doc)
+    import json as _json
+    from pathlib import Path as _Path
+    _nd = _Path(__file__).resolve().parents[3] / 'research_extension/current_manuscript_lean_20261008/named_declarations.json'
+    n_decl = len(_json.loads(_nd.read_text()))
+    doc = record_value_supplement(doc, n_decl if n_decl != 1310 else None, 146)  # one module added (Paper1RecordValue)
     return doc
 
 
@@ -365,3 +372,73 @@ def passive_upper_supplement(doc):
                     r"statistic and its error.",
                r"For a single passive record, least-squares autoregression on logarithmically many lags gives such "
                r"growing-depth guarantees (Main Theorem~\ref{M-n:passiveupper}).")
+
+
+# ==================================================================== Theorem 7.12 (27 November 2026, part 3)
+
+RECORD_THEOREM = r"""
+
+\textbf{What a longer price record buys.} Theorem~\ref{n:paradox} is about detection; a supervisor deciding what to record needs the value of what it learns. Compare the price record with a record that links accounts to their owners.
+
+\begin{theorem}[More data does not substitute for records]\label{n:recordvalue}
+Consider one supervisory cycle with two equally likely states: in state $1$ the untagged group of Theorem~\ref{n:paradox} is present at distance $\delta$ from its neighbor, and in state $0$ the record comes from the closest merged economy. A policy $\theta$ in a compact set $\Theta$ earns welfare $W(\theta, \omega)$, continuous in $\theta$. Let $W_\varnothing = \max_\theta \tfrac12\{W(\theta, 0) + W(\theta, 1)\}$ be the best welfare without information, and $V^* = \tfrac12\{\max_\theta W(\theta, 0) + \max_\theta W(\theta, 1)\} - W_\varnothing \ge 0$ the value of knowing the state, which an owner-linked record supplies.
+\begin{enumerate}
+  \item[(i)] \emph{Value of a record.} Every policy chosen from a record whose laws in the two states are $P_0$ and $P_1$ gains at most $\TV(P_0, P_1)\, V^* \le V^* \sqrt{\KL(P_1 \| P_0)/2}$ over $W_\varnothing$.
+  \item[(ii)] \emph{The price record under crowding.} Suppose the supervisor targets through a test as in Theorem~\ref{n:paradox}(ii), a rejection costs the group $L$, and stakes are high. Let $V_P(N)$ be the gain of any policy based on $N$ price observations when the group crowds optimally against the test. In the benchmark $n = 4$, for every $N$,
+  \[
+    V_P(N) \le \frac{2\sqrt{2}\, k^2 \delta_0^2}{L^2 \beta^2 \sqrt{cN}}\, V^*,
+  \]
+  and for general $n > 2$, $V_P(N) \le V^* \{c N B_N^{n/(n-2)}/2\}^{1/2}$ with $B_N = 4k^2\delta_0^2/(L^2\beta^2 cN)$, which is of order $N^{-1/(n-2)}$.
+  \item[(iii)] \emph{Record choice.} If $V^* > 0$ and an owner-linked record costs $F_A < V^*$, it is strictly better than targeting from prices once
+  \[
+    N > \frac{8 k^4 \delta_0^4 (V^*)^2}{L^4 \beta^4 c\, (V^* - F_A)^2} \qquad (n = 4),
+  \]
+  and at every record length the price record's gain stays strictly below $V^*$.
+\end{enumerate}
+\end{theorem}
+
+Part~(i) is the standard bound on the value of an experiment (Blackwell, 1953; Le Cam, 1964). The content is in~(ii) and~(iii). Because the group crowds as the record grows, the value of price surveillance falls like $N^{-1/2}$, so a longer price record never substitutes for an owner-linked one, and the record length beyond which a trail of cost $F_A$ pays is explicit. Proposition~\ref{n:relabel} compares owner-linked trails with class tags at fixed costs; Theorem~\ref{n:recordvalue} adds the comparison with prices alone. In the Gaussian shift experiment with $\alpha = 0.05$, $k = 1$, $\delta_0 = 0.2$, $L = 1$ and $c = 1$ (replication archive), the bound in~(ii) holds at every $N$ from $10$ to $10^8$, and the exact total variation falls with fitted slope $-0.48$ in $\log N$."""
+
+RECORD_PROOF = r"""\begin{proof}[Proof of Theorem~\ref{n:recordvalue}]
+\emph{(i)} Let $p_0, p_1$ be densities of $P_0, P_1$ with respect to $P_0 + P_1$, let $a = \min(p_0, p_1)$, and let $\theta(x)$ be the policy. Since $\tfrac12\{W(\theta, 0) + W(\theta, 1)\} \le W_\varnothing$ for every $\theta$, $\int a = 1 - \TV(P_0, P_1)$ and $\int (p_0 - a) = \int (p_1 - a) = \TV(P_0, P_1)$,
+\begin{align*}
+  \mathbb{E}\, W &= \int a\, \tfrac12\{W(\theta(x), 0) + W(\theta(x), 1)\} \\
+  &\quad + \tfrac12 \int (p_0 - a) W(\theta(x), 0) + \tfrac12 \int (p_1 - a) W(\theta(x), 1) \\
+  &\le (1 - \TV) W_\varnothing + \TV\, \tfrac12\{\max_\theta W(\theta, 0) + \max_\theta W(\theta, 1)\}.
+\end{align*}
+Subtracting $W_\varnothing$ gives the first bound, and Pinsker's inequality the second. \emph{(ii)} By Theorem~\ref{n:paradox}(ii), $(\delta^*)^{n-2} \le B_N$ for every $N$, so $J^* = cN(\delta^*)^n \le cN B_N^{n/(n-2)}$; at $n = 4$ this is $16 k^4 \delta_0^4 / (L^4 \beta^4 cN)$. Part~(i) with $\KL(P_1 \| P_0) = J^*$ gives the bound. \emph{(iii)} The owner-linked record yields $W_\varnothing + V^* - F_A$ and the price record at most $W_\varnothing + V_P(N)$; the threshold is the solution of $2\sqrt{2} k^2 \delta_0^2 V^* / (L^2 \beta^2 \sqrt{cN}) < V^* - F_A$. Gaussian laws at finite divergence have total variation below one, so $V_P(N) \le \TV\, V^* < V^*$.
+\end{proof}
+
+"""
+
+RECORD_ROW = (r"Theorem~\ref{M-n:recordvalue} & value of information at most total variation times the full-information "
+              r"gain on finite records, the $n=4$ crowding-to-divergence bound, its closed-form Pinsker step, and the "
+              r"record-length threshold (\texttt{voi\_le\_tv\_mul\_gain}, \texttt{crowding\_divergence\_bound}, "
+              r"\texttt{tv\_bound\_from\_divergence}, \texttt{trail\_beats\_prices}) (\nolinkurl{PublicationRevision19.lean}; "
+              r"\nolinkurl{Paper1RecordValue.lean}) & the integral form of~(i), Pinsker's inequality, and the crowding bound "
+              r"of Theorem~\ref{M-n:paradox}(ii)\\" + "\n")
+
+
+def record_value(t):
+    t = rep(t, r"(Supplement Proposition~\ref{S-prop:endogenous_supervisor}).",
+            r"(Supplement Proposition~\ref{S-prop:endogenous_supervisor})." + RECORD_THEOREM)
+    t = rep(t, r"\begin{proof}[Proof of Proposition~\ref{n:relabel}]", RECORD_PROOF + r"\begin{proof}[Proof of Proposition~\ref{n:relabel}]")
+    t = rep(t, r"Memory-independent tag inquiries eliminate this incentive.",
+            r"Memory-independent tag inquiries eliminate this incentive, and a longer price record never substitutes for "
+            r"an owner-linked one: in equilibrium its value falls like $N^{-1/2}$ (Theorem~\ref{n:recordvalue}).")
+    t = rep(t, r"and derive how strategic crowding degrades untagged surveillance (using the Gaussian chain rule in "
+               r"Theorem~\ref{n:dual} to link detection and forecast loss)",
+            r"derive how strategic crowding degrades untagged surveillance (using the Gaussian chain rule in "
+            r"Theorem~\ref{n:dual} to link detection and forecast loss), and show that the value of a longer price record "
+            r"therefore vanishes, so no record length substitutes for owner-linked records")
+    return t
+
+
+def record_value_supplement(doc, n_decl=None, n_modules=None):
+    doc = rep(doc, r"Theorem~\ref{thm:mpv} & discrete floor", RECORD_ROW + r"Theorem~\ref{thm:mpv} & discrete floor")
+    doc = rep(doc, "All eighteen revision files are audited", "All nineteen revision files are audited")
+    doc = rep(doc, r"eighteen Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision18.lean}",
+              r"nineteen Lean~4 files, \nolinkurl{PublicationRevision.lean} to \nolinkurl{PublicationRevision19.lean}")
+    if n_decl:
+        doc = rep(doc, "1,310 named declarations in 145 modules", f"{n_decl:,} named declarations in {n_modules} modules")
+    return doc

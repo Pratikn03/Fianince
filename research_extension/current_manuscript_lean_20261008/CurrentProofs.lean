@@ -155,3 +155,4 @@ import CurrentProofs.Paper1EndogenousSupervisor
 import CurrentProofs.Paper1MPVQuantization
 import CurrentProofs.Paper1FrequentBatchAuction
 import CurrentProofs.Paper1FragilityAndDesign
+import CurrentProofs.Paper1RecordValue

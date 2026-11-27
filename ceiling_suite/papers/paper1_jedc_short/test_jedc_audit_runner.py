@@ -136,10 +136,11 @@ def run_audit_checks():
           "endogenous" in supp_text.lower(),
           "Verified Section S14 calibration sensitivity terminology")
 
-    # Check 19: Table S2 Lean declaration sync
+    # Check 19: Table S2 Lean declaration sync (count read from the regenerated receipt files)
+    _N_DECL = len(json.loads((Path(__file__).resolve().parents[3] / "research_extension/current_manuscript_lean_20261008/named_declarations.json").read_text()))
     check(19, "Table S2 Lean declaration sync",
-          "1,310" in supp_text and "eighteen" in supp_text.lower(),
-          "Found sync to 18 Lean files and 1,310 declarations in Table S2")
+          f"{_N_DECL:,}" in supp_text and "nineteen" in supp_text.lower(),
+          f"Found sync to 19 Lean files and {_N_DECL:,} declarations in Table S2")
 
     # Check 20: Table S24 notation table update
     check(20, "Table S24 notation table update",
@@ -230,13 +231,12 @@ def run_audit_checks():
           "take full responsibility" in main_text and "Lean~4 checks certify only" in main_text,
           "Verified rigorous author responsibility and formal boundary disclosure")
 
-    # Check 37: Main PDF page count <= 36 pages (raised from 35 on 27 Nov 2026, when Theorem 5.2, the passive upper
-    # bound, was added; the last page holds only references)
+    # Check 37: Main PDF page count <= 37 pages (raised from 35 on 27 Nov 2026, when Theorems 5.2 and 7.12 were added)
     reader_main = pypdf.PdfReader(str(MAIN_PDF))
     main_pages = len(reader_main.pages)
-    check(37, f"Main PDF page count <= 36 (observed: {main_pages} pages)",
-          main_pages <= 36,
-          f"Main PDF has exactly {main_pages} pages (target <= 36)")
+    check(37, f"Main PDF page count <= 37 (observed: {main_pages} pages)",
+          main_pages <= 37,
+          f"Main PDF has exactly {main_pages} pages (target <= 37)")
 
     # Check 38: Supplement PDF page count >= 72 pages
     reader_supp = pypdf.PdfReader(str(SUPP_PDF))

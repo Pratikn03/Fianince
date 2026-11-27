@@ -1,8 +1,8 @@
-# Author check: Theorems 5.2 and 7.1 (added 27 November 2026)
+# Author check: Theorems 5.2, 7.1 and 7.12 (added 27 November 2026)
 
-Once you have checked both theorems, set `AUTHORS_CHECKED_1127 = True` in
+Once you have checked all three theorems, set `AUTHORS_CHECKED_1127 = True` in
 `ceiling_suite/papers/paper1_jedc_short/sharpen_1127.py` and rebuild. The AI declaration then covers 21–27 November.
-Until then, it says that these two theorems are being checked.
+Until then, it says that these three theorems are being checked.
 
 ## Theorem 5.2 (one passive price record attains the rates). Proof: Appendix A
 
@@ -40,6 +40,22 @@ What to check most carefully: step 2 assumes a ≥ 0 and positive weights, and s
 
 What to check: in (i), the noise bound N ≥ 8κ²σ²L log(2/β)/ε² comes from P(|Z| > t) ≤ 2e^{−t²/2}.
 
+## Theorem 7.12 (more data does not substitute for records). Proof: Appendix A
+
+1. **(i)** Split each density as a = min(p0, p1) plus the excess. Then E W ≤ (1 − TV) W_∅ + TV × ½(max W0 + max W1).
+   This step uses ½(W(θ,0) + W(θ,1)) ≤ W_∅ for every θ. The finite-record version is machine-checked as
+   `voi_le_tv_mul_gain`. Pinsker's inequality then gives the KL form.
+2. **(ii)** Theorem 7.11(ii) gives (δ*)^(n−2) ≤ B_N = 4k²δ0²/(L²β²cN). At n = 4 this gives
+   J* ≤ 16k⁴δ0⁴/(L⁴β⁴cN) (`crowding_divergence_bound`), and then √(J*/2) ≤ 2√2 k²δ0²/(L²β²√(cN))
+   (`tv_bound_from_divergence`).
+3. **(iii)** The threshold N̄ = 8k⁴δ0⁴V*²/(L⁴β⁴c(V* − F_A)²) (`trail_beats_prices`). The price record's gain stays
+   below V* because Gaussian laws at finite divergence have TV < 1.
+
+What to check: in (ii), the theorem takes Theorem 7.11's targeting test as given. It does not cover every
+record-based rule the supervisor might use in equilibrium.
+
 ## Numerical check
 
-`ceiling_suite/p1_theory/passive_upper_check.py`, with results in `passive_upper_check_results.json`.
+- Theorem 5.2: `ceiling_suite/p1_theory/passive_upper_check.py`, with results in `passive_upper_check_results.json`.
+- Theorem 7.12: `ceiling_suite/p1_theory/record_value_check.py`, with results in `record_value_check_results.json`.
+  The bound holds for N from 10 to 10⁸, and the total variation falls with slope −0.48.
