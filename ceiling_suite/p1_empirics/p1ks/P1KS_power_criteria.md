@@ -52,6 +52,18 @@ If any row fails, the design fails. Its parameters are not adjusted to pass, and
 - Index membership comes from KOSPI 200 and KOSDAQ 150 constituents on 2019-01-02, for calibration by group. The
   test's own treatment assignment uses 3 May 2021 membership, which is read only if the test is registered.
 
+## Data-source change (27 November 2026, before any data were read)
+
+KRX Data Marketplace sign-up requires Korean identity verification (i-PIN or a Korean mobile number), so the account
+cannot be created. The planned source is now Naver Finance:
+- foreign net buying by stock and day, from the per-stock foreign/institution page;
+- prices from Naver's daily chart service;
+- shares outstanding implied by foreign holdings divided by the foreign ownership ratio;
+- stock lists, including delisted stocks, from FinanceDataReader.
+
+A schema probe (`P1KS_Naver_Probe_Colab.ipynb`) is run first. It prints column names, row counts and the earliest
+reachable date only. The test design and the pass criteria above are unchanged; only the data source changes.
+
 ## Results
 
 (Filled in after the calibration and the simulation are run.)
