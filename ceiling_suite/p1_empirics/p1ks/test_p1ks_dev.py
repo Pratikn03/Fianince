@@ -16,7 +16,7 @@ def fake_stock(seed, r=0.4, w=0.002, kappa=0.3, n=1400, start='2014-09-01'):
         x[t] = 0.95 * x[t - 1] + kappa * u[t - 1] + 0.05 * rng.standard_normal()
     mcap = np.full(n, 1e12)
     close = np.exp(np.cumsum(0.01 * rng.standard_normal(n)) + 0 * x)
-    df = pd.DataFrame({'close': close, 'mcap': mcap, 'fnet': u * mcap}, index=dates)
+    df = pd.DataFrame({'close': close, 'scale': mcap, 'fnet': u * mcap}, index=dates)
     return df, x
 
 
@@ -53,9 +53,9 @@ def test_summary_shapes():
     for i in range(12):
         df, _ = fake_stock(100 + i)
         res[f't{i}'] = P.stock_stats(df)
-        groups[f't{i}'] = 'index' if i % 2 else 'other'
+        groups[f't{i}'] = 'large' if i % 2 else 'other'
     s = P.summarize(res, groups)
-    for g in ('index', 'other', 'all'):
+    for g in ('large', 'other', 'all'):
         assert s[g]['n_full'] == 6 if g != 'all' else s[g]['n_full'] == 12
     assert 'corr_dS_dc' in s['all']
 

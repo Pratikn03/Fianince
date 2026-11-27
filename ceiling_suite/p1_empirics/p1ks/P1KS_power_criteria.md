@@ -61,7 +61,22 @@ cannot be created. The planned source is now Naver Finance:
 - shares outstanding implied by foreign holdings divided by the foreign ownership ratio;
 - stock lists, including delisted stocks, from FinanceDataReader.
 
-A schema probe (`P1KS_Naver_Probe_Colab.ipynb`) is run first. It prints column names, row counts and the earliest
+Two schema probes were run (column names, counts and dates only):
+- Naver's desktop flow page now redirects to a page with no tables.
+- The mobile trend endpoint returns `foreignerPureBuyQuant`, `organPureBuyQuant`, `individualPureBuyQuant`,
+  `accumulatedTradingVolume`, `closePrice` and `foreignerHoldRatio` by day, and pages back to January 2015.
+- The chart service reaches September 2014.
+
+The calibration therefore uses the following, all fixed before any data were read:
+- **Flows.** u = foreign net buying in shares / trailing 60-day mean volume. The contribution c = κ w/(1−r) does not
+  depend on how u is scaled, because κ is estimated in the same units.
+- **Prices.** Naver adjusted closes requested up to 2019-12-30. A stock with any daily move beyond the ±30% price limit
+  is dropped as an unadjusted split.
+- **Groups.** 'Large' is the top quarter of a 700-stock random sample by 2015–2019 traded value, a proxy for index
+  membership that Naver does not keep. Membership on 3 May 2021 for the test itself must come from another public
+  source before registration.
+
+The first schema probe was `P1KS_Naver_Probe_Colab.ipynb`. It prints column names, row counts and the earliest
 reachable date only. The test design and the pass criteria above are unchanged; only the data source changes.
 
 ## Results

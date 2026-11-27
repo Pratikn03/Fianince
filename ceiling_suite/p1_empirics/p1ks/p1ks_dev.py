@@ -2,13 +2,13 @@
 
 Input: for each stock, a daily DataFrame with columns
     close   adjusted close,
-    mcap    market capitalization,
-    fnet    foreign net purchase value (KRX categories 외국인 + 기타외국인),
+    scale   flow scale (Naver source: trailing 60-day mean trading volume, in shares),
+    fnet    foreign net purchases, in the same units as scale (Naver: foreignerPureBuyQuant, shares),
 indexed by a DatetimeIndex. Prices may start 2014-09-01; every date must be before 2020-01-01.
 
 Per stock and window (full 2015-2019, and halves split at 2017-07-01):
     x_t   log close minus its trailing 60-day mean, divided by the stock's s.d. of daily log returns (2015-2019),
-    u_t   foreign net purchase / market cap at t-1, winsorized at the window's 0.5% and 99.5% quantiles,
+    u_t   foreign net purchase / scale at t-1, winsorized at the window's 0.5% and 99.5% quantiles,
     tagged rule  u_t = alpha + r u_{t-1} + w x_{t-1} + e            (OLS),
     impact       x_t = const + sum_{j<=5} a_j x_{t-j} + kappa u_{t-1} + e   (OLS),
     c            kappa * w / (1 - r)   (foreign budget contribution; requires |r| < 0.99),
@@ -44,7 +44,7 @@ def prepare(df):
     ret = lc.diff()
     sd = ret[ret.index >= START].std()
     x = (lc - lc.rolling(60).mean()) / sd
-    u = df['fnet'].astype(float) / df['mcap'].astype(float).shift(1)
+    u = df['fnet'].astype(float) / df['scale'].astype(float).shift(1)
     out = pd.DataFrame({'x': x, 'u': u}).replace([np.inf, -np.inf], np.nan)
     return out[out.index >= START].dropna()
 
@@ -84,9 +84,9 @@ def _q(v):
 
 
 def summarize(results, groups):
-    """results: ticker -> stock_stats output; groups: ticker -> 'index' or 'other'."""
+    """results: ticker -> stock_stats output; groups: ticker -> 'large' or 'other'."""
     out = {'n_stocks_input': len(results)}
-    for g in ('index', 'other', 'all'):
+    for g in ('large', 'other', 'all'):
         tick = [t for t in results if g == 'all' or groups.get(t) == g]
         full = [results[t]['full'] for t in tick if results[t]['full']]
         both = [(results[t]['h1'], results[t]['h2']) for t in tick
