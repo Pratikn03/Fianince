@@ -154,3 +154,4 @@ import CurrentProofs.Paper1PassiveIncidenceUpper
 import CurrentProofs.Paper1EndogenousSupervisor
 import CurrentProofs.Paper1MPVQuantization
 import CurrentProofs.Paper1FrequentBatchAuction
+import CurrentProofs.Paper1FragilityAndDesign

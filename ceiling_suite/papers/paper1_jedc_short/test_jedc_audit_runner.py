@@ -138,8 +138,8 @@ def run_audit_checks():
 
     # Check 19: Table S2 Lean declaration sync
     check(19, "Table S2 Lean declaration sync",
-          "1,289" in supp_text and "seventeen" in supp_text.lower(),
-          "Found sync to 17 Lean files and 1,289 declarations in Table S2")
+          "1,306" in supp_text and "eighteen" in supp_text.lower(),
+          "Found sync to 18 Lean files and 1,306 declarations in Table S2")
 
     # Check 20: Table S24 notation table update
     check(20, "Table S24 notation table update",
@@ -168,7 +168,7 @@ def run_audit_checks():
 
     # Check 25: Table S2 new upgrade rows present
     check(25, "Table S2 new upgrade rows present",
-          "PublicationRevision16.lean" in supp_text and "PublicationRevision17.lean" in supp_text,
+          "PublicationRevision16.lean" in supp_text and "PublicationRevision17.lean" in supp_text and "PublicationRevision18.lean" in supp_text,
           "Found Revision 16 and 17 rows in Supplement Table S2")
 
     # Check 26: Epistemic honesty declaration with verified 21-26 November 2026 audit scope
@@ -314,7 +314,7 @@ def run_audit_checks():
 
     # Check 49: Table S2 minimaxtags uniqueness note and Table S1 Gaussian-control H3 labeling
     check(49, "Table S2 minimaxtags entry and Table S1 Gaussian-control H3 labeling",
-          "existence on compact $[0,1]^K$ and strict-convexity group-uniform uniqueness" in supp_text and r"Price only, $K=3$ (H3)$^\dagger$" in supp_text,
+          "minimax_partial_tags_strict_unique" in supp_text and r"Price only, $K=3$ (H3)$^\dagger$" in supp_text,
           "Confirmed Table S2 minimaxtags qualification and Table S1 Gaussian-control marker")
 
     # Check 50: Prop 7.9 ASA v. SEC / TRS / intra-LEI netting caveats

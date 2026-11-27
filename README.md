@@ -44,7 +44,7 @@ Public replication archive, LaTeX manuscript sources, pre-registered empirical p
 
 Deterministic algebraic, combinatorial, game-theoretic, and spectral-approximation steps are machine-checked in **Lean 4.34.1** against pinned Mathlib (`d13f23b723b8a846827a245b89c10fc7d3f11612`), recorded in [`formal_verification_receipt.json`](research_extension/current_manuscript_lean_20261008/formal_verification_receipt.json):
 
-- **Audited Proof Inventory:** `1289 named theorems` across `CurrentProofs/` and 17 `PublicationRevision*.lean` modules (`3,178` project constants scanned; zero `sorry`; standard Lean axioms `propext`, `Classical.choice`, and `Quot.sound` only).
+- **Audited Proof Inventory:** `1306 named theorems` across `CurrentProofs/` and 18 `PublicationRevision*.lean` modules (`3,178` project constants scanned; zero `sorry`; standard Lean axioms `propext`, `Classical.choice`, and `Quot.sound` only).
 - **Explicit Coverage Boundary:** [`COVERAGE.md`](COVERAGE.md) classifies 76 environments across the baseline suite (30 `full`, 27 `conditional`, 19 `arithmetic`), and Paper 1 Online Supplement Table S2 documents the exact division between machine-checked deterministic lemmas and paper-proved probabilistic steps (Gaussian KL chain rule, Whittle asymptotics, Pinsker's inequality, and central limit theorems).
 
 ---
