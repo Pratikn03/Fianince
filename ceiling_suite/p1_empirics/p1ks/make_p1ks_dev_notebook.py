@@ -16,8 +16,9 @@ MD = f"""# P1KS development window (2015–2019 only)
 Calibration for the power check of the planned Korea short-sale test. **It reads nothing dated 2020 or later**, and
 the code stops if any date reaches 2020. It prints summary statistics across stocks only.
 
-**Before running:** in Colab, open the key icon (Secrets) and make sure `KRX_ID` and `KRX_PW` exist with notebook
-access on. Never paste them into a cell or into chat. Then Runtime → Run all. The download takes about 20–40 minutes.
+**Before running:** in Colab, open the key icon (Secrets) and add `KRX_ID` and `KRX_PW` (your free data.krx.co.kr
+login) with notebook access on. Never paste them into a cell or into chat. If they are missing, the notebook tries
+without a login and says so. Then Runtime → Run all. The download takes about 20–40 minutes.
 Send back the final printed JSON.
 
 Calibration code: `p1ks_dev.py`, SHA-256 `{SHA}`.
@@ -27,8 +28,17 @@ SETUP = r'''
 import os, subprocess, sys, time, json, hashlib, random
 subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'pykrx==1.2.9'], check=True)
 from google.colab import userdata
-os.environ['KRX_ID'] = userdata.get('KRX_ID')
-os.environ['KRX_PW'] = userdata.get('KRX_PW')
+missing = []
+for k in ('KRX_ID', 'KRX_PW'):
+    try:
+        os.environ[k] = userdata.get(k)
+    except Exception as e:
+        missing.append(k + ' (' + type(e).__name__ + ')')
+if missing:
+    print('KRX secrets not available:', ', '.join(missing))
+    print('Continuing without a KRX login. If the download step fails, add the secrets (key icon) and rerun.')
+else:
+    print('KRX login secrets found.')
 SRC = %s
 assert hashlib.sha256(SRC.encode()).hexdigest() == %r, 'calibration code changed'
 open('p1ks_dev.py', 'w').write(SRC)
@@ -74,6 +84,11 @@ def fetch(t):
             err = type(e).__name__ + ': ' + str(e)[:120]
             time.sleep(2 + 3 * attempt)
     return None, err
+
+probe, perr = fetch(universe[0])
+if probe is None:
+    raise SystemExit('KRX download failed for the first stock: ' + str(perr) + '\nAdd the KRX_ID / KRX_PW secrets and rerun.')
+print('first download ok:', len(probe), 'rows')
 
 results, failures = {}, {}
 for i, t in enumerate(universe):
