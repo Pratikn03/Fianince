@@ -174,10 +174,11 @@ def run_audit_checks():
           "PublicationRevision16.lean" in supp_text and "PublicationRevision17.lean" in supp_text and "PublicationRevision18.lean" in supp_text,
           "Found Revision 16 and 17 rows in Supplement Table S2")
 
-    # Check 26: Epistemic honesty declaration with verified 21-26 November 2026 audit scope
+    # Check 26: Epistemic honesty declaration with author-verified 21-27 November 2026 scope (authors confirmed 27 Nov)
     check(26, "Epistemic honesty declaration",
-          "21--26 November 2026" in main_text and "flagged in the verification dossier" not in main_text and "Lean~4 checks certify only" in main_text,
-          "Confirmed author-verified 21-26 November 2026 declaration with Lean/probabilistic scope boundaries")
+          "21--27 November 2026" in main_text and "being checked by the authors" not in main_text
+          and "flagged in the verification dossier" not in main_text and "Lean~4 checks certify only" in main_text,
+          "Confirmed author-verified 21-27 November 2026 declaration with Lean/probabilistic scope boundaries")
 
     # Check 27: MPV Resolution Limit Theorem (Theorem 5.2) present in Section 5
     check(27, "MPV Resolution Limit Theorem (Theorem 5.2)",

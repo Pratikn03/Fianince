@@ -21,7 +21,7 @@ Supplement: receives the three results; Table S2 rows say what Lean checks; the 
 import re
 
 # Set to True only after the first author has read and checked Theorems 7.1 and 5.2 (added 27 November 2026).
-AUTHORS_CHECKED_1127 = False
+AUTHORS_CHECKED_1127 = True
 
 MOVED_LABELS = ('thm:mpv', 'cor:posthaltflip', 'prop:endogenous_supervisor', 'n:univ', 'n:shape')
 
