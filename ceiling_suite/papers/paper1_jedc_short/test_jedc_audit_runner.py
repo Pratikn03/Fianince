@@ -177,8 +177,9 @@ def run_audit_checks():
 
     # Check 26: Epistemic honesty declaration with author-verified 21-27 November 2026 scope (authors confirmed 27 Nov)
     check(26, "Epistemic honesty declaration",
-          "21--27 November 2026" in main_text and "being checked by the authors" not in main_text
-          and "flagged in the verification dossier" not in main_text and "Lean~4 checks certify only" in main_text,
+          "through 27 November 2026" in main_text and "flagged in the verification dossier" not in main_text
+          and "Lean~4 checks certify the formal statements" in main_text
+          and (("is being checked by the authors" in main_text) != __import__('revision_1128').AUTHORS_CHECKED_1128),
           "Confirmed author-verified 21-27 November 2026 declaration with Lean/probabilistic scope boundaries")
 
     # Check 27: MPV Resolution Limit Theorem (Theorem 5.2) present in Section 5
@@ -198,7 +199,7 @@ def run_audit_checks():
 
     # Check 30: Countercyclical pre-funded APC margin buffers linked to S
     check(30, "Countercyclical APC margin buffer linked to S",
-          "countercyclical" in main_text.lower() and "margin_scaling" in supp_text and "b_{\\mathrm{APC}}" in supp_text,
+          "margin_scaling" in supp_text and "b_{\\mathrm{APC}}" in supp_text and "no result in the paper uses it" in supp_text,
           "Found BCBS-CPMI-IOSCO countercyclical APC margin schedule in main and supplement")
 
     # Check 31: Removal of un-defensible HFT / sub-millisecond claims from Abstract & Section 1
@@ -210,7 +211,7 @@ def run_audit_checks():
 
     # Check 32: TWSE 5-second periodic batch auction institutional context in Section 7.4
     check(32, "TWSE 5-second periodic batch auction institutional context",
-          "5-second" in main_text and "periodic call auction" in main_text,
+          "periodic call-auction interval" in main_text and "Twu and Wang, 2018" in main_text,
           "Found TWSE call auction institutional context in Section 7.4")
 
     # Check 33: Concession that tagged flow persistence reflects parent-order slicing
@@ -230,7 +231,7 @@ def run_audit_checks():
 
     # Check 36: Declarations accuracy
     check(36, "Declarations accuracy (clean epistemic boundaries)",
-          "take full responsibility" in main_text and "Lean~4 checks certify only" in main_text,
+          "take full responsibility" in main_text and "not their correspondence with the prose" in main_text,
           "Verified rigorous author responsibility and formal boundary disclosure")
 
     # Check 37: Main PDF page count <= 37 pages (raised from 35 on 27 Nov 2026, when Theorems 5.2 and 7.12 were added)
@@ -324,12 +325,12 @@ def run_audit_checks():
 
     # Check 50: Prop 7.9 ASA v. SEC / TRS / intra-LEI netting caveats
     check(50, "Prop 7.9 and S15 ASA v. SEC, TRS, and intra-LEI pod-netting disclosures",
-          "ASA v." in main_text and "ASA v." in supp_text and r"\gamma_{\mathrm{TRS}}" in main_text,
+          "American Securities Association v." in main_text and "American Securities Association v." in supp_text and r"\gamma_{\mathrm{TRS}}" in main_text,
           "Confirmed Eleventh Circuit ASA v. SEC and synthetic swap caveats in Main and Supplement")
 
     # Check 51: TWSE institutional regime, DealerOwn, P1M-A1 lag profile, and P1T Rule 4 holdout table
     check(51, "TWSE institutional details, DealerOwn, P1M-A1 lag -1.235, and P1T Rule 4 table",
-          "DealerOwn" in main_text and "-1.235" in main_text and "-1.235" in supp_text and "tab:p1t_holdout" in supp_text and "0.0238" in supp_text,
+          "DealerOwn" in main_text and "-1.235" in main_text and "-1.235" in supp_text and "tab:p1t_all" in supp_text and "0.0238" in supp_text,
           "Confirmed full TWSE empirical disclosure across Main Section 7.4 and Supplement Section S19")
 
     # Check 52: Round-3 Supplement S6.1/S8/S24 microstructure, Nyquist omega=pi, hazard, and AR(1) HMM fixes
@@ -369,6 +370,35 @@ def run_audit_checks():
     check(57, "Data-driven passive truncation (no S23 plateau) & natural-experiment Proposition S19.1",
           pdiag_ok and "prop:natural_exp" in supp_text and "S-prop:natural_exp" in main_text and "0.00232" in supp_text,
           f"passive tail_4x_rmse_ratio={pdiag.get('tail_4x_rmse_ratio'):.3f}, rmse_32768={pdiag['rows'][-1]['rmse']:.5f}")
+
+
+    # Check 58-63: revision of 28 November 2026 (responses to the AI referee reports)
+    readB = ("Read with its pre-specified diagnostic, the test does not provide evidence of feedback beyond prices revealing past flow."
+             in main_text and "its pre-specified diagnostic attributes the gain to reverse causality." in main_text
+             and "Read with its pre-specified diagnostic, the test does not provide evidence of feedback beyond prices revealing past flow." in supp_text
+             and "its pre-specified diagnostic attributes the gain to reverse causality." in supp_text)
+    check(58, "Registered reading-B wording verbatim; no 'placebo'",
+          readB and "placebo" not in main_text.lower() and "placebo" not in supp_text.lower() and "pre-registered" not in supp_text,
+          "Committed readout text restored in main and supplement")
+    check(59, "Introduction example: Delta^2 gap and Delta^-4 for two-against-one",
+          "of order $\\Delta^{-4}$" in main_text and "first- and second-order differences cancel" not in main_text.lower(),
+          "Two groups against one differ at order Delta^2")
+    check(60, "Surveillance result stated as a best-response upper bound",
+          "in equilibrium its value falls like" not in main_text and "best response to a fixed test" in main_text and "N^{-1/6}" in main_text,
+          "No equilibrium claim; one- and two-sided bounds")
+    check(61, "Uniform cut in the dealer equilibrium (Theorem n:eqcut) with proofs and checks",
+          "\\label{n:eqcut}" in main_text and "Proof of Theorem~\\ref{n:eqcut}(i)--(ii)" in main_text and "\\label{sec:eqcut}" in supp_text
+          and (REPO_ROOT / "ceiling_suite/p1_theory/equilibrium_uniform_cut_check_results.json").exists()
+          and "a market-wide cut is the safe default" not in main_text,
+          "Equilibrium version proved; 'safe default' withdrawn")
+    check(62, "Every registered holdout outcome tabulated from the run's output file",
+          "\\label{tab:p1t_all}" in supp_text and "-0.0493" in supp_text and "\\label{tab:prespec}" in supp_text
+          and (REPO_ROOT / "ceiling_suite/p1_empirics/results/p1t_holdout_results.zip").exists(),
+          "S1, S2, S3, sensitivity and stability reported; all pre-specified tests listed")
+    check(63, "Claims register and consistent machine-check scope",
+          "\\label{tab:claims}" in supp_text and "deterministic algebraic steps (with probabilistic" not in main_text
+          and "several finite-sample probability bounds" in main_text,
+          "Title page, declaration and supplement agree")
 
     print("=" * 80)
     passed = sum(1 for _, _, s, _ in results if s == "PASS")

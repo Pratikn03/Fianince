@@ -29,6 +29,8 @@ import round10  # noqa: E402  (P1M-A1 passages, applied only once the result fil
 sys.path.insert(0, str(HERE))
 import sharpen_1127  # noqa: E402  (revision of 27 November 2026)
 import final_cut_1127  # noqa: E402  (final restructuring, 27 November 2026)
+import revision_1128  # noqa: E402  (revision of 28 November 2026: responses to the AI referee reports)
+import revision_1128_supp  # noqa: E402
 
 MOVED = {}  # blocks moved to the supplement by sharpen_1127
 SRC = HERE / 'received' / 'Paper1_JEDC_final.tex'
@@ -731,6 +733,7 @@ $K = 3$ & $0.5 \pm 0.1$   & $0.8\text{--}1.4$  & $2.0 \times 10^8$ & $1.3 \times
 
     t, moved = sharpen_1127.main_text(t)
     t = final_cut_1127.main_text(t, moved)
+    t = revision_1128.main_text(t)
     MOVED.clear()
     MOVED.update(moved)
     MOVED['_main_tex'] = t

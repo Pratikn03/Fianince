@@ -41,6 +41,7 @@ def make_twse_sensitivity_figure():
         "Registered: 2023",
         "Registered: reverse causality",
         "Post hoc: limit days masked",
+        "Post hoc: masked, reverse causality",
         "Post hoc: pre-Mar 2020 (5s call)",
         "Post hoc: post-Mar 2020 (cont.)",
     ]
@@ -53,6 +54,7 @@ def make_twse_sensitivity_figure():
         regd["stability"]["2023"],
         regd["reverse_causality"],
         hold["primary_block20"],
+        hold["diagnostics"]["reverse_causality"],
         reg["pre_20200323_call_auction_5s"]["Foreign_block20"],
         reg["post_20200323_continuous_matching"]["Foreign_block20"],
     ]
@@ -140,14 +142,14 @@ def make_fragility_figure():
     D_crit = D_grid[idx_crit]
     assert 10 < idx_crit < len(D_grid) - 10, f"Interior fold check failed: idx_crit={idx_crit}"
 
-    # Stable upper branch: D in [D_crit, 1.0], lambda from lam_crit down to 0
+    # Principal branch (largest root, dF/dD > 0): D in [D_crit, 1.0], lambda from lam_crit down to 0
     D_stab = D_grid[idx_crit:]
     lam_stab = lam_grid[idx_crit:]
     km_stab = kappa_minus[idx_crit:]
     depth_stab = D_stab / km_stab
     V_stab = (sF ** 2) + (km_stab / D_stab) ** 2 * (sXi ** 2)
 
-    # Unstable lower branch: D in (max(D_min, r), D_crit]
+    # Lower branch (dF/dD < 0): D in (max(D_min, r), D_crit]; no dynamic stability claim is made for it
     D_unst = D_grid[:idx_crit + 1]
     lam_unst = lam_grid[:idx_crit + 1]
     km_unst = kappa_minus[:idx_crit + 1]
@@ -156,8 +158,8 @@ def make_fragility_figure():
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.2, 3.15), constrained_layout=True)
 
-    ax1.plot(lam_stab, depth_stab, color="#1f4e78", linewidth=1.9, label=r"Stable branch $D(\lambda)/\kappa(\lambda)$")
-    ax1.plot(lam_unst, depth_unst, color="#c0392b", linestyle="--", linewidth=1.4, label="Unstable lower branch")
+    ax1.plot(lam_stab, depth_stab, color="#1f4e78", linewidth=1.9, label=r"Principal branch $D(\lambda)/\kappa(\lambda)$")
+    ax1.plot(lam_unst, depth_unst, color="#c0392b", linestyle="--", linewidth=1.4, label=r"Lower branch ($\partial_D F<0$)")
     ax1.axvline(lam_crit, color="#444444", linestyle=":", linewidth=1.1)
     ax1.scatter([lam_crit], [D_crit / kappa_minus[idx_crit]], color="#c0392b", zorder=5, s=30,
                 label=rf"Saddle-node fold $\lambda_{{\mathrm{{crit}}}}={lam_crit:.3f}$")
@@ -168,8 +170,8 @@ def make_fragility_figure():
     ax1.legend(frameon=False, fontsize=7.4, loc=(0.03, 0.36))
     ax1.grid(True, linestyle=":", alpha=0.4)
 
-    ax2.plot(lam_stab, V_stab, color="#1f4e78", linewidth=1.9, label=r"Stable equilibrium $V(\lambda)$")
-    ax2.plot(lam_unst, V_unst, color="#c0392b", linestyle="--", linewidth=1.3, alpha=0.75, label="Unstable lower branch")
+    ax2.plot(lam_stab, V_stab, color="#1f4e78", linewidth=1.9, label=r"Principal branch $V(\lambda)$")
+    ax2.plot(lam_unst, V_unst, color="#c0392b", linestyle="--", linewidth=1.3, alpha=0.75, label=r"Lower branch ($\partial_D F<0$)")
     ax2.axhline(2 * (sF ** 2), color="#444444", linestyle="-.", linewidth=1.2,
                 label=rf"Vieta ceiling $2\sigma_F^2 = {2*sF**2:.3f}$")
     ax2.axvline(lam_crit, color="#444444", linestyle=":", linewidth=1.1)
